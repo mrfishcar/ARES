@@ -60,6 +60,26 @@ const LC = '[a-zà-öø-ÿа-яё]'; // Lowercase (Latin + Cyrillic)
 const WORD = '(?:[A-ZÀ-ÖØ-ÞА-ЯЁ][a-zà-öø-ÿа-яё]*(?:\'[a-zà-öø-ÿа-яё]+)?)';
 
 /**
+ * Pronouns to exclude from entity detection
+ */
+const PRONOUNS = new Set([
+  'he', 'she', 'it', 'they', 'we', 'i', 'you',
+  'him', 'her', 'them', 'us', 'me',
+  'his', 'hers', 'its', 'their', 'our', 'my', 'your',
+  'himself', 'herself', 'itself', 'themselves', 'ourselves', 'myself', 'yourself',
+  'this', 'that', 'these', 'those',
+]);
+
+/**
+ * Common descriptors/ethnicities that shouldn't be standalone entities
+ */
+const DESCRIPTORS = new Set([
+  'hittite', 'canaanite', 'philistine', 'egyptian', 'assyrian',
+  'babylonian', 'persian', 'greek', 'roman', 'israelite',
+  'jewish', 'christian', 'muslim', 'buddhist', 'hindu',
+]);
+
+/**
  * Entity patterns for natural language detection
  */
 const ENTITY_PATTERNS = {
@@ -307,6 +327,22 @@ function detectNaturalEntities(text: string, minConfidence: number): EntitySpan[
         // Skip if already detected
         const key = `${start}-${end}`;
         if (seenSpans.has(key)) {
+          continue;
+        }
+
+        // Filter out pronouns (he, she, it, they, etc.)
+        const lowerCaptured = captured.toLowerCase().trim();
+        if (PRONOUNS.has(lowerCaptured)) {
+          continue;
+        }
+
+        // Filter out standalone descriptors (Hittite, Egyptian, etc.)
+        if (DESCRIPTORS.has(lowerCaptured)) {
+          continue;
+        }
+
+        // Filter out single-letter captures
+        if (captured.length === 1) {
           continue;
         }
 
