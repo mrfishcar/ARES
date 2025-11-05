@@ -3,7 +3,7 @@
  * Focused on Notes + Entities workflows
  */
 
-import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useState, useEffect, useMemo } from 'react';
 import { useToast, ToastContainer } from './components/Toast';
 import { ThemeProvider } from './context/ThemeContext';
@@ -22,7 +22,7 @@ type NavItem = {
   label: string;
 };
 
-function Navigation({
+function _Navigation({
   items,
   activePath,
   onNavigate,
@@ -95,9 +95,8 @@ function Navigation({
 }
 
 function AppShell() {
-  const [project, setProject] = useState<string>(() => loadState('project', 'default'));
+  const [project] = useState<string>(() => loadState('project', 'default'));
   const toast = useToast();
-  const navigate = useNavigate();
   const location = useLocation();
 
   const navItems = useMemo<NavItem[]>(
@@ -119,7 +118,7 @@ function AppShell() {
     };
   }, [project]);
 
-  const activePath = navItems.some(item => item.path === location.pathname)
+  const _activePath = navItems.some(item => item.path === location.pathname)
     ? location.pathname
     : '/notes';
 

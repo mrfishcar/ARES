@@ -111,7 +111,7 @@ export function MiniGarden({
     // Create simulation nodes with positions - preserve existing, spread out new ones
     const simulationNodes = nodes.map(node => {
       const existing = positionsRef.current.get(node.id);
-      const radius = node.isCluster ? Math.min(30 + node.count * 2, 50) : getNodeSize(node.mentions || 1);
+      const radius = ('isCluster' in node && node.isCluster) ? Math.min(30 + node.count * 2, 50) : getNodeSize(('mentions' in node ? node.mentions : 1) || 1);
 
       if (existing && existing.x >= radius && existing.x <= width - radius && existing.y >= radius && existing.y <= height - radius) {
         // Reuse existing position if it's within bounds
@@ -159,19 +159,19 @@ export function MiniGarden({
       .attr('stroke', '#fff')
       .attr('stroke-width', (d: any) => d.isCluster ? 3 : 2)
       .style('cursor', 'pointer')
-      .on('mouseenter', function(event, d: any) {
+      .on('mouseenter', function(_event, d: any) {
         d3.select(this)
           .attr('r', getNodeRadius(d) + 4)
           .attr('stroke-width', d.isCluster ? 4 : 3);
         if (!d.isCluster) setHoveredEntity(d);
       })
-      .on('mouseleave', function(event, d: any) {
+      .on('mouseleave', function(_event, d: any) {
         d3.select(this)
           .attr('r', getNodeRadius(d))
           .attr('stroke-width', d.isCluster ? 3 : 2);
         setHoveredEntity(null);
       })
-      .on('click', (event, d: any) => {
+      .on('click', (_event, d: any) => {
         if (d.isCluster) {
           // Toggle cluster expansion
           setExpandedClusters(prev => {

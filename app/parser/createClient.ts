@@ -3,8 +3,16 @@ import { EmbeddedParserClient } from "./EmbeddedParserClient";
 import { MockParserClient } from "./MockParserClient";
 import type { ParserClient } from "./ParserClient";
 
-const DEFAULT_BASE_URL = process.env.PARSER_URL || "http://127.0.0.1:8000";
-const TIMEOUT_MS = Number(process.env.PARSER_TIMEOUT_MS || 800);
+// Browser-compatible env access
+const getEnv = (key: string, defaultValue: string = ''): string => {
+  if (typeof process !== 'undefined' && process.env) {
+    return process.env[key] || defaultValue;
+  }
+  return defaultValue;
+};
+
+const DEFAULT_BASE_URL = getEnv('PARSER_URL', "http://127.0.0.1:8000");
+const TIMEOUT_MS = Number(getEnv('PARSER_TIMEOUT_MS', '800'));
 
 async function canReachHTTP(base: string): Promise<boolean> {
   const controller = new AbortController();
@@ -23,7 +31,10 @@ async function canReachHTTP(base: string): Promise<boolean> {
 }
 
 function activate(client: ParserClient, backend: string): ParserClient {
-  process.env.PARSER_ACTIVE_BACKEND = backend;
+  // Store backend info (skip in browser environment)
+  if (typeof process !== 'undefined' && process.env) {
+    process.env.PARSER_ACTIVE_BACKEND = backend;
+  }
   return client;
 }
 
@@ -37,8 +48,8 @@ function tryCreateEmbedded(): ParserClient | null {
 }
 
 export async function createParserClient(): Promise<ParserClient> {
-  const preferred = (process.env.PARSER_BACKEND || "").toLowerCase();
-  const baseUrl = process.env.PARSER_URL || DEFAULT_BASE_URL;
+  const preferred = getEnv('PARSER_BACKEND', '').toLowerCase();
+  const baseUrl = getEnv('PARSER_URL', DEFAULT_BASE_URL);
 
   if (preferred === "mock") {
     return activate(new MockParserClient(), "mock");

@@ -224,7 +224,7 @@ export function useHighlights(noteId?: string) {
   const autoConfirmPending = useCallback(
     async (noteId: string, threshold: number): Promise<void> => {
       try {
-        const result = await mutate<{ autoConfirmPending: Highlight[] }>(
+        await mutate<{ autoConfirmPending: Highlight[] }>(
           MUTATION_AUTO_CONFIRM_PENDING,
           { noteId, threshold }
         );

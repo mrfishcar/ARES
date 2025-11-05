@@ -55,8 +55,8 @@ const TITLE_INDICATORS = new Set(['Fellowship', 'Council', 'Ring', ...]);
  * Supports common European and fantasy name characters (Lothlórien, Éowyn, etc.)
  */
 // Define character classes for Unicode-aware name matching
-const UC = '[A-ZÀ-ÖØ-ÞА-ЯЁ]'; // Uppercase (Latin + Cyrillic)
-const LC = '[a-zà-öø-ÿа-яё]'; // Lowercase (Latin + Cyrillic)
+// Uppercase (Latin + Cyrillic): [A-ZÀ-ÖØ-ÞА-ЯЁ]
+// Lowercase (Latin + Cyrillic): [a-zà-öø-ÿа-яё]
 const WORD = '(?:[A-ZÀ-ÖØ-ÞА-ЯЁ][a-zà-öø-ÿа-яё]*(?:\'[a-zà-öø-ÿа-яё]+)?)';
 
 /**
@@ -229,7 +229,6 @@ function detectHashtags(text: string): EntitySpan[] {
       // Extract entity name and type based on pattern
       let entityName: string;
       let typeHint: string | undefined;
-      let isInProgress = false;  // Track if this is a partial tag
 
       if (fullMatch.startsWith('#[')) {
         // Bracket format: #[Name]:TYPE or just #[Name]
@@ -237,7 +236,6 @@ function detectHashtags(text: string): EntitySpan[] {
         if (bracketMatch) {
           entityName = bracketMatch[1];
           typeHint = bracketMatch[2];
-          isInProgress = !typeHint; // No type yet means in progress
         } else {
           continue;
         }
@@ -247,7 +245,6 @@ function detectHashtags(text: string): EntitySpan[] {
         if (wordMatch) {
           entityName = wordMatch[1];
           typeHint = wordMatch[2];
-          isInProgress = !typeHint; // No type yet means in progress
         } else {
           continue;
         }
@@ -255,7 +252,6 @@ function detectHashtags(text: string): EntitySpan[] {
         // Natural language pattern matched
         entityName = match[1].trim();
         typeHint = inferTypeFromContext(entityName, text, match.index);
-        isInProgress = false;  // Natural matches are complete
       }
 
       // Skip if this looks like a markdown heading
@@ -301,8 +297,6 @@ function detectHashtags(text: string): EntitySpan[] {
 function detectNaturalEntities(text: string, minConfidence: number): EntitySpan[] {
   const spans: EntitySpan[] = [];
   const seenSpans = new Set<string>(); // Deduplicate overlapping spans
-  // Debugging disabled in production
-  const DEBUG = false;
 
   // Try each entity type pattern
   for (const [type, patterns] of Object.entries(ENTITY_PATTERNS)) {
@@ -839,28 +833,29 @@ async function incrementalParse(
   // TODO: Implement incremental diff-based parsing
 
   // S3: Pass 0 - Alias lookup (if enabled and project provided)
+  // NOTE: Disabled in browser builds - requires Node.js module system
   let aliasSpans: EntitySpan[] = [];
-  if (config.enableAliasPass && config.project) {
-    try {
-      // Import alias brain only if needed (conditional to avoid circular dependency)
-      const { aliasPass } = require('./aliasBrain');
-      const aliasMatches = aliasPass(text, config.project);
-
-      // Convert AliasMatch to EntitySpan format
-      aliasSpans = aliasMatches.map((match: any) => ({
-        start: match.start,
-        end: match.end,
-        text: match.text,
-        displayText: match.entityName, // Show entity name, not alias
-        type: match.type,
-        confidence: match.confidence,
-        source: 'tag' as const, // Alias matches are treated like explicit tags
-      }));
-    } catch (error) {
-      // Silently fail if alias brain is not available
-      console.warn('Alias pass failed:', error);
-    }
-  }
+  // if (config.enableAliasPass && config.project && typeof require !== 'undefined') {
+  //   try {
+  //     // Import alias brain only if needed (conditional to avoid circular dependency)
+  //     const { aliasPass } = require('./aliasBrain');
+  //     const aliasMatches = aliasPass(text, config.project);
+  //
+  //     // Convert AliasMatch to EntitySpan format
+  //     aliasSpans = aliasMatches.map((match: any) => ({
+  //       start: match.start,
+  //       end: match.end,
+  //       text: match.text,
+  //       displayText: match.entityName, // Show entity name, not alias
+  //       type: match.type,
+  //       confidence: match.confidence,
+  //       source: 'tag' as const, // Alias matches are treated like explicit tags
+  //     }));
+  //   } catch (error) {
+  //     // Silently fail if alias brain is not available
+  //     console.warn('Alias pass failed:', error);
+  //   }
+  // }
 
   // Always detect explicit tags and hashtags (highest priority)
   const tagSpans = detectTags(text);

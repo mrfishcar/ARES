@@ -47,7 +47,6 @@ export function AutomationSlider({ project }: AutomationSliderProps) {
     loading,
     setMode,
     toggleHandsOff,
-    getModeName,
   } = useAutomation(project);
   const [expanded, setExpanded] = useState(false);
 

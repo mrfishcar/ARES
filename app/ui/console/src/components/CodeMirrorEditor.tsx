@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { EditorState, Extension, StateEffect, StateField, RangeSetBuilder } from '@codemirror/state';
+import { EditorState, StateEffect, StateField, RangeSetBuilder } from '@codemirror/state';
 import { EditorView, keymap, ViewPlugin, ViewUpdate, Decoration, DecorationSet } from '@codemirror/view';
 import { defaultKeymap } from '@codemirror/commands';
 import { markdown } from '@codemirror/lang-markdown';
 import type { EntitySpan, EntityType } from '../../../../editor/entityHighlighter';
 import { highlightEntities, getEntityTypeColor } from '../../../../editor/entityHighlighter';
 import { EntityContextMenu } from './EntityContextMenu';
-import { useEntityMentions } from '../hooks/useEntityMentions';
 
 import type { CodeMirrorEditorProps } from './CodeMirrorEditorProps';
 
@@ -14,10 +13,6 @@ import type { CodeMirrorEditorProps } from './CodeMirrorEditorProps';
 // --- Helper functions ---
 function getSpanDisplayName(span: EntitySpan): string {
   return span.displayText || span.text;
-}
-function getSpanCanonicalName(span: EntitySpan): string {
-  const canonical = (span as any).canonicalName?.trim();
-  return canonical && canonical.length > 0 ? canonical : getSpanDisplayName(span);
 }
 function getSpanTooltipLabel(span: EntitySpan): string {
   const display = getSpanDisplayName(span);
@@ -137,7 +132,7 @@ export function CodeMirrorEditor({
   } | null>(null);
 
   // Confirm mention stub (replace with real hook if needed)
-  const confirmMention = async () => {};
+  const _confirmMention = async () => {};
 
     // Initialize CodeMirror editor on mount
   useEffect(() => {
@@ -152,7 +147,7 @@ export function CodeMirrorEditor({
           ...entityHighlighterExtension(setContextMenu),
           entityHighlightTheme,
           EditorView.lineWrapping,
-          EditorView.updateListener.of(update => {
+          EditorView.updateListener.of((update: ViewUpdate) => {
             if (update.docChanged) {
               onChange(update.state.doc.toString());
             }

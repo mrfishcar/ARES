@@ -21,7 +21,7 @@ interface UnifiedHomePageProps {
 export function UnifiedHomePage({ project, toast }: UnifiedHomePageProps) {
   const navigate = useNavigate();
   const { notes, createNote, updateNote } = useNotes({ project });
-  const { entities, loading: entitiesLoading } = useEntities({ project });
+  const { entities } = useEntities({ project });
 
   // Editor state
   const [title, setTitle] = useState('');
@@ -38,7 +38,7 @@ export function UnifiedHomePage({ project, toast }: UnifiedHomePageProps) {
   const [showNotesVault, setShowNotesVault] = useState(false); // Notes organizer sidebar
 
   // Refs
-  const saveTimeoutRef = useRef<NodeJS.Timeout>();
+  const saveTimeoutRef = useRef<number>();
   const previousEntityCountRef = useRef(entities.length);
 
   // Word count
@@ -51,8 +51,6 @@ export function UnifiedHomePage({ project, toast }: UnifiedHomePageProps) {
     setIsSaving(true);
 
     try {
-      let noteId = currentNoteId;
-
       // Combine title and text into markdown
       const markdown = title.trim()
         ? `# ${title}\n\n${text}`
@@ -67,7 +65,6 @@ export function UnifiedHomePage({ project, toast }: UnifiedHomePageProps) {
           markdown,
           attachments: [],
         });
-        noteId = note.id;
         setCurrentNoteId(note.id);
       }
 
