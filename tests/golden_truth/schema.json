@@ -1,0 +1,252 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ares.app/schemas/golden-truth-v1.json",
+  "title": "ARES Golden Truth Test Case",
+  "description": "Schema for golden truth entity extraction test cases",
+  "type": "object",
+  "required": [
+    "version",
+    "case_id",
+    "domain",
+    "source_notes",
+    "input_text",
+    "entities",
+    "coref_clusters",
+    "alias_dictionary",
+    "relations",
+    "dates",
+    "negative_cases",
+    "rule_upgrade_suggestions"
+  ],
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "ares-test-v1"
+    },
+    "case_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+$",
+      "description": "Snake-case identifier for this test case"
+    },
+    "domain": {
+      "type": "string",
+      "enum": ["fantasy", "academic", "news", "legal", "technical", "mixed"]
+    },
+    "source_notes": {
+      "type": "string",
+      "description": "Brief description of passage style and intent"
+    },
+    "input_text": {
+      "type": "string",
+      "minLength": 100,
+      "description": "The full passage text (target: 1000-1400 words)"
+    },
+    "entities": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "surface", "start", "end", "type", "canonical", "alias_of", "reasoning"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^E[0-9]+$",
+            "description": "Unique entity ID within this case (E1, E2, etc.)"
+          },
+          "surface": {
+            "type": "string",
+            "description": "Exact text as it appears in input_text"
+          },
+          "start": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Character offset (inclusive) in input_text"
+          },
+          "end": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Character offset (exclusive) in input_text"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "PERSON", "PLACE", "ORG", "EVENT", "WORK", "OBJECT",
+              "DATE", "TIME", "QUANTITY", "MONEY", "LAW",
+              "CONCEPT", "NORP", "PRODUCT"
+            ]
+          },
+          "canonical": {
+            "type": "string",
+            "description": "Canonical form of this entity"
+          },
+          "alias_of": {
+            "type": ["string", "null"],
+            "pattern": "^(E[0-9]+)?$",
+            "description": "ID of canonical entity if this is an alias, null otherwise"
+          },
+          "reasoning": {
+            "type": "string",
+            "description": "Explanation of why this annotation was made"
+          }
+        }
+      }
+    },
+    "coref_clusters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["canonical", "members", "aliases"],
+        "properties": {
+          "canonical": {
+            "type": "string",
+            "description": "Canonical name for this cluster"
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^E[0-9]+$"
+            },
+            "minItems": 1,
+            "description": "Entity IDs in this coreference cluster"
+          },
+          "aliases": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "All surface forms for this entity"
+          }
+        }
+      }
+    },
+    "alias_dictionary": {
+      "type": "object",
+      "description": "Canonical name -> aliases mapping",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "string" }
+      }
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "head", "tail", "evidence_span", "reasoning"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Relation type (e.g., communicated_with, traveled_to)"
+          },
+          "head": {
+            "type": "string",
+            "pattern": "^E[0-9]+$",
+            "description": "Subject entity ID"
+          },
+          "tail": {
+            "type": ["string", "null"],
+            "pattern": "^(E[0-9]+)?$",
+            "description": "Object entity ID (null if not tagged)"
+          },
+          "evidence_span": {
+            "type": "object",
+            "required": ["start", "end", "surface"],
+            "properties": {
+              "start": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "end": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "surface": {
+                "type": "string"
+              }
+            }
+          },
+          "reasoning": {
+            "type": "string",
+            "description": "Explanation of relation extraction"
+          }
+        }
+      }
+    },
+    "dates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["surface", "start", "end", "normalized", "reasoning"],
+        "properties": {
+          "surface": {
+            "type": "string"
+          },
+          "start": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "end": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "normalized": {
+            "type": "object",
+            "required": ["calendar"],
+            "properties": {
+              "calendar": {
+                "type": "string",
+                "enum": ["gregorian", "fictional", "julian", "islamic", "hebrew", "other"]
+              },
+              "pattern": {
+                "type": ["string", "null"]
+              },
+              "iso_guess": {
+                "type": ["string", "null"]
+              },
+              "relative_to": {
+                "type": ["string", "null"]
+              }
+            }
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "negative_cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["surface", "start", "end", "should_tag", "reasoning"],
+        "properties": {
+          "surface": {
+            "type": "string"
+          },
+          "start": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "end": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "should_tag": {
+            "type": "boolean",
+            "description": "True if should be tagged but with normalization; false if should not be tagged at all"
+          },
+          "normalized_surface": {
+            "type": "string",
+            "description": "Expected surface after normalization (if should_tag=true)"
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "rule_upgrade_suggestions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of rule improvements discovered during annotation"
+    }
+  }
+}

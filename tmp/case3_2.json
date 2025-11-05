@@ -1,0 +1,269 @@
+{
+  "entities": [
+    {
+      "id": "global_org_0",
+      "type": "ORG",
+      "canonical": "Gryffindor",
+      "aliases": [],
+      "created_at": "2025-10-14T17:36:51.654Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_org_1",
+      "type": "ORG",
+      "canonical": "Slytherin",
+      "aliases": [],
+      "created_at": "2025-10-14T17:36:51.655Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_2",
+      "type": "PERSON",
+      "canonical": "Hermione Granger",
+      "aliases": [],
+      "created_at": "2025-10-14T17:36:51.655Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_3",
+      "type": "PERSON",
+      "canonical": "Ron Weasley",
+      "aliases": [],
+      "created_at": "2025-10-14T17:36:51.655Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_4",
+      "type": "PERSON",
+      "canonical": "Harry Potter",
+      "aliases": [
+        "Harry"
+      ],
+      "created_at": "2025-10-14T17:36:51.655Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_5",
+      "type": "PERSON",
+      "canonical": "Draco Malfoy",
+      "aliases": [],
+      "created_at": "2025-10-14T17:36:51.655Z",
+      "centrality": 0
+    }
+  ],
+  "relations": [
+    {
+      "id": "b95e06f5-070b-489f-b45b-d1e153ebcea4",
+      "subj": "global_person_2",
+      "pred": "member_of",
+      "obj": "global_org_0",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 0,
+            "end": 49,
+            "text": "Hermione Granger was sorted into Gryffindor House. Harry Potter and Ron Weasley were also"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.6255835708728382,
+      "extractor": "dep"
+    },
+    {
+      "id": "68983f59-c406-4941-916a-ef9b21f7c854",
+      "subj": "8639470b-69c1-442e-bdb8-b45cebc2f3ee",
+      "pred": "member_of",
+      "obj": "global_org_0",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 51,
+            "end": 49,
+            "text": "anger was sorted into Gryffindor House. Harry Potter and Ron Weasley were also"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.9,
+      "extractor": "dep"
+    },
+    {
+      "id": "53f03de5-236c-4019-9c44-e158b6db27ac",
+      "subj": "15df7eef-dfa0-4b47-8651-044a07e360cc",
+      "pred": "member_of",
+      "obj": "global_org_0",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 68,
+            "end": 49,
+            "text": "into Gryffindor House. Harry Potter and Ron Weasley were also"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.9,
+      "extractor": "dep"
+    },
+    {
+      "id": "e595d348-1658-4839-b263-cd43d0fca182",
+      "subj": "33e005da-1e4a-4504-9ba2-400bcb2c32ce",
+      "pred": "member_of",
+      "obj": "9a6973d2-6f1c-4b70-bf74-7a0869656eb9",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 106,
+            "end": 155,
+            "text": "d Ron Weasley were also in Gryffindor.\n\nDraco Malfoy, on the other hand, joined Slytherin. He became a rival to Harry."
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.5731714734284387,
+      "extractor": "dep"
+    },
+    {
+      "id": "3b2fc8ff-7a40-4041-bda7-7a5a5d62c15d",
+      "subj": "global_person_4",
+      "pred": "member_of",
+      "obj": "global_org_0",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 51,
+            "end": 49,
+            "text": "anger was sorted into Gryffindor House. Harry Potter and Ron Weasley were also"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.9,
+      "extractor": "dep"
+    },
+    {
+      "id": "35282d04-56b3-4850-99b5-6497aea15fd0",
+      "subj": "global_person_3",
+      "pred": "member_of",
+      "obj": "global_org_0",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 68,
+            "end": 49,
+            "text": "into Gryffindor House. Harry Potter and Ron Weasley were also"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.9,
+      "extractor": "dep"
+    },
+    {
+      "id": "9399f3ca-6444-4bed-b915-4bb9c28b46bb",
+      "subj": "ae929dfd-8326-48c2-89de-4965521d6709",
+      "pred": "member_of",
+      "obj": "9aa86cf9-bd7a-4318-a73d-394e6c19326c",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 106,
+            "end": 155,
+            "text": "d Ron Weasley were also in Gryffindor.\n\nDraco Malfoy, on the other hand, joined Slytherin. He became a rival to Harry."
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.5731714734284387,
+      "extractor": "dep"
+    },
+    {
+      "id": "561e0d31-2762-4c21-9cdc-a68a4dc2818f",
+      "subj": "global_person_5",
+      "pred": "member_of",
+      "obj": "global_org_1",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 106,
+            "end": 155,
+            "text": "d Ron Weasley were also in Gryffindor.\n\nDraco Malfoy, on the other hand, joined Slytherin. He became a rival to Harry."
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.5731714734284387,
+      "extractor": "dep"
+    }
+  ],
+  "conflicts": [],
+  "provenance": {
+    "3.2_entity_0": {
+      "global_id": "global_org_0",
+      "doc_id": "3.2",
+      "merged_at": "2025-10-14T17:36:51.655Z",
+      "local_canonical": "Gryffindor"
+    },
+    "3.2_entity_1": {
+      "global_id": "global_person_2",
+      "doc_id": "3.2",
+      "merged_at": "2025-10-14T17:36:51.655Z",
+      "local_canonical": "Hermione Granger"
+    },
+    "3.2_entity_2": {
+      "global_id": "global_person_3",
+      "doc_id": "3.2",
+      "merged_at": "2025-10-14T17:36:51.655Z",
+      "local_canonical": "Ron Weasley"
+    },
+    "3.2_entity_3": {
+      "global_id": "global_person_4",
+      "doc_id": "3.2",
+      "merged_at": "2025-10-14T17:36:51.655Z",
+      "local_canonical": "Harry Potter"
+    },
+    "3.2_entity_4": {
+      "global_id": "global_person_5",
+      "doc_id": "3.2",
+      "merged_at": "2025-10-14T17:36:51.655Z",
+      "local_canonical": "Draco Malfoy"
+    },
+    "3.2_entity_5": {
+      "global_id": "global_org_1",
+      "doc_id": "3.2",
+      "merged_at": "2025-10-14T17:36:51.655Z",
+      "local_canonical": "Slytherin"
+    },
+    "3.2_entity_6": {
+      "global_id": "global_person_4",
+      "doc_id": "3.2",
+      "merged_at": "2025-10-14T17:36:51.655Z",
+      "local_canonical": "Harry"
+    }
+  },
+  "metadata": {
+    "created_at": "2025-10-14T17:36:51.461Z",
+    "updated_at": "2025-10-14T17:36:51.655Z",
+    "doc_count": 1,
+    "doc_ids": [
+      "3.2"
+    ]
+  }
+}

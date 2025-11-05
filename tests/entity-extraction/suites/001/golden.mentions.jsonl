@@ -1,0 +1,28 @@
+{"entity_id":"TS-L-01JFQ3UXT2V4X6Z8BD0F2H4J-X","doc_id":"001:tech:001","span":[45,58],"surface":"Silicon Valley","sent_id":1}
+{"entity_id":"TS-O-01JFQ3SHZ8B0D2F4HJ6L8N0P-K","doc_id":"001:tech:001","span":[63,68],"surface":"OpenAI","sent_id":1}
+{"entity_id":"TS-L-01JFQ3V5V4X6Z8B0DF2H4J6L-C","doc_id":"001:tech:001","span":[84,97],"surface":"San Francisco","sent_id":1}
+{"entity_id":"TS-P-01JFQ3Q9B5M2R2C3VX8Q2S0T-7","doc_id":"001:tech:001","span":[103,113],"surface":"Sam Altman","sent_id":1}
+{"entity_id":"TS-T-01JFQ3VLZ8B0D2F4HJ6L8N0P-M","doc_id":"001:tech:001","span":[124,129],"surface":"GPT-5","sent_id":1}
+{"entity_id":"TS-O-01JFQ3SPB2D4F6H8JL0N2P4R-T","doc_id":"001:tech:001","span":[136,145],"surface":"Microsoft","sent_id":1}
+{"entity_id":"TS-P-01JFQ3QPR3F6S2YF3B4Z5E1G-K","doc_id":"001:tech:001","span":[178,191],"surface":"Satya Nadella","sent_id":1}
+{"entity_id":"TS-P-01JFQ3QXZ5M9R3A4VY7Q1D2M-N","doc_id":"001:tech:001","span":[211,220],"surface":"@elonmusk","sent_id":1}
+{"entity_id":"TS-O-01JFQ3SXD4F6H8J0LN2P4R6T-Y","doc_id":"001:tech:001","span":[233,240],"surface":"Twitter","sent_id":1}
+{"entity_id":"TS-O-01JFQ3T5F6H8J0L2NP4R6T8V-B","doc_id":"001:tech:001","span":[279,285],"surface":"Google","sent_id":1}
+{"entity_id":"TS-O-01JFQ3TDF8H0J2L4NP6R8T0V-L","doc_id":"001:tech:001","span":[287,295],"surface":"DeepMind","sent_id":1}
+{"entity_id":"TS-P-01JFQ3R4K8N1P5D7HJ2L9F3B-X","doc_id":"001:tech:001","span":[302,316],"surface":"Demis Hassabis","sent_id":1}
+{"entity_id":"TS-L-01JFQ3VDX6Z8B0D2FH4J6L8N-H","doc_id":"001:tech:001","span":[320,326],"surface":"London","sent_id":1}
+{"entity_id":"TS-P-01JFQ3RCM4T6V8X0ZB2D7H9L-Q","doc_id":"001:tech:001","span":[353,362],"surface":"Jeff Dean","sent_id":1}
+{"entity_id":"TS-O-01JFQ3TLH0J2L4N6PR8T0V2X-Q","doc_id":"001:tech:001","span":[366,377],"surface":"Google Brain","sent_id":1}
+{"entity_id":"TS-O-01JFQ3TTJ2L4N6P8RT0V2X4Z-W","doc_id":"001:tech:001","span":[401,411],"surface":"Google AGI","sent_id":1}
+{"entity_id":"TS-O-01JFQ3SPB2D4F6H8JL0N2P4R-T","doc_id":"001:tech:001","span":[439,444],"surface":"$MSFT","sent_id":2}
+{"entity_id":"TS-O-01JFQ3T5F6H8J0L2NP4R6T8V-B","doc_id":"001:tech:001","span":[467,473],"surface":"$GOOGL","sent_id":2}
+{"entity_id":"TS-O-01JFQ3U1L4N6P8R0TV2X4Z6B-C","doc_id":"001:tech:001","span":[485,494],"surface":"Anthropic","sent_id":2}
+{"entity_id":"TS-T-01JFQ3VTB0D2F4H6JL8N0P2R-S","doc_id":"001:tech:001","span":[496,504],"surface":"Claude 3","sent_id":2}
+{"entity_id":"TS-P-01JFQ3RKP7W9Y1A3CF5J8M0N-D","doc_id":"001:tech:001","span":[520,533],"surface":"Dario Amodei","sent_id":2}
+{"entity_id":"TS-P-01JFQ3RTS2B4D6F8HJ0L2N4P-R","doc_id":"001:tech:001","span":[538,553],"surface":"Paul Christiano","sent_id":2}
+{"entity_id":"TS-O-01JFQ3U9N6P8R0T2VX4Z6B8D-H","doc_id":"001:tech:001","span":[577,601],"surface":"Stanford AI Safety Institute","sent_id":2}
+{"entity_id":"TS-P-01JFQ3S1V4X6Z8B0DJ2L4N6P-W","doc_id":"001:tech:001","span":[613,629],"surface":"Dustin Moskovitz","sent_id":2}
+{"entity_id":"TS-O-01JFQ3UHP8R0T2V4XZ6B8D0F-M","doc_id":"001:tech:001","span":[637,645],"surface":"@OpenPhil","sent_id":2}
+{"entity_id":"TS-O-01JFQ3UPR0T2V4X6ZB8D0F2H-S","doc_id":"001:tech:001","span":[671,684],"surface":"Berkeley CHAI","sent_id":3}
+{"entity_id":"TS-P-01JFQ3S9X6Z8B0D2FH4J6L8N-M","doc_id":"001:tech:001","span":[686,708],"surface":"Prof. Stuart Russell","sent_id":3}
+{"entity_id":"TS-O-01JFQ3U1L4N6P8R0TV2X4Z6B-C","doc_id":"001:tech:001","span":[726,738],"surface":"@AnthropicAI","sent_id":3}

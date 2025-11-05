@@ -1,0 +1,297 @@
+{
+  "results": [
+    {
+      "id": "3.1",
+      "entityPrecision": 1,
+      "entityRecall": 0.875,
+      "relationPrecision": 1,
+      "relationRecall": 1
+    },
+    {
+      "id": "3.2",
+      "entityPrecision": 0.8571428571428571,
+      "entityRecall": 1,
+      "relationPrecision": 0.7142857142857143,
+      "relationRecall": 0.8333333333333334
+    },
+    {
+      "id": "3.3",
+      "entityPrecision": 1,
+      "entityRecall": 1,
+      "relationPrecision": 1,
+      "relationRecall": 1
+    },
+    {
+      "id": "3.4",
+      "entityPrecision": 1,
+      "entityRecall": 0.8333333333333334,
+      "relationPrecision": 1,
+      "relationRecall": 0.8571428571428571
+    },
+    {
+      "id": "3.5",
+      "entityPrecision": 0.9,
+      "entityRecall": 1,
+      "relationPrecision": 0.25,
+      "relationRecall": 0.5
+    },
+    {
+      "id": "3.6",
+      "entityPrecision": 0.8,
+      "entityRecall": 0.8,
+      "relationPrecision": 1,
+      "relationRecall": 0.5
+    },
+    {
+      "id": "3.7",
+      "entityPrecision": 1,
+      "entityRecall": 1,
+      "relationPrecision": 1,
+      "relationRecall": 1
+    },
+    {
+      "id": "3.8",
+      "entityPrecision": 0.8,
+      "entityRecall": 1,
+      "relationPrecision": 0.6666666666666666,
+      "relationRecall": 1
+    },
+    {
+      "id": "3.9",
+      "entityPrecision": 0.8,
+      "entityRecall": 1,
+      "relationPrecision": 1,
+      "relationRecall": 0.5
+    },
+    {
+      "id": "3.10",
+      "entityPrecision": 1,
+      "entityRecall": 0.8571428571428571,
+      "relationPrecision": 1,
+      "relationRecall": 0.75
+    }
+  ],
+  "detail": [
+    {
+      "id": "3.1",
+      "gold": [
+        "PERSON::harry potter",
+        "PERSON::james",
+        "PERSON::lily potter",
+        "PERSON::dursleys",
+        "PLACE::privet drive",
+        "PERSON::ron weasley",
+        "PERSON::arthur",
+        "ORG::ministry of magic"
+      ],
+      "extracted": [
+        "PERSON::harry potter",
+        "PERSON::james",
+        "PERSON::lily potter",
+        "PERSON::dursleys",
+        "PERSON::ron weasley",
+        "PERSON::arthur",
+        "PLACE::privet drive"
+      ],
+      "missing": [
+        "ORG::ministry of magic"
+      ],
+      "extra": []
+    },
+    {
+      "id": "3.2",
+      "gold": [
+        "PERSON::hermione granger",
+        "ORG::gryffindor",
+        "PERSON::harry potter",
+        "PERSON::ron weasley",
+        "PERSON::draco malfoy",
+        "ORG::slytherin"
+      ],
+      "extracted": [
+        "ORG::gryffindor",
+        "ORG::slytherin",
+        "PERSON::hermione granger",
+        "PERSON::ron weasley",
+        "PERSON::harry potter",
+        "PERSON::draco malfoy",
+        "PERSON::slytherin"
+      ],
+      "missing": [],
+      "extra": [
+        "PERSON::slytherin"
+      ]
+    },
+    {
+      "id": "3.3",
+      "gold": [
+        "PERSON::albus dumbledore",
+        "ORG::hogwarts",
+        "PERSON::fawkes",
+        "PERSON::severus snape"
+      ],
+      "extracted": [
+        "PERSON::albus dumbledore",
+        "PERSON::fawkes",
+        "PERSON::severus snape",
+        "ORG::hogwarts"
+      ],
+      "missing": [],
+      "extra": []
+    },
+    {
+      "id": "3.4",
+      "gold": [
+        "DATE::1991",
+        "PERSON::harry potter",
+        "ORG::hogwarts school",
+        "PERSON::ron",
+        "PERSON::hermione",
+        "PERSON::voldemort"
+      ],
+      "extracted": [
+        "PERSON::harry potter",
+        "PERSON::hermione",
+        "PERSON::ron",
+        "PERSON::voldemort",
+        "ORG::hogwarts school"
+      ],
+      "missing": [
+        "DATE::1991"
+      ],
+      "extra": []
+    },
+    {
+      "id": "3.5",
+      "gold": [
+        "PLACE::burrow",
+        "PERSON::molly weasley",
+        "PERSON::arthur",
+        "PERSON::ron",
+        "PERSON::ginny",
+        "PERSON::fred",
+        "PERSON::george",
+        "PERSON::bill weasley",
+        "ORG::gringotts bank"
+      ],
+      "extracted": [
+        "PLACE::burrow",
+        "PERSON::molly weasley",
+        "PERSON::arthur",
+        "PERSON::ginny",
+        "PERSON::fred",
+        "PERSON::george",
+        "PERSON::ron",
+        "PERSON::bill weasley",
+        "PERSON::gringotts",
+        "ORG::gringotts bank"
+      ],
+      "missing": [],
+      "extra": [
+        "PERSON::gringotts"
+      ]
+    },
+    {
+      "id": "3.6",
+      "gold": [
+        "PERSON::luna lovegood",
+        "ORG::hogwarts",
+        "ORG::ravenclaw",
+        "PERSON::ginny weasley",
+        "WORK::quibbler"
+      ],
+      "extracted": [
+        "ORG::hogwarts",
+        "ORG::ravenclaw",
+        "PERSON::luna lovegood",
+        "PERSON::ginny weasley",
+        "WORK::the quibbler"
+      ],
+      "missing": [
+        "WORK::quibbler"
+      ],
+      "extra": [
+        "WORK::the quibbler"
+      ]
+    },
+    {
+      "id": "3.7",
+      "gold": [
+        "PERSON::harry",
+        "PERSON::ron",
+        "PERSON::hermione"
+      ],
+      "extracted": [
+        "PERSON::harry",
+        "PERSON::ron",
+        "PERSON::hermione"
+      ],
+      "missing": [],
+      "extra": []
+    },
+    {
+      "id": "3.8",
+      "gold": [
+        "PERSON::harry potter",
+        "PERSON::ginny weasley",
+        "PERSON::ron weasley",
+        "PERSON::hermione granger"
+      ],
+      "extracted": [
+        "PERSON::harry potter",
+        "PERSON::ginny weasley",
+        "PERSON::ron weasley",
+        "PERSON::hermione granger",
+        "ORG::hermione granger"
+      ],
+      "missing": [],
+      "extra": [
+        "ORG::hermione granger"
+      ]
+    },
+    {
+      "id": "3.9",
+      "gold": [
+        "PERSON::professor mcgonagall",
+        "ORG::hogwarts",
+        "ORG::gryffindor",
+        "PERSON::professor snape"
+      ],
+      "extracted": [
+        "PERSON::professor mcgonagall",
+        "PERSON::professor snape",
+        "ORG::hogwarts",
+        "ORG::gryffindor",
+        "ORG::potions"
+      ],
+      "missing": [],
+      "extra": [
+        "ORG::potions"
+      ]
+    },
+    {
+      "id": "3.10",
+      "gold": [
+        "ORG::hogwarts school",
+        "PLACE::scotland",
+        "ITEM::hogwarts express",
+        "ORG::gryffindor",
+        "ORG::slytherin",
+        "ORG::hufflepuff",
+        "ORG::ravenclaw"
+      ],
+      "extracted": [
+        "PLACE::scotland",
+        "ORG::hogwarts school",
+        "ORG::slytherin",
+        "ORG::hufflepuff",
+        "ORG::gryffindor",
+        "ITEM::hogwarts express"
+      ],
+      "missing": [
+        "ORG::ravenclaw"
+      ],
+      "extra": []
+    }
+  ]
+}

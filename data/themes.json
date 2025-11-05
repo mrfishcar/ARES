@@ -1,0 +1,67 @@
+{
+  "themes": [
+    {
+      "id": "default",
+      "name": "Default",
+      "colors": {
+        "primary": "#3b82f6",
+        "secondary": "#8b5cf6",
+        "accent": "#10b981",
+        "background": "#ffffff",
+        "surface": "#f9fafb",
+        "text": "#111827",
+        "textSecondary": "#6b7280",
+        "border": "#e5e7eb"
+      },
+      "background": {
+        "type": "solid",
+        "value": "#ffffff"
+      },
+      "createdAt": "2025-10-31T18:22:03.450Z",
+      "updatedAt": "2025-10-31T18:22:03.450Z"
+    },
+    {
+      "id": "c003d2c0-87f7-4251-b390-da65655e86dd",
+      "name": "cool",
+      "colors": {
+        "primary": "#3b82f6",
+        "secondary": "#8b5cf6",
+        "accent": "#10b981",
+        "background": "#000000",
+        "surface": "#f9fafb",
+        "text": "#ffffff",
+        "textSecondary": "#6b7280",
+        "border": "#e5e7eb"
+      },
+      "background": {
+        "type": "solid",
+        "value": "#ffffff",
+        "blur": 0
+      },
+      "createdAt": "2025-10-31T19:16:13.879Z",
+      "updatedAt": "2025-10-31T19:16:13.879Z"
+    },
+    {
+      "id": "76143e31-55cb-45b0-b6b9-f1de397634c1",
+      "name": "Cool",
+      "colors": {
+        "primary": "#3b82f6",
+        "secondary": "#8b5cf6",
+        "accent": "#fff995",
+        "background": "#9929bd",
+        "surface": "#929292",
+        "text": "#d95000",
+        "textSecondary": "#6b7280",
+        "border": "#000000"
+      },
+      "background": {
+        "type": "gradient",
+        "value": "#7b219f",
+        "blur": 0
+      },
+      "createdAt": "2025-10-31T20:06:58.423Z",
+      "updatedAt": "2025-10-31T20:08:01.069Z"
+    }
+  ],
+  "defaultThemeId": "default"
+}

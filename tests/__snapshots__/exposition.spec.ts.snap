@@ -1,0 +1,100 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Exposition Generation > generates deterministic wiki page for Aragorn 1`] = `
+"# Aragorn
+
+## Infobox
+
+| Field | Value |
+|-------|-------|
+| **Name** | Aragorn |
+| **Residence** | Gondor |
+| **Relatives** | **Spouse(s):** Arwen |
+| **Items** | Anduril |
+| **Aliases** | Elessar, Strider |
+
+## Overview
+
+Aragorn married Arwen in 3019. Aragorn traveled to Minas Tirith in 3019. Aragorn lived in Gondor.
+
+## Biography
+
+Aragorn married Arwen in 3019. Aragorn traveled to Minas Tirith in 3019.
+
+## Items
+
+Aragorn wields Anduril.
+
+## Affiliations
+
+Lived in Gondor.
+"
+`;
+
+exports[`Exposition Generation > generates deterministic wiki page for Gandalf 1`] = `
+"# Gandalf
+
+## Infobox
+
+| Field | Value |
+|-------|-------|
+| **Name** | Gandalf |
+| **Aliases** | Gandalf the Grey, Mithrandir |
+
+## Overview
+
+Gandalf traveled to Rivendell in 3018. Gandalf traveled to Minas Tirith in 3019. Gandalf authored Magic.
+
+## Biography
+
+Gandalf traveled to Rivendell in 3018. Gandalf traveled to Minas Tirith in 3019.
+"
+`;
+
+exports[`Exposition Generation > generates wiki page with disputed claims 1`] = `
+"# Frodo Baggins
+
+## Infobox
+
+| Field | Value |
+|-------|-------|
+| **Name** | Frodo Baggins |
+| **Residence** | Shire |
+
+## Overview
+
+Frodo Baggins lived in Shire.
+
+## Biography
+
+Frodo Baggins lived in Shire.
+
+## Affiliations
+
+Lived in Shire.
+
+## Disputed Claims
+
+Conflicting information exists regarding age: 33 vs 50.
+"
+`;
+
+exports[`Exposition Generation > handles low-confidence claims with grouped relationships 1`] = `
+"# Harry Potter
+
+## Infobox
+
+| Field | Value |
+|-------|-------|
+| **Name** | Harry Potter |
+| **Relatives** | **Spouse(s):** Ginny Weasley |
+
+## Overview
+
+Harry Potter reportedly married Ginny Weasley.
+
+## Biography
+
+Harry Potter married Ginny Weasley.
+"
+`;

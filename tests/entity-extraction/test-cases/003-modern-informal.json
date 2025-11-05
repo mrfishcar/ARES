@@ -1,0 +1,130 @@
+[
+  {
+    "id": "modern-informal-001",
+    "description": "Modern tech industry with informal writing style and mixed references",
+    "text": "OMG, did you hear about what Elon (yeah, THAT Elon!) just did with X (formerly known as Twitter)? 😱 The CEO of Tesla and SpaceX has been shaking things up since he bought the bird app for $44B. Some folks at OpenAI, the company he co-founded with Sam Altman, aren't too happy about his recent takes on AI safety. BTW, Sam's now running things at OpenAI after that whole drama in SF last year. The tech world's been wild since ChatGPT dropped - Microsoft threw billions into OpenAI while Google's been pushing their Bard AI like crazy. Sundar (Google's big boss) keeps talking about responsible AI development, but tbh who knows what's really going on in those Silicon Valley boardrooms? Meanwhile, Apple's been super quiet about their AI stuff - typical Cupertino move, right? Tim Cook's probably got something brewing in those spaceship-looking Apple HQ buildings. Meta (FB for all us oldies lol) is somewhere in between - Zuck's trying to make the metaverse happen while also jumping on the AI bandwagon. The AI race is getting intense in the Bay Area! 🚀",
+    "expectedEntities": [
+      {
+        "type": "PERSON",
+        "text": "Elon Musk",
+        "aliases": ["Elon"],
+        "context": "CEO of Tesla and SpaceX",
+        "confidence": 0.98
+      },
+      {
+        "type": "PERSON",
+        "text": "Sam Altman",
+        "aliases": ["Sam"],
+        "context": "OpenAI leader",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Sundar Pichai",
+        "aliases": ["Sundar"],
+        "context": "Google CEO",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Tim Cook",
+        "context": "Apple CEO",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Mark Zuckerberg",
+        "aliases": ["Zuck"],
+        "context": "Meta CEO",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "X",
+        "aliases": ["Twitter", "bird app"],
+        "context": "social media platform",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Tesla",
+        "context": "automotive company",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "SpaceX",
+        "context": "aerospace company",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "OpenAI",
+        "context": "AI research company",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Microsoft",
+        "context": "tech company",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Google",
+        "context": "tech company",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Apple",
+        "context": "tech company",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Meta",
+        "aliases": ["FB"],
+        "context": "tech company",
+        "confidence": 0.95
+      },
+      {
+        "type": "PRODUCT",
+        "text": "ChatGPT",
+        "context": "AI model",
+        "confidence": 0.98
+      },
+      {
+        "type": "PRODUCT",
+        "text": "Bard",
+        "context": "AI model",
+        "confidence": 0.95
+      },
+      {
+        "type": "LOCATION",
+        "text": "Silicon Valley",
+        "context": "tech industry hub",
+        "confidence": 0.98
+      },
+      {
+        "type": "LOCATION",
+        "text": "Cupertino",
+        "context": "Apple headquarters location",
+        "confidence": 0.95
+      },
+      {
+        "type": "LOCATION",
+        "text": "Bay Area",
+        "context": "San Francisco region",
+        "confidence": 0.95
+      },
+      {
+        "type": "LOCATION",
+        "text": "SF",
+        "aliases": ["San Francisco"],
+        "context": "city",
+        "confidence": 0.90
+      }
+    ]
+  }
+]

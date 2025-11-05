@@ -1,0 +1,104 @@
+{
+  "items": [
+    {
+      "id": "7f53668e-e77c-46e0-be95-35d7efab081e",
+      "type": "relation",
+      "confidence": 0.6178124469477058,
+      "data": {
+        "id": "4ddf3e5a-8140-4c68-a3d6-9773de11dab1",
+        "subj": "global_person_1",
+        "pred": "married_to",
+        "obj": "global_person_3",
+        "evidence": [
+          {
+            "doc_id": "default",
+            "span": {
+              "start": 200,
+              "end": 239,
+              "text": "ted members of the academic community.\n\nMildred eventually married Thomas Finch in 2018. The wedding was held at Mount "
+            },
+            "sentence_index": 0,
+            "source": "RULE"
+          }
+        ],
+        "confidence": 0.6178124469477058,
+        "extractor": "dep",
+        "qualifiers": [
+          {
+            "type": "place",
+            "value": "Mount Lola Chapel",
+            "entity_id": "4efd9858-7d8a-4278-838b-2e17fdeb34fe",
+            "span": [
+              273,
+              290
+            ]
+          },
+          {
+            "type": "time",
+            "value": "2018",
+            "entity_id": "252f8abb-957c-4b92-a92e-39c67a7ddc03",
+            "span": [
+              243,
+              247
+            ]
+          }
+        ]
+      },
+      "docId": "doc:barty-note:1760573502624",
+      "addedAt": "2025-10-16T00:11:43.019Z",
+      "status": "pending"
+    },
+    {
+      "id": "30e01ab2-3fe2-4941-81c1-335b036153fb",
+      "type": "relation",
+      "confidence": 0.6178124469477058,
+      "data": {
+        "id": "950b1900-47f8-4d96-869c-19897e7ba838",
+        "subj": "global_person_3",
+        "pred": "married_to",
+        "obj": "global_person_1",
+        "evidence": [
+          {
+            "doc_id": "default",
+            "span": {
+              "start": 200,
+              "end": 239,
+              "text": "ted members of the academic community.\n\nMildred eventually married Thomas Finch in 2018. The wedding was held at Mount "
+            },
+            "sentence_index": 0,
+            "source": "RULE"
+          }
+        ],
+        "confidence": 0.6178124469477058,
+        "extractor": "dep",
+        "qualifiers": [
+          {
+            "type": "place",
+            "value": "Mount Lola Chapel",
+            "entity_id": "4efd9858-7d8a-4278-838b-2e17fdeb34fe",
+            "span": [
+              273,
+              290
+            ]
+          },
+          {
+            "type": "time",
+            "value": "2018",
+            "entity_id": "252f8abb-957c-4b92-a92e-39c67a7ddc03",
+            "span": [
+              243,
+              247
+            ]
+          }
+        ]
+      },
+      "docId": "doc:barty-note:1760573502624",
+      "addedAt": "2025-10-16T00:11:43.019Z",
+      "status": "pending"
+    }
+  ],
+  "metadata": {
+    "created_at": "2025-10-16T00:11:43.019Z",
+    "updated_at": "2025-10-16T00:11:43.019Z"
+  }
+}

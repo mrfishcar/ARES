@@ -1,0 +1,680 @@
+{
+  "coref": {
+    "links": [
+      {
+        "mention": {
+          "text": "She",
+          "start": 287,
+          "end": 290,
+          "sentence_index": 2,
+          "type": "pronoun"
+        },
+        "entity_id": "a99fbedd-2002-472d-90cc-93d23345d0c1",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "her",
+          "start": 295,
+          "end": 298,
+          "sentence_index": 2,
+          "type": "pronoun"
+        },
+        "entity_id": "a99fbedd-2002-472d-90cc-93d23345d0c1",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "they",
+          "start": 365,
+          "end": 369,
+          "sentence_index": 2,
+          "type": "pronoun"
+        },
+        "entity_id": "4513164a-765a-4d0e-9ebb-6cc51078c00a",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "She",
+          "start": 959,
+          "end": 962,
+          "sentence_index": 8,
+          "type": "pronoun"
+        },
+        "entity_id": "1886351a-5dc5-4759-b5b2-e8e279b0ecfa",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "her",
+          "start": 972,
+          "end": 975,
+          "sentence_index": 8,
+          "type": "pronoun"
+        },
+        "entity_id": "1886351a-5dc5-4759-b5b2-e8e279b0ecfa",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "His",
+          "start": 1149,
+          "end": 1152,
+          "sentence_index": 10,
+          "type": "pronoun"
+        },
+        "entity_id": "3c7656ee-9c78-4dd5-864d-d5a2d37f7155",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "he",
+          "start": 1175,
+          "end": 1177,
+          "sentence_index": 10,
+          "type": "pronoun"
+        },
+        "entity_id": "3c7656ee-9c78-4dd5-864d-d5a2d37f7155",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "their",
+          "start": 1286,
+          "end": 1291,
+          "sentence_index": 11,
+          "type": "pronoun"
+        },
+        "entity_id": "05d2dfcf-3628-415f-a24c-37a367f933cc",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "their",
+          "start": 1478,
+          "end": 1483,
+          "sentence_index": 13,
+          "type": "pronoun"
+        },
+        "entity_id": "05d2dfcf-3628-415f-a24c-37a367f933cc",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "them",
+          "start": 1585,
+          "end": 1589,
+          "sentence_index": 13,
+          "type": "pronoun"
+        },
+        "entity_id": "8adb7db6-ddcb-4b52-b8ea-f83dd0e68ed9",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "She",
+          "start": 2084,
+          "end": 2087,
+          "sentence_index": 19,
+          "type": "pronoun"
+        },
+        "entity_id": "fce219fe-21c6-4075-b3e6-167cfa59b1b2",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "Their",
+          "start": 2709,
+          "end": 2714,
+          "sentence_index": 25,
+          "type": "pronoun"
+        },
+        "entity_id": "7aa03cf7-cfee-425f-8759-3a49a1a91406",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "his",
+          "start": 2880,
+          "end": 2883,
+          "sentence_index": 26,
+          "type": "pronoun"
+        },
+        "entity_id": "3c7656ee-9c78-4dd5-864d-d5a2d37f7155",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "her",
+          "start": 2905,
+          "end": 2908,
+          "sentence_index": 27,
+          "type": "pronoun"
+        },
+        "entity_id": "1886351a-5dc5-4759-b5b2-e8e279b0ecfa",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "she",
+          "start": 2944,
+          "end": 2947,
+          "sentence_index": 27,
+          "type": "pronoun"
+        },
+        "entity_id": "1886351a-5dc5-4759-b5b2-e8e279b0ecfa",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "her",
+          "start": 3253,
+          "end": 3256,
+          "sentence_index": 30,
+          "type": "pronoun"
+        },
+        "entity_id": "dd9aeb1d-3a15-4f26-9018-c7e018abf892",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "She",
+          "start": 3378,
+          "end": 3381,
+          "sentence_index": 32,
+          "type": "pronoun"
+        },
+        "entity_id": "dd9aeb1d-3a15-4f26-9018-c7e018abf892",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "her",
+          "start": 3391,
+          "end": 3394,
+          "sentence_index": 32,
+          "type": "pronoun"
+        },
+        "entity_id": "dd9aeb1d-3a15-4f26-9018-c7e018abf892",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "she",
+          "start": 3425,
+          "end": 3428,
+          "sentence_index": 32,
+          "type": "pronoun"
+        },
+        "entity_id": "dd9aeb1d-3a15-4f26-9018-c7e018abf892",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "her",
+          "start": 3498,
+          "end": 3501,
+          "sentence_index": 32,
+          "type": "pronoun"
+        },
+        "entity_id": "7578875a-0f66-4017-84ba-06274d0cfe02",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "her",
+          "start": 3591,
+          "end": 3594,
+          "sentence_index": 33,
+          "type": "pronoun"
+        },
+        "entity_id": "7578875a-0f66-4017-84ba-06274d0cfe02",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "Their",
+          "start": 3648,
+          "end": 3653,
+          "sentence_index": 34,
+          "type": "pronoun"
+        },
+        "entity_id": "7578875a-0f66-4017-84ba-06274d0cfe02",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "he",
+          "start": 3691,
+          "end": 3693,
+          "sentence_index": 34,
+          "type": "pronoun"
+        },
+        "entity_id": "4efe454b-c6c4-4516-b2e9-8e7a8363ee0d",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "her",
+          "start": 3942,
+          "end": 3945,
+          "sentence_index": 36,
+          "type": "pronoun"
+        },
+        "entity_id": "1886351a-5dc5-4759-b5b2-e8e279b0ecfa",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "He",
+          "start": 4495,
+          "end": 4497,
+          "sentence_index": 43,
+          "type": "pronoun"
+        },
+        "entity_id": "3c7656ee-9c78-4dd5-864d-d5a2d37f7155",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "him",
+          "start": 4618,
+          "end": 4621,
+          "sentence_index": 44,
+          "type": "pronoun"
+        },
+        "entity_id": "3c7656ee-9c78-4dd5-864d-d5a2d37f7155",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "him",
+          "start": 4641,
+          "end": 4644,
+          "sentence_index": 44,
+          "type": "pronoun"
+        },
+        "entity_id": "3c7656ee-9c78-4dd5-864d-d5a2d37f7155",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "he",
+          "start": 4724,
+          "end": 4726,
+          "sentence_index": 45,
+          "type": "pronoun"
+        },
+        "entity_id": "3c7656ee-9c78-4dd5-864d-d5a2d37f7155",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "He",
+          "start": 4784,
+          "end": 4786,
+          "sentence_index": 46,
+          "type": "pronoun"
+        },
+        "entity_id": "3c7656ee-9c78-4dd5-864d-d5a2d37f7155",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "She",
+          "start": 5181,
+          "end": 5184,
+          "sentence_index": 50,
+          "type": "pronoun"
+        },
+        "entity_id": "a99fbedd-2002-472d-90cc-93d23345d0c1",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "they",
+          "start": 5355,
+          "end": 5359,
+          "sentence_index": 51,
+          "type": "pronoun"
+        },
+        "entity_id": "05d2dfcf-3628-415f-a24c-37a367f933cc",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "her",
+          "start": 5480,
+          "end": 5483,
+          "sentence_index": 52,
+          "type": "pronoun"
+        },
+        "entity_id": "1886351a-5dc5-4759-b5b2-e8e279b0ecfa",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "their",
+          "start": 5557,
+          "end": 5562,
+          "sentence_index": 52,
+          "type": "pronoun"
+        },
+        "entity_id": "7578875a-0f66-4017-84ba-06274d0cfe02",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "They",
+          "start": 5584,
+          "end": 5588,
+          "sentence_index": 53,
+          "type": "pronoun"
+        },
+        "entity_id": "7578875a-0f66-4017-84ba-06274d0cfe02",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "their",
+          "start": 5810,
+          "end": 5815,
+          "sentence_index": 55,
+          "type": "pronoun"
+        },
+        "entity_id": "590f3f2b-7143-4b6f-a9b2-ae215fdb523d",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "Their",
+          "start": 6303,
+          "end": 6308,
+          "sentence_index": 60,
+          "type": "pronoun"
+        },
+        "entity_id": "7aa03cf7-cfee-425f-8759-3a49a1a91406",
+        "confidence": 0.7,
+        "method": "pronoun_stack"
+      },
+      {
+        "mention": {
+          "text": "The couple had",
+          "start": 419,
+          "end": 433,
+          "sentence_index": 3,
+          "type": "nominal"
+        },
+        "entity_id": "a99fbedd-2002-472d-90cc-93d23345d0c1",
+        "confidence": 0.75,
+        "method": "nominal_match"
+      },
+      {
+        "mention": {
+          "text": "The couple had",
+          "start": 419,
+          "end": 433,
+          "sentence_index": 3,
+          "type": "nominal"
+        },
+        "entity_id": "3c7656ee-9c78-4dd5-864d-d5a2d37f7155",
+        "confidence": 0.75,
+        "method": "nominal_match"
+      },
+      {
+        "mention": {
+          "text": "The trio had",
+          "start": 1458,
+          "end": 1470,
+          "sentence_index": 13,
+          "type": "nominal"
+        },
+        "entity_id": "05d2dfcf-3628-415f-a24c-37a367f933cc",
+        "confidence": 0.75,
+        "method": "nominal_match"
+      },
+      {
+        "mention": {
+          "text": "the trio would",
+          "start": 3065,
+          "end": 3079,
+          "sentence_index": 28,
+          "type": "nominal"
+        },
+        "entity_id": "3c7656ee-9c78-4dd5-864d-d5a2d37f7155",
+        "confidence": 0.75,
+        "method": "nominal_match"
+      },
+      {
+        "mention": {
+          "text": "the trio would",
+          "start": 3065,
+          "end": 3079,
+          "sentence_index": 28,
+          "type": "nominal"
+        },
+        "entity_id": "1886351a-5dc5-4759-b5b2-e8e279b0ecfa",
+        "confidence": 0.75,
+        "method": "nominal_match"
+      },
+      {
+        "mention": {
+          "text": "the trio would",
+          "start": 3065,
+          "end": 3079,
+          "sentence_index": 28,
+          "type": "nominal"
+        },
+        "entity_id": "05d2dfcf-3628-415f-a24c-37a367f933cc",
+        "confidence": 0.75,
+        "method": "nominal_match"
+      },
+      {
+        "mention": {
+          "text": "The pair",
+          "start": 5315,
+          "end": 5323,
+          "sentence_index": 51,
+          "type": "nominal"
+        },
+        "entity_id": "a99fbedd-2002-472d-90cc-93d23345d0c1",
+        "confidence": 0.75,
+        "method": "nominal_match"
+      },
+      {
+        "mention": {
+          "text": "The pair",
+          "start": 5315,
+          "end": 5323,
+          "sentence_index": 51,
+          "type": "nominal"
+        },
+        "entity_id": "05d2dfcf-3628-415f-a24c-37a367f933cc",
+        "confidence": 0.75,
+        "method": "nominal_match"
+      },
+      {
+        "mention": {
+          "text": "Aria and Elias",
+          "start": 2631,
+          "end": 2645,
+          "sentence_index": 24,
+          "type": "name"
+        },
+        "entity_id": "1886351a-5dc5-4759-b5b2-e8e279b0ecfa",
+        "confidence": 0.9,
+        "method": "coordination"
+      },
+      {
+        "mention": {
+          "text": "Aria and Elias",
+          "start": 2631,
+          "end": 2645,
+          "sentence_index": 24,
+          "type": "name"
+        },
+        "entity_id": "7578875a-0f66-4017-84ba-06274d0cfe02",
+        "confidence": 0.9,
+        "method": "coordination"
+      }
+    ],
+    "quotes": []
+  },
+  "entities": [
+    {
+      "id": "590f3f2b-7143-4b6f-a9b2-ae215fdb523d",
+      "type": "PLACE",
+      "canonical": "Meridian Ridge",
+      "aliases": [],
+      "created_at": "2025-10-24T18:25:08.165Z"
+    },
+    {
+      "id": "a99fbedd-2002-472d-90cc-93d23345d0c1",
+      "type": "PERSON",
+      "canonical": "Aria Thorne",
+      "aliases": [],
+      "created_at": "2025-10-24T18:25:08.165Z"
+    },
+    {
+      "id": "3c7656ee-9c78-4dd5-864d-d5a2d37f7155",
+      "type": "PERSON",
+      "canonical": "Elias Calder",
+      "aliases": [],
+      "created_at": "2025-10-24T18:25:08.165Z"
+    },
+    {
+      "id": "4513164a-765a-4d0e-9ebb-6cc51078c00a",
+      "type": "PLACE",
+      "canonical": "Meridian Plaza",
+      "aliases": [],
+      "created_at": "2025-10-24T18:25:08.165Z"
+    },
+    {
+      "id": "1886351a-5dc5-4759-b5b2-e8e279b0ecfa",
+      "type": "PERSON",
+      "canonical": "Aria",
+      "aliases": [],
+      "created_at": "2025-10-24T18:25:08.165Z"
+    },
+    {
+      "id": "7578875a-0f66-4017-84ba-06274d0cfe02",
+      "type": "PERSON",
+      "canonical": "Elias",
+      "aliases": [],
+      "created_at": "2025-10-24T18:25:08.165Z"
+    },
+    {
+      "id": "8adb7db6-ddcb-4b52-b8ea-f83dd0e68ed9",
+      "type": "ORG",
+      "canonical": "Meridian Academy",
+      "aliases": [],
+      "created_at": "2025-10-24T18:25:08.165Z"
+    },
+    {
+      "id": "3170ec0c-99f8-4588-a22a-dc3b21f3d9e8",
+      "type": "PERSON",
+      "canonical": "Professor Lysa Marren",
+      "aliases": [],
+      "created_at": "2025-10-24T18:25:08.165Z"
+    },
+    {
+      "id": "05d2dfcf-3628-415f-a24c-37a367f933cc",
+      "type": "PERSON",
+      "canonical": "Jun Park",
+      "aliases": [],
+      "created_at": "2025-10-24T18:25:08.165Z"
+    },
+    {
+      "id": "985f3e1d-895d-4408-96bf-9898fb80a3cd",
+      "type": "PLACE",
+      "canonical": "Observatory Commons",
+      "aliases": [],
+      "created_at": "2025-10-24T18:25:08.165Z"
+    },
+    {
+      "id": "0ffb8f9d-b5dd-4a5f-a8da-40b9c0801676",
+      "type": "PERSON",
+      "canonical": "Kara Nightfall",
+      "aliases": [],
+      "created_at": "2025-10-24T18:25:08.165Z"
+    },
+    {
+      "id": "fce219fe-21c6-4075-b3e6-167cfa59b1b2",
+      "type": "PERSON",
+      "canonical": "Kara",
+      "aliases": [],
+      "created_at": "2025-10-24T18:25:08.165Z"
+    },
+    {
+      "id": "7aa03cf7-cfee-425f-8759-3a49a1a91406",
+      "type": "PLACE",
+      "canonical": "Mistward River",
+      "aliases": [],
+      "created_at": "2025-10-24T18:25:08.165Z"
+    },
+    {
+      "id": "dd9aeb1d-3a15-4f26-9018-c7e018abf892",
+      "type": "PERSON",
+      "canonical": "Mira Calder",
+      "aliases": [],
+      "created_at": "2025-10-24T18:25:08.165Z"
+    },
+    {
+      "id": "4efe454b-c6c4-4516-b2e9-8e7a8363ee0d",
+      "type": "PERSON",
+      "canonical": "Cael Calder",
+      "aliases": [],
+      "created_at": "2025-10-24T18:25:08.165Z"
+    },
+    {
+      "id": "0a5646c7-8bca-469b-a673-22a23c3042bc",
+      "type": "PLACE",
+      "canonical": "Canyon Bridge",
+      "aliases": [],
+      "created_at": "2025-10-24T18:25:08.165Z"
+    },
+    {
+      "id": "2fe22801-c4e9-4b77-aadd-1a1bb04ad1f9",
+      "type": "ORG",
+      "canonical": "Guild of Cartographers",
+      "aliases": [],
+      "created_at": "2025-10-24T18:25:08.165Z"
+    }
+  ]
+}

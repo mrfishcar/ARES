@@ -1,0 +1,909 @@
+{
+  "entities": [
+    {
+      "id": "global_place_0",
+      "type": "PLACE",
+      "canonical": "Meridian Ridge",
+      "aliases": [],
+      "created_at": "2025-10-24T18:36:24.926Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_place_1",
+      "type": "PLACE",
+      "canonical": "Meridian Plaza",
+      "aliases": [],
+      "created_at": "2025-10-24T18:36:24.926Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_place_2",
+      "type": "PLACE",
+      "canonical": "Observatory Commons",
+      "aliases": [],
+      "created_at": "2025-10-24T18:36:24.926Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_place_3",
+      "type": "PLACE",
+      "canonical": "Mistward River",
+      "aliases": [],
+      "created_at": "2025-10-24T18:36:24.926Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_place_4",
+      "type": "PLACE",
+      "canonical": "Canyon Bridge",
+      "aliases": [],
+      "created_at": "2025-10-24T18:36:24.926Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_5",
+      "type": "PERSON",
+      "canonical": "Aria Thorne",
+      "aliases": [],
+      "created_at": "2025-10-24T18:36:24.926Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_6",
+      "type": "PERSON",
+      "canonical": "Elias Calder",
+      "aliases": [],
+      "created_at": "2025-10-24T18:36:24.926Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_7",
+      "type": "PERSON",
+      "canonical": "Professor Lysa Marren",
+      "aliases": [],
+      "created_at": "2025-10-24T18:36:24.926Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_8",
+      "type": "PERSON",
+      "canonical": "Jun Park",
+      "aliases": [],
+      "created_at": "2025-10-24T18:36:24.926Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_9",
+      "type": "PERSON",
+      "canonical": "Kara Nightfall",
+      "aliases": [],
+      "created_at": "2025-10-24T18:36:24.926Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_10",
+      "type": "PERSON",
+      "canonical": "Mira Calder",
+      "aliases": [],
+      "created_at": "2025-10-24T18:36:24.926Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_11",
+      "type": "PERSON",
+      "canonical": "Cael Calder",
+      "aliases": [],
+      "created_at": "2025-10-24T18:36:24.926Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_org_12",
+      "type": "ORG",
+      "canonical": "Meridian Academy",
+      "aliases": [],
+      "created_at": "2025-10-24T18:36:24.926Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_org_13",
+      "type": "ORG",
+      "canonical": "Guild of Cartographers",
+      "aliases": [],
+      "created_at": "2025-10-24T18:36:24.926Z",
+      "centrality": 0
+    }
+  ],
+  "relations": [
+    {
+      "id": "df575d67-69c8-4396-833e-73bb9935e3ad",
+      "subj": "global_person_5",
+      "pred": "studies_at",
+      "obj": "global_org_12",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 230,
+            "end": 269,
+            "text": "sextant.\n\nDuring their young adulthood, Aria Thorne studied at Meridian Academy, the coastal college famed for relentle"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "d47dfc33-a284-4374-9a8d-c45649658501",
+      "subj": "global_person_5",
+      "pred": "married_to",
+      "obj": "global_person_6",
+      "evidence": [
+        {
+          "doc_id": "mega-001",
+          "span": {
+            "start": 419,
+            "end": 441,
+            "text": "The couple had married"
+          },
+          "sentence_index": 3,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.85,
+      "extractor": "regex"
+    },
+    {
+      "id": "21f0d2af-cb96-4455-ae5b-143808aee677",
+      "subj": "global_person_6",
+      "pred": "married_to",
+      "obj": "global_person_5",
+      "evidence": [
+        {
+          "doc_id": "mega-001",
+          "span": {
+            "start": 419,
+            "end": 441,
+            "text": "The couple had married"
+          },
+          "sentence_index": 3,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.85,
+      "extractor": "regex"
+    },
+    {
+      "id": "21e4e1da-5dc7-45d9-8919-ef1447c1f9fb",
+      "subj": "global_person_8",
+      "pred": "friends_with",
+      "obj": "global_person_5",
+      "evidence": [
+        {
+          "doc_id": "mega-001",
+          "span": {
+            "start": 1591,
+            "end": 1633,
+            "text": "Jun remained best friends with Aria Thorne"
+          },
+          "sentence_index": 14,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.85,
+      "extractor": "regex"
+    },
+    {
+      "id": "a773f2f5-3689-4d41-b5d6-1c697da68f77",
+      "subj": "global_person_5",
+      "pred": "friends_with",
+      "obj": "global_person_8",
+      "evidence": [
+        {
+          "doc_id": "mega-001",
+          "span": {
+            "start": 1591,
+            "end": 1633,
+            "text": "Jun remained best friends with Aria Thorne"
+          },
+          "sentence_index": 14,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.85,
+      "extractor": "regex"
+    },
+    {
+      "id": "f12f36b0-61cc-44d7-9ea4-108c46ff5118",
+      "subj": "global_person_8",
+      "pred": "friends_with",
+      "obj": "global_person_6",
+      "evidence": [
+        {
+          "doc_id": "mega-001",
+          "span": {
+            "start": 1705,
+            "end": 1744,
+            "text": "Jun also struck a friendship with Elias"
+          },
+          "sentence_index": 15,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.85,
+      "extractor": "regex"
+    },
+    {
+      "id": "65c3535f-b411-494c-b46c-05e274f4c140",
+      "subj": "global_person_6",
+      "pred": "friends_with",
+      "obj": "global_person_8",
+      "evidence": [
+        {
+          "doc_id": "mega-001",
+          "span": {
+            "start": 1705,
+            "end": 1744,
+            "text": "Jun also struck a friendship with Elias"
+          },
+          "sentence_index": 15,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.85,
+      "extractor": "regex"
+    },
+    {
+      "id": "f356a2da-1a8e-4512-adcf-0b5ad7044deb",
+      "subj": "global_person_5",
+      "pred": "enemy_of",
+      "obj": "global_person_9",
+      "evidence": [
+        {
+          "doc_id": "mega-001",
+          "span": {
+            "start": 4286,
+            "end": 4319,
+            "text": "the rivalry between Aria and Kara"
+          },
+          "sentence_index": 41,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.85,
+      "extractor": "regex"
+    },
+    {
+      "id": "c624aa1d-785b-4f6b-ab7c-eb2050955698",
+      "subj": "global_person_9",
+      "pred": "enemy_of",
+      "obj": "global_person_5",
+      "evidence": [
+        {
+          "doc_id": "mega-001",
+          "span": {
+            "start": 4286,
+            "end": 4319,
+            "text": "the rivalry between Aria and Kara"
+          },
+          "sentence_index": 41,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.85,
+      "extractor": "regex"
+    },
+    {
+      "id": "3d051da7-e37b-4566-b96a-bb2890b02d66",
+      "subj": "global_person_10",
+      "pred": "studies_at",
+      "obj": "global_org_12",
+      "evidence": [
+        {
+          "doc_id": "mega-001",
+          "span": {
+            "start": 5898,
+            "end": 5948,
+            "text": "Mira Calder continued studying at Meridian Academy"
+          },
+          "sentence_index": 56,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.85,
+      "extractor": "regex"
+    },
+    {
+      "id": "a71319f8-21d1-46cc-ab9c-57359c16b338",
+      "subj": "global_person_6",
+      "pred": "teaches_at",
+      "obj": "global_org_12",
+      "evidence": [
+        {
+          "doc_id": "mega-001",
+          "span": {
+            "start": 4784,
+            "end": 4825,
+            "text": "He continued to teach at Meridian Academy"
+          },
+          "sentence_index": 46,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.85,
+      "extractor": "regex"
+    },
+    {
+      "id": "12b084f9-6e06-4490-88a6-53ab80cccc8e",
+      "subj": "global_person_5",
+      "pred": "lives_in",
+      "obj": "global_place_3",
+      "evidence": [
+        {
+          "doc_id": "mega-001",
+          "span": {
+            "start": 2631,
+            "end": 2707,
+            "text": "Aria and Elias lived in a copper-roofed house overlooking the Mistward River"
+          },
+          "sentence_index": 24,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.85,
+      "extractor": "regex"
+    },
+    {
+      "id": "bce4a5e5-c77b-4c12-ae08-1dbbe6267a3b",
+      "subj": "global_person_6",
+      "pred": "lives_in",
+      "obj": "global_place_3",
+      "evidence": [
+        {
+          "doc_id": "mega-001",
+          "span": {
+            "start": 2631,
+            "end": 2707,
+            "text": "Aria and Elias lived in a copper-roofed house overlooking the Mistward River"
+          },
+          "sentence_index": 24,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.85,
+      "extractor": "regex"
+    },
+    {
+      "id": "6c619322-6573-4c19-8c1e-c2c6ce270dc0",
+      "subj": "global_person_5",
+      "pred": "parent_of",
+      "obj": "global_person_10",
+      "evidence": [
+        {
+          "doc_id": "mega-001",
+          "span": {
+            "start": 3183,
+            "end": 3215,
+            "text": "The couple's daughter Mira Calder"
+          },
+          "sentence_index": 30,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "c5ab4747-b8d3-449c-bf14-f8c39d774487",
+      "subj": "global_person_10",
+      "pred": "child_of",
+      "obj": "global_person_5",
+      "evidence": [
+        {
+          "doc_id": "mega-001",
+          "span": {
+            "start": 3183,
+            "end": 3215,
+            "text": "The couple's daughter Mira Calder"
+          },
+          "sentence_index": 30,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "08036187-0925-4e47-a7ae-f18a9661e2e0",
+      "subj": "global_person_6",
+      "pred": "parent_of",
+      "obj": "global_person_10",
+      "evidence": [
+        {
+          "doc_id": "mega-001",
+          "span": {
+            "start": 3183,
+            "end": 3215,
+            "text": "The couple's daughter Mira Calder"
+          },
+          "sentence_index": 30,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "c6502842-9917-4d23-8733-650ae26ea752",
+      "subj": "global_person_10",
+      "pred": "child_of",
+      "obj": "global_person_6",
+      "evidence": [
+        {
+          "doc_id": "mega-001",
+          "span": {
+            "start": 3183,
+            "end": 3215,
+            "text": "The couple's daughter Mira Calder"
+          },
+          "sentence_index": 30,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "1fdd9e35-855e-4f07-bf76-f68817149bf8",
+      "subj": "global_person_5",
+      "pred": "parent_of",
+      "obj": "global_person_11",
+      "evidence": [
+        {
+          "doc_id": "mega-001",
+          "span": {
+            "start": 3648,
+            "end": 3668,
+            "text": "Their son Cael Calder"
+          },
+          "sentence_index": 34,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "50f22b1c-2d59-4902-bfc0-55274b11807b",
+      "subj": "global_person_11",
+      "pred": "child_of",
+      "obj": "global_person_5",
+      "evidence": [
+        {
+          "doc_id": "mega-001",
+          "span": {
+            "start": 3648,
+            "end": 3668,
+            "text": "Their son Cael Calder"
+          },
+          "sentence_index": 34,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "6266b08f-9658-43a2-b9a4-05c2729b575a",
+      "subj": "global_person_6",
+      "pred": "parent_of",
+      "obj": "global_person_11",
+      "evidence": [
+        {
+          "doc_id": "mega-001",
+          "span": {
+            "start": 3648,
+            "end": 3668,
+            "text": "Their son Cael Calder"
+          },
+          "sentence_index": 34,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "c1fa2b27-fe14-48d6-bb51-8ae88a518649",
+      "subj": "global_person_11",
+      "pred": "child_of",
+      "obj": "global_person_6",
+      "evidence": [
+        {
+          "doc_id": "mega-001",
+          "span": {
+            "start": 3648,
+            "end": 3668,
+            "text": "Their son Cael Calder"
+          },
+          "sentence_index": 34,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    }
+  ],
+  "conflicts": [
+    {
+      "type": "single_valued",
+      "severity": 2,
+      "description": "Entity global_person_5 has multiple values for single-valued predicate 'parent_of': global_person_10, global_person_11",
+      "relations": [
+        {
+          "id": "6c619322-6573-4c19-8c1e-c2c6ce270dc0",
+          "subj": "global_person_5",
+          "pred": "parent_of",
+          "obj": "global_person_10",
+          "evidence": [
+            {
+              "doc_id": "mega-001",
+              "span": {
+                "start": 3183,
+                "end": 3215,
+                "text": "The couple's daughter Mira Calder"
+              },
+              "sentence_index": 30,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.8,
+          "extractor": "regex"
+        },
+        {
+          "id": "1fdd9e35-855e-4f07-bf76-f68817149bf8",
+          "subj": "global_person_5",
+          "pred": "parent_of",
+          "obj": "global_person_11",
+          "evidence": [
+            {
+              "doc_id": "mega-001",
+              "span": {
+                "start": 3648,
+                "end": 3668,
+                "text": "Their son Cael Calder"
+              },
+              "sentence_index": 34,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.8,
+          "extractor": "regex"
+        }
+      ]
+    },
+    {
+      "type": "single_valued",
+      "severity": 2,
+      "description": "Entity global_person_6 has multiple values for single-valued predicate 'parent_of': global_person_10, global_person_11",
+      "relations": [
+        {
+          "id": "08036187-0925-4e47-a7ae-f18a9661e2e0",
+          "subj": "global_person_6",
+          "pred": "parent_of",
+          "obj": "global_person_10",
+          "evidence": [
+            {
+              "doc_id": "mega-001",
+              "span": {
+                "start": 3183,
+                "end": 3215,
+                "text": "The couple's daughter Mira Calder"
+              },
+              "sentence_index": 30,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.8,
+          "extractor": "regex"
+        },
+        {
+          "id": "6266b08f-9658-43a2-b9a4-05c2729b575a",
+          "subj": "global_person_6",
+          "pred": "parent_of",
+          "obj": "global_person_11",
+          "evidence": [
+            {
+              "doc_id": "mega-001",
+              "span": {
+                "start": 3648,
+                "end": 3668,
+                "text": "Their son Cael Calder"
+              },
+              "sentence_index": 34,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.8,
+          "extractor": "regex"
+        }
+      ]
+    },
+    {
+      "type": "cycle",
+      "severity": 3,
+      "description": "Cycle detected in parent_of/child_of: global_person_5 → global_person_10 → global_person_5",
+      "relations": [
+        {
+          "id": "6c619322-6573-4c19-8c1e-c2c6ce270dc0",
+          "subj": "global_person_5",
+          "pred": "parent_of",
+          "obj": "global_person_10",
+          "evidence": [
+            {
+              "doc_id": "mega-001",
+              "span": {
+                "start": 3183,
+                "end": 3215,
+                "text": "The couple's daughter Mira Calder"
+              },
+              "sentence_index": 30,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.8,
+          "extractor": "regex"
+        },
+        {
+          "id": "c5ab4747-b8d3-449c-bf14-f8c39d774487",
+          "subj": "global_person_10",
+          "pred": "child_of",
+          "obj": "global_person_5",
+          "evidence": [
+            {
+              "doc_id": "mega-001",
+              "span": {
+                "start": 3183,
+                "end": 3215,
+                "text": "The couple's daughter Mira Calder"
+              },
+              "sentence_index": 30,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.8,
+          "extractor": "regex"
+        }
+      ]
+    },
+    {
+      "type": "cycle",
+      "severity": 3,
+      "description": "Cycle detected in parent_of/child_of: global_person_10 → global_person_6 → global_person_10",
+      "relations": [
+        {
+          "id": "c6502842-9917-4d23-8733-650ae26ea752",
+          "subj": "global_person_10",
+          "pred": "child_of",
+          "obj": "global_person_6",
+          "evidence": [
+            {
+              "doc_id": "mega-001",
+              "span": {
+                "start": 3183,
+                "end": 3215,
+                "text": "The couple's daughter Mira Calder"
+              },
+              "sentence_index": 30,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.8,
+          "extractor": "regex"
+        },
+        {
+          "id": "08036187-0925-4e47-a7ae-f18a9661e2e0",
+          "subj": "global_person_6",
+          "pred": "parent_of",
+          "obj": "global_person_10",
+          "evidence": [
+            {
+              "doc_id": "mega-001",
+              "span": {
+                "start": 3183,
+                "end": 3215,
+                "text": "The couple's daughter Mira Calder"
+              },
+              "sentence_index": 30,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.8,
+          "extractor": "regex"
+        }
+      ]
+    },
+    {
+      "type": "cycle",
+      "severity": 3,
+      "description": "Cycle detected in parent_of/child_of: global_person_5 → global_person_10 → global_person_6 → global_person_11 → global_person_5",
+      "relations": [
+        {
+          "id": "6c619322-6573-4c19-8c1e-c2c6ce270dc0",
+          "subj": "global_person_5",
+          "pred": "parent_of",
+          "obj": "global_person_10",
+          "evidence": [
+            {
+              "doc_id": "mega-001",
+              "span": {
+                "start": 3183,
+                "end": 3215,
+                "text": "The couple's daughter Mira Calder"
+              },
+              "sentence_index": 30,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.8,
+          "extractor": "regex"
+        },
+        {
+          "id": "c6502842-9917-4d23-8733-650ae26ea752",
+          "subj": "global_person_10",
+          "pred": "child_of",
+          "obj": "global_person_6",
+          "evidence": [
+            {
+              "doc_id": "mega-001",
+              "span": {
+                "start": 3183,
+                "end": 3215,
+                "text": "The couple's daughter Mira Calder"
+              },
+              "sentence_index": 30,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.8,
+          "extractor": "regex"
+        },
+        {
+          "id": "6266b08f-9658-43a2-b9a4-05c2729b575a",
+          "subj": "global_person_6",
+          "pred": "parent_of",
+          "obj": "global_person_11",
+          "evidence": [
+            {
+              "doc_id": "mega-001",
+              "span": {
+                "start": 3648,
+                "end": 3668,
+                "text": "Their son Cael Calder"
+              },
+              "sentence_index": 34,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.8,
+          "extractor": "regex"
+        },
+        {
+          "id": "50f22b1c-2d59-4902-bfc0-55274b11807b",
+          "subj": "global_person_11",
+          "pred": "child_of",
+          "obj": "global_person_5",
+          "evidence": [
+            {
+              "doc_id": "mega-001",
+              "span": {
+                "start": 3648,
+                "end": 3668,
+                "text": "Their son Cael Calder"
+              },
+              "sentence_index": 34,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.8,
+          "extractor": "regex"
+        }
+      ]
+    }
+  ],
+  "provenance": {
+    "mega-001_entity_0": {
+      "global_id": "global_place_0",
+      "doc_id": "mega-001",
+      "merged_at": "2025-10-24T18:36:24.926Z",
+      "local_canonical": "Meridian Ridge"
+    },
+    "mega-001_entity_1": {
+      "global_id": "global_person_5",
+      "doc_id": "mega-001",
+      "merged_at": "2025-10-24T18:36:24.926Z",
+      "local_canonical": "Aria Thorne"
+    },
+    "mega-001_entity_2": {
+      "global_id": "global_person_6",
+      "doc_id": "mega-001",
+      "merged_at": "2025-10-24T18:36:24.926Z",
+      "local_canonical": "Elias Calder"
+    },
+    "mega-001_entity_3": {
+      "global_id": "global_place_1",
+      "doc_id": "mega-001",
+      "merged_at": "2025-10-24T18:36:24.926Z",
+      "local_canonical": "Meridian Plaza"
+    },
+    "mega-001_entity_4": {
+      "global_id": "global_org_12",
+      "doc_id": "mega-001",
+      "merged_at": "2025-10-24T18:36:24.926Z",
+      "local_canonical": "Meridian Academy"
+    },
+    "mega-001_entity_5": {
+      "global_id": "global_person_7",
+      "doc_id": "mega-001",
+      "merged_at": "2025-10-24T18:36:24.926Z",
+      "local_canonical": "Professor Lysa Marren"
+    },
+    "mega-001_entity_6": {
+      "global_id": "global_person_8",
+      "doc_id": "mega-001",
+      "merged_at": "2025-10-24T18:36:24.926Z",
+      "local_canonical": "Jun Park"
+    },
+    "mega-001_entity_7": {
+      "global_id": "global_place_2",
+      "doc_id": "mega-001",
+      "merged_at": "2025-10-24T18:36:24.926Z",
+      "local_canonical": "Observatory Commons"
+    },
+    "mega-001_entity_8": {
+      "global_id": "global_person_9",
+      "doc_id": "mega-001",
+      "merged_at": "2025-10-24T18:36:24.926Z",
+      "local_canonical": "Kara Nightfall"
+    },
+    "mega-001_entity_9": {
+      "global_id": "global_place_3",
+      "doc_id": "mega-001",
+      "merged_at": "2025-10-24T18:36:24.926Z",
+      "local_canonical": "Mistward River"
+    },
+    "mega-001_entity_10": {
+      "global_id": "global_person_10",
+      "doc_id": "mega-001",
+      "merged_at": "2025-10-24T18:36:24.926Z",
+      "local_canonical": "Mira Calder"
+    },
+    "mega-001_entity_11": {
+      "global_id": "global_person_11",
+      "doc_id": "mega-001",
+      "merged_at": "2025-10-24T18:36:24.926Z",
+      "local_canonical": "Cael Calder"
+    },
+    "mega-001_entity_12": {
+      "global_id": "global_place_4",
+      "doc_id": "mega-001",
+      "merged_at": "2025-10-24T18:36:24.926Z",
+      "local_canonical": "Canyon Bridge"
+    },
+    "mega-001_entity_13": {
+      "global_id": "global_org_13",
+      "doc_id": "mega-001",
+      "merged_at": "2025-10-24T18:36:24.926Z",
+      "local_canonical": "Guild of Cartographers"
+    }
+  },
+  "metadata": {
+    "created_at": "2025-10-24T18:36:24.836Z",
+    "updated_at": "2025-10-24T18:36:24.927Z",
+    "doc_count": 1,
+    "doc_ids": [
+      "mega-001"
+    ]
+  }
+}

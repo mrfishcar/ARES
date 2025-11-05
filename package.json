@@ -1,0 +1,56 @@
+{
+  "name": "ares",
+  "version": "0.1.0",
+  "description": "Rule-first knowledge engine for extracting entities, relations, and events from long texts",
+  "main": "app/engine/orchestrator.ts",
+  "scripts": {
+    "parser": "cd app/services && uvicorn parser:app --host 127.0.0.1 --port 8000",
+    "dev": "ts-node app/ui/server.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "validate:golden": "node scripts/validate-ares-golden.js tests/golden_truth",
+    "validate:golden:cp": "node scripts/validate-ares-golden.js tests/golden_truth --codepoints",
+    "test:mega": "vitest run tests/mega/mega-regression.spec.ts",
+    "fiction:ch2": "MODULE_PATH=./app/engine/fiction-extraction ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"Node\"}' scripts/run-fiction-ch2.ts"
+  },
+  "keywords": [
+    "knowledge-graph",
+    "nlp",
+    "entity-extraction",
+    "relation-extraction"
+  ],
+  "author": "ARES Team",
+  "license": "MIT",
+  "dependencies": {
+    "@apollo/server": "^5.0.0",
+    "@codemirror/autocomplete": "^6.19.0",
+    "@codemirror/commands": "^6.9.0",
+    "@codemirror/lang-markdown": "^6.4.0",
+    "@codemirror/language": "^6.11.3",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/view": "^6.38.6",
+    "@fastify/static": "^6.12.0",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/sdk-trace-base": "^2.1.0",
+    "@types/lunr": "^2.3.7",
+    "better-sqlite3": "^12.4.1",
+    "chokidar": "^3.5.3",
+    "express-rate-limit": "^8.1.0",
+    "fastify": "^4.25.0",
+    "graphql": "^16.11.0",
+    "lunr": "^2.3.9",
+    "ollama": "^0.5.0",
+    "pino": "^9",
+    "prom-client": "^15.1.3",
+    "uuid": "^9.0.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/uuid": "^9.0.8",
+    "jsdom": "^27.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3",
+    "vitest": "^1.0.4"
+  }
+}

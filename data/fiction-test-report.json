@@ -1,0 +1,65 @@
+{
+  "story": {
+    "title": "The Last Train to Brooklyn",
+    "word_count": 5879,
+    "char_count": 36648
+  },
+  "extraction": {
+    "duration_seconds": 30.98,
+    "entities": 53,
+    "spans": 585,
+    "relations": 54,
+    "herts": 585
+  },
+  "quality": {
+    "entity_types": {
+      "PERSON": 38,
+      "PLACE": 11,
+      "ORG": 4
+    },
+    "aliases_per_entity": 1.0416666666666667,
+    "unique_surface_forms": 50
+  },
+  "top_entities": [
+    {
+      "name": "Meeting Sarah",
+      "mentions": 139
+    },
+    {
+      "name": "James Patrick Morrison",
+      "mentions": 126
+    },
+    {
+      "name": "Emily",
+      "mentions": 47
+    },
+    {
+      "name": "Maya Rodriguez",
+      "mentions": 42
+    },
+    {
+      "name": "Marcus Washington",
+      "mentions": 17
+    },
+    {
+      "name": "TO BROOKLYN Chapter",
+      "mentions": 13
+    },
+    {
+      "name": "Veronica Chen",
+      "mentions": 10
+    },
+    {
+      "name": "Karen",
+      "mentions": 10
+    },
+    {
+      "name": "Carmen Rodriguez",
+      "mentions": 10
+    },
+    {
+      "name": "Patricia Okonkwo",
+      "mentions": 9
+    }
+  ]
+}

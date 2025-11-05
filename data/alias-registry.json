@@ -1,0 +1,1611 @@
+{
+  "version": 1,
+  "nextAID": 714,
+  "mappings": [
+    {
+      "aid": 554,
+      "surfaceForm": "Baker Street",
+      "normalizedKey": "baker street",
+      "eid": 244,
+      "created_at": "2025-10-30T20:27:53.826Z",
+      "last_seen": "2025-10-30T20:27:53.826Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 555,
+      "surfaceForm": "Sherlock Holmes",
+      "normalizedKey": "sherlock holmes",
+      "eid": 245,
+      "created_at": "2025-10-30T20:27:53.826Z",
+      "last_seen": "2025-10-30T20:27:53.826Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 556,
+      "surfaceForm": "Watson",
+      "normalizedKey": "watson",
+      "eid": 246,
+      "created_at": "2025-10-30T20:27:53.827Z",
+      "last_seen": "2025-10-30T20:27:53.827Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 557,
+      "surfaceForm": "Inspector Lestrade",
+      "normalizedKey": "inspector lestrade",
+      "eid": 247,
+      "created_at": "2025-10-30T20:27:53.827Z",
+      "last_seen": "2025-10-30T20:27:53.827Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 558,
+      "surfaceForm": "Lestrade",
+      "normalizedKey": "lestrade",
+      "eid": 247,
+      "created_at": "2025-10-30T20:27:53.827Z",
+      "last_seen": "2025-10-30T20:27:53.827Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 559,
+      "surfaceForm": "Scotland Yard",
+      "normalizedKey": "scotland yard",
+      "eid": 248,
+      "created_at": "2025-10-30T20:27:53.827Z",
+      "last_seen": "2025-10-30T20:27:53.827Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 560,
+      "surfaceForm": "Crown Jewels",
+      "normalizedKey": "crown jewels",
+      "eid": 249,
+      "created_at": "2025-10-30T20:27:53.827Z",
+      "last_seen": "2025-10-30T20:27:53.827Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 561,
+      "surfaceForm": "Westminster Abbey",
+      "normalizedKey": "westminster abbey",
+      "eid": 250,
+      "created_at": "2025-10-30T20:27:53.827Z",
+      "last_seen": "2025-10-30T20:27:53.827Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 562,
+      "surfaceForm": "Jonathan Small",
+      "normalizedKey": "jonathan small",
+      "eid": 251,
+      "created_at": "2025-10-30T20:27:53.827Z",
+      "last_seen": "2025-10-30T20:27:53.827Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 563,
+      "surfaceForm": "Aragorn",
+      "normalizedKey": "aragorn",
+      "eid": 8,
+      "created_at": "2025-10-30T20:27:53.946Z",
+      "last_seen": "2025-10-30T20:27:53.946Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 564,
+      "surfaceForm": "Arathorn",
+      "normalizedKey": "arathorn",
+      "eid": 9,
+      "created_at": "2025-10-30T20:27:53.946Z",
+      "last_seen": "2025-10-30T20:27:53.946Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 565,
+      "surfaceForm": "Rivendell",
+      "normalizedKey": "rivendell",
+      "eid": 2,
+      "created_at": "2025-10-30T20:27:53.946Z",
+      "last_seen": "2025-10-30T20:27:53.946Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 566,
+      "surfaceForm": "Gandalf the Grey",
+      "normalizedKey": "gandalf the grey",
+      "eid": 1,
+      "created_at": "2025-10-30T20:27:53.946Z",
+      "last_seen": "2025-10-30T20:27:53.946Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 567,
+      "surfaceForm": "Ring of Power",
+      "normalizedKey": "ring of power",
+      "eid": 252,
+      "created_at": "2025-10-30T20:27:53.946Z",
+      "last_seen": "2025-10-30T20:27:53.946Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 568,
+      "surfaceForm": "Gondor",
+      "normalizedKey": "gondor",
+      "eid": 11,
+      "created_at": "2025-10-30T20:27:53.946Z",
+      "last_seen": "2025-10-30T20:27:53.946Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 569,
+      "surfaceForm": "Thou",
+      "normalizedKey": "thou",
+      "eid": 253,
+      "created_at": "2025-10-30T20:27:53.946Z",
+      "last_seen": "2025-10-30T20:27:53.946Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 570,
+      "surfaceForm": "Jesus",
+      "normalizedKey": "jesus",
+      "eid": 254,
+      "created_at": "2025-10-30T20:27:54.194Z",
+      "last_seen": "2025-10-30T20:27:54.194Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 571,
+      "surfaceForm": "Jordan River",
+      "normalizedKey": "jordan river",
+      "eid": 255,
+      "created_at": "2025-10-30T20:27:54.194Z",
+      "last_seen": "2025-10-30T20:27:54.194Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 572,
+      "surfaceForm": "And John",
+      "normalizedKey": "and john",
+      "eid": 256,
+      "created_at": "2025-10-30T20:27:54.194Z",
+      "last_seen": "2025-10-30T20:27:54.194Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 573,
+      "surfaceForm": "Nazareth",
+      "normalizedKey": "nazareth",
+      "eid": 257,
+      "created_at": "2025-10-30T20:27:54.194Z",
+      "last_seen": "2025-10-30T20:27:54.194Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 574,
+      "surfaceForm": "Baptist",
+      "normalizedKey": "baptist",
+      "eid": 258,
+      "created_at": "2025-10-30T20:27:54.194Z",
+      "last_seen": "2025-10-30T20:27:54.194Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 575,
+      "surfaceForm": "Behold the Lamb of God",
+      "normalizedKey": "behold the lamb of god",
+      "eid": 259,
+      "created_at": "2025-10-30T20:27:54.194Z",
+      "last_seen": "2025-10-30T20:27:54.194Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 576,
+      "surfaceForm": "Jordan",
+      "normalizedKey": "jordan",
+      "eid": 255,
+      "created_at": "2025-10-30T20:27:54.194Z",
+      "last_seen": "2025-10-30T20:27:54.194Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 577,
+      "surfaceForm": "James",
+      "normalizedKey": "james",
+      "eid": 260,
+      "created_at": "2025-10-30T20:27:54.194Z",
+      "last_seen": "2025-10-30T20:27:54.194Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 578,
+      "surfaceForm": "Peter",
+      "normalizedKey": "peter",
+      "eid": 261,
+      "created_at": "2025-10-30T20:27:54.194Z",
+      "last_seen": "2025-10-30T20:27:54.194Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 579,
+      "surfaceForm": "Mary Magdalene",
+      "normalizedKey": "mary magdalene",
+      "eid": 262,
+      "created_at": "2025-10-30T20:27:54.194Z",
+      "last_seen": "2025-10-30T20:27:54.194Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 580,
+      "surfaceForm": "Professor James Moriarty",
+      "normalizedKey": "professor james moriarty",
+      "eid": 260,
+      "created_at": "2025-10-30T20:27:54.475Z",
+      "last_seen": "2025-10-30T20:27:54.475Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 581,
+      "surfaceForm": "Oxford",
+      "normalizedKey": "oxford",
+      "eid": 263,
+      "created_at": "2025-10-30T20:27:54.475Z",
+      "last_seen": "2025-10-30T20:27:54.475Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 582,
+      "surfaceForm": "Switzerland",
+      "normalizedKey": "switzerland",
+      "eid": 264,
+      "created_at": "2025-10-30T20:27:54.475Z",
+      "last_seen": "2025-10-30T20:27:54.475Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 583,
+      "surfaceForm": "Reichenbach Falls",
+      "normalizedKey": "reichenbach falls",
+      "eid": 265,
+      "created_at": "2025-10-30T20:27:54.475Z",
+      "last_seen": "2025-10-30T20:27:54.475Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 584,
+      "surfaceForm": "Falls",
+      "normalizedKey": "falls",
+      "eid": 265,
+      "created_at": "2025-10-30T20:27:54.475Z",
+      "last_seen": "2025-10-30T20:27:54.475Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 585,
+      "surfaceForm": "Battle of Helm's Deep",
+      "normalizedKey": "battle of helm's deep",
+      "eid": 266,
+      "created_at": "2025-10-30T21:07:11.502Z",
+      "last_seen": "2025-10-30T21:07:11.502Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 586,
+      "surfaceForm": "March",
+      "normalizedKey": "march",
+      "eid": 267,
+      "created_at": "2025-10-30T21:07:11.502Z",
+      "last_seen": "2025-10-30T21:07:11.502Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 587,
+      "surfaceForm": "Third Age",
+      "normalizedKey": "third age",
+      "eid": 268,
+      "created_at": "2025-10-30T21:07:11.502Z",
+      "last_seen": "2025-10-30T21:07:11.502Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 588,
+      "surfaceForm": "Gimli",
+      "normalizedKey": "gimli",
+      "eid": 29,
+      "created_at": "2025-10-30T21:07:11.502Z",
+      "last_seen": "2025-10-30T21:07:11.502Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 589,
+      "surfaceForm": "Legolas",
+      "normalizedKey": "legolas",
+      "eid": 28,
+      "created_at": "2025-10-30T21:07:11.502Z",
+      "last_seen": "2025-10-30T21:07:11.502Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 590,
+      "surfaceForm": "Saruman",
+      "normalizedKey": "saruman",
+      "eid": 34,
+      "created_at": "2025-10-30T21:07:11.502Z",
+      "last_seen": "2025-10-30T21:07:11.502Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 591,
+      "surfaceForm": "Gandalf",
+      "normalizedKey": "gandalf",
+      "eid": 1,
+      "created_at": "2025-10-30T21:07:11.503Z",
+      "last_seen": "2025-10-30T21:07:11.503Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 592,
+      "surfaceForm": "Earlier",
+      "normalizedKey": "earlier",
+      "eid": 269,
+      "created_at": "2025-10-30T21:07:11.503Z",
+      "last_seen": "2025-10-30T21:07:11.503Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 593,
+      "surfaceForm": "Council of Elrond",
+      "normalizedKey": "council of elrond",
+      "eid": 270,
+      "created_at": "2025-10-30T21:07:11.503Z",
+      "last_seen": "2025-10-30T21:07:11.503Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 594,
+      "surfaceForm": "Elrond",
+      "normalizedKey": "elrond",
+      "eid": 270,
+      "created_at": "2025-10-30T21:07:11.503Z",
+      "last_seen": "2025-10-30T21:07:11.503Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 595,
+      "surfaceForm": "Mount Doom",
+      "normalizedKey": "mount doom",
+      "eid": 17,
+      "created_at": "2025-10-30T21:07:11.503Z",
+      "last_seen": "2025-10-30T21:07:11.503Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 596,
+      "surfaceForm": "Frodo Baggins",
+      "normalizedKey": "frodo baggins",
+      "eid": 23,
+      "created_at": "2025-10-30T21:07:11.503Z",
+      "last_seen": "2025-10-30T21:07:11.503Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 597,
+      "surfaceForm": "December",
+      "normalizedKey": "december",
+      "eid": 168,
+      "created_at": "2025-10-30T21:07:11.503Z",
+      "last_seen": "2025-10-30T21:07:11.503Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 598,
+      "surfaceForm": "January",
+      "normalizedKey": "january",
+      "eid": 271,
+      "created_at": "2025-10-30T21:07:11.503Z",
+      "last_seen": "2025-10-30T21:07:11.503Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 599,
+      "surfaceForm": "Mines of Moria",
+      "normalizedKey": "mines of moria",
+      "eid": 272,
+      "created_at": "2025-10-30T21:07:11.503Z",
+      "last_seen": "2025-10-30T21:07:11.503Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 600,
+      "surfaceForm": "Bridge",
+      "normalizedKey": "bridge",
+      "eid": 273,
+      "created_at": "2025-10-30T21:07:11.504Z",
+      "last_seen": "2025-10-30T21:07:11.504Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 601,
+      "surfaceForm": "Galadriel",
+      "normalizedKey": "galadriel",
+      "eid": 274,
+      "created_at": "2025-10-30T21:07:11.504Z",
+      "last_seen": "2025-10-30T21:07:11.504Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 602,
+      "surfaceForm": "Lothl",
+      "normalizedKey": "lothl",
+      "eid": 275,
+      "created_at": "2025-10-30T21:07:11.504Z",
+      "last_seen": "2025-10-30T21:07:11.504Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 603,
+      "surfaceForm": "One Ring",
+      "normalizedKey": "one ring",
+      "eid": 5,
+      "created_at": "2025-10-30T21:07:11.504Z",
+      "last_seen": "2025-10-30T21:07:11.504Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 604,
+      "surfaceForm": "King of Gondor",
+      "normalizedKey": "king of gondor",
+      "eid": 11,
+      "created_at": "2025-10-30T21:07:11.504Z",
+      "last_seen": "2025-10-30T21:07:11.504Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 605,
+      "surfaceForm": "Free Peoples",
+      "normalizedKey": "free peoples",
+      "eid": 276,
+      "created_at": "2025-10-31T00:58:49.111Z",
+      "last_seen": "2025-10-31T00:58:49.111Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 606,
+      "surfaceForm": "Sauron",
+      "normalizedKey": "sauron",
+      "eid": 7,
+      "created_at": "2025-10-31T00:58:49.111Z",
+      "last_seen": "2025-10-31T00:58:49.111Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 607,
+      "surfaceForm": "Minas Tirith",
+      "normalizedKey": "minas tirith",
+      "eid": 277,
+      "created_at": "2025-10-31T00:58:49.111Z",
+      "last_seen": "2025-10-31T00:58:49.111Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 608,
+      "surfaceForm": "Tirith",
+      "normalizedKey": "tirith",
+      "eid": 277,
+      "created_at": "2025-10-31T00:58:49.111Z",
+      "last_seen": "2025-10-31T00:58:49.111Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 609,
+      "surfaceForm": "Mordor",
+      "normalizedKey": "mordor",
+      "eid": 278,
+      "created_at": "2025-10-31T00:58:49.112Z",
+      "last_seen": "2025-10-31T00:58:49.112Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 610,
+      "surfaceForm": "Battle",
+      "normalizedKey": "battle",
+      "eid": 266,
+      "created_at": "2025-10-31T00:58:49.112Z",
+      "last_seen": "2025-10-31T00:58:49.112Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 611,
+      "surfaceForm": "Pelennor Fields",
+      "normalizedKey": "pelennor fields",
+      "eid": 279,
+      "created_at": "2025-10-31T00:58:49.112Z",
+      "last_seen": "2025-10-31T00:58:49.112Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 612,
+      "surfaceForm": "Ring",
+      "normalizedKey": "ring",
+      "eid": 252,
+      "created_at": "2025-10-31T00:58:49.112Z",
+      "last_seen": "2025-10-31T00:58:49.112Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 613,
+      "surfaceForm": "Samwise Gamgee",
+      "normalizedKey": "samwise gamgee",
+      "eid": 280,
+      "created_at": "2025-10-31T00:58:49.112Z",
+      "last_seen": "2025-10-31T00:58:49.112Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 614,
+      "surfaceForm": "King Th",
+      "normalizedKey": "king th",
+      "eid": 33,
+      "created_at": "2025-10-31T00:58:49.114Z",
+      "last_seen": "2025-10-31T00:58:49.114Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 615,
+      "surfaceForm": "Rohan",
+      "normalizedKey": "rohan",
+      "eid": 32,
+      "created_at": "2025-10-31T00:58:49.114Z",
+      "last_seen": "2025-10-31T00:58:49.114Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 616,
+      "surfaceForm": "Fellowship",
+      "normalizedKey": "fellowship",
+      "eid": 42,
+      "created_at": "2025-10-31T00:58:49.114Z",
+      "last_seen": "2025-10-31T00:58:49.114Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 617,
+      "surfaceForm": "Gl",
+      "normalizedKey": "gl",
+      "eid": 281,
+      "created_at": "2025-10-31T00:58:49.114Z",
+      "last_seen": "2025-10-31T00:58:49.114Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 618,
+      "surfaceForm": "Woodland Realm",
+      "normalizedKey": "woodland realm",
+      "eid": 282,
+      "created_at": "2025-10-31T00:58:49.115Z",
+      "last_seen": "2025-10-31T00:58:49.115Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 619,
+      "surfaceForm": "Pippin",
+      "normalizedKey": "pippin",
+      "eid": 283,
+      "created_at": "2025-10-31T00:58:49.115Z",
+      "last_seen": "2025-10-31T00:58:49.115Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 620,
+      "surfaceForm": "Merry",
+      "normalizedKey": "merry",
+      "eid": 284,
+      "created_at": "2025-10-31T00:58:49.115Z",
+      "last_seen": "2025-10-31T00:58:49.115Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 621,
+      "surfaceForm": "Shire",
+      "normalizedKey": "shire",
+      "eid": 22,
+      "created_at": "2025-10-31T00:58:49.115Z",
+      "last_seen": "2025-10-31T00:58:49.115Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 622,
+      "surfaceForm": "Black Gate",
+      "normalizedKey": "black gate",
+      "eid": 14,
+      "created_at": "2025-10-31T00:58:49.115Z",
+      "last_seen": "2025-10-31T00:58:49.115Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 623,
+      "surfaceForm": "West",
+      "normalizedKey": "west",
+      "eid": 250,
+      "created_at": "2025-10-31T00:58:49.115Z",
+      "last_seen": "2025-10-31T00:58:49.115Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 624,
+      "surfaceForm": "Barad-d",
+      "normalizedKey": "barad-d",
+      "eid": 285,
+      "created_at": "2025-10-31T00:58:49.116Z",
+      "last_seen": "2025-10-31T00:58:49.116Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 625,
+      "surfaceForm": "Bilbo Baggins",
+      "normalizedKey": "bilbo baggins",
+      "eid": 24,
+      "created_at": "2025-10-31T01:49:57.780Z",
+      "last_seen": "2025-10-31T01:49:57.780Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 626,
+      "surfaceForm": "At the Prancing Pony",
+      "normalizedKey": "at the prancing pony",
+      "eid": 286,
+      "created_at": "2025-10-31T01:49:57.780Z",
+      "last_seen": "2025-10-31T01:49:57.780Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 627,
+      "surfaceForm": "September",
+      "normalizedKey": "september",
+      "eid": 287,
+      "created_at": "2025-10-31T01:49:57.781Z",
+      "last_seen": "2025-10-31T01:49:57.781Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 628,
+      "surfaceForm": "Sam",
+      "normalizedKey": "sam",
+      "eid": 16,
+      "created_at": "2025-10-31T01:49:57.781Z",
+      "last_seen": "2025-10-31T01:49:57.781Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 629,
+      "surfaceForm": "Nazg",
+      "normalizedKey": "nazg",
+      "eid": 288,
+      "created_at": "2025-10-31T01:49:57.781Z",
+      "last_seen": "2025-10-31T01:49:57.781Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 630,
+      "surfaceForm": "Bree",
+      "normalizedKey": "bree",
+      "eid": 289,
+      "created_at": "2025-10-31T01:49:57.781Z",
+      "last_seen": "2025-10-31T01:49:57.781Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 631,
+      "surfaceForm": "Weathertop",
+      "normalizedKey": "weathertop",
+      "eid": 290,
+      "created_at": "2025-10-31T01:49:57.781Z",
+      "last_seen": "2025-10-31T01:49:57.781Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 632,
+      "surfaceForm": "October",
+      "normalizedKey": "october",
+      "eid": 291,
+      "created_at": "2025-10-31T01:49:57.781Z",
+      "last_seen": "2025-10-31T01:49:57.781Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 633,
+      "surfaceForm": "Morgul-blade",
+      "normalizedKey": "morgul-blade",
+      "eid": 292,
+      "created_at": "2025-10-31T01:49:57.782Z",
+      "last_seen": "2025-10-31T01:49:57.782Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 634,
+      "surfaceForm": "Boromir",
+      "normalizedKey": "boromir",
+      "eid": 27,
+      "created_at": "2025-10-31T01:49:57.782Z",
+      "last_seen": "2025-10-31T01:49:57.782Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 635,
+      "surfaceForm": "Pippin Gandalf Aragorn",
+      "normalizedKey": "pippin gandalf aragorn",
+      "eid": 8,
+      "created_at": "2025-10-31T01:49:57.782Z",
+      "last_seen": "2025-10-31T01:49:57.782Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 636,
+      "surfaceForm": "Celeborn",
+      "normalizedKey": "celeborn",
+      "eid": 293,
+      "created_at": "2025-10-31T01:49:57.782Z",
+      "last_seen": "2025-10-31T01:49:57.782Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 637,
+      "surfaceForm": "February",
+      "normalizedKey": "february",
+      "eid": 201,
+      "created_at": "2025-10-31T01:49:57.782Z",
+      "last_seen": "2025-10-31T01:49:57.782Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 638,
+      "surfaceForm": "Anduin River",
+      "normalizedKey": "anduin river",
+      "eid": 294,
+      "created_at": "2025-10-31T01:49:57.782Z",
+      "last_seen": "2025-10-31T01:49:57.782Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 639,
+      "surfaceForm": "Rauros",
+      "normalizedKey": "rauros",
+      "eid": 295,
+      "created_at": "2025-10-31T01:49:57.783Z",
+      "last_seen": "2025-10-31T01:49:57.783Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 640,
+      "surfaceForm": "Fangorn Forest",
+      "normalizedKey": "fangorn forest",
+      "eid": 296,
+      "created_at": "2025-10-31T01:49:57.783Z",
+      "last_seen": "2025-10-31T01:49:57.783Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 641,
+      "surfaceForm": "Treebeard",
+      "normalizedKey": "treebeard",
+      "eid": 297,
+      "created_at": "2025-10-31T01:49:57.783Z",
+      "last_seen": "2025-10-31T01:49:57.783Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 642,
+      "surfaceForm": "Gandalf the White",
+      "normalizedKey": "gandalf the white",
+      "eid": 1,
+      "created_at": "2025-10-31T01:49:57.783Z",
+      "last_seen": "2025-10-31T01:49:57.783Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 643,
+      "surfaceForm": "Balrog",
+      "normalizedKey": "balrog",
+      "eid": 298,
+      "created_at": "2025-10-31T01:49:57.783Z",
+      "last_seen": "2025-10-31T01:49:57.783Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 644,
+      "surfaceForm": "Th",
+      "normalizedKey": "th",
+      "eid": 299,
+      "created_at": "2025-10-31T01:49:57.783Z",
+      "last_seen": "2025-10-31T01:49:57.783Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 645,
+      "surfaceForm": "Rohirrim",
+      "normalizedKey": "rohirrim",
+      "eid": 300,
+      "created_at": "2025-10-31T01:49:57.783Z",
+      "last_seen": "2025-10-31T01:49:57.783Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 646,
+      "surfaceForm": "Denethor",
+      "normalizedKey": "denethor",
+      "eid": 301,
+      "created_at": "2025-10-31T01:49:57.783Z",
+      "last_seen": "2025-10-31T01:49:57.783Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 647,
+      "surfaceForm": "Battle of Bywater",
+      "normalizedKey": "battle of bywater",
+      "eid": 266,
+      "created_at": "2025-10-31T01:49:57.783Z",
+      "last_seen": "2025-10-31T01:49:57.783Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 648,
+      "surfaceForm": "Witch-king",
+      "normalizedKey": "witch-king",
+      "eid": 302,
+      "created_at": "2025-10-31T01:49:57.783Z",
+      "last_seen": "2025-10-31T01:49:57.783Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 649,
+      "surfaceForm": "Army",
+      "normalizedKey": "army",
+      "eid": 303,
+      "created_at": "2025-10-31T01:49:57.784Z",
+      "last_seen": "2025-10-31T01:49:57.784Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 650,
+      "surfaceForm": "Black Gate of Mordor",
+      "normalizedKey": "black gate of mordor",
+      "eid": 278,
+      "created_at": "2025-10-31T01:49:57.784Z",
+      "last_seen": "2025-10-31T01:49:57.784Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 651,
+      "surfaceForm": "Gollum",
+      "normalizedKey": "gollum",
+      "eid": 304,
+      "created_at": "2025-10-31T01:49:57.784Z",
+      "last_seen": "2025-10-31T01:49:57.784Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 652,
+      "surfaceForm": "Cracks of Doom",
+      "normalizedKey": "cracks of doom",
+      "eid": 305,
+      "created_at": "2025-10-31T01:49:57.784Z",
+      "last_seen": "2025-10-31T01:49:57.784Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 653,
+      "surfaceForm": "Arnor",
+      "normalizedKey": "arnor",
+      "eid": 306,
+      "created_at": "2025-10-31T01:49:57.784Z",
+      "last_seen": "2025-10-31T01:49:57.784Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 654,
+      "surfaceForm": "King Elessar",
+      "normalizedKey": "king elessar",
+      "eid": 307,
+      "created_at": "2025-10-31T01:49:57.784Z",
+      "last_seen": "2025-10-31T01:49:57.784Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 655,
+      "surfaceForm": "Reunited Kingdom of Gondor",
+      "normalizedKey": "reunited kingdom of gondor",
+      "eid": 11,
+      "created_at": "2025-10-31T01:49:57.784Z",
+      "last_seen": "2025-10-31T01:49:57.784Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 656,
+      "surfaceForm": "Grey Havens",
+      "normalizedKey": "grey havens",
+      "eid": 308,
+      "created_at": "2025-10-31T01:49:57.784Z",
+      "last_seen": "2025-10-31T01:49:57.784Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 657,
+      "surfaceForm": "Undying Lands",
+      "normalizedKey": "undying lands",
+      "eid": 309,
+      "created_at": "2025-10-31T01:49:57.784Z",
+      "last_seen": "2025-10-31T01:49:57.784Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 658,
+      "surfaceForm": "At the Falls of Rauros",
+      "normalizedKey": "at the falls of rauros",
+      "eid": 265,
+      "created_at": "2025-10-31T01:49:58.238Z",
+      "last_seen": "2025-10-31T01:49:58.238Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 659,
+      "surfaceForm": "Frodo",
+      "normalizedKey": "frodo",
+      "eid": 23,
+      "created_at": "2025-10-31T01:49:58.238Z",
+      "last_seen": "2025-10-31T01:49:58.238Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 660,
+      "surfaceForm": "Steward of Gondor",
+      "normalizedKey": "steward of gondor",
+      "eid": 11,
+      "created_at": "2025-10-31T01:49:58.238Z",
+      "last_seen": "2025-10-31T01:49:58.238Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 661,
+      "surfaceForm": "April",
+      "normalizedKey": "april",
+      "eid": 223,
+      "created_at": "2025-10-31T01:49:58.238Z",
+      "last_seen": "2025-10-31T01:49:58.238Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 662,
+      "surfaceForm": "Middle-earth",
+      "normalizedKey": "middle-earth",
+      "eid": 41,
+      "created_at": "2025-10-31T01:49:58.239Z",
+      "last_seen": "2025-10-31T01:49:58.239Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 663,
+      "surfaceForm": "Two Dark Lords",
+      "normalizedKey": "two dark lords",
+      "eid": 310,
+      "created_at": "2025-10-31T01:49:58.239Z",
+      "last_seen": "2025-10-31T01:49:58.239Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 664,
+      "surfaceForm": "Cory",
+      "normalizedKey": "cory",
+      "eid": 311,
+      "created_at": "2025-11-01T15:18:00.037Z",
+      "last_seen": "2025-11-01T15:18:00.037Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 665,
+      "surfaceForm": "Kailey",
+      "normalizedKey": "kailey",
+      "eid": 312,
+      "created_at": "2025-11-01T15:31:06.794Z",
+      "last_seen": "2025-11-01T15:31:06.794Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 666,
+      "surfaceForm": "Ethan",
+      "normalizedKey": "ethan",
+      "eid": 313,
+      "created_at": "2025-11-01T15:42:50.985Z",
+      "last_seen": "2025-11-01T15:42:50.985Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 667,
+      "surfaceForm": "Dominique Gilford",
+      "normalizedKey": "dominique gilford",
+      "eid": 314,
+      "created_at": "2025-11-01T16:28:51.703Z",
+      "last_seen": "2025-11-01T16:28:51.703Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 668,
+      "surfaceForm": "Lacombe",
+      "normalizedKey": "lacombe",
+      "eid": 315,
+      "created_at": "2025-11-01T16:28:51.703Z",
+      "last_seen": "2025-11-01T16:28:51.703Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 669,
+      "surfaceForm": "Louisiana",
+      "normalizedKey": "louisiana",
+      "eid": 316,
+      "created_at": "2025-11-01T16:28:51.704Z",
+      "last_seen": "2025-11-01T16:28:51.704Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 670,
+      "surfaceForm": "Dominique",
+      "normalizedKey": "dominique",
+      "eid": 314,
+      "created_at": "2025-11-01T19:04:04.359Z",
+      "last_seen": "2025-11-01T19:04:04.359Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 671,
+      "surfaceForm": "Dav",
+      "normalizedKey": "dav",
+      "eid": 317,
+      "created_at": "2025-11-01T19:23:13.160Z",
+      "last_seen": "2025-11-01T19:23:13.160Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 672,
+      "surfaceForm": "When the Philistines",
+      "normalizedKey": "when the philistines",
+      "eid": 318,
+      "created_at": "2025-11-01T19:26:32.565Z",
+      "last_seen": "2025-11-01T19:26:32.565Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 673,
+      "surfaceForm": "Socoh",
+      "normalizedKey": "socoh",
+      "eid": 319,
+      "created_at": "2025-11-01T19:26:32.565Z",
+      "last_seen": "2025-11-01T19:26:32.565Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 674,
+      "surfaceForm": "Judah",
+      "normalizedKey": "judah",
+      "eid": 320,
+      "created_at": "2025-11-01T19:26:32.565Z",
+      "last_seen": "2025-11-01T19:26:32.565Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 675,
+      "surfaceForm": "Azekah",
+      "normalizedKey": "azekah",
+      "eid": 321,
+      "created_at": "2025-11-01T19:26:32.566Z",
+      "last_seen": "2025-11-01T19:26:32.566Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 676,
+      "surfaceForm": "Ephes Dammim",
+      "normalizedKey": "ephes dammim",
+      "eid": 322,
+      "created_at": "2025-11-01T19:26:32.566Z",
+      "last_seen": "2025-11-01T19:26:32.566Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 677,
+      "surfaceForm": "When Saul",
+      "normalizedKey": "when saul",
+      "eid": 318,
+      "created_at": "2025-11-01T19:26:32.566Z",
+      "last_seen": "2025-11-01T19:26:32.566Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 678,
+      "surfaceForm": "Oak Valley",
+      "normalizedKey": "oak valley",
+      "eid": 323,
+      "created_at": "2025-11-01T19:26:32.567Z",
+      "last_seen": "2025-11-01T19:26:32.567Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 679,
+      "surfaceForm": "Israelites",
+      "normalizedKey": "israelites",
+      "eid": 324,
+      "created_at": "2025-11-01T19:26:32.568Z",
+      "last_seen": "2025-11-01T19:26:32.568Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 680,
+      "surfaceForm": "Gath",
+      "normalizedKey": "gath",
+      "eid": 325,
+      "created_at": "2025-11-01T19:26:32.568Z",
+      "last_seen": "2025-11-01T19:26:32.568Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 681,
+      "surfaceForm": "Philistine",
+      "normalizedKey": "philistine",
+      "eid": 318,
+      "created_at": "2025-11-01T19:26:32.568Z",
+      "last_seen": "2025-11-01T19:26:32.568Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 682,
+      "surfaceForm": "Goliath",
+      "normalizedKey": "goliath",
+      "eid": 326,
+      "created_at": "2025-11-01T19:26:32.569Z",
+      "last_seen": "2025-11-01T19:26:32.569Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 683,
+      "surfaceForm": "Israelite",
+      "normalizedKey": "israelite",
+      "eid": 324,
+      "created_at": "2025-11-01T19:26:32.569Z",
+      "last_seen": "2025-11-01T19:26:32.569Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 684,
+      "surfaceForm": "Am I",
+      "normalizedKey": "am i",
+      "eid": 327,
+      "created_at": "2025-11-01T19:26:32.569Z",
+      "last_seen": "2025-11-01T19:26:32.569Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 685,
+      "surfaceForm": "As the Philistine",
+      "normalizedKey": "as the philistine",
+      "eid": 318,
+      "created_at": "2025-11-01T19:26:32.570Z",
+      "last_seen": "2025-11-01T19:26:32.570Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 686,
+      "surfaceForm": "God of Israel",
+      "normalizedKey": "god of israel",
+      "eid": 328,
+      "created_at": "2025-11-01T19:26:32.570Z",
+      "last_seen": "2025-11-01T19:26:32.570Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 687,
+      "surfaceForm": "Give",
+      "normalizedKey": "give",
+      "eid": 329,
+      "created_at": "2025-11-01T19:26:32.571Z",
+      "last_seen": "2025-11-01T19:26:32.571Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 688,
+      "surfaceForm": "Enter David",
+      "normalizedKey": "enter david",
+      "eid": 330,
+      "created_at": "2025-11-01T19:26:32.571Z",
+      "last_seen": "2025-11-01T19:26:32.571Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 689,
+      "surfaceForm": "Jesse",
+      "normalizedKey": "jesse",
+      "eid": 331,
+      "created_at": "2025-11-01T19:26:32.571Z",
+      "last_seen": "2025-11-01T19:26:32.571Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 690,
+      "surfaceForm": "Bethlehem",
+      "normalizedKey": "bethlehem",
+      "eid": 332,
+      "created_at": "2025-11-01T19:26:32.571Z",
+      "last_seen": "2025-11-01T19:26:32.571Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 691,
+      "surfaceForm": "Abinadab",
+      "normalizedKey": "abinadab",
+      "eid": 333,
+      "created_at": "2025-11-01T19:26:32.572Z",
+      "last_seen": "2025-11-01T19:26:32.572Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 692,
+      "surfaceForm": "Shammah",
+      "normalizedKey": "shammah",
+      "eid": 334,
+      "created_at": "2025-11-01T19:26:32.572Z",
+      "last_seen": "2025-11-01T19:26:32.572Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 693,
+      "surfaceForm": "Eliab",
+      "normalizedKey": "eliab",
+      "eid": 335,
+      "created_at": "2025-11-01T19:26:32.572Z",
+      "last_seen": "2025-11-01T19:26:32.572Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 694,
+      "surfaceForm": "Take",
+      "normalizedKey": "take",
+      "eid": 336,
+      "created_at": "2025-11-01T19:26:32.572Z",
+      "last_seen": "2025-11-01T19:26:32.572Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 695,
+      "surfaceForm": "Check",
+      "normalizedKey": "check",
+      "eid": 337,
+      "created_at": "2025-11-01T19:26:32.572Z",
+      "last_seen": "2025-11-01T19:26:32.572Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 696,
+      "surfaceForm": "Five Smooth Stones",
+      "normalizedKey": "five smooth stones",
+      "eid": 338,
+      "created_at": "2025-11-01T19:26:32.573Z",
+      "last_seen": "2025-11-01T19:26:32.573Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 697,
+      "surfaceForm": "God-Alive",
+      "normalizedKey": "god-alive",
+      "eid": 339,
+      "created_at": "2025-11-01T19:26:32.573Z",
+      "last_seen": "2025-11-01T19:26:32.573Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 698,
+      "surfaceForm": "Ignoring",
+      "normalizedKey": "ignoring",
+      "eid": 252,
+      "created_at": "2025-11-01T19:26:32.573Z",
+      "last_seen": "2025-11-01T19:26:32.573Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 699,
+      "surfaceForm": "Master",
+      "normalizedKey": "master",
+      "eid": 340,
+      "created_at": "2025-11-01T19:26:32.573Z",
+      "last_seen": "2025-11-01T19:26:32.573Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 700,
+      "surfaceForm": "Whenever",
+      "normalizedKey": "whenever",
+      "eid": 318,
+      "created_at": "2025-11-01T19:26:32.573Z",
+      "last_seen": "2025-11-01T19:26:32.573Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 701,
+      "surfaceForm": "Lion",
+      "normalizedKey": "lion",
+      "eid": 341,
+      "created_at": "2025-11-01T19:26:32.574Z",
+      "last_seen": "2025-11-01T19:26:32.574Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 702,
+      "surfaceForm": "God",
+      "normalizedKey": "god",
+      "eid": 342,
+      "created_at": "2025-11-01T19:26:32.574Z",
+      "last_seen": "2025-11-01T19:26:32.574Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 703,
+      "surfaceForm": "Then Saul",
+      "normalizedKey": "then saul",
+      "eid": 343,
+      "created_at": "2025-11-01T19:26:32.575Z",
+      "last_seen": "2025-11-01T19:26:32.575Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 704,
+      "surfaceForm": "Then David",
+      "normalizedKey": "then david",
+      "eid": 344,
+      "created_at": "2025-11-01T19:26:32.575Z",
+      "last_seen": "2025-11-01T19:26:32.575Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 705,
+      "surfaceForm": "Israel",
+      "normalizedKey": "israel",
+      "eid": 324,
+      "created_at": "2025-11-01T19:26:32.575Z",
+      "last_seen": "2025-11-01T19:26:32.575Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 706,
+      "surfaceForm": "God-of-the-Angel-Armies",
+      "normalizedKey": "god-of-the-angel-armies",
+      "eid": 345,
+      "created_at": "2025-11-01T19:26:32.575Z",
+      "last_seen": "2025-11-01T19:26:32.575Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 707,
+      "surfaceForm": "Philistines",
+      "normalizedKey": "philistines",
+      "eid": 318,
+      "created_at": "2025-11-01T19:26:32.575Z",
+      "last_seen": "2025-11-01T19:26:32.575Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 708,
+      "surfaceForm": "Ekron",
+      "normalizedKey": "ekron",
+      "eid": 346,
+      "created_at": "2025-11-01T19:26:32.576Z",
+      "last_seen": "2025-11-01T19:26:32.576Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 709,
+      "surfaceForm": "Shaaraim",
+      "normalizedKey": "shaaraim",
+      "eid": 347,
+      "created_at": "2025-11-01T19:26:32.576Z",
+      "last_seen": "2025-11-01T19:26:32.576Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 710,
+      "surfaceForm": "Jerusalem",
+      "normalizedKey": "jerusalem",
+      "eid": 348,
+      "created_at": "2025-11-01T19:26:32.576Z",
+      "last_seen": "2025-11-01T19:26:32.576Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 711,
+      "surfaceForm": "Abner",
+      "normalizedKey": "abner",
+      "eid": 349,
+      "created_at": "2025-11-01T19:26:32.577Z",
+      "last_seen": "2025-11-01T19:26:32.577Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 712,
+      "surfaceForm": "Well",
+      "normalizedKey": "well",
+      "eid": 350,
+      "created_at": "2025-11-01T19:26:32.577Z",
+      "last_seen": "2025-11-01T19:26:32.577Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 713,
+      "surfaceForm": "Young",
+      "normalizedKey": "young",
+      "eid": 351,
+      "created_at": "2025-11-01T19:26:32.577Z",
+      "last_seen": "2025-11-01T19:26:32.577Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    }
+  ],
+  "metadata": {
+    "total_aliases": 160,
+    "total_entities": 132,
+    "last_updated": "2025-11-01T19:26:37.897Z"
+  }
+}

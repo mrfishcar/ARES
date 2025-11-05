@@ -1,0 +1,5 @@
+In ancient Mesopotamia, King Hammurabi of Babylon promulgated his famous Code, inscribed on a black stone stele now housed in the Louvre Museum. The laws, written in Akkadian cuneiform, invoke both Shamash (the sun god) and Marduk (patron deity of Babylon). High Priest Nabû-šuma-imbi of the Esagila Temple performed the dedication ritual before the city elders.
+
+The Temple of Marduk, known as Esagila ("house whose head is raised"), stood near the great Etemenanki ziggurat. During the Akitu Festival, the king would process from the Ishtar Gate through the Sacred Way to make offerings at both shrines. The Enuma Elish, Babylon's creation epic, was recited in its entirety by the kalû-priests.
+
+Babylonian astronomers at the Temple Observatory, following the computational tables of Nabu-rimanni, tracked the movements of Nergal (Mars) and Ninurta's star (Sirius). The astrologer Aba-enlil-dari, writing on clay tablets found in the temple library, correlated these observations with omens from the Enuma Anu Enlil series. Meanwhile, scribes of the Shamash temple in Sippar maintained their own records in the Ebabbar archive.

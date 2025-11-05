@@ -1,0 +1,5 @@
+The rise of artificial intelligence has transformed Silicon Valley. At OpenAI's headquarters in San Francisco, CEO Sam Altman announced GPT-5, while Microsoft's $50B investment through CEO Satya Nadella signaled major changes. @elonmusk, posting on X (formerly Twitter), criticized the move: "AGI requires more oversight." Google's DeepMind, led by Demis Hassabis in London, accelerated their research. Meanwhile, Jeff Dean at Google Brain merged with DeepMind to form Google AGI.
+
+The announcement caused $MSFT stock to jump 15%, while $GOOGL saw a 7% increase. Anthropic's Claude 3, developed under Dario Amodei and Paul Christiano, demonstrated new capabilities. Stanford's AI Safety Institute, funded by Dustin Moskovitz through @OpenPhil, launched ethics guidelines.
+
+At Berkeley's CHAI (Center for Human-Compatible AI), Prof. Stuart Russell collaborated with @AnthropicAI researchers. The #AISafety and #AGIControl hashtags trended worldwide.

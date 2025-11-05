@@ -1,0 +1,1184 @@
+# ARES GraphQL Schema - Sprint R4: Console Expansion
+
+"""Relay-style cursor for pagination"""
+scalar Cursor
+
+"""Page info for Relay-style pagination"""
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: Cursor
+  endCursor: Cursor
+}
+
+type Entity {
+  id: ID!
+  type: String!
+  canonical: String!
+  aliases: [String!]!
+  centrality: Float
+  createdAt: String!
+  localIds: [String!]!
+}
+
+"""Edge type for Entity connections"""
+type EntityEdge {
+  cursor: Cursor!
+  node: Entity!
+}
+
+"""Connection type for paginated Entity results"""
+type EntityConnection {
+  edges: [EntityEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type Relation {
+  id: ID!
+  subject: Entity!
+  predicate: String!
+  object: Entity!
+  confidence: Float!
+  extractor: String
+  qualifiers: [Qualifier!]
+  evidence: [Evidence!]!
+}
+
+"""Edge type for Relation connections"""
+type RelationEdge {
+  cursor: Cursor!
+  node: Relation!
+}
+
+"""Connection type for paginated Relation results"""
+type RelationConnection {
+  edges: [RelationEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type Qualifier {
+  type: String!
+  value: String!
+  entityId: String
+  span: [Int!]
+}
+
+type Evidence {
+  docId: String!
+  span: Span!
+  sentenceIndex: Int!
+  source: String!
+}
+
+type Span {
+  start: Int!
+  end: Int!
+  text: String!
+}
+
+type Conflict {
+  type: String!
+  severity: Int!
+  description: String!
+  relations: [Relation!]!
+}
+
+"""Edge type for Conflict connections"""
+type ConflictEdge {
+  cursor: Cursor!
+  node: Conflict!
+}
+
+"""Connection type for paginated Conflict results"""
+type ConflictConnection {
+  edges: [ConflictEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type Query {
+  """Get entities with optional filters (legacy - use entitiesConnection for pagination)"""
+  entities(type: String, name: String): [Entity!]!
+
+  """Get entities with Relay-style cursor pagination"""
+  entitiesConnection(
+    type: String
+    name: String
+    first: Int
+    after: Cursor
+    last: Int
+    before: Cursor
+  ): EntityConnection!
+
+  """Get relations with optional filters (legacy - use relationsConnection for pagination)"""
+  relations(predicate: String, subjectId: ID, objectId: ID): [Relation!]!
+
+  """Get relations with Relay-style cursor pagination"""
+  relationsConnection(
+    predicate: String
+    subjectId: ID
+    objectId: ID
+    first: Int
+    after: Cursor
+    last: Int
+    before: Cursor
+  ): RelationConnection!
+
+  """Get conflicts with optional filters (legacy - use conflictsConnection for pagination)"""
+  conflicts(subjectId: ID, type: String): [Conflict!]!
+
+  """Get conflicts with Relay-style cursor pagination"""
+  conflictsConnection(
+    subjectId: ID
+    type: String
+    first: Int
+    after: Cursor
+    last: Int
+    before: Cursor
+  ): ConflictConnection!
+
+  """Get entire knowledge graph"""
+  graph: KnowledgeGraph!
+}
+
+type KnowledgeGraph {
+  entities: [Entity!]!
+  relations: [Relation!]!
+  conflicts: [Conflict!]!
+  metadata: Metadata!
+}
+
+type Metadata {
+  createdAt: String!
+  updatedAt: String!
+  docCount: Int!
+  docIds: [String!]!
+}
+
+type Mutation {
+  """Ingest a new document into the knowledge graph"""
+  ingestDoc(text: String!, docId: String!): IngestResult!
+}
+
+type IngestResult {
+  entities: [Entity!]!
+  relations: [Relation!]!
+  conflicts: [Conflict!]!
+  mergeCount: Int!
+  message: String!
+}
+
+# Review Queue Types (Sprint R1)
+
+type PendingEvidence {
+  text: String!
+  confidence: Float!
+}
+
+type PendingEntity {
+  id: ID!
+  name: String!
+  aliases: [String!]!
+  types: [String!]!
+  evidence: [PendingEvidence!]!
+  project: String!
+  createdAt: String!
+}
+
+type PendingRelation {
+  id: ID!
+  subject: String!
+  predicate: String!
+  object: String!
+  symmetric: Boolean!
+  evidence: [PendingEvidence!]!
+  project: String!
+  createdAt: String!
+}
+
+type ReviewQueueStats {
+  entities: Int!
+  relations: Int!
+}
+
+type ReviewHeartbeat {
+  project: String!
+  lastUpdatedAt: String!
+}
+
+type SearchResult {
+  id: ID!
+  name: String!
+  type: String!
+  snippet: String
+}
+
+extend type Query {
+  """Get review queue statistics for a project"""
+  reviewStats(project: String!): ReviewQueueStats!
+
+  """Get pending entities in review queue"""
+  pendingEntities(project: String!, limit: Int = 50, after: ID): [PendingEntity!]!
+
+  """Get pending relations in review queue"""
+  pendingRelations(project: String!, limit: Int = 50, after: ID): [PendingRelation!]!
+
+  """Get review queue heartbeat for change detection"""
+  reviewHeartbeat(project: String!): ReviewHeartbeat!
+
+  """Search entities by text (name, aliases)"""
+  searchEntities(text: String!, limit: Int = 20): [SearchResult!]!
+
+  """Search relations by text (subject, object, predicate)"""
+  searchRelations(text: String!, limit: Int = 20): [SearchResult!]!
+}
+
+extend type Mutation {
+  """Approve a review item and merge into knowledge graph"""
+  approveReviewItem(project: String!, id: ID!): Boolean!
+
+  """Dismiss a review item without adding to graph"""
+  dismissReviewItem(project: String!, id: ID!): Boolean!
+}
+
+# Sprint R4: Console Expansion - Entities, Relations, Graph Ops
+
+"""Lightweight entity type for list views"""
+type EntityLite {
+  id: ID!
+  name: String!
+  types: [String!]!
+  aliases: [String!]!
+  mentionCount: Int
+}
+
+"""Lightweight relation type for list views"""
+type RelationLite {
+  id: ID!
+  subject: String!
+  predicate: String!
+  object: String!
+  symmetric: Boolean
+  confidenceAvg: Float
+}
+
+"""Evidence snippet with normalized text"""
+type EvidenceSnippet {
+  text: String!
+  confidence: Float
+  docId: String
+}
+
+"""Detailed entity view with relations and evidence"""
+type EntityDetail {
+  entity: EntityLite!
+  inbound: [RelationLite!]!
+  outbound: [RelationLite!]!
+  evidence: [EvidenceSnippet!]!
+}
+
+"""Detailed relation view with evidence"""
+type RelationDetail {
+  relation: RelationLite!
+  evidence: [EvidenceSnippet!]!
+}
+
+"""Enhanced page info for Sprint R4"""
+type PageInfoR4 {
+  endCursor: Cursor
+  hasNextPage: Boolean!
+}
+
+"""Entity connection with cursor pagination"""
+type EntityConnectionR4 {
+  nodes: [EntityLite!]!
+  pageInfo: PageInfoR4!
+  totalApprox: Int
+}
+
+"""Relation connection with cursor pagination"""
+type RelationConnectionR4 {
+  nodes: [RelationLite!]!
+  pageInfo: PageInfoR4!
+  totalApprox: Int
+}
+
+"""Filter for entity queries"""
+input EntityFilter {
+  type: String
+  nameContains: String
+}
+
+"""Filter for relation queries"""
+input RelationFilter {
+  predicate: String
+  nameContains: String
+}
+
+"""Client-side error payload for logging"""
+input ClientErrorInput {
+  message: String!
+  stack: String
+  component: String
+  url: String
+  userAgent: String
+  extra: JSON
+}
+
+"""Snapshot reference"""
+type SnapshotRef {
+  id: ID!
+  createdAt: String!
+  bytes: Int!
+}
+
+"""Export reference"""
+type ExportRef {
+  format: String!
+  path: String!
+}
+
+extend type Query {
+  """List entities with filters and pagination"""
+  listEntities(
+    project: String!
+    after: Cursor
+    limit: Int = 50
+    filter: EntityFilter
+  ): EntityConnectionR4!
+
+  """Get entity detail with relations and evidence"""
+  getEntity(project: String!, id: ID!): EntityDetail!
+
+  """List relations with filters and pagination"""
+  listRelations(
+    project: String!
+    after: Cursor
+    limit: Int = 50
+    filter: RelationFilter
+  ): RelationConnectionR4!
+
+  """Get relation detail with evidence"""
+  getRelation(project: String!, id: ID!): RelationDetail!
+
+  """List snapshots for a project"""
+  listSnapshots(project: String!): [SnapshotRef!]!
+}
+
+extend type Mutation {
+  """Create a snapshot of the knowledge graph"""
+  createSnapshot(project: String!): SnapshotRef!
+
+  """Restore a snapshot"""
+  restoreSnapshot(project: String!, id: ID!): Boolean!
+
+  """Export knowledge graph to external format"""
+  exportGraph(project: String!, format: String!): ExportRef!
+}
+
+# Sprint R6: Graph Visualization, Bulk Review, Advanced Search
+
+"""Graph node for visualization"""
+type GraphNode {
+  id: ID!
+  name: String!
+  types: [String!]!
+}
+
+"""Graph edge for visualization"""
+type GraphEdge {
+  id: ID!
+  subject: ID!
+  object: ID!
+  predicate: String!
+  symmetric: Boolean
+}
+
+"""Graph slice (subgraph)"""
+type GraphSlice {
+  nodes: [GraphNode!]!
+  edges: [GraphEdge!]!
+}
+
+extend type Query {
+  """Get neighborhood graph around a center entity (BFS depth 1 or 2)"""
+  graphNeighborhood(
+    project: String!
+    centerId: ID!
+    depth: Int = 1
+    limit: Int = 200
+  ): GraphSlice!
+
+  """Get graph filtered by predicate"""
+  graphByPredicate(
+    project: String!
+    predicate: String!
+    limit: Int = 500
+  ): GraphSlice!
+}
+
+# Sprint R7: Prompt-First Home, Notes, and Seeds Panel
+
+"""Markdown note with entity tagging"""
+type Note {
+  id: ID!
+  project: String!
+  title: String
+  markdown: String!
+  attachments: [String!]!
+  createdAt: String!
+  updatedAt: String!
+}
+
+"""Edge type for Note connections"""
+type NoteEdge {
+  cursor: Cursor!
+  node: Note!
+}
+
+"""Connection type for paginated Note results"""
+type NoteConnection {
+  nodes: [Note!]!
+  pageInfo: PageInfoR4!
+  totalApprox: Int
+}
+
+"""Input for creating or updating a note"""
+input NoteInput {
+  title: String
+  markdown: String!
+  attachments: [String!]
+}
+
+"""Citation seed for entity evidence"""
+type Seed {
+  id: ID!
+  entityId: ID!
+  docId: String!
+  span: Span!
+  quote: String!
+  addedBy: String!
+  addedAt: String!
+  removed: Boolean!
+}
+
+"""Input for adding a seed"""
+input SeedInput {
+  entityId: ID!
+  docId: String!
+  quote: String!
+  start: Int!
+  end: Int!
+}
+
+extend type Query {
+  """List notes with pagination"""
+  listNotes(
+    project: String!
+    after: Cursor
+    limit: Int = 50
+  ): NoteConnection!
+
+  """Get a single note by ID"""
+  getNote(id: ID!): Note
+
+  """List seeds for an entity"""
+  listSeeds(entityId: ID!): [Seed!]!
+}
+
+extend type Mutation {
+  """Create a new note (parses entity tags)"""
+  createNote(project: String!, input: NoteInput!): Note!
+
+  """Update an existing note (parses entity tags)"""
+  updateNote(id: ID!, input: NoteInput!): Note!
+
+  """Delete a note"""
+  deleteNote(id: ID!): Boolean!
+
+  """Add a seed citation to an entity"""
+  addSeed(input: SeedInput!): Seed!
+
+  """Remove a seed citation"""
+  removeSeed(id: ID!): Boolean!
+
+  """Rebuild entity wiki page from seeds"""
+  rebuildEntity(entityId: ID!): Boolean!
+}
+
+# Sprint R8: Theming, Gamification & Temporal Graph Integration
+
+"""JSON scalar for flexible theme data"""
+scalar JSON
+
+"""Visual theme for personalization"""
+type Theme {
+  id: ID!
+  name: String!
+  colors: JSON!
+  background: JSON!
+  hero: JSON
+  createdAt: String!
+  updatedAt: String!
+}
+
+"""User progress and gamification state"""
+type Progress {
+  level: Int!
+  unlockedCategories: [String!]!
+  totalEntities: Int!
+  totalRelations: Int!
+  experiencePoints: Int!
+}
+
+"""Temporal event with normalized time data"""
+type TemporalEvent {
+  id: ID!
+  entityId: ID!
+  eventType: String!
+  isoStart: String
+  isoEnd: String
+  precision: String!
+  confidence: Float!
+  extractedFrom: String!
+}
+
+"""Temporal edge representing chronological ordering"""
+type TemporalEdge {
+  id: ID!
+  fromEventId: ID!
+  toEventId: ID!
+  relationType: String!
+  confidence: Float!
+}
+
+extend type Query {
+  """List all themes"""
+  listThemes: [Theme!]!
+
+  """Get a specific theme by ID"""
+  getTheme(id: ID!): Theme
+
+  """Get current user progress"""
+  getProgress(project: String!): Progress!
+
+  """List temporal events for a project"""
+  listTemporalEvents(
+    project: String!
+    limit: Int = 100
+    after: Cursor
+  ): [TemporalEvent!]!
+
+  """Get temporal edges (chronological relationships)"""
+  listTemporalEdges(
+    project: String!
+    limit: Int = 100
+  ): [TemporalEdge!]!
+}
+
+extend type Mutation {
+  """Save or update a theme"""
+  saveTheme(
+    id: ID
+    name: String!
+    colors: JSON!
+    background: JSON!
+    hero: JSON
+  ): Theme!
+
+  """Delete a theme"""
+  deleteTheme(id: ID!): Boolean!
+
+  """Record an entity action to update progress"""
+  recordEntityAction(
+    project: String!
+    actionType: String!
+  ): Progress!
+}
+
+# Timeline Analysis System
+
+"""Temporal anchor representing a point in time"""
+type TemporalAnchor {
+  raw: String!
+  normalized: String
+  precision: String!
+  confidence: Float!
+}
+
+"""Participant in a timeline event"""
+type EventParticipant {
+  eid: Int!
+  name: String!
+  type: String!
+  role: String
+}
+
+"""Location of a timeline event"""
+type EventLocation {
+  eid: Int!
+  name: String!
+}
+
+"""Source reference for a timeline event"""
+type EventSource {
+  documentId: String!
+  hert: String!
+  paragraph: Int!
+  confidence: Float!
+}
+
+"""Relationship between timeline events"""
+type EventRelation {
+  targetEventId: ID!
+  type: String!
+  confidence: Float!
+}
+
+"""Timeline event - a single point or span in a timeline"""
+type TimelineEventType {
+  id: ID!
+  eventEID: Int
+  eventName: String
+  temporal: TemporalAnchor!
+  description: String!
+  participants: [EventParticipant!]!
+  location: EventLocation
+  sources: [EventSource!]!
+  relations: [EventRelation!]!
+}
+
+"""Primary participant in a timeline"""
+type TimelineParticipant {
+  eid: Int!
+  name: String!
+  type: String!
+}
+
+"""Primary location in a timeline"""
+type TimelineLocation {
+  eid: Int!
+  name: String!
+}
+
+"""Divergence information for branch timelines"""
+type TimelineDivergence {
+  parentTimelineId: ID!
+  divergenceEventId: ID!
+  divergencePoint: TemporalAnchor!
+  reason: String
+}
+
+"""Timeline span"""
+type TimelineSpan {
+  start: TemporalAnchor!
+  end: TemporalAnchor!
+}
+
+"""Timeline - a sequence of events"""
+type TimelineType {
+  id: ID!
+  name: String!
+  type: String!
+  events: [TimelineEventType!]!
+  span: TimelineSpan
+  divergence: TimelineDivergence
+  primaryParticipants: [TimelineParticipant!]!
+  primaryLocations: [TimelineLocation!]!
+  coherence: Float!
+  sourceDocuments: [String!]!
+}
+
+"""Cross-timeline connection"""
+type TimelineConnection {
+  fromTimelineId: ID!
+  toTimelineId: ID!
+  fromEventId: ID!
+  toEventId: ID!
+  connectionType: String!
+  confidence: Float!
+}
+
+"""Timeline set - collection of related timelines"""
+type TimelineSet {
+  primary: TimelineType!
+  branches: [TimelineType!]!
+  alternates: [TimelineType!]!
+  disconnected: [TimelineType!]!
+  flashbacks: [TimelineType!]!
+  prophecies: [TimelineType!]!
+  globalSpan: TimelineSpan
+  connections: [TimelineConnection!]!
+}
+
+"""Timeline statistics"""
+type TimelineStats {
+  totalEvents: Int!
+  totalTimelines: Int!
+  averageEventsPerTimeline: Float!
+  temporalCoverage: String!
+  mostActiveParticipant: MostActiveItem!
+  mostActiveLocation: MostActiveItem!
+}
+
+"""Most active item statistics"""
+type MostActiveItem {
+  eid: Int!
+  name: String!
+  eventCount: Int!
+}
+
+"""Timeline warning"""
+type TimelineWarning {
+  type: String!
+  message: String!
+  eventIds: [ID!]!
+}
+
+"""Timeline suggestion"""
+type TimelineSuggestion {
+  type: String!
+  message: String!
+  confidence: Float!
+}
+
+"""Complete timeline analysis result"""
+type TimelineAnalysisResult {
+  timelineSet: TimelineSet!
+  stats: TimelineStats!
+  warnings: [TimelineWarning!]!
+  suggestions: [TimelineSuggestion!]!
+}
+
+"""Options for timeline extraction"""
+input TimelineOptions {
+  minTemporalConfidence: Float
+  minEventsPerTimeline: Int
+  maxTemporalGap: String
+  clusteringStrategy: String
+  inferTemporalRelations: Boolean
+  detectBranches: Boolean
+  autoMergeDisconnected: Boolean
+}
+
+extend type Query {
+  """Analyze timelines from project data"""
+  analyzeTimeline(
+    project: String!
+    options: TimelineOptions
+  ): TimelineAnalysisResult!
+
+  """Get timeline visualization data"""
+  getTimelineData(
+    project: String!
+    startDate: String
+    endDate: String
+    minConfidence: Float
+  ): TimelineSet!
+
+  """Get wiki file list for a project"""
+  listWikiFiles(project: String!): [WikiFile!]!
+
+  """Get wiki file content"""
+  getWikiFile(project: String!, fileId: ID!): WikiFileContent!
+}
+
+# Wiki Generation System
+
+"""Wiki file reference"""
+type WikiFile {
+  id: ID!
+  path: String!
+  title: String!
+  entityId: Int
+  type: String
+}
+
+"""Wiki file content"""
+type WikiFileContent {
+  id: ID!
+  path: String!
+  content: String!
+  metadata: WikiMetadata!
+}
+
+"""Wiki metadata"""
+type WikiMetadata {
+  entityId: Int
+  entityName: String
+  type: String
+  generatedAt: String!
+  stats: WikiStats
+}
+
+"""Wiki statistics"""
+type WikiStats {
+  mentionCount: Int!
+  relationCount: Int!
+  aliasCount: Int!
+}
+
+"""Wiki generation result"""
+type WikiGenerationResult {
+  filesGenerated: Int!
+  files: [WikiFile!]!
+  errors: [String!]!
+}
+
+extend type Mutation {
+  """Generate wiki pages for all entities"""
+  generateWiki(project: String!): WikiGenerationResult!
+
+  """Regenerate a specific wiki page"""
+  regenerateWikiPage(project: String!, entityId: Int!): WikiFile!
+}
+
+# Sprint R10: Live Entity Highlighting & Automation Modes
+
+"""Entity highlight in a note with confidence scoring"""
+type Highlight {
+  id: ID!
+  noteId: ID!
+  text: String!
+  entityId: ID
+  entityType: String!
+  confidence: Float!
+  status: String!
+  start: Int!
+  end: Int!
+  createdAt: String!
+}
+
+"""Automation configuration for the project"""
+type AutomationConfig {
+  mode: Int!
+  autoConfirmThreshold: Float!
+  handsOffMode: Boolean!
+}
+
+"""Statistics for highlight usage"""
+type HighlightStats {
+  total: Int!
+  confirmed: Int!
+  rejected: Int!
+  pending: Int!
+}
+
+extend type Query {
+  """Get highlights for a specific note"""
+  highlights(noteId: ID!): [Highlight!]!
+
+  """Get automation configuration for a project"""
+  getAutomationConfig(project: String!): AutomationConfig!
+
+  """Get highlight statistics for a project"""
+  getHighlightStats(project: String!): HighlightStats!
+}
+
+extend type Mutation {
+  """Confirm a highlight and optionally override entity type"""
+  confirmHighlight(
+    id: ID!
+    entityType: String
+  ): Highlight!
+
+  """Reject a highlight"""
+  rejectHighlight(id: ID!): Highlight!
+
+  """Correct highlight with a different entity type"""
+  correctHighlight(
+    id: ID!
+    newEntityType: String!
+  ): Highlight!
+
+  """Reanalyze a note to generate new highlights"""
+  reanalyzeNote(noteId: ID!): [Highlight!]!
+
+  """Update automation configuration"""
+  setAutomationConfig(
+    project: String!
+    mode: Int!
+    autoConfirmThreshold: Float
+    handsOffMode: Boolean
+  ): AutomationConfig!
+
+  """Auto-confirm all pending highlights above threshold"""
+  autoConfirmPending(
+    noteId: ID!
+    threshold: Float!
+  ): [Highlight!]!
+}
+
+# Sprint W1: Entity Digest Composer
+
+"""Citation reference for digest content"""
+type CitationRef {
+  seedId: ID!
+  docId: String!
+  quote: String!
+}
+
+"""Section of an entity digest with citations"""
+type DigestSection {
+  title: String!
+  markdown: String!
+  citations: [CitationRef!]!
+}
+
+"""Compiled entity digest from notes and seeds"""
+type EntityDigest {
+  entityId: ID!
+  entityName: String!
+  sections: [DigestSection!]!
+  generatedAt: String!
+  stats: DigestStats!
+}
+
+"""Statistics about digest composition"""
+type DigestStats {
+  seedCount: Int!
+  noteCount: Int!
+  relationCount: Int!
+  temporalEventCount: Int!
+}
+
+extend type Query {
+  """Get compiled digest for an entity"""
+  entityDigest(
+    project: String!
+    entityId: ID!
+  ): EntityDigest!
+}
+
+extend type Mutation {
+  """Regenerate entity digest with optional configuration"""
+  regenerateEntityDigest(
+    project: String!
+    entityId: ID!
+    options: JSON
+  ): EntityDigest!
+}
+
+# Sprint W2: Entity Highlighting & Interactive Writing Layer
+
+"""Entity mention in a note with detection status"""
+type EntityMention {
+  id: ID!
+  noteId: ID!
+  projectId: String!
+  text: String!
+  type: String!
+  confidence: Float!
+  status: String!
+  start: Int!
+  end: Int!
+  createdAt: String!
+  confirmedAt: String
+}
+
+"""Statistics for entity mention detection"""
+type EntityMentionStats {
+  detected: Int!
+  confirmed: Int!
+  rejected: Int!
+  pending: Int!
+}
+
+extend type Query {
+  """Get entity mentions for a note"""
+  getEntityMentions(noteId: ID!): [EntityMention!]!
+
+  """Get entity mention statistics for a project"""
+  getEntityMentionStats(project: String!): EntityMentionStats!
+}
+
+extend type Mutation {
+  """Confirm an entity mention"""
+  confirmEntityMention(
+    project: String!
+    noteId: ID!
+    entityName: String!
+    type: String!
+  ): EntityMention!
+
+  """Update entity mention type"""
+  updateEntityMentionType(
+    id: ID!
+    newType: String!
+  ): EntityMention!
+
+  """Reject an entity mention"""
+  rejectEntityMention(id: ID!): Boolean!
+
+  """S4: Update the type of an entity in the knowledge graph"""
+  updateEntityType(
+    project: String!
+    entityId: ID!
+    newType: String!
+  ): EntityLite!
+}
+
+# Sprint S3 & S8: Alias Brain & Alias Mutations
+
+"""Alias entry in the project dictionary"""
+type AliasEntry {
+  entityId: ID!
+  entityName: String!
+  alias: String!
+  type: String!
+  confidence: Float!
+  confirmedAt: String!
+}
+
+"""Alias index with version tracking"""
+type AliasIndex {
+  version: Int!
+  aliases: [AliasEntry!]!
+  updatedAt: String!
+}
+
+extend type Query {
+  """S3: Get alias version for cache invalidation"""
+  getAliasVersion(project: String!): Int!
+
+  """S3: Get all aliases for a project"""
+  getAliasIndex(project: String!): AliasIndex!
+
+  """S3: Get aliases for a specific entity"""
+  getEntityAliases(project: String!, entityId: ID!): [String!]!
+}
+
+extend type Mutation {
+  """S8: Confirm an alias (add to dictionary)"""
+  aliasConfirm(
+    project: String!
+    entityId: ID!
+    entityName: String!
+    alias: String!
+    type: String!
+  ): AliasEntry!
+
+  """S8: Reject an alias (remove from dictionary)"""
+  aliasReject(
+    project: String!
+    entityId: ID!
+    alias: String!
+  ): Boolean!
+
+  """S8: Reclassify an alias (change entity type)"""
+  aliasReclassify(
+    project: String!
+    entityId: ID!
+    alias: String!
+    newType: String!
+  ): AliasEntry!
+
+  """S3: Rebuild alias index from knowledge graph"""
+  rebuildAliasIndex(project: String!): AliasIndex!
+}
+
+# Sprint R6 Phase 3: Bulk Review Operations
+
+"""Filter criteria for bulk review operations"""
+input ReviewBulkFilter {
+  """Filter by entity/relation type"""
+  type: String
+
+  """Minimum confidence threshold (0.0-1.0)"""
+  minConfidence: Float
+
+  """Filter by name substring"""
+  nameContains: String
+
+  """Maximum items to process (hard cap: 500)"""
+  maxItems: Int = 100
+}
+
+"""Result of bulk review operation"""
+type BulkActionResult {
+  """Total items processed"""
+  processed: Int!
+
+  """Items successfully approved (for approve operation)"""
+  approved: Int!
+
+  """Items successfully dismissed (for dismiss operation)"""
+  dismissed: Int!
+}
+
+"""Preview result for bulk review operations"""
+type ReviewItem {
+  id: ID!
+  type: String!
+  confidence: Float!
+}
+
+"""Result of bulk preview operation"""
+type BulkPreviewResult {
+  count: Int!
+  items: [ReviewItem!]!
+}
+
+extend type Query {
+  """Preview bulk action without executing (dry-run)"""
+  previewBulkAction(
+    project: String!
+    filter: ReviewBulkFilter!
+  ): BulkPreviewResult!
+}
+
+extend type Mutation {
+  """Approve multiple review items in bulk"""
+  approveReviewBulk(
+    project: String!
+    filter: ReviewBulkFilter!
+  ): BulkActionResult!
+
+  """Dismiss multiple review items in bulk"""
+  dismissReviewBulk(
+    project: String!
+    filter: ReviewBulkFilter!
+  ): BulkActionResult!
+}
+
+extend type Mutation {
+  """Log a client-side error from the console UI"""
+  logClientError(project: String!, input: ClientErrorInput!): Boolean!
+}
+
+# Sprint R6 Phase 5: Advanced Search
+
+"""Facet for filtering search results"""
+type Facet {
+  name: String!
+  count: Int!
+}
+
+"""Search result hit"""
+type SearchHit {
+  id: ID!
+  kind: String!
+  label: String!
+  snippet: String
+  score: Float!
+  type: String!
+  predicate: String
+}
+
+"""Search results with facets"""
+type SearchResults {
+  hits: [SearchHit!]!
+  entityTypes: [Facet!]!
+  predicates: [Facet!]!
+}
+
+extend type Query {
+  """Full-text search across entities and relations"""
+  search(
+    project: String!
+    text: String!
+    limit: Int = 50
+  ): SearchResults!
+}

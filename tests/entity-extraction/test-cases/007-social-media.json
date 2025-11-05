@@ -1,0 +1,187 @@
+[
+  {
+    "id": "social-media-001",
+    "description": "Twitter/X thread about tech industry news",
+    "text": "@TechCrunch: BREAKING: @tim_cook just announced @Apple's new AI initiative at #WWDC25! 🚀 The Neural Engine X will be integrated into every device from iPhone 16 to MacBook Air. @markgurman reports this is part of Apple's $10B investment in AI research.\n\n🧵 1/6 Here's what we know:\n- Partnership with @OpenAI and @AnthropicAI \n- New Silicon Valley campus dedicated to AI\n- Hiring former DeepMind researcher @DemisHassabis\n\n2/6 According to @mingchikuo, first devices shipping Q3 2025. Google's @sundarpichai responded: \"Competition drives innovation\" $AAPL $GOOG 📈\n\n3/6 @tim_cook: \"This marks a new chapter in human-computer interaction\" speaking live from Apple Park in Cupertino. Watch live: apple.co/wwdc25\n\n4/6 The @Apple dev community is buzzing! @SwiftUI already trending with #AIKit samples. @_DavidSmith and @_stroughtonsmith showing impressive demos.\n\n5/6 Remember when @elonmusk said Apple wouldn't compete in AI? @sama's response: 🤔\n\n6/6 Full coverage on @TheVerge and @WSJ. Follow @markgurman and @joannastern for updates.",
+    "expectedEntities": [
+      {
+        "type": "ORGANIZATION",
+        "text": "TechCrunch",
+        "context": "tech news outlet",
+        "confidence": 0.98
+      },
+      {
+        "type": "PERSON",
+        "text": "Tim Cook",
+        "aliases": ["@tim_cook"],
+        "context": "Apple CEO",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Apple",
+        "aliases": ["@Apple"],
+        "context": "technology company",
+        "confidence": 0.98
+      },
+      {
+        "type": "EVENT",
+        "text": "WWDC25",
+        "context": "Apple developer conference",
+        "confidence": 0.95
+      },
+      {
+        "type": "PRODUCT",
+        "text": "Neural Engine X",
+        "context": "AI hardware",
+        "confidence": 0.95
+      },
+      {
+        "type": "PRODUCT",
+        "text": "iPhone 16",
+        "context": "smartphone",
+        "confidence": 0.98
+      },
+      {
+        "type": "PRODUCT",
+        "text": "MacBook Air",
+        "context": "laptop",
+        "confidence": 0.98
+      },
+      {
+        "type": "PERSON",
+        "text": "Mark Gurman",
+        "aliases": ["@markgurman"],
+        "context": "tech journalist",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "OpenAI",
+        "aliases": ["@OpenAI"],
+        "context": "AI company",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Anthropic",
+        "aliases": ["@AnthropicAI"],
+        "context": "AI company",
+        "confidence": 0.95
+      },
+      {
+        "type": "LOCATION",
+        "text": "Silicon Valley",
+        "context": "tech region",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "DeepMind",
+        "context": "AI company",
+        "confidence": 0.98
+      },
+      {
+        "type": "PERSON",
+        "text": "Demis Hassabis",
+        "aliases": ["@DemisHassabis"],
+        "context": "AI researcher",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Ming-Chi Kuo",
+        "aliases": ["@mingchikuo"],
+        "context": "tech analyst",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Sundar Pichai",
+        "aliases": ["@sundarpichai"],
+        "context": "Google CEO",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Google",
+        "context": "technology company",
+        "confidence": 0.98
+      },
+      {
+        "type": "LOCATION",
+        "text": "Apple Park",
+        "context": "corporate campus",
+        "confidence": 0.95
+      },
+      {
+        "type": "LOCATION",
+        "text": "Cupertino",
+        "context": "city",
+        "confidence": 0.98
+      },
+      {
+        "type": "PRODUCT",
+        "text": "SwiftUI",
+        "aliases": ["@SwiftUI"],
+        "context": "software framework",
+        "confidence": 0.95
+      },
+      {
+        "type": "PRODUCT",
+        "text": "AIKit",
+        "context": "software framework",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "David Smith",
+        "aliases": ["@_DavidSmith"],
+        "context": "developer",
+        "confidence": 0.90
+      },
+      {
+        "type": "PERSON",
+        "text": "Steve Troughton-Smith",
+        "aliases": ["@_stroughtonsmith"],
+        "context": "developer",
+        "confidence": 0.90
+      },
+      {
+        "type": "PERSON",
+        "text": "Elon Musk",
+        "aliases": ["@elonmusk"],
+        "context": "tech executive",
+        "confidence": 0.98
+      },
+      {
+        "type": "PERSON",
+        "text": "Sam Altman",
+        "aliases": ["@sama"],
+        "context": "tech executive",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "The Verge",
+        "aliases": ["@TheVerge"],
+        "context": "tech news outlet",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Wall Street Journal",
+        "aliases": ["@WSJ"],
+        "context": "news outlet",
+        "confidence": 0.98
+      },
+      {
+        "type": "PERSON",
+        "text": "Joanna Stern",
+        "aliases": ["@joannastern"],
+        "context": "tech journalist",
+        "confidence": 0.95
+      }
+    ]
+  }
+]

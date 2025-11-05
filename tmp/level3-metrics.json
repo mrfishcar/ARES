@@ -1,0 +1,203 @@
+[
+  {
+    "id": "3.1",
+    "p": 1,
+    "r": 1,
+    "extracted": [
+      "PERSON::harry potter",
+      "PERSON::james",
+      "PERSON::lily potter",
+      "PERSON::dursleys",
+      "PERSON::ron weasley",
+      "PERSON::arthur",
+      "PLACE::privet drive",
+      "ORG::ministry of magic"
+    ],
+    "gold": [
+      "PERSON::harry potter",
+      "PERSON::james",
+      "PERSON::lily potter",
+      "PERSON::dursleys",
+      "PLACE::privet drive",
+      "PERSON::ron weasley",
+      "PERSON::arthur",
+      "ORG::ministry of magic"
+    ]
+  },
+  {
+    "id": "3.2",
+    "p": 1,
+    "r": 1,
+    "extracted": [
+      "ORG::gryffindor",
+      "ORG::slytherin",
+      "PERSON::hermione granger",
+      "PERSON::ron weasley",
+      "PERSON::harry potter",
+      "PERSON::draco malfoy"
+    ],
+    "gold": [
+      "PERSON::hermione granger",
+      "ORG::gryffindor",
+      "PERSON::harry potter",
+      "PERSON::ron weasley",
+      "PERSON::draco malfoy",
+      "ORG::slytherin"
+    ]
+  },
+  {
+    "id": "3.3",
+    "p": 1,
+    "r": 1,
+    "extracted": [
+      "PERSON::albus dumbledore",
+      "PERSON::fawkes",
+      "PERSON::severus snape",
+      "ORG::hogwarts"
+    ],
+    "gold": [
+      "PERSON::albus dumbledore",
+      "ORG::hogwarts",
+      "PERSON::fawkes",
+      "PERSON::severus snape"
+    ]
+  },
+  {
+    "id": "3.4",
+    "p": 1,
+    "r": 0.8333333333333334,
+    "extracted": [
+      "PERSON::harry potter",
+      "PERSON::hermione",
+      "PERSON::ron",
+      "PERSON::voldemort",
+      "ORG::hogwarts school"
+    ],
+    "gold": [
+      "DATE::1991",
+      "PERSON::harry potter",
+      "ORG::hogwarts school",
+      "PERSON::ron",
+      "PERSON::hermione",
+      "PERSON::voldemort"
+    ]
+  },
+  {
+    "id": "3.5",
+    "p": 1,
+    "r": 1,
+    "extracted": [
+      "PLACE::burrow",
+      "PERSON::molly weasley",
+      "PERSON::arthur",
+      "PERSON::ginny",
+      "PERSON::fred",
+      "PERSON::george",
+      "PERSON::ron",
+      "PERSON::bill weasley",
+      "ORG::gringotts bank"
+    ],
+    "gold": [
+      "PLACE::burrow",
+      "PERSON::molly weasley",
+      "PERSON::arthur",
+      "PERSON::ron",
+      "PERSON::ginny",
+      "PERSON::fred",
+      "PERSON::george",
+      "PERSON::bill weasley",
+      "ORG::gringotts bank"
+    ]
+  },
+  {
+    "id": "3.6",
+    "p": 1,
+    "r": 1,
+    "extracted": [
+      "ORG::hogwarts",
+      "ORG::ravenclaw",
+      "PERSON::luna lovegood",
+      "PERSON::ginny weasley",
+      "WORK::quibbler"
+    ],
+    "gold": [
+      "PERSON::luna lovegood",
+      "ORG::hogwarts",
+      "ORG::ravenclaw",
+      "PERSON::ginny weasley",
+      "WORK::quibbler"
+    ]
+  },
+  {
+    "id": "3.7",
+    "p": 1,
+    "r": 1,
+    "extracted": [
+      "PERSON::harry",
+      "PERSON::ron",
+      "PERSON::hermione"
+    ],
+    "gold": [
+      "PERSON::harry",
+      "PERSON::ron",
+      "PERSON::hermione"
+    ]
+  },
+  {
+    "id": "3.8",
+    "p": 1,
+    "r": 1,
+    "extracted": [
+      "PERSON::harry potter",
+      "PERSON::ginny weasley",
+      "PERSON::ron weasley",
+      "PERSON::hermione granger"
+    ],
+    "gold": [
+      "PERSON::harry potter",
+      "PERSON::ginny weasley",
+      "PERSON::ron weasley",
+      "PERSON::hermione granger"
+    ]
+  },
+  {
+    "id": "3.9",
+    "p": 1,
+    "r": 1,
+    "extracted": [
+      "PERSON::professor mcgonagall",
+      "PERSON::professor snape",
+      "ORG::hogwarts",
+      "ORG::gryffindor"
+    ],
+    "gold": [
+      "PERSON::professor mcgonagall",
+      "ORG::hogwarts",
+      "ORG::gryffindor",
+      "PERSON::professor snape"
+    ]
+  },
+  {
+    "id": "3.10",
+    "p": 1,
+    "r": 1,
+    "extracted": [
+      "PLACE::scotland",
+      "ORG::hogwarts school",
+      "ORG::slytherin",
+      "ORG::hufflepuff",
+      "ORG::ravenclaw",
+      "ORG::gryffindor",
+      "ITEM::hogwarts express"
+    ],
+    "gold": [
+      "ORG::hogwarts school",
+      "PLACE::scotland",
+      "ITEM::hogwarts express",
+      "ORG::gryffindor",
+      "ORG::slytherin",
+      "ORG::hufflepuff",
+      "ORG::ravenclaw"
+    ]
+  }
+]

@@ -1,0 +1,343 @@
+{
+  "entities": [
+    {
+      "id": "global_person_0",
+      "type": "PERSON",
+      "canonical": "Barty Beauregard",
+      "aliases": [
+        "Barty"
+      ],
+      "created_at": "2025-10-16T00:11:43.017Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_1",
+      "type": "PERSON",
+      "canonical": "Mildred Plume",
+      "aliases": [
+        "Mildred"
+      ],
+      "created_at": "2025-10-16T00:11:43.017Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_2",
+      "type": "PERSON",
+      "canonical": "Percy Pratt",
+      "aliases": [],
+      "created_at": "2025-10-16T00:11:43.017Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_3",
+      "type": "PERSON",
+      "canonical": "Thomas Finch",
+      "aliases": [],
+      "created_at": "2025-10-16T00:11:43.017Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_date_4",
+      "type": "DATE",
+      "canonical": "October 1, 1993",
+      "aliases": [
+        "October"
+      ],
+      "created_at": "2025-10-16T00:11:43.017Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_place_5",
+      "type": "PLACE",
+      "canonical": "Mount Lola Chapel",
+      "aliases": [
+        "Mount Lola"
+      ],
+      "created_at": "2025-10-16T00:11:43.017Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_org_6",
+      "type": "ORG",
+      "canonical": "Oakwood Academy",
+      "aliases": [],
+      "created_at": "2025-10-16T00:11:43.018Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_org_7",
+      "type": "ORG",
+      "canonical": "Mount Lola University",
+      "aliases": [],
+      "created_at": "2025-10-16T00:11:43.018Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_org_8",
+      "type": "ORG",
+      "canonical": "Later",
+      "aliases": [],
+      "created_at": "2025-10-16T00:11:43.018Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_org_9",
+      "type": "ORG",
+      "canonical": "Despite",
+      "aliases": [],
+      "created_at": "2025-10-16T00:11:43.018Z",
+      "centrality": 0
+    }
+  ],
+  "relations": [
+    {
+      "id": "af02a44f-231f-4ac7-93b5-1188211704e6",
+      "subj": "global_person_0",
+      "pred": "friends_with",
+      "obj": "global_person_1",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 104,
+            "end": 149,
+            "text": "Barty became close friends with Mildred Plume"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "9018371f-4f12-4bf1-ae60-9a01a85951f8",
+      "subj": "global_person_1",
+      "pred": "friends_with",
+      "obj": "global_person_0",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 104,
+            "end": 149,
+            "text": "Barty became close friends with Mildred Plume"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "5cd155d3-3d56-4184-8453-f8c4ccb46919",
+      "subj": "global_person_0",
+      "pred": "enemy_of",
+      "obj": "global_person_2",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 207,
+            "end": 242,
+            "text": "ended Oakwood Academy together.\n\nLater, Barty became a rival to Percy Pratt when they both competed for the same po"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.7000732185442234,
+      "extractor": "dep"
+    },
+    {
+      "id": "c520a6ba-73a9-4236-81c3-f1857ccc9423",
+      "subj": "global_person_2",
+      "pred": "enemy_of",
+      "obj": "global_person_0",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 207,
+            "end": 242,
+            "text": "ended Oakwood Academy together.\n\nLater, Barty became a rival to Percy Pratt when they both competed for the same po"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.7000732185442234,
+      "extractor": "dep"
+    },
+    {
+      "id": "4ddf3e5a-8140-4c68-a3d6-9773de11dab1",
+      "subj": "global_person_1",
+      "pred": "married_to",
+      "obj": "global_person_3",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 200,
+            "end": 239,
+            "text": "ted members of the academic community.\n\nMildred eventually married Thomas Finch in 2018. The wedding was held at Mount "
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.6178124469477058,
+      "extractor": "dep",
+      "qualifiers": [
+        {
+          "type": "place",
+          "value": "Mount Lola Chapel",
+          "entity_id": "4efd9858-7d8a-4278-838b-2e17fdeb34fe",
+          "span": [
+            273,
+            290
+          ]
+        },
+        {
+          "type": "time",
+          "value": "2018",
+          "entity_id": "252f8abb-957c-4b92-a92e-39c67a7ddc03",
+          "span": [
+            243,
+            247
+          ]
+        }
+      ]
+    },
+    {
+      "id": "950b1900-47f8-4d96-869c-19897e7ba838",
+      "subj": "global_person_3",
+      "pred": "married_to",
+      "obj": "global_person_1",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 200,
+            "end": 239,
+            "text": "ted members of the academic community.\n\nMildred eventually married Thomas Finch in 2018. The wedding was held at Mount "
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.6178124469477058,
+      "extractor": "dep",
+      "qualifiers": [
+        {
+          "type": "place",
+          "value": "Mount Lola Chapel",
+          "entity_id": "4efd9858-7d8a-4278-838b-2e17fdeb34fe",
+          "span": [
+            273,
+            290
+          ]
+        },
+        {
+          "type": "time",
+          "value": "2018",
+          "entity_id": "252f8abb-957c-4b92-a92e-39c67a7ddc03",
+          "span": [
+            243,
+            247
+          ]
+        }
+      ]
+    }
+  ],
+  "conflicts": [],
+  "provenance": {
+    "doc:barty-note:1760573502624_entity_0": {
+      "global_id": "global_person_0",
+      "doc_id": "doc:barty-note:1760573502624",
+      "merged_at": "2025-10-16T00:11:43.018Z",
+      "local_canonical": "Barty Beauregard"
+    },
+    "doc:barty-note:1760573502624_entity_1": {
+      "global_id": "global_date_4",
+      "doc_id": "doc:barty-note:1760573502624",
+      "merged_at": "2025-10-16T00:11:43.018Z",
+      "local_canonical": "October"
+    },
+    "doc:barty-note:1760573502624_entity_3": {
+      "global_id": "global_place_5",
+      "doc_id": "doc:barty-note:1760573502624",
+      "merged_at": "2025-10-16T00:11:43.018Z",
+      "local_canonical": "Mount Lola"
+    },
+    "doc:barty-note:1760573502624_entity_4": {
+      "global_id": "global_person_0",
+      "doc_id": "doc:barty-note:1760573502624",
+      "merged_at": "2025-10-16T00:11:43.018Z",
+      "local_canonical": "Barty"
+    },
+    "doc:barty-note:1760573502624_entity_5": {
+      "global_id": "global_person_1",
+      "doc_id": "doc:barty-note:1760573502624",
+      "merged_at": "2025-10-16T00:11:43.018Z",
+      "local_canonical": "Mildred Plume"
+    },
+    "doc:barty-note:1760573502624_entity_6": {
+      "global_id": "global_org_6",
+      "doc_id": "doc:barty-note:1760573502624",
+      "merged_at": "2025-10-16T00:11:43.018Z",
+      "local_canonical": "Oakwood Academy"
+    },
+    "doc:barty-note:1760573502624_entity_7": {
+      "global_id": "global_person_2",
+      "doc_id": "doc:barty-note:1760573502624",
+      "merged_at": "2025-10-16T00:11:43.018Z",
+      "local_canonical": "Percy Pratt"
+    },
+    "doc:barty-note:1760573502624_entity_8": {
+      "global_id": "global_org_7",
+      "doc_id": "doc:barty-note:1760573502624",
+      "merged_at": "2025-10-16T00:11:43.018Z",
+      "local_canonical": "Mount Lola University"
+    },
+    "doc:barty-note:1760573502624_entity_9": {
+      "global_id": "global_org_8",
+      "doc_id": "doc:barty-note:1760573502624",
+      "merged_at": "2025-10-16T00:11:43.018Z",
+      "local_canonical": "Later"
+    },
+    "doc:barty-note:1760573502624_entity_10": {
+      "global_id": "global_org_9",
+      "doc_id": "doc:barty-note:1760573502624",
+      "merged_at": "2025-10-16T00:11:43.018Z",
+      "local_canonical": "Despite"
+    },
+    "doc:barty-note:1760573502624_entity_11": {
+      "global_id": "global_person_1",
+      "doc_id": "doc:barty-note:1760573502624",
+      "merged_at": "2025-10-16T00:11:43.018Z",
+      "local_canonical": "Mildred"
+    },
+    "doc:barty-note:1760573502624_entity_12": {
+      "global_id": "global_person_3",
+      "doc_id": "doc:barty-note:1760573502624",
+      "merged_at": "2025-10-16T00:11:43.018Z",
+      "local_canonical": "Thomas Finch"
+    },
+    "doc:barty-note:1760573502624_entity_13": {
+      "global_id": "global_place_5",
+      "doc_id": "doc:barty-note:1760573502624",
+      "merged_at": "2025-10-16T00:11:43.018Z",
+      "local_canonical": "Mount Lola Chapel"
+    }
+  },
+  "metadata": {
+    "created_at": "2025-10-16T00:11:42.625Z",
+    "updated_at": "2025-10-16T00:11:43.018Z",
+    "doc_count": 1,
+    "doc_ids": [
+      "doc:barty-note:1760573502624"
+    ]
+  }
+}

@@ -1,0 +1,2822 @@
+{
+  "entities": [
+    {
+      "id": "global_person_0",
+      "type": "PERSON",
+      "canonical": "Cory",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 1
+    },
+    {
+      "id": "global_person_1",
+      "type": "PERSON",
+      "canonical": "Kailey",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 1
+    },
+    {
+      "id": "global_person_2",
+      "type": "PERSON",
+      "canonical": "Ethan",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 1
+    },
+    {
+      "id": "global_person_3",
+      "type": "PERSON",
+      "canonical": "Dominique Gilford",
+      "aliases": [
+        "Dominique"
+      ],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 1
+    },
+    {
+      "id": "global_person_4",
+      "type": "PERSON",
+      "canonical": "Dav",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 1
+    },
+    {
+      "id": "global_person_5",
+      "type": "PERSON",
+      "canonical": "As the Philistine",
+      "aliases": [
+        "When the Philistines",
+        "philistines",
+        "philistine"
+      ],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_6",
+      "type": "PERSON",
+      "canonical": "Socoh",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_7",
+      "type": "PERSON",
+      "canonical": "Azekah",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_8",
+      "type": "PERSON",
+      "canonical": "Ephes Dammim",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_9",
+      "type": "PERSON",
+      "canonical": "When Saul",
+      "aliases": [
+        "saul",
+        "Then Saul"
+      ],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_10",
+      "type": "PERSON",
+      "canonical": "God of Israel",
+      "aliases": [
+        "Israelites",
+        "Israelite",
+        "israel",
+        "God"
+      ],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_11",
+      "type": "PERSON",
+      "canonical": "Goliath",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_12",
+      "type": "PERSON",
+      "canonical": "Am I",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_13",
+      "type": "PERSON",
+      "canonical": "Give",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_14",
+      "type": "PERSON",
+      "canonical": "Then David",
+      "aliases": [
+        "Enter David",
+        "david"
+      ],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_15",
+      "type": "PERSON",
+      "canonical": "Jesse the Ephrathite",
+      "aliases": [
+        "Jesse"
+      ],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_16",
+      "type": "PERSON",
+      "canonical": "Abinadab",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_17",
+      "type": "PERSON",
+      "canonical": "Shammah",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_18",
+      "type": "PERSON",
+      "canonical": "Eliab",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_19",
+      "type": "PERSON",
+      "canonical": "Take",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_20",
+      "type": "PERSON",
+      "canonical": "Check",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_21",
+      "type": "PERSON",
+      "canonical": "Five Smooth Stones",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_22",
+      "type": "PERSON",
+      "canonical": "God-Alive",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_23",
+      "type": "PERSON",
+      "canonical": "Ignoring",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_24",
+      "type": "PERSON",
+      "canonical": "Master",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_25",
+      "type": "PERSON",
+      "canonical": "Whenever",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_26",
+      "type": "PERSON",
+      "canonical": "Lion",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_27",
+      "type": "PERSON",
+      "canonical": "God-of-the-Angel-Armies",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_28",
+      "type": "PERSON",
+      "canonical": "Judah",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_29",
+      "type": "PERSON",
+      "canonical": "Gath",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_30",
+      "type": "PERSON",
+      "canonical": "Ekron",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_31",
+      "type": "PERSON",
+      "canonical": "Shaaraim",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_32",
+      "type": "PERSON",
+      "canonical": "Abner",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_33",
+      "type": "PERSON",
+      "canonical": "Well",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_34",
+      "type": "PERSON",
+      "canonical": "Young",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_place_35",
+      "type": "PLACE",
+      "canonical": "Lacombe",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 1
+    },
+    {
+      "id": "global_place_36",
+      "type": "PLACE",
+      "canonical": "Louisiana",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 1
+    },
+    {
+      "id": "global_place_37",
+      "type": "PLACE",
+      "canonical": "Judah",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_place_38",
+      "type": "PLACE",
+      "canonical": "Oak Valley",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_place_39",
+      "type": "PLACE",
+      "canonical": "Gath",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_place_40",
+      "type": "PLACE",
+      "canonical": "Philistine",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_place_41",
+      "type": "PLACE",
+      "canonical": "Bethlehem",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_place_42",
+      "type": "PLACE",
+      "canonical": "Israel",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_place_43",
+      "type": "PLACE",
+      "canonical": "Jerusalem",
+      "aliases": [],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_org_44",
+      "type": "ORG",
+      "canonical": "Philistine",
+      "aliases": [
+        "Philistines"
+      ],
+      "created_at": "2025-11-01T19:26:32.584Z",
+      "centrality": 0
+    }
+  ],
+  "relations": [
+    {
+      "id": "cc7cd63b-1701-4493-aa92-26a950126c49",
+      "subj": "global_person_3",
+      "pred": "married_to",
+      "obj": "global_person_0",
+      "evidence": [
+        {
+          "doc_id": "note:e47c79bd-982e-4de2-a128-9ae6c96f8e2d",
+          "span": {
+            "start": 77,
+            "end": 92,
+            "text": "her husband Cory"
+          },
+          "sentence_index": 1,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "1dd31691-c8e4-4fb0-8e3f-13331eb5720e",
+      "subj": "global_person_0",
+      "pred": "married_to",
+      "obj": "global_person_3",
+      "evidence": [
+        {
+          "doc_id": "note:e47c79bd-982e-4de2-a128-9ae6c96f8e2d",
+          "span": {
+            "start": 77,
+            "end": 92,
+            "text": "her husband Cory"
+          },
+          "sentence_index": 1,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "2b7e2a0a-73d9-41d6-ab82-6e67843c3588",
+      "subj": "global_person_11",
+      "pred": "born_in",
+      "obj": "global_place_39",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 285,
+            "end": 302,
+            "text": "from the Philistine line into the open, Goliath from Gath. He had a bronze helmet on his head and"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.9,
+      "extractor": "dep",
+      "qualifiers": [
+        {
+          "type": "place",
+          "value": "Philistine",
+          "entity_id": "0087da2f-35f0-47d4-9685-735199eb329d",
+          "span": [
+            254,
+            264
+          ]
+        }
+      ]
+    },
+    {
+      "id": "637cc175-7ff8-45fc-8e5e-f90c30138aef",
+      "subj": "global_person_5",
+      "pred": "lives_in",
+      "obj": "global_place_38",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 10,
+            "end": 39,
+            "text": " with the Philistines in the Oak Valley.”\n\n20-23 David was up at the crack of d"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.9,
+      "extractor": "dep"
+    },
+    {
+      "id": "93ccdfbf-266e-4610-92d8-8f2a6a6d55fe",
+      "subj": "global_person_10",
+      "pred": "lives_in",
+      "obj": "global_place_42",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 36,
+            "end": 269,
+            "text": "m you curse and mock. This very day God is handing you over to me. I’m about to kill you, cut off your head, and serve up your body and the bodies of your Philistine buddies to the crows and coyotes. The whole earth will know that there’s an extraordinary God in Israel. And everyone gathered here will learn "
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.9,
+      "extractor": "dep"
+    },
+    {
+      "id": "d6f7a172-4b63-4f96-8af0-f63e80b7dc62",
+      "subj": "global_person_32",
+      "pred": "lives_in",
+      "obj": "global_place_41",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 259,
+            "end": 470,
+            "text": " came back from killing the Philistine, Abner brought him, the Philistine’s head still in his hand, straight to Saul.\n\n58 Saul asked him, “Young man, whose son are you?”\n\n“I’m the son of your servant Jesse,” said David, “the one who lives in Bethlehem.”"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.9,
+      "extractor": "dep"
+    },
+    {
+      "id": "d18d06ba-145b-41e6-b957-9b65721e65c6",
+      "subj": "global_person_5",
+      "pred": "child_of",
+      "obj": "global_person_15",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 411,
+            "end": 434,
+            "text": " and lost all hope.\n\n12-15 Enter David. He was the son of Jesse the Eph"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.7545978267276113,
+      "extractor": "dep"
+    },
+    {
+      "id": "7b32c31e-b2cd-47df-8755-b651d4125cd8",
+      "subj": "global_person_15",
+      "pred": "parent_of",
+      "obj": "global_person_5",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 411,
+            "end": 434,
+            "text": " and lost all hope.\n\n12-15 Enter David. He was the son of Jesse the Eph"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.7545978267276113,
+      "extractor": "dep"
+    },
+    {
+      "id": "4746eb0b-ec43-451e-82e3-6ffdf55c37e6",
+      "subj": "global_person_9",
+      "pred": "child_of",
+      "obj": "global_person_15",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 219,
+            "end": 242,
+            "text": " and lost all hope.\n\n12-15 Enter David. He was the son of Jesse the Ephrathite from Bethlehem in Judah."
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.7545978267276113,
+      "extractor": "dep",
+      "qualifiers": [
+        {
+          "type": "place",
+          "value": "Judah",
+          "entity_id": "0f50a80b-95f5-48aa-ae84-9fc1120e63da",
+          "span": [
+            276,
+            281
+          ]
+        },
+        {
+          "type": "place",
+          "value": "Bethlehem",
+          "entity_id": "795af3e4-8488-478b-8597-425a139b012f",
+          "span": [
+            263,
+            272
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bb2d1eed-0043-49d2-93fa-a99bbf1dc942",
+      "subj": "global_person_15",
+      "pred": "parent_of",
+      "obj": "global_person_9",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 219,
+            "end": 242,
+            "text": " and lost all hope.\n\n12-15 Enter David. He was the son of Jesse the Ephrathite from Bethlehem in Judah."
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.7545978267276113,
+      "extractor": "dep",
+      "qualifiers": [
+        {
+          "type": "place",
+          "value": "Judah",
+          "entity_id": "0f50a80b-95f5-48aa-ae84-9fc1120e63da",
+          "span": [
+            276,
+            281
+          ]
+        },
+        {
+          "type": "place",
+          "value": "Bethlehem",
+          "entity_id": "795af3e4-8488-478b-8597-425a139b012f",
+          "span": [
+            263,
+            272
+          ]
+        }
+      ]
+    },
+    {
+      "id": "96658f4a-ad28-42cf-a322-19306b464e84",
+      "subj": "global_person_14",
+      "pred": "parent_of",
+      "obj": "global_person_19",
+      "evidence": [
+        {
+          "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+          "span": {
+            "start": 1955,
+            "end": 1966,
+            "text": "his son Take"
+          },
+          "sentence_index": 27,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "f1f4eedc-b88e-43de-8abd-874eaff53d9c",
+      "subj": "global_person_10",
+      "pred": "parent_of",
+      "obj": "global_person_21",
+      "evidence": [
+        {
+          "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+          "span": {
+            "start": 3290,
+            "end": 3320,
+            "text": "his daughter Five Smooth Stones"
+          },
+          "sentence_index": 39,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "c0921a73-f812-427f-b6ee-44061d692b62",
+      "subj": "global_person_18",
+      "pred": "sibling_of",
+      "obj": "global_person_14",
+      "evidence": [
+        {
+          "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+          "span": {
+            "start": 3765,
+            "end": 3787,
+            "text": "his older brother David"
+          },
+          "sentence_index": 43,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "cb727bb2-dca6-41a2-bda3-da6361aeaa9c",
+      "subj": "global_person_23",
+      "pred": "sibling_of",
+      "obj": "global_person_5",
+      "evidence": [
+        {
+          "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+          "span": {
+            "start": 4149,
+            "end": 4163,
+            "text": "his brother The"
+          },
+          "sentence_index": 50,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "a6454354-6dcd-4f33-a8df-727c126257e3",
+      "subj": "global_person_19",
+      "pred": "child_of",
+      "obj": "global_person_14",
+      "evidence": [
+        {
+          "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+          "span": {
+            "start": 1955,
+            "end": 1966,
+            "text": "his son Take"
+          },
+          "sentence_index": 27,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "9298ff30-8cb0-41f2-ac40-945a85d14f57",
+      "subj": "global_person_21",
+      "pred": "child_of",
+      "obj": "global_person_10",
+      "evidence": [
+        {
+          "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+          "span": {
+            "start": 3290,
+            "end": 3320,
+            "text": "his daughter Five Smooth Stones"
+          },
+          "sentence_index": 39,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "b81059db-15e0-4df5-9f43-933a5b099dea",
+      "subj": "global_person_14",
+      "pred": "sibling_of",
+      "obj": "global_person_18",
+      "evidence": [
+        {
+          "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+          "span": {
+            "start": 3765,
+            "end": 3787,
+            "text": "his older brother David"
+          },
+          "sentence_index": 43,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "a86972d4-455a-45d8-9951-2a7e043ab413",
+      "subj": "global_person_5",
+      "pred": "sibling_of",
+      "obj": "global_person_23",
+      "evidence": [
+        {
+          "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+          "span": {
+            "start": 4149,
+            "end": 4163,
+            "text": "his brother The"
+          },
+          "sentence_index": 50,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    }
+  ],
+  "conflicts": [
+    {
+      "type": "single_valued",
+      "severity": 2,
+      "description": "Entity global_person_15 has multiple values for single-valued predicate 'parent_of': global_person_5, global_person_9",
+      "relations": [
+        {
+          "id": "7b32c31e-b2cd-47df-8755-b651d4125cd8",
+          "subj": "global_person_15",
+          "pred": "parent_of",
+          "obj": "global_person_5",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 411,
+                "end": 434,
+                "text": " and lost all hope.\n\n12-15 Enter David. He was the son of Jesse the Eph"
+              },
+              "sentence_index": 0,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.7545978267276113,
+          "extractor": "dep"
+        },
+        {
+          "id": "bb2d1eed-0043-49d2-93fa-a99bbf1dc942",
+          "subj": "global_person_15",
+          "pred": "parent_of",
+          "obj": "global_person_9",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 219,
+                "end": 242,
+                "text": " and lost all hope.\n\n12-15 Enter David. He was the son of Jesse the Ephrathite from Bethlehem in Judah."
+              },
+              "sentence_index": 0,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.7545978267276113,
+          "extractor": "dep",
+          "qualifiers": [
+            {
+              "type": "place",
+              "value": "Judah",
+              "entity_id": "0f50a80b-95f5-48aa-ae84-9fc1120e63da",
+              "span": [
+                276,
+                281
+              ]
+            },
+            {
+              "type": "place",
+              "value": "Bethlehem",
+              "entity_id": "795af3e4-8488-478b-8597-425a139b012f",
+              "span": [
+                263,
+                272
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "cycle",
+      "severity": 3,
+      "description": "Cycle detected in parent_of/child_of: global_person_5 → global_person_15 → global_person_5",
+      "relations": [
+        {
+          "id": "d18d06ba-145b-41e6-b957-9b65721e65c6",
+          "subj": "global_person_5",
+          "pred": "child_of",
+          "obj": "global_person_15",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 411,
+                "end": 434,
+                "text": " and lost all hope.\n\n12-15 Enter David. He was the son of Jesse the Eph"
+              },
+              "sentence_index": 0,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.7545978267276113,
+          "extractor": "dep"
+        },
+        {
+          "id": "7b32c31e-b2cd-47df-8755-b651d4125cd8",
+          "subj": "global_person_15",
+          "pred": "parent_of",
+          "obj": "global_person_5",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 411,
+                "end": 434,
+                "text": " and lost all hope.\n\n12-15 Enter David. He was the son of Jesse the Eph"
+              },
+              "sentence_index": 0,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.7545978267276113,
+          "extractor": "dep"
+        }
+      ]
+    },
+    {
+      "type": "cycle",
+      "severity": 3,
+      "description": "Cycle detected in parent_of/child_of: global_person_15 → global_person_9 → global_person_15",
+      "relations": [
+        {
+          "id": "bb2d1eed-0043-49d2-93fa-a99bbf1dc942",
+          "subj": "global_person_15",
+          "pred": "parent_of",
+          "obj": "global_person_9",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 219,
+                "end": 242,
+                "text": " and lost all hope.\n\n12-15 Enter David. He was the son of Jesse the Ephrathite from Bethlehem in Judah."
+              },
+              "sentence_index": 0,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.7545978267276113,
+          "extractor": "dep",
+          "qualifiers": [
+            {
+              "type": "place",
+              "value": "Judah",
+              "entity_id": "0f50a80b-95f5-48aa-ae84-9fc1120e63da",
+              "span": [
+                276,
+                281
+              ]
+            },
+            {
+              "type": "place",
+              "value": "Bethlehem",
+              "entity_id": "795af3e4-8488-478b-8597-425a139b012f",
+              "span": [
+                263,
+                272
+              ]
+            }
+          ]
+        },
+        {
+          "id": "4746eb0b-ec43-451e-82e3-6ffdf55c37e6",
+          "subj": "global_person_9",
+          "pred": "child_of",
+          "obj": "global_person_15",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 219,
+                "end": 242,
+                "text": " and lost all hope.\n\n12-15 Enter David. He was the son of Jesse the Ephrathite from Bethlehem in Judah."
+              },
+              "sentence_index": 0,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.7545978267276113,
+          "extractor": "dep",
+          "qualifiers": [
+            {
+              "type": "place",
+              "value": "Judah",
+              "entity_id": "0f50a80b-95f5-48aa-ae84-9fc1120e63da",
+              "span": [
+                276,
+                281
+              ]
+            },
+            {
+              "type": "place",
+              "value": "Bethlehem",
+              "entity_id": "795af3e4-8488-478b-8597-425a139b012f",
+              "span": [
+                263,
+                272
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "cycle",
+      "severity": 3,
+      "description": "Cycle detected in parent_of/child_of: global_person_14 → global_person_19 → global_person_14",
+      "relations": [
+        {
+          "id": "96658f4a-ad28-42cf-a322-19306b464e84",
+          "subj": "global_person_14",
+          "pred": "parent_of",
+          "obj": "global_person_19",
+          "evidence": [
+            {
+              "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+              "span": {
+                "start": 1955,
+                "end": 1966,
+                "text": "his son Take"
+              },
+              "sentence_index": 27,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.8,
+          "extractor": "regex"
+        },
+        {
+          "id": "a6454354-6dcd-4f33-a8df-727c126257e3",
+          "subj": "global_person_19",
+          "pred": "child_of",
+          "obj": "global_person_14",
+          "evidence": [
+            {
+              "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+              "span": {
+                "start": 1955,
+                "end": 1966,
+                "text": "his son Take"
+              },
+              "sentence_index": 27,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.8,
+          "extractor": "regex"
+        }
+      ]
+    },
+    {
+      "type": "cycle",
+      "severity": 3,
+      "description": "Cycle detected in parent_of/child_of: global_person_10 → global_person_21 → global_person_10",
+      "relations": [
+        {
+          "id": "f1f4eedc-b88e-43de-8abd-874eaff53d9c",
+          "subj": "global_person_10",
+          "pred": "parent_of",
+          "obj": "global_person_21",
+          "evidence": [
+            {
+              "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+              "span": {
+                "start": 3290,
+                "end": 3320,
+                "text": "his daughter Five Smooth Stones"
+              },
+              "sentence_index": 39,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.8,
+          "extractor": "regex"
+        },
+        {
+          "id": "9298ff30-8cb0-41f2-ac40-945a85d14f57",
+          "subj": "global_person_21",
+          "pred": "child_of",
+          "obj": "global_person_10",
+          "evidence": [
+            {
+              "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+              "span": {
+                "start": 3290,
+                "end": 3320,
+                "text": "his daughter Five Smooth Stones"
+              },
+              "sentence_index": 39,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.8,
+          "extractor": "regex"
+        }
+      ]
+    }
+  ],
+  "provenance": {
+    "note:272e8a4c-b95d-4dd4-b92c-777bc45e799d_entity_0": {
+      "global_id": "global_person_0",
+      "doc_id": "note:272e8a4c-b95d-4dd4-b92c-777bc45e799d",
+      "merged_at": "2025-11-01T15:18:00.039Z",
+      "local_canonical": "Cory"
+    },
+    "note:0df54851-4f28-4cfa-ab9a-83bdba468916_entity_0": {
+      "global_id": "global_person_1",
+      "doc_id": "note:0df54851-4f28-4cfa-ab9a-83bdba468916",
+      "merged_at": "2025-11-01T15:31:06.795Z",
+      "local_canonical": "Kailey"
+    },
+    "note:0df54851-4f28-4cfa-ab9a-83bdba468916_entity_1": {
+      "global_id": "global_person_0",
+      "doc_id": "note:0df54851-4f28-4cfa-ab9a-83bdba468916",
+      "merged_at": "2025-11-01T15:31:06.795Z",
+      "local_canonical": "Cory"
+    },
+    "note:d9dd0bdc-6d64-43d7-9cc6-fb50e304594a_entity_0": {
+      "global_id": "global_person_0",
+      "doc_id": "note:d9dd0bdc-6d64-43d7-9cc6-fb50e304594a",
+      "merged_at": "2025-11-01T15:39:13.907Z",
+      "local_canonical": "Cory"
+    },
+    "note:d9dd0bdc-6d64-43d7-9cc6-fb50e304594a_entity_1": {
+      "global_id": "global_person_1",
+      "doc_id": "note:d9dd0bdc-6d64-43d7-9cc6-fb50e304594a",
+      "merged_at": "2025-11-01T15:39:13.907Z",
+      "local_canonical": "Kailey"
+    },
+    "note:bda3c4b5-3f6a-47f9-beda-8bd93e591209_entity_0": {
+      "global_id": "global_person_2",
+      "doc_id": "note:bda3c4b5-3f6a-47f9-beda-8bd93e591209",
+      "merged_at": "2025-11-01T15:42:50.985Z",
+      "local_canonical": "Ethan"
+    },
+    "note:bda3c4b5-3f6a-47f9-beda-8bd93e591209_entity_1": {
+      "global_id": "global_person_0",
+      "doc_id": "note:bda3c4b5-3f6a-47f9-beda-8bd93e591209",
+      "merged_at": "2025-11-01T15:42:50.985Z",
+      "local_canonical": "Cory"
+    },
+    "note:bda3c4b5-3f6a-47f9-beda-8bd93e591209_entity_2": {
+      "global_id": "global_person_1",
+      "doc_id": "note:bda3c4b5-3f6a-47f9-beda-8bd93e591209",
+      "merged_at": "2025-11-01T15:42:50.985Z",
+      "local_canonical": "Kailey"
+    },
+    "note:e47c79bd-982e-4de2-a128-9ae6c96f8e2d_entity_0": {
+      "global_id": "global_person_3",
+      "doc_id": "note:e47c79bd-982e-4de2-a128-9ae6c96f8e2d",
+      "merged_at": "2025-11-01T16:28:51.704Z",
+      "local_canonical": "Dominique Gilford"
+    },
+    "note:e47c79bd-982e-4de2-a128-9ae6c96f8e2d_entity_1": {
+      "global_id": "global_place_35",
+      "doc_id": "note:e47c79bd-982e-4de2-a128-9ae6c96f8e2d",
+      "merged_at": "2025-11-01T16:28:51.704Z",
+      "local_canonical": "Lacombe"
+    },
+    "note:e47c79bd-982e-4de2-a128-9ae6c96f8e2d_entity_2": {
+      "global_id": "global_place_36",
+      "doc_id": "note:e47c79bd-982e-4de2-a128-9ae6c96f8e2d",
+      "merged_at": "2025-11-01T16:28:51.704Z",
+      "local_canonical": "Louisiana"
+    },
+    "note:e47c79bd-982e-4de2-a128-9ae6c96f8e2d_entity_3": {
+      "global_id": "global_person_0",
+      "doc_id": "note:e47c79bd-982e-4de2-a128-9ae6c96f8e2d",
+      "merged_at": "2025-11-01T16:28:51.704Z",
+      "local_canonical": "Cory"
+    },
+    "note:28d48c55-8139-4630-a837-e94ea89b84d0_entity_0": {
+      "global_id": "global_person_0",
+      "doc_id": "note:28d48c55-8139-4630-a837-e94ea89b84d0",
+      "merged_at": "2025-11-01T19:04:04.360Z",
+      "local_canonical": "Cory"
+    },
+    "note:28d48c55-8139-4630-a837-e94ea89b84d0_entity_1": {
+      "global_id": "global_person_3",
+      "doc_id": "note:28d48c55-8139-4630-a837-e94ea89b84d0",
+      "merged_at": "2025-11-01T19:04:04.360Z",
+      "local_canonical": "Dominique"
+    },
+    "note:61e27dff-a0e0-4816-ab5d-6f8cbdf2dff0_entity_0": {
+      "global_id": "global_person_4",
+      "doc_id": "note:61e27dff-a0e0-4816-ab5d-6f8cbdf2dff0",
+      "merged_at": "2025-11-01T19:23:13.160Z",
+      "local_canonical": "Dav"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_0": {
+      "global_id": "global_person_5",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "When the Philistines"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_1": {
+      "global_id": "global_person_6",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Socoh"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_2": {
+      "global_id": "global_place_37",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Judah"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_3": {
+      "global_id": "global_person_7",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Azekah"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_4": {
+      "global_id": "global_person_8",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Ephes Dammim"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_5": {
+      "global_id": "global_person_9",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "When Saul"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_6": {
+      "global_id": "global_place_38",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Oak Valley"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_7": {
+      "global_id": "global_person_10",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Israelites"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_8": {
+      "global_id": "global_place_39",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Gath"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_9": {
+      "global_id": "global_place_40",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Philistine"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_10": {
+      "global_id": "global_person_11",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Goliath"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_11": {
+      "global_id": "global_person_10",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Israelite"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_12": {
+      "global_id": "global_person_12",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Am I"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_13": {
+      "global_id": "global_person_5",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "As the Philistine"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_14": {
+      "global_id": "global_person_10",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "God of Israel"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_15": {
+      "global_id": "global_person_13",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Give"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_16": {
+      "global_id": "global_org_44",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Philistine"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_17": {
+      "global_id": "global_person_14",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Enter David"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_18": {
+      "global_id": "global_person_15",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Jesse"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_19": {
+      "global_id": "global_place_41",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Bethlehem"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_21": {
+      "global_id": "global_person_16",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Abinadab"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_22": {
+      "global_id": "global_person_17",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Shammah"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_23": {
+      "global_id": "global_person_18",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Eliab"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_24": {
+      "global_id": "global_person_19",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Take"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_25": {
+      "global_id": "global_person_20",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Check"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_26": {
+      "global_id": "global_person_21",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Five Smooth Stones"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_27": {
+      "global_id": "global_person_22",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "God-Alive"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_28": {
+      "global_id": "global_person_23",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Ignoring"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_29": {
+      "global_id": "global_person_24",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Master"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_30": {
+      "global_id": "global_person_25",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Whenever"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_31": {
+      "global_id": "global_person_26",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Lion"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_32": {
+      "global_id": "global_person_10",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "God"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_33": {
+      "global_id": "global_person_9",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Then Saul"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_34": {
+      "global_id": "global_person_14",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Then David"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_35": {
+      "global_id": "global_place_42",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Israel"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_36": {
+      "global_id": "global_person_27",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "God-of-the-Angel-Armies"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_37": {
+      "global_id": "global_org_44",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Philistines"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_38": {
+      "global_id": "global_person_28",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Judah"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_39": {
+      "global_id": "global_person_29",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Gath"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_40": {
+      "global_id": "global_person_30",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Ekron"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_41": {
+      "global_id": "global_person_31",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Shaaraim"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_42": {
+      "global_id": "global_place_43",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Jerusalem"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_43": {
+      "global_id": "global_person_32",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Abner"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_44": {
+      "global_id": "global_person_33",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Well"
+    },
+    "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73_entity_45": {
+      "global_id": "global_person_34",
+      "doc_id": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "merged_at": "2025-11-01T19:26:32.584Z",
+      "local_canonical": "Young"
+    }
+  },
+  "profiles": {
+    "cea2926e-129c-4d42-8754-d8fd77ffff29": {
+      "entity_id": "cea2926e-129c-4d42-8754-d8fd77ffff29",
+      "entity_type": "PERSON",
+      "canonical": "Cory",
+      "descriptors": [],
+      "titles": [
+        "Cory"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Cory is a man."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:272e8a4c-b95d-4dd4-b92c-777bc45e799d",
+      "last_seen": "note:272e8a4c-b95d-4dd4-b92c-777bc45e799d",
+      "confidence_score": 0.55
+    },
+    "3ee4c7df-3292-4afd-8152-3678ff8098f4": {
+      "entity_id": "3ee4c7df-3292-4afd-8152-3678ff8098f4",
+      "entity_type": "PERSON",
+      "canonical": "Kailey",
+      "descriptors": [],
+      "titles": [
+        "Kailey"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Kailey is Cory’s sister."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:0df54851-4f28-4cfa-ab9a-83bdba468916",
+      "last_seen": "note:0df54851-4f28-4cfa-ab9a-83bdba468916",
+      "confidence_score": 0.55
+    },
+    "78426854-77ea-4ceb-827a-01908eeaedb5": {
+      "entity_id": "78426854-77ea-4ceb-827a-01908eeaedb5",
+      "entity_type": "PERSON",
+      "canonical": "Cory",
+      "descriptors": [],
+      "titles": [
+        "Cory"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Kailey is Cory’s sister."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:0df54851-4f28-4cfa-ab9a-83bdba468916",
+      "last_seen": "note:0df54851-4f28-4cfa-ab9a-83bdba468916",
+      "confidence_score": 0.55
+    },
+    "7422b75e-7ef2-4a62-a089-8e99bf69885a": {
+      "entity_id": "7422b75e-7ef2-4a62-a089-8e99bf69885a",
+      "entity_type": "PERSON",
+      "canonical": "Cory",
+      "descriptors": [],
+      "titles": [
+        "Cory"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Cory is a man."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:d9dd0bdc-6d64-43d7-9cc6-fb50e304594a",
+      "last_seen": "note:d9dd0bdc-6d64-43d7-9cc6-fb50e304594a",
+      "confidence_score": 0.55
+    },
+    "5f386b20-9344-47e2-8b90-07910c6bda94": {
+      "entity_id": "5f386b20-9344-47e2-8b90-07910c6bda94",
+      "entity_type": "PERSON",
+      "canonical": "Kailey",
+      "descriptors": [],
+      "titles": [
+        "Kailey"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Kailey is his sister."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:d9dd0bdc-6d64-43d7-9cc6-fb50e304594a",
+      "last_seen": "note:d9dd0bdc-6d64-43d7-9cc6-fb50e304594a",
+      "confidence_score": 0.55
+    },
+    "485ede43-79bd-4ef6-a84e-e301dfa33e55": {
+      "entity_id": "485ede43-79bd-4ef6-a84e-e301dfa33e55",
+      "entity_type": "PERSON",
+      "canonical": "Ethan",
+      "descriptors": [],
+      "titles": [
+        "Ethan"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Ethan is Cory’s brother.",
+        "Kailey is Cory and Ethan’s sister."
+      ],
+      "mention_count": 2,
+      "first_seen": "note:bda3c4b5-3f6a-47f9-beda-8bd93e591209",
+      "last_seen": "note:bda3c4b5-3f6a-47f9-beda-8bd93e591209",
+      "confidence_score": 0.6
+    },
+    "bcf2ff61-c2a8-4367-aa7e-091161bef8f8": {
+      "entity_id": "bcf2ff61-c2a8-4367-aa7e-091161bef8f8",
+      "entity_type": "PERSON",
+      "canonical": "Cory",
+      "descriptors": [],
+      "titles": [
+        "Cory"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Ethan is Cory’s brother.",
+        "Kailey is Cory and Ethan’s sister."
+      ],
+      "mention_count": 2,
+      "first_seen": "note:bda3c4b5-3f6a-47f9-beda-8bd93e591209",
+      "last_seen": "note:bda3c4b5-3f6a-47f9-beda-8bd93e591209",
+      "confidence_score": 0.6
+    },
+    "210592e7-309d-4f5c-bf17-0b52d36ecf22": {
+      "entity_id": "210592e7-309d-4f5c-bf17-0b52d36ecf22",
+      "entity_type": "PERSON",
+      "canonical": "Kailey",
+      "descriptors": [],
+      "titles": [
+        "Kailey"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Kailey is Cory and Ethan’s sister."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:bda3c4b5-3f6a-47f9-beda-8bd93e591209",
+      "last_seen": "note:bda3c4b5-3f6a-47f9-beda-8bd93e591209",
+      "confidence_score": 0.55
+    },
+    "7616621c-15e4-4570-8e51-36f0b8bd0308": {
+      "entity_id": "7616621c-15e4-4570-8e51-36f0b8bd0308",
+      "entity_type": "PERSON",
+      "canonical": "Dominique Gilford",
+      "descriptors": [],
+      "titles": [
+        "Dominique Gilford"
+      ],
+      "roles": [
+        "queen"
+      ],
+      "attributes": {},
+      "contexts": [
+        "Dominique Gilford is a queen. she lives in Lacombe, Louisiana, and dominates her husband, Cory."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:e47c79bd-982e-4de2-a128-9ae6c96f8e2d",
+      "last_seen": "note:e47c79bd-982e-4de2-a128-9ae6c96f8e2d",
+      "confidence_score": 0.55
+    },
+    "e72ae8e5-5561-4d83-898f-e399c89a9535": {
+      "entity_id": "e72ae8e5-5561-4d83-898f-e399c89a9535",
+      "entity_type": "PLACE",
+      "canonical": "Lacombe",
+      "descriptors": [],
+      "titles": [
+        "Lacombe"
+      ],
+      "roles": [
+        "queen"
+      ],
+      "attributes": {},
+      "contexts": [
+        "Dominique Gilford is a queen. she lives in Lacombe, Louisiana, and dominates her husband, Cory."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:e47c79bd-982e-4de2-a128-9ae6c96f8e2d",
+      "last_seen": "note:e47c79bd-982e-4de2-a128-9ae6c96f8e2d",
+      "confidence_score": 0.55
+    },
+    "1987d8db-b1f5-4156-91fd-9750e28398b4": {
+      "entity_id": "1987d8db-b1f5-4156-91fd-9750e28398b4",
+      "entity_type": "PLACE",
+      "canonical": "Louisiana",
+      "descriptors": [],
+      "titles": [
+        "Louisiana"
+      ],
+      "roles": [
+        "queen"
+      ],
+      "attributes": {},
+      "contexts": [
+        "Dominique Gilford is a queen. she lives in Lacombe, Louisiana, and dominates her husband, Cory."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:e47c79bd-982e-4de2-a128-9ae6c96f8e2d",
+      "last_seen": "note:e47c79bd-982e-4de2-a128-9ae6c96f8e2d",
+      "confidence_score": 0.55
+    },
+    "718bb1e7-e16e-4805-9574-6d10767002d1": {
+      "entity_id": "718bb1e7-e16e-4805-9574-6d10767002d1",
+      "entity_type": "PERSON",
+      "canonical": "Cory",
+      "descriptors": [],
+      "titles": [
+        "Cory"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Dominique Gilford is a queen. she lives in Lacombe, Louisiana, and dominates her husband, Cory."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:e47c79bd-982e-4de2-a128-9ae6c96f8e2d",
+      "last_seen": "note:e47c79bd-982e-4de2-a128-9ae6c96f8e2d",
+      "confidence_score": 0.55
+    },
+    "96c6d058-261f-435f-93fe-e4abfd10ab9b": {
+      "entity_id": "96c6d058-261f-435f-93fe-e4abfd10ab9b",
+      "entity_type": "PERSON",
+      "canonical": "Cory",
+      "descriptors": [],
+      "titles": [
+        "Cory"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Cory is a man.",
+        "Dominique is Cory's wife."
+      ],
+      "mention_count": 2,
+      "first_seen": "note:28d48c55-8139-4630-a837-e94ea89b84d0",
+      "last_seen": "note:28d48c55-8139-4630-a837-e94ea89b84d0",
+      "confidence_score": 0.6
+    },
+    "1c9de333-6cbc-4ae8-80b2-d1de76e70dba": {
+      "entity_id": "1c9de333-6cbc-4ae8-80b2-d1de76e70dba",
+      "entity_type": "PERSON",
+      "canonical": "Dominique",
+      "descriptors": [],
+      "titles": [
+        "Dominique"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Dominique is Cory's wife."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:28d48c55-8139-4630-a837-e94ea89b84d0",
+      "last_seen": "note:28d48c55-8139-4630-a837-e94ea89b84d0",
+      "confidence_score": 0.55
+    },
+    "14ed857d-5ee7-4403-92e0-1810e4e15574": {
+      "entity_id": "14ed857d-5ee7-4403-92e0-1810e4e15574",
+      "entity_type": "PERSON",
+      "canonical": "Dav",
+      "descriptors": [],
+      "titles": [
+        "Dav"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "# Dav"
+      ],
+      "mention_count": 1,
+      "first_seen": "note:61e27dff-a0e0-4816-ab5d-6f8cbdf2dff0",
+      "last_seen": "note:61e27dff-a0e0-4816-ab5d-6f8cbdf2dff0",
+      "confidence_score": 0.55
+    },
+    "da321f3e-17eb-4dbf-bd03-15d47f220cfb": {
+      "entity_id": "da321f3e-17eb-4dbf-bd03-15d47f220cfb",
+      "entity_type": "PERSON",
+      "canonical": "When the Philistines",
+      "descriptors": [],
+      "titles": [
+        "When the Philistines",
+        "philistines"
+      ],
+      "roles": [],
+      "attributes": {
+        "color": [
+          "red"
+        ],
+        "power": [
+          "great"
+        ],
+        "age": [
+          "young"
+        ]
+      },
+      "contexts": [
+        "The Philistines drew up their troops for battle.",
+        "The Philistines drew up their troops for battle.",
+        "Saul and the Israelites came together, camped at Oak Valley, and spread out their troops in battle readiness for the Philistines.",
+        "The Philistines were on one hill, the Israelites on the opposing hill, with the valley between them.",
+        "If he gets the upper hand and kills me, the Philistines will all become your slaves.",
+        "Check in on your brothers to see whether they are getting along all right, and let me know how they’re doing—Saul and your brothers, and all the Israelites in their war with the Philistines in the Oak Valley.”",
+        "Israel and the Philistines moved into position, facing each other, battle-ready.",
+        "While they were talking together, the Philistine champion, Goliath of Gath, stepped out from the front lines of the Philistines, and gave his usual challenge.",
+        "When the Philistines saw that their great champion was dead, they scattered, running for their lives.",
+        "When the Philistines saw that their great champion was dead, they scattered, running for their lives.",
+        "They chased the Philistines all the way to the outskirts of Gath and the gates of Ekron.",
+        "After chasing the Philistines, the Israelites came back and looted their camp.",
+        "* * * 55 When Saul saw David go out to meet the Philistine, he said to Abner, commander of the army, “Tell me about this young man’s family.”"
+      ],
+      "mention_count": 13,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.95
+    },
+    "1e721b00-aedc-4585-b724-2a0cbc1726c7": {
+      "entity_id": "1e721b00-aedc-4585-b724-2a0cbc1726c7",
+      "entity_type": "PERSON",
+      "canonical": "Socoh",
+      "descriptors": [],
+      "titles": [
+        "Socoh"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "They deployed them at Socoh in Judah, and set up camp between Socoh and Azekah at Ephes Dammim.",
+        "They deployed them at Socoh in Judah, and set up camp between Socoh and Azekah at Ephes Dammim."
+      ],
+      "mention_count": 2,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.6
+    },
+    "0f50a80b-95f5-48aa-ae84-9fc1120e63da": {
+      "entity_id": "0f50a80b-95f5-48aa-ae84-9fc1120e63da",
+      "entity_type": "PLACE",
+      "canonical": "Judah",
+      "descriptors": [],
+      "titles": [
+        "Judah"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "They deployed them at Socoh in Judah, and set up camp between Socoh and Azekah at Ephes Dammim.",
+        "He was the son of Jesse the Ephrathite from Bethlehem in Judah."
+      ],
+      "mention_count": 2,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.6
+    },
+    "87b3a42d-4f7c-4a04-a550-aa312667f0c0": {
+      "entity_id": "87b3a42d-4f7c-4a04-a550-aa312667f0c0",
+      "entity_type": "PERSON",
+      "canonical": "Azekah",
+      "descriptors": [],
+      "titles": [
+        "Azekah"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "They deployed them at Socoh in Judah, and set up camp between Socoh and Azekah at Ephes Dammim."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.55
+    },
+    "4242faa8-9d1c-4bd2-9adb-cf399cfd1846": {
+      "entity_id": "4242faa8-9d1c-4bd2-9adb-cf399cfd1846",
+      "entity_type": "PERSON",
+      "canonical": "Ephes Dammim",
+      "descriptors": [],
+      "titles": [
+        "Ephes Dammim"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "They deployed them at Socoh in Judah, and set up camp between Socoh and Azekah at Ephes Dammim."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.55
+    },
+    "9d7f5725-fa68-4d58-88bc-cebf521803da": {
+      "entity_id": "9d7f5725-fa68-4d58-88bc-cebf521803da",
+      "entity_type": "PERSON",
+      "canonical": "When Saul",
+      "descriptors": [],
+      "titles": [
+        "When Saul",
+        "saul"
+      ],
+      "roles": [],
+      "attributes": {
+        "age": [
+          "old",
+          "young"
+        ],
+        "color": [
+          "red"
+        ]
+      },
+      "contexts": [
+        "Saul and the Israelites came together, camped at Oak Valley, and spread out their troops in battle readiness for the Philistines.",
+        "And you’re all committed to Saul, aren’t you?",
+        "11 When Saul and his troops heard the Philistine’s challenge, they were terrified and lost all hope.",
+        "11 When Saul and his troops heard the Philistine’s challenge, they were terrified and lost all hope.",
+        "Jesse, the father of eight sons, was himself too old to join Saul’s army.",
+        "Jesse’s three oldest sons had followed Saul to war.",
+        "The names of the three sons who had joined up with Saul were Eliab, the firstborn; next, Abinadab; and third, Shammah.",
+        "While his three oldest brothers went to war with Saul, David went back and forth from attending to Saul to tending his father’s sheep in Bethlehem.",
+        "While his three oldest brothers went to war with Saul, David went back and forth from attending to Saul to tending his father’s sheep in Bethlehem.",
+        "Check in on your brothers to see whether they are getting along all right, and let me know how they’re doing—Saul and your brothers, and all the Israelites in their war with the Philistines in the Oak Valley.”",
+        "31 The things David was saying were picked up and reported to Saul.",
+        "Saul sent for him.",
+        "33 Saul answered David, “You can’t go and fight this Philistine.",
+        "Saul said, “Go.",
+        "38-39 Then Saul outfitted David as a soldier in armor.",
+        "David told Saul, “I can’t even move with all this stuff on me.",
+        "* * * 55 When Saul saw David go out to meet the Philistine, he said to Abner, commander of the army, “Tell me about this young man’s family.”",
+        "57 As soon as David came back from killing the Philistine, Abner brought him, the Philistine’s head still in his hand, straight to Saul.",
+        "58 Saul asked him, “Young man, whose son are you?”"
+      ],
+      "mention_count": 19,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.95
+    },
+    "aa54f6c0-fd90-42ff-a9bc-08755fe04a02": {
+      "entity_id": "aa54f6c0-fd90-42ff-a9bc-08755fe04a02",
+      "entity_type": "PLACE",
+      "canonical": "Oak Valley",
+      "descriptors": [],
+      "titles": [
+        "Oak Valley"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Saul and the Israelites came together, camped at Oak Valley, and spread out their troops in battle readiness for the Philistines.",
+        "Check in on your brothers to see whether they are getting along all right, and let me know how they’re doing—Saul and your brothers, and all the Israelites in their war with the Philistines in the Oak Valley.”",
+        "Check in on your brothers to see whether they are getting along all right, and let me know how they’re doing—Saul and your brothers, and all the Israelites in their war with the Philistines in the Oak Valley.”"
+      ],
+      "mention_count": 3,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.65
+    },
+    "97bd3614-a8c3-4e65-b6b7-4e47972b3e5c": {
+      "entity_id": "97bd3614-a8c3-4e65-b6b7-4e47972b3e5c",
+      "entity_type": "PERSON",
+      "canonical": "Israelites",
+      "descriptors": [],
+      "titles": [
+        "Israelites"
+      ],
+      "roles": [],
+      "attributes": {
+        "size": [
+          "tall",
+          "giant"
+        ]
+      },
+      "contexts": [
+        "Saul and the Israelites came together, camped at Oak Valley, and spread out their troops in battle readiness for the Philistines.",
+        "The Philistines were on one hill, the Israelites on the opposing hill, with the valley between them.",
+        "Check in on your brothers to see whether they are getting along all right, and let me know how they’re doing—Saul and your brothers, and all the Israelites in their war with the Philistines in the Oak Valley.”",
+        "24-25 The Israelites, to a man, fell back the moment they saw the giant—totally frightened.",
+        "After chasing the Philistines, the Israelites came back and looted their camp."
+      ],
+      "mention_count": 5,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.75
+    },
+    "e338363f-6b80-4a9f-a4d8-7e55a82f1fae": {
+      "entity_id": "e338363f-6b80-4a9f-a4d8-7e55a82f1fae",
+      "entity_type": "PLACE",
+      "canonical": "Gath",
+      "descriptors": [],
+      "titles": [
+        "Gath"
+      ],
+      "roles": [],
+      "attributes": {
+        "size": [
+          "tall",
+          "giant"
+        ]
+      },
+      "contexts": [
+        "4-7 A giant nearly ten feet tall stepped out from the Philistine line into the open, Goliath from Gath."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.55
+    },
+    "0087da2f-35f0-47d4-9685-735199eb329d": {
+      "entity_id": "0087da2f-35f0-47d4-9685-735199eb329d",
+      "entity_type": "PLACE",
+      "canonical": "Philistine",
+      "descriptors": [],
+      "titles": [
+        "Philistine"
+      ],
+      "roles": [
+        "earl",
+        "king"
+      ],
+      "attributes": {
+        "size": [
+          "tall",
+          "giant"
+        ]
+      },
+      "contexts": [
+        "4-7 A giant nearly ten feet tall stepped out from the Philistine line into the open, Goliath from Gath.",
+        "While they were talking together, the Philistine champion, Goliath of Gath, stepped out from the front lines of the Philistines, and gave his usual challenge.",
+        "41-42 As the Philistine paced back and forth, his shield bearer in front of him, he noticed David.",
+        "43 The Philistine ridiculed David."
+      ],
+      "mention_count": 4,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.7
+    },
+    "31d13d4f-8bca-4d38-8399-0cc4b09c8d58": {
+      "entity_id": "31d13d4f-8bca-4d38-8399-0cc4b09c8d58",
+      "entity_type": "PERSON",
+      "canonical": "Goliath",
+      "descriptors": [],
+      "titles": [
+        "Goliath"
+      ],
+      "roles": [
+        "king"
+      ],
+      "attributes": {
+        "size": [
+          "tall",
+          "giant"
+        ]
+      },
+      "contexts": [
+        "4-7 A giant nearly ten feet tall stepped out from the Philistine line into the open, Goliath from Gath.",
+        "8-10 Goliath stood there and called out to the Israelite troops, “Why bother using your whole army?",
+        "16 Each morning and evening for forty days, Goliath took his stand and made his speech.",
+        "While they were talking together, the Philistine champion, Goliath of Gath, stepped out from the front lines of the Philistines, and gave his usual challenge.",
+        "While they were talking together, the Philistine champion, Goliath of Gath, stepped out from the front lines of the Philistines, and gave his usual challenge.",
+        "40 Then David took his shepherd’s staff, selected five smooth stones from the brook, and put them in the pocket of his shepherd’s pack, and with his sling in his hand approached Goliath."
+      ],
+      "mention_count": 6,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.8
+    },
+    "929e1fac-0880-4394-85bb-0a75aca82e70": {
+      "entity_id": "929e1fac-0880-4394-85bb-0a75aca82e70",
+      "entity_type": "PERSON",
+      "canonical": "Israelite",
+      "descriptors": [],
+      "titles": [
+        "Israelite"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "8-10 Goliath stood there and called out to the Israelite troops, “Why bother using your whole army?"
+      ],
+      "mention_count": 1,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.55
+    },
+    "1ecd85f4-b960-47bb-a28c-b7af2068add2": {
+      "entity_id": "1ecd85f4-b960-47bb-a28c-b7af2068add2",
+      "entity_type": "PERSON",
+      "canonical": "Am I",
+      "descriptors": [],
+      "titles": [
+        "Am I"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Am I not Philistine enough for you?",
+        "“Am I a dog that you come after me with a stick?”"
+      ],
+      "mention_count": 2,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.6
+    },
+    "f82ddb8d-af42-4a3d-8f15-9b9d53d6c63f": {
+      "entity_id": "f82ddb8d-af42-4a3d-8f15-9b9d53d6c63f",
+      "entity_type": "PERSON",
+      "canonical": "As the Philistine",
+      "descriptors": [],
+      "titles": [
+        "As the Philistine",
+        "philistine"
+      ],
+      "roles": [],
+      "attributes": {
+        "age": [
+          "old"
+        ],
+        "color": [
+          "red"
+        ],
+        "size": [
+          "giant"
+        ]
+      },
+      "contexts": [
+        "Am I not Philistine enough for you?",
+        "26 David, who was talking to the men standing around him, asked, “What’s in it for the man who kills that Philistine and gets rid of this ugly blot on Israel’s honor?",
+        "Who does he think he is, anyway, this uncircumcised Philistine, taunting the armies of God-Alive?”",
+        "27 They told him what everyone was saying about what the king would do for the man who killed the Philistine.",
+        "I’m ready to go and fight this Philistine.”",
+        "33 Saul answered David, “You can’t go and fight this Philistine.",
+        "And I’ll do the same to this Philistine pig who is taunting the troops of God-Alive.",
+        "God, who delivered me from the teeth of the lion and the claws of the bear, will deliver me from this Philistine.”",
+        "41-42 As the Philistine paced back and forth, his shield bearer in front of him, he noticed David.",
+        "43 The Philistine ridiculed David.",
+        "44 “Come on,” said the Philistine.",
+        "I’m about to kill you, cut off your head, and serve up your body and the bodies of your Philistine buddies to the crows and coyotes.",
+        "48-49 That roused the Philistine, and he started toward David.",
+        "David took off from the front line, running toward the Philistine.",
+        "David reached into his pocket for a stone, slung it, and hit the Philistine hard in the forehead, embedding the stone deeply.",
+        "The Philistine crashed, facedown in the dirt.",
+        "The Philistine crashed, facedown in the dirt.",
+        "50 That’s how David beat the Philistine—with a sling and a stone.",
+        "51 Then David ran up to the Philistine and stood over him, pulled the giant’s sword from its sheath, and finished the job by cutting off his head."
+      ],
+      "mention_count": 19,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.95
+    },
+    "1d33118e-9c17-4db3-930f-e7a75dc1bf74": {
+      "entity_id": "1d33118e-9c17-4db3-930f-e7a75dc1bf74",
+      "entity_type": "PERSON",
+      "canonical": "God of Israel",
+      "descriptors": [],
+      "titles": [
+        "God of Israel",
+        "israel"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "I challenge the troops of Israel this day.",
+        "Israel and the Philistines moved into position, facing each other, battle-ready.",
+        "The talk among the troops was, “Have you ever seen anything like this, this man openly and defiantly challenging Israel?",
+        "26 David, who was talking to the men standing around him, asked, “What’s in it for the man who kills that Philistine and gets rid of this ugly blot on Israel’s honor?",
+        "I come at you in the name of God-of-the-Angel-Armies, the God of Israel’s troops, whom you curse and mock.",
+        "I come at you in the name of God-of-the-Angel-Armies, the God of Israel’s troops, whom you curse and mock.",
+        "52-54 The men of Israel and Judah were up on their feet, shouting!"
+      ],
+      "mention_count": 7,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.8500000000000001
+    },
+    "d3acad76-a470-4bdc-8616-848e4fdebb95": {
+      "entity_id": "d3acad76-a470-4bdc-8616-848e4fdebb95",
+      "entity_type": "PERSON",
+      "canonical": "Give",
+      "descriptors": [],
+      "titles": [
+        "Give"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Give me a man."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.55
+    },
+    "63654b92-8768-4766-a7cb-40602ff4b1b1": {
+      "entity_id": "63654b92-8768-4766-a7cb-40602ff4b1b1",
+      "entity_type": "ORG",
+      "canonical": "Philistine",
+      "descriptors": [],
+      "titles": [
+        "Philistine"
+      ],
+      "roles": [
+        "commander"
+      ],
+      "attributes": {
+        "age": [
+          "young"
+        ]
+      },
+      "contexts": [
+        "11 When Saul and his troops heard the Philistine’s challenge, they were terrified and lost all hope.",
+        "David took the Philistine’s head and brought it to Jerusalem.",
+        "* * * 55 When Saul saw David go out to meet the Philistine, he said to Abner, commander of the army, “Tell me about this young man’s family.”",
+        "57 As soon as David came back from killing the Philistine, Abner brought him, the Philistine’s head still in his hand, straight to Saul."
+      ],
+      "mention_count": 4,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.7
+    },
+    "63be37b5-1f03-4754-913d-73aeabe23a30": {
+      "entity_id": "63be37b5-1f03-4754-913d-73aeabe23a30",
+      "entity_type": "PERSON",
+      "canonical": "Enter David",
+      "descriptors": [],
+      "titles": [
+        "Enter David",
+        "david"
+      ],
+      "roles": [],
+      "attributes": {
+        "age": [
+          "young",
+          "old"
+        ],
+        "color": [
+          "red"
+        ],
+        "size": [
+          "giant"
+        ]
+      },
+      "contexts": [
+        "32 “Master,” said David, “don’t give up hope.",
+        "33 Saul answered David, “You can’t go and fight this Philistine.",
+        "34-37 David said, “I’ve been a shepherd, tending sheep for my father.",
+        "38-39 Then Saul outfitted David as a soldier in armor.",
+        "David tried to walk but he could hardly budge.",
+        "David told Saul, “I can’t even move with all this stuff on me.",
+        "40 Then David took his shepherd’s staff, selected five smooth stones from the brook, and put them in the pocket of his shepherd’s pack, and with his sling in his hand approached Goliath.",
+        "41-42 As the Philistine paced back and forth, his shield bearer in front of him, he noticed David.",
+        "43 The Philistine ridiculed David.",
+        "45-47 David answered, “You come at me with sword and spear and battle-ax.",
+        "48-49 That roused the Philistine, and he started toward David.",
+        "David took off from the front line, running toward the Philistine.",
+        "David reached into his pocket for a stone, slung it, and hit the Philistine hard in the forehead, embedding the stone deeply.",
+        "50 That’s how David beat the Philistine—with a sling and a stone.",
+        "No sword for David!",
+        "51 Then David ran up to the Philistine and stood over him, pulled the giant’s sword from its sheath, and finished the job by cutting off his head.",
+        "David took the Philistine’s head and brought it to Jerusalem.",
+        "* * * 55 When Saul saw David go out to meet the Philistine, he said to Abner, commander of the army, “Tell me about this young man’s family.”",
+        "57 As soon as David came back from killing the Philistine, Abner brought him, the Philistine’s head still in his hand, straight to Saul.",
+        "“I’m the son of your servant Jesse,” said David, “the one who lives in Bethlehem.”"
+      ],
+      "mention_count": 32,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.95
+    },
+    "d9ec0c2c-bc6d-4514-92e5-917967895c22": {
+      "entity_id": "d9ec0c2c-bc6d-4514-92e5-917967895c22",
+      "entity_type": "PERSON",
+      "canonical": "Jesse",
+      "descriptors": [],
+      "titles": [
+        "Jesse",
+        "Jesse the Ephrathite"
+      ],
+      "roles": [],
+      "attributes": {
+        "age": [
+          "old"
+        ]
+      },
+      "contexts": [
+        "He was the son of Jesse the Ephrathite from Bethlehem in Judah.",
+        "Jesse, the father of eight sons, was himself too old to join Saul’s army.",
+        "Jesse’s three oldest sons had followed Saul to war.",
+        "17-19 One day, Jesse told David his son, “Take this sack of cracked wheat and these ten loaves of bread and run them down to your brothers in the camp.",
+        "20-23 David was up at the crack of dawn and, having arranged for someone to tend his flock, took the food and was on his way just as Jesse had directed him.",
+        "“I’m the son of your servant Jesse,” said David, “the one who lives in Bethlehem.”"
+      ],
+      "mention_count": 6,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.8
+    },
+    "795af3e4-8488-478b-8597-425a139b012f": {
+      "entity_id": "795af3e4-8488-478b-8597-425a139b012f",
+      "entity_type": "PLACE",
+      "canonical": "Bethlehem",
+      "descriptors": [],
+      "titles": [
+        "Bethlehem"
+      ],
+      "roles": [],
+      "attributes": {
+        "age": [
+          "old"
+        ]
+      },
+      "contexts": [
+        "He was the son of Jesse the Ephrathite from Bethlehem in Judah.",
+        "While his three oldest brothers went to war with Saul, David went back and forth from attending to Saul to tending his father’s sheep in Bethlehem.",
+        "“I’m the son of your servant Jesse,” said David, “the one who lives in Bethlehem.”"
+      ],
+      "mention_count": 3,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.65
+    },
+    "156a70e5-5a44-4138-b2e1-d9e295150247": {
+      "entity_id": "156a70e5-5a44-4138-b2e1-d9e295150247",
+      "entity_type": "PERSON",
+      "canonical": "Enter David",
+      "descriptors": [],
+      "titles": [
+        "Enter David"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "12-15 Enter David."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.55
+    },
+    "00968a5a-39bc-4e75-ad7d-92934ff6c5f0": {
+      "entity_id": "00968a5a-39bc-4e75-ad7d-92934ff6c5f0",
+      "entity_type": "PERSON",
+      "canonical": "Abinadab",
+      "descriptors": [],
+      "titles": [
+        "Abinadab"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "The names of the three sons who had joined up with Saul were Eliab, the firstborn; next, Abinadab; and third, Shammah."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.55
+    },
+    "365eb8b9-f8bb-47a5-b161-f4da75fc9e03": {
+      "entity_id": "365eb8b9-f8bb-47a5-b161-f4da75fc9e03",
+      "entity_type": "PERSON",
+      "canonical": "Shammah",
+      "descriptors": [],
+      "titles": [
+        "Shammah"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "The names of the three sons who had joined up with Saul were Eliab, the firstborn; next, Abinadab; and third, Shammah."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.55
+    },
+    "b1bf19de-12aa-41cf-9e46-5e4df73eb495": {
+      "entity_id": "b1bf19de-12aa-41cf-9e46-5e4df73eb495",
+      "entity_type": "PERSON",
+      "canonical": "Eliab",
+      "descriptors": [],
+      "titles": [
+        "Eliab"
+      ],
+      "roles": [],
+      "attributes": {
+        "age": [
+          "old"
+        ]
+      },
+      "contexts": [
+        "The names of the three sons who had joined up with Saul were Eliab, the firstborn; next, Abinadab; and third, Shammah.",
+        "28 Eliab, his older brother, heard David fraternizing with the men and lost his temper: “What are you doing here!"
+      ],
+      "mention_count": 2,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.6
+    },
+    "5c94d1f4-7239-4ba3-b931-cc33276765d7": {
+      "entity_id": "5c94d1f4-7239-4ba3-b931-cc33276765d7",
+      "entity_type": "PERSON",
+      "canonical": "Take",
+      "descriptors": [],
+      "titles": [
+        "Take"
+      ],
+      "roles": [],
+      "attributes": {
+        "age": [
+          "old"
+        ]
+      },
+      "contexts": [
+        "17-19 One day, Jesse told David his son, “Take this sack of cracked wheat and these ten loaves of bread and run them down to your brothers in the camp."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.55
+    },
+    "9cf87001-29ee-400d-ae28-2cf6693b00eb": {
+      "entity_id": "9cf87001-29ee-400d-ae28-2cf6693b00eb",
+      "entity_type": "PERSON",
+      "canonical": "Check",
+      "descriptors": [],
+      "titles": [
+        "Check"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Check in on your brothers to see whether they are getting along all right, and let me know how they’re doing—Saul and your brothers, and all the Israelites in their war with the Philistines in the Oak Valley.”"
+      ],
+      "mention_count": 1,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.55
+    },
+    "271fd4bf-a679-4891-b68b-40e00df80344": {
+      "entity_id": "271fd4bf-a679-4891-b68b-40e00df80344",
+      "entity_type": "PERSON",
+      "canonical": "Five Smooth Stones",
+      "descriptors": [],
+      "titles": [
+        "Five Smooth Stones"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Five Smooth Stones"
+      ],
+      "mention_count": 1,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.55
+    },
+    "743183a4-b0fd-462b-8630-cbf1a90710c5": {
+      "entity_id": "743183a4-b0fd-462b-8630-cbf1a90710c5",
+      "entity_type": "PERSON",
+      "canonical": "God-Alive",
+      "descriptors": [],
+      "titles": [
+        "God-Alive"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Who does he think he is, anyway, this uncircumcised Philistine, taunting the armies of God-Alive?”",
+        "And I’ll do the same to this Philistine pig who is taunting the troops of God-Alive.",
+        "And I’ll do the same to this Philistine pig who is taunting the troops of God-Alive."
+      ],
+      "mention_count": 3,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.65
+    },
+    "72212b66-e8fe-4f4a-9281-7835cc9ba7bc": {
+      "entity_id": "72212b66-e8fe-4f4a-9281-7835cc9ba7bc",
+      "entity_type": "PERSON",
+      "canonical": "Ignoring",
+      "descriptors": [],
+      "titles": [
+        "Ignoring"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Ignoring his brother, he turned to someone else, asked the same question, and got the same answer as before."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.55
+    },
+    "ff3b9b42-8eb8-4847-8ca1-b110b33a17ab": {
+      "entity_id": "ff3b9b42-8eb8-4847-8ca1-b110b33a17ab",
+      "entity_type": "PERSON",
+      "canonical": "Master",
+      "descriptors": [],
+      "titles": [
+        "Master"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "32 “Master,” said David, “don’t give up hope."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.55
+    },
+    "507fb52e-53e6-46f1-bfce-deb00f7e4806": {
+      "entity_id": "507fb52e-53e6-46f1-bfce-deb00f7e4806",
+      "entity_type": "PERSON",
+      "canonical": "Whenever",
+      "descriptors": [],
+      "titles": [
+        "Whenever"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Whenever a lion or bear came and took a lamb from the flock, I’d go after it, knock it down, and rescue the lamb."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.55
+    },
+    "d3754532-d6b4-4964-903f-063471150c96": {
+      "entity_id": "d3754532-d6b4-4964-903f-063471150c96",
+      "entity_type": "PERSON",
+      "canonical": "Lion",
+      "descriptors": [],
+      "titles": [
+        "Lion"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Lion or bear, it made no difference—I killed it."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.55
+    },
+    "fb73cdc5-aa66-41d6-9a1e-186bf2fead42": {
+      "entity_id": "fb73cdc5-aa66-41d6-9a1e-186bf2fead42",
+      "entity_type": "PERSON",
+      "canonical": "God",
+      "descriptors": [],
+      "titles": [
+        "God"
+      ],
+      "roles": [],
+      "attributes": {
+        "color": [
+          "red"
+        ]
+      },
+      "contexts": [
+        "God, who delivered me from the teeth of the lion and the claws of the bear, will deliver me from this Philistine.”",
+        "And God help you!”",
+        "This very day God is handing you over to me.",
+        "The whole earth will know that there’s an extraordinary God in Israel.",
+        "And everyone gathered here will learn that God doesn’t save by means of sword or spear.",
+        "The battle belongs to God—he’s handing you to us on a platter!”"
+      ],
+      "mention_count": 6,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.8
+    },
+    "c5c00455-bece-4bf0-888f-583c7258af3f": {
+      "entity_id": "c5c00455-bece-4bf0-888f-583c7258af3f",
+      "entity_type": "PERSON",
+      "canonical": "Then Saul",
+      "descriptors": [],
+      "titles": [
+        "Then Saul"
+      ],
+      "roles": [
+        "soldier"
+      ],
+      "attributes": {
+        "age": [
+          "old"
+        ]
+      },
+      "contexts": [
+        "38-39 Then Saul outfitted David as a soldier in armor."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.55
+    },
+    "2ee3c779-9528-4909-8373-1a3ce7874427": {
+      "entity_id": "2ee3c779-9528-4909-8373-1a3ce7874427",
+      "entity_type": "PERSON",
+      "canonical": "Then David",
+      "descriptors": [],
+      "titles": [
+        "Then David"
+      ],
+      "roles": [],
+      "attributes": {
+        "size": [
+          "giant"
+        ]
+      },
+      "contexts": [
+        "40 Then David took his shepherd’s staff, selected five smooth stones from the brook, and put them in the pocket of his shepherd’s pack, and with his sling in his hand approached Goliath.",
+        "51 Then David ran up to the Philistine and stood over him, pulled the giant’s sword from its sheath, and finished the job by cutting off his head."
+      ],
+      "mention_count": 2,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.6
+    },
+    "f2df68e3-05fa-4e47-897f-d11df7cbea43": {
+      "entity_id": "f2df68e3-05fa-4e47-897f-d11df7cbea43",
+      "entity_type": "PLACE",
+      "canonical": "Israel",
+      "descriptors": [],
+      "titles": [
+        "Israel"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "I come at you in the name of God-of-the-Angel-Armies, the God of Israel’s troops, whom you curse and mock.",
+        "The whole earth will know that there’s an extraordinary God in Israel."
+      ],
+      "mention_count": 2,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.6
+    },
+    "d9d19b8e-dc4e-4552-8389-e3896dc31d4b": {
+      "entity_id": "d9d19b8e-dc4e-4552-8389-e3896dc31d4b",
+      "entity_type": "PERSON",
+      "canonical": "God-of-the-Angel-Armies",
+      "descriptors": [],
+      "titles": [
+        "God-of-the-Angel-Armies"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "I come at you in the name of God-of-the-Angel-Armies, the God of Israel’s troops, whom you curse and mock."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.55
+    },
+    "56b6942b-dadf-407e-b062-be639a702840": {
+      "entity_id": "56b6942b-dadf-407e-b062-be639a702840",
+      "entity_type": "ORG",
+      "canonical": "Philistines",
+      "descriptors": [],
+      "titles": [
+        "Philistines"
+      ],
+      "roles": [],
+      "attributes": {
+        "color": [
+          "red"
+        ],
+        "power": [
+          "great"
+        ]
+      },
+      "contexts": [
+        "When the Philistines saw that their great champion was dead, they scattered, running for their lives.",
+        "They chased the Philistines all the way to the outskirts of Gath and the gates of Ekron."
+      ],
+      "mention_count": 2,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.6
+    },
+    "65a9df22-dd0a-40bb-832a-7ab1c95774cc": {
+      "entity_id": "65a9df22-dd0a-40bb-832a-7ab1c95774cc",
+      "entity_type": "PERSON",
+      "canonical": "Judah",
+      "descriptors": [],
+      "titles": [
+        "Judah"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "52-54 The men of Israel and Judah were up on their feet, shouting!"
+      ],
+      "mention_count": 1,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.55
+    },
+    "3a2d5166-57e4-4d2e-bcd4-c3c570a9ce9d": {
+      "entity_id": "3a2d5166-57e4-4d2e-bcd4-c3c570a9ce9d",
+      "entity_type": "PERSON",
+      "canonical": "Gath",
+      "descriptors": [],
+      "titles": [
+        "Gath"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "They chased the Philistines all the way to the outskirts of Gath and the gates of Ekron.",
+        "Wounded Philistines were strewn along the Shaaraim road all the way to Gath and Ekron."
+      ],
+      "mention_count": 2,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.6
+    },
+    "60126d26-b8ef-40bc-a04e-39100420795f": {
+      "entity_id": "60126d26-b8ef-40bc-a04e-39100420795f",
+      "entity_type": "PERSON",
+      "canonical": "Ekron",
+      "descriptors": [],
+      "titles": [
+        "Ekron"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "They chased the Philistines all the way to the outskirts of Gath and the gates of Ekron.",
+        "Wounded Philistines were strewn along the Shaaraim road all the way to Gath and Ekron."
+      ],
+      "mention_count": 2,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.6
+    },
+    "f6622c8e-a0d9-4557-8df7-e5ce93159f45": {
+      "entity_id": "f6622c8e-a0d9-4557-8df7-e5ce93159f45",
+      "entity_type": "PERSON",
+      "canonical": "Shaaraim",
+      "descriptors": [],
+      "titles": [
+        "Shaaraim"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Wounded Philistines were strewn along the Shaaraim road all the way to Gath and Ekron."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.55
+    },
+    "dae5503d-9886-4f0b-9df8-0057d9015c3f": {
+      "entity_id": "dae5503d-9886-4f0b-9df8-0057d9015c3f",
+      "entity_type": "PLACE",
+      "canonical": "Jerusalem",
+      "descriptors": [],
+      "titles": [
+        "Jerusalem"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "David took the Philistine’s head and brought it to Jerusalem."
+      ],
+      "mention_count": 1,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.55
+    },
+    "6fc5ed81-d985-4c2c-a0c8-f814390b6a43": {
+      "entity_id": "6fc5ed81-d985-4c2c-a0c8-f814390b6a43",
+      "entity_type": "PERSON",
+      "canonical": "Abner",
+      "descriptors": [],
+      "titles": [
+        "Abner"
+      ],
+      "roles": [
+        "commander",
+        "king"
+      ],
+      "attributes": {
+        "age": [
+          "young"
+        ]
+      },
+      "contexts": [
+        "* * * 55 When Saul saw David go out to meet the Philistine, he said to Abner, commander of the army, “Tell me about this young man’s family.”",
+        "Abner said, “For the life of me, O King, I don’t know.”",
+        "57 As soon as David came back from killing the Philistine, Abner brought him, the Philistine’s head still in his hand, straight to Saul."
+      ],
+      "mention_count": 3,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.65
+    },
+    "f2204351-9180-4aeb-825a-0841fa17150b": {
+      "entity_id": "f2204351-9180-4aeb-825a-0841fa17150b",
+      "entity_type": "PERSON",
+      "canonical": "Well",
+      "descriptors": [],
+      "titles": [
+        "Well"
+      ],
+      "roles": [
+        "king"
+      ],
+      "attributes": {},
+      "contexts": [
+        "56 The king said, “Well, find out the lineage of this raw youth.”"
+      ],
+      "mention_count": 1,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.55
+    },
+    "e5dcbac8-ab57-4c0c-987d-f521c3a3aafd": {
+      "entity_id": "e5dcbac8-ab57-4c0c-987d-f521c3a3aafd",
+      "entity_type": "PERSON",
+      "canonical": "Young",
+      "descriptors": [],
+      "titles": [
+        "Young"
+      ],
+      "roles": [],
+      "attributes": {
+        "age": [
+          "young"
+        ]
+      },
+      "contexts": [
+        "58 Saul asked him, “Young man, whose son are you?”"
+      ],
+      "mention_count": 1,
+      "first_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "last_seen": "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73",
+      "confidence_score": 0.55
+    }
+  },
+  "metadata": {
+    "created_at": "2025-11-01T00:04:39.037Z",
+    "updated_at": "2025-11-01T19:26:32.585Z",
+    "doc_count": 8,
+    "doc_ids": [
+      "note:272e8a4c-b95d-4dd4-b92c-777bc45e799d",
+      "note:0df54851-4f28-4cfa-ab9a-83bdba468916",
+      "note:d9dd0bdc-6d64-43d7-9cc6-fb50e304594a",
+      "note:bda3c4b5-3f6a-47f9-beda-8bd93e591209",
+      "note:e47c79bd-982e-4de2-a128-9ae6c96f8e2d",
+      "note:28d48c55-8139-4630-a837-e94ea89b84d0",
+      "note:61e27dff-a0e0-4816-ab5d-6f8cbdf2dff0",
+      "note:8aa67e5d-d119-47ed-ac4e-83b9aaa88d73"
+    ]
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "entities": [
+    {
+      "id": "global_person_0",
+      "type": "PERSON",
+      "canonical": "Albus Dumbledore",
+      "aliases": [],
+      "created_at": "2025-10-13T21:26:51.190Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_1",
+      "type": "PERSON",
+      "canonical": "Fawkes",
+      "aliases": [],
+      "created_at": "2025-10-13T21:26:51.190Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_2",
+      "type": "PERSON",
+      "canonical": "Severus Snape",
+      "aliases": [
+        "Snape"
+      ],
+      "created_at": "2025-10-13T21:26:51.190Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_org_3",
+      "type": "ORG",
+      "canonical": "Hogwarts",
+      "aliases": [],
+      "created_at": "2025-10-13T21:26:51.190Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_house_4",
+      "type": "HOUSE",
+      "canonical": "Snape",
+      "aliases": [],
+      "created_at": "2025-10-13T21:26:51.190Z",
+      "centrality": 0
+    }
+  ],
+  "relations": [],
+  "conflicts": [],
+  "provenance": {
+    "3.3_entity_0": {
+      "global_id": "global_person_0",
+      "doc_id": "3.3",
+      "merged_at": "2025-10-13T21:26:51.190Z",
+      "local_canonical": "Albus Dumbledore"
+    },
+    "3.3_entity_1": {
+      "global_id": "global_org_3",
+      "doc_id": "3.3",
+      "merged_at": "2025-10-13T21:26:51.190Z",
+      "local_canonical": "Hogwarts"
+    },
+    "3.3_entity_2": {
+      "global_id": "global_person_1",
+      "doc_id": "3.3",
+      "merged_at": "2025-10-13T21:26:51.190Z",
+      "local_canonical": "Fawkes"
+    },
+    "3.3_entity_3": {
+      "global_id": "global_person_2",
+      "doc_id": "3.3",
+      "merged_at": "2025-10-13T21:26:51.190Z",
+      "local_canonical": "Severus Snape"
+    },
+    "3.3_entity_4": {
+      "global_id": "global_person_2",
+      "doc_id": "3.3",
+      "merged_at": "2025-10-13T21:26:51.190Z",
+      "local_canonical": "Snape"
+    },
+    "3.3_entity_5": {
+      "global_id": "global_house_4",
+      "doc_id": "3.3",
+      "merged_at": "2025-10-13T21:26:51.190Z",
+      "local_canonical": "Snape"
+    }
+  },
+  "metadata": {
+    "created_at": "2025-10-13T21:26:51.016Z",
+    "updated_at": "2025-10-13T21:26:51.191Z",
+    "doc_count": 1,
+    "doc_ids": [
+      "3.3"
+    ]
+  }
+}

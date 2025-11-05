@@ -1,0 +1,93 @@
+{
+  "version": "ares-test-v1",
+  "last_updated": "2025-10-22",
+  "total_cases": 1,
+  "cases": [
+    {
+      "case_id": "s5_example_baseline",
+      "domain": "mixed",
+      "file_path": "mixed/s5_example_baseline.json",
+      "created": "2025-10-22",
+      "rules_tested": [
+        "S5.1 - Preposition trim for 'to + Name'",
+        "S5.2 - Verb-class assignment (communication/motion)",
+        "S5.3 - Noun-governed overrides",
+        "S5.4 - Span extension for 'The ...' titles",
+        "S5.5 - Temporal preposition trim",
+        "S5.6 - Fictional calendar normalization",
+        "S5.7 - Live alias propagation"
+      ],
+      "difficulty": "easy",
+      "status": "active",
+      "entity_count": 13,
+      "relation_count": 5,
+      "word_count": 87,
+      "tags": ["baseline", "example", "all-rules"],
+      "notes": "Minimal complexity baseline demonstrating all S5 rules. Good starting point for validation."
+    }
+  ],
+  "metadata": {
+    "schema_version": "ares-test-v1",
+    "supported_domains": [
+      "fantasy",
+      "academic",
+      "news",
+      "legal",
+      "technical",
+      "mixed"
+    ],
+    "supported_entity_types": [
+      "PERSON",
+      "PLACE",
+      "ORG",
+      "EVENT",
+      "WORK",
+      "OBJECT",
+      "DATE",
+      "TIME",
+      "QUANTITY",
+      "MONEY",
+      "LAW",
+      "CONCEPT",
+      "NORP",
+      "PRODUCT"
+    ],
+    "quality_gates": {
+      "min_word_count": 1000,
+      "min_entity_count": 30,
+      "min_relation_count": 10,
+      "min_alias_coverage": 3,
+      "min_negative_cases": 5
+    },
+    "rule_catalog": {
+      "S5.1": {
+        "name": "Preposition trim for 'to + Name'",
+        "description": "Avoid capturing prepositions like 'to' in PERSON spans"
+      },
+      "S5.2": {
+        "name": "Verb-class assignment",
+        "description": "Communication verbs → PERSON targets; motion verbs → PLACE targets"
+      },
+      "S5.3": {
+        "name": "Noun-governed overrides",
+        "description": "Governor nouns like letter/gift → PERSON; road/path → PLACE"
+      },
+      "S5.4": {
+        "name": "Span extension for 'The ...' titles",
+        "description": "Extend 'The ...' span for named places/works"
+      },
+      "S5.5": {
+        "name": "Temporal preposition trim",
+        "description": "Trim temporal prepositions from DATE/TIME spans"
+      },
+      "S5.6": {
+        "name": "Fictional calendar normalization",
+        "description": "Normalize fictional calendar dates to structured format"
+      },
+      "S5.7": {
+        "name": "Live alias propagation",
+        "description": "Co-reference aliases across ±3 sentence window"
+      }
+    }
+  }
+}

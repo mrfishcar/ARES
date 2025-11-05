@@ -1,0 +1,113 @@
+version: '3.8'
+
+services:
+  # Python NLP Parser Service
+  parser:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: python-base
+    container_name: ares-parser
+    ports:
+      - "${PARSER_PORT:-8000}:8000"
+    command: ["python3", "-m", "uvicorn", "parser_service:app", "--host", "0.0.0.0", "--port", "8000"]
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - ares-net
+    restart: unless-stopped
+
+  # ARES GraphQL API + Review Queue
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ares-api
+    ports:
+      - "${GRAPHQL_PORT:-4000}:4000"
+      - "${METRICS_PORT:-4100}:4100"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PARSER_URL=http://parser:8000
+      - GRAPHQL_PORT=4000
+      - METRICS_PORT=4100
+    volumes:
+      - ares-data:/app/data
+      - ares-incoming:/app/incoming
+      - ares-wiki:/app/wiki
+    depends_on:
+      parser:
+        condition: service_healthy
+    command: ["node", "app/api/graphql.js"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:4000/healthz', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - ares-net
+    restart: unless-stopped
+
+  # Review Dashboard UI (served via HTTP)
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ares-ui
+    ports:
+      - "${UI_PORT:-3000}:3000"
+    environment:
+      - GRAPHQL_URL=http://api:4000/graphql
+    volumes:
+      - ./app/ui/review-dashboard/dist:/usr/share/nginx/html:ro
+    command: ["npx", "serve", "-s", "app/ui/review-dashboard/dist", "-l", "3000"]
+    depends_on:
+      - api
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - ares-net
+    restart: unless-stopped
+
+  # Watch Service (monitors incoming directory for new documents)
+  watch:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ares-watch
+    environment:
+      - WATCH_INTERVAL_MS=${WATCH_INTERVAL_MS:-3000}
+      - REBUILD_DEBOUNCE_MS=${REBUILD_DEBOUNCE_MS:-5000}
+      - PARSER_URL=http://parser:8000
+      - GRAPHQL_URL=http://api:4000/graphql
+    volumes:
+      - ares-data:/app/data
+      - ares-incoming:/app/incoming
+      - ares-wiki:/app/wiki
+    depends_on:
+      api:
+        condition: service_healthy
+    command: ["node", "app/watch/monitor.js"]
+    networks:
+      - ares-net
+    restart: unless-stopped
+
+volumes:
+  ares-data:
+    driver: local
+  ares-incoming:
+    driver: local
+  ares-wiki:
+    driver: local
+
+networks:
+  ares-net:
+    driver: bridge

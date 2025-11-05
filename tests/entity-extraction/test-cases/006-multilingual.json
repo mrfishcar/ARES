@@ -1,0 +1,132 @@
+[
+  {
+    "id": "multilingual-001",
+    "description": "Mixed language content with transliterated names and cross-cultural references",
+    "text": "The renowned mangaka 村上 春樹 (Haruki Murakami), whose novel 'ノルウェイの森' (Norwegian Wood) brought him international acclaim, spoke at Le Centre Pompidou in Paris last week. Murakami-sensei, as his Japanese fans call him, discussed his latest work with celebrated French author Michel Houellebecq. The event, organized by Éditions Gallimard in collaboration with 新潮社 (Shinchosha Publishing), drew literary critics from Le Monde and The New York Times. Among the attendees was Chinese writer 莫言 (Mo Yan), winner of the 2012 Nobel Prize in Literature, and Spanish author Isabel Allende. The discussion, moderated by Prof. María González from Universidad Complutense de Madrid, touched on Murakami's influence on contemporary world literature. The bookstore La Fnac reported record sales of '1Q84' (いちきゅうはちよん) and 'Kafka sur le rivage' (海辺のカフカ) following the event. Meanwhile, at the Российская государственная библиотека (Russian State Library) in Moscow, a special exhibition dedicated to Murakami's works opened, featuring translations by Boris Akunin (Борис Акунин).",
+    "expectedEntities": [
+      {
+        "type": "PERSON",
+        "text": "Haruki Murakami",
+        "aliases": ["村上 春樹", "Murakami-sensei", "Murakami"],
+        "context": "Japanese author",
+        "confidence": 0.98
+      },
+      {
+        "type": "PERSON",
+        "text": "Michel Houellebecq",
+        "context": "French author",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Mo Yan",
+        "aliases": ["莫言"],
+        "context": "Chinese author, Nobel laureate",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Isabel Allende",
+        "context": "Spanish author",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "María González",
+        "context": "professor",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Boris Akunin",
+        "aliases": ["Борис Акунин"],
+        "context": "translator",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Centre Pompidou",
+        "aliases": ["Le Centre Pompidou"],
+        "context": "cultural center",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Éditions Gallimard",
+        "context": "publisher",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Shinchosha Publishing",
+        "aliases": ["新潮社"],
+        "context": "publisher",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Le Monde",
+        "context": "newspaper",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "The New York Times",
+        "context": "newspaper",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Universidad Complutense de Madrid",
+        "context": "university",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "La Fnac",
+        "context": "bookstore",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Russian State Library",
+        "aliases": ["Российская государственная библиотека"],
+        "context": "library",
+        "confidence": 0.95
+      },
+      {
+        "type": "LOCATION",
+        "text": "Paris",
+        "context": "city",
+        "confidence": 0.98
+      },
+      {
+        "type": "LOCATION",
+        "text": "Moscow",
+        "context": "city",
+        "confidence": 0.98
+      },
+      {
+        "type": "WORK",
+        "text": "Norwegian Wood",
+        "aliases": ["ノルウェイの森"],
+        "context": "novel",
+        "confidence": 0.95
+      },
+      {
+        "type": "WORK",
+        "text": "1Q84",
+        "aliases": ["いちきゅうはちよん"],
+        "context": "novel",
+        "confidence": 0.95
+      },
+      {
+        "type": "WORK",
+        "text": "Kafka on the Shore",
+        "aliases": ["Kafka sur le rivage", "海辺のカフカ"],
+        "context": "novel",
+        "confidence": 0.95
+      }
+    ]
+  }
+]

@@ -1,0 +1,283 @@
+{
+  "version": "ares-test-v1",
+  "case_id": "s5_example_baseline",
+  "domain": "mixed",
+  "source_notes": "Baseline example demonstrating all S5 hotfix rule goals with minimal complexity. Includes preposition trimming, verb-class assignment, noun-governed overrides, span extension, temporal trimming, fictional calendar, and alias propagation.",
+  "input_text": "On Frostmonth 12, Y149, Professor Harold Finch sent a letter to Hermione Granger at The Great Hall in Cambridge. The inventor, as Dr. H. was known among colleagues, had discovered an anomaly in The Codex of Shadows during his research. Hermione walked to The Great Hall and found the note waiting on her desk. She called Harold immediately. The road leading to Cambridge Observatory was blocked, so she traveled to the library instead. Harold gave a gift to his assistant before departing for Queen's Road.",
+  "entities": [
+    {
+      "id": "E1",
+      "surface": "Professor Harold Finch",
+      "start": 24,
+      "end": 46,
+      "type": "PERSON",
+      "canonical": "Harold Finch",
+      "alias_of": null,
+      "reasoning": "Full name with title; primary entity"
+    },
+    {
+      "id": "E2",
+      "surface": "Hermione Granger",
+      "start": 64,
+      "end": 80,
+      "type": "PERSON",
+      "canonical": "Hermione Granger",
+      "alias_of": null,
+      "reasoning": "Full name; target of communication verb 'sent'"
+    },
+    {
+      "id": "E3",
+      "surface": "The Great Hall",
+      "start": 84,
+      "end": 98,
+      "type": "PLACE",
+      "canonical": "The Great Hall",
+      "alias_of": null,
+      "reasoning": "S5.4: Span extension for 'The ...' titles; building/place referent"
+    },
+    {
+      "id": "E4",
+      "surface": "Cambridge",
+      "start": 102,
+      "end": 111,
+      "type": "PLACE",
+      "canonical": "Cambridge",
+      "alias_of": null,
+      "reasoning": "City name; location context"
+    },
+    {
+      "id": "E5",
+      "surface": "The inventor",
+      "start": 113,
+      "end": 125,
+      "type": "PERSON",
+      "canonical": "Harold Finch",
+      "alias_of": "E1",
+      "reasoning": "S5.7: Alias for Harold Finch; epithet"
+    },
+    {
+      "id": "E6",
+      "surface": "Dr. H.",
+      "start": 130,
+      "end": 136,
+      "type": "PERSON",
+      "canonical": "Harold Finch",
+      "alias_of": "E1",
+      "reasoning": "S5.7: Alias for Harold Finch; abbreviated title + initial"
+    },
+    {
+      "id": "E7",
+      "surface": "The Codex of Shadows",
+      "start": 194,
+      "end": 214,
+      "type": "WORK",
+      "canonical": "The Codex of Shadows",
+      "alias_of": null,
+      "reasoning": "S5.4: Span extension for 'The ...' titles; named work/document"
+    },
+    {
+      "id": "E8",
+      "surface": "Hermione",
+      "start": 236,
+      "end": 244,
+      "type": "PERSON",
+      "canonical": "Hermione Granger",
+      "alias_of": "E2",
+      "reasoning": "S5.7: Alias (first name only) for Hermione Granger"
+    },
+    {
+      "id": "E9",
+      "surface": "The Great Hall",
+      "start": 255,
+      "end": 269,
+      "type": "PLACE",
+      "canonical": "The Great Hall",
+      "alias_of": "E3",
+      "reasoning": "S5.2: Target of motion verb 'walked to'; same entity as E3"
+    },
+    {
+      "id": "E10",
+      "surface": "Harold",
+      "start": 321,
+      "end": 327,
+      "type": "PERSON",
+      "canonical": "Harold Finch",
+      "alias_of": "E1",
+      "reasoning": "S5.1 & S5.7: Preposition 'to' trimmed (appears after 'called'); first name alias for Harold Finch"
+    },
+    {
+      "id": "E11",
+      "surface": "Cambridge Observatory",
+      "start": 361,
+      "end": 382,
+      "type": "PLACE",
+      "canonical": "Cambridge Observatory",
+      "alias_of": null,
+      "reasoning": "Named place; building/institution"
+    },
+    {
+      "id": "E12",
+      "surface": "Harold",
+      "start": 436,
+      "end": 442,
+      "type": "PERSON",
+      "canonical": "Harold Finch",
+      "alias_of": "E1",
+      "reasoning": "S5.3: Subject of 'gave' with object 'gift' → noun-governed PERSON bias"
+    },
+    {
+      "id": "E13",
+      "surface": "Queen's Road",
+      "start": 493,
+      "end": 505,
+      "type": "PLACE",
+      "canonical": "Queen's Road",
+      "alias_of": null,
+      "reasoning": "S5.3: Noun-governed override; 'road' noun → PLACE"
+    }
+  ],
+  "coref_clusters": [
+    {
+      "canonical": "Harold Finch",
+      "members": ["E1", "E5", "E6", "E10", "E12"],
+      "aliases": ["Professor Harold Finch", "The inventor", "Dr. H.", "Harold"]
+    },
+    {
+      "canonical": "Hermione Granger",
+      "members": ["E2", "E8"],
+      "aliases": ["Hermione Granger", "Hermione"]
+    },
+    {
+      "canonical": "The Great Hall",
+      "members": ["E3", "E9"],
+      "aliases": ["The Great Hall"]
+    }
+  ],
+  "alias_dictionary": {
+    "Harold Finch": ["Professor Harold Finch", "The inventor", "Dr. H.", "Harold"],
+    "Hermione Granger": ["Hermione"],
+    "The Great Hall": []
+  },
+  "relations": [
+    {
+      "type": "communicated_with",
+      "head": "E1",
+      "tail": "E2",
+      "evidence_span": {
+        "start": 24,
+        "end": 111,
+        "surface": "Professor Harold Finch sent a letter to Hermione Granger at The Great Hall in Cambridge"
+      },
+      "reasoning": "S5.2: Verb-class=communication ('sent a letter') → PERSON↔PERSON bias; S5.3: Noun-governed ('letter') → PERSON target"
+    },
+    {
+      "type": "traveled_to",
+      "head": "E8",
+      "tail": "E9",
+      "evidence_span": {
+        "start": 236,
+        "end": 269,
+        "surface": "Hermione walked to The Great Hall"
+      },
+      "reasoning": "S5.2: Verb-class=motion ('walked to') → PLACE on object"
+    },
+    {
+      "type": "communicated_with",
+      "head": "E8",
+      "tail": "E10",
+      "evidence_span": {
+        "start": 310,
+        "end": 339,
+        "surface": "She called Harold immediately"
+      },
+      "reasoning": "S5.2: Verb-class=communication ('called') → PERSON↔PERSON bias"
+    },
+    {
+      "type": "traveled_to",
+      "head": "E8",
+      "tail": null,
+      "evidence_span": {
+        "start": 399,
+        "end": 434,
+        "surface": "she traveled to the library instead"
+      },
+      "reasoning": "S5.2: Verb-class=motion ('traveled to') → PLACE expected (but 'library' is generic, not tagged)"
+    },
+    {
+      "type": "gave_to",
+      "head": "E12",
+      "tail": null,
+      "evidence_span": {
+        "start": 436,
+        "end": 478,
+        "surface": "Harold gave a gift to his assistant before"
+      },
+      "reasoning": "S5.3: Noun-governed ('gift') → PERSON target expected; 'assistant' is role, not tagged as entity here"
+    }
+  ],
+  "dates": [
+    {
+      "surface": "Frostmonth 12, Y149",
+      "start": 3,
+      "end": 22,
+      "normalized": {
+        "calendar": "fictional",
+        "pattern": "Frostmonth-12-Y149",
+        "iso_guess": null,
+        "relative_to": null
+      },
+      "reasoning": "S5.5: Temporal preposition 'On' trimmed; S5.6: Fictional calendar normalization"
+    }
+  ],
+  "negative_cases": [
+    {
+      "surface": "to Hermione Granger",
+      "start": 61,
+      "end": 80,
+      "should_tag": true,
+      "normalized_surface": "Hermione Granger",
+      "reasoning": "S5.1: Preposition 'to' should be trimmed; entity is PERSON 'Hermione Granger' starting at offset 64"
+    },
+    {
+      "surface": "The road",
+      "start": 341,
+      "end": 349,
+      "should_tag": false,
+      "reasoning": "Generic common noun with 'the'; no unique referent → do not tag. Only 'Queen's Road' (proper name) is tagged."
+    },
+    {
+      "surface": "the library",
+      "start": 415,
+      "end": 426,
+      "should_tag": false,
+      "reasoning": "Generic common noun with 'the'; no unique referent → do not tag"
+    },
+    {
+      "surface": "his assistant",
+      "start": 458,
+      "end": 471,
+      "should_tag": false,
+      "reasoning": "Role/occupation without proper name → do not tag as entity (could be tagged if system supports ROLE type)"
+    },
+    {
+      "surface": "On Frostmonth 12, Y149",
+      "start": 0,
+      "end": 22,
+      "should_tag": true,
+      "normalized_surface": "Frostmonth 12, Y149",
+      "reasoning": "S5.5: Temporal preposition 'On' should be trimmed from DATE span"
+    }
+  ],
+  "rule_upgrade_suggestions": [
+    "S5.1: If preposition ∈ {to, from, with, by} precedes NNP/PERSON → trim preposition from entity span",
+    "S5.2: If verb lemma ∈ {send, tell, ask, call, email, write} → bias object toward PERSON",
+    "S5.2: If verb lemma ∈ {walk, travel, go, arrive, depart, move} → bias object toward PLACE",
+    "S5.3: If governor noun ∈ {letter, note, gift, call, email, memo, message} → bias object toward PERSON",
+    "S5.3: If governor noun ∈ {road, path, street, bridge, square, avenue, boulevard} → bias object toward PLACE",
+    "S5.4: Extend 'The ...' span to include full NP when head noun ∈ {Hall, Observatory, Archives, Ministry, Library, Museum, Palace, Cathedral, Codex, Chronicle}",
+    "S5.5: Trim temporal prepositions {on, during, by, before, after, until, from, since} from DATE/TIME spans",
+    "S5.6: Fictional calendar patterns should normalize to structured format: <MonthName>-<Day>-<Year>",
+    "S5.7: Alias propagation window ±3 sentences; merge if Levenshtein≤2 and POS pattern matches (e.g., 'Dr. H.' → 'Harold Finch')",
+    "Consider role entities (assistant, colleague, professor) if ROLE type is added to schema"
+  ]
+}

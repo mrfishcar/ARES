@@ -1,0 +1,104 @@
+[
+  {
+    "id": "academic-001",
+    "description": "Academic paper with complex entity relationships and citations",
+    "text": "In their groundbreaking paper, Drs. Jennifer A. Thompson and Richard M. Lee (Department of Computational Biology, Stanford University) demonstrated that the CRISPR-Cas9 system, initially discovered by Emmanuelle Charpentier and Jennifer Doudna at UC Berkeley, could be modified for enhanced specificity. Dr. Thompson's team at the Thompson Lab, collaborating with researchers from the MIT Broad Institute and the Lee Research Group at Harvard Medical School, found that modifications to the guide RNA structure reduced off-target effects by 85%. This work, published in Nature Biotechnology, builds upon earlier findings by Feng Zhang's team at the Broad Institute. Prof. Zhang, who independently developed CRISPR applications for mammalian cells, noted that this advancement could revolutionize gene therapy approaches. The research was supported by grants from the Howard Hughes Medical Institute (HHMI) and the National Institutes of Health (NIH).",
+    "expectedEntities": [
+      {
+        "type": "PERSON",
+        "text": "Jennifer A. Thompson",
+        "aliases": ["Dr. Thompson"],
+        "context": "researcher at Stanford University",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Richard M. Lee",
+        "context": "researcher at Stanford University",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Emmanuelle Charpentier",
+        "context": "CRISPR-Cas9 discoverer",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Jennifer Doudna",
+        "context": "CRISPR-Cas9 discoverer",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Feng Zhang",
+        "aliases": ["Prof. Zhang"],
+        "context": "Broad Institute researcher",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Stanford University",
+        "context": "academic institution",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "UC Berkeley",
+        "context": "academic institution",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Thompson Lab",
+        "context": "research laboratory",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "MIT Broad Institute",
+        "aliases": ["Broad Institute"],
+        "context": "research institution",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Lee Research Group",
+        "context": "research group",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Harvard Medical School",
+        "context": "academic institution",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Nature Biotechnology",
+        "context": "scientific journal",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Howard Hughes Medical Institute",
+        "aliases": ["HHMI"],
+        "context": "research institution",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "National Institutes of Health",
+        "aliases": ["NIH"],
+        "context": "government institution",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Department of Computational Biology",
+        "context": "academic department",
+        "confidence": 0.90
+      }
+    ]
+  }
+]

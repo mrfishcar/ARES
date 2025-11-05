@@ -1,0 +1,81 @@
+[
+  {
+    "id": "basic-person-001",
+    "description": "Simple person identification with formal name and nickname",
+    "text": "Dr. James Robert Wilson, a renowned physicist at MIT, is often called 'Jim' by his colleagues. Dr. Wilson's groundbreaking research in quantum mechanics has revolutionized our understanding of particle physics. Jim started his career at CERN before moving to Massachusetts.",
+    "expectedEntities": [
+      {
+        "type": "PERSON",
+        "text": "James Robert Wilson",
+        "aliases": ["Jim", "Dr. Wilson"],
+        "context": "physicist at MIT",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "MIT",
+        "context": "educational institution",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "CERN",
+        "context": "research institution",
+        "confidence": 0.98
+      },
+      {
+        "type": "LOCATION",
+        "text": "Massachusetts",
+        "context": "US state",
+        "confidence": 0.98
+      }
+    ]
+  },
+  {
+    "id": "complex-person-002",
+    "description": "Multiple persons with relationship context and informal references",
+    "text": "Sarah Johnson-Smith and her husband Michael Smith run a successful tech startup in Silicon Valley. Their daughter Emma, known to friends as 'Em', is following in her parents' footsteps. While Sarah focuses on AI development, Mike handles the business side. Emma recently graduated from Stanford where she studied computer science. The Johnson-Smith family frequently collaborates with Dr. Wei Chen, a leading AI researcher who everyone calls 'Professor Wei'.",
+    "expectedEntities": [
+      {
+        "type": "PERSON",
+        "text": "Sarah Johnson-Smith",
+        "aliases": ["Sarah"],
+        "context": "tech startup founder, AI developer",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Michael Smith",
+        "aliases": ["Mike"],
+        "context": "tech startup founder, business",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Emma Smith",
+        "aliases": ["Em"],
+        "context": "computer science graduate",
+        "confidence": 0.90
+      },
+      {
+        "type": "PERSON",
+        "text": "Wei Chen",
+        "aliases": ["Professor Wei"],
+        "context": "AI researcher",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Stanford",
+        "context": "university",
+        "confidence": 0.98
+      },
+      {
+        "type": "LOCATION",
+        "text": "Silicon Valley",
+        "context": "tech hub",
+        "confidence": 0.98
+      }
+    ]
+  }
+]

@@ -1,0 +1,234 @@
+{
+  "entities": [
+    {
+      "id": "global_person_0",
+      "type": "PERSON",
+      "canonical": "Jacob",
+      "aliases": [],
+      "created_at": "2025-10-14T02:24:22.757Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_1",
+      "type": "PERSON",
+      "canonical": "Abram",
+      "aliases": [],
+      "created_at": "2025-10-14T02:24:22.757Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_2",
+      "type": "PERSON",
+      "canonical": "Isaac",
+      "aliases": [],
+      "created_at": "2025-10-14T02:24:22.757Z",
+      "centrality": 0
+    }
+  ],
+  "relations": [
+    {
+      "id": "108991d2-0f55-4bb7-a51c-ea84041859e1",
+      "subj": "global_person_1",
+      "pred": "parent_of",
+      "obj": "global_person_2",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 4,
+            "end": 21,
+            "text": "And Abram begat Isaac; and Isaac begat Jacob."
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8133690377216797,
+      "extractor": "dep"
+    },
+    {
+      "id": "a42f5539-f0f1-4bcb-aa7b-0a1b8d601611",
+      "subj": "global_person_2",
+      "pred": "child_of",
+      "obj": "global_person_1",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 4,
+            "end": 21,
+            "text": "And Abram begat Isaac; and Isaac begat Jacob."
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8133690377216797,
+      "extractor": "dep"
+    },
+    {
+      "id": "c297c65b-448f-4beb-93f2-e7766c838901",
+      "subj": "global_person_2",
+      "pred": "parent_of",
+      "obj": "global_person_0",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 27,
+            "end": 44,
+            "text": "And Abram begat Isaac; and Isaac begat Jacob."
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8133690377216797,
+      "extractor": "dep"
+    },
+    {
+      "id": "9db9e15e-bdb2-4ba4-9346-d7fb52e84a0a",
+      "subj": "global_person_0",
+      "pred": "child_of",
+      "obj": "global_person_2",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 27,
+            "end": 44,
+            "text": "And Abram begat Isaac; and Isaac begat Jacob."
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8133690377216797,
+      "extractor": "dep"
+    }
+  ],
+  "conflicts": [
+    {
+      "type": "cycle",
+      "severity": 3,
+      "description": "Cycle detected in parent_of/child_of: global_person_1 → global_person_2 → global_person_1",
+      "relations": [
+        {
+          "id": "108991d2-0f55-4bb7-a51c-ea84041859e1",
+          "subj": "global_person_1",
+          "pred": "parent_of",
+          "obj": "global_person_2",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 4,
+                "end": 21,
+                "text": "And Abram begat Isaac; and Isaac begat Jacob."
+              },
+              "sentence_index": 0,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.8133690377216797,
+          "extractor": "dep"
+        },
+        {
+          "id": "a42f5539-f0f1-4bcb-aa7b-0a1b8d601611",
+          "subj": "global_person_2",
+          "pred": "child_of",
+          "obj": "global_person_1",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 4,
+                "end": 21,
+                "text": "And Abram begat Isaac; and Isaac begat Jacob."
+              },
+              "sentence_index": 0,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.8133690377216797,
+          "extractor": "dep"
+        }
+      ]
+    },
+    {
+      "type": "cycle",
+      "severity": 3,
+      "description": "Cycle detected in parent_of/child_of: global_person_2 → global_person_0 → global_person_2",
+      "relations": [
+        {
+          "id": "c297c65b-448f-4beb-93f2-e7766c838901",
+          "subj": "global_person_2",
+          "pred": "parent_of",
+          "obj": "global_person_0",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 27,
+                "end": 44,
+                "text": "And Abram begat Isaac; and Isaac begat Jacob."
+              },
+              "sentence_index": 0,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.8133690377216797,
+          "extractor": "dep"
+        },
+        {
+          "id": "9db9e15e-bdb2-4ba4-9346-d7fb52e84a0a",
+          "subj": "global_person_0",
+          "pred": "child_of",
+          "obj": "global_person_2",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 27,
+                "end": 44,
+                "text": "And Abram begat Isaac; and Isaac begat Jacob."
+              },
+              "sentence_index": 0,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.8133690377216797,
+          "extractor": "dep"
+        }
+      ]
+    }
+  ],
+  "provenance": {
+    "begat_entity_0": {
+      "global_id": "global_person_0",
+      "doc_id": "begat",
+      "merged_at": "2025-10-14T02:24:22.757Z",
+      "local_canonical": "Jacob"
+    },
+    "begat_entity_1": {
+      "global_id": "global_person_1",
+      "doc_id": "begat",
+      "merged_at": "2025-10-14T02:24:22.757Z",
+      "local_canonical": "Abram"
+    },
+    "begat_entity_2": {
+      "global_id": "global_person_2",
+      "doc_id": "begat",
+      "merged_at": "2025-10-14T02:24:22.757Z",
+      "local_canonical": "Isaac"
+    }
+  },
+  "metadata": {
+    "created_at": "2025-10-14T02:24:22.694Z",
+    "updated_at": "2025-10-14T02:24:22.758Z",
+    "doc_count": 1,
+    "doc_ids": [
+      "begat"
+    ]
+  }
+}

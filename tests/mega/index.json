@@ -1,0 +1,19 @@
+{
+  "suite": "ARES Mega Regression Suite",
+  "description": "High-word-count narratives for large-scale regression tracking.",
+  "targets": {
+    "entityPrecision": 0.8,
+    "entityRecall": 0.75,
+    "relationPrecision": 0.8,
+    "relationRecall": 0.75
+  },
+  "cases": [
+    {
+      "id": "mega-001",
+      "file": "cases/mega-001.json",
+      "domain": "emerald-chronicle",
+      "approx_word_count": 1000,
+      "notes": "Foundational long-form narrative covering family, alliances, rivalries, and academic ties."
+    }
+  ]
+}

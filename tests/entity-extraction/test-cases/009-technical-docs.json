@@ -1,0 +1,173 @@
+[
+  {
+    "id": "technical-001",
+    "description": "Software documentation with API references and technical specifications",
+    "text": "The React.js team at Meta (formerly Facebook) has released version 19.0.0, introducing concurrent features developed by Sebastian Markbåge and Andrew Clark. Dan Abramov's comprehensive guide on the official React blog explains how the new Suspense architecture, building on contributions from Sophie Alpert's streaming renderer work, enables better user experiences. According to Kent C. Dodds' testing documentation, the @testing-library/react package fully supports these features. The React DevTools extension, maintained by Brian Vaughn, has been updated to support debugging of concurrent mode features.\n\nImplementation requires Node.js 18.0+ and can be installed via npm:\n```bash\nnpm install react@19.0.0 react-dom@19.0.0\n```\n\nThe TypeScript team at Microsoft, led by Anders Hejlsberg, has also released updated type definitions. Ryan Cavanaugh's pull request (microsoft/TypeScript#58923) includes enhanced types for the new APIs. Integration with Next.js 14, developed by Guillermo Rauch's Vercel team, is available through the @next/react-enhancement package.\n\nFor deployment, Netlify's Build Plugins and Vercel's Edge Functions both support the new features. AWS Amplify, as documented by Nader Dabit, provides seamless integration through the @aws-amplify/react package. The Chrome DevTools team has added specific debugging features for concurrent React, accessible in Chrome 121 beta.\n\nBenchmarks by the React Core team show significant performance improvements:\n- Time to First Contentful Paint: -35%\n- Memory usage: -27%\n- Bundle size (min+gzip): -12%\n\nThe changes are fully documented in the React RFC repository (reactjs/rfcs#189), with examples available in the React documentation site deployed on Netlify.",
+    "expectedEntities": [
+      {
+        "type": "TECHNOLOGY",
+        "text": "React.js",
+        "aliases": ["React"],
+        "context": "software framework",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Meta",
+        "aliases": ["Facebook"],
+        "context": "technology company",
+        "confidence": 0.98
+      },
+      {
+        "type": "PERSON",
+        "text": "Sebastian Markbåge",
+        "context": "React developer",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Andrew Clark",
+        "context": "React developer",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Dan Abramov",
+        "context": "React developer",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Sophie Alpert",
+        "context": "React developer",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Kent C. Dodds",
+        "context": "software developer",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Brian Vaughn",
+        "context": "React developer",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Anders Hejlsberg",
+        "context": "TypeScript developer",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Ryan Cavanaugh",
+        "context": "TypeScript developer",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Guillermo Rauch",
+        "context": "Vercel CEO",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Nader Dabit",
+        "context": "AWS developer",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Microsoft",
+        "context": "technology company",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Vercel",
+        "context": "technology company",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Netlify",
+        "context": "technology company",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "AWS",
+        "context": "technology company",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "React Core team",
+        "context": "development team",
+        "confidence": 0.95
+      },
+      {
+        "type": "PRODUCT",
+        "text": "Node.js",
+        "context": "software runtime",
+        "confidence": 0.98
+      },
+      {
+        "type": "PRODUCT",
+        "text": "npm",
+        "context": "package manager",
+        "confidence": 0.98
+      },
+      {
+        "type": "PRODUCT",
+        "text": "TypeScript",
+        "context": "programming language",
+        "confidence": 0.98
+      },
+      {
+        "type": "PRODUCT",
+        "text": "Next.js",
+        "context": "software framework",
+        "confidence": 0.98
+      },
+      {
+        "type": "PRODUCT",
+        "text": "Chrome DevTools",
+        "context": "development tools",
+        "confidence": 0.95
+      },
+      {
+        "type": "PRODUCT",
+        "text": "Chrome",
+        "context": "web browser",
+        "confidence": 0.98
+      },
+      {
+        "type": "PRODUCT",
+        "text": "AWS Amplify",
+        "context": "cloud service",
+        "confidence": 0.95
+      },
+      {
+        "type": "SOFTWARE_LIBRARY",
+        "text": "@testing-library/react",
+        "context": "testing package",
+        "confidence": 0.95
+      },
+      {
+        "type": "SOFTWARE_LIBRARY",
+        "text": "@next/react-enhancement",
+        "context": "software package",
+        "confidence": 0.95
+      },
+      {
+        "type": "SOFTWARE_LIBRARY",
+        "text": "@aws-amplify/react",
+        "context": "software package",
+        "confidence": 0.95
+      }
+    ]
+  }
+]

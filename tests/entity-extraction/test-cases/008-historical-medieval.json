@@ -1,0 +1,157 @@
+[
+  {
+    "id": "historical-002",
+    "description": "Medieval European history with complex dynastic relationships",
+    "text": "The Treaty of Troyes (1420) marked a pivotal moment in the Hundred Years' War when King Charles VI of France, often called 'Charles the Mad', agreed to disinherit his son Charles (later Charles VII) in favor of King Henry V of England. The treaty arranged the marriage of Henry V to Catherine of Valois, Charles VI's daughter, making their future son, Henry VI, heir to both the English and French thrones. The Dauphin Charles, supported by Joan of Arc (Jeanne d'Arc), would later challenge this arrangement. During this period, Philip the Good, Duke of Burgundy, allied with the English following the assassination of his father, John the Fearless, at the Bridge of Montereau. The House of Valois-Burgundy, a cadet branch of the French royal house, controlled territories stretching from Dijon to the Low Countries. In Paris, the University scholars, led by Jean Gerson, Chancellor of the University of Paris, debated the legitimacy of the treaty, while at the Basilica of Saint-Denis, the traditional burial place of French kings, preparations were made for what many saw as the union of two great kingdoms. The Armagnac faction, led by Bernard VII, Count of Armagnac, and supported by the powerful House of Orléans, continued to resist English dominion from their strongholds in southern France.",
+    "expectedEntities": [
+      {
+        "type": "EVENT",
+        "text": "Treaty of Troyes",
+        "context": "historical treaty",
+        "confidence": 0.95
+      },
+      {
+        "type": "EVENT",
+        "text": "Hundred Years' War",
+        "context": "historical conflict",
+        "confidence": 0.98
+      },
+      {
+        "type": "PERSON",
+        "text": "Charles VI of France",
+        "aliases": ["Charles the Mad", "Charles VI"],
+        "context": "French king",
+        "confidence": 0.98
+      },
+      {
+        "type": "PERSON",
+        "text": "Charles VII of France",
+        "aliases": ["Charles", "The Dauphin Charles", "Charles VII"],
+        "context": "French heir/king",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Henry V of England",
+        "aliases": ["Henry V"],
+        "context": "English king",
+        "confidence": 0.98
+      },
+      {
+        "type": "PERSON",
+        "text": "Catherine of Valois",
+        "context": "French princess",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Henry VI",
+        "context": "heir to English and French thrones",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Joan of Arc",
+        "aliases": ["Jeanne d'Arc"],
+        "context": "French military leader",
+        "confidence": 0.98
+      },
+      {
+        "type": "PERSON",
+        "text": "Philip the Good",
+        "context": "Duke of Burgundy",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "John the Fearless",
+        "context": "Duke of Burgundy",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Jean Gerson",
+        "context": "university chancellor",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Bernard VII",
+        "context": "Count of Armagnac",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "House of Valois-Burgundy",
+        "context": "royal dynasty",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "University of Paris",
+        "context": "educational institution",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "House of Orléans",
+        "context": "royal dynasty",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Armagnac faction",
+        "context": "political group",
+        "confidence": 0.90
+      },
+      {
+        "type": "LOCATION",
+        "text": "Troyes",
+        "context": "French city",
+        "confidence": 0.95
+      },
+      {
+        "type": "LOCATION",
+        "text": "England",
+        "context": "country",
+        "confidence": 0.98
+      },
+      {
+        "type": "LOCATION",
+        "text": "France",
+        "context": "country",
+        "confidence": 0.98
+      },
+      {
+        "type": "LOCATION",
+        "text": "Bridge of Montereau",
+        "context": "historical site",
+        "confidence": 0.95
+      },
+      {
+        "type": "LOCATION",
+        "text": "Dijon",
+        "context": "city",
+        "confidence": 0.95
+      },
+      {
+        "type": "LOCATION",
+        "text": "Low Countries",
+        "context": "region",
+        "confidence": 0.95
+      },
+      {
+        "type": "LOCATION",
+        "text": "Paris",
+        "context": "city",
+        "confidence": 0.98
+      },
+      {
+        "type": "LOCATION",
+        "text": "Basilica of Saint-Denis",
+        "context": "religious building",
+        "confidence": 0.95
+      }
+    ]
+  }
+]

@@ -1,0 +1,136 @@
+[
+  {
+    "id": "legal-001",
+    "description": "Legal document with complex organizational hierarchies and roles",
+    "text": "In the matter of United States v. Microsoft Corporation (Civil Action No. 98-1232), Judge Thomas Penfield Jackson of the United States District Court for the District of Columbia ruled that Microsoft Corp., under the leadership of CEO Bill Gates and President Steve Ballmer, had maintained an illegal monopoly. The Department of Justice (DOJ), represented by Attorney General Janet Reno and lead prosecutor Joel I. Klein, argued that Microsoft's bundling of Internet Explorer with the Windows Operating System violated the Sherman Antitrust Act. Assistant Attorney General Anne K. Bingaman of the DOJ's Antitrust Division worked closely with attorneys from various state Attorney General offices. The European Commission's Competition Authority, then led by Commissioner Mario Monti, launched a parallel investigation. Microsoft's legal team, headed by William H. Neukom, General Counsel, contested these claims. The case was later appealed to the U.S. Court of Appeals for the D.C. Circuit, where Chief Judge Douglas H. Ginsburg presided. The Federal Trade Commission (FTC) and the Securities and Exchange Commission (SEC) also monitored the proceedings.",
+    "expectedEntities": [
+      {
+        "type": "PERSON",
+        "text": "Thomas Penfield Jackson",
+        "aliases": ["Judge Jackson"],
+        "context": "District Court Judge",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Bill Gates",
+        "context": "Microsoft CEO",
+        "confidence": 0.98
+      },
+      {
+        "type": "PERSON",
+        "text": "Steve Ballmer",
+        "context": "Microsoft President",
+        "confidence": 0.98
+      },
+      {
+        "type": "PERSON",
+        "text": "Janet Reno",
+        "context": "Attorney General",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Joel I. Klein",
+        "context": "lead prosecutor",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Anne K. Bingaman",
+        "context": "Assistant Attorney General",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Mario Monti",
+        "context": "EU Commissioner",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "William H. Neukom",
+        "context": "Microsoft General Counsel",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Douglas H. Ginsburg",
+        "aliases": ["Chief Judge Ginsburg"],
+        "context": "Appeals Court Judge",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Microsoft Corporation",
+        "aliases": ["Microsoft Corp.", "Microsoft"],
+        "context": "technology company",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "United States District Court for the District of Columbia",
+        "context": "federal court",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Department of Justice",
+        "aliases": ["DOJ"],
+        "context": "government agency",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "DOJ Antitrust Division",
+        "context": "government department",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "European Commission Competition Authority",
+        "context": "regulatory body",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "U.S. Court of Appeals for the D.C. Circuit",
+        "context": "federal court",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Federal Trade Commission",
+        "aliases": ["FTC"],
+        "context": "government agency",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Securities and Exchange Commission",
+        "aliases": ["SEC"],
+        "context": "government agency",
+        "confidence": 0.98
+      },
+      {
+        "type": "PRODUCT",
+        "text": "Internet Explorer",
+        "context": "web browser",
+        "confidence": 0.98
+      },
+      {
+        "type": "PRODUCT",
+        "text": "Windows Operating System",
+        "aliases": ["Windows"],
+        "context": "operating system",
+        "confidence": 0.98
+      },
+      {
+        "type": "LAW",
+        "text": "Sherman Antitrust Act",
+        "context": "federal law",
+        "confidence": 0.95
+      }
+    ]
+  }
+]

@@ -1,0 +1,8 @@
+{
+  "id": "52281947-e9d9-494a-b074-6c250708978c",
+  "project": "test",
+  "markdown": "@about(Barty Beauregard)\n\nOn March 14, 1903, Barty Beauregard met Mildred Finch beneath the old clock tower in Wickersham Square. \nThe tower had been abandoned since the Great Fire of 1887, but Barty believed something within its gears \nstill marked the hours for the dead.\n\n[[Entity: Barty Beauregard|type=PERSON]] carried his silver pocket watch, a gift from [[Entity: Frederick Holloway|type=PERSON]], \nand noted that it ticked perfectly in sync with the tower's broken hands. Mildred, ever cautious, warned him that \nthe clock had struck thirteen once before — on the night Frederick vanished.\n\nLater that evening, Barty recorded in his journal that he had seen a faint green light pulse behind the tower’s face. \nHe wrote, “The sound was like breathing.” [[Entity: Melora Graves|type=PERSON]] later confirmed seeing the same glow \nfrom her window at [[Entity: Thornbridge House|type=PLACE]].\n\nBy dawn, the clock tower stood silent again. Yet witnesses swore that the second hand trembled, as if resisting the dawn.\n\n#seeds\n- Quotation from Barty’s journal dated March 14, 1903.\n- Statement from Melora Graves to the Wickersham Gazette.\n- Parish record confirming the clock tower fire (April 1887).\n\n#tags\n[[Entity: Wickersham Clock Tower|type=PLACE]], [[Entity: Wickersham Gazette|type=ORG]], [[Entity: Great Fire of 1887|type=EVENT]]",
+  "attachments": [],
+  "createdAt": "2025-10-18T23:51:17.037Z",
+  "updatedAt": "2025-10-18T23:51:17.037Z"
+}

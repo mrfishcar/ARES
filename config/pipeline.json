@@ -1,0 +1,27 @@
+{
+  "confidence": {
+    "ACCEPT": 0.7,
+    "REVIEW": 0.4
+  },
+  "watch": {
+    "intervalMs": 3000,
+    "rebuildDebounceMs": 5000,
+    "incomingDir": "./incoming"
+  },
+  "ui": {
+    "pollMs": 2000,
+    "projectDefault": "default",
+    "homePrompt": "What are you thinking about?",
+    "graph": {
+      "maxNodes": 2000,
+      "maxEdges": 5000,
+      "defaultDepth": 1,
+      "defaultNeighborhoodLimit": 50,
+      "defaultPredicateLimit": 100
+    }
+  },
+  "server": {
+    "graphqlPort": 4000,
+    "metricsPort": 4100
+  }
+}

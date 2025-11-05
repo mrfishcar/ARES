@@ -1,0 +1,1880 @@
+{
+  "entities": [
+    {
+      "id": "global_org_0",
+      "type": "ORG",
+      "canonical": "Burrow",
+      "aliases": [],
+      "created_at": "2025-10-14T17:43:58.684Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_org_1",
+      "type": "ORG",
+      "canonical": "Gringotts Bank",
+      "aliases": [],
+      "created_at": "2025-10-14T17:43:58.685Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_2",
+      "type": "PERSON",
+      "canonical": "Molly Weasley",
+      "aliases": [],
+      "created_at": "2025-10-14T17:43:58.685Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_3",
+      "type": "PERSON",
+      "canonical": "Arthur",
+      "aliases": [],
+      "created_at": "2025-10-14T17:43:58.685Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_4",
+      "type": "PERSON",
+      "canonical": "Fred",
+      "aliases": [],
+      "created_at": "2025-10-14T17:43:58.685Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_5",
+      "type": "PERSON",
+      "canonical": "George",
+      "aliases": [],
+      "created_at": "2025-10-14T17:43:58.685Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_6",
+      "type": "PERSON",
+      "canonical": "Ron",
+      "aliases": [],
+      "created_at": "2025-10-14T17:43:58.685Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_7",
+      "type": "PERSON",
+      "canonical": "Ginny",
+      "aliases": [],
+      "created_at": "2025-10-14T17:43:58.685Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_8",
+      "type": "PERSON",
+      "canonical": "Bill Weasley",
+      "aliases": [],
+      "created_at": "2025-10-14T17:43:58.685Z",
+      "centrality": 0
+    }
+  ],
+  "relations": [
+    {
+      "id": "b3fc32cd-fcb5-4884-b784-44bdb6be8350",
+      "subj": "ff7553cf-52ac-4da0-8cfe-c2c793adc3d7",
+      "pred": "parent_of",
+      "obj": "c05dd6fb-3c7b-476d-ac54-968cd91fbf47",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 58,
+            "end": 100,
+            "text": "Arthur's wife. Their children included Ron"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "eeea48ed-9c94-4c87-a4c7-fa1d5669c773",
+      "subj": "ff7553cf-52ac-4da0-8cfe-c2c793adc3d7",
+      "pred": "child_of",
+      "obj": "c05dd6fb-3c7b-476d-ac54-968cd91fbf47",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 58,
+            "end": 100,
+            "text": "Arthur's wife. Their children included Ron"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "1160ef10-1d36-448e-ba8e-e503c7bc9402",
+      "subj": "ff7553cf-52ac-4da0-8cfe-c2c793adc3d7",
+      "pred": "parent_of",
+      "obj": "68b3a6c4-6494-4f12-9aac-2551e567b182",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 58,
+            "end": 107,
+            "text": "Arthur's wife. Their children included Ron, Ginny"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "304cacee-578c-4acf-ba2d-78143b14a634",
+      "subj": "ff7553cf-52ac-4da0-8cfe-c2c793adc3d7",
+      "pred": "child_of",
+      "obj": "68b3a6c4-6494-4f12-9aac-2551e567b182",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 58,
+            "end": 107,
+            "text": "Arthur's wife. Their children included Ron, Ginny"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "db808973-f5ce-47ae-aed1-59559a86ce5a",
+      "subj": "ff7553cf-52ac-4da0-8cfe-c2c793adc3d7",
+      "pred": "parent_of",
+      "obj": "465b26c7-030f-4471-a21d-48767098a451",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 58,
+            "end": 113,
+            "text": "Arthur's wife. Their children included Ron, Ginny, Fred"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "00ef9fff-7276-41ac-982c-5d5082019573",
+      "subj": "ff7553cf-52ac-4da0-8cfe-c2c793adc3d7",
+      "pred": "child_of",
+      "obj": "465b26c7-030f-4471-a21d-48767098a451",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 58,
+            "end": 113,
+            "text": "Arthur's wife. Their children included Ron, Ginny, Fred"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "9a77f652-d166-43e2-8d4d-a3ac7fc4511f",
+      "subj": "ff7553cf-52ac-4da0-8cfe-c2c793adc3d7",
+      "pred": "parent_of",
+      "obj": "d79ab6dc-72ed-47fb-a189-c19fc4fe262f",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 58,
+            "end": 125,
+            "text": "Arthur's wife. Their children included Ron, Ginny, Fred, and George"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "226eceb6-9b12-495e-b784-7c53d26b9799",
+      "subj": "ff7553cf-52ac-4da0-8cfe-c2c793adc3d7",
+      "pred": "child_of",
+      "obj": "d79ab6dc-72ed-47fb-a189-c19fc4fe262f",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 58,
+            "end": 125,
+            "text": "Arthur's wife. Their children included Ron, Ginny, Fred, and George"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "be21960e-4511-4652-bf86-5133f429d9d2",
+      "subj": "1c4542fd-3b4d-4cda-adec-6e66ac648a9e",
+      "pred": "parent_of",
+      "obj": "c05dd6fb-3c7b-476d-ac54-968cd91fbf47",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 40,
+            "end": 100,
+            "text": "Molly Weasley was Arthur's wife. Their children included Ron"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "ebe15d28-c296-40d6-95d5-49a70daac55f",
+      "subj": "1c4542fd-3b4d-4cda-adec-6e66ac648a9e",
+      "pred": "child_of",
+      "obj": "c05dd6fb-3c7b-476d-ac54-968cd91fbf47",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 40,
+            "end": 100,
+            "text": "Molly Weasley was Arthur's wife. Their children included Ron"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "84f3280d-3161-4a24-b458-e00a57865cd3",
+      "subj": "1c4542fd-3b4d-4cda-adec-6e66ac648a9e",
+      "pred": "parent_of",
+      "obj": "68b3a6c4-6494-4f12-9aac-2551e567b182",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 40,
+            "end": 107,
+            "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "e4543fb9-83e7-49e5-a12b-276a551e3cf8",
+      "subj": "1c4542fd-3b4d-4cda-adec-6e66ac648a9e",
+      "pred": "child_of",
+      "obj": "68b3a6c4-6494-4f12-9aac-2551e567b182",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 40,
+            "end": 107,
+            "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "541911cc-aa52-4c4f-9a72-da198d4a0432",
+      "subj": "1c4542fd-3b4d-4cda-adec-6e66ac648a9e",
+      "pred": "parent_of",
+      "obj": "465b26c7-030f-4471-a21d-48767098a451",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 40,
+            "end": 113,
+            "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "446f5fbf-c899-48d3-9b1b-b8f03d83edf3",
+      "subj": "1c4542fd-3b4d-4cda-adec-6e66ac648a9e",
+      "pred": "child_of",
+      "obj": "465b26c7-030f-4471-a21d-48767098a451",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 40,
+            "end": 113,
+            "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "97c79fac-00e0-4762-96ba-f5f38ae437ba",
+      "subj": "1c4542fd-3b4d-4cda-adec-6e66ac648a9e",
+      "pred": "parent_of",
+      "obj": "d79ab6dc-72ed-47fb-a189-c19fc4fe262f",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 40,
+            "end": 125,
+            "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred, and George"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "2137fe9e-5a78-468d-91ea-3bd87a9a32a6",
+      "subj": "1c4542fd-3b4d-4cda-adec-6e66ac648a9e",
+      "pred": "child_of",
+      "obj": "d79ab6dc-72ed-47fb-a189-c19fc4fe262f",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 40,
+            "end": 125,
+            "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred, and George"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "002b3f82-09dc-42b5-87de-f329437fb516",
+      "subj": "global_person_3",
+      "pred": "parent_of",
+      "obj": "f3755e80-808b-4045-8022-90118638ecec",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 58,
+            "end": 100,
+            "text": "Arthur's wife. Their children included Ron"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "4c5a90fc-49d6-4999-a6c3-d906e686682a",
+      "subj": "global_person_3",
+      "pred": "child_of",
+      "obj": "f3755e80-808b-4045-8022-90118638ecec",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 58,
+            "end": 100,
+            "text": "Arthur's wife. Their children included Ron"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "f92825ad-783b-41df-b4cc-9817984293a4",
+      "subj": "global_person_3",
+      "pred": "parent_of",
+      "obj": "77f44718-ebb4-4d59-bd19-218c099114d5",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 58,
+            "end": 107,
+            "text": "Arthur's wife. Their children included Ron, Ginny"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "db6d5d9b-d497-4f3d-9256-b7fb9c400b2c",
+      "subj": "global_person_3",
+      "pred": "child_of",
+      "obj": "77f44718-ebb4-4d59-bd19-218c099114d5",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 58,
+            "end": 107,
+            "text": "Arthur's wife. Their children included Ron, Ginny"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "3fe6fa62-bd81-4cb9-b779-3093de3080e4",
+      "subj": "global_person_3",
+      "pred": "parent_of",
+      "obj": "7e61d927-69ee-4efb-be7f-ece5a8ca328d",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 58,
+            "end": 113,
+            "text": "Arthur's wife. Their children included Ron, Ginny, Fred"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "adf3374c-78b9-41ec-89b9-f00a096e3586",
+      "subj": "global_person_3",
+      "pred": "child_of",
+      "obj": "7e61d927-69ee-4efb-be7f-ece5a8ca328d",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 58,
+            "end": 113,
+            "text": "Arthur's wife. Their children included Ron, Ginny, Fred"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "49b067dc-bd3c-463c-ae63-6d49bfa7fa36",
+      "subj": "global_person_3",
+      "pred": "parent_of",
+      "obj": "70fe12a6-fc7e-42ec-be6b-d5c4f3fa2676",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 58,
+            "end": 125,
+            "text": "Arthur's wife. Their children included Ron, Ginny, Fred, and George"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "67c7707a-cedf-44a2-ac86-8413af8c9111",
+      "subj": "global_person_3",
+      "pred": "child_of",
+      "obj": "70fe12a6-fc7e-42ec-be6b-d5c4f3fa2676",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 58,
+            "end": 125,
+            "text": "Arthur's wife. Their children included Ron, Ginny, Fred, and George"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "fafc4cc2-13bd-430f-9115-52aa4ba77b3b",
+      "subj": "global_person_2",
+      "pred": "parent_of",
+      "obj": "f3755e80-808b-4045-8022-90118638ecec",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 40,
+            "end": 100,
+            "text": "Molly Weasley was Arthur's wife. Their children included Ron"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "ad7d581d-98ce-4f2a-b285-a9314f759ce0",
+      "subj": "global_person_2",
+      "pred": "child_of",
+      "obj": "f3755e80-808b-4045-8022-90118638ecec",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 40,
+            "end": 100,
+            "text": "Molly Weasley was Arthur's wife. Their children included Ron"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "8488d341-5ac0-4c20-9446-9888acbcd6a0",
+      "subj": "global_person_2",
+      "pred": "parent_of",
+      "obj": "77f44718-ebb4-4d59-bd19-218c099114d5",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 40,
+            "end": 107,
+            "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "d31707e9-263f-4c84-8597-75f69a3e75c7",
+      "subj": "global_person_2",
+      "pred": "child_of",
+      "obj": "77f44718-ebb4-4d59-bd19-218c099114d5",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 40,
+            "end": 107,
+            "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "d1466ef5-ab5d-43d3-8136-9c245c19b16f",
+      "subj": "global_person_2",
+      "pred": "parent_of",
+      "obj": "7e61d927-69ee-4efb-be7f-ece5a8ca328d",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 40,
+            "end": 113,
+            "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "30128427-8b6f-4fd4-b63d-e1cc8c1199ff",
+      "subj": "global_person_2",
+      "pred": "child_of",
+      "obj": "7e61d927-69ee-4efb-be7f-ece5a8ca328d",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 40,
+            "end": 113,
+            "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "2abcec03-1282-4448-bb85-01114dc8758a",
+      "subj": "global_person_2",
+      "pred": "parent_of",
+      "obj": "70fe12a6-fc7e-42ec-be6b-d5c4f3fa2676",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 40,
+            "end": 125,
+            "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred, and George"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "a6be7c30-a9ac-4aa3-bafc-ae5b704eddb7",
+      "subj": "global_person_2",
+      "pred": "child_of",
+      "obj": "70fe12a6-fc7e-42ec-be6b-d5c4f3fa2676",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 40,
+            "end": 125,
+            "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred, and George"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "4823ec78-b7f1-4c4a-88d9-068ce6e996a7",
+      "subj": "global_person_3",
+      "pred": "parent_of",
+      "obj": "global_person_6",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 58,
+            "end": 100,
+            "text": "Arthur's wife. Their children included Ron"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "a02458f7-26b7-470f-a6f0-5345ed7336e2",
+      "subj": "global_person_3",
+      "pred": "child_of",
+      "obj": "global_person_6",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 58,
+            "end": 100,
+            "text": "Arthur's wife. Their children included Ron"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "21115399-b4c7-4a4d-9f87-d43803f23d7c",
+      "subj": "global_person_3",
+      "pred": "parent_of",
+      "obj": "global_person_7",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 58,
+            "end": 107,
+            "text": "Arthur's wife. Their children included Ron, Ginny"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "8e7f97a5-f3ba-45fd-be97-59487d1aed59",
+      "subj": "global_person_3",
+      "pred": "child_of",
+      "obj": "global_person_7",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 58,
+            "end": 107,
+            "text": "Arthur's wife. Their children included Ron, Ginny"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "93741c69-d7c3-445d-abd7-c69c1e69ec6b",
+      "subj": "global_person_3",
+      "pred": "parent_of",
+      "obj": "global_person_4",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 58,
+            "end": 113,
+            "text": "Arthur's wife. Their children included Ron, Ginny, Fred"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "237a786c-5b20-4305-b0d8-87362d864a52",
+      "subj": "global_person_3",
+      "pred": "child_of",
+      "obj": "global_person_4",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 58,
+            "end": 113,
+            "text": "Arthur's wife. Their children included Ron, Ginny, Fred"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "65572e8b-4115-4dd8-970d-77eab5ac4424",
+      "subj": "global_person_3",
+      "pred": "parent_of",
+      "obj": "global_person_5",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 58,
+            "end": 125,
+            "text": "Arthur's wife. Their children included Ron, Ginny, Fred, and George"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "928e0057-eba8-4291-8f5e-ebe055125efa",
+      "subj": "global_person_3",
+      "pred": "child_of",
+      "obj": "global_person_5",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 58,
+            "end": 125,
+            "text": "Arthur's wife. Their children included Ron, Ginny, Fred, and George"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "7d7f3ac0-dea7-4bc6-a500-2cc97c91ec0a",
+      "subj": "global_person_2",
+      "pred": "parent_of",
+      "obj": "global_person_6",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 40,
+            "end": 100,
+            "text": "Molly Weasley was Arthur's wife. Their children included Ron"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "27634cfb-0f69-48ea-b2db-258d71a472d4",
+      "subj": "global_person_2",
+      "pred": "child_of",
+      "obj": "global_person_6",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 40,
+            "end": 100,
+            "text": "Molly Weasley was Arthur's wife. Their children included Ron"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "57b42212-a124-46fc-9f7e-7a76b82a936d",
+      "subj": "global_person_2",
+      "pred": "parent_of",
+      "obj": "global_person_7",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 40,
+            "end": 107,
+            "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "11bc77ac-6e01-44d5-8d4e-0b6055c96095",
+      "subj": "global_person_2",
+      "pred": "child_of",
+      "obj": "global_person_7",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 40,
+            "end": 107,
+            "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "f19432dc-f66d-4e36-bdae-6ced385200b7",
+      "subj": "global_person_2",
+      "pred": "parent_of",
+      "obj": "global_person_4",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 40,
+            "end": 113,
+            "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "d2e0ecb3-e797-4ed1-bce3-153108c16459",
+      "subj": "global_person_2",
+      "pred": "child_of",
+      "obj": "global_person_4",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 40,
+            "end": 113,
+            "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "7af620f0-2689-4a1d-983d-fbcc60615d61",
+      "subj": "global_person_2",
+      "pred": "parent_of",
+      "obj": "global_person_5",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 40,
+            "end": 125,
+            "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred, and George"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "1ef1092c-fb66-4852-aa06-2bb642239a39",
+      "subj": "global_person_2",
+      "pred": "child_of",
+      "obj": "global_person_5",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 40,
+            "end": 125,
+            "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred, and George"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "f131cbf8-a290-4a76-85bb-3f39032768e7",
+      "subj": "global_person_6",
+      "pred": "child_of",
+      "obj": "global_person_3",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 97,
+            "end": 66,
+            "text": " Arthur's wife. Their children included Ron, Ginn"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.9,
+      "extractor": "dep"
+    },
+    {
+      "id": "0743b5c0-43cd-42df-b38a-0b7fb4aeddd5",
+      "subj": "global_person_4",
+      "pred": "child_of",
+      "obj": "global_person_3",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 109,
+            "end": 66,
+            "text": "fe. Their children included Ron, Ginn"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.9,
+      "extractor": "dep"
+    },
+    {
+      "id": "03fe4b21-5e6b-43d9-aacd-b33dd12673dc",
+      "subj": "global_person_5",
+      "pred": "child_of",
+      "obj": "global_person_3",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 119,
+            "end": 66,
+            "text": "children included Ron, Ginn"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.9,
+      "extractor": "dep"
+    }
+  ],
+  "conflicts": [
+    {
+      "type": "single_valued",
+      "severity": 2,
+      "description": "Entity ff7553cf-52ac-4da0-8cfe-c2c793adc3d7 has multiple values for single-valued predicate 'parent_of': c05dd6fb-3c7b-476d-ac54-968cd91fbf47, 68b3a6c4-6494-4f12-9aac-2551e567b182, 465b26c7-030f-4471-a21d-48767098a451, d79ab6dc-72ed-47fb-a189-c19fc4fe262f",
+      "relations": [
+        {
+          "id": "b3fc32cd-fcb5-4884-b784-44bdb6be8350",
+          "subj": "ff7553cf-52ac-4da0-8cfe-c2c793adc3d7",
+          "pred": "parent_of",
+          "obj": "c05dd6fb-3c7b-476d-ac54-968cd91fbf47",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 58,
+                "end": 100,
+                "text": "Arthur's wife. Their children included Ron"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "1160ef10-1d36-448e-ba8e-e503c7bc9402",
+          "subj": "ff7553cf-52ac-4da0-8cfe-c2c793adc3d7",
+          "pred": "parent_of",
+          "obj": "68b3a6c4-6494-4f12-9aac-2551e567b182",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 58,
+                "end": 107,
+                "text": "Arthur's wife. Their children included Ron, Ginny"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "db808973-f5ce-47ae-aed1-59559a86ce5a",
+          "subj": "ff7553cf-52ac-4da0-8cfe-c2c793adc3d7",
+          "pred": "parent_of",
+          "obj": "465b26c7-030f-4471-a21d-48767098a451",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 58,
+                "end": 113,
+                "text": "Arthur's wife. Their children included Ron, Ginny, Fred"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "9a77f652-d166-43e2-8d4d-a3ac7fc4511f",
+          "subj": "ff7553cf-52ac-4da0-8cfe-c2c793adc3d7",
+          "pred": "parent_of",
+          "obj": "d79ab6dc-72ed-47fb-a189-c19fc4fe262f",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 58,
+                "end": 125,
+                "text": "Arthur's wife. Their children included Ron, Ginny, Fred, and George"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        }
+      ]
+    },
+    {
+      "type": "single_valued",
+      "severity": 2,
+      "description": "Entity 1c4542fd-3b4d-4cda-adec-6e66ac648a9e has multiple values for single-valued predicate 'parent_of': c05dd6fb-3c7b-476d-ac54-968cd91fbf47, 68b3a6c4-6494-4f12-9aac-2551e567b182, 465b26c7-030f-4471-a21d-48767098a451, d79ab6dc-72ed-47fb-a189-c19fc4fe262f",
+      "relations": [
+        {
+          "id": "be21960e-4511-4652-bf86-5133f429d9d2",
+          "subj": "1c4542fd-3b4d-4cda-adec-6e66ac648a9e",
+          "pred": "parent_of",
+          "obj": "c05dd6fb-3c7b-476d-ac54-968cd91fbf47",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 40,
+                "end": 100,
+                "text": "Molly Weasley was Arthur's wife. Their children included Ron"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "84f3280d-3161-4a24-b458-e00a57865cd3",
+          "subj": "1c4542fd-3b4d-4cda-adec-6e66ac648a9e",
+          "pred": "parent_of",
+          "obj": "68b3a6c4-6494-4f12-9aac-2551e567b182",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 40,
+                "end": 107,
+                "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "541911cc-aa52-4c4f-9a72-da198d4a0432",
+          "subj": "1c4542fd-3b4d-4cda-adec-6e66ac648a9e",
+          "pred": "parent_of",
+          "obj": "465b26c7-030f-4471-a21d-48767098a451",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 40,
+                "end": 113,
+                "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "97c79fac-00e0-4762-96ba-f5f38ae437ba",
+          "subj": "1c4542fd-3b4d-4cda-adec-6e66ac648a9e",
+          "pred": "parent_of",
+          "obj": "d79ab6dc-72ed-47fb-a189-c19fc4fe262f",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 40,
+                "end": 125,
+                "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred, and George"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        }
+      ]
+    },
+    {
+      "type": "single_valued",
+      "severity": 2,
+      "description": "Entity global_person_3 has multiple values for single-valued predicate 'parent_of': f3755e80-808b-4045-8022-90118638ecec, 77f44718-ebb4-4d59-bd19-218c099114d5, 7e61d927-69ee-4efb-be7f-ece5a8ca328d, 70fe12a6-fc7e-42ec-be6b-d5c4f3fa2676, global_person_6, global_person_7, global_person_4, global_person_5",
+      "relations": [
+        {
+          "id": "002b3f82-09dc-42b5-87de-f329437fb516",
+          "subj": "global_person_3",
+          "pred": "parent_of",
+          "obj": "f3755e80-808b-4045-8022-90118638ecec",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 58,
+                "end": 100,
+                "text": "Arthur's wife. Their children included Ron"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "f92825ad-783b-41df-b4cc-9817984293a4",
+          "subj": "global_person_3",
+          "pred": "parent_of",
+          "obj": "77f44718-ebb4-4d59-bd19-218c099114d5",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 58,
+                "end": 107,
+                "text": "Arthur's wife. Their children included Ron, Ginny"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "3fe6fa62-bd81-4cb9-b779-3093de3080e4",
+          "subj": "global_person_3",
+          "pred": "parent_of",
+          "obj": "7e61d927-69ee-4efb-be7f-ece5a8ca328d",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 58,
+                "end": 113,
+                "text": "Arthur's wife. Their children included Ron, Ginny, Fred"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "49b067dc-bd3c-463c-ae63-6d49bfa7fa36",
+          "subj": "global_person_3",
+          "pred": "parent_of",
+          "obj": "70fe12a6-fc7e-42ec-be6b-d5c4f3fa2676",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 58,
+                "end": 125,
+                "text": "Arthur's wife. Their children included Ron, Ginny, Fred, and George"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "4823ec78-b7f1-4c4a-88d9-068ce6e996a7",
+          "subj": "global_person_3",
+          "pred": "parent_of",
+          "obj": "global_person_6",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 58,
+                "end": 100,
+                "text": "Arthur's wife. Their children included Ron"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "21115399-b4c7-4a4d-9f87-d43803f23d7c",
+          "subj": "global_person_3",
+          "pred": "parent_of",
+          "obj": "global_person_7",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 58,
+                "end": 107,
+                "text": "Arthur's wife. Their children included Ron, Ginny"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "93741c69-d7c3-445d-abd7-c69c1e69ec6b",
+          "subj": "global_person_3",
+          "pred": "parent_of",
+          "obj": "global_person_4",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 58,
+                "end": 113,
+                "text": "Arthur's wife. Their children included Ron, Ginny, Fred"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "65572e8b-4115-4dd8-970d-77eab5ac4424",
+          "subj": "global_person_3",
+          "pred": "parent_of",
+          "obj": "global_person_5",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 58,
+                "end": 125,
+                "text": "Arthur's wife. Their children included Ron, Ginny, Fred, and George"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        }
+      ]
+    },
+    {
+      "type": "single_valued",
+      "severity": 2,
+      "description": "Entity global_person_2 has multiple values for single-valued predicate 'parent_of': f3755e80-808b-4045-8022-90118638ecec, 77f44718-ebb4-4d59-bd19-218c099114d5, 7e61d927-69ee-4efb-be7f-ece5a8ca328d, 70fe12a6-fc7e-42ec-be6b-d5c4f3fa2676, global_person_6, global_person_7, global_person_4, global_person_5",
+      "relations": [
+        {
+          "id": "fafc4cc2-13bd-430f-9115-52aa4ba77b3b",
+          "subj": "global_person_2",
+          "pred": "parent_of",
+          "obj": "f3755e80-808b-4045-8022-90118638ecec",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 40,
+                "end": 100,
+                "text": "Molly Weasley was Arthur's wife. Their children included Ron"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "8488d341-5ac0-4c20-9446-9888acbcd6a0",
+          "subj": "global_person_2",
+          "pred": "parent_of",
+          "obj": "77f44718-ebb4-4d59-bd19-218c099114d5",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 40,
+                "end": 107,
+                "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "d1466ef5-ab5d-43d3-8136-9c245c19b16f",
+          "subj": "global_person_2",
+          "pred": "parent_of",
+          "obj": "7e61d927-69ee-4efb-be7f-ece5a8ca328d",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 40,
+                "end": 113,
+                "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "2abcec03-1282-4448-bb85-01114dc8758a",
+          "subj": "global_person_2",
+          "pred": "parent_of",
+          "obj": "70fe12a6-fc7e-42ec-be6b-d5c4f3fa2676",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 40,
+                "end": 125,
+                "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred, and George"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "7d7f3ac0-dea7-4bc6-a500-2cc97c91ec0a",
+          "subj": "global_person_2",
+          "pred": "parent_of",
+          "obj": "global_person_6",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 40,
+                "end": 100,
+                "text": "Molly Weasley was Arthur's wife. Their children included Ron"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "57b42212-a124-46fc-9f7e-7a76b82a936d",
+          "subj": "global_person_2",
+          "pred": "parent_of",
+          "obj": "global_person_7",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 40,
+                "end": 107,
+                "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "f19432dc-f66d-4e36-bdae-6ced385200b7",
+          "subj": "global_person_2",
+          "pred": "parent_of",
+          "obj": "global_person_4",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 40,
+                "end": 113,
+                "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "7af620f0-2689-4a1d-983d-fbcc60615d61",
+          "subj": "global_person_2",
+          "pred": "parent_of",
+          "obj": "global_person_5",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 40,
+                "end": 125,
+                "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred, and George"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        }
+      ]
+    },
+    {
+      "type": "cycle",
+      "severity": 3,
+      "description": "Cycle detected in parent_of/child_of: global_person_3 → global_person_6 → global_person_3",
+      "relations": [
+        {
+          "id": "a02458f7-26b7-470f-a6f0-5345ed7336e2",
+          "subj": "global_person_3",
+          "pred": "child_of",
+          "obj": "global_person_6",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 58,
+                "end": 100,
+                "text": "Arthur's wife. Their children included Ron"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "f131cbf8-a290-4a76-85bb-3f39032768e7",
+          "subj": "global_person_6",
+          "pred": "child_of",
+          "obj": "global_person_3",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 97,
+                "end": 66,
+                "text": " Arthur's wife. Their children included Ron, Ginn"
+              },
+              "sentence_index": 0,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.9,
+          "extractor": "dep"
+        }
+      ]
+    },
+    {
+      "type": "cycle",
+      "severity": 3,
+      "description": "Cycle detected in parent_of/child_of: global_person_6 → global_person_2 → global_person_6",
+      "relations": [
+        {
+          "id": "27634cfb-0f69-48ea-b2db-258d71a472d4",
+          "subj": "global_person_2",
+          "pred": "child_of",
+          "obj": "global_person_6",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 40,
+                "end": 100,
+                "text": "Molly Weasley was Arthur's wife. Their children included Ron"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        }
+      ]
+    },
+    {
+      "type": "cycle",
+      "severity": 3,
+      "description": "Cycle detected in parent_of/child_of: global_person_3 → global_person_6 → global_person_2 → global_person_4 → global_person_3",
+      "relations": [
+        {
+          "id": "a02458f7-26b7-470f-a6f0-5345ed7336e2",
+          "subj": "global_person_3",
+          "pred": "child_of",
+          "obj": "global_person_6",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 58,
+                "end": 100,
+                "text": "Arthur's wife. Their children included Ron"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "d2e0ecb3-e797-4ed1-bce3-153108c16459",
+          "subj": "global_person_2",
+          "pred": "child_of",
+          "obj": "global_person_4",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 40,
+                "end": 113,
+                "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "0743b5c0-43cd-42df-b38a-0b7fb4aeddd5",
+          "subj": "global_person_4",
+          "pred": "child_of",
+          "obj": "global_person_3",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 109,
+                "end": 66,
+                "text": "fe. Their children included Ron, Ginn"
+              },
+              "sentence_index": 0,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.9,
+          "extractor": "dep"
+        }
+      ]
+    },
+    {
+      "type": "cycle",
+      "severity": 3,
+      "description": "Cycle detected in parent_of/child_of: global_person_3 → global_person_6 → global_person_2 → global_person_4 → global_person_5 → global_person_3",
+      "relations": [
+        {
+          "id": "a02458f7-26b7-470f-a6f0-5345ed7336e2",
+          "subj": "global_person_3",
+          "pred": "child_of",
+          "obj": "global_person_6",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 58,
+                "end": 100,
+                "text": "Arthur's wife. Their children included Ron"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "d2e0ecb3-e797-4ed1-bce3-153108c16459",
+          "subj": "global_person_2",
+          "pred": "child_of",
+          "obj": "global_person_4",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 40,
+                "end": 113,
+                "text": "Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "03fe4b21-5e6b-43d9-aacd-b33dd12673dc",
+          "subj": "global_person_5",
+          "pred": "child_of",
+          "obj": "global_person_3",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 119,
+                "end": 66,
+                "text": "children included Ron, Ginn"
+              },
+              "sentence_index": 0,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.9,
+          "extractor": "dep"
+        }
+      ]
+    }
+  ],
+  "provenance": {
+    "3.5_entity_0": {
+      "global_id": "global_org_0",
+      "doc_id": "3.5",
+      "merged_at": "2025-10-14T17:43:58.685Z",
+      "local_canonical": "Burrow"
+    },
+    "3.5_entity_1": {
+      "global_id": "global_person_2",
+      "doc_id": "3.5",
+      "merged_at": "2025-10-14T17:43:58.685Z",
+      "local_canonical": "Molly Weasley"
+    },
+    "3.5_entity_2": {
+      "global_id": "global_person_3",
+      "doc_id": "3.5",
+      "merged_at": "2025-10-14T17:43:58.685Z",
+      "local_canonical": "Arthur"
+    },
+    "3.5_entity_3": {
+      "global_id": "global_person_4",
+      "doc_id": "3.5",
+      "merged_at": "2025-10-14T17:43:58.685Z",
+      "local_canonical": "Fred"
+    },
+    "3.5_entity_4": {
+      "global_id": "global_person_5",
+      "doc_id": "3.5",
+      "merged_at": "2025-10-14T17:43:58.685Z",
+      "local_canonical": "George"
+    },
+    "3.5_entity_5": {
+      "global_id": "global_person_6",
+      "doc_id": "3.5",
+      "merged_at": "2025-10-14T17:43:58.685Z",
+      "local_canonical": "Ron"
+    },
+    "3.5_entity_6": {
+      "global_id": "global_person_7",
+      "doc_id": "3.5",
+      "merged_at": "2025-10-14T17:43:58.685Z",
+      "local_canonical": "Ginny"
+    },
+    "3.5_entity_7": {
+      "global_id": "global_person_8",
+      "doc_id": "3.5",
+      "merged_at": "2025-10-14T17:43:58.685Z",
+      "local_canonical": "Bill Weasley"
+    },
+    "3.5_entity_8": {
+      "global_id": "global_org_1",
+      "doc_id": "3.5",
+      "merged_at": "2025-10-14T17:43:58.685Z",
+      "local_canonical": "Gringotts Bank"
+    }
+  },
+  "metadata": {
+    "created_at": "2025-10-14T17:43:58.503Z",
+    "updated_at": "2025-10-14T17:43:58.686Z",
+    "doc_count": 1,
+    "doc_ids": [
+      "3.5"
+    ]
+  }
+}

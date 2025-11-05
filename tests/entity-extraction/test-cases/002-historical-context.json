@@ -1,0 +1,85 @@
+[
+  {
+    "id": "historical-context-001",
+    "description": "Historical figures with multiple titles and relationships",
+    "text": "Queen Victoria of the United Kingdom, also known as the Empress of India, ruled during a period of great transformation. Her marriage to Prince Albert of Saxe-Coburg and Gotha strengthened ties between Britain and German states. Victoria, who would later be nicknamed 'Grandmother of Europe', had nine children who married into royal families across the continent. Her eldest son, Edward VII (nicknamed 'Bertie'), succeeded her in 1901. The Victorian Era saw the British Empire reach its height, with the East India Company playing a crucial role in colonial expansion. London, the heart of the empire, grew into the world's largest city. Prince Albert's death at Windsor Castle in 1861 left Victoria in mourning, and the Queen retreated from public life for many years. Despite her grief, the monarch continued to influence policy through correspondence with Prime Minister Benjamin Disraeli, whom she favored over his rival William Gladstone. The Houses of Parliament, rebuilt during her reign, became a symbol of British democracy.",
+    "expectedEntities": [
+      {
+        "type": "PERSON",
+        "text": "Victoria",
+        "aliases": ["Queen Victoria", "Empress of India", "Grandmother of Europe", "the Queen", "the monarch"],
+        "context": "British monarch",
+        "confidence": 0.98
+      },
+      {
+        "type": "PERSON",
+        "text": "Albert",
+        "aliases": ["Prince Albert"],
+        "context": "Victoria's husband",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Edward VII",
+        "aliases": ["Bertie"],
+        "context": "Victoria's successor",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Benjamin Disraeli",
+        "context": "Prime Minister",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "William Gladstone",
+        "context": "Disraeli's rival",
+        "confidence": 0.95
+      },
+      {
+        "type": "LOCATION",
+        "text": "United Kingdom",
+        "aliases": ["Britain"],
+        "context": "country",
+        "confidence": 0.98
+      },
+      {
+        "type": "LOCATION",
+        "text": "India",
+        "context": "British colony",
+        "confidence": 0.98
+      },
+      {
+        "type": "LOCATION",
+        "text": "London",
+        "context": "capital city",
+        "confidence": 0.98
+      },
+      {
+        "type": "LOCATION",
+        "text": "Windsor Castle",
+        "context": "royal residence",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "East India Company",
+        "context": "colonial trading company",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Houses of Parliament",
+        "context": "government building",
+        "confidence": 0.95
+      },
+      {
+        "type": "LOCATION",
+        "text": "Saxe-Coburg and Gotha",
+        "context": "German duchy",
+        "confidence": 0.90
+      }
+    ]
+  }
+]

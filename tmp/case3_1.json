@@ -1,0 +1,745 @@
+{
+  "entities": [
+    {
+      "id": "global_person_0",
+      "type": "PERSON",
+      "canonical": "Harry Potter",
+      "aliases": [
+        "Harry"
+      ],
+      "created_at": "2025-10-14T17:36:12.127Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_1",
+      "type": "PERSON",
+      "canonical": "James",
+      "aliases": [],
+      "created_at": "2025-10-14T17:36:12.127Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_2",
+      "type": "PERSON",
+      "canonical": "Lily Potter",
+      "aliases": [],
+      "created_at": "2025-10-14T17:36:12.127Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_3",
+      "type": "PERSON",
+      "canonical": "Dursleys",
+      "aliases": [],
+      "created_at": "2025-10-14T17:36:12.127Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_4",
+      "type": "PERSON",
+      "canonical": "Ron Weasley",
+      "aliases": [
+        "Ron"
+      ],
+      "created_at": "2025-10-14T17:36:12.127Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_5",
+      "type": "PERSON",
+      "canonical": "Arthur",
+      "aliases": [],
+      "created_at": "2025-10-14T17:36:12.127Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_place_6",
+      "type": "PLACE",
+      "canonical": "Privet Drive",
+      "aliases": [],
+      "created_at": "2025-10-14T17:36:12.127Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_org_7",
+      "type": "ORG",
+      "canonical": "the Ministry of Magic",
+      "aliases": [
+        "Ministry of Magic"
+      ],
+      "created_at": "2025-10-14T17:36:12.127Z",
+      "centrality": 0
+    }
+  ],
+  "relations": [
+    {
+      "id": "c23853ab-aa1b-4298-a76f-1ee978844e3c",
+      "subj": "global_person_0",
+      "pred": "child_of",
+      "obj": "global_person_1",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 0,
+            "end": 33,
+            "text": "Harry Potter was the son of James and Lily Potter. He lived with the Durs"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.6659302447841843,
+      "extractor": "dep",
+      "qualifiers": [
+        {
+          "type": "place",
+          "value": "Privet Drive",
+          "entity_id": "f56885c7-decb-4d8b-afe2-92907263c812",
+          "span": [
+            81,
+            93
+          ]
+        }
+      ]
+    },
+    {
+      "id": "4a9a4b0c-7256-46c4-86bc-09a897abe0b6",
+      "subj": "global_person_1",
+      "pred": "parent_of",
+      "obj": "global_person_0",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 0,
+            "end": 33,
+            "text": "Harry Potter was the son of James and Lily Potter. He lived with the Durs"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.6659302447841843,
+      "extractor": "dep",
+      "qualifiers": [
+        {
+          "type": "place",
+          "value": "Privet Drive",
+          "entity_id": "f56885c7-decb-4d8b-afe2-92907263c812",
+          "span": [
+            81,
+            93
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dd5dd4ad-84b2-4af6-b4d0-a18022f22a1f",
+      "subj": "global_person_0",
+      "pred": "child_of",
+      "obj": "global_person_2",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 0,
+            "end": 49,
+            "text": "Harry Potter was the son of James and Lily Potter. He lived with the Dursleys in Privet D"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.587681378359444,
+      "extractor": "dep",
+      "qualifiers": [
+        {
+          "type": "place",
+          "value": "Privet Drive",
+          "entity_id": "f56885c7-decb-4d8b-afe2-92907263c812",
+          "span": [
+            81,
+            93
+          ]
+        }
+      ]
+    },
+    {
+      "id": "5471011e-ab69-48f7-b2c7-cd65c5af3988",
+      "subj": "global_person_2",
+      "pred": "parent_of",
+      "obj": "global_person_0",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 0,
+            "end": 49,
+            "text": "Harry Potter was the son of James and Lily Potter. He lived with the Dursleys in Privet D"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.587681378359444,
+      "extractor": "dep",
+      "qualifiers": [
+        {
+          "type": "place",
+          "value": "Privet Drive",
+          "entity_id": "f56885c7-decb-4d8b-afe2-92907263c812",
+          "span": [
+            81,
+            93
+          ]
+        }
+      ]
+    },
+    {
+      "id": "d2eef3e5-6234-4839-ba52-de610b26e6a3",
+      "subj": "global_person_0",
+      "pred": "lives_in",
+      "obj": "f56885c7-decb-4d8b-afe2-92907263c812",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 0,
+            "end": 93,
+            "text": "Harry Potter was the son of James and Lily Potter. He lived with the Dursleys in Privet Drive.\n\nHarry's best friend was Ron Weasley. "
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.6494883684574687,
+      "extractor": "dep",
+      "qualifiers": [
+        {
+          "type": "place",
+          "value": "Privet Drive",
+          "entity_id": "f56885c7-decb-4d8b-afe2-92907263c812",
+          "span": [
+            81,
+            93
+          ]
+        }
+      ]
+    },
+    {
+      "id": "0bf7e378-51c3-4d0a-ae8d-0ae1b86d941c",
+      "subj": "bdac0d4a-cfb9-49e2-af5a-4ccafdc2b672",
+      "pred": "friends_with",
+      "obj": "a5a3475d-c671-424f-8404-a4d7bf67c44d",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 96,
+            "end": 131,
+            "text": "ved with the Dursleys in Privet Drive.\n\nHarry's best friend was Ron Weasley. Ron came from a large wizarding family"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.7000732185442234,
+      "extractor": "dep",
+      "qualifiers": [
+        {
+          "type": "place",
+          "value": "Privet Drive",
+          "entity_id": "f56885c7-decb-4d8b-afe2-92907263c812",
+          "span": [
+            81,
+            93
+          ]
+        }
+      ]
+    },
+    {
+      "id": "5c9325c6-54c4-42d4-a3f4-f4522515c597",
+      "subj": "a5a3475d-c671-424f-8404-a4d7bf67c44d",
+      "pred": "friends_with",
+      "obj": "bdac0d4a-cfb9-49e2-af5a-4ccafdc2b672",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 96,
+            "end": 131,
+            "text": "ved with the Dursleys in Privet Drive.\n\nHarry's best friend was Ron Weasley. Ron came from a large wizarding family"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.7000732185442234,
+      "extractor": "dep",
+      "qualifiers": [
+        {
+          "type": "place",
+          "value": "Privet Drive",
+          "entity_id": "f56885c7-decb-4d8b-afe2-92907263c812",
+          "span": [
+            81,
+            93
+          ]
+        }
+      ]
+    },
+    {
+      "id": "432a8e2a-2ed8-490f-8dab-23d20207171b",
+      "subj": "global_person_0",
+      "pred": "lives_in",
+      "obj": "global_place_6",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 0,
+            "end": 93,
+            "text": "Harry Potter was the son of James and Lily Potter. He lived with the Dursleys in Privet Drive.\n\nHarry's best friend was Ron Weasley. "
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.6494883684574687,
+      "extractor": "dep",
+      "qualifiers": [
+        {
+          "type": "place",
+          "value": "Privet Drive",
+          "entity_id": "a9bdea0c-a2ac-4b5f-9151-a2273c634496",
+          "span": [
+            81,
+            93
+          ]
+        }
+      ]
+    },
+    {
+      "id": "771aa007-36f5-4eb4-85ab-50a0ccc044bf",
+      "subj": "eab699e0-f1ad-43e4-a6d0-813a677adf28",
+      "pred": "friends_with",
+      "obj": "d8af0e2b-1238-4c7e-85f3-d6e4d27d5f09",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 96,
+            "end": 131,
+            "text": "ved with the Dursleys in Privet Drive.\n\nHarry's best friend was Ron Weasley. Ron came from a large wizarding family"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.7000732185442234,
+      "extractor": "dep",
+      "qualifiers": [
+        {
+          "type": "place",
+          "value": "Privet Drive",
+          "entity_id": "a9bdea0c-a2ac-4b5f-9151-a2273c634496",
+          "span": [
+            81,
+            93
+          ]
+        }
+      ]
+    },
+    {
+      "id": "66de6250-af7a-4555-b9d7-ce32e25c89b5",
+      "subj": "d8af0e2b-1238-4c7e-85f3-d6e4d27d5f09",
+      "pred": "friends_with",
+      "obj": "eab699e0-f1ad-43e4-a6d0-813a677adf28",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 96,
+            "end": 131,
+            "text": "ved with the Dursleys in Privet Drive.\n\nHarry's best friend was Ron Weasley. Ron came from a large wizarding family"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.7000732185442234,
+      "extractor": "dep",
+      "qualifiers": [
+        {
+          "type": "place",
+          "value": "Privet Drive",
+          "entity_id": "a9bdea0c-a2ac-4b5f-9151-a2273c634496",
+          "span": [
+            81,
+            93
+          ]
+        }
+      ]
+    },
+    {
+      "id": "219a8c56-7c4d-4308-8cb7-f7dfbb6c2813",
+      "subj": "global_person_0",
+      "pred": "friends_with",
+      "obj": "global_person_4",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 96,
+            "end": 131,
+            "text": "ved with the Dursleys in Privet Drive.\n\nHarry's best friend was Ron Weasley. Ron came from a large wizarding family"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.7000732185442234,
+      "extractor": "dep",
+      "qualifiers": [
+        {
+          "type": "place",
+          "value": "Privet Drive",
+          "entity_id": "5beb8975-8800-4550-9a53-b53d7658aaba",
+          "span": [
+            81,
+            93
+          ]
+        }
+      ]
+    },
+    {
+      "id": "45ef2adb-e6f1-452e-ac99-23bc69551688",
+      "subj": "global_person_4",
+      "pred": "friends_with",
+      "obj": "global_person_0",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 96,
+            "end": 131,
+            "text": "ved with the Dursleys in Privet Drive.\n\nHarry's best friend was Ron Weasley. Ron came from a large wizarding family"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.7000732185442234,
+      "extractor": "dep",
+      "qualifiers": [
+        {
+          "type": "place",
+          "value": "Privet Drive",
+          "entity_id": "5beb8975-8800-4550-9a53-b53d7658aaba",
+          "span": [
+            81,
+            93
+          ]
+        }
+      ]
+    },
+    {
+      "id": "788fc51b-618d-4181-bf87-331eddf5a560",
+      "subj": "global_person_4",
+      "pred": "child_of",
+      "obj": "global_person_5",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 173,
+            "end": 190,
+            "text": "Ron came from a large wizarding family. His father Arthur worked at the Ministry of Magic."
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8989118061531748,
+      "extractor": "dep"
+    },
+    {
+      "id": "a50a2f68-ef3a-4f23-a1f1-3c663de078b1",
+      "subj": "global_person_5",
+      "pred": "parent_of",
+      "obj": "global_person_4",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 173,
+            "end": 190,
+            "text": "Ron came from a large wizarding family. His father Arthur worked at the Ministry of Magic."
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8989118061531748,
+      "extractor": "dep"
+    }
+  ],
+  "conflicts": [
+    {
+      "type": "cycle",
+      "severity": 3,
+      "description": "Cycle detected in parent_of/child_of: global_person_0 → global_person_1 → global_person_0",
+      "relations": [
+        {
+          "id": "c23853ab-aa1b-4298-a76f-1ee978844e3c",
+          "subj": "global_person_0",
+          "pred": "child_of",
+          "obj": "global_person_1",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 0,
+                "end": 33,
+                "text": "Harry Potter was the son of James and Lily Potter. He lived with the Durs"
+              },
+              "sentence_index": 0,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.6659302447841843,
+          "extractor": "dep",
+          "qualifiers": [
+            {
+              "type": "place",
+              "value": "Privet Drive",
+              "entity_id": "f56885c7-decb-4d8b-afe2-92907263c812",
+              "span": [
+                81,
+                93
+              ]
+            }
+          ]
+        },
+        {
+          "id": "4a9a4b0c-7256-46c4-86bc-09a897abe0b6",
+          "subj": "global_person_1",
+          "pred": "parent_of",
+          "obj": "global_person_0",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 0,
+                "end": 33,
+                "text": "Harry Potter was the son of James and Lily Potter. He lived with the Durs"
+              },
+              "sentence_index": 0,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.6659302447841843,
+          "extractor": "dep",
+          "qualifiers": [
+            {
+              "type": "place",
+              "value": "Privet Drive",
+              "entity_id": "f56885c7-decb-4d8b-afe2-92907263c812",
+              "span": [
+                81,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "cycle",
+      "severity": 3,
+      "description": "Cycle detected in parent_of/child_of: global_person_0 → global_person_1 → global_person_2 → global_person_0",
+      "relations": [
+        {
+          "id": "c23853ab-aa1b-4298-a76f-1ee978844e3c",
+          "subj": "global_person_0",
+          "pred": "child_of",
+          "obj": "global_person_1",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 0,
+                "end": 33,
+                "text": "Harry Potter was the son of James and Lily Potter. He lived with the Durs"
+              },
+              "sentence_index": 0,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.6659302447841843,
+          "extractor": "dep",
+          "qualifiers": [
+            {
+              "type": "place",
+              "value": "Privet Drive",
+              "entity_id": "f56885c7-decb-4d8b-afe2-92907263c812",
+              "span": [
+                81,
+                93
+              ]
+            }
+          ]
+        },
+        {
+          "id": "5471011e-ab69-48f7-b2c7-cd65c5af3988",
+          "subj": "global_person_2",
+          "pred": "parent_of",
+          "obj": "global_person_0",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 0,
+                "end": 49,
+                "text": "Harry Potter was the son of James and Lily Potter. He lived with the Dursleys in Privet D"
+              },
+              "sentence_index": 0,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.587681378359444,
+          "extractor": "dep",
+          "qualifiers": [
+            {
+              "type": "place",
+              "value": "Privet Drive",
+              "entity_id": "f56885c7-decb-4d8b-afe2-92907263c812",
+              "span": [
+                81,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "cycle",
+      "severity": 3,
+      "description": "Cycle detected in parent_of/child_of: global_person_4 → global_person_5 → global_person_4",
+      "relations": [
+        {
+          "id": "788fc51b-618d-4181-bf87-331eddf5a560",
+          "subj": "global_person_4",
+          "pred": "child_of",
+          "obj": "global_person_5",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 173,
+                "end": 190,
+                "text": "Ron came from a large wizarding family. His father Arthur worked at the Ministry of Magic."
+              },
+              "sentence_index": 0,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.8989118061531748,
+          "extractor": "dep"
+        },
+        {
+          "id": "a50a2f68-ef3a-4f23-a1f1-3c663de078b1",
+          "subj": "global_person_5",
+          "pred": "parent_of",
+          "obj": "global_person_4",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 173,
+                "end": 190,
+                "text": "Ron came from a large wizarding family. His father Arthur worked at the Ministry of Magic."
+              },
+              "sentence_index": 0,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.8989118061531748,
+          "extractor": "dep"
+        }
+      ]
+    }
+  ],
+  "provenance": {
+    "3.1_entity_0": {
+      "global_id": "global_person_0",
+      "doc_id": "3.1",
+      "merged_at": "2025-10-14T17:36:12.127Z",
+      "local_canonical": "Harry Potter"
+    },
+    "3.1_entity_1": {
+      "global_id": "global_person_1",
+      "doc_id": "3.1",
+      "merged_at": "2025-10-14T17:36:12.127Z",
+      "local_canonical": "James"
+    },
+    "3.1_entity_2": {
+      "global_id": "global_person_2",
+      "doc_id": "3.1",
+      "merged_at": "2025-10-14T17:36:12.127Z",
+      "local_canonical": "Lily Potter"
+    },
+    "3.1_entity_3": {
+      "global_id": "global_place_6",
+      "doc_id": "3.1",
+      "merged_at": "2025-10-14T17:36:12.127Z",
+      "local_canonical": "Privet Drive"
+    },
+    "3.1_entity_4": {
+      "global_id": "global_person_3",
+      "doc_id": "3.1",
+      "merged_at": "2025-10-14T17:36:12.127Z",
+      "local_canonical": "Dursleys"
+    },
+    "3.1_entity_5": {
+      "global_id": "global_person_0",
+      "doc_id": "3.1",
+      "merged_at": "2025-10-14T17:36:12.127Z",
+      "local_canonical": "Harry"
+    },
+    "3.1_entity_6": {
+      "global_id": "global_person_4",
+      "doc_id": "3.1",
+      "merged_at": "2025-10-14T17:36:12.127Z",
+      "local_canonical": "Ron Weasley"
+    },
+    "3.1_entity_7": {
+      "global_id": "global_person_4",
+      "doc_id": "3.1",
+      "merged_at": "2025-10-14T17:36:12.127Z",
+      "local_canonical": "Ron"
+    },
+    "3.1_entity_8": {
+      "global_id": "global_person_5",
+      "doc_id": "3.1",
+      "merged_at": "2025-10-14T17:36:12.127Z",
+      "local_canonical": "Arthur"
+    },
+    "3.1_entity_9": {
+      "global_id": "global_org_7",
+      "doc_id": "3.1",
+      "merged_at": "2025-10-14T17:36:12.127Z",
+      "local_canonical": "Ministry of Magic"
+    }
+  },
+  "metadata": {
+    "created_at": "2025-10-14T17:36:11.844Z",
+    "updated_at": "2025-10-14T17:36:12.127Z",
+    "doc_count": 1,
+    "doc_ids": [
+      "3.1"
+    ]
+  }
+}

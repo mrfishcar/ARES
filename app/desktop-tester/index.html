@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ares Wiki Generator - Desktop Tester</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-width: 900px;
+      width: 100%;
+      padding: 40px;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 2em;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 0.9em;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      color: #555;
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 0.9em;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 14px;
+      resize: vertical;
+      transition: border-color 0.3s;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      flex: 1;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    button.primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    button.secondary {
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    button.secondary:hover:not(:disabled) {
+      background: #e8e8e8;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status {
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: none;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .status.info {
+      background: #e3f2fd;
+      color: #1976d2;
+      border-left: 4px solid #1976d2;
+    }
+
+    .status.success {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border-left: 4px solid #2e7d32;
+    }
+
+    .status.error {
+      background: #ffebee;
+      color: #c62828;
+      border-left: 4px solid #c62828;
+    }
+
+    .status.show {
+      display: block;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .stat-card {
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2em;
+      font-weight: 700;
+      color: #667eea;
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 0.85em;
+      color: #666;
+      margin-top: 5px;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 3px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .examples {
+      margin-top: 15px;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      font-size: 0.85em;
+    }
+
+    .examples h3 {
+      color: #555;
+      font-size: 1em;
+      margin-bottom: 10px;
+    }
+
+    .examples ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .examples li {
+      padding: 5px 0;
+      color: #666;
+    }
+
+    .examples li::before {
+      content: "→ ";
+      color: #667eea;
+      font-weight: bold;
+    }
+
+    .highlights {
+      margin-top: 30px;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+    }
+
+    .highlights h3 {
+      margin-top: 0;
+      margin-bottom: 6px;
+      font-size: 1.1em;
+      color: #1f2937;
+    }
+
+    .highlights p {
+      margin: 0 0 16px 0;
+      color: #6b7280;
+      font-size: 0.9em;
+    }
+
+    .highlights ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 0;
+      display: grid;
+      gap: 12px;
+    }
+
+    .highlights li {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 12px 16px;
+      border-radius: 10px;
+      background: #f9fafb;
+      border: 1px solid #eef2ff;
+    }
+
+    .highlight-name {
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .highlight-tag {
+      font-size: 0.75em;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #e0e7ff;
+      color: #4338ca;
+    }
+
+    .highlight-meta {
+      color: #6b7280;
+      font-size: 0.8em;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🏺 Ares Wiki Generator</h1>
+    <p class="subtitle">Desktop Testing Tool - Generate knowledge graph wikis from text</p>
+
+    <div class="input-group">
+      <label for="textInput">Enter Text to Process:</label>
+      <textarea
+        id="textInput"
+        placeholder="Paste your text here... For example:&#10;&#10;Aragorn, son of Arathorn, was born in 2931 of the Third Age.&#10;Aragorn married Arwen in 3019.&#10;Aragorn became King of Gondor and ruled from Minas Tirith.&#10;Aragorn was friends with Gandalf the wizard."
+      ></textarea>
+    </div>
+
+    <div class="examples">
+      <h3>Example Text Ideas:</h3>
+      <ul>
+        <li>Biographical narratives (historical figures, fictional characters)</li>
+        <li>Historical events with people, places, and dates</li>
+        <li>Story excerpts with character relationships</li>
+        <li>News articles with named entities and events</li>
+      </ul>
+    </div>
+
+    <div class="button-group">
+      <button class="primary" id="generateBtn" onclick="generateWikis()">
+        <span id="btnText">🚀 Generate Wikis</span>
+      </button>
+      <button class="secondary" id="clearBtn" onclick="clearAll()">
+        🗑️ Clear
+      </button>
+    </div>
+
+    <div id="status" class="status"></div>
+
+    <div id="statsContainer" style="display: none;">
+      <div class="stats">
+        <div class="stat-card">
+          <span class="stat-value" id="entityCount">0</span>
+          <span class="stat-label">Entities</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value" id="relationCount">0</span>
+          <span class="stat-label">Relations</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value" id="wikiCount">0</span>
+          <span class="stat-label">Wikis Created</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value" id="timeElapsed">0s</span>
+          <span class="stat-label">Time Elapsed</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="highlights" class="highlights" style="display: none;">
+      <h3>Fiction Highlights</h3>
+      <p>Top narrative entities detected in your text (characters, artifacts, locations).</p>
+      <ul id="highlightList"></ul>
+    </div>
+  </div>
+
+  <script>
+    async function generateWikis() {
+      const textInput = document.getElementById('textInput');
+      const generateBtn = document.getElementById('generateBtn');
+      const btnText = document.getElementById('btnText');
+      const statusDiv = document.getElementById('status');
+      const statsContainer = document.getElementById('statsContainer');
+      const highlightContainer = document.getElementById('highlights');
+      const highlightList = document.getElementById('highlightList');
+
+      const text = textInput.value.trim();
+
+      if (!text) {
+        showStatus('Please enter some text to process.', 'error');
+        return;
+      }
+
+      // Disable button and show loading
+      generateBtn.disabled = true;
+      btnText.innerHTML = '<span class="spinner"></span>Processing...';
+      showStatus('Processing text and generating wikis...', 'info');
+      statsContainer.style.display = 'none';
+
+      const startTime = Date.now();
+
+      try {
+        // Call the backend API
+        const response = await fetch('http://localhost:3000/generate-wikis', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ text }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+
+        // Update stats
+        document.getElementById('entityCount').textContent = result.entities || 0;
+        document.getElementById('relationCount').textContent = result.relations || 0;
+        document.getElementById('wikiCount').textContent = result.wikisCreated || 0;
+        document.getElementById('timeElapsed').textContent = `${elapsed}s`;
+        statsContainer.style.display = 'block';
+
+        if (result.fictionEntities && result.fictionEntities.length) {
+          highlightList.innerHTML = result.fictionEntities
+            .map(entity => {
+              const mentions = entity.mentions === 1 ? '1 mention' : `${entity.mentions} mentions`;
+              const typeLabel = entity.type
+                .replace(/_/g, ' ')
+                .replace(/(^|\s)\w/g, char => char.toUpperCase());
+              return `
+                <li>
+                  <div>
+                    <span class="highlight-name">${entity.name}</span>
+                    <div class="highlight-meta">${mentions}</div>
+                  </div>
+                  <span class="highlight-tag">${typeLabel}</span>
+                </li>
+              `;
+            })
+            .join('');
+          highlightContainer.style.display = 'block';
+        } else {
+          highlightList.innerHTML = '';
+          highlightContainer.style.display = 'none';
+        }
+
+        // Show success message
+        showStatus(
+          `✅ Success! Generated ${result.wikisCreated} wiki pages in ${elapsed}s. Check ~/Desktop/test_wikis/ folder.`,
+          'success'
+        );
+
+      } catch (error) {
+        console.error('Error:', error);
+        showStatus(
+          `❌ Error: ${error.message}. Make sure the backend server is running (npm start).`,
+          'error'
+        );
+      } finally {
+        // Re-enable button
+        generateBtn.disabled = false;
+        btnText.innerHTML = '🚀 Generate Wikis';
+      }
+    }
+
+    function showStatus(message, type) {
+      const statusDiv = document.getElementById('status');
+      statusDiv.textContent = message;
+      statusDiv.className = `status ${type} show`;
+    }
+
+    function clearAll() {
+      document.getElementById('textInput').value = '';
+      document.getElementById('status').className = 'status';
+      document.getElementById('statsContainer').style.display = 'none';
+      document.getElementById('highlights').style.display = 'none';
+      document.getElementById('highlightList').innerHTML = '';
+    }
+
+    // Handle Enter key in textarea (with Shift for new line)
+    document.getElementById('textInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && e.metaKey) {
+        generateWikis();
+      }
+    });
+  </script>
+</body>
+</html>

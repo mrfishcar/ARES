@@ -1,0 +1,179 @@
+{
+  "entities": [
+    {
+      "id": "global_person_0",
+      "type": "PERSON",
+      "canonical": "Harry",
+      "aliases": [],
+      "created_at": "2025-10-15T12:55:06.928Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_1",
+      "type": "PERSON",
+      "canonical": "Ron",
+      "aliases": [],
+      "created_at": "2025-10-15T12:55:06.928Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_2",
+      "type": "PERSON",
+      "canonical": "Hermione",
+      "aliases": [],
+      "created_at": "2025-10-15T12:55:06.928Z",
+      "centrality": 0
+    }
+  ],
+  "relations": [
+    {
+      "id": "90fa2a72-5994-4989-9b98-56d24a3d065e",
+      "subj": "global_person_0",
+      "pred": "friends_with",
+      "obj": "global_person_1",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 0,
+            "end": 10,
+            "text": "Harry, Ron, and Hermione formed a powerful trio. T"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8658268337100795,
+      "extractor": "dep"
+    },
+    {
+      "id": "9f3f2e98-e198-428b-9ccd-89fa4e72d12a",
+      "subj": "global_person_1",
+      "pred": "friends_with",
+      "obj": "global_person_0",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 0,
+            "end": 10,
+            "text": "Harry, Ron, and Hermione formed a powerful trio. T"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8658268337100795,
+      "extractor": "dep"
+    },
+    {
+      "id": "e93d31e2-8204-4038-8b57-e580f1e00743",
+      "subj": "global_person_0",
+      "pred": "friends_with",
+      "obj": "global_person_2",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 0,
+            "end": 24,
+            "text": "Harry, Ron, and Hermione formed a powerful trio. They fought tog"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.7737005616586928,
+      "extractor": "dep"
+    },
+    {
+      "id": "7bbb2ec1-3537-437a-8506-33ffe3cf8dac",
+      "subj": "global_person_2",
+      "pred": "friends_with",
+      "obj": "global_person_0",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 0,
+            "end": 24,
+            "text": "Harry, Ron, and Hermione formed a powerful trio. They fought tog"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.7737005616586928,
+      "extractor": "dep"
+    },
+    {
+      "id": "95dfbf19-6a1a-4623-a349-f3c0e7e9fc49",
+      "subj": "global_person_1",
+      "pred": "friends_with",
+      "obj": "global_person_2",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 7,
+            "end": 24,
+            "text": "Harry, Ron, and Hermione formed a powerful trio. They fought tog"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8444494930175473,
+      "extractor": "dep"
+    },
+    {
+      "id": "52b029c2-d84b-4aa2-a772-e6b8944b129f",
+      "subj": "global_person_2",
+      "pred": "friends_with",
+      "obj": "global_person_1",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 7,
+            "end": 24,
+            "text": "Harry, Ron, and Hermione formed a powerful trio. They fought tog"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8444494930175473,
+      "extractor": "dep"
+    }
+  ],
+  "conflicts": [],
+  "provenance": {
+    "3.7_entity_0": {
+      "global_id": "global_person_0",
+      "doc_id": "3.7",
+      "merged_at": "2025-10-15T12:55:06.928Z",
+      "local_canonical": "Harry"
+    },
+    "3.7_entity_1": {
+      "global_id": "global_person_1",
+      "doc_id": "3.7",
+      "merged_at": "2025-10-15T12:55:06.928Z",
+      "local_canonical": "Ron"
+    },
+    "3.7_entity_2": {
+      "global_id": "global_person_2",
+      "doc_id": "3.7",
+      "merged_at": "2025-10-15T12:55:06.928Z",
+      "local_canonical": "Hermione"
+    }
+  },
+  "metadata": {
+    "created_at": "2025-10-15T12:55:06.842Z",
+    "updated_at": "2025-10-15T12:55:06.928Z",
+    "doc_count": 1,
+    "doc_ids": [
+      "3.7"
+    ]
+  }
+}

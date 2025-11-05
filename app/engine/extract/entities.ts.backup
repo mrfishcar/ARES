@@ -1,0 +1,124 @@
+/**
+ * Entity Extraction
+ * Combines spaCy NER with capitalization heuristics
+ */
+
+import { v4 as uuid } from "uuid";
+import type { Entity, EntityType } from "../schema";
+
+// Parser response types
+type Token = {
+  i: number; text: string; lemma: string; pos: string; tag: string;
+  dep: string; head: number; ent: string; start: number; end: number;
+};
+type ParsedSentence = { sentence_index: number; tokens: Token[]; start: number; end: number; };
+type ParseResponse = { sentences: ParsedSentence[] };
+
+const PARSER_URL = process.env.PARSER_URL || "http://127.0.0.1:8000/parse";
+
+// Map spaCy ent labels → our EntityType
+function mapEnt(ent: string): EntityType | null {
+  switch (ent) {
+    case "PERSON": return "PERSON";
+    case "ORG": return "ORG";
+    case "GPE":
+    case "LOC": return "PLACE";
+    case "DATE": return "DATE";
+    case "WORK_OF_ART": return "WORK";
+    case "NORP": return "HOUSE";
+    default: return null;
+  }
+}
+
+function normalizeName(s: string) {
+  return s.replace(/\s+/g, " ").trim();
+}
+
+// Group consecutive tokens with same ent label into spans
+function nerSpans(sent: ParsedSentence) {
+  const spans: { text: string; type: EntityType; start: number; end: number }[] = [];
+  let i = 0;
+  while (i < sent.tokens.length) {
+    const t = sent.tokens[i];
+    const mapped = mapEnt(t.ent);
+    if (!mapped) { i++; continue; }
+
+    let j = i + 1;
+    while (j < sent.tokens.length && sent.tokens[j].ent === t.ent) j++;
+
+    const spanTokens = sent.tokens.slice(i, j);
+    const text = normalizeName(spanTokens.map(x => x.text).join(" "));
+    const start = spanTokens[0].start;
+    const end = spanTokens[spanTokens.length - 1].end;
+    spans.push({ text, type: mapped, start, end });
+    i = j;
+  }
+  return spans;
+}
+
+// Capitalized 2–3 word fallback
+const STOP = new Set(["The","A","An","And","But","Or","On","In","At","To","From","With"]);
+const PRON = new Set(["I","You","He","She","It","We","They","Me","Him","Her","Us","Them","My","Your","His","Its","Our","Their"]);
+const MONTH = new Set(["January","February","March","April","May","June","July","August","September","October","November","December"]);
+
+function fallbackNames(text: string) {
+  const spans: { text: string; type: EntityType; start: number; end: number }[] = [];
+  // FIXED: Changed {1,2} to {0,2} to allow 1-3 word names (including single words like "Gandalf")
+  const rx = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})\b/g;
+  let m: RegExpExecArray | null;
+  while ((m = rx.exec(text))) {
+    const value = m[1];
+    const parts = value.split(/\s+/);
+    if (parts.some(p => STOP.has(p) || PRON.has(p) || MONTH.has(p))) continue;
+    spans.push({ text: value, type: "PERSON", start: m.index, end: m.index + value.length });
+  }
+  return spans;
+}
+
+// Simple de-dup
+function dedupe(spans: { text: string; type: EntityType; start: number; end: number }[]) {
+  const seen = new Set<string>();
+  const out: typeof spans = [];
+  for (const s of spans) {
+    const key = `${s.type}::${s.text.toLowerCase()}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(s);
+  }
+  return out;
+}
+
+export async function parseWithService(text: string): Promise<ParseResponse> {
+  const res = await fetch(PARSER_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text })
+  });
+  if (!res.ok) {
+    throw new Error(`Parser service error ${res.status}: ${await res.text()}`);
+  }
+  return res.json() as Promise<ParseResponse>;
+}
+
+export async function extractEntities(text: string): Promise<{ entities: Entity[]; spans: {entity_id: string; start: number; end: number}[] }> {
+  const parsed = await parseWithService(text);
+  const ner = parsed.sentences.flatMap(nerSpans);
+  const fb = fallbackNames(text);
+  const all = dedupe([...ner, ...fb]);
+
+  const entities: Entity[] = [];
+  const spans: {entity_id: string; start: number; end: number}[] = [];
+  for (const s of all) {
+    const id = uuid();
+    entities.push({
+      id,
+      type: s.type,
+      canonical: s.text,
+      aliases: [],
+      created_at: new Date().toISOString()
+    });
+    spans.push({ entity_id: id, start: s.start, end: s.end });
+  }
+
+  return { entities, spans };
+}
