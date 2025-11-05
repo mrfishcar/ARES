@@ -40,7 +40,6 @@ export function UnifiedHomePage({ project, toast }: UnifiedHomePageProps) {
   // Refs
   const saveTimeoutRef = useRef<NodeJS.Timeout>();
   const previousEntityCountRef = useRef(entities.length);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Word count
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
@@ -127,8 +126,10 @@ export function UnifiedHomePage({ project, toast }: UnifiedHomePageProps) {
 
       // Tab = Toggle garden view
       if (e.key === 'Tab' && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
-        // Only if not in textarea
-        if (document.activeElement !== textareaRef.current) {
+        // Only if not in CodeMirror editor
+        const activeElement = document.activeElement;
+        const isInEditor = activeElement?.closest('.cm-editor');
+        if (!isInEditor) {
           e.preventDefault();
           setShowGardenFull(g => !g);
         }
@@ -535,23 +536,10 @@ export function UnifiedHomePage({ project, toast }: UnifiedHomePageProps) {
               }}
             />
 
-            <textarea
-              ref={textareaRef}
+            <CodeMirrorEditor
               value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Start writing... Your ideas will grow into a beautiful knowledge garden."
-              style={{
-                width: '100%',
-                minHeight: 'calc(100vh - 280px)',
-                border: 'none',
-                outline: 'none',
-                resize: 'none',
-                fontSize: '17px',
-                lineHeight: '1.7',
-                color: '#374151',
-                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                background: 'transparent',
-              }}
+              onChange={(newText) => setText(newText)}
+              minHeight="calc(100vh - 280px)"
             />
           </div>
         </div>
