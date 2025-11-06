@@ -6,6 +6,8 @@
   "scripts": {
     "parser": "cd app/services && uvicorn parser:app --host 127.0.0.1 --port 8000",
     "dev": "ts-node app/ui/server.ts",
+    "build": "cd app/ui/console && npm install && npm run build",
+    "build:dashboard": "cd app/ui/review-dashboard && npm install && npm run build",
     "test": "vitest run",
     "test:watch": "vitest",
     "validate:golden": "node scripts/validate-ares-golden.js tests/golden_truth",
