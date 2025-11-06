@@ -48,7 +48,7 @@ export async function logClientError(project: string, payload: ClientErrorPayloa
     });
   } catch (error) {
     // Avoid throwing from logger; simply report in console for local debugging.
-    if (process.env.NODE_ENV !== 'production') {
+    if (import.meta.env.MODE !== 'production') {
       console.warn('Failed to send client error log:', error);
     }
   }

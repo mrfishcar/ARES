@@ -3,6 +3,11 @@ import type { ParserClient, ParseInput, ParseOutput } from "./ParserClient";
 type EmbeddedParserFn = (text: string) => Promise<ParseOutput> | ParseOutput;
 
 function loadEmbeddedParser(): EmbeddedParserFn {
+  // Browser environment check - embedded parser only works in Node.js
+  if (typeof process === 'undefined' || typeof require === 'undefined') {
+    throw new Error('Embedded parser not available in browser environment');
+  }
+
   const modulePath =
     process.env.PARSER_EMBEDDED_MODULE || "../embedded/parseText";
 
