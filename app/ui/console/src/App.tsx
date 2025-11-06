@@ -144,7 +144,7 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider>
-        <BrowserRouter basename="/lab">
+        <BrowserRouter>
           <AppShell />
         </BrowserRouter>
       </ThemeProvider>

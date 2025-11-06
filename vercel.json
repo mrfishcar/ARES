@@ -2,15 +2,5 @@
   "buildCommand": "cd app/ui/console && npm install && npm run build",
   "outputDirectory": "app/ui/console/dist",
   "framework": null,
-  "installCommand": "npm install",
-  "rewrites": [
-    {
-      "source": "/lab",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/lab/(.*)",
-      "destination": "/index.html"
-    }
-  ]
+  "installCommand": "npm install"
 }
