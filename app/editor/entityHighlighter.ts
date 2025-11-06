@@ -110,6 +110,23 @@ const COMMON_ADJECTIVES = new Set([
 ]);
 
 /**
+ * Days of the week and months (should not be entities)
+ */
+const TIME_WORDS = new Set([
+  'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
+  'january', 'february', 'march', 'april', 'may', 'june',
+  'july', 'august', 'september', 'october', 'november', 'december',
+]);
+
+/**
+ * Common abbreviations that should not be entities
+ */
+const ABBREVIATIONS = new Set([
+  'ch', 'vol', 'pg', 'pp', 'ed', 'etc', 'vs', 'dr', 'mr', 'mrs', 'ms',
+  'st', 'ave', 'blvd', 'rd', 'ln', 'ct',
+]);
+
+/**
  * Entity patterns for natural language detection
  */
 const ENTITY_PATTERNS = {
@@ -117,30 +134,34 @@ const ENTITY_PATTERNS = {
   PERSON: [
     // DIALOGUE PATTERNS (highest priority for extracting names from dialogue)
     // Pattern: "...", said NAME or "...", NAME said
-    new RegExp(`"[^"]+",?\\s+(${WORD}(?:\\s+${WORD}){0,2})\\s+(?:said|asked|replied|answered|whispered|shouted|yelled|muttered|murmured|cried|screamed|demanded|screeched|snapped|growled|hissed|snarled|remarked|added|continued|exclaimed|declared|announced|proclaimed|stated|mentioned)`, 'gi'),
+    new RegExp(`"[^"]+",?\\s+(${WORD}(?:\\s+${WORD}){0,2})\\s+(?:said|asked|replied|answered|whispered|shouted|yelled|muttered|murmured|cried|screamed|demanded|screeched|snapped|growled|hissed|snarled|remarked|added|continued|exclaimed|declared|announced|proclaimed|stated|mentioned|thought|felt)`, 'gi'),
     // Pattern: NAME said, "..." or NAME asked
-    new RegExp(`\\b(${WORD}(?:\\s+${WORD}){0,2})\\s+(?:said|asked|replied|answered|whispered|shouted|yelled|muttered|murmured|cried|screamed|demanded|screeched|snapped|growled|hissed|snarled|remarked|added|continued|exclaimed|declared|announced|proclaimed|stated|mentioned)\\b`, 'gi'),
+    new RegExp(`\\b(${WORD}(?:\\s+${WORD}){0,2})\\s+(?:said|asked|replied|answered|whispered|shouted|yelled|muttered|murmured|cried|screamed|demanded|screeched|snapped|growled|hissed|snarled|remarked|added|continued|exclaimed|declared|announced|proclaimed|stated|mentioned|thought|felt)(?:\\s*,|\\s+that)`, 'gi'),
 
     // Honorifics and titles: "Dr. Watson", "King David", "Aunt Petunia"
     new RegExp(`(?:Mr\\.|Mrs\\.|Ms\\.|Dr\\.|Prof\\.|Lord|Lady|King|Queen|Prince|Princess|Aunt|Uncle)\\s+(${WORD}(?:\\s+${WORD}){0,2})`, 'g'),
+
+    // Author names with initials: "JK Rowling", "CS Lewis", "RR Tolkien"
+    new RegExp(`\\b([A-Z]{1,3})\\s+(${WORD}(?:\\s+${WORD})?)\\b`, 'g'),
 
     // Multi-word names with connectors: "Uriah the Hittite", "Mary Jane Watson"
     // Note: More restrictive now - requires at least 2 words and specific connectors
     new RegExp(`\\b(${WORD}\\s+(?:the|of|von|van|de|da|le)\\s+${WORD}(?:\\s+${WORD}){0,1})\\b`, 'g'),
 
-    // Two-word capitalized names: "Harry Potter", "Dudley Dursley" (but NOT at sentence start)
-    new RegExp(`(?<=[.!?]\\s+.{10,}|^.{10,})(${WORD}\\s+${WORD})(?!\\s+(?:Street|Drive|Road|Avenue|Lane|Boulevard|Way|Court|Circle))\\b`, 'g'),
+    // Two-word capitalized names: "Harry Potter", "Dudley Dursley" (but NOT at sentence start or after "The")
+    new RegExp(`(?<=[.!?]\\s+.{10,}|^.{10,}|[a-z]\\s+)(${WORD}\\s+${WORD})(?!\\s+(?:Street|Drive|Road|Avenue|Lane|Boulevard|Way|Court|Circle|Stone|Glass))\\b`, 'g'),
 
     // Single-word name followed by appositive/possessive context: "Aragorn, son of Arathorn"
     new RegExp(`\\b(${WORD})(?=\\s*(?:,\\s*(?:son|daughter|the|who|whose)))`, 'gi'),
 
     // Action verbs preceding a name: "married Arwen", "met Gandalf"
-    new RegExp(`(?:married|wed|met|visited|joined|saw|met\\s+with|called|named|kissed|hugged)\\s+(${WORD}(?:\\s+${WORD}){0,2})`, 'gi'),
+    new RegExp(`(?:married|wed|met|visited|joined|saw|met\\s+with|called|named|kissed|hugged|bought|asked|watched|licking)\\s+(${WORD}(?:\\s+${WORD}){0,2})`, 'gi'),
 
     // Single-name detection (for recurring characters): must be mid-sentence with lowercase context
     // Examples: "...and Harry woke...", "...with Dudley was..."
-    // Negative lookbehind ensures not at sentence start, positive lookbehind ensures lowercase before
-    new RegExp(`(?<=[a-z,;]\\s+)(${WORD})(?=\\s+[a-z])`, 'g'),
+    // More aggressive now - matches after common words
+    new RegExp(`(?<=\\b(?:and|but|so|if|when|while|as|after|before|though|because)\\s+)(${WORD})(?=\\s+[a-z])`, 'g'),
+    new RegExp(`(?<=[a-z,;]\\s+)(${WORD})(?=\\s+(?:was|were|is|are|had|have|has|did|do|does|could|would|should|moved|thought|felt|stood|sat|went|looked|walked))\\b`, 'g'),
   ],
 
   // Place patterns: streets, locations, geographical features
@@ -164,6 +185,12 @@ const ENTITY_PATTERNS = {
   // Event patterns: Battle of X, War of Y
   EVENT: [
     new RegExp(`\\b(?:Battle|War|Quest|Siege|Council)\\s+of\\s+(${WORD}(?:\\s+${WORD})?)\\b`, 'g'),
+  ],
+
+  // Object patterns: artifacts, books, items with 's
+  OBJECT: [
+    // Possessive object names: "Philosopher's Stone", "Sorcerer's Stone", "King's Crown"
+    new RegExp(`\\b(${WORD}'s\\s+(?:Stone|Ring|Sword|Crown|Cloak|Wand|Staff|Book|Glass|Mirror|Cup|Goblet))\\b`, 'g'),
   ],
 
   // Date patterns (treated as events)
@@ -403,10 +430,18 @@ function detectNaturalEntities(text: string, minConfidence: number): EntitySpan[
         // Clean up the captured text
         let cleanedCapture = captured.trim();
 
+        // Remove newlines from entity text
+        cleanedCapture = cleanedCapture.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+
         // Remove leading context words: "Yet Harry" -> "Harry", "His Aunt" -> "Aunt"
         const firstWord = cleanedCapture.split(/\s+/)[0].toLowerCase();
         if (CONTEXT_WORDS.has(firstWord)) {
           cleanedCapture = cleanedCapture.split(/\s+/).slice(1).join(' ');
+        }
+
+        // Remove "The" from beginning if it's a title pattern
+        if (cleanedCapture.startsWith('The ') && type !== 'ORG') {
+          cleanedCapture = cleanedCapture.substring(4);
         }
 
         // If nothing left after cleaning, skip
@@ -420,6 +455,16 @@ function detectNaturalEntities(text: string, minConfidence: number): EntitySpan[
           continue;
         }
 
+        // Filter out days of the week and months
+        if (TIME_WORDS.has(lowerCaptured)) {
+          continue;
+        }
+
+        // Filter out abbreviations
+        if (ABBREVIATIONS.has(lowerCaptured)) {
+          continue;
+        }
+
         // Filter out standalone descriptors ONLY if single word (Hittite, Egyptian, etc.)
         // Allow multi-word names like "Uriah the Hittite"
         const words = cleanedCapture.trim().split(/\s+/);
@@ -429,6 +474,11 @@ function detectNaturalEntities(text: string, minConfidence: number): EntitySpan[
 
         // Filter out single-letter captures
         if (cleanedCapture.length === 1) {
+          continue;
+        }
+
+        // Filter out single-word captures that are less than 3 characters (except known names)
+        if (words.length === 1 && cleanedCapture.length <= 2) {
           continue;
         }
 
@@ -448,6 +498,11 @@ function detectNaturalEntities(text: string, minConfidence: number): EntitySpan[
           if (/^\s+(tape|fries|class|door|bread|toast|butter|paper|horn|kiss|connection)/i.test(afterText)) {
             continue;
           }
+        }
+
+        // Filter out possessive-only captures (ending with 's)
+        if (/^[A-Z][a-z]+'s$/.test(cleanedCapture)) {
+          continue;
         }
 
         // Adjust start/end if we cleaned the capture
