@@ -142,14 +142,16 @@ const ENTITY_PATTERNS = {
     new RegExp(`(?:Mr\\.|Mrs\\.|Ms\\.|Dr\\.|Prof\\.|Lord|Lady|King|Queen|Prince|Princess|Aunt|Uncle)\\s+(${WORD}(?:\\s+${WORD}){0,2})`, 'g'),
 
     // Author names with initials: "JK Rowling", "CS Lewis", "RR Tolkien"
-    new RegExp(`\\b([A-Z]{1,3})\\s+(${WORD}(?:\\s+${WORD})?)\\b`, 'g'),
+    // Match 1-3 capital letters followed by a space and a capitalized name
+    new RegExp(`\\b([A-Z]{1,3}\\s+${WORD}(?:\\s+${WORD})?)\\b`, 'g'),
 
     // Multi-word names with connectors: "Uriah the Hittite", "Mary Jane Watson"
     // Note: More restrictive now - requires at least 2 words and specific connectors
     new RegExp(`\\b(${WORD}\\s+(?:the|of|von|van|de|da|le)\\s+${WORD}(?:\\s+${WORD}){0,1})\\b`, 'g'),
 
     // Two-word capitalized names: "Harry Potter", "Dudley Dursley" (but NOT at sentence start or after "The")
-    new RegExp(`(?<=[.!?]\\s+.{10,}|^.{10,}|[a-z]\\s+)(${WORD}\\s+${WORD})(?!\\s+(?:Street|Drive|Road|Avenue|Lane|Boulevard|Way|Court|Circle|Stone|Glass))\\b`, 'g'),
+    // Excludes book/object titles and places
+    new RegExp(`(?<=[.!?]\\s+.{10,}|^.{10,}|[a-z]\\s+)(${WORD}\\s+${WORD})(?!\\s+(?:Street|Drive|Road|Avenue|Lane|Boulevard|Way|Court|Circle))(?<!'s\\s+(?:Stone|Glass|Ring|Sword|Crown|Mirror))\\b`, 'g'),
 
     // Single-word name followed by appositive/possessive context: "Aragorn, son of Arathorn"
     new RegExp(`\\b(${WORD})(?=\\s*(?:,\\s*(?:son|daughter|the|who|whose)))`, 'gi'),
@@ -338,6 +340,9 @@ function detectHashtags(text: string): EntitySpan[] {
         // Natural language pattern matched (title-based only now)
         entityName = match[1].trim();
 
+        // Remove newlines and normalize whitespace
+        entityName = entityName.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+
         // Clean context words from the entity name
         const firstWord = entityName.split(/\s+/)[0].toLowerCase();
         if (CONTEXT_WORDS.has(firstWord)) {
@@ -502,6 +507,23 @@ function detectNaturalEntities(text: string, minConfidence: number): EntitySpan[
 
         // Filter out possessive-only captures (ending with 's)
         if (/^[A-Z][a-z]+'s$/.test(cleanedCapture)) {
+          continue;
+        }
+
+        // Filter out chapter/book title patterns that look like "Vanishing Glass", "Hidden Chamber"
+        // These appear after "The" at line breaks and are usually chapter/section titles
+        if (words.length === 2 && type === 'PERSON') {
+          const beforeContext = text.slice(Math.max(0, start - 20), start);
+          // Check if this appears right after "The" and a newline (chapter title pattern)
+          if (/The\s*\n\s*$/.test(beforeContext)) {
+            continue;
+          }
+        }
+
+        // Reclassify possessive object patterns as OBJECT, not PERSON
+        // "Philosopher's Stone", "Sorcerer's Stone", etc.
+        if (type === 'PERSON' && /'s\s+(?:Stone|Ring|Sword|Crown|Cloak|Wand|Staff|Book|Glass|Mirror|Cup|Goblet)\b/i.test(cleanedCapture)) {
+          // Skip this PERSON match - it will be caught by OBJECT pattern
           continue;
         }
 
