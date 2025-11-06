@@ -277,15 +277,12 @@ export function CodeMirrorEditor({
           border: '1px solid #e5e7eb',
           borderRadius: '6px',
           minHeight,
-          padding: '8px',
           backgroundColor: '#ffffff',
           width: '100%',
-          height: '100%'
+          height: '100%',
+          overflow: 'auto'
         }}
-      >
-        {/* Debug text to verify rendering */}
-        Loading editor...
-      </div>
+      />
 
       {contextMenu && (
         <EntityContextMenu
@@ -320,6 +317,13 @@ const entityHighlightTheme = EditorView.theme({
     cursor: 'pointer',
     fontWeight: '500', // Make it slightly bolder
   },
+  '.cm-scroller': {
+    overflow: 'auto',
+    minHeight: '100%'
+  },
+  '.cm-content': {
+    minHeight: '100%'
+  }
 });
 
 

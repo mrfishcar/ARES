@@ -176,7 +176,7 @@ a:hover {
   background: white;
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-soft);
-  overflow: hidden;
+  overflow: auto;
 }
 
 .panel-header {
