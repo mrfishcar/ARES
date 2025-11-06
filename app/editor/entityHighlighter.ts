@@ -71,6 +71,26 @@ const PRONOUNS = new Set([
 ]);
 
 /**
+ * Dialogue verbs for extracting names from dialogue
+ */
+const DIALOGUE_VERBS = new Set([
+  'said', 'asked', 'replied', 'answered', 'whispered', 'shouted', 'yelled',
+  'muttered', 'murmured', 'cried', 'screamed', 'demanded', 'screeched',
+  'snapped', 'growled', 'hissed', 'snarled', 'remarked', 'added', 'continued',
+  'exclaimed', 'declared', 'announced', 'proclaimed', 'stated', 'mentioned',
+]);
+
+/**
+ * Context words that should not be part of entity names
+ */
+const CONTEXT_WORDS = new Set([
+  'yet', 'his', 'her', 'their', 'the', 'a', 'an', 'this', 'that',
+  'these', 'those', 'some', 'any', 'all', 'both', 'each', 'every',
+  'another', 'other', 'such', 'no', 'nor', 'not', 'only', 'own',
+  'same', 'so', 'than', 'too', 'very', 'well', 'just', 'but',
+]);
+
+/**
  * Common descriptors/ethnicities that shouldn't be standalone entities
  */
 const DESCRIPTORS = new Set([
@@ -83,22 +103,46 @@ const DESCRIPTORS = new Set([
  * Entity patterns for natural language detection
  */
 const ENTITY_PATTERNS = {
-  // Person patterns: capitalized names, single-word names in appositive contexts, honorifics, and verb-preceded names
+  // Person patterns: dialogue, honorifics, multi-word names, and contextual detection
   PERSON: [
-    // Multi-word names up to 4 words: "John Smith", "Uriah the Hittite", "Mary Jane Watson"
-    new RegExp(`\\b(${WORD}(?:\\s+(?:the|of|von|van|de|da|le)\\s+)?${WORD}(?:\\s+${WORD}){0,2})\\b`, 'g'),
-    // Single-word name followed by comma or appositive/possessive context: "Aragorn, son of Arathorn"
-    new RegExp(`\\b(${WORD})(?=\\s*(?:,|son\\s+of|daughter\\s+of|,\\s+the|,\\s+son|the\\s+king|the\\s+queen|the\\s+warrior))`, 'gi'),
-    // Verbs preceding a name: "married Arwen", "traveled Gandalf" (common narrative cases)
-    new RegExp(`(?:married|wed|met|visited|traveled|went|joined|saw|met\\s+with|called|named|known\\s+as)\\s+(${WORD}(?:\\s+${WORD}){0,2})`, 'gi'),
-    // Honorifics: "Dr. Watson", "King David"
-    new RegExp(`(?:Mr\\.|Mrs\\.|Ms\\.|Dr\\.|Prof\\.|Lord|Lady|King|Queen|Prince|Princess)\\s+(${WORD}(?:\\s+${WORD}){0,2})`, 'g'),
+    // DIALOGUE PATTERNS (highest priority for extracting names from dialogue)
+    // Pattern: "...", said NAME or "...", NAME said
+    new RegExp(`"[^"]+",?\\s+(${WORD}(?:\\s+${WORD}){0,2})\\s+(?:said|asked|replied|answered|whispered|shouted|yelled|muttered|murmured|cried|screamed|demanded|screeched|snapped|growled|hissed|snarled|remarked|added|continued|exclaimed|declared|announced|proclaimed|stated|mentioned)`, 'gi'),
+    // Pattern: NAME said, "..." or NAME asked
+    new RegExp(`\\b(${WORD}(?:\\s+${WORD}){0,2})\\s+(?:said|asked|replied|answered|whispered|shouted|yelled|muttered|murmured|cried|screamed|demanded|screeched|snapped|growled|hissed|snarled|remarked|added|continued|exclaimed|declared|announced|proclaimed|stated|mentioned)\\b`, 'gi'),
+
+    // Honorifics and titles: "Dr. Watson", "King David", "Aunt Petunia"
+    new RegExp(`(?:Mr\\.|Mrs\\.|Ms\\.|Dr\\.|Prof\\.|Lord|Lady|King|Queen|Prince|Princess|Aunt|Uncle)\\s+(${WORD}(?:\\s+${WORD}){0,2})`, 'g'),
+
+    // Multi-word names with connectors: "Uriah the Hittite", "Mary Jane Watson"
+    // Note: More restrictive now - requires at least 2 words and specific connectors
+    new RegExp(`\\b(${WORD}\\s+(?:the|of|von|van|de|da|le)\\s+${WORD}(?:\\s+${WORD}){0,1})\\b`, 'g'),
+
+    // Two-word capitalized names: "Harry Potter", "Dudley Dursley" (but NOT at sentence start)
+    new RegExp(`(?<=[.!?]\\s+.{10,}|^.{10,})(${WORD}\\s+${WORD})(?!\\s+(?:Street|Drive|Road|Avenue|Lane|Boulevard|Way|Court|Circle))\\b`, 'g'),
+
+    // Single-word name followed by appositive/possessive context: "Aragorn, son of Arathorn"
+    new RegExp(`\\b(${WORD})(?=\\s*(?:,\\s*(?:son|daughter|the|who|whose)))`, 'gi'),
+
+    // Action verbs preceding a name: "married Arwen", "met Gandalf"
+    new RegExp(`(?:married|wed|met|visited|joined|saw|met\\s+with|called|named|kissed|hugged)\\s+(${WORD}(?:\\s+${WORD}){0,2})`, 'gi'),
+
+    // Single-name detection (for recurring characters): must be mid-sentence with lowercase context
+    // Examples: "...and Harry woke...", "...with Dudley was..."
+    // Negative lookbehind ensures not at sentence start, positive lookbehind ensures lowercase before
+    new RegExp(`(?<=[a-z,;]\\s+)(${WORD})(?=\\s+[a-z])`, 'g'),
   ],
 
-  // Place patterns: Location indicators
+  // Place patterns: streets, locations, geographical features
   PLACE: [
-    new RegExp(`\\b(?:in|at|from|to|near)\\s+(${WORD}(?:\\s+${WORD})?)\\b`, 'g'), // "in London", "at Lothlórien"
-    new RegExp(`\\b(${WORD})\\s+(?:City|Town|Village|Kingdom|Mountain|River|Forest)\\b`, 'g'), // "Gondor Kingdom"
+    // Street names: "Privet Drive", "Main Street", "Abbey Road"
+    new RegExp(`\\b(${WORD}(?:\\s+${WORD})?)\\s+(Street|Drive|Road|Avenue|Lane|Boulevard|Way|Court|Circle|Place)\\b`, 'g'),
+
+    // Prepositions + place: "in London", "at Hogwarts", "from Gondor"
+    new RegExp(`\\b(?:in|at|from|to|near|toward|towards)\\s+(${WORD}(?:\\s+${WORD})?)\\b`, 'g'),
+
+    // Geographic features: "Gondor Kingdom", "Misty Mountains"
+    new RegExp(`\\b(${WORD}(?:\\s+${WORD})?)\\s+(?:City|Town|Village|Kingdom|Mountain|Mountains|River|Forest|Lake|Sea|Ocean|Island|Castle|Palace)\\b`, 'g'),
   ],
 
   // Organization patterns
@@ -307,7 +351,7 @@ function detectNaturalEntities(text: string, minConfidence: number): EntitySpan[
 
       while ((match = regex.exec(text)) !== null) {
           // Extract captured group (entity name) if present
-          const captured = match[1] || match[0];
+          let captured = match[1] || match[0];
           const fullMatch = match[0];
 
           // Determine the start/end for the captured group within the full match
@@ -316,8 +360,8 @@ function detectNaturalEntities(text: string, minConfidence: number): EntitySpan[
             // Captured group not found in match, skip this match
             continue;
           }
-          const start = match.index + groupOffset;
-          const end = start + captured.length;
+          let start = match.index + groupOffset;
+          let end = start + captured.length;
 
         // Skip if already detected
         const key = `${start}-${end}`;
@@ -325,22 +369,54 @@ function detectNaturalEntities(text: string, minConfidence: number): EntitySpan[
           continue;
         }
 
+        // Clean up the captured text
+        let cleanedCapture = captured.trim();
+
+        // Remove leading context words: "Yet Harry" -> "Harry", "His Aunt" -> "Aunt"
+        const firstWord = cleanedCapture.split(/\s+/)[0].toLowerCase();
+        if (CONTEXT_WORDS.has(firstWord)) {
+          cleanedCapture = cleanedCapture.split(/\s+/).slice(1).join(' ');
+        }
+
+        // If nothing left after cleaning, skip
+        if (!cleanedCapture || cleanedCapture.length === 0) {
+          continue;
+        }
+
         // Filter out pronouns (he, she, it, they, etc.)
-        const lowerCaptured = captured.toLowerCase().trim();
+        const lowerCaptured = cleanedCapture.toLowerCase().trim();
         if (PRONOUNS.has(lowerCaptured)) {
           continue;
         }
 
         // Filter out standalone descriptors ONLY if single word (Hittite, Egyptian, etc.)
         // Allow multi-word names like "Uriah the Hittite"
-        const words = captured.trim().split(/\s+/);
+        const words = cleanedCapture.trim().split(/\s+/);
         if (words.length === 1 && DESCRIPTORS.has(lowerCaptured)) {
           continue;
         }
 
         // Filter out single-letter captures
-        if (captured.length === 1) {
+        if (cleanedCapture.length === 1) {
           continue;
+        }
+
+        // Filter out quoted single words that appear before dialogue verbs
+        // Example: "Nearly," said Harry -> should NOT capture "Nearly"
+        if (words.length === 1) {
+          const beforeMatch = text.slice(Math.max(0, start - 10), start);
+          if (/["""]$/.test(beforeMatch)) {
+            // This is a quoted word, skip it
+            continue;
+          }
+        }
+
+        // Adjust start/end if we cleaned the capture
+        if (cleanedCapture !== captured) {
+          const offset = captured.indexOf(cleanedCapture);
+          start = start + offset;
+          end = start + cleanedCapture.length;
+          captured = cleanedCapture;
         }
 
         // Calculate confidence based on pattern and context
