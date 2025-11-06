@@ -37,16 +37,35 @@ function entityHighlighterExtension(setContextMenu?: (ctx: any) => void) {
     provide: f => EditorView.decorations.from(f)
   });
   const plugin = ViewPlugin.fromClass(class {
+    private timeout: number | null = null;
+    private readonly debounceMs = 1000; // 1 second debounce
+
     constructor(view: EditorView) {
       console.log('[EntityHighlighter] Plugin initialized');
       this.updateHighlights(view);
     }
+
     update(update: ViewUpdate) {
       if (update.docChanged || update.viewportChanged) {
-        console.log('[EntityHighlighter] Document changed, updating highlights...');
-        this.updateHighlights(update.view);
+        console.log('[EntityHighlighter] Document changed, scheduling highlight update...');
+        // Clear existing timeout
+        if (this.timeout !== null) {
+          clearTimeout(this.timeout);
+        }
+        // Schedule new update after debounce period
+        this.timeout = setTimeout(() => {
+          this.updateHighlights(update.view);
+        }, this.debounceMs) as unknown as number;
       }
     }
+
+    destroy() {
+      // Clean up timeout on plugin destruction
+      if (this.timeout !== null) {
+        clearTimeout(this.timeout);
+      }
+    }
+
     async updateHighlights(view: EditorView) {
       const text = view.state.doc.toString();
       console.log('[EntityHighlighter] Analyzing text:', text.slice(0, 100) + (text.length > 100 ? '...' : ''));

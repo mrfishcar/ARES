@@ -107,7 +107,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         <div className="editor-panel">
           <div className="panel-header">
             <h2>Write or paste text...</h2>
-            <p className="panel-subtitle">Entities will be highlighted as you type</p>
+            <p className="panel-subtitle">Entities will be highlighted as you type (updates every 1s)</p>
           </div>
           <CodeMirrorEditor
             value={text}
