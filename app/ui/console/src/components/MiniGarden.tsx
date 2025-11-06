@@ -111,7 +111,9 @@ export function MiniGarden({
     // Create simulation nodes with positions - preserve existing, spread out new ones
     const simulationNodes = nodes.map(node => {
       const existing = positionsRef.current.get(node.id);
-      const radius = node.isCluster ? Math.min(30 + node.count * 2, 50) : getNodeSize(node.mentions || 1);
+      const radius = 'isCluster' in node && node.isCluster
+        ? Math.min(30 + node.count * 2, 50)
+        : getNodeSize('mentions' in node ? node.mentions || 1 : 1);
 
       if (existing && existing.x >= radius && existing.x <= width - radius && existing.y >= radius && existing.y <= height - radius) {
         // Reuse existing position if it's within bounds

@@ -164,8 +164,8 @@ export function MarkdownEditorWithHighlighting({
     }
 
     // Debounce parsing by 15ms for real-time feel
-    parseTimeoutRef.current = window.setTimeout(() => {
-      const spans = highlightEntities(value, {
+    parseTimeoutRef.current = window.setTimeout(async () => {
+      const spans = await highlightEntities(value, {
         maxHighlights: 1000,
         minConfidence: 0.6,
         enableNaturalDetection: true,
