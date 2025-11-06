@@ -26,6 +26,72 @@ function debounce<T extends (...args: any[]) => any>(
   };
 }
 
+/**
+ * Deduplicate entities - merge shorter names into longer ones
+ * Example: "David" merges into "King David"
+ */
+function deduplicateEntities(entities: EntitySpan[]): EntitySpan[] {
+  if (entities.length === 0) return entities;
+
+  // Group by type
+  const byType = new Map<string, EntitySpan[]>();
+  for (const entity of entities) {
+    const group = byType.get(entity.type) || [];
+    group.push(entity);
+    byType.set(entity.type, group);
+  }
+
+  const deduplicated: EntitySpan[] = [];
+
+  // Process each type group
+  for (const [type, group] of byType.entries()) {
+    // Sort by text length (longest first)
+    const sorted = [...group].sort((a, b) => b.text.length - a.text.length);
+    const merged = new Set<number>(); // Track indices we've merged
+
+    for (let i = 0; i < sorted.length; i++) {
+      if (merged.has(i)) continue;
+
+      const longer = sorted[i];
+      const longerLower = longer.text.toLowerCase().trim();
+      let kept = true;
+
+      // Check if this entity should be merged into a longer one
+      for (let j = 0; j < i; j++) {
+        if (merged.has(j)) continue;
+
+        const other = sorted[j];
+        const otherLower = other.text.toLowerCase().trim();
+
+        // If longer contains this one, skip this entity
+        if (otherLower.includes(longerLower)) {
+          merged.add(i);
+          kept = false;
+          break;
+        }
+      }
+
+      if (kept) {
+        // Check if any shorter entities should be merged into this one
+        for (let j = i + 1; j < sorted.length; j++) {
+          const shorter = sorted[j];
+          const shorterLower = shorter.text.toLowerCase().trim();
+
+          // If this contains the shorter one, mark shorter as merged
+          if (longerLower.includes(shorterLower)) {
+            merged.add(j);
+          }
+        }
+
+        deduplicated.push(longer);
+      }
+    }
+  }
+
+  // Sort by position in original text
+  return deduplicated.sort((a, b) => a.start - b.start);
+}
+
 export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [text, setText] = useState('');
   const [entities, setEntities] = useState<EntitySpan[]>([]);
@@ -53,17 +119,20 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           enableNaturalDetection: true,
         });
 
+        // Deduplicate: merge "David" into "King David", etc.
+        const deduplicated = deduplicateEntities(extractedEntities);
+
         const time = performance.now() - start;
         const avgConfidence =
-          extractedEntities.length > 0
-            ? extractedEntities.reduce((sum, e) => sum + e.confidence, 0) / extractedEntities.length
+          deduplicated.length > 0
+            ? deduplicated.reduce((sum, e) => sum + e.confidence, 0) / deduplicated.length
             : 0;
 
-        setEntities(extractedEntities);
+        setEntities(deduplicated);
         setStats({
           time: Math.round(time),
           confidence: Math.round(avgConfidence * 100),
-          count: extractedEntities.length,
+          count: deduplicated.length,
         });
       } catch (error) {
         console.error('Extraction failed:', error);
