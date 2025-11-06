@@ -100,6 +100,16 @@ const DESCRIPTORS = new Set([
 ]);
 
 /**
+ * Common adjectives that appear before nouns (false positives)
+ * Example: "Scotch tape", "French fries", "English class"
+ */
+const COMMON_ADJECTIVES = new Set([
+  'scotch', 'french', 'english', 'spanish', 'german', 'italian',
+  'chinese', 'japanese', 'american', 'british', 'irish', 'scottish',
+  'dutch', 'polish', 'russian', 'greek', 'latin',
+]);
+
+/**
  * Entity patterns for natural language detection
  */
 const ENTITY_PATTERNS = {
@@ -180,16 +190,14 @@ const HASHTAG_PATTERNS = [
   // Complete tag formats (match these first)
   /#\[([^\]]+)\]:([A-Z]+)/g,                                      // #[Multi Word]:TYPE
   new RegExp(`#(${WORD}(?:_${WORD})*):([A-Z]+)`, 'g'),          // #Word:TYPE or #Word_Word:TYPE
-  
+
   // Partial tags (in progress)
   /#\[([^\]]+)\](?!:)/g,                                         // #[Multi Word] without type yet
   new RegExp(`#(${WORD}(?:_${WORD})*)(?!:)(?=[\\s.,!?;\\n])`, 'g'), // #Word without type yet
-  
-  // Natural language detection
-  new RegExp(`\\b(${WORD}(?:\\s+${WORD}){1,2})\\b(?!:)`, 'g'),  // "King David" -> #[King David]:PERSON
-  
-  // Title detection patterns
-  new RegExp(`\\b((?:King|Queen|Prophet|Lord|Lady|Prince|Princess|Professor|Doctor|Sir)\\s+${WORD}(?:\\s+${WORD})?)\\b(?!:)`, 'g')
+
+  // Title-based detection (only with explicit titles like King, Queen, etc.)
+  // This is more restrictive than the old broad pattern
+  new RegExp(`\\b((?:King|Queen|Prophet|Lord|Lady|Prince|Princess|Professor|Doctor|Sir|Aunt|Uncle)\\s+${WORD}(?:\\s+${WORD})?)\\b`, 'g')
 ];
 
 /**
@@ -205,29 +213,35 @@ function inferTypeFromContext(name: string, text: string, position: number): Ent
   // Get context window (30 chars before and after)
   const before = text.slice(Math.max(0, position - 30), position);
   const after = text.slice(position + name.length, position + name.length + 30);
-  
-  // Check for title patterns indicating PERSON
-  if (/\b(King|Queen|Prophet|Lord|Lady|Prince|Princess|Professor|Doctor|Sir)\s+$/i.test(before)) {
-    return 'PERSON';
-  }
-  
-  // Check for verbs indicating PERSON
-  if (/\b(said|spoke|went|called|married)\s+$/i.test(before)) {
-    return 'PERSON';
-  }
-  
-  // Check for place indicators
-  if (/\b(in|at|to|from|near)\s+$/i.test(before) || 
-      /\b(Kingdom|Mountain|River|Forest|City)\b/i.test(after)) {
+
+  // Check for street/place suffixes (highest priority)
+  if (/\b(Street|Drive|Road|Avenue|Lane|Boulevard|Way|Court|Circle|Place)\b/i.test(name) ||
+      /^\s+(Street|Drive|Road|Avenue|Lane|Boulevard|Way|Court|Circle|Place)\b/i.test(after)) {
     return 'PLACE';
   }
-  
+
+  // Check for title patterns indicating PERSON
+  if (/\b(King|Queen|Prophet|Lord|Lady|Prince|Princess|Professor|Doctor|Sir|Aunt|Uncle|Mr\.|Mrs\.|Ms\.)\s+$/i.test(before)) {
+    return 'PERSON';
+  }
+
+  // Check for verbs indicating PERSON
+  if (/\b(said|spoke|went|called|married|asked|replied|answered|whispered|shouted|yelled)\s+$/i.test(before)) {
+    return 'PERSON';
+  }
+
+  // Check for place indicators
+  if (/\b(in|at|to|from|near|toward|towards)\s+$/i.test(before) ||
+      /\b(Kingdom|Mountain|Mountains|River|Forest|City|Town|Village|Castle|Palace|Lake|Sea|Ocean|Island)\b/i.test(after)) {
+    return 'PLACE';
+  }
+
   // Check for organization indicators
   if (/\b(The)\s+$/i.test(before) &&
       /\b(Fellowship|Council|Order|Company)\b/i.test(name)) {
     return 'ORG';
   }
-  
+
   // Default to PERSON for capitalized names (most common in narrative)
   return 'PERSON';
 }
@@ -294,8 +308,15 @@ function detectHashtags(text: string): EntitySpan[] {
           continue;
         }
       } else {
-        // Natural language pattern matched
+        // Natural language pattern matched (title-based only now)
         entityName = match[1].trim();
+
+        // Clean context words from the entity name
+        const firstWord = entityName.split(/\s+/)[0].toLowerCase();
+        if (CONTEXT_WORDS.has(firstWord)) {
+          entityName = entityName.split(/\s+/).slice(1).join(' ');
+        }
+
         typeHint = inferTypeFromContext(entityName, text, match.index);
       }
 
@@ -309,14 +330,24 @@ function detectHashtags(text: string): EntitySpan[] {
       // Convert underscores to spaces for display
       const displayName = cleanName.replace(/_/g, ' ');
 
-      // Determine type
+      // Determine type with improved place detection
       let type: EntityType;
       if (typeHint) {
         type = typeHint as EntityType;
       } else {
         // Smart detection based on name patterns
         type = 'CONCEPT'; // Default
-        if (/^(?:Mr\.|Mrs\.|Ms\.|Dr\.|Prof\.)\s+/.test(displayName) || displayName.split(/\s+/).length >= 2) {
+
+        // Check for street/place patterns
+        if (/\b(Street|Drive|Road|Avenue|Lane|Boulevard|Way|Court|Circle|Place)\b/i.test(displayName)) {
+          type = 'PLACE';
+        }
+        // Check for honorifics/titles indicating PERSON
+        else if (/^(?:Mr\.|Mrs\.|Ms\.|Dr\.|Prof\.|Aunt|Uncle|King|Queen|Prince|Princess|Lord|Lady)\s+/.test(displayName)) {
+          type = 'PERSON';
+        }
+        // Multi-word names are usually people
+        else if (displayName.split(/\s+/).length >= 2) {
           type = 'PERSON';
         }
       }
@@ -407,6 +438,14 @@ function detectNaturalEntities(text: string, minConfidence: number): EntitySpan[
           const beforeMatch = text.slice(Math.max(0, start - 10), start);
           if (/["""]$/.test(beforeMatch)) {
             // This is a quoted word, skip it
+            continue;
+          }
+        }
+
+        // Filter out common adjectives before nouns (e.g., "Scotch tape", "French fries")
+        if (words.length === 1 && COMMON_ADJECTIVES.has(lowerCaptured)) {
+          const afterText = text.slice(end, end + 20);
+          if (/^\s+(tape|fries|class|door|bread|toast|butter|paper|horn|kiss|connection)/i.test(afterText)) {
             continue;
           }
         }
