@@ -85,13 +85,14 @@ const DESCRIPTORS = new Set([
 const ENTITY_PATTERNS = {
   // Person patterns: capitalized names, single-word names in appositive contexts, honorifics, and verb-preceded names
   PERSON: [
-    new RegExp(`\\b(${WORD}(?:\\s+${WORD}){0,2})\\b`, 'g'), // multi-word names: "John Smith", "Mary Jane Watson", and single names: "Aragorn"
+    // Multi-word names up to 4 words: "John Smith", "Uriah the Hittite", "Mary Jane Watson"
+    new RegExp(`\\b(${WORD}(?:\\s+(?:the|of|von|van|de|da|le)\\s+)?${WORD}(?:\\s+${WORD}){0,2})\\b`, 'g'),
     // Single-word name followed by comma or appositive/possessive context: "Aragorn, son of Arathorn"
     new RegExp(`\\b(${WORD})(?=\\s*(?:,|son\\s+of|daughter\\s+of|,\\s+the|,\\s+son|the\\s+king|the\\s+queen|the\\s+warrior))`, 'gi'),
     // Verbs preceding a name: "married Arwen", "traveled Gandalf" (common narrative cases)
-    new RegExp(`(?:married|wed|met|visited|traveled|went|joined|saw|met\\s+with|called|named|known\\s+as)\\s+(${WORD}(?:\\s+${WORD})?)`, 'gi'),
-    // Honorifics: "Dr. Watson"
-    new RegExp(`(?:Mr\\.|Mrs\\.|Ms\\.|Dr\\.|Prof\\.|Lord|Lady|King|Queen|Prince|Princess)\\s+(${WORD}(?:\\s+${WORD})?)`, 'g'),
+    new RegExp(`(?:married|wed|met|visited|traveled|went|joined|saw|met\\s+with|called|named|known\\s+as)\\s+(${WORD}(?:\\s+${WORD}){0,2})`, 'gi'),
+    // Honorifics: "Dr. Watson", "King David"
+    new RegExp(`(?:Mr\\.|Mrs\\.|Ms\\.|Dr\\.|Prof\\.|Lord|Lady|King|Queen|Prince|Princess)\\s+(${WORD}(?:\\s+${WORD}){0,2})`, 'g'),
   ],
 
   // Place patterns: Location indicators
@@ -330,8 +331,10 @@ function detectNaturalEntities(text: string, minConfidence: number): EntitySpan[
           continue;
         }
 
-        // Filter out standalone descriptors (Hittite, Egyptian, etc.)
-        if (DESCRIPTORS.has(lowerCaptured)) {
+        // Filter out standalone descriptors ONLY if single word (Hittite, Egyptian, etc.)
+        // Allow multi-word names like "Uriah the Hittite"
+        const words = captured.trim().split(/\s+/);
+        if (words.length === 1 && DESCRIPTORS.has(lowerCaptured)) {
           continue;
         }
 

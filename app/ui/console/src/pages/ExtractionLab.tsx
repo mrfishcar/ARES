@@ -149,6 +149,41 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     extractEntities(text);
   }, [text, extractEntities]);
 
+  // Generate and copy test report
+  const copyReport = () => {
+    const report = {
+      timestamp: new Date().toISOString(),
+      text: text,
+      textLength: text.length,
+      stats: {
+        processingTime: stats.time,
+        averageConfidence: stats.confidence,
+        entityCount: stats.count,
+      },
+      entities: entities.map((e) => ({
+        text: e.text,
+        type: e.type,
+        confidence: e.confidence,
+        start: e.start,
+        end: e.end,
+        source: e.source,
+        displayText: e.displayText,
+        canonicalName: (e as any).canonicalName,
+        // Include surrounding context (50 chars before/after)
+        context: text.substring(Math.max(0, e.start - 50), Math.min(text.length, e.end + 50)),
+      })),
+      // Group by type for easy analysis
+      byType: entities.reduce((acc, e) => {
+        if (!acc[e.type]) acc[e.type] = [];
+        acc[e.type].push(e.text);
+        return acc;
+      }, {} as Record<string, string[]>),
+    };
+
+    navigator.clipboard.writeText(JSON.stringify(report, null, 2));
+    toast.success('Report copied to clipboard! Paste it for analysis.');
+  };
+
   return (
     <div className="extraction-lab">
       {/* Header */}
@@ -165,6 +200,14 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
               <span className="stat-badge">⏱️ {stats.time}ms</span>
               <span className="stat-badge">🎯 {stats.confidence}% confidence</span>
               <span className="stat-badge">📊 {stats.count} entities</span>
+              <button
+                onClick={copyReport}
+                className="report-button"
+                disabled={entities.length === 0}
+                title="Copy extraction report to clipboard"
+              >
+                📋 Copy Report
+              </button>
             </>
           )}
         </div>

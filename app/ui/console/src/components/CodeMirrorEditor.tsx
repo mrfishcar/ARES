@@ -97,7 +97,7 @@ function entityHighlighterExtension(setContextMenu?: (ctx: any) => void) {
               class: 'cm-entity-highlight',
               attributes: {
                 'data-entity': JSON.stringify(entity),
-                style: `background: ${color}20; border-bottom: 2px solid ${color}; cursor: pointer;`
+                style: `background: ${color}30; cursor: pointer; border-radius: 3px; padding: 1px 0;`
               }
             }));
           } else {

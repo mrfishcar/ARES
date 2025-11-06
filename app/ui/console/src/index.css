@@ -124,6 +124,37 @@ a:hover {
   animation: pulse 1.5s ease-in-out infinite;
 }
 
+.report-button {
+  padding: 8px 16px;
+  background: var(--accent-warm);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.report-button:hover:not(:disabled) {
+  background: var(--accent-glow);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(232, 168, 124, 0.3);
+}
+
+.report-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.report-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
