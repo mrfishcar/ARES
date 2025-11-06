@@ -151,7 +151,7 @@ const ENTITY_PATTERNS = {
 
     // Two-word capitalized names: "Harry Potter", "Dudley Dursley" (but NOT at sentence start or after "The")
     // Excludes book/object titles and places
-    new RegExp(`(?<=[.!?]\\s+.{10,}|^.{10,}|[a-z]\\s+)(${WORD}\\s+${WORD})(?!\\s+(?:Street|Drive|Road|Avenue|Lane|Boulevard|Way|Court|Circle))(?<!'s\\s+(?:Stone|Glass|Ring|Sword|Crown|Mirror))\\b`, 'g'),
+    new RegExp(`(?<=[.!?]\\s+.{10,}|^.{10,}|[a-z]\\s+)(${WORD}\\s+${WORD})(?!\\s+(?:Street|Drive|Road|Avenue|Lane|Boulevard|Way|Court|Circle))\\b`, 'g'),
 
     // Single-word name followed by appositive/possessive context: "Aragorn, son of Arathorn"
     new RegExp(`\\b(${WORD})(?=\\s*(?:,\\s*(?:son|daughter|the|who|whose)))`, 'gi'),
