@@ -161,9 +161,9 @@ const ENTITY_PATTERNS = {
 
     // Single-name detection (for recurring characters): must be mid-sentence with lowercase context
     // Examples: "...and Harry woke...", "...with Dudley was..."
-    // More aggressive now - matches after common words
-    new RegExp(`(?<=\\b(?:and|but|so|if|when|while|as|after|before|though|because)\\s+)(${WORD})(?=\\s+[a-z])`, 'g'),
-    new RegExp(`(?<=[a-z,;]\\s+)(${WORD})(?=\\s+(?:was|were|is|are|had|have|has|did|do|does|could|would|should|moved|thought|felt|stood|sat|went|looked|walked))\\b`, 'g'),
+    // More aggressive patterns - multiple approaches to catch recurring names
+    new RegExp(`\\b(?:and|but|so|if|when|while|as)\\s+(${WORD})(?=\\s+(?:was|were|had|has|did|could|would|should|moved|thought|felt|stood|looked|walked))`, 'gi'),
+    new RegExp(`[,;]\\s+(${WORD})(?=\\s+(?:was|were|had|has|did|could|would|should|moved|thought|felt|stood|looked|walked))`, 'gi'),
   ],
 
   // Place patterns: streets, locations, geographical features
@@ -384,10 +384,13 @@ function detectHashtags(text: string): EntitySpan[] {
         }
       }
 
+      // Normalize fullMatch to remove newlines for the text field
+      const cleanedText = fullMatch.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+
       spans.push({
         start: match.index,
         end: match.index + fullMatch.length,
-        text: fullMatch,
+        text: cleanedText, // Use cleaned text without newlines
         displayText: displayName, // Clean name with spaces
         type,
         confidence: 1.0, // Hashtags are explicit
@@ -515,7 +518,8 @@ function detectNaturalEntities(text: string, minConfidence: number): EntitySpan[
         if (words.length === 2 && type === 'PERSON') {
           const beforeContext = text.slice(Math.max(0, start - 20), start);
           // Check if this appears right after "The" and a newline (chapter title pattern)
-          if (/The\s*\n\s*$/.test(beforeContext)) {
+          // OR at the very start of text preceded by "The"
+          if (/The\s*\n\s*$/.test(beforeContext) || (start < 10 && /^The\s+/.test(text.slice(0, start + cleanedCapture.length)))) {
             continue;
           }
         }
