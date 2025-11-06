@@ -1,6 +1,11 @@
 /**
- * Segmented Extraction Orchestrator
+ * Segmented Extraction Orchestrator (Enhanced with Macro-Level Analysis)
  * Processes documents using sentence-level segmentation with context windows
+ *
+ * NEW: Multi-pass architecture for advanced entity recognition:
+ * - Pass 1: Document-level analysis (salience, co-occurrence, genre)
+ * - Pass 2: Entity extraction with macro context
+ * - Pass 3: Evidence-based classification
  */
 
 import type { Entity, Relation } from '../schema';
@@ -19,6 +24,19 @@ import { getLLMConfig, validateLLMConfig, DEFAULT_LLM_CONFIG, type LLMConfig } f
 import { applyPatterns, type Pattern } from '../bootstrap';
 import type { PatternLibrary } from '../pattern-library';
 import { isValidEntity } from '../entity-filter';
+
+// NEW: Macro-level analysis imports
+import { analyzeDocument, type MacroAnalysis } from './macro-analyzer';
+import { extractAllParserFeatures, type ParserFeatures } from './parser-features';
+import { detectGenre, type GenrePriors, getGenreConfidenceBoost } from './genre-detector';
+import {
+  createEntityEvidence,
+  accumulateMentionEvidence,
+  accumulateCooccurrenceEvidence,
+  addSalienceEvidence,
+  classifyWithEvidence,
+  type EntityEvidence
+} from './evidence-accumulator';
 
 /**
  * Extract entities and relations from segments with context windows
@@ -39,6 +57,7 @@ export async function extractFromSegments(
   options?: {
     generateHERTs?: boolean;     // Enable HERT generation (Phase 2)
     autoSaveHERTs?: boolean;     // Auto-save to HERT store
+    enableMacroAnalysis?: boolean; // Enable macro-level entity recognition (NEW)
   }
 ): Promise<{
   entities: Entity[];
@@ -47,6 +66,8 @@ export async function extractFromSegments(
   fictionEntities: FictionEntity[];
   profiles: Map<string, EntityProfile>;
   herts?: string[];              // Generated HERTs (if enabled)
+  macroAnalysis?: MacroAnalysis;  // Document-level analysis (if enabled)
+  genre?: GenrePriors;           // Detected genre (if macro enabled)
 }> {
   // Validate and resolve LLM config
   const resolvedConfig = getLLMConfig(llmConfig);
@@ -57,6 +78,37 @@ export async function extractFromSegments(
     console.warn(`[ORCHESTRATOR] Falling back to spaCy-only extraction`);
     resolvedConfig.enabled = false;
   }
+
+  // NEW: PASS 1 - Document-Level Macro Analysis (if enabled)
+  let macroAnalysis: MacroAnalysis | undefined;
+  let genre: GenrePriors | undefined;
+
+  const enableMacro = options?.enableMacroAnalysis ?? true; // Enabled by default
+
+  if (enableMacro) {
+    console.log(`[ORCHESTRATOR] Starting macro-level analysis...`);
+    const startTime = Date.now();
+
+    // Step 1.1: Detect genre
+    genre = detectGenre(fullText);
+    console.log(`[ORCHESTRATOR] Genre detected: ${genre.displayName}`);
+
+    // Step 1.2: Parse full document
+    const fullParse = await parseWithService(fullText);
+
+    // Step 1.3: Analyze document structure, salience, co-occurrences
+    macroAnalysis = await analyzeDocument(fullText, fullParse);
+
+    const elapsed = Date.now() - startTime;
+    console.log(`[ORCHESTRATOR] Macro analysis complete: ${macroAnalysis.mentions.length} mentions, ${macroAnalysis.salience.size} unique entities (${elapsed}ms)`);
+    console.log(`[ORCHESTRATOR] Top 5 salient entities:`,
+      Array.from(macroAnalysis.salience.values())
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 5)
+        .map(s => `${s.surface} (${s.score.toFixed(2)})`)
+    );
+  }
+
   // 1. Segment the document
   const segs = segmentDocument(docId, fullText);
 
@@ -668,7 +720,9 @@ export async function extractFromSegments(
     relations: filteredRelations,
     fictionEntities,
     profiles, // Return updated profiles for cross-document learning
-    herts     // Return HERTs if generated
+    herts,    // Return HERTs if generated
+    macroAnalysis, // Return macro-level analysis if enabled
+    genre     // Return detected genre if macro enabled
   };
 }
 

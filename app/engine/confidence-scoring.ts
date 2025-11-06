@@ -6,10 +6,16 @@
  * - Mention frequency
  * - Context validation
  * - Generic word penalties
+ * - NEW: Document-level salience (if macro analysis enabled)
+ * - NEW: Genre alignment
  */
 
 import type { EntityType } from "./schema";
 import type { EntityCluster, ExtractorSource, Mention } from "./mention-tracking";
+
+// NEW: Import types for macro-level analysis support
+import type { EntitySalience } from "./extract/macro-analyzer";
+import type { GenrePriors } from "./extract/genre-detector";
 
 /**
  * Base confidence scores by extraction source
@@ -64,8 +70,16 @@ const STRONG_CONTEXT_PATTERNS = [
 
 /**
  * Compute confidence score for an entity cluster
+ *
+ * NEW: Optional macro-level context for enhanced scoring
  */
-export function computeEntityConfidence(cluster: EntityCluster): number {
+export function computeEntityConfidence(
+  cluster: EntityCluster,
+  options?: {
+    salience?: EntitySalience;  // Document-level salience from macro analysis
+    genre?: GenrePriors;        // Detected genre for genre-appropriate scoring
+  }
+): number {
   // Start with base score from sources
   const baseScore = Math.max(...cluster.sources.map(s => SOURCE_CONFIDENCE[s]));
 
@@ -135,6 +149,47 @@ export function computeEntityConfidence(cluster: EntityCluster): number {
     finalScore *= fallbackBoost;
   }
 
+  // NEW: Salience bonus (macro-level importance)
+  if (options?.salience) {
+    const salienceScore = options.salience.score;
+
+    // High-salience entities get confidence boost
+    if (salienceScore > 0.7) {
+      finalScore *= 1.15; // 15% boost for very important entities
+    } else if (salienceScore > 0.5) {
+      finalScore *= 1.08; // 8% boost for moderately important entities
+    }
+
+    // Opening paragraph bonus (already in salience, but worth emphasizing)
+    if (options.salience.inOpeningParagraph) {
+      finalScore *= 1.05; // Additional 5% for entities introduced early
+    }
+
+    // Entity with titles are more reliable
+    if (options.salience.titleCount > 0) {
+      finalScore *= 1.05; // 5% boost for formalized entities
+    }
+  }
+
+  // NEW: Genre alignment bonus
+  if (options?.genre) {
+    // Check if entity type matches genre expectations
+    const expectedTypes = options.genre.expectedTypes;
+    if (expectedTypes.includes(cluster.type)) {
+      // Bonus for entities matching genre (e.g., PERSON in fantasy, ORG in business)
+      finalScore *= options.genre.confidenceBoost;
+    }
+
+    // For ambiguous cases, genre priors help
+    if (baseScore < 0.6) { // Low base confidence
+      const typePrior = options.genre.singleWordPriors[cluster.type] || 0;
+      if (typePrior > 0.5) {
+        // Genre strongly suggests this type
+        finalScore *= 1.1;
+      }
+    }
+  }
+
   // Clamp to [0, 1]
   finalScore = Math.max(0, Math.min(1.0, finalScore));
 
@@ -153,9 +208,13 @@ function hasStrongContext(surface: string): boolean {
  */
 export function shouldFilterEntity(
   cluster: EntityCluster,
-  threshold: number = 0.5
+  threshold: number = 0.5,
+  options?: {
+    salience?: EntitySalience;
+    genre?: GenrePriors;
+  }
 ): boolean {
-  const confidence = computeEntityConfidence(cluster);
+  const confidence = computeEntityConfidence(cluster, options);
   cluster.confidence = confidence; // Update cluster with computed score
   return confidence < threshold;
 }
@@ -165,10 +224,20 @@ export function shouldFilterEntity(
  */
 export function filterEntitiesByConfidence(
   clusters: EntityCluster[],
-  threshold: number = 0.5
+  threshold: number = 0.5,
+  options?: {
+    salience?: Map<string, EntitySalience>;  // Map for looking up by entity name
+    genre?: GenrePriors;
+  }
 ): EntityCluster[] {
   return clusters.filter(cluster => {
-    cluster.confidence = computeEntityConfidence(cluster);
+    // Look up salience for this entity if map provided
+    const entitySalience = options?.salience?.get(cluster.canonical.toLowerCase().trim());
+
+    cluster.confidence = computeEntityConfidence(cluster, {
+      salience: entitySalience,
+      genre: options?.genre
+    });
     return cluster.confidence >= threshold;
   });
 }
@@ -218,7 +287,13 @@ export function computeMentionConfidence(
 /**
  * Explain why an entity was filtered (for debugging)
  */
-export function explainConfidence(cluster: EntityCluster): string {
+export function explainConfidence(
+  cluster: EntityCluster,
+  options?: {
+    salience?: EntitySalience;
+    genre?: GenrePriors;
+  }
+): string {
   const baseScore = Math.max(...cluster.sources.map(s => SOURCE_CONFIDENCE[s]));
   const mentionBonus = Math.min(1.2, 1.0 + (cluster.mentionCount * 0.05));
 
@@ -239,22 +314,41 @@ export function explainConfidence(cluster: EntityCluster): string {
   ).length;
   const contextBonus = mentionsWithStrongContext > 0 ? 1.1 : 1.0;
 
-  const finalScore = baseScore * mentionBonus * genericPenalty * contextBonus;
+  const finalScore = computeEntityConfidence(cluster, options);
 
-  return [
+  const lines = [
     `Entity: ${cluster.canonical} (${cluster.id})`,
     `  Base score: ${baseScore.toFixed(2)} (sources: ${cluster.sources.join(', ')})`,
     `  Mention bonus: ${mentionBonus.toFixed(2)}x (${cluster.mentionCount} mentions)`,
     `  Generic penalty: ${genericPenalty.toFixed(2)}x${genericPenalty < 1 ? ' ⚠️' : ''}`,
-    `  Context bonus: ${contextBonus.toFixed(2)}x (${mentionsWithStrongContext} strong)`,
-    `  Final confidence: ${finalScore.toFixed(3)} ${finalScore < 0.5 ? '❌ FILTERED' : '✅ KEPT'}`
-  ].join('\n');
+    `  Context bonus: ${contextBonus.toFixed(2)}x (${mentionsWithStrongContext} strong)`
+  ];
+
+  // Add salience info if available
+  if (options?.salience) {
+    lines.push(`  Salience: ${options.salience.score.toFixed(3)} (opening: ${options.salience.inOpeningParagraph}, titles: ${options.salience.titleCount})`);
+  }
+
+  // Add genre info if available
+  if (options?.genre) {
+    lines.push(`  Genre: ${options.genre.displayName} (boost: ${options.genre.confidenceBoost.toFixed(2)}x)`);
+  }
+
+  lines.push(`  Final confidence: ${finalScore.toFixed(3)} ${finalScore < 0.5 ? '❌ FILTERED' : '✅ KEPT'}`);
+
+  return lines.join('\n');
 }
 
 /**
  * Get confidence statistics for a set of clusters
  */
-export function getConfidenceStats(clusters: EntityCluster[]): {
+export function getConfidenceStats(
+  clusters: EntityCluster[],
+  options?: {
+    salience?: Map<string, EntitySalience>;
+    genre?: GenrePriors;
+  }
+): {
   total: number;
   highConfidence: number;
   mediumConfidence: number;
@@ -270,7 +364,13 @@ export function getConfidenceStats(clusters: EntityCluster[]): {
   let sumConfidence = 0;
 
   for (const cluster of clusters) {
-    const confidence = computeEntityConfidence(cluster);
+    // Look up salience if map provided
+    const entitySalience = options?.salience?.get(cluster.canonical.toLowerCase().trim());
+
+    const confidence = computeEntityConfidence(cluster, {
+      salience: entitySalience,
+      genre: options?.genre
+    });
     cluster.confidence = confidence;
     sumConfidence += confidence;
 

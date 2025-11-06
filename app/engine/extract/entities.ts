@@ -1592,3 +1592,30 @@ const chooseCanonical = (names: Set<string>): string => {
 
   return { entities, spans };
 }
+
+/**
+ * NOTE: Macro-Level Analysis Integration
+ *
+ * The orchestrator.ts now performs macro-level document analysis before calling
+ * extractEntities. This provides:
+ *
+ * 1. Entity Salience Scoring - Tracks which entities are most important based on:
+ *    - Mention frequency across the document
+ *    - Position (entities in opening paragraphs are more salient)
+ *    - Spread (entities spanning multiple paragraphs are more important)
+ *
+ * 2. Genre Detection - Automatically detects document genre (fantasy, biblical,
+ *    business, etc.) and applies appropriate entity type priors.
+ *
+ * 3. Co-occurrence Analysis - Builds an entity graph showing which entities
+ *    appear together, helping with type disambiguation.
+ *
+ * 4. Evidence-Based Classification - Instead of classifying entities immediately
+ *    based on first mention, evidence is accumulated across all mentions and
+ *    classification is deferred until sufficient context is available.
+ *
+ * The macro-level analysis is available via extractFromSegments() with the
+ * enableMacroAnalysis option (enabled by default).
+ *
+ * See: macro-analyzer.ts, genre-detector.ts, evidence-accumulator.ts
+ */
