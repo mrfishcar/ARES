@@ -713,7 +713,7 @@ export async function startGraphQLServer(port: number = 4000, storagePath?: stri
   });
 
   const { url } = await startStandaloneServer(server, {
-    listen: { port },
+    listen: { port, host: '0.0.0.0' },
     context: async ({ req }) => {
       // Rate limiting check
       const clientId = extractClientId(req.headers as Record<string, string | string[] | undefined>);
@@ -752,7 +752,8 @@ export function createGraphQLServer(storagePath?: string) {
 
 // Start server if this file is run directly
 if (require.main === module) {
-  startGraphQLServer().catch((error) => {
+  const port = parseInt(process.env.PORT || '4000', 10);
+  startGraphQLServer(port).catch((error) => {
     console.error('Failed to start GraphQL server:', error);
     process.exit(1);
   });
