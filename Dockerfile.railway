@@ -19,9 +19,9 @@ RUN apt-get update && apt-get install -y \
 COPY scripts/requirements.txt ./scripts/
 RUN pip install --no-cache-dir -r scripts/requirements.txt
 
-# Copy package files and install Node dependencies
+# Copy package files and install Node dependencies (including TypeScript)
 COPY package*.json ./
-RUN npm install --production
+RUN npm install
 
 # Copy source code (UI excluded via .dockerignore)
 COPY . .
