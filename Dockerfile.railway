@@ -1,11 +1,11 @@
 # Railway-optimized Dockerfile
-# Simpler single-stage build to avoid multi-stage issues
+# Backend only (API + Parser) - UI deploys separately to Vercel
 
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install Node.js on the Python image (more compatible than copying Python to Node)
+# Install Node.js on the Python image
 RUN apt-get update && apt-get install -y \
     curl \
     gnupg \
@@ -20,18 +20,21 @@ RUN pip install --no-cache-dir -r scripts/requirements.txt
 
 # Copy package files and install Node dependencies
 COPY package*.json ./
-RUN npm install
+RUN npm install --production
 
-# Copy source code
+# Copy source code (UI excluded via .dockerignore)
 COPY . .
 
-# Build TypeScript
-RUN npx tsc || echo "TypeScript build had warnings, continuing..."
+# Build TypeScript backend only (UI excluded in tsconfig.json)
+RUN npx tsc
 
 # Create data directories
 RUN mkdir -p /app/data/projects /app/incoming /app/wiki
 
 # Expose ports
+# 4000: GraphQL API
+# 4100: Metrics endpoint
+# 8000: Python parser service
 EXPOSE 4000 4100 8000
 
 # Health check
@@ -39,5 +42,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD node -e "require('http').get('http://localhost:4000/healthz', (r) => process.exit(r.statusCode === 200 ? 0 : 1))" || exit 0
 
 # Start both services
-# Railway will override this with their own start command if needed
 CMD ["sh", "-c", "python3 scripts/parser_service.py & sleep 3 && node dist/app/api/graphql.js"]
