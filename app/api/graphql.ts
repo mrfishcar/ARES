@@ -565,17 +565,22 @@ export async function startGraphQLServer(port: number = 4000, storagePath?: stri
 
   // Start Apollo Server
   await server.start();
+  logger.info({ msg: 'apollo_server_started' });
 
   // Create Express app
   const app = express();
 
   // Health check endpoints (before body parser to keep them fast)
   app.get('/healthz', (req, res) => {
-    res.status(200).send('ok');
+    logger.info({ msg: 'healthz_request_received' });
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('ok');
   });
 
   app.get('/readyz', (req, res) => {
-    res.status(200).send('ready');
+    logger.info({ msg: 'readyz_request_received' });
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('ready');
   });
 
   // Metrics endpoint
@@ -710,10 +715,18 @@ export async function startGraphQLServer(port: number = 4000, storagePath?: stri
   });
 
   // Start Express server on the main port
-  await new Promise<void>((resolve) => {
-    app.listen(port, '0.0.0.0', () => {
-      logger.info({ msg: 'graphql_server_ready', port, host: '0.0.0.0' });
+  await new Promise<void>((resolve, reject) => {
+    const httpServer = app.listen(port, '0.0.0.0', () => {
+      logger.info({ msg: 'express_server_listening', port, host: '0.0.0.0', address: httpServer.address() });
+      console.log(`✅ Express server listening on http://0.0.0.0:${port}`);
+      console.log(`✅ Health check available at http://0.0.0.0:${port}/healthz`);
       resolve();
+    });
+
+    httpServer.on('error', (err) => {
+      logger.error({ msg: 'express_server_error', err: err.message });
+      console.error('❌ Express server error:', err);
+      reject(err);
     });
   });
 
