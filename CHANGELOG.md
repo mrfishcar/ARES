@@ -6,6 +6,146 @@ Format: `[Date] - [AI Model/Developer Name]`
 
 ---
 
+## 2025-11-06 - Claude Code (Sonnet 4.5)
+
+### Added
+- **Extraction Lab** - Browser-based entity testing interface at `/lab`
+  - Real-time entity highlighting with CodeMirror editor
+  - Split-pane interface with editor + results panel
+  - 1-second debounce for smooth performance
+  - Client-side entity deduplication
+  - JSON report export via "Copy Report" button
+  - Fixed scrolling for long documents
+- **Comprehensive entity detection patterns** in `/app/editor/entityHighlighter.ts` (1000+ lines):
+  - 20+ regex patterns for PERSON, PLACE, ORG, EVENT, OBJECT detection
+  - Dialogue attribution: `"...", said Harry` (highly reliable)
+  - Honorifics: `Uncle Vernon`, `Professor McGonagall`, `Dr. Watson`
+  - Author initials: `JK Rowling`, `CS Lewis`
+  - Possessive objects: `Philosopher's Stone` → OBJECT
+  - Multi-word names: `Harry Potter`, `Hermione Granger`
+  - Recurring single names: `Harry thought`, `Dudley moved`
+  - Connector patterns: `King David of Israel`, `Ruth the Moabite`
+- **Comprehensive entity filters**:
+  - TIME_WORDS - Filters days/months ("Saturday", "March")
+  - ABBREVIATIONS - Filters "Ch", "Vol", "Pg"
+  - COMMON_ADJECTIVES - Filters "Scotch tape", "French fries"
+  - CONTEXT_WORDS - Strips "Yet", "His", "The" from entity names
+  - Chapter title detection (position < 10 AND starts with "The ")
+  - Newline normalization in entity text
+- **Vercel deployment configuration** for browser testing
+  - Auto-deploys from feature branch
+  - Build: `cd app/ui/console && npm install && npm run build`
+  - Output: `app/ui/console/dist`
+  - SPA routing with rewrites to `/index.html`
+
+### Changed
+- Enhanced entity detection with dialogue attribution (most reliable pattern)
+- Improved multi-word name detection with proper boundaries
+- Added newline normalization before creating entity spans
+- Simplified recurring character patterns (removed complex lookbehinds for build compatibility)
+
+### Fixed
+- **Scrolling issue** in Extraction Lab editor (multiple text boxes appearing)
+  - Changed `.editor-panel` overflow from `hidden` to `auto`
+  - Added overflow styles to `.cm-scroller`
+- **Chapter title false positives** (e.g., "The Vanishing Glass" detected as PERSON)
+  - Added check for position < 10 AND text starts with "The "
+- **Newline in entity text** (literal `\n` characters in highlighted spans)
+  - Normalize fullMatch before creating span decorations
+- **Recurring character under-detection** (only 1 "Harry" detected instead of 10+)
+  - Simplified patterns: `and|but|when + Harry + verb` and `,|; + Harry + verb`
+- **Vercel build failures** (regex syntax errors)
+  - Removed invalid negative lookbehind placed after pattern
+
+### Performance
+- **Test case** (Harry Potter zoo excerpt, 2,250 characters):
+  - Processing: ~10ms
+  - Entities detected: 8+ (before fixes)
+  - Build: 820KB bundle (acceptable)
+  - Debounce prevents UI blocking on large pastes
+
+### Documentation
+- Created **ENTITY_EXTRACTION_STATUS.md** (744 lines) - Comprehensive system reference:
+  - All detection patterns documented
+  - Testing results and edge cases
+  - Macro-level vision for book-scale analysis
+  - 5-level architecture proposal (token → sentence → paragraph → chapter → book)
+- Created **HANDOFF.md** (414 lines) - Session continuity document:
+  - What was accomplished
+  - Fixed issues with details
+  - Current status and limitations
+  - Next steps for syntactic parsing integration
+  - Strategic test cases
+- Created **DOCUMENTATION_CONSOLIDATION_PLAN.md** - Plan to reduce 54 markdown files to organized structure
+
+### Notes
+- **Current approach**: Pattern-based (regex) detection at micro-level
+- **Limitation**: No cross-sentence tracking, anaphora resolution, or discourse analysis
+- **Future vision**: Switch to syntactic parsing as primary detection method
+  - Use spaCy dependency trees (nsubj, nsubjpass)
+  - Extract grammatical subjects and filter by POS tags (PROPN)
+  - Implement paragraph-level salience scoring
+  - Build entity registry with transitive closure for alias resolution
+  - Add book-scale analysis with global entity network
+- **User context**: Literary critic, wants book-scale entity tracking with narrative arcs
+- **Parser integration**: spaCy client available at `/app/parser/index.ts` but underutilized
+- **Design lesson**: "Think at macro level, not just micro" - sentence diagramming + discourse analysis needed
+
+### Files Modified/Created
+- **Core Implementation**:
+  - `/app/editor/entityHighlighter.ts` - 1000+ line entity detection system
+  - `/app/ui/console/src/pages/ExtractionLab.tsx` - Extraction Lab interface
+  - `/app/ui/console/src/components/CodeMirrorEditor.tsx` - Editor with highlighting
+  - `/app/ui/console/src/index.css` - Styles for entity highlighting
+- **Configuration**:
+  - `/vercel.json` - Vercel deployment config
+  - `/app/ui/console/tsconfig.json` - TypeScript configuration
+- **Documentation**:
+  - `/ENTITY_EXTRACTION_STATUS.md` - Complete system reference
+  - `/HANDOFF.md` - Session handoff document
+  - `/DOCUMENTATION_CONSOLIDATION_PLAN.md` - Documentation cleanup plan
+
+### Commit History
+1. `cc7e15d` - Fix scrolling issue in Extraction Lab editor
+2. `0d8b73e` - Add sophisticated dialogue-aware entity detection
+3. `beb792b` - Fix hashtag pattern interference and improve entity classification
+4. `7fe17c1` - Add comprehensive entity filtering and improve character detection
+5. `0ad57d9` - Fix object classification, author names, and chapter title filtering
+6. `b1bcc78` - Fix invalid regex syntax causing Vercel build failure
+7. `690b294` - Fix chapter title detection, newline cleaning, and recurring character patterns
+8. `a128184` - Add comprehensive entity extraction system documentation
+
+### User Testing Status
+- ⏳ Awaiting retest with Harry Potter text to verify:
+  - Chapter title filtering (fix deployed)
+  - Newline cleaning (fix deployed)
+  - Recurring character detection improvements (new patterns deployed)
+
+---
+
+## 2025-11-07 - Claude Code (Sonnet 4.5)
+
+### Changed
+- **Documentation consolidation**: Reduced 54 markdown files to 4 in root + organized `docs/` folder
+  - Kept in root: README.md, CHANGELOG.md, ENTITY_EXTRACTION_STATUS.md, HANDOFF.md
+  - Moved architecture docs to `docs/architecture/` (HERT_INTEGRATION_GUIDE.md, ENGINE_EVOLUTION_STRATEGY.md, HERT_IMPLEMENTATION.md)
+  - Moved guides to `docs/guides/` (DESKTOP_TESTER_QUICKSTART.md, QUICK_START.md)
+  - Moved reference docs to `docs/reference/` (WIKI_QUICKSTART.md)
+  - Archived 45+ old phase/sprint/completion reports to `docs/archive/old-reports/`
+- **Updated README.md** with clean version from consolidate-docs branch:
+  - Added Extraction Lab section
+  - Updated documentation links to new structure
+  - Added project structure showing docs/ organization
+  - Professional, concise presentation
+
+### Notes
+- Improved navigation: 54 files → 4 in root (92% reduction)
+- Historical context preserved in `docs/archive/`
+- Professional appearance for new contributors
+- Easier for future Claude sessions to find current documentation
+
+---
+
 ## 2025-01-26 - Claude Code (Sonnet 4.5)
 
 ### Added
