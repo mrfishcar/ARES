@@ -4,7 +4,10 @@
  */
 
 import { ApolloServer } from '@apollo/server';
-import { startStandaloneServer } from '@apollo/server/standalone';
+import { expressMiddleware } from '@apollo/server/express4';
+import express from 'express';
+import cors from 'cors';
+import bodyParser from 'body-parser';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
@@ -712,31 +715,56 @@ export async function startGraphQLServer(port: number = 4000, storagePath?: stri
     httpServer.listen(port + 100, () => resolve());
   });
 
-  const { url } = await startStandaloneServer(server, {
-    listen: { port, host: '0.0.0.0' },
-    context: async ({ req }) => {
-      // Rate limiting check
-      const clientId = extractClientId(req.headers as Record<string, string | string[] | undefined>);
-      const rateLimitResult = globalRateLimiter.checkLimit(clientId);
+  // Start Apollo Server
+  await server.start();
 
-      if (!rateLimitResult.allowed) {
-        throw new Error(`Rate limit exceeded. Retry after ${rateLimitResult.retryAfter} seconds.`);
-      }
+  // Create Express app
+  const app = express();
 
-      // Generate request_id
-      const request_id = (req.headers['x-request-id'] as string) || crypto.randomUUID();
-      const log = withRequest(logger, request_id);
-
-      // Log request (operation name not available at this stage)
-      log.info({ msg: 'graphql_request', request_id });
-
-      // Load graph for each request
-      const graph = loadGraph(storagePath);
-      return { graph, log, request_id };
-    }
+  // Health check endpoint (must be before other middleware to avoid body parsing)
+  app.get('/healthz', (req, res) => {
+    res.status(200).send('OK');
   });
 
-  logger.info({ msg: 'graphql_server_ready', url });
+  // Apply middleware
+  app.use(cors());
+  app.use(bodyParser.json());
+
+  // GraphQL endpoint
+  app.use(
+    '/graphql',
+    expressMiddleware(server, {
+      context: async ({ req }) => {
+        // Rate limiting check
+        const clientId = extractClientId(req.headers as Record<string, string | string[] | undefined>);
+        const rateLimitResult = globalRateLimiter.checkLimit(clientId);
+
+        if (!rateLimitResult.allowed) {
+          throw new Error(`Rate limit exceeded. Retry after ${rateLimitResult.retryAfter} seconds.`);
+        }
+
+        // Generate request_id
+        const request_id = (req.headers['x-request-id'] as string) || crypto.randomUUID();
+        const log = withRequest(logger, request_id);
+
+        // Log request (operation name not available at this stage)
+        log.info({ msg: 'graphql_request', request_id });
+
+        // Load graph for each request
+        const graph = loadGraph(storagePath);
+        return { graph, log, request_id };
+      }
+    })
+  );
+
+  // Start Express server
+  await new Promise<void>((resolve) => {
+    app.listen(port, '0.0.0.0', () => {
+      logger.info({ msg: 'graphql_server_ready', port, host: '0.0.0.0' });
+      resolve();
+    });
+  });
+
   return server;
 }
 
