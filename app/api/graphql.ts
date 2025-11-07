@@ -563,172 +563,31 @@ export async function startGraphQLServer(port: number = 4000, storagePath?: stri
     logger.error({ msg: 'uncaughtException', err: err?.stack || String(err) });
   });
 
-  // Custom HTTP server wrapper for observability endpoints
-  const httpServer = http.createServer(async (req, res) => {
-    // Health/readiness/metrics endpoints
-    if (req.url === '/healthz') {
-      res.writeHead(200, { 'Content-Type': 'text/plain' });
-      res.end('ok');
-      return;
-    }
-    if (req.url === '/readyz') {
-      res.writeHead(200, { 'Content-Type': 'text/plain' });
-      res.end('ready');
-      return;
-    }
-    if (req.url === '/metrics') {
-      // Import metrics from monitor module
-      const { getPrometheusMetrics } = await import('../monitor/metrics');
-      res.writeHead(200, { 'Content-Type': 'text/plain; version=0.0.4' });
-      res.end(getPrometheusMetrics());
-      return;
-    }
-
-    // Wiki file serving endpoint (Sprint R4)
-    if (req.url?.startsWith('/wiki-file')) {
-      const url = new URL(req.url, `http://${req.headers.host}`);
-      const project = url.searchParams.get('project');
-      const id = url.searchParams.get('id');
-
-      if (!project || !id) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Missing project or id parameter' }));
-        return;
-      }
-
-      // Validate project and id (no path traversal)
-      if (project.includes('..') || project.includes('/') || project.includes('\\')) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid project name' }));
-        return;
-      }
-
-      if (id.includes('..') || id.includes('/') || id.includes('\\')) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid entity id' }));
-        return;
-      }
-
-      // Build and validate path
-      const wikiBase = path.join(process.cwd(), 'data', 'projects', project, 'wiki');
-      const wikiFile = path.join(wikiBase, `${id}.md`);
-      const resolvedPath = path.resolve(wikiFile);
-      const resolvedBase = path.resolve(wikiBase);
-
-      // Verify path is within wiki directory (path traversal protection)
-      if (!resolvedPath.startsWith(resolvedBase)) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Path traversal attempt detected' }));
-        return;
-      }
-
-      // Check if file exists
-      if (!fs.existsSync(resolvedPath)) {
-        res.writeHead(404, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Wiki file not found' }));
-        return;
-      }
-
-      // Serve file
-      const content = fs.readFileSync(resolvedPath, 'utf-8');
-      res.writeHead(200, { 'Content-Type': 'text/markdown; charset=utf-8' });
-      res.end(content);
-      return;
-    }
-
-    // Download endpoint (Sprint R4)
-    if (req.url?.startsWith('/download')) {
-      const url = new URL(req.url, `http://${req.headers.host}`);
-      const filePath = url.searchParams.get('path');
-
-      if (!filePath) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Missing path parameter' }));
-        return;
-      }
-
-      // Reject absolute paths
-      if (path.isAbsolute(filePath)) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Absolute paths not allowed' }));
-        return;
-      }
-
-      // Reject path traversal
-      if (filePath.includes('..')) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Path traversal not allowed' }));
-        return;
-      }
-
-      // Whitelist: only out/ directory
-      const outBase = path.join(process.cwd(), 'out');
-      const fullPath = path.join(outBase, filePath);
-      const resolvedPath = path.resolve(fullPath);
-      const resolvedBase = path.resolve(outBase);
-
-      // Verify path is within out/ directory
-      if (!resolvedPath.startsWith(resolvedBase)) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Access denied: only out/ directory allowed' }));
-        return;
-      }
-
-      // Check if file exists
-      if (!fs.existsSync(resolvedPath)) {
-        res.writeHead(404, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'File not found' }));
-        return;
-      }
-
-      // Serve file with download header
-      const basename = path.basename(resolvedPath);
-      const content = fs.readFileSync(resolvedPath);
-      res.writeHead(200, {
-        'Content-Type': 'application/octet-stream',
-        'Content-Disposition': `attachment; filename="${basename}"`
-      });
-      res.end(content);
-      return;
-    }
-
-    // Upload endpoint (Sprint R7)
-    if (req.url === '/upload') {
-      await handleUpload(req, res);
-      return;
-    }
-
-    // Media file serving (Sprint R7)
-    if (req.url?.startsWith('/media/')) {
-      const filepath = req.url.replace('/media/', '');
-      handleMediaServe(req, res, filepath);
-      return;
-    }
-
-    // For GraphQL requests, return 404 - Apollo will handle them
-    res.writeHead(404);
-    res.end('Not Found');
-  });
-
-  // Start custom server
-  await new Promise<void>((resolve) => {
-    httpServer.listen(port + 100, () => resolve());
-  });
-
   // Start Apollo Server
   await server.start();
 
   // Create Express app
   const app = express();
 
-  // Health check endpoint (must be before other middleware to avoid body parsing)
+  // Health check endpoints (before body parser to keep them fast)
   app.get('/healthz', (req, res) => {
-    res.status(200).send('OK');
+    res.status(200).send('ok');
+  });
+
+  app.get('/readyz', (req, res) => {
+    res.status(200).send('ready');
+  });
+
+  // Metrics endpoint
+  app.get('/metrics', async (req, res) => {
+    const { getPrometheusMetrics } = await import('../monitor/metrics');
+    res.set('Content-Type', 'text/plain; version=0.0.4');
+    res.send(getPrometheusMetrics());
   });
 
   // Apply middleware
   app.use(cors());
-  app.use(bodyParser.json());
+  app.use(bodyParser.json({ limit: '50mb' }));
 
   // GraphQL endpoint
   app.use(
@@ -757,7 +616,100 @@ export async function startGraphQLServer(port: number = 4000, storagePath?: stri
     })
   );
 
-  // Start Express server
+  // Wiki file serving endpoint
+  app.get('/wiki-file', (req, res) => {
+    const project = req.query.project as string;
+    const id = req.query.id as string;
+
+    if (!project || !id) {
+      return res.status(400).json({ error: 'Missing project or id parameter' });
+    }
+
+    // Validate project and id (no path traversal)
+    if (project.includes('..') || project.includes('/') || project.includes('\\')) {
+      return res.status(400).json({ error: 'Invalid project name' });
+    }
+
+    if (id.includes('..') || id.includes('/') || id.includes('\\')) {
+      return res.status(400).json({ error: 'Invalid entity id' });
+    }
+
+    // Build and validate path
+    const wikiBase = path.join(process.cwd(), 'data', 'projects', project, 'wiki');
+    const wikiFile = path.join(wikiBase, `${id}.md`);
+    const resolvedPath = path.resolve(wikiFile);
+    const resolvedBase = path.resolve(wikiBase);
+
+    // Verify path is within wiki directory
+    if (!resolvedPath.startsWith(resolvedBase)) {
+      return res.status(400).json({ error: 'Path traversal attempt detected' });
+    }
+
+    // Check if file exists
+    if (!fs.existsSync(resolvedPath)) {
+      return res.status(404).json({ error: 'Wiki file not found' });
+    }
+
+    // Serve file
+    const content = fs.readFileSync(resolvedPath, 'utf-8');
+    res.set('Content-Type', 'text/markdown; charset=utf-8');
+    res.send(content);
+  });
+
+  // Download endpoint
+  app.get('/download', (req, res) => {
+    const filePath = req.query.path as string;
+
+    if (!filePath) {
+      return res.status(400).json({ error: 'Missing path parameter' });
+    }
+
+    // Reject absolute paths
+    if (path.isAbsolute(filePath)) {
+      return res.status(400).json({ error: 'Absolute paths not allowed' });
+    }
+
+    // Reject path traversal
+    if (filePath.includes('..')) {
+      return res.status(400).json({ error: 'Path traversal not allowed' });
+    }
+
+    // Whitelist: only out/ directory
+    const outBase = path.join(process.cwd(), 'out');
+    const fullPath = path.join(outBase, filePath);
+    const resolvedPath = path.resolve(fullPath);
+    const resolvedBase = path.resolve(outBase);
+
+    // Verify path is within out/ directory
+    if (!resolvedPath.startsWith(resolvedBase)) {
+      return res.status(400).json({ error: 'Access denied: only out/ directory allowed' });
+    }
+
+    // Check if file exists
+    if (!fs.existsSync(resolvedPath)) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+
+    // Serve file with download header
+    const basename = path.basename(resolvedPath);
+    const content = fs.readFileSync(resolvedPath);
+    res.set('Content-Type', 'application/octet-stream');
+    res.set('Content-Disposition', `attachment; filename="${basename}"`);
+    res.send(content);
+  });
+
+  // Upload endpoint - needs raw http.IncomingMessage
+  app.post('/upload', (req, res) => {
+    handleUpload(req as any, res as any);
+  });
+
+  // Media file serving
+  app.get('/media/*', (req, res) => {
+    const filepath = req.path.replace('/media/', '');
+    handleMediaServe(req as any, res as any, filepath);
+  });
+
+  // Start Express server on the main port
   await new Promise<void>((resolve) => {
     app.listen(port, '0.0.0.0', () => {
       logger.info({ msg: 'graphql_server_ready', port, host: '0.0.0.0' });
