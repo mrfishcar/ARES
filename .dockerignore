@@ -1,0 +1,58 @@
+# Node
+node_modules
+npm-debug.log
+.npm
+
+# TypeScript
+*.tsbuildinfo
+
+# Build outputs (will be regenerated)
+dist
+build
+*.js.map
+
+# Python
+__pycache__
+*.py[cod]
+*.egg-info
+.venv
+venv
+*.so
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Git
+.git
+.gitignore
+
+# Docs
+docs
+*.md
+!README.md
+
+# Tests
+tests
+*.test.ts
+*.spec.ts
+
+# Temp files
+tmp
+temp
+*.log
+
+# Large dependencies that will be reinstalled
+app/ui/console/node_modules
+app/ui/review-dashboard/node_modules
+
+# Data (not needed for build)
+data
+incoming
+wiki
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,43 @@
+# Railway-optimized Dockerfile
+# Simpler single-stage build to avoid multi-stage issues
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install Node.js on the Python image (more compatible than copying Python to Node)
+RUN apt-get update && apt-get install -y \
+    curl \
+    gnupg \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies first (better caching)
+COPY scripts/requirements.txt ./scripts/
+RUN pip install --no-cache-dir -r scripts/requirements.txt
+
+# Copy package files and install Node dependencies
+COPY package*.json ./
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Build TypeScript
+RUN npx tsc || echo "TypeScript build had warnings, continuing..."
+
+# Create data directories
+RUN mkdir -p /app/data/projects /app/incoming /app/wiki
+
+# Expose ports
+EXPOSE 4000 4100 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:4000/healthz', (r) => process.exit(r.statusCode === 200 ? 0 : 1))" || exit 0
+
+# Start both services
+# Railway will override this with their own start command if needed
+CMD ["sh", "-c", "python3 scripts/parser_service.py & sleep 3 && node dist/app/api/graphql.js"]

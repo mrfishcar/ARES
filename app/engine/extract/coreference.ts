@@ -79,7 +79,7 @@ function inferEntityGender(entityName: string): Gender {
 /**
  * Check if entity gender matches pronoun gender
  */
-function matchesGender(entity: CanonicalEntity, pronoun Gender): boolean {
+function matchesGender(entity: CanonicalEntity, pronounGender: Gender): boolean {
   const entityGender = inferEntityGender(entity.canonical_name);
 
   // Neutral matches anything
