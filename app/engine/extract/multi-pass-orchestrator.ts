@@ -74,19 +74,14 @@ export async function runMultiPassExtraction(
   console.log(`Document length: ${fullText.length} characters\n`);
 
   // ────────────────────────────────────────────────────────────
-  // PASS 1: ENTITY CENSUS
+  // PASS 1: ENTITY CENSUS (with parsing for disambiguation)
   // ────────────────────────────────────────────────────────────
-  console.log('┌─ PASS 1: Entity Census ─────────────────────┐');
+  console.log('┌─ PASS 1: Entity Census (w/ Disambiguation) ─┐');
   const censusResult = await runEntityCensus(fullText);
   console.log('└──────────────────────────────────────────────┘\n');
 
-  // ────────────────────────────────────────────────────────────
-  // PARSE DOCUMENT (needed for passes 2 & 3)
-  // ────────────────────────────────────────────────────────────
-  console.log('┌─ Parsing Document ───────────────────────────┐');
-  const parsed = await parseWithService(fullText);
-  console.log(`[PARSE] Parsed ${parsed.sentences.length} sentences`);
-  console.log('└──────────────────────────────────────────────┘\n');
+  // Use parsed data from census (already parsed for disambiguation)
+  const parsed = censusResult.parsed;
 
   // ────────────────────────────────────────────────────────────
   // PASS 2: SALIENCE SCORING

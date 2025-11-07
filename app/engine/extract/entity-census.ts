@@ -17,6 +17,13 @@
 import type { Entity, EntityType } from '../schema';
 import { parseWithService } from './entities';
 import { v4 as uuid } from 'uuid';
+import {
+  extractEntityContext,
+  areContextsConflicting,
+  generateDisambiguatedName,
+  summarizeContext,
+  type EntityContext
+} from './entity-disambiguation';
 
 export interface EntityMention {
   text: string;
@@ -34,6 +41,7 @@ export interface CanonicalEntity {
   mention_count: number;
   mentions: EntityMention[];
   first_mention_position: number;
+  context?: EntityContext;  // NEW: Disambiguation context
 }
 
 /**
@@ -190,9 +198,13 @@ async function collectAllMentions(fullText: string): Promise<EntityMention[]> {
 }
 
 /**
- * Phase 1b: Build entity registry from mentions
+ * Phase 1b: Build entity registry from mentions (WITH DISAMBIGUATION)
  */
-function buildEntityRegistry(mentions: EntityMention[]): Map<string, CanonicalEntity> {
+function buildEntityRegistry(
+  mentions: EntityMention[],
+  sentences: any[],  // ParsedSentence[]
+  fullText: string
+): Map<string, CanonicalEntity> {
   const registry = new Map<string, CanonicalEntity>();
 
   // Group mentions by normalized name
@@ -215,24 +227,185 @@ function buildEntityRegistry(mentions: EntityMention[]): Map<string, CanonicalEn
     // Infer type (most common across mentions)
     const type = mode(groupMentions.map(m => m.type));
 
-    // First mention position
-    const firstPosition = Math.min(...groupMentions.map(m => m.start));
+    // Extract context for this entity
+    const context = extractEntityContext(canonical, aliases, sentences, fullText);
 
-    // Create canonical entity
-    const entity: CanonicalEntity = {
-      id: uuid(),
-      canonical_name: canonical,
-      aliases: aliases,
-      type: type,
-      mention_count: groupMentions.length,
-      mentions: groupMentions,
-      first_mention_position: firstPosition
-    };
+    console.log(`[CENSUS] ${canonical}: ${summarizeContext(context)}`);
 
-    registry.set(normalizedName, entity);
+    // Check if we need to split this entity based on context
+    // (e.g., "John Smith" father vs "John Smith" son)
+    const needsSplit = shouldSplitEntity(groupMentions, sentences, fullText, context);
+
+    if (needsSplit && groupMentions.length > 1) {
+      // Split into multiple entities based on context
+      console.log(`[CENSUS] ⚠ Splitting "${canonical}" into multiple entities based on context`);
+
+      const splitEntities = splitEntityByContext(canonical, aliases, type, groupMentions, sentences, fullText);
+
+      for (const splitEntity of splitEntities) {
+        const key = normalizeName(splitEntity.canonical_name);
+        registry.set(key, splitEntity);
+      }
+    } else {
+      // No split needed, create single entity
+      const firstPosition = Math.min(...groupMentions.map(m => m.start));
+
+      const entity: CanonicalEntity = {
+        id: uuid(),
+        canonical_name: canonical,
+        aliases: aliases,
+        type: type,
+        mention_count: groupMentions.length,
+        mentions: groupMentions,
+        first_mention_position: firstPosition,
+        context: context
+      };
+
+      registry.set(normalizedName, entity);
+    }
   }
 
   return registry;
+}
+
+/**
+ * Determine if entity should be split based on conflicting contexts
+ */
+function shouldSplitEntity(
+  mentions: EntityMention[],
+  sentences: any[],
+  fullText: string,
+  overallContext: EntityContext
+): boolean {
+  // If very few mentions, probably don't need to split
+  if (mentions.length < 3) {
+    return false;
+  }
+
+  // Check for relationship conflicts (e.g., both "father" and "son")
+  const relationships = overallContext.relationships.map(r => r.relation_type);
+  const hasParentChildConflict =
+    (relationships.includes('father') || relationships.includes('mother')) &&
+    (relationships.includes('son') || relationships.includes('daughter'));
+
+  if (hasParentChildConflict) {
+    console.log(`[CENSUS] Detected parent-child relationship conflict`);
+    return true;
+  }
+
+  // Check for occupation conflicts
+  if (overallContext.occupations.length > 1) {
+    // Multiple different occupations might indicate different people
+    console.log(`[CENSUS] Detected multiple occupations: ${overallContext.occupations.join(', ')}`);
+    return true;
+  }
+
+  // Check for temporal conflicts (died vs alive, retired vs young)
+  const hasDied = overallContext.age_markers.some(m => /died|deceased/.test(m));
+  const hasRetired = overallContext.age_markers.some(m => /retired/.test(m));
+  const hasYoung = overallContext.age_markers.some(m => /young/.test(m));
+
+  if ((hasDied || hasRetired) && hasYoung) {
+    console.log(`[CENSUS] Detected temporal conflict (retired/died vs young)`);
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Split entity into multiple based on context differences
+ */
+function splitEntityByContext(
+  baseName: string,
+  baseAliases: string[],
+  type: EntityType,
+  mentions: EntityMention[],
+  sentences: any[],
+  fullText: string
+): CanonicalEntity[] {
+  // Group mentions by their local context
+  const contextGroups: Map<number, EntityMention[]> = new Map();
+
+  for (const mention of mentions) {
+    // Extract context just around this mention
+    const localSentences = sentences.filter(s =>
+      s.tokens.some((t: any) =>
+        t.char_start >= mention.start - 200 &&
+        t.char_start <= mention.end + 200
+      )
+    );
+
+    const localContext = extractEntityContext(baseName, baseAliases, localSentences, fullText);
+
+    // Find which group this belongs to
+    let assigned = false;
+    for (const [groupId, groupMentions] of contextGroups) {
+      if (groupMentions.length === 0) continue;
+
+      // Get context of first mention in group
+      const groupFirstMention = groupMentions[0];
+      const groupLocalSentences = sentences.filter(s =>
+        s.tokens.some((t: any) =>
+          t.char_start >= groupFirstMention.start - 200 &&
+          t.char_start <= groupFirstMention.end + 200
+        )
+      );
+      const groupContext = extractEntityContext(baseName, baseAliases, groupLocalSentences, fullText);
+
+      // If contexts don't conflict, add to this group
+      if (!areContextsConflicting(localContext, groupContext)) {
+        groupMentions.push(mention);
+        assigned = true;
+        break;
+      }
+    }
+
+    if (!assigned) {
+      // Create new group
+      contextGroups.set(contextGroups.size, [mention]);
+    }
+  }
+
+  // Create entities from groups
+  const entities: CanonicalEntity[] = [];
+
+  for (const [groupId, groupMentions] of contextGroups) {
+    if (groupMentions.length === 0) continue;
+
+    // Extract context for this group
+    const groupSentences = sentences.filter(s =>
+      groupMentions.some(m =>
+        s.tokens.some((t: any) =>
+          t.char_start >= m.start - 50 &&
+          t.char_start <= m.end + 50
+        )
+      )
+    );
+
+    const groupContext = extractEntityContext(baseName, baseAliases, groupSentences, fullText);
+
+    // Generate disambiguated name
+    const disambiguatedName = generateDisambiguatedName(baseName, groupContext);
+
+    console.log(`[CENSUS]   Created: ${disambiguatedName}`);
+    console.log(`[CENSUS]     Context: ${summarizeContext(groupContext)}`);
+
+    const entity: CanonicalEntity = {
+      id: uuid(),
+      canonical_name: disambiguatedName,
+      aliases: baseAliases,
+      type: type,
+      mention_count: groupMentions.length,
+      mentions: groupMentions,
+      first_mention_position: Math.min(...groupMentions.map(m => m.start)),
+      context: groupContext
+    };
+
+    entities.push(entity);
+  }
+
+  return entities;
 }
 
 /**
@@ -260,7 +433,7 @@ function canonicalToEntities(registry: Map<string, CanonicalEntity>): Entity[] {
 }
 
 /**
- * PASS 1: Execute full entity census
+ * PASS 1: Execute full entity census (WITH DISAMBIGUATION)
  */
 export async function runEntityCensus(
   fullText: string
@@ -268,14 +441,19 @@ export async function runEntityCensus(
   entities: Entity[];
   registry: Map<string, CanonicalEntity>;
   mentions: EntityMention[];
+  parsed: any;  // ParseResponse
 }> {
+  // Parse document first (needed for disambiguation)
+  const parsed = await parseWithService(fullText);
+  console.log(`[CENSUS] Parsed ${parsed.sentences.length} sentences for context extraction`);
+
   // Phase 1a: Collect all mentions
   const mentions = await collectAllMentions(fullText);
 
   console.log(`[CENSUS] Collected ${mentions.length} raw mentions`);
 
-  // Phase 1b: Build registry
-  const registry = buildEntityRegistry(mentions);
+  // Phase 1b: Build registry WITH DISAMBIGUATION
+  const registry = buildEntityRegistry(mentions, parsed.sentences, fullText);
 
   console.log(`[CENSUS] Built registry with ${registry.size} canonical entities`);
 
@@ -287,11 +465,15 @@ export async function runEntityCensus(
   console.log(`[CENSUS] Top 5 entities:`);
   sorted.slice(0, 5).forEach((e, i) => {
     console.log(`  ${i+1}. ${e.canonical_name} (${e.type}) - ${e.mention_count} mentions`);
+    if (e.context) {
+      console.log(`      ${summarizeContext(e.context)}`);
+    }
   });
 
   return {
     entities,
     registry,
-    mentions
+    mentions,
+    parsed
   };
 }
