@@ -1,0 +1,28 @@
+# Ignore everything except what we need for frontend build
+node_modules
+*.pyc
+__pycache__
+.pytest_cache
+.venv
+venv
+env
+
+# Backend services (not needed for frontend-only deployment)
+app/services
+app/engine
+
+# Test files
+tests
+*.test.ts
+*.spec.ts
+
+# Build artifacts from other apps
+app/ui/review-dashboard/dist
+app/desktop-tester/dist
+
+# Python packages
+tmp
+
+# Keep these for frontend build
+!app/ui/console
+!app/editor

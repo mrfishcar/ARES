@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { EditorState, Extension, StateEffect, StateField, RangeSetBuilder } from '@codemirror/state';
+import { EditorState, StateEffect, StateField, RangeSetBuilder } from '@codemirror/state';
 import { EditorView, keymap, ViewPlugin, ViewUpdate, Decoration, DecorationSet } from '@codemirror/view';
 import { defaultKeymap } from '@codemirror/commands';
 import { markdown } from '@codemirror/lang-markdown';
 import type { EntitySpan, EntityType } from '../../../../editor/entityHighlighter';
 import { highlightEntities, getEntityTypeColor } from '../../../../editor/entityHighlighter';
 import { EntityContextMenu } from './EntityContextMenu';
-import { useEntityMentions } from '../hooks/useEntityMentions';
 
 import type { CodeMirrorEditorProps } from './CodeMirrorEditorProps';
 
@@ -14,10 +13,6 @@ import type { CodeMirrorEditorProps } from './CodeMirrorEditorProps';
 // --- Helper functions ---
 function getSpanDisplayName(span: EntitySpan): string {
   return span.displayText || span.text;
-}
-function getSpanCanonicalName(span: EntitySpan): string {
-  const canonical = (span as any).canonicalName?.trim();
-  return canonical && canonical.length > 0 ? canonical : getSpanDisplayName(span);
 }
 function getSpanTooltipLabel(span: EntitySpan): string {
   const display = getSpanDisplayName(span);
@@ -42,16 +37,35 @@ function entityHighlighterExtension(setContextMenu?: (ctx: any) => void) {
     provide: f => EditorView.decorations.from(f)
   });
   const plugin = ViewPlugin.fromClass(class {
+    private timeout: number | null = null;
+    private readonly debounceMs = 1000; // 1 second debounce
+
     constructor(view: EditorView) {
       console.log('[EntityHighlighter] Plugin initialized');
       this.updateHighlights(view);
     }
+
     update(update: ViewUpdate) {
       if (update.docChanged || update.viewportChanged) {
-        console.log('[EntityHighlighter] Document changed, updating highlights...');
-        this.updateHighlights(update.view);
+        console.log('[EntityHighlighter] Document changed, scheduling highlight update...');
+        // Clear existing timeout
+        if (this.timeout !== null) {
+          clearTimeout(this.timeout);
+        }
+        // Schedule new update after debounce period
+        this.timeout = setTimeout(() => {
+          this.updateHighlights(update.view);
+        }, this.debounceMs) as unknown as number;
       }
     }
+
+    destroy() {
+      // Clean up timeout on plugin destruction
+      if (this.timeout !== null) {
+        clearTimeout(this.timeout);
+      }
+    }
+
     async updateHighlights(view: EditorView) {
       const text = view.state.doc.toString();
       console.log('[EntityHighlighter] Analyzing text:', text.slice(0, 100) + (text.length > 100 ? '...' : ''));
@@ -83,7 +97,7 @@ function entityHighlighterExtension(setContextMenu?: (ctx: any) => void) {
               class: 'cm-entity-highlight',
               attributes: {
                 'data-entity': JSON.stringify(entity),
-                style: `background: ${color}20; border-bottom: 2px solid ${color}; cursor: pointer;`
+                style: `background: ${color}30; cursor: pointer; border-radius: 3px; padding: 1px 0;`
               }
             }));
           } else {
@@ -137,7 +151,7 @@ export function CodeMirrorEditor({
   } | null>(null);
 
   // Confirm mention stub (replace with real hook if needed)
-  const confirmMention = async () => {};
+  const _confirmMention = async () => {};
 
     // Initialize CodeMirror editor on mount
   useEffect(() => {
@@ -152,7 +166,7 @@ export function CodeMirrorEditor({
           ...entityHighlighterExtension(setContextMenu),
           entityHighlightTheme,
           EditorView.lineWrapping,
-          EditorView.updateListener.of(update => {
+          EditorView.updateListener.of((update: ViewUpdate) => {
             if (update.docChanged) {
               onChange(update.state.doc.toString());
             }
@@ -263,15 +277,12 @@ export function CodeMirrorEditor({
           border: '1px solid #e5e7eb',
           borderRadius: '6px',
           minHeight,
-          padding: '8px',
           backgroundColor: '#ffffff',
           width: '100%',
-          height: '100%'
+          height: '100%',
+          overflow: 'auto'
         }}
-      >
-        {/* Debug text to verify rendering */}
-        Loading editor...
-      </div>
+      />
 
       {contextMenu && (
         <EntityContextMenu
@@ -306,6 +317,13 @@ const entityHighlightTheme = EditorView.theme({
     cursor: 'pointer',
     fontWeight: '500', // Make it slightly bolder
   },
+  '.cm-scroller': {
+    overflow: 'auto',
+    minHeight: '100%'
+  },
+  '.cm-content': {
+    minHeight: '100%'
+  }
 });
 
 

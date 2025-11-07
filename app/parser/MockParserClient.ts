@@ -1,5 +1,5 @@
 import type { ParserClient, ParseInput, ParseOutput } from "./ParserClient";
-import type { ParsedSentence, Token } from "../engine/extract/parse-types";
+import type { ParsedSentence, Token } from "./parse-types";
 
 const SENTENCE_SPLIT_REGEX = /(?<=[.!?])\s+|\n+/g;
 const WORD_REGEX = /\b[\w'’\-]+\b/g;

@@ -1,4 +1,4 @@
-import type { ParseResponse } from "../engine/extract/parse-types";
+import type { ParseResponse } from "./parse-types";
 
 export type ParseInput = { text: string };
 export type ParseOutput = ParseResponse;

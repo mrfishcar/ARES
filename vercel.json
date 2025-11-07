@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "name": "ares-console",
+  "buildCommand": "cd app/ui/console && npm install && npm run build",
+  "devCommand": "cd app/ui/console && npm run dev",
+  "installCommand": "cd app/ui/console && npm install",
+  "outputDirectory": "app/ui/console/dist",
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ]
+}

@@ -55,29 +55,127 @@ const TITLE_INDICATORS = new Set(['Fellowship', 'Council', 'Ring', ...]);
  * Supports common European and fantasy name characters (Lothlórien, Éowyn, etc.)
  */
 // Define character classes for Unicode-aware name matching
-const UC = '[A-ZÀ-ÖØ-ÞА-ЯЁ]'; // Uppercase (Latin + Cyrillic)
-const LC = '[a-zà-öø-ÿа-яё]'; // Lowercase (Latin + Cyrillic)
+// Uppercase (Latin + Cyrillic): [A-ZÀ-ÖØ-ÞА-ЯЁ]
+// Lowercase (Latin + Cyrillic): [a-zà-öø-ÿа-яё]
 const WORD = '(?:[A-ZÀ-ÖØ-ÞА-ЯЁ][a-zà-öø-ÿа-яё]*(?:\'[a-zà-öø-ÿа-яё]+)?)';
+
+/**
+ * Pronouns to exclude from entity detection
+ */
+const PRONOUNS = new Set([
+  'he', 'she', 'it', 'they', 'we', 'i', 'you',
+  'him', 'her', 'them', 'us', 'me',
+  'his', 'hers', 'its', 'their', 'our', 'my', 'your',
+  'himself', 'herself', 'itself', 'themselves', 'ourselves', 'myself', 'yourself',
+  'this', 'that', 'these', 'those',
+]);
+
+/**
+ * Dialogue verbs for extracting names from dialogue
+ */
+const DIALOGUE_VERBS = new Set([
+  'said', 'asked', 'replied', 'answered', 'whispered', 'shouted', 'yelled',
+  'muttered', 'murmured', 'cried', 'screamed', 'demanded', 'screeched',
+  'snapped', 'growled', 'hissed', 'snarled', 'remarked', 'added', 'continued',
+  'exclaimed', 'declared', 'announced', 'proclaimed', 'stated', 'mentioned',
+]);
+
+/**
+ * Context words that should not be part of entity names
+ */
+const CONTEXT_WORDS = new Set([
+  'yet', 'his', 'her', 'their', 'the', 'a', 'an', 'this', 'that',
+  'these', 'those', 'some', 'any', 'all', 'both', 'each', 'every',
+  'another', 'other', 'such', 'no', 'nor', 'not', 'only', 'own',
+  'same', 'so', 'than', 'too', 'very', 'well', 'just', 'but',
+]);
+
+/**
+ * Common descriptors/ethnicities that shouldn't be standalone entities
+ */
+const DESCRIPTORS = new Set([
+  'hittite', 'canaanite', 'philistine', 'egyptian', 'assyrian',
+  'babylonian', 'persian', 'greek', 'roman', 'israelite',
+  'jewish', 'christian', 'muslim', 'buddhist', 'hindu',
+]);
+
+/**
+ * Common adjectives that appear before nouns (false positives)
+ * Example: "Scotch tape", "French fries", "English class"
+ */
+const COMMON_ADJECTIVES = new Set([
+  'scotch', 'french', 'english', 'spanish', 'german', 'italian',
+  'chinese', 'japanese', 'american', 'british', 'irish', 'scottish',
+  'dutch', 'polish', 'russian', 'greek', 'latin',
+]);
+
+/**
+ * Days of the week and months (should not be entities)
+ */
+const TIME_WORDS = new Set([
+  'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
+  'january', 'february', 'march', 'april', 'may', 'june',
+  'july', 'august', 'september', 'october', 'november', 'december',
+]);
+
+/**
+ * Common abbreviations that should not be entities
+ */
+const ABBREVIATIONS = new Set([
+  'ch', 'vol', 'pg', 'pp', 'ed', 'etc', 'vs', 'dr', 'mr', 'mrs', 'ms',
+  'st', 'ave', 'blvd', 'rd', 'ln', 'ct',
+]);
 
 /**
  * Entity patterns for natural language detection
  */
 const ENTITY_PATTERNS = {
-  // Person patterns: capitalized names, single-word names in appositive contexts, honorifics, and verb-preceded names
+  // Person patterns: dialogue, honorifics, multi-word names, and contextual detection
   PERSON: [
-    new RegExp(`\\b(${WORD}(?:\\s+${WORD}){0,2})\\b`, 'g'), // multi-word names: "John Smith", "Mary Jane Watson", and single names: "Aragorn"
-    // Single-word name followed by comma or appositive/possessive context: "Aragorn, son of Arathorn"
-    new RegExp(`\\b(${WORD})(?=\\s*(?:,|son\\s+of|daughter\\s+of|,\\s+the|,\\s+son|the\\s+king|the\\s+queen|the\\s+warrior))`, 'gi'),
-    // Verbs preceding a name: "married Arwen", "traveled Gandalf" (common narrative cases)
-    new RegExp(`(?:married|wed|met|visited|traveled|went|joined|saw|met\\s+with|called|named|known\\s+as)\\s+(${WORD}(?:\\s+${WORD})?)`, 'gi'),
-    // Honorifics: "Dr. Watson"
-    new RegExp(`(?:Mr\\.|Mrs\\.|Ms\\.|Dr\\.|Prof\\.|Lord|Lady|King|Queen|Prince|Princess)\\s+(${WORD}(?:\\s+${WORD})?)`, 'g'),
+    // DIALOGUE PATTERNS (highest priority for extracting names from dialogue)
+    // Pattern: "...", said NAME or "...", NAME said
+    new RegExp(`"[^"]+",?\\s+(${WORD}(?:\\s+${WORD}){0,2})\\s+(?:said|asked|replied|answered|whispered|shouted|yelled|muttered|murmured|cried|screamed|demanded|screeched|snapped|growled|hissed|snarled|remarked|added|continued|exclaimed|declared|announced|proclaimed|stated|mentioned|thought|felt)`, 'gi'),
+    // Pattern: NAME said, "..." or NAME asked
+    new RegExp(`\\b(${WORD}(?:\\s+${WORD}){0,2})\\s+(?:said|asked|replied|answered|whispered|shouted|yelled|muttered|murmured|cried|screamed|demanded|screeched|snapped|growled|hissed|snarled|remarked|added|continued|exclaimed|declared|announced|proclaimed|stated|mentioned|thought|felt)(?:\\s*,|\\s+that)`, 'gi'),
+
+    // Honorifics and titles: "Dr. Watson", "King David", "Aunt Petunia"
+    new RegExp(`(?:Mr\\.|Mrs\\.|Ms\\.|Dr\\.|Prof\\.|Lord|Lady|King|Queen|Prince|Princess|Aunt|Uncle)\\s+(${WORD}(?:\\s+${WORD}){0,2})`, 'g'),
+
+    // Author names with initials: "JK Rowling", "CS Lewis", "RR Tolkien"
+    // Match 1-3 capital letters followed by a space and a capitalized name
+    new RegExp(`\\b([A-Z]{1,3}\\s+${WORD}(?:\\s+${WORD})?)\\b`, 'g'),
+
+    // Multi-word names with connectors: "Uriah the Hittite", "Mary Jane Watson"
+    // Note: More restrictive now - requires at least 2 words and specific connectors
+    new RegExp(`\\b(${WORD}\\s+(?:the|of|von|van|de|da|le)\\s+${WORD}(?:\\s+${WORD}){0,1})\\b`, 'g'),
+
+    // Two-word capitalized names: "Harry Potter", "Dudley Dursley" (but NOT at sentence start or after "The")
+    // Excludes book/object titles and places
+    new RegExp(`(?<=[.!?]\\s+.{10,}|^.{10,}|[a-z]\\s+)(${WORD}\\s+${WORD})(?!\\s+(?:Street|Drive|Road|Avenue|Lane|Boulevard|Way|Court|Circle))\\b`, 'g'),
+
+    // Single-word name followed by appositive/possessive context: "Aragorn, son of Arathorn"
+    new RegExp(`\\b(${WORD})(?=\\s*(?:,\\s*(?:son|daughter|the|who|whose)))`, 'gi'),
+
+    // Action verbs preceding a name: "married Arwen", "met Gandalf"
+    new RegExp(`(?:married|wed|met|visited|joined|saw|met\\s+with|called|named|kissed|hugged|bought|asked|watched|licking)\\s+(${WORD}(?:\\s+${WORD}){0,2})`, 'gi'),
+
+    // Single-name detection (for recurring characters): must be mid-sentence with lowercase context
+    // Examples: "...and Harry woke...", "...with Dudley was..."
+    // More aggressive patterns - multiple approaches to catch recurring names
+    new RegExp(`\\b(?:and|but|so|if|when|while|as)\\s+(${WORD})(?=\\s+(?:was|were|had|has|did|could|would|should|moved|thought|felt|stood|looked|walked))`, 'gi'),
+    new RegExp(`[,;]\\s+(${WORD})(?=\\s+(?:was|were|had|has|did|could|would|should|moved|thought|felt|stood|looked|walked))`, 'gi'),
   ],
 
-  // Place patterns: Location indicators
+  // Place patterns: streets, locations, geographical features
   PLACE: [
-    new RegExp(`\\b(?:in|at|from|to|near)\\s+(${WORD}(?:\\s+${WORD})?)\\b`, 'g'), // "in London", "at Lothlórien"
-    new RegExp(`\\b(${WORD})\\s+(?:City|Town|Village|Kingdom|Mountain|River|Forest)\\b`, 'g'), // "Gondor Kingdom"
+    // Street names: "Privet Drive", "Main Street", "Abbey Road"
+    new RegExp(`\\b(${WORD}(?:\\s+${WORD})?)\\s+(Street|Drive|Road|Avenue|Lane|Boulevard|Way|Court|Circle|Place)\\b`, 'g'),
+
+    // Prepositions + place: "in London", "at Hogwarts", "from Gondor"
+    new RegExp(`\\b(?:in|at|from|to|near|toward|towards)\\s+(${WORD}(?:\\s+${WORD})?)\\b`, 'g'),
+
+    // Geographic features: "Gondor Kingdom", "Misty Mountains"
+    new RegExp(`\\b(${WORD}(?:\\s+${WORD})?)\\s+(?:City|Town|Village|Kingdom|Mountain|Mountains|River|Forest|Lake|Sea|Ocean|Island|Castle|Palace)\\b`, 'g'),
   ],
 
   // Organization patterns
@@ -89,6 +187,12 @@ const ENTITY_PATTERNS = {
   // Event patterns: Battle of X, War of Y
   EVENT: [
     new RegExp(`\\b(?:Battle|War|Quest|Siege|Council)\\s+of\\s+(${WORD}(?:\\s+${WORD})?)\\b`, 'g'),
+  ],
+
+  // Object patterns: artifacts, books, items with 's
+  OBJECT: [
+    // Possessive object names: "Philosopher's Stone", "Sorcerer's Stone", "King's Crown"
+    new RegExp(`\\b(${WORD}'s\\s+(?:Stone|Ring|Sword|Crown|Cloak|Wand|Staff|Book|Glass|Mirror|Cup|Goblet))\\b`, 'g'),
   ],
 
   // Date patterns (treated as events)
@@ -115,16 +219,14 @@ const HASHTAG_PATTERNS = [
   // Complete tag formats (match these first)
   /#\[([^\]]+)\]:([A-Z]+)/g,                                      // #[Multi Word]:TYPE
   new RegExp(`#(${WORD}(?:_${WORD})*):([A-Z]+)`, 'g'),          // #Word:TYPE or #Word_Word:TYPE
-  
+
   // Partial tags (in progress)
   /#\[([^\]]+)\](?!:)/g,                                         // #[Multi Word] without type yet
   new RegExp(`#(${WORD}(?:_${WORD})*)(?!:)(?=[\\s.,!?;\\n])`, 'g'), // #Word without type yet
-  
-  // Natural language detection
-  new RegExp(`\\b(${WORD}(?:\\s+${WORD}){1,2})\\b(?!:)`, 'g'),  // "King David" -> #[King David]:PERSON
-  
-  // Title detection patterns
-  new RegExp(`\\b((?:King|Queen|Prophet|Lord|Lady|Prince|Princess|Professor|Doctor|Sir)\\s+${WORD}(?:\\s+${WORD})?)\\b(?!:)`, 'g')
+
+  // Title-based detection (only with explicit titles like King, Queen, etc.)
+  // This is more restrictive than the old broad pattern
+  new RegExp(`\\b((?:King|Queen|Prophet|Lord|Lady|Prince|Princess|Professor|Doctor|Sir|Aunt|Uncle)\\s+${WORD}(?:\\s+${WORD})?)\\b`, 'g')
 ];
 
 /**
@@ -140,29 +242,35 @@ function inferTypeFromContext(name: string, text: string, position: number): Ent
   // Get context window (30 chars before and after)
   const before = text.slice(Math.max(0, position - 30), position);
   const after = text.slice(position + name.length, position + name.length + 30);
-  
-  // Check for title patterns indicating PERSON
-  if (/\b(King|Queen|Prophet|Lord|Lady|Prince|Princess|Professor|Doctor|Sir)\s+$/i.test(before)) {
-    return 'PERSON';
-  }
-  
-  // Check for verbs indicating PERSON
-  if (/\b(said|spoke|went|called|married)\s+$/i.test(before)) {
-    return 'PERSON';
-  }
-  
-  // Check for place indicators
-  if (/\b(in|at|to|from|near)\s+$/i.test(before) || 
-      /\b(Kingdom|Mountain|River|Forest|City)\b/i.test(after)) {
+
+  // Check for street/place suffixes (highest priority)
+  if (/\b(Street|Drive|Road|Avenue|Lane|Boulevard|Way|Court|Circle|Place)\b/i.test(name) ||
+      /^\s+(Street|Drive|Road|Avenue|Lane|Boulevard|Way|Court|Circle|Place)\b/i.test(after)) {
     return 'PLACE';
   }
-  
+
+  // Check for title patterns indicating PERSON
+  if (/\b(King|Queen|Prophet|Lord|Lady|Prince|Princess|Professor|Doctor|Sir|Aunt|Uncle|Mr\.|Mrs\.|Ms\.)\s+$/i.test(before)) {
+    return 'PERSON';
+  }
+
+  // Check for verbs indicating PERSON
+  if (/\b(said|spoke|went|called|married|asked|replied|answered|whispered|shouted|yelled)\s+$/i.test(before)) {
+    return 'PERSON';
+  }
+
+  // Check for place indicators
+  if (/\b(in|at|to|from|near|toward|towards)\s+$/i.test(before) ||
+      /\b(Kingdom|Mountain|Mountains|River|Forest|City|Town|Village|Castle|Palace|Lake|Sea|Ocean|Island)\b/i.test(after)) {
+    return 'PLACE';
+  }
+
   // Check for organization indicators
   if (/\b(The)\s+$/i.test(before) &&
       /\b(Fellowship|Council|Order|Company)\b/i.test(name)) {
     return 'ORG';
   }
-  
+
   // Default to PERSON for capitalized names (most common in narrative)
   return 'PERSON';
 }
@@ -209,7 +317,6 @@ function detectHashtags(text: string): EntitySpan[] {
       // Extract entity name and type based on pattern
       let entityName: string;
       let typeHint: string | undefined;
-      let isInProgress = false;  // Track if this is a partial tag
 
       if (fullMatch.startsWith('#[')) {
         // Bracket format: #[Name]:TYPE or just #[Name]
@@ -217,7 +324,6 @@ function detectHashtags(text: string): EntitySpan[] {
         if (bracketMatch) {
           entityName = bracketMatch[1];
           typeHint = bracketMatch[2];
-          isInProgress = !typeHint; // No type yet means in progress
         } else {
           continue;
         }
@@ -227,15 +333,23 @@ function detectHashtags(text: string): EntitySpan[] {
         if (wordMatch) {
           entityName = wordMatch[1];
           typeHint = wordMatch[2];
-          isInProgress = !typeHint; // No type yet means in progress
         } else {
           continue;
         }
       } else {
-        // Natural language pattern matched
+        // Natural language pattern matched (title-based only now)
         entityName = match[1].trim();
+
+        // Remove newlines and normalize whitespace
+        entityName = entityName.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+
+        // Clean context words from the entity name
+        const firstWord = entityName.split(/\s+/)[0].toLowerCase();
+        if (CONTEXT_WORDS.has(firstWord)) {
+          entityName = entityName.split(/\s+/).slice(1).join(' ');
+        }
+
         typeHint = inferTypeFromContext(entityName, text, match.index);
-        isInProgress = false;  // Natural matches are complete
       }
 
       // Skip if this looks like a markdown heading
@@ -248,22 +362,35 @@ function detectHashtags(text: string): EntitySpan[] {
       // Convert underscores to spaces for display
       const displayName = cleanName.replace(/_/g, ' ');
 
-      // Determine type
+      // Determine type with improved place detection
       let type: EntityType;
       if (typeHint) {
         type = typeHint as EntityType;
       } else {
         // Smart detection based on name patterns
         type = 'CONCEPT'; // Default
-        if (/^(?:Mr\.|Mrs\.|Ms\.|Dr\.|Prof\.)\s+/.test(displayName) || displayName.split(/\s+/).length >= 2) {
+
+        // Check for street/place patterns
+        if (/\b(Street|Drive|Road|Avenue|Lane|Boulevard|Way|Court|Circle|Place)\b/i.test(displayName)) {
+          type = 'PLACE';
+        }
+        // Check for honorifics/titles indicating PERSON
+        else if (/^(?:Mr\.|Mrs\.|Ms\.|Dr\.|Prof\.|Aunt|Uncle|King|Queen|Prince|Princess|Lord|Lady)\s+/.test(displayName)) {
+          type = 'PERSON';
+        }
+        // Multi-word names are usually people
+        else if (displayName.split(/\s+/).length >= 2) {
           type = 'PERSON';
         }
       }
 
+      // Normalize fullMatch to remove newlines for the text field
+      const cleanedText = fullMatch.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+
       spans.push({
         start: match.index,
         end: match.index + fullMatch.length,
-        text: fullMatch,
+        text: cleanedText, // Use cleaned text without newlines
         displayText: displayName, // Clean name with spaces
         type,
         confidence: 1.0, // Hashtags are explicit
@@ -281,8 +408,6 @@ function detectHashtags(text: string): EntitySpan[] {
 function detectNaturalEntities(text: string, minConfidence: number): EntitySpan[] {
   const spans: EntitySpan[] = [];
   const seenSpans = new Set<string>(); // Deduplicate overlapping spans
-  // Debugging disabled in production
-  const DEBUG = false;
 
   // Try each entity type pattern
   for (const [type, patterns] of Object.entries(ENTITY_PATTERNS)) {
@@ -292,7 +417,7 @@ function detectNaturalEntities(text: string, minConfidence: number): EntitySpan[
 
       while ((match = regex.exec(text)) !== null) {
           // Extract captured group (entity name) if present
-          const captured = match[1] || match[0];
+          let captured = match[1] || match[0];
           const fullMatch = match[0];
 
           // Determine the start/end for the captured group within the full match
@@ -301,13 +426,117 @@ function detectNaturalEntities(text: string, minConfidence: number): EntitySpan[
             // Captured group not found in match, skip this match
             continue;
           }
-          const start = match.index + groupOffset;
-          const end = start + captured.length;
+          let start = match.index + groupOffset;
+          let end = start + captured.length;
 
         // Skip if already detected
         const key = `${start}-${end}`;
         if (seenSpans.has(key)) {
           continue;
+        }
+
+        // Clean up the captured text
+        let cleanedCapture = captured.trim();
+
+        // Remove newlines from entity text
+        cleanedCapture = cleanedCapture.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+
+        // Remove leading context words: "Yet Harry" -> "Harry", "His Aunt" -> "Aunt"
+        const firstWord = cleanedCapture.split(/\s+/)[0].toLowerCase();
+        if (CONTEXT_WORDS.has(firstWord)) {
+          cleanedCapture = cleanedCapture.split(/\s+/).slice(1).join(' ');
+        }
+
+        // Remove "The" from beginning if it's a title pattern
+        if (cleanedCapture.startsWith('The ') && type !== 'ORG') {
+          cleanedCapture = cleanedCapture.substring(4);
+        }
+
+        // If nothing left after cleaning, skip
+        if (!cleanedCapture || cleanedCapture.length === 0) {
+          continue;
+        }
+
+        // Filter out pronouns (he, she, it, they, etc.)
+        const lowerCaptured = cleanedCapture.toLowerCase().trim();
+        if (PRONOUNS.has(lowerCaptured)) {
+          continue;
+        }
+
+        // Filter out days of the week and months
+        if (TIME_WORDS.has(lowerCaptured)) {
+          continue;
+        }
+
+        // Filter out abbreviations
+        if (ABBREVIATIONS.has(lowerCaptured)) {
+          continue;
+        }
+
+        // Filter out standalone descriptors ONLY if single word (Hittite, Egyptian, etc.)
+        // Allow multi-word names like "Uriah the Hittite"
+        const words = cleanedCapture.trim().split(/\s+/);
+        if (words.length === 1 && DESCRIPTORS.has(lowerCaptured)) {
+          continue;
+        }
+
+        // Filter out single-letter captures
+        if (cleanedCapture.length === 1) {
+          continue;
+        }
+
+        // Filter out single-word captures that are less than 3 characters (except known names)
+        if (words.length === 1 && cleanedCapture.length <= 2) {
+          continue;
+        }
+
+        // Filter out quoted single words that appear before dialogue verbs
+        // Example: "Nearly," said Harry -> should NOT capture "Nearly"
+        if (words.length === 1) {
+          const beforeMatch = text.slice(Math.max(0, start - 10), start);
+          if (/["""]$/.test(beforeMatch)) {
+            // This is a quoted word, skip it
+            continue;
+          }
+        }
+
+        // Filter out common adjectives before nouns (e.g., "Scotch tape", "French fries")
+        if (words.length === 1 && COMMON_ADJECTIVES.has(lowerCaptured)) {
+          const afterText = text.slice(end, end + 20);
+          if (/^\s+(tape|fries|class|door|bread|toast|butter|paper|horn|kiss|connection)/i.test(afterText)) {
+            continue;
+          }
+        }
+
+        // Filter out possessive-only captures (ending with 's)
+        if (/^[A-Z][a-z]+'s$/.test(cleanedCapture)) {
+          continue;
+        }
+
+        // Filter out chapter/book title patterns that look like "Vanishing Glass", "Hidden Chamber"
+        // These appear after "The" at line breaks and are usually chapter/section titles
+        if (words.length === 2 && type === 'PERSON') {
+          const beforeContext = text.slice(Math.max(0, start - 20), start);
+          // Check if this appears right after "The" and a newline (chapter title pattern)
+          // OR at the very start of text preceded by "The"
+          if (/The\s*\n\s*$/.test(beforeContext) || (start < 10 && /^The\s+/.test(text.slice(0, start + cleanedCapture.length)))) {
+            continue;
+          }
+        }
+
+        // Reclassify possessive object patterns as OBJECT, not PERSON
+        // "Philosopher's Stone", "Sorcerer's Stone", etc.
+        if (type === 'PERSON' && /'s\s+(?:Stone|Ring|Sword|Crown|Cloak|Wand|Staff|Book|Glass|Mirror|Cup|Goblet)\b/i.test(cleanedCapture)) {
+          // Skip this PERSON match - it will be caught by OBJECT pattern
+          continue;
+        }
+
+        // Adjust start/end if we cleaned the capture
+        if (cleanedCapture !== captured) {
+          const offset = captured.indexOf(cleanedCapture);
+          start = start + offset;
+          end = start + cleanedCapture.length;
+          captured = cleanedCapture;
         }
 
         // Calculate confidence based on pattern and context
@@ -803,28 +1032,29 @@ async function incrementalParse(
   // TODO: Implement incremental diff-based parsing
 
   // S3: Pass 0 - Alias lookup (if enabled and project provided)
+  // NOTE: Disabled in browser builds - requires Node.js module system
   let aliasSpans: EntitySpan[] = [];
-  if (config.enableAliasPass && config.project) {
-    try {
-      // Import alias brain only if needed (conditional to avoid circular dependency)
-      const { aliasPass } = require('./aliasBrain');
-      const aliasMatches = aliasPass(text, config.project);
-
-      // Convert AliasMatch to EntitySpan format
-      aliasSpans = aliasMatches.map((match: any) => ({
-        start: match.start,
-        end: match.end,
-        text: match.text,
-        displayText: match.entityName, // Show entity name, not alias
-        type: match.type,
-        confidence: match.confidence,
-        source: 'tag' as const, // Alias matches are treated like explicit tags
-      }));
-    } catch (error) {
-      // Silently fail if alias brain is not available
-      console.warn('Alias pass failed:', error);
-    }
-  }
+  // if (config.enableAliasPass && config.project && typeof require !== 'undefined') {
+  //   try {
+  //     // Import alias brain only if needed (conditional to avoid circular dependency)
+  //     const { aliasPass } = require('./aliasBrain');
+  //     const aliasMatches = aliasPass(text, config.project);
+  //
+  //     // Convert AliasMatch to EntitySpan format
+  //     aliasSpans = aliasMatches.map((match: any) => ({
+  //       start: match.start,
+  //       end: match.end,
+  //       text: match.text,
+  //       displayText: match.entityName, // Show entity name, not alias
+  //       type: match.type,
+  //       confidence: match.confidence,
+  //       source: 'tag' as const, // Alias matches are treated like explicit tags
+  //     }));
+  //   } catch (error) {
+  //     // Silently fail if alias brain is not available
+  //     console.warn('Alias pass failed:', error);
+  //   }
+  // }
 
   // Always detect explicit tags and hashtags (highest priority)
   const tagSpans = detectTags(text);
