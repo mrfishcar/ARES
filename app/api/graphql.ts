@@ -746,8 +746,14 @@ export function createGraphQLServer(storagePath?: string) {
 // Start server if this file is run directly
 if (require.main === module) {
   const port = parseInt(process.env.PORT || '4000', 10);
+  console.log(`🚀 Starting ARES GraphQL Server...`);
+  console.log(`📍 PORT from environment: ${process.env.PORT || 'not set (using default 4000)'}`);
+  console.log(`📍 Parsed port number: ${port}`);
+  console.log(`📍 Will bind to: 0.0.0.0:${port}`);
+  console.log(`📍 Health check will be at: http://0.0.0.0:${port}/healthz`);
+
   startGraphQLServer(port).catch((error) => {
-    console.error('Failed to start GraphQL server:', error);
+    console.error('❌ Failed to start GraphQL server:', error);
     process.exit(1);
   });
 }

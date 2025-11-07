@@ -34,14 +34,13 @@ RUN npx tsc || true
 RUN mkdir -p /app/data/projects /app/incoming /app/wiki
 
 # Expose ports
-# 4000: GraphQL API
-# 4100: Metrics endpoint
-# 8000: Python parser service
-EXPOSE 4000 4100 8000
+# Railway sets PORT dynamically (usually 8080 or similar)
+# GraphQL API + Health Check: $PORT
+# Python parser service: 8000
+EXPOSE 8000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:4000/healthz', (r) => process.exit(r.statusCode === 200 ? 0 : 1))" || exit 0
+# Note: Railway uses its own health check mechanism from railway.json
+# Docker HEALTHCHECK is disabled since Railway manages this
 
 # Start both services
 CMD ["sh", "-c", "python3 scripts/parser_service.py & sleep 3 && node dist/app/api/graphql.js"]
