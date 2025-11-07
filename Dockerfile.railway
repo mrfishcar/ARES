@@ -1,5 +1,6 @@
 # Railway-optimized Dockerfile
 # Backend only (API + Parser) - UI deploys separately to Vercel
+# Build: Clean TypeScript backend without JSX/UI files
 
 FROM python:3.11-slim
 
