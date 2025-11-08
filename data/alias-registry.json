@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextAID": 968,
+  "nextAID": 973,
   "mappings": [
     {
       "aid": 554,
@@ -4141,11 +4141,61 @@
       "last_seen": "2025-11-08T05:18:28.274Z",
       "occurrence_count": 1,
       "confidence": 0.9
+    },
+    {
+      "aid": 968,
+      "surfaceForm": "King Aldric the Just",
+      "normalizedKey": "king aldric the just",
+      "eid": 451,
+      "created_at": "2025-11-08T15:41:43.876Z",
+      "last_seen": "2025-11-08T15:41:43.876Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 969,
+      "surfaceForm": "Malachar",
+      "normalizedKey": "malachar",
+      "eid": 446,
+      "created_at": "2025-11-08T15:41:43.876Z",
+      "last_seen": "2025-11-08T15:41:43.876Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 970,
+      "surfaceForm": "Korvan",
+      "normalizedKey": "korvan",
+      "eid": 472,
+      "created_at": "2025-11-08T15:41:43.878Z",
+      "last_seen": "2025-11-08T15:41:43.878Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 971,
+      "surfaceForm": "Cassandra",
+      "normalizedKey": "cassandra",
+      "eid": 455,
+      "created_at": "2025-11-08T15:41:43.878Z",
+      "last_seen": "2025-11-08T15:41:43.878Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 972,
+      "surfaceForm": "Raven",
+      "normalizedKey": "raven",
+      "eid": 485,
+      "created_at": "2025-11-08T15:41:43.879Z",
+      "last_seen": "2025-11-08T15:41:43.879Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
     }
   ],
   "metadata": {
-    "total_aliases": 414,
+    "total_aliases": 419,
     "total_entities": 333,
-    "last_updated": "2025-11-08T05:18:28.285Z"
+    "last_updated": "2025-11-08T15:42:13.847Z"
   }
 }
