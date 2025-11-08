@@ -1047,8 +1047,8 @@
       "canonical": "London",
       "normalizedKey": "london",
       "created_at": "2025-10-30T03:57:03.544Z",
-      "last_seen": "2025-10-30T13:31:22.950Z",
-      "occurrence_count": 4
+      "last_seen": "2025-11-08T04:19:57.083Z",
+      "occurrence_count": 5
     },
     {
       "eid": 132,
@@ -2901,6 +2901,6 @@
   ],
   "metadata": {
     "total_entities": 362,
-    "last_updated": "2025-11-08T04:01:24.412Z"
+    "last_updated": "2025-11-08T04:20:26.924Z"
   }
 }

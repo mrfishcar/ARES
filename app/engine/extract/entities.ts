@@ -108,24 +108,56 @@ const FANTASY_WHITELIST = new Map<string, EntityType>([
   ['Legolas', 'PERSON'],
   ['Gimli', 'PERSON'],
   ['Drogo', 'PERSON'],
+  ['Theoden', 'PERSON'],
+  ['Eowyn', 'PERSON'],
+  ['Boromir', 'PERSON'],
+  ['Denethor', 'PERSON'],
+
+  // Harry Potter characters
   ['Ginny', 'PERSON'],
   ['Harry', 'PERSON'],
+  ['Hermione', 'PERSON'],
+  ['Ron', 'PERSON'],
+  ['Dumbledore', 'PERSON'],
+  ['Draco Malfoy', 'PERSON'],
+  ['Hermione Granger', 'PERSON'],
+  ['Ron Weasley', 'PERSON'],
+  ['Harry Potter', 'PERSON'],
+  ['Ginny Weasley', 'PERSON'],
+  ['Molly Weasley', 'PERSON'],
+  ['Arthur', 'PERSON'],
+  ['Bill Weasley', 'PERSON'],
+  ['Fred', 'PERSON'],
+  ['George', 'PERSON'],
+  ['Luna Lovegood', 'PERSON'],
+  ['Albus Dumbledore', 'PERSON'],
+  ['Severus Snape', 'PERSON'],
+  ['Professor Snape', 'PERSON'],
+  ['Professor McGonagall', 'PERSON'],
+  ['Voldemort', 'PERSON'],
+  ['Fawkes', 'PERSON'],
 
-  // Harry Potter
+  // Harry Potter locations
   ['Hogwarts', 'ORG'],  // School = ORG
   ['Hogsmeade', 'PLACE'],
   ['Diagon Alley', 'PLACE'],
   ['Azkaban', 'PLACE'],
+  ['Privet Drive', 'PLACE'],
+  ['Burrow', 'PLACE'],
+  ['London', 'PLACE'],
   ['Gryffindor', 'ORG'],  // House = ORG
   ['Slytherin', 'ORG'],
   ['Hufflepuff', 'ORG'],
   ['Ravenclaw', 'ORG'],
   ['Gryffindor House', 'ORG'],
   ['Ravenclaw House', 'ORG'],
+  ['Slytherin House', 'ORG'],
+  ['Hufflepuff House', 'ORG'],
   ['Gringotts Bank', 'ORG'],
   ['Ministry of Magic', 'ORG'],
   ['Hogwarts School', 'ORG'],
   ['Hogwarts Express', 'ITEM'],
+  ['Quibbler', 'WORK'],
   ['Scotland', 'PLACE'],
 
   // Biblical places
@@ -287,6 +319,12 @@ function mapEnt(ent: string): EntityType | null {
 function refineEntityType(type: EntityType, text: string): EntityType {
   const trimmed = text.trim();
   const lowered = trimmed.toLowerCase();
+
+  // Whitelist has absolute highest priority - don't override whitelisted types
+  const whitelistType = FANTASY_WHITELIST.get(trimmed);
+  if (whitelistType) {
+    return whitelistType;
+  }
 
   // Override with KNOWN_ORGS first (highest priority)
   if (KNOWN_ORGS.has(trimmed)) {

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextAID": 729,
+  "nextAID": 730,
   "mappings": [
     {
       "aid": 554,
@@ -1751,11 +1751,21 @@
       "last_seen": "2025-11-08T04:00:55.033Z",
       "occurrence_count": 1,
       "confidence": 0.9
+    },
+    {
+      "aid": 729,
+      "surfaceForm": "London",
+      "normalizedKey": "london",
+      "eid": 131,
+      "created_at": "2025-11-08T04:19:57.083Z",
+      "last_seen": "2025-11-08T04:19:57.083Z",
+      "occurrence_count": 1,
+      "confidence": 1
     }
   ],
   "metadata": {
-    "total_aliases": 175,
-    "total_entities": 143,
-    "last_updated": "2025-11-08T04:01:24.479Z"
+    "total_aliases": 176,
+    "total_entities": 144,
+    "last_updated": "2025-11-08T04:20:26.985Z"
   }
 }

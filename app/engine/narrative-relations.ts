@@ -153,6 +153,20 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+fought\s+in\s+(?:the\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
     predicate: 'fought_in',
     typeGuard: { subj: ['PERSON'], obj: ['EVENT', 'PLACE'] }
+  },
+
+  // === GOVERNANCE/LEADERSHIP PATTERNS ===
+  // "Aragorn ruled Gondor", "Theoden rules Rohan"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:ruled|rules|governs|governed|reigned|reigns)\s+(?:over\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'rules',
+    typeGuard: { subj: ['PERSON'], obj: ['PLACE', 'ORG'] }
+  },
+  // "Aragorn became king of Gondor", "became king there"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+became\s+(?:king|queen|ruler|leader)\s+(?:of\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'rules',
+    typeGuard: { subj: ['PERSON'], obj: ['PLACE', 'ORG'] }
   }
 ];
 
