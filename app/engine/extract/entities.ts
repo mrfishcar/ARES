@@ -1,13 +1,14 @@
 /**
- * Entity Extraction - Phase 1 (Enhanced with Custom Rules)
- * 
+ * Entity Extraction - Phase 1 (Context-Aware Classification)
+ *
  * Strategy:
  * 1. Call spaCy parser for NER tags + dependency structure
  * 2. Extract NER spans (group consecutive tokens with same label)
- * 3. Fallback: capitalized 1-3 word patterns with context classification
- * 4. Custom gazetteers for fantasy/biblical names
- * 5. Deduplicate by (type, lowercase_name)
- * 6. Return entities + spans (spans enable precise relation binding in Phase 2)
+ * 3. Dependency-based extraction with context-aware classification
+ * 4. Fallback: capitalized 1-3 word patterns with linguistic reasoning
+ * 5. Minimal whitelist for truly ambiguous cases only
+ * 6. Deduplicate by (type, lowercase_name)
+ * 7. Return entities + spans (spans enable precise relation binding in Phase 2)
  */
 
 import { v4 as uuid } from "uuid";
@@ -18,6 +19,7 @@ import { clusterToEntity, createEntityCluster, createMention } from "../mention-
 import { computeEntityConfidence, filterEntitiesByConfidence } from "../confidence-scoring";
 import type { Token, ParsedSentence, ParseResponse } from "./parse-types";
 import { getParserClient } from "../../parser";
+import { analyzeEntityContext, classifyWithContext, shouldExtractByContext } from "./context-classifier";
 
 const TRACE_SPANS = process.env.L3_TRACE === "1";
 
@@ -586,8 +588,8 @@ function splitCoordination(
 }
 
 /**
- * Extract entities using dependency patterns
- * Looks for syntactic clues like nsubj, pobj with motion verbs, family relations, etc.
+ * Extract entities using dependency patterns with context-aware classification
+ * Uses linguistic rules to determine entity types instead of whitelists
  */
 function depBasedEntities(sent: ParsedSentence): Array<{ text: string; type: EntityType; start: number; end: number }> {
   const spans: { text: string; type: EntityType; start: number; end: number }[] = [];
@@ -597,7 +599,6 @@ function depBasedEntities(sent: ParsedSentence): Array<{ text: string; type: Ent
     const tok = tokens[i];
 
     // Only process capitalized words (potential entities)
-    // Don't rely solely on POS tags as spaCy can mis-tag fantasy/biblical names
     if (!/^[A-Z]/.test(tok.text)) {
       continue;
     }
@@ -607,226 +608,117 @@ function depBasedEntities(sent: ParsedSentence): Array<{ text: string; type: Ent
       continue;
     }
 
-    let entityType: EntityType | null = null;
+    // Gather entity tokens (including compounds)
+    let startIdx = i;
+    let endIdx = i;
 
-    // Pattern 1: Nominal subject (nsubj) of action verbs → likely PERSON
-    if (tok.dep === 'nsubj' && tok.head !== tok.i) {
-      const headToken = tokens.find(t => t.i === tok.head);
-      // Check both VERB and AUX (auxiliary verbs like "is", "was", "has")
-      if (headToken && (headToken.pos === 'VERB' || headToken.pos === 'AUX')) {
-        const headLemma = headToken.lemma.toLowerCase();
-
-        // If it's a motion verb or social verb, subject is PERSON
-        if (MOTION_VERBS.has(headLemma) || SOCIAL_VERBS.has(headLemma)) {
-          entityType = 'PERSON';
-        }
-        // If it's "be" (is/was/were), check if there's a person role descriptor
-        else if (headLemma === 'be') {
-          // Look for attribute/predicate nominative (attr, acomp)
-          const attrToken = tokens.find(t =>
-            t.head === headToken.i && (t.dep === 'attr' || t.dep === 'acomp')
-          );
-          if (attrToken) {
-            const attrLemma = attrToken.lemma.toLowerCase();
-            // Person role descriptors
-            if (PERSON_ROLES.has(attrLemma)) {
-              entityType = 'PERSON';
-            }
-          }
-        }
-        else {
-          // Default: subjects of action verbs are usually PERSON
-          entityType = 'PERSON';
-        }
+    // Look backward for compounds
+    for (let j = i - 1; j >= 0; j--) {
+      if (tokens[j].dep === 'compound' && tokens[j].head === tok.i) {
+        startIdx = j;
+      } else {
+        break;
       }
     }
 
-    // Pattern 2: Object of preposition (pobj) → check the preposition
-    if (tok.dep === 'pobj' && tok.head !== tok.i) {
-      const prepToken = tokens.find(t => t.i === tok.head);
-      if (prepToken && prepToken.pos === 'ADP') {
-        const prepLemma = prepToken.lemma.toLowerCase();
-
-        // Check if prep has a head that's a family word
-        const prepHead = tokens.find(t => t.i === prepToken.head);
-        if (prepHead && FAMILY_WORDS.has(prepHead.lemma.toLowerCase())) {
-          // "son of X", "daughter of X" → X is PERSON
-          entityType = 'PERSON';
-        }
-        // Check if prep is location preposition
-        else if (LOC_PREPS.has(prepLemma)) {
-          // Check if the prep's head is a motion verb
-          if (prepHead && prepHead.pos === 'VERB' && MOTION_VERBS.has(prepHead.lemma.toLowerCase())) {
-            // "traveled to X", "dwelt in X" → X is PLACE
-            entityType = 'PLACE';
-          } else {
-            // "in X", "at X" without motion verb → likely PLACE
-            entityType = 'PLACE';
-          }
-        }
+    // Look forward for compounds
+    for (let j = i + 1; j < tokens.length; j++) {
+      if (tokens[j].dep === 'compound' && tokens[j].head === tok.i) {
+        endIdx = j;
+      } else {
+        break;
       }
     }
 
-    // Pattern 3: Appositive (appos) after family relation word → PERSON
-    if (tok.dep === 'appos' && tok.head !== tok.i) {
-      const headToken = tokens.find(t => t.i === tok.head);
+    const spanTokens = tokens.slice(startIdx, endIdx + 1);
+    const text = normalizeName(spanTokens.map(t => t.text).join(' '));
 
-      // Check if there's a "son"/"daughter"/etc. token nearby
-      const nearbyFamily = tokens.find(t =>
-        Math.abs(t.i - tok.i) <= 3 && FAMILY_WORDS.has(t.lemma.toLowerCase())
-      );
-
-      if (nearbyFamily) {
-        entityType = 'PERSON';
-      } else if (headToken) {
-        // Check if the head has a modifier that's a social verb
-        const socialModifier = tokens.find(t =>
-          t.head === headToken.i && SOCIAL_VERBS.has(t.lemma.toLowerCase())
-        );
-        if (socialModifier) {
-          entityType = 'PERSON';
-        }
-      }
-    }
-
-    // Pattern 4: Direct object (dobj) of social verbs → PERSON
-    if (tok.dep === 'dobj' && tok.head !== tok.i) {
-      const headToken = tokens.find(t => t.i === tok.head);
-      if (headToken && headToken.pos === 'VERB') {
-        const headLemma = headToken.lemma.toLowerCase();
-        if (SOCIAL_VERBS.has(headLemma)) {
-          entityType = 'PERSON';
-        }
-      }
-    }
-
-    // Pattern 5: Nominal modifier (nmod) followed by action verb → likely PERSON
-    // Handles cases like "Gandalf the Grey traveled" where Gandalf modifies Grey
-    if (tok.dep === 'nmod' && tok.head !== tok.i) {
-      const headToken = tokens.find(t => t.i === tok.head);
-      // Look for a verb that the head is related to
-      const verbRelation = tokens.find(t =>
-        t.pos === 'VERB' && (t.i === headToken?.head || (headToken && tokens.some(x => x.head === t.i && x.i === headToken.i)))
-      );
-
-      if (verbRelation) {
-        const verbLemma = verbRelation.lemma.toLowerCase();
-        if (MOTION_VERBS.has(verbLemma) || SOCIAL_VERBS.has(verbLemma)) {
-          entityType = 'PERSON';
-        }
-      }
-    }
-
-    if (!entityType && tok.dep === 'conj') {
-      const headToken = tokens.find(t => t.i === tok.head);
+    // Skip single-word spans preceded by articles/prepositions
+    if (spanTokens.length === 1) {
+      const prevToken = tokens[startIdx - 1];
       if (
-        headToken &&
-        /^[A-Z]/.test(tok.text) &&
-        (headToken.ent === 'PERSON' || /^[A-Z]/.test(headToken.text))
+        prevToken &&
+        tok.dep !== 'pobj' &&
+        ['the', 'of', 'son', 'daughter'].includes(prevToken.text.toLowerCase())
       ) {
-        entityType = 'PERSON';
+        continue;
       }
     }
 
-    // If we identified an entity type, extract it (handle multi-word compounds)
-    if (entityType) {
-      // Look for compound tokens (like "Minas" + "Tirith")
-      let startIdx = i;
-      let endIdx = i;
+    // Analyze context using dependency structure
+    const context = analyzeEntityContext(spanTokens, tokens, sent);
 
-      // Look backward for compounds
-      for (let j = i - 1; j >= 0; j--) {
-        if (tokens[j].dep === 'compound' && tokens[j].head === tok.i) {
-          startIdx = j;
-        } else {
-          break;
-        }
-      }
-
-      // Look forward for compounds
-      for (let j = i + 1; j < tokens.length; j++) {
-        if (tokens[j].dep === 'compound' && tokens[j].head === tok.i) {
-          endIdx = j;
-        } else {
-          break;
-        }
-      }
-
-      const spanTokens = tokens.slice(startIdx, endIdx + 1);
-      let text = normalizeName(spanTokens.map(t => t.text).join(' '));
-      const start = spanTokens[0].start;
-      const end = spanTokens[spanTokens.length - 1].end;
-
-      // Skip single-word spans that are preceded by articles/prepositions (e.g., "the Grey")
-      if (spanTokens.length === 1) {
-        const prevToken = tokens[startIdx - 1];
-        if (
-          prevToken &&
-          tok.dep !== 'pobj' &&
-          ['the', 'of', 'son', 'daughter'].includes(prevToken.text.toLowerCase())
-        ) {
-          continue;
-        }
-      }
-
-      // Apply whitelist override (e.g., "Hogwarts" → ORG, not PLACE)
-      const whitelistType = FANTASY_WHITELIST.get(text);
-      if (whitelistType) {
-        entityType = whitelistType;
-      }
-
-      // Apply geographic marker override (e.g., "Mistward River" → PLACE)
-      if (GEO_MARKERS.test(text)) {
-        entityType = 'PLACE';
-      }
-
-      if (entityType === 'ORG' && /\bHouse$/i.test(text)) {
-        text = text.replace(/\s+House$/i, '');
-      }
-
-      spans.push({ text, type: entityType, start, end });
-      traceSpan("dep", sent.tokens.map(tok => tok.text).join(" "), start, end, text);
+    // Check if context suggests we should extract this entity
+    if (!shouldExtractByContext(context)) {
+      // Not a syntactically interesting position, skip
+      continue;
     }
 
+    // Check whitelist FIRST (for known ambiguous cases)
+    // This allows manual overrides for entities that are hard to classify
+    const whitelistType = FANTASY_WHITELIST.get(text);
+    let entityType: EntityType;
+
+    if (whitelistType) {
+      // Whitelist entry exists, use it
+      entityType = whitelistType;
+    } else {
+      // Use context-aware classification
+      entityType = classifyWithContext(text, context);
+    }
+
+    // Skip if classified as invalid
+    if (!entityType) {
+      continue;
+    }
+
+    // Clean up entity text
+    let cleanedText = text;
+    if (entityType === 'ORG' && /\bHouse$/i.test(cleanedText)) {
+      cleanedText = cleanedText.replace(/\s+House$/i, '');
+    }
+
+    const start = spanTokens[0].start;
+    const end = spanTokens[spanTokens.length - 1].end;
+
+    spans.push({ text: cleanedText, type: entityType, start, end });
+    traceSpan("dep", sent.tokens.map(tok => tok.text).join(" "), start, end, cleanedText);
   }
 
   return spans;
 }
 
 /**
- * Classify a name using context and whitelists
+ * Classify a name using context-aware linguistic reasoning
  * Returns EntityType or null if should be skipped
+ *
+ * Uses verb patterns and preposition analysis to determine entity type
+ * without relying on whitelists for most cases.
  */
 function classifyName(text: string, surface: string, start: number, end: number): EntityType | null {
-  const debugTargets: string[] = []; // Disable debug logging
-  const isDebug = debugTargets.some(t => surface.includes(t));
-
-  // 1) Whitelist beats everything
+  // 1) Check whitelist first (for known ambiguous cases only)
   const whitelisted = FANTASY_WHITELIST.get(surface);
   if (whitelisted) return whitelisted;
 
-  // 2) Check known places/orgs (for contemporary text)
+  // 2) Check known places/orgs (real-world entities)
   if (KNOWN_PLACES.has(surface)) {
-    if (isDebug) console.log(`[CLASSIFY] "${surface}" → PLACE (known place)`);
     return 'PLACE';
   }
 
   if (KNOWN_ORGS.has(surface)) {
-    if (isDebug) console.log(`[CLASSIFY] "${surface}" → ORG (known org)`);
     return 'ORG';
   }
 
   // Check for partial matches in multi-word names
   const surfaceTokens = surface.split(/\s+/);
   if (surfaceTokens.some(tok => KNOWN_PLACES.has(tok))) {
-    if (isDebug) console.log(`[CLASSIFY] "${surface}" → PLACE (contains known place)`);
     return 'PLACE';
   }
   if (surfaceTokens.some(tok => KNOWN_ORGS.has(tok))) {
-    if (isDebug) console.log(`[CLASSIFY] "${surface}" → ORG (contains known org)`);
     return 'ORG';
   }
 
+  // 3) Lexical markers in entity name itself (highest priority)
   if (/\bfamily$/i.test(surface)) {
     return 'PERSON';
   }
@@ -839,96 +731,119 @@ function classifyName(text: string, surface: string, start: number, end: number)
     return 'HOUSE';
   }
 
-  if (ORG_DESCRIPTOR_PATTERN.test(surface)) {
-    if (isDebug) console.log(`[CLASSIFY] "${surface}" → ORG (descriptor pattern)`);
-    return 'ORG';
-  }
-
-  // 3) Geographic markers in the name itself → PLACE
-  // Examples: "Mistward River", "Mount Silverpeak", "Crystal Falls"
+  // Geographic markers → PLACE
   if (GEO_MARKERS.test(surface)) {
-    if (isDebug) console.log(`[CLASSIFY] "${surface}" → PLACE (geo marker)`);
     return 'PLACE';
   }
 
-  // 3) Get context windows (before and after the name)
-  const before = text.slice(Math.max(0, start - 40), start);
-  const after = text.slice(end, Math.min(text.length, end + 40));
-  const ctx = (before + ' ' + after).toLowerCase();
-
-  if (isDebug) {
-    console.log(`[CLASSIFY] Analyzing "${surface}"`);
-    console.log(`  Context before: "${before}"`);
-    console.log(`  Context after: "${after}"`);
-  }
-
-  // 4) Organization hints (school, university, ministry, etc.)
-  // Only apply if the org keyword is PART OF the entity name itself
-  // This prevents "Sarah Chen" being classified as ORG just because "university" appears nearby
-  if (ORG_HINTS.test(surface)) {
-    if (isDebug) console.log(`[CLASSIFY] "${surface}" → ORG (org keyword in name)`);
+  // Organizational descriptors → ORG
+  if (ORG_DESCRIPTOR_PATTERN.test(surface)) {
     return 'ORG';
   }
 
-  // 5) Preposition context suggests PLACE ("in Minas Tirith", "to Hogwarts")
-  // Only apply if the preposition is IMMEDIATELY before the name (within ~10 chars)
-  // BUT: "work at X" / "worked at X" suggests ORG, not PLACE
+  // Organization keywords in name → ORG
+  if (ORG_HINTS.test(surface)) {
+    return 'ORG';
+  }
+
+  // 4) Context-based classification using verb patterns
+  const before = text.slice(Math.max(0, start - 50), start);
+  const after = text.slice(end, Math.min(text.length, end + 50));
+
+  // Extract immediate context (within 15 chars)
   const immediateContext = text.slice(Math.max(0, start - 15), start).trim();
-  const immediatePrepPattern = /\b(in|at|to|from|into|near|within|toward)\s*$/i;
 
-  // Check if "at" is preceded by work-related verbs
-  const workAtPattern = /\b(work|works|working|worked|study|studies|studied|teach|teaches|teaching|taught)\s+at\s*$/i;
-
-  if (immediatePrepPattern.test(immediateContext)) {
-    // If it's "work at" / "worked at" context → ORG, not PLACE
-    if (workAtPattern.test(immediateContext)) {
-      if (isDebug) console.log(`[CLASSIFY] "${surface}" → ORG (work/study at pattern)`);
-      return 'ORG';
-    }
-    if (isDebug) console.log(`[CLASSIFY] "${surface}" → PLACE (preposition: "${immediateContext}")`);
+  // Pattern: "ruled X" → X is PLACE
+  if (/\b(ruled?|governed?|reigned? over)\s*$/i.test(immediateContext)) {
     return 'PLACE';
   }
 
-  // 6) Single-word capitalized proper nouns
-  // Use linguistic cues from context to classify intelligently
-
-  // Check for action verbs nearby (subject → PERSON)
-  const verbPattern = /\b(traveled|dwelt|married|went|came|left|arrived|departed|fought|ruled|led|begat|bore)\b/i;
-  if (verbPattern.test(ctx)) {
-    // If the name appears before a verb, likely PERSON
-    if (verbPattern.test(after)) {
-      if (isDebug) console.log(`[CLASSIFY] "${surface}" → PERSON (verb in after-context)`);
-      return 'PERSON';
-    }
-  }
-
-  // Check for possessive or family context
-  const personContext = /'s\b|son|daughter|father|mother|brother|sister|wife|husband|king|queen|lord|lady|prince|princess/i;
-  if (personContext.test(ctx)) {
-    if (isDebug) console.log(`[CLASSIFY] "${surface}" → PERSON (person context)`);
+  // Pattern: "X ruled" → X is PERSON
+  if (/\b(ruled?|governed?|reigned?)\b/i.test(after.slice(0, 20))) {
     return 'PERSON';
   }
 
-  // Check for business/founding context → ORG
-  // "founded X", "invested in X", "acquired X", "launched X"
-  const orgVerbContext = /\b(founded?|co-founded?|established?|started?|launched?|created?|built?|acquired?|invested in|works? at|joined?|hired by|employed by)\b/i;
+  // Pattern: "married X" → X is PERSON
+  if (/\b(married?|wed|wedded)\s*$/i.test(immediateContext)) {
+    return 'PERSON';
+  }
+
+  // Pattern: "studied at X" / "taught at X" / "attended X" → X is ORG
+  if (/\b(study|studies|studied|teach|teaches|taught|attend|attended|work|works|worked)\s+at\s*$/i.test(immediateContext)) {
+    return 'ORG';
+  }
+
+  // Pattern: "went to X" / "traveled to X" → X could be PLACE or ORG
+  // If entity name contains school/university keywords → ORG
+  if (/\b(went|traveled|travelled|journeyed|moved)\s+to\s*$/i.test(immediateContext)) {
+    if (/school|university|academy|college|hogwarts/i.test(surface)) {
+      return 'ORG';
+    }
+    return 'PLACE';
+  }
+
+  // Pattern: "lived in X" / "dwelt in X" → X is PLACE
+  if (/\b(live|lived|dwell|dwelt|reside|resided|settle|settled)\s+in\s*$/i.test(immediateContext)) {
+    return 'PLACE';
+  }
+
+  // Pattern: "fought in X" → X is EVENT (if has battle/war keyword) or PLACE
+  if (/\b(fought?|battled?)\s+in\s*$/i.test(immediateContext)) {
+    if (/battle|war|conflict|siege|skirmish/i.test(surface)) {
+      return 'EVENT';
+    }
+    return 'PLACE';
+  }
+
+  // Pattern: "founded X" / "established X" → X is ORG
+  if (/\b(founded?|co-founded?|established?|created?|launched?|started?)\s*$/i.test(immediateContext)) {
+    return 'ORG';
+  }
+
+  // Pattern: "in X" (location context) → PLACE
+  // But exclude "work in" / "study in" which could be fields (e.g., "work in technology")
+  if (/\b(in|within|near|by)\s*$/i.test(immediateContext) &&
+      !/\b(work|study|studied|specialize|specialized|major|majored)\s+in\s*$/i.test(immediateContext)) {
+    return 'PLACE';
+  }
+
+  // Pattern: "at X" (general location) → could be ORG or PLACE
+  // Prefer ORG if no other context
+  if (/\bat\s*$/i.test(immediateContext)) {
+    return 'ORG';
+  }
+
+  // Pattern: "to X" (motion) → PLACE
+  if (/\bto\s*$/i.test(immediateContext)) {
+    return 'PLACE';
+  }
+
+  // 5) Subject of action verbs → PERSON
+  // Look for verbs in after-context (entity is subject)
+  const actionVerbsAfter = /^\s*\b(ruled?|governed?|reigned?|led|headed|founded?|established?|traveled?|travelled|went|came|left|arrived|departed|married?|fought?|lived?|dwelt|studied?|taught?)\b/i;
+  if (actionVerbsAfter.test(after)) {
+    return 'PERSON';
+  }
+
+  // 6) Possessive or family context → PERSON
+  const personContext = /'s\b|son|daughter|father|mother|brother|sister|wife|husband|parent|child|king|queen|lord|lady|prince|princess|wizard|mage/i;
+  if (personContext.test(before + ' ' + after)) {
+    return 'PERSON';
+  }
+
+  // 7) Business/founding context → ORG
+  const orgVerbContext = /\b(founded?|co-founded?|established?|started?|launched?|created?|built?|acquired?|invested in|joined?)\b/i;
   if (orgVerbContext.test(before)) {
-    // Name appears AFTER a founding/business verb → likely ORG
-    if (isDebug) console.log(`[CLASSIFY] "${surface}" → ORG (founding/business verb before)`);
     return 'ORG';
   }
 
-  // Check if name appears as subject before "was founded", "was acquired"
-  const passiveOrgPattern = /\bwas (founded|established|created|launched|acquired|invested)\b/i;
-  if (passiveOrgPattern.test(after)) {
-    if (isDebug) console.log(`[CLASSIFY] "${surface}" → ORG (passive business verb after)`);
+  // Pattern: "X was founded" → X is ORG
+  if (/^\s*\bwas (founded|established|created|launched|acquired|incorporated)\b/i.test(after)) {
     return 'ORG';
   }
 
-  // Default for single-word capitalized: PERSON (most common in narrative text)
-  // This is a reasonable default for fantasy/historical texts where most single
-  // capitalized words are character names
-  if (isDebug) console.log(`[CLASSIFY] "${surface}" → PERSON (default)`);
+  // 8) Default: PERSON
+  // In narrative text, most single capitalized words are character names
   return 'PERSON';
 }
 
@@ -1599,6 +1514,8 @@ const chooseCanonical = (names: Set<string>): string => {
 
     entities.push(entry.entity);
 
+    // Deduplicate and filter subsumed spans
+    // A span is subsumed if it's completely contained within another span
     const spanByStart = new Map<number, { start: number; end: number }>();
     for (const span of entry.spanList) {
       const existing = spanByStart.get(span.start);
@@ -1607,7 +1524,22 @@ const chooseCanonical = (names: Set<string>): string => {
       }
     }
 
-    const uniqueSpans = Array.from(spanByStart.values()).sort((a, b) => a.start - b.start);
+    let candidateSpans = Array.from(spanByStart.values()).sort((a, b) => a.start - b.start);
+
+    // Filter out subsumed spans (spans completely contained within others)
+    const uniqueSpans = candidateSpans.filter((span, i) => {
+      // Check if this span is subsumed by any other span
+      for (let j = 0; j < candidateSpans.length; j++) {
+        if (i === j) continue;
+        const other = candidateSpans[j];
+        // Is 'span' completely contained within 'other'?
+        if (span.start >= other.start && span.end <= other.end &&
+            (span.start !== other.start || span.end !== other.end)) {
+          return false; // Subsumed, filter it out
+        }
+      }
+      return true; // Not subsumed, keep it
+    });
 
     for (const span of uniqueSpans) {
       const key = `${entry.entity.id}:${span.start}:${span.end}`;
