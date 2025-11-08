@@ -43,7 +43,13 @@ const COMMON_WORDS = new Set([
   'being', 'have', 'has', 'had', 'do', 'does', 'did',
   'will', 'would', 'should', 'could', 'might', 'must', 'can',
   'dinner', 'tomorrow', 'yesterday', 'today',
-  'life', 'people', 'children', 'recovery', 'medicine'
+  'life', 'people', 'children', 'recovery', 'medicine',
+  // Narrative false positives
+  'perhaps', 'hidden', 'forgive', 'finally', 'inside', 'bodies',
+  'whoever', 'three', 'fifty', 'entire', 'fields', 'livestock',
+  'chose', 'oh', 'join', 'release', 'long', 'run', 'brilliant',
+  'rebuild', 'located', 'looking', 'wisdoms', 'gather',
+  'take', 'if', 'before', 'after', 'during', 'while', 'whenever'
 ]);
 
 /**
@@ -51,7 +57,7 @@ const COMMON_WORDS = new Set([
  */
 const BAD_PATTERNS = [
   // Leading conjunctions/articles/prepositions
-  /^(and|or|but|the|a|an|when|where|seeing|meeting)\s+/i,
+  /^(and|or|but|the|a|an|when|where|seeing|meeting|before|after|if|take|gather|located)\s+/i,
   // Trailing verbs
   /\s+(said|asked|replied|moved|came|went|told)$/i,
   // Just punctuation/numbers
@@ -60,6 +66,10 @@ const BAD_PATTERNS = [
   /^[a-z]$/i,
   // Chapter/section markers
   /chapter|section|part\s+\d+|epilogue|prologue/i,
+  // All caps shouted text (dialogue)
+  /^[A-Z\s]{4,}$/,
+  // Sentence fragments with verbs
+  /^(you|i|they|we)\s+(dared|use|my|your|their|our)/i,
 ];
 
 /**
