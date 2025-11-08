@@ -1,0 +1,895 @@
+{
+  "entities": [
+    {
+      "id": "37d6cb01-8225-4d40-8456-4dcd4c58338c",
+      "type": "PERSON",
+      "canonical": "Last Summer",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:02.396Z",
+      "eid": 386,
+      "aid": 758
+    },
+    {
+      "id": "2d6b97e8-8834-4825-a19a-4dfff0d33707",
+      "type": "PERSON",
+      "canonical": "And Sarah Chen",
+      "aliases": [
+        "sarah chen"
+      ],
+      "created_at": "2025-11-08T05:19:02.465Z",
+      "eid": 265,
+      "aid": 759
+    },
+    {
+      "id": "54d6f710-3a64-4898-9804-00807a468da2",
+      "type": "ORG",
+      "canonical": "Boston Memorial Hospital",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:02.465Z",
+      "eid": 387,
+      "aid": 760
+    },
+    {
+      "id": "a9b53138-d2ba-422c-bcec-b3b43d593654",
+      "type": "PERSON",
+      "canonical": "Marcus Williams",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:02.715Z",
+      "eid": 388,
+      "aid": 761
+    },
+    {
+      "id": "253b1940-5f48-44b1-9f36-dc2fb3515ffc",
+      "type": "PERSON",
+      "canonical": "Patterson",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:02.890Z",
+      "eid": 389,
+      "aid": 762
+    },
+    {
+      "id": "1c63ef49-cd3d-4b99-9308-5f06b77a325d",
+      "type": "PERSON",
+      "canonical": "Am I",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:03.216Z",
+      "eid": 327,
+      "aid": 684
+    },
+    {
+      "id": "507c3abc-fab3-4ae2-a31e-1b2f216f0ca1",
+      "type": "PERSON",
+      "canonical": "Lily",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:03.276Z",
+      "eid": 390,
+      "aid": 763
+    },
+    {
+      "id": "b770e719-f899-4597-b4fd-74a46be20929",
+      "type": "PERSON",
+      "canonical": "David",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:03.336Z",
+      "eid": 330,
+      "aid": 764
+    },
+    {
+      "id": "4afcba63-3515-45f9-8bc4-b07347c65fc8",
+      "type": "PLACE",
+      "canonical": "Maine",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:03.524Z",
+      "eid": 391,
+      "aid": 765
+    },
+    {
+      "id": "c409df83-4b49-48ac-9be3-202d325d1929",
+      "type": "PLACE",
+      "canonical": "Oceanside",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:03.579Z",
+      "eid": 392,
+      "aid": 766
+    },
+    {
+      "id": "1cc43e6d-d951-4093-a877-80b89cb107d8",
+      "type": "PERSON",
+      "canonical": "Maine",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:03.878Z",
+      "eid": 391,
+      "aid": 765
+    },
+    {
+      "id": "fa7e08bf-ff1d-4e9e-9453-4f13d325a872",
+      "type": "PERSON",
+      "canonical": "Seabrook Medical Clinic",
+      "aliases": [
+        "seabrook"
+      ],
+      "created_at": "2025-11-08T05:19:03.991Z",
+      "eid": 393,
+      "aid": 767
+    },
+    {
+      "id": "b2fcb663-649c-4b7f-bc02-9e0c9e7023c4",
+      "type": "PLACE",
+      "canonical": "Boston",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:04.252Z",
+      "eid": 387,
+      "aid": 768
+    },
+    {
+      "id": "e5994807-0e79-4163-ac94-37c64cf68e0c",
+      "type": "PERSON",
+      "canonical": "Complete",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:04.252Z",
+      "eid": 394,
+      "aid": 769
+    },
+    {
+      "id": "b27a8dee-f0ec-4264-a98b-760e63475301",
+      "type": "ORG",
+      "canonical": "Cambridge",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:04.303Z",
+      "eid": 273,
+      "aid": 770
+    },
+    {
+      "id": "eaf71cef-610f-4b1e-bdf4-e106c50b4462",
+      "type": "PERSON",
+      "canonical": "Kids",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:04.984Z",
+      "eid": 395,
+      "aid": 771
+    },
+    {
+      "id": "49522abc-a11f-4c1c-aa4d-0ac409a77d41",
+      "type": "PERSON",
+      "canonical": "Same",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:05.089Z",
+      "eid": 396,
+      "aid": 772
+    },
+    {
+      "id": "9934ae85-172f-4592-9e3d-820e50a71df1",
+      "type": "PERSON",
+      "canonical": "Imposing",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:05.282Z",
+      "eid": 397,
+      "aid": 773
+    },
+    {
+      "id": "ec104d30-d596-477c-87cd-3af608aa3e59",
+      "type": "PERSON",
+      "canonical": "Even Patricia Monroe",
+      "aliases": [
+        "patricia monroe"
+      ],
+      "created_at": "2025-11-08T05:19:05.335Z",
+      "eid": 398,
+      "aid": 774
+    },
+    {
+      "id": "0dbc2f70-1953-46d5-bd8f-de96603f67f8",
+      "type": "ORG",
+      "canonical": "Boston Memorial",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:05.389Z",
+      "eid": 387,
+      "aid": 775
+    },
+    {
+      "id": "8d519c74-20b9-4857-aaeb-b4b82230c5de",
+      "type": "PERSON",
+      "canonical": "Selfish",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:05.559Z",
+      "eid": 399,
+      "aid": 776
+    },
+    {
+      "id": "b5586bd2-2ba4-40b1-ab0a-31861055b829",
+      "type": "PERSON",
+      "canonical": "Help",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:05.619Z",
+      "eid": 400,
+      "aid": 777
+    },
+    {
+      "id": "0a7b7a84-14d0-4b35-8319-28f0e98aa1ee",
+      "type": "PERSON",
+      "canonical": "Jennifer Park",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:05.726Z",
+      "eid": 380,
+      "aid": 778
+    },
+    {
+      "id": "e025b19b-5a3c-485a-80a8-58f516870eeb",
+      "type": "PERSON",
+      "canonical": "Johns Hopkins",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:05.726Z",
+      "eid": 401,
+      "aid": 779
+    },
+    {
+      "id": "e2f27959-8916-4e48-b0c0-9cda447490d2",
+      "type": "PERSON",
+      "canonical": "Young",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:05.777Z",
+      "eid": 351,
+      "aid": 713
+    },
+    {
+      "id": "02e07011-4b10-42d9-bb67-7c45e1fc079a",
+      "type": "PERSON",
+      "canonical": "Take Mrs",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:06.185Z",
+      "eid": 336,
+      "aid": 780
+    },
+    {
+      "id": "de51662d-7fa5-4c43-bdcc-276f669fc7dd",
+      "type": "PERSON",
+      "canonical": "Agnes Foster",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:06.233Z",
+      "eid": 402,
+      "aid": 781
+    },
+    {
+      "id": "b66099b1-cc32-4a28-a990-2da734bd1835",
+      "type": "PERSON",
+      "canonical": "Stage",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:06.284Z",
+      "eid": 403,
+      "aid": 782
+    },
+    {
+      "id": "51a0445a-b684-49c6-89e7-5d243272b081",
+      "type": "PERSON",
+      "canonical": "Know",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:06.332Z",
+      "eid": 404,
+      "aid": 783
+    },
+    {
+      "id": "c0713ed2-db6f-4c3b-bb06-c430805ea78c",
+      "type": "ORG",
+      "canonical": "Johns Hopkins",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:06.488Z",
+      "eid": 401,
+      "aid": 779
+    },
+    {
+      "id": "985e713e-ee69-42e9-b670-b6d82e124dbf",
+      "type": "PERSON",
+      "canonical": "Patients",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:06.688Z",
+      "eid": 405,
+      "aid": 784
+    },
+    {
+      "id": "6f58a47d-1e25-44e4-b00f-69b76a5578a9",
+      "type": "PERSON",
+      "canonical": "Grandmother Rose",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:06.853Z",
+      "eid": 406,
+      "aid": 785
+    },
+    {
+      "id": "de5658d7-9d96-4de3-8c4f-911d471f8dbe",
+      "type": "PLACE",
+      "canonical": "Atlantic Ocean",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:06.909Z",
+      "eid": 407,
+      "aid": 786
+    },
+    {
+      "id": "d681cda8-9386-43fa-8315-de4b71943d3c",
+      "type": "PERSON",
+      "canonical": "Absolutely",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:07.028Z",
+      "eid": 408,
+      "aid": 787
+    },
+    {
+      "id": "706faa26-d7d4-432e-a331-da1b9697ebc1",
+      "type": "PERSON",
+      "canonical": "But Tom",
+      "aliases": [
+        "tom"
+      ],
+      "created_at": "2025-11-08T05:19:07.082Z",
+      "eid": 409,
+      "aid": 788
+    },
+    {
+      "id": "5c82f56f-6955-4012-bd2f-3e8c7c3c536c",
+      "type": "PLACE",
+      "canonical": "San Francisco",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:07.082Z",
+      "eid": 64,
+      "aid": 789
+    },
+    {
+      "id": "8f417e29-346a-453d-91ad-a3ba9783447a",
+      "type": "PERSON",
+      "canonical": "Vietnamese",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:07.199Z",
+      "eid": 410,
+      "aid": 790
+    },
+    {
+      "id": "30ffac3f-e33e-40f0-ab61-833c7a8751d3",
+      "type": "PLACE",
+      "canonical": "Allston",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:07.199Z",
+      "eid": 411,
+      "aid": 791
+    },
+    {
+      "id": "1b43d041-35d4-4893-a444-c55501ac270d",
+      "type": "DATE",
+      "canonical": "August",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:08.070Z",
+      "eid": 412,
+      "aid": 792
+    },
+    {
+      "id": "097ca052-544b-4d7b-9871-8f525a123ef6",
+      "type": "PERSON",
+      "canonical": "Colleagues",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:08.439Z",
+      "eid": 413,
+      "aid": 793
+    },
+    {
+      "id": "2db9ce23-8e0d-47dd-a33a-2dfc929f675d",
+      "type": "PERSON",
+      "canonical": "Nurses",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:08.487Z",
+      "eid": 414,
+      "aid": 794
+    },
+    {
+      "id": "b43522dc-8581-4435-ad0a-5e8dfd705f30",
+      "type": "PERSON",
+      "canonical": "On Christmas Eve",
+      "aliases": [
+        "on sarah"
+      ],
+      "created_at": "2025-11-08T05:19:08.595Z",
+      "eid": 415,
+      "aid": 795
+    },
+    {
+      "id": "1a09dbbc-4cd3-4eb6-bbbb-f3082d383441",
+      "type": "PLACE",
+      "canonical": "Keep",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:09.099Z",
+      "eid": 416,
+      "aid": 796
+    },
+    {
+      "id": "178bb885-405b-45d2-812a-5a9c00fd3d69",
+      "type": "PERSON",
+      "canonical": "Interstate",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:09.236Z",
+      "eid": 417,
+      "aid": 797
+    },
+    {
+      "id": "013f3d89-145e-432d-8a1a-d0ba98c6bc1b",
+      "type": "PLACE",
+      "canonical": "New Hampshire",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:09.236Z",
+      "eid": 22,
+      "aid": 798
+    },
+    {
+      "id": "889937b2-8df8-4d2a-adf0-d423b7a05a28",
+      "type": "DATE",
+      "canonical": "September",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:09.393Z",
+      "eid": 287,
+      "aid": 627
+    },
+    {
+      "id": "94bb9f4c-ba56-4da1-9603-51294aa5e60e",
+      "type": "PLACE",
+      "canonical": "Seabrook",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:09.393Z",
+      "eid": 393,
+      "aid": 799
+    },
+    {
+      "id": "aa7ba759-57bc-43c2-a0d5-32bd2fe32fb3",
+      "type": "PERSON",
+      "canonical": "Neighbors",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:09.525Z",
+      "eid": 418,
+      "aid": 800
+    },
+    {
+      "id": "c13aa91a-340e-48d9-98aa-eafa333e210a",
+      "type": "PERSON",
+      "canonical": "Harold Jenkins",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:09.525Z",
+      "eid": 419,
+      "aid": 801
+    },
+    {
+      "id": "749b4a41-fc1c-4716-a181-0ff543a2aeb7",
+      "type": "PERSON",
+      "canonical": "Emma Torres",
+      "aliases": [
+        "emma"
+      ],
+      "created_at": "2025-11-08T05:19:09.525Z",
+      "eid": 420,
+      "aid": 802
+    },
+    {
+      "id": "4bd5be19-3a08-4827-a8d4-e9ee50cf3ab5",
+      "type": "PERSON",
+      "canonical": "Jason Torres",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:09.525Z",
+      "eid": 421,
+      "aid": 803
+    },
+    {
+      "id": "3a70708e-034c-4819-8323-5a8422c4ea34",
+      "type": "PERSON",
+      "canonical": "Martha Quinn",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:09.525Z",
+      "eid": 422,
+      "aid": 804
+    },
+    {
+      "id": "e6ce9ca1-3b49-46a6-b959-e5f6048daa77",
+      "type": "PERSON",
+      "canonical": "Robert Sullivan",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:09.818Z",
+      "eid": 423,
+      "aid": 805
+    },
+    {
+      "id": "48dfaa6c-6731-46f9-b297-c73d33660cbe",
+      "type": "PLACE",
+      "canonical": "Portland",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:10.048Z",
+      "eid": 424,
+      "aid": 806
+    },
+    {
+      "id": "58effb0c-f03a-4c68-b762-4d6b2802f354",
+      "type": "PERSON",
+      "canonical": "Right",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:10.048Z",
+      "eid": 425,
+      "aid": 807
+    },
+    {
+      "id": "811e17ac-9cbc-49de-8fee-61f3c7ef5775",
+      "type": "PERSON",
+      "canonical": "Twenty",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:10.158Z",
+      "eid": 426,
+      "aid": 808
+    },
+    {
+      "id": "9e156069-00dc-455f-b621-409e7f1466c4",
+      "type": "PERSON",
+      "canonical": "Patrick O'Malley",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:10.504Z",
+      "eid": 427,
+      "aid": 809
+    },
+    {
+      "id": "cdc8b4a4-52d5-4bef-8a19-3a900ccfdddb",
+      "type": "PERSON",
+      "canonical": "Rachel Morrison",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:10.769Z",
+      "eid": 428,
+      "aid": 810
+    },
+    {
+      "id": "b0abc5fb-d72f-41a8-9026-b162b7b0a9dc",
+      "type": "PERSON",
+      "canonical": "Sophie Kim",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:10.769Z",
+      "eid": 381,
+      "aid": 811
+    },
+    {
+      "id": "5312c83a-81f4-4af6-9607-9b1accc534a7",
+      "type": "DATE",
+      "canonical": "October",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:10.878Z",
+      "eid": 291,
+      "aid": 632
+    },
+    {
+      "id": "d8d6fbdc-9e17-46eb-b475-4c4878af5328",
+      "type": "PERSON",
+      "canonical": "Atlantic",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:10.878Z",
+      "eid": 407,
+      "aid": 812
+    },
+    {
+      "id": "0f147f34-fc21-46fa-909e-63571fe5c3c0",
+      "type": "PERSON",
+      "canonical": "High",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:11.154Z",
+      "eid": 429,
+      "aid": 813
+    },
+    {
+      "id": "132274c6-c357-4e0e-8cac-51c1da082c2a",
+      "type": "PERSON",
+      "canonical": "Like",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:11.270Z",
+      "eid": 430,
+      "aid": 814
+    },
+    {
+      "id": "c81f629b-98f5-46d8-940d-d9ab75ec92fb",
+      "type": "PERSON",
+      "canonical": "Peterson",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:11.324Z",
+      "eid": 261,
+      "aid": 815
+    },
+    {
+      "id": "347cabfe-9e79-4fbd-a69c-d0db610769ef",
+      "type": "PERSON",
+      "canonical": "Oh",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:11.959Z",
+      "eid": 69,
+      "aid": 816
+    },
+    {
+      "id": "367cbde6-61ec-4524-a2ae-6ee611b340d8",
+      "type": "PERSON",
+      "canonical": "Remission",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:12.201Z",
+      "eid": 431,
+      "aid": 817
+    },
+    {
+      "id": "ca03568b-142c-4a07-9f03-a3697ecd6271",
+      "type": "PERSON",
+      "canonical": "Tears",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:12.320Z",
+      "eid": 432,
+      "aid": 818
+    },
+    {
+      "id": "2df199da-48b5-4397-befd-bfaa04e57cf3",
+      "type": "PERSON",
+      "canonical": "Kyle Anderson",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:13.054Z",
+      "eid": 433,
+      "aid": 819
+    },
+    {
+      "id": "9163a03b-42bf-4af0-a367-2319ee707a8e",
+      "type": "PERSON",
+      "canonical": "Susan Anderson",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:13.161Z",
+      "eid": 434,
+      "aid": 820
+    },
+    {
+      "id": "e47bebb2-1f8e-4c4f-80f9-5645c89e6f3a",
+      "type": "PERSON",
+      "canonical": "Christmas",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:13.477Z",
+      "eid": 415,
+      "aid": 821
+    },
+    {
+      "id": "c1364b1e-1ebf-4d53-9eb2-a78ea2fb8bbb",
+      "type": "PERSON",
+      "canonical": "Snow",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:13.522Z",
+      "eid": 435,
+      "aid": 822
+    },
+    {
+      "id": "eb904f01-e326-4f35-893a-6691eb053fae",
+      "type": "PLACE",
+      "canonical": "Boston Memorial",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:13.782Z",
+      "eid": 387,
+      "aid": 775
+    },
+    {
+      "id": "34d7c282-85d7-45ac-b6d7-7f8a1c992cea",
+      "type": "PERSON",
+      "canonical": "Learn",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:14.007Z",
+      "eid": 436,
+      "aid": 823
+    },
+    {
+      "id": "942ce13b-a374-4608-9e2b-fc60edd5a6c6",
+      "type": "PERSON",
+      "canonical": "Well",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:14.562Z",
+      "eid": 350,
+      "aid": 712
+    },
+    {
+      "id": "e5dbc464-354c-4930-8981-2d4857d77b3c",
+      "type": "PERSON",
+      "canonical": "Get",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:14.723Z",
+      "eid": 437,
+      "aid": 824
+    }
+  ],
+  "relations": [
+    {
+      "id": "13af99f2-6a15-478a-86c3-18cdb20b589c",
+      "subj": "e47bebb2-1f8e-4c4f-80f9-5645c89e6f3a",
+      "pred": "lives_in",
+      "obj": "94bb9f4c-ba56-4da1-9603-51294aa5e60e",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 200,
+            "end": 221,
+            "text": "mbered none of their names by evening.\n\nChristmas in Seabrook was magical. Snow covered the cottage, "
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.9,
+      "extractor": "dep"
+    },
+    {
+      "id": "06c0653f-c7e4-436e-b29d-96c990cf8333",
+      "subj": "2df199da-48b5-4397-befd-bfaa04e57cf3",
+      "pred": "child_of",
+      "obj": "9163a03b-42bf-4af0-a367-2319ee707a8e",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 438,
+            "end": 467,
+            "text": " provided local support and monitoring. Kyle's mother, Susan Anderson, was overwhelmed with gratitude.\n\n\"In a"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8658268337100795,
+      "extractor": "dep",
+      "qualifiers": [
+        {
+          "type": "place",
+          "value": "Portland",
+          "entity_id": "48dfaa6c-6731-46f9-b297-c73d33660cbe",
+          "span": [
+            385,
+            393
+          ]
+        }
+      ]
+    },
+    {
+      "id": "186d239c-c8a4-4d55-bf79-4ff73e18a798",
+      "subj": "9163a03b-42bf-4af0-a367-2319ee707a8e",
+      "pred": "parent_of",
+      "obj": "2df199da-48b5-4397-befd-bfaa04e57cf3",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 438,
+            "end": 467,
+            "text": " provided local support and monitoring. Kyle's mother, Susan Anderson, was overwhelmed with gratitude.\n\n\"In a"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8658268337100795,
+      "extractor": "dep",
+      "qualifiers": [
+        {
+          "type": "place",
+          "value": "Portland",
+          "entity_id": "48dfaa6c-6731-46f9-b297-c73d33660cbe",
+          "span": [
+            385,
+            393
+          ]
+        }
+      ]
+    },
+    {
+      "id": "4b91d0c3-216b-4137-996d-46d76003da5f",
+      "subj": "2d6b97e8-8834-4825-a19a-4dfff0d33707",
+      "pred": "sibling_of",
+      "obj": "706faa26-d7d4-432e-a331-da1b9697ebc1",
+      "evidence": [
+        {
+          "doc_id": "contemporary-chapter-01.txt",
+          "span": {
+            "start": 5137,
+            "end": 5155,
+            "text": "Sarah's brother Tom"
+          },
+          "sentence_index": 106,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "9e8d56ba-01d5-4a94-8f18-65c0631ae235",
+      "subj": "706faa26-d7d4-432e-a331-da1b9697ebc1",
+      "pred": "sibling_of",
+      "obj": "2d6b97e8-8834-4825-a19a-4dfff0d33707",
+      "evidence": [
+        {
+          "doc_id": "contemporary-chapter-01.txt",
+          "span": {
+            "start": 5137,
+            "end": 5155,
+            "text": "Sarah's brother Tom"
+          },
+          "sentence_index": 106,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "92927b19-1678-4654-99d8-b5f825bb946e",
+      "subj": "706faa26-d7d4-432e-a331-da1b9697ebc1",
+      "pred": "married_to",
+      "obj": "0a7b7a84-14d0-4b35-8319-28f0e98aa1ee",
+      "evidence": [
+        {
+          "doc_id": "contemporary-chapter-01.txt",
+          "span": {
+            "start": 12935,
+            "end": 12951,
+            "text": "his wife Jennifer"
+          },
+          "sentence_index": 253,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "7fec555c-f38a-48fc-99ec-0b33aeeee068",
+      "subj": "e5dbc464-354c-4930-8981-2d4857d77b3c",
+      "pred": "parent_of",
+      "obj": "2d6b97e8-8834-4825-a19a-4dfff0d33707",
+      "evidence": [
+        {
+          "doc_id": "contemporary-chapter-01.txt",
+          "span": {
+            "start": 13610,
+            "end": 13639,
+            "text": "her husband and daughter Sarah"
+          },
+          "sentence_index": 270,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "4982af06-f88a-4efb-a61f-593a001531d2",
+      "subj": "0a7b7a84-14d0-4b35-8319-28f0e98aa1ee",
+      "pred": "married_to",
+      "obj": "706faa26-d7d4-432e-a331-da1b9697ebc1",
+      "evidence": [
+        {
+          "doc_id": "contemporary-chapter-01.txt",
+          "span": {
+            "start": 12935,
+            "end": 12951,
+            "text": "his wife Jennifer"
+          },
+          "sentence_index": 253,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "a77dd977-7e5d-49d5-855b-67584f9e9cd9",
+      "subj": "2d6b97e8-8834-4825-a19a-4dfff0d33707",
+      "pred": "child_of",
+      "obj": "e5dbc464-354c-4930-8981-2d4857d77b3c",
+      "evidence": [
+        {
+          "doc_id": "contemporary-chapter-01.txt",
+          "span": {
+            "start": 13610,
+            "end": 13639,
+            "text": "her husband and daughter Sarah"
+          },
+          "sentence_index": 270,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    }
+  ]
+}

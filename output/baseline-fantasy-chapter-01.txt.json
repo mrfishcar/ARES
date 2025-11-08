@@ -1,0 +1,845 @@
+{
+  "entities": [
+    {
+      "id": "b5bbbff8-c857-4648-bae2-82c2d1583081",
+      "type": "PERSON",
+      "canonical": "Gathering Storm",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:21.553Z",
+      "eid": 252,
+      "aid": 825
+    },
+    {
+      "id": "318f4fe2-6bca-4bfe-9794-a209dedd2364",
+      "type": "PERSON",
+      "canonical": "Elara Moonwhisper",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:21.590Z",
+      "eid": 438,
+      "aid": 826
+    },
+    {
+      "id": "909fe8d5-293b-49b9-9d07-ed0c4feb3c66",
+      "type": "PERSON",
+      "canonical": "Crystal Cliffs",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:21.590Z",
+      "eid": 439,
+      "aid": 827
+    },
+    {
+      "id": "076f95d7-3d12-4684-ad68-518b9d883c6e",
+      "type": "PERSON",
+      "canonical": "Alderan",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:21.590Z",
+      "eid": 440,
+      "aid": 828
+    },
+    {
+      "id": "34a93310-b35c-47da-a781-31ee24ed70b0",
+      "type": "PLACE",
+      "canonical": "Crimson Sea",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:21.590Z",
+      "eid": 441,
+      "aid": 829
+    },
+    {
+      "id": "59e6b5f8-68e0-4765-a7f3-32c515c0e43b",
+      "type": "PERSON",
+      "canonical": "Northern Reaches",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:21.636Z",
+      "eid": 442,
+      "aid": 830
+    },
+    {
+      "id": "b8579d85-7f8e-471d-bde7-1cecc71405b4",
+      "type": "PERSON",
+      "canonical": "Master Theron Brightforge",
+      "aliases": [
+        "theron brightforge"
+      ],
+      "created_at": "2025-11-08T05:19:21.802Z",
+      "eid": 340,
+      "aid": 831
+    },
+    {
+      "id": "83e78e0b-13b0-402b-8708-9b35afa40d82",
+      "type": "EVENT",
+      "canonical": "Council of Seven",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:21.907Z",
+      "eid": 443,
+      "aid": 832
+    },
+    {
+      "id": "1fd1df85-c732-42b2-b79f-b13e17d2175b",
+      "type": "PERSON",
+      "canonical": "Seven Stars",
+      "aliases": [
+        "seven"
+      ],
+      "created_at": "2025-11-08T05:19:21.907Z",
+      "eid": 444,
+      "aid": 833
+    },
+    {
+      "id": "41b7bab0-362d-4bd4-9871-d2ccb1d2e5e9",
+      "type": "PERSON",
+      "canonical": "Shadow King",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:22.014Z",
+      "eid": 445,
+      "aid": 834
+    },
+    {
+      "id": "fdf760f8-d7b4-4444-9091-aeadb64f3b4f",
+      "type": "PERSON",
+      "canonical": "Lord Malachar",
+      "aliases": [
+        "malachar"
+      ],
+      "created_at": "2025-11-08T05:19:22.071Z",
+      "eid": 446,
+      "aid": 835
+    },
+    {
+      "id": "1a644bfa-eb4b-4034-a0a5-47791f558f69",
+      "type": "PERSON",
+      "canonical": "Void",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:22.071Z",
+      "eid": 447,
+      "aid": 836
+    },
+    {
+      "id": "ad519cd0-6c81-41c6-9018-320d4617a09d",
+      "type": "EVENT",
+      "canonical": "Battle of Starfall Ridge",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:22.071Z",
+      "eid": 266,
+      "aid": 837
+    },
+    {
+      "id": "315542a8-3534-4cc8-b6af-aa8330fa91cc",
+      "type": "PLACE",
+      "canonical": "Starfall Ridge",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:22.071Z",
+      "eid": 266,
+      "aid": 838
+    },
+    {
+      "id": "865e28a9-501c-44d5-9f0c-b33bd670870f",
+      "type": "PERSON",
+      "canonical": "Obsidian Mountains",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:22.131Z",
+      "eid": 448,
+      "aid": 839
+    },
+    {
+      "id": "f67a5bb1-94be-4981-a5c9-8e02873afc5b",
+      "type": "ORG",
+      "canonical": "Orb of Eternal Night",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:22.131Z",
+      "eid": 449,
+      "aid": 840
+    },
+    {
+      "id": "6a323dcb-cd19-445c-8fe6-b11d81645a50",
+      "type": "PERSON",
+      "canonical": "Orb of Eternal Night",
+      "aliases": [
+        "Orb of Eternal Night"
+      ],
+      "created_at": "2025-11-08T05:19:22.131Z",
+      "eid": 449,
+      "aid": 840
+    },
+    {
+      "id": "ee2e6afc-ec98-4e0f-90c5-90d801efc864",
+      "type": "PERSON",
+      "canonical": "Hidden",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:22.411Z",
+      "eid": 450,
+      "aid": 841
+    },
+    {
+      "id": "b93deb12-3946-4523-bfb2-816b82e65631",
+      "type": "PERSON",
+      "canonical": "King Aldric",
+      "aliases": [
+        "King Aldric the Just"
+      ],
+      "created_at": "2025-11-08T05:19:22.411Z",
+      "eid": 451,
+      "aid": 842
+    },
+    {
+      "id": "c8014e16-cc3f-4a08-8998-9ae072eb6512",
+      "type": "PERSON",
+      "canonical": "Silverhaven",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:22.411Z",
+      "eid": 452,
+      "aid": 843
+    },
+    {
+      "id": "3bddeead-58ac-4ac3-9d87-b197b014c8ec",
+      "type": "PERSON",
+      "canonical": "Lyssa Moonwhisper",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:22.471Z",
+      "eid": 453,
+      "aid": 844
+    },
+    {
+      "id": "5e077c16-ef3e-4bb0-9ec5-8fb482d44334",
+      "type": "PERSON",
+      "canonical": "Before Elara",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:22.578Z",
+      "eid": 454,
+      "aid": 845
+    },
+    {
+      "id": "2f4a70b2-a1c5-49b1-a7e6-611fe8b26d2a",
+      "type": "PERSON",
+      "canonical": "Cassandra Stormweaver",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:22.634Z",
+      "eid": 455,
+      "aid": 846
+    },
+    {
+      "id": "5c86aced-dabc-4d38-94cc-a53390c6811c",
+      "type": "PERSON",
+      "canonical": "High Priestess",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:22.634Z",
+      "eid": 429,
+      "aid": 847
+    },
+    {
+      "id": "5849f299-9150-4ea3-ad4c-922503ae9a73",
+      "type": "PERSON",
+      "canonical": "Forgive",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:22.738Z",
+      "eid": 329,
+      "aid": 848
+    },
+    {
+      "id": "f65472ea-3b24-4ce6-a8f8-4a93bc459593",
+      "type": "PERSON",
+      "canonical": "Lord Malachar",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:22.789Z",
+      "eid": 446,
+      "aid": 835
+    },
+    {
+      "id": "31dc70ca-7c6b-49cc-bd4b-cdb921cd4439",
+      "type": "PERSON",
+      "canonical": "Thornhaven",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:22.789Z",
+      "eid": 456,
+      "aid": 849
+    },
+    {
+      "id": "50463ac3-3579-46af-9d38-f4538bcf1260",
+      "type": "PERSON",
+      "canonical": "Vex the Bloodless",
+      "aliases": [
+        "Vex the Bloodless"
+      ],
+      "created_at": "2025-11-08T05:19:22.841Z",
+      "eid": 457,
+      "aid": 850
+    },
+    {
+      "id": "48869fac-4d63-4192-997e-2d662c894e19",
+      "type": "PERSON",
+      "canonical": "Fifty",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:22.841Z",
+      "eid": 458,
+      "aid": 851
+    },
+    {
+      "id": "37184eca-aca1-43b7-bda3-32b65bb53bf3",
+      "type": "PLACE",
+      "canonical": "Tower",
+      "aliases": [
+        "Tower of Seven Stars"
+      ],
+      "created_at": "2025-11-08T05:19:22.996Z",
+      "eid": 459,
+      "aid": 852
+    },
+    {
+      "id": "4f2d33d0-511c-4100-ae8f-7f6a2816bccc",
+      "type": "PLACE",
+      "canonical": "Lake Serenity",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:23.055Z",
+      "eid": 460,
+      "aid": 853
+    },
+    {
+      "id": "b53a8fbd-8bc2-47be-85ec-839eb3d8c104",
+      "type": "ORG",
+      "canonical": "Evocation Transmutation Divination Necromancy",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:23.055Z",
+      "eid": 461,
+      "aid": 854
+    },
+    {
+      "id": "5748c30c-8006-4b1b-b3ee-a9fa735ea0c4",
+      "type": "PERSON",
+      "canonical": "Conjuration",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:23.055Z",
+      "eid": 462,
+      "aid": 855
+    },
+    {
+      "id": "78a48a24-45ea-45ab-b564-df473cacfdb2",
+      "type": "PERSON",
+      "canonical": "Located",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:23.055Z",
+      "eid": 463,
+      "aid": 856
+    },
+    {
+      "id": "876061f9-9709-4ab8-b4f5-8406a4643ab4",
+      "type": "PERSON",
+      "canonical": "Evocation",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:23.055Z",
+      "eid": 461,
+      "aid": 857
+    },
+    {
+      "id": "798cecd2-4366-4b6e-8d13-d9f9d5d91fad",
+      "type": "PERSON",
+      "canonical": "Transmutation",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:23.055Z",
+      "eid": 461,
+      "aid": 858
+    },
+    {
+      "id": "04a5d17f-defe-4fef-92ad-2c768f9cc23a",
+      "type": "PERSON",
+      "canonical": "Divination",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:23.055Z",
+      "eid": 461,
+      "aid": 859
+    },
+    {
+      "id": "94a09d5c-a287-44a2-90ac-f3d3dfa9bc7b",
+      "type": "PERSON",
+      "canonical": "Necromancy",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:23.055Z",
+      "eid": 461,
+      "aid": 860
+    },
+    {
+      "id": "2caeb828-3964-4a39-8338-4fc28dea31d0",
+      "type": "PERSON",
+      "canonical": "Enchantment",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:23.055Z",
+      "eid": 464,
+      "aid": 861
+    },
+    {
+      "id": "dce25052-1abc-48bc-b2b6-9a9288e9eee7",
+      "type": "PERSON",
+      "canonical": "Illusion",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:23.055Z",
+      "eid": 465,
+      "aid": 862
+    },
+    {
+      "id": "a593644d-a1eb-48ae-9fa9-226b4f76795c",
+      "type": "PERSON",
+      "canonical": "Arcturus Ironmind",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:23.187Z",
+      "eid": 466,
+      "aid": 863
+    },
+    {
+      "id": "89c96b5f-db22-4dae-92c9-a136144ab450",
+      "type": "PERSON",
+      "canonical": "Lysander Shadowmere",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:23.187Z",
+      "eid": 467,
+      "aid": 864
+    },
+    {
+      "id": "111486b4-f099-410c-a774-8d6773975724",
+      "type": "PERSON",
+      "canonical": "Necromancer",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:23.187Z",
+      "eid": 468,
+      "aid": 865
+    },
+    {
+      "id": "3d7c5439-d4e5-4385-9562-37b97cc97800",
+      "type": "PERSON",
+      "canonical": "Meridian Starseeker",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:23.187Z",
+      "eid": 469,
+      "aid": 866
+    },
+    {
+      "id": "8997b3e3-83cd-437b-821c-0f5749a29181",
+      "type": "PERSON",
+      "canonical": "Diviner",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:23.187Z",
+      "eid": 470,
+      "aid": 867
+    },
+    {
+      "id": "6a9e370b-10d0-4fbd-8fdd-1c36ca7f23eb",
+      "type": "PERSON",
+      "canonical": "Isolde Dreamweaver",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:23.187Z",
+      "eid": 471,
+      "aid": 868
+    },
+    {
+      "id": "fb62542d-93f8-4f36-ba03-e20e2ad127d6",
+      "type": "PERSON",
+      "canonical": "Illusions",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:23.187Z",
+      "eid": 465,
+      "aid": 869
+    },
+    {
+      "id": "eed6844b-e3f3-42ca-bcaa-ad1360e621e4",
+      "type": "PERSON",
+      "canonical": "Korvan the Summoner",
+      "aliases": [
+        "Korvan Summoner"
+      ],
+      "created_at": "2025-11-08T05:19:23.257Z",
+      "eid": 472,
+      "aid": 870
+    },
+    {
+      "id": "03668d75-49db-43fa-814b-d9ad13db0606",
+      "type": "PERSON",
+      "canonical": "Three",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:23.470Z",
+      "eid": 473,
+      "aid": 871
+    },
+    {
+      "id": "2d6ca265-3c72-4810-8e81-fcea7814aeba",
+      "type": "PERSON",
+      "canonical": "Forgotten Wastes",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:23.691Z",
+      "eid": 474,
+      "aid": 872
+    },
+    {
+      "id": "a5802e44-b0ad-4014-a855-645e17f0b954",
+      "type": "PERSON",
+      "canonical": "Sir Gareth Stonehelm",
+      "aliases": [
+        "gareth stonehelm"
+      ],
+      "created_at": "2025-11-08T05:19:24.017Z",
+      "eid": 475,
+      "aid": 873
+    },
+    {
+      "id": "bc950887-9fba-4382-a822-ccc627a99fb1",
+      "type": "PERSON",
+      "canonical": "Your Wisdoms",
+      "aliases": [
+        "wisdoms"
+      ],
+      "created_at": "2025-11-08T05:19:24.072Z",
+      "eid": 476,
+      "aid": 874
+    },
+    {
+      "id": "f12d28a5-b865-4e48-aad1-84017da7b646",
+      "type": "PERSON",
+      "canonical": "Whoever",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:24.484Z",
+      "eid": 477,
+      "aid": 875
+    },
+    {
+      "id": "fe9d9fbb-507f-419e-ba90-bbc06f38ccb6",
+      "type": "PERSON",
+      "canonical": "Perhaps",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:24.598Z",
+      "eid": 478,
+      "aid": 876
+    },
+    {
+      "id": "77c58e54-70bc-4eb3-84df-53aec6ff73d8",
+      "type": "ORG",
+      "canonical": "Academy of Mystic Arts",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:24.656Z",
+      "eid": 479,
+      "aid": 877
+    },
+    {
+      "id": "9000e110-fd9d-4e8c-a08f-a46f95785526",
+      "type": "PERSON",
+      "canonical": "Mystic Arts",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:24.656Z",
+      "eid": 479,
+      "aid": 878
+    },
+    {
+      "id": "c4065edb-3fd2-40e6-a757-6b8e1875a19c",
+      "type": "PERSON",
+      "canonical": "Take Sir Gareth",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:24.781Z",
+      "eid": 336,
+      "aid": 879
+    },
+    {
+      "id": "089c0684-2573-43e5-9edf-b6460b8e5866",
+      "type": "PERSON",
+      "canonical": "If Malachar",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:24.897Z",
+      "eid": 446,
+      "aid": 880
+    },
+    {
+      "id": "75a7e1cf-b148-430c-8fbe-00d2b4e19c38",
+      "type": "PLACE",
+      "canonical": "Whispering Woods",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:25.009Z",
+      "eid": 252,
+      "aid": 881
+    },
+    {
+      "id": "c2e51eed-b5d9-4661-8a7f-42767c773e60",
+      "type": "PERSON",
+      "canonical": "Inside",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:25.212Z",
+      "eid": 480,
+      "aid": 882
+    },
+    {
+      "id": "9a10c23a-cb06-4d60-b947-bad56507764a",
+      "type": "PERSON",
+      "canonical": "Bodies",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:25.261Z",
+      "eid": 481,
+      "aid": 883
+    },
+    {
+      "id": "db41faf8-9145-4b34-81c1-ece57e6ae16f",
+      "type": "PERSON",
+      "canonical": "Archmagus Talen",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:25.362Z",
+      "eid": 482,
+      "aid": 884
+    },
+    {
+      "id": "3cca6930-9df0-4964-8958-83da8e338541",
+      "type": "PERSON",
+      "canonical": "Looking",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:25.418Z",
+      "eid": 483,
+      "aid": 885
+    },
+    {
+      "id": "241036a8-63a7-4428-8af5-8ed174c254d0",
+      "type": "EVENT",
+      "canonical": "Gather the Council",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:25.837Z",
+      "eid": 325,
+      "aid": 886
+    },
+    {
+      "id": "7c10299a-0600-443a-ae6b-75a92b9bf5b0",
+      "type": "PERSON",
+      "canonical": "Seven Stars",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:25.935Z",
+      "eid": 444,
+      "aid": 833
+    },
+    {
+      "id": "b440492a-abc2-4afb-a21c-f0fa30ec6a8b",
+      "type": "EVENT",
+      "canonical": "Council",
+      "aliases": [
+        "Gather the Council"
+      ],
+      "created_at": "2025-11-08T05:19:25.984Z",
+      "eid": 270,
+      "aid": 887
+    },
+    {
+      "id": "b572b0c3-7c1c-4b39-a070-b2b238cfac28",
+      "type": "PERSON",
+      "canonical": "Finally",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:26.186Z",
+      "eid": 484,
+      "aid": 888
+    },
+    {
+      "id": "002273d7-b200-402f-961c-3e7f51d2c98d",
+      "type": "PERSON",
+      "canonical": "Raven Nightshade",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:26.654Z",
+      "eid": 485,
+      "aid": 889
+    },
+    {
+      "id": "a92f9d62-e9df-488b-b8f0-3a876fb77565",
+      "type": "PERSON",
+      "canonical": "Valdris",
+      "aliases": [
+        "Valdris the Pale",
+        "Pale"
+      ],
+      "created_at": "2025-11-08T05:19:26.818Z",
+      "eid": 486,
+      "aid": 890
+    },
+    {
+      "id": "94ae5d6d-56e6-43d9-bb96-c9c2adbd46e6",
+      "type": "PERSON",
+      "canonical": "Stormchaser",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:26.982Z",
+      "eid": 487,
+      "aid": 891
+    },
+    {
+      "id": "17689741-c09b-404a-bc6b-542da69b00fd",
+      "type": "PERSON",
+      "canonical": "Entire",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:27.127Z",
+      "eid": 488,
+      "aid": 892
+    },
+    {
+      "id": "f71e3dd2-22b8-4255-81c8-33a8583eb054",
+      "type": "PERSON",
+      "canonical": "Fields",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:27.173Z",
+      "eid": 279,
+      "aid": 893
+    },
+    {
+      "id": "6ed832c8-db7d-46e1-9763-97eea77b20fb",
+      "type": "PERSON",
+      "canonical": "Livestock",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:27.216Z",
+      "eid": 489,
+      "aid": 894
+    },
+    {
+      "id": "a8d1f781-4a76-44df-8d24-efd55c7c8a27",
+      "type": "PERSON",
+      "canonical": "Dreadspire Fortress",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:27.849Z",
+      "eid": 490,
+      "aid": 895
+    },
+    {
+      "id": "d2c39229-3b11-4c09-9ffa-1f4b1e30d22b",
+      "type": "PERSON",
+      "canonical": "Chose",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:28.565Z",
+      "eid": 491,
+      "aid": 896
+    },
+    {
+      "id": "8bc64d27-1a7d-4103-80be-f3d0283bbb8f",
+      "type": "PERSON",
+      "canonical": "Oh",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:28.717Z",
+      "eid": 69,
+      "aid": 816
+    },
+    {
+      "id": "7dcbfa1b-2b92-4ea2-8861-55da3d7a8a90",
+      "type": "PERSON",
+      "canonical": "Join",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:28.931Z",
+      "eid": 492,
+      "aid": 897
+    },
+    {
+      "id": "2c863b14-c4c3-47c8-8a65-d324b8e679e8",
+      "type": "PERSON",
+      "canonical": "Release",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:29.881Z",
+      "eid": 493,
+      "aid": 898
+    },
+    {
+      "id": "4295448a-b7d7-48f3-978a-f351cfe037ee",
+      "type": "PERSON",
+      "canonical": "Long",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:30.542Z",
+      "eid": 494,
+      "aid": 899
+    },
+    {
+      "id": "348e5e2d-b54c-43b8-ad10-2bfb98a766fa",
+      "type": "PERSON",
+      "canonical": "YOU DARED TO",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:30.922Z",
+      "eid": 495,
+      "aid": 900
+    },
+    {
+      "id": "b76510ea-9365-43f5-b449-f81ff1631c09",
+      "type": "PLACE",
+      "canonical": "USE MY POWER",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:30.922Z",
+      "eid": 496,
+      "aid": 901
+    },
+    {
+      "id": "f8c98f52-1d0e-4bc3-910c-792ed23e2779",
+      "type": "PERSON",
+      "canonical": "Run",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:30.977Z",
+      "eid": 497,
+      "aid": 902
+    },
+    {
+      "id": "907cb618-ceac-4c45-8d7f-e20f5182d873",
+      "type": "WORK",
+      "canonical": "Orb of Eternal Night",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:31.177Z",
+      "eid": 449,
+      "aid": 840
+    },
+    {
+      "id": "d013160b-a51f-412a-8f42-1f5f306a6757",
+      "type": "PLACE",
+      "canonical": "Tower of Seven Stars",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:31.231Z",
+      "eid": 444,
+      "aid": 903
+    },
+    {
+      "id": "1300cdd5-7b06-41dc-b56c-04cddc1fa103",
+      "type": "PERSON",
+      "canonical": "Brilliant",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:31.377Z",
+      "eid": 498,
+      "aid": 904
+    },
+    {
+      "id": "cc0a8b06-55f7-4fe4-a98a-3b3dcfa54491",
+      "type": "PERSON",
+      "canonical": "Rebuild",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:31.690Z",
+      "eid": 499,
+      "aid": 905
+    }
+  ],
+  "relations": [
+    {
+      "id": "d0266a4c-6a5d-4f01-b549-3953d86a659d",
+      "subj": "6a323dcb-cd19-445c-8fe6-b11d81645a50",
+      "pred": "enemy_of",
+      "obj": "348e5e2d-b54c-43b8-ad10-2bfb98a766fa",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 117,
+            "end": 135,
+            "text": "\" Elara said, dodging a shadow strike. \"I can't defeat you. But I can set you free.\"\n\nShe reached "
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.7834325166804784,
+      "extractor": "dep"
+    },
+    {
+      "id": "99cf6f54-5036-40d9-98b1-afa264bb7db3",
+      "subj": "348e5e2d-b54c-43b8-ad10-2bfb98a766fa",
+      "pred": "enemy_of",
+      "obj": "6a323dcb-cd19-445c-8fe6-b11d81645a50",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 117,
+            "end": 135,
+            "text": "\" Elara said, dodging a shadow strike. \"I can't defeat you. But I can set you free.\"\n\nShe reached "
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.7834325166804784,
+      "extractor": "dep"
+    }
+  ]
+}

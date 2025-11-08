@@ -1,0 +1,752 @@
+{
+  "entities": [
+    {
+      "id": "f4fd505a-70d8-409d-ad52-fcc0fb30cdc1",
+      "type": "PERSON",
+      "canonical": "Architect of Revolution Paris",
+      "aliases": [
+        "Architect of Revolution Paris"
+      ],
+      "created_at": "2025-11-08T05:19:38.415Z",
+      "eid": 500,
+      "aid": 906
+    },
+    {
+      "id": "ed575fe8-365c-4db3-8b22-08eaa399655b",
+      "type": "ORG",
+      "canonical": "Jean-Baptiste Moreau",
+      "aliases": [
+        "Jean"
+      ],
+      "created_at": "2025-11-08T05:19:38.481Z",
+      "eid": 258,
+      "aid": 907
+    },
+    {
+      "id": "a282a633-2331-4b32-816f-9a2664e392d1",
+      "type": "PERSON",
+      "canonical": "Saint-",
+      "aliases": [
+        "Saint"
+      ],
+      "created_at": "2025-11-08T05:19:38.481Z",
+      "eid": 501,
+      "aid": 908
+    },
+    {
+      "id": "99d072e6-5f9b-4ea8-aa1b-d48db2d634dc",
+      "type": "PERSON",
+      "canonical": "Jean-Baptiste Moreau",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:38.481Z",
+      "eid": 258,
+      "aid": 907
+    },
+    {
+      "id": "30897fce-7370-4928-a24a-e6ba8e8ec46e",
+      "type": "PERSON",
+      "canonical": "Baptiste",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:38.588Z",
+      "eid": 258,
+      "aid": 909
+    },
+    {
+      "id": "9ea24e1c-70a2-4fcb-ba3c-2f73219e42a5",
+      "type": "ORG",
+      "canonical": "Jean-Baptiste",
+      "aliases": [
+        "Jean"
+      ],
+      "created_at": "2025-11-08T05:19:38.588Z",
+      "eid": 258,
+      "aid": 910
+    },
+    {
+      "id": "712250f6-e8bd-446a-9c44-d3608cce9691",
+      "type": "PLACE",
+      "canonical": "France",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:38.588Z",
+      "eid": 502,
+      "aid": 911
+    },
+    {
+      "id": "66a54d99-480e-4229-92c0-a396aaa778f8",
+      "type": "ORG",
+      "canonical": "Gothic",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:38.588Z",
+      "eid": 503,
+      "aid": 912
+    },
+    {
+      "id": "1cb44af0-f5d0-4216-b7c2-ea44038d966c",
+      "type": "PERSON",
+      "canonical": "Monsieur Moreau",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:38.650Z",
+      "eid": 504,
+      "aid": 913
+    },
+    {
+      "id": "27b25b3a-93ba-4a8e-99e0-ac81f192599b",
+      "type": "PERSON",
+      "canonical": "Pierre Dubois",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:38.650Z",
+      "eid": 505,
+      "aid": 914
+    },
+    {
+      "id": "71fdbd78-6e36-4fa9-b0bb-a74c7365be2b",
+      "type": "PERSON",
+      "canonical": "Burgundy",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:38.705Z",
+      "eid": 506,
+      "aid": 915
+    },
+    {
+      "id": "c3cc60dd-ccd7-4b77-a639-b9878cd40b62",
+      "type": "PERSON",
+      "canonical": "Again",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:38.755Z",
+      "eid": 507,
+      "aid": 916
+    },
+    {
+      "id": "761e1f01-0405-4693-b00c-9c970d312f3d",
+      "type": "PERSON",
+      "canonical": "Peasants",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:38.955Z",
+      "eid": 508,
+      "aid": 917
+    },
+    {
+      "id": "9a1e8f49-ec17-4e56-9f40-a3f5b872774b",
+      "type": "PLACE",
+      "canonical": "Versailles",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:39.009Z",
+      "eid": 509,
+      "aid": 918
+    },
+    {
+      "id": "fe3d2bb5-c510-4bdc-8c0e-159e9aef7dcb",
+      "type": "PLACE",
+      "canonical": "Paris",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:39.113Z",
+      "eid": 500,
+      "aid": 919
+    },
+    {
+      "id": "fa7438b9-be4a-4109-b7a3-d7ee142d7df2",
+      "type": "PERSON",
+      "canonical": "Luxembourg Gardens",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:39.290Z",
+      "eid": 510,
+      "aid": 920
+    },
+    {
+      "id": "a148389b-34fe-416b-b447-8e77a69c1ec1",
+      "type": "PERSON",
+      "canonical": "Valmont",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:39.290Z",
+      "eid": 511,
+      "aid": 921
+    },
+    {
+      "id": "55e59642-f494-4c42-8c9c-8b1410f62a2f",
+      "type": "PERSON",
+      "canonical": "Effective",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:39.557Z",
+      "eid": 512,
+      "aid": 922
+    },
+    {
+      "id": "d437691e-c054-4730-80e6-740b9fd5c24f",
+      "type": "ORG",
+      "canonical": "National Assembly",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:39.767Z",
+      "eid": 513,
+      "aid": 923
+    },
+    {
+      "id": "8474ca4a-d3ad-42bc-93fb-e92329f01b14",
+      "type": "PERSON",
+      "canonical": "Read",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:39.825Z",
+      "eid": 490,
+      "aid": 924
+    },
+    {
+      "id": "6644a2f1-fee0-4ab8-ac17-1b5c9c863b7b",
+      "type": "PERSON",
+      "canonical": "Jean-",
+      "aliases": [
+        "Jean"
+      ],
+      "created_at": "2025-11-08T05:19:39.945Z",
+      "eid": 258,
+      "aid": 925
+    },
+    {
+      "id": "0c727bbf-57d5-462f-b8bc-f50cce5b853a",
+      "type": "PERSON",
+      "canonical": "Enough",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:40.053Z",
+      "eid": 514,
+      "aid": 926
+    },
+    {
+      "id": "28d16134-2612-46af-b356-87b4a66311df",
+      "type": "PERSON",
+      "canonical": "Groups",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:40.356Z",
+      "eid": 515,
+      "aid": 927
+    },
+    {
+      "id": "9715b0f5-33ad-4204-89de-c24e56a8c767",
+      "type": "PERSON",
+      "canonical": "Pamphlets",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:40.403Z",
+      "eid": 516,
+      "aid": 928
+    },
+    {
+      "id": "df356486-902f-4456-a654-5939211c5c3d",
+      "type": "PERSON",
+      "canonical": "King Louis XVI",
+      "aliases": [
+        "louis xvi"
+      ],
+      "created_at": "2025-11-08T05:19:40.453Z",
+      "eid": 517,
+      "aid": 929
+    },
+    {
+      "id": "df9f75d3-cf85-4d4a-92e5-d0f88882233c",
+      "type": "PERSON",
+      "canonical": "Queen Marie Antoinette",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:40.453Z",
+      "eid": 518,
+      "aid": 930
+    },
+    {
+      "id": "5c6c735a-3008-42f2-a274-2fd67250125a",
+      "type": "PLACE",
+      "canonical": "Street",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:40.453Z",
+      "eid": 244,
+      "aid": 931
+    },
+    {
+      "id": "6d0b7381-49ba-4eb2-acb9-4df9f66594b0",
+      "type": "PERSON",
+      "canonical": "Claire",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:40.502Z",
+      "eid": 519,
+      "aid": 932
+    },
+    {
+      "id": "f67d9ff4-1551-40bd-a9bb-1e35b94fbcdb",
+      "type": "PERSON",
+      "canonical": "Marais",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:40.502Z",
+      "eid": 520,
+      "aid": 933
+    },
+    {
+      "id": "822987ca-6009-4802-936a-3d38586dd5f0",
+      "type": "PERSON",
+      "canonical": "Perhaps",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:40.714Z",
+      "eid": 478,
+      "aid": 876
+    },
+    {
+      "id": "e36beaee-ac01-477e-aab4-48a26300825e",
+      "type": "PERSON",
+      "canonical": "Jacques Roussel",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:41.538Z",
+      "eid": 521,
+      "aid": 934
+    },
+    {
+      "id": "7f3811f2-0772-4cf0-9fd9-d871f6666fba",
+      "type": "PLACE",
+      "canonical": "Bastille",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:41.614Z",
+      "eid": 522,
+      "aid": 935
+    },
+    {
+      "id": "f281025b-5040-478c-a384-371bc5dc19ca",
+      "type": "PERSON",
+      "canonical": "Third Estate",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:41.614Z",
+      "eid": 523,
+      "aid": 936
+    },
+    {
+      "id": "fafb49d4-1b7d-45f8-87ef-9f809e89a346",
+      "type": "PERSON",
+      "canonical": "Marchand",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:41.901Z",
+      "eid": 267,
+      "aid": 937
+    },
+    {
+      "id": "9e73f742-d952-48d9-b681-f2e8d17c0992",
+      "type": "PERSON",
+      "canonical": "Antoine Girard",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:41.901Z",
+      "eid": 524,
+      "aid": 938
+    },
+    {
+      "id": "dceaec58-b70f-4de8-aade-d2a2185a556c",
+      "type": "PERSON",
+      "canonical": "Bastille",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:41.965Z",
+      "eid": 522,
+      "aid": 935
+    },
+    {
+      "id": "68d84279-758e-4a7c-9af0-20847ced2a33",
+      "type": "DATE",
+      "canonical": "July",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:42.596Z",
+      "eid": 525,
+      "aid": 939
+    },
+    {
+      "id": "213c250e-aa58-486c-9fd1-2b23bb403b27",
+      "type": "PERSON",
+      "canonical": "Inside",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:42.819Z",
+      "eid": 480,
+      "aid": 882
+    },
+    {
+      "id": "59086888-8f3a-4f64-8671-93a084d413fa",
+      "type": "PERSON",
+      "canonical": "Maximilien Robespierre",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:43.142Z",
+      "eid": 526,
+      "aid": 940
+    },
+    {
+      "id": "49792f4f-016c-4cef-bd33-e4a089627c20",
+      "type": "PERSON",
+      "canonical": "Notre-",
+      "aliases": [
+        "Notre"
+      ],
+      "created_at": "2025-11-08T05:19:43.313Z",
+      "eid": 527,
+      "aid": 941
+    },
+    {
+      "id": "e478f076-2ed2-4aaa-870c-f40efe4be591",
+      "type": "PERSON",
+      "canonical": "Dame",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:43.313Z",
+      "eid": 528,
+      "aid": 942
+    },
+    {
+      "id": "c2d93072-fe91-421c-b84d-4329ee9e848e",
+      "type": "PERSON",
+      "canonical": "Notre-Dame",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:43.313Z",
+      "eid": 527,
+      "aid": 943
+    },
+    {
+      "id": "49547e01-c0fb-4324-8db5-0cf8b0127412",
+      "type": "PERSON",
+      "canonical": "September Massacres",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:43.419Z",
+      "eid": 287,
+      "aid": 944
+    },
+    {
+      "id": "817aed26-d2db-4ae6-98a0-064fdd1004e8",
+      "type": "DATE",
+      "canonical": "January",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:43.473Z",
+      "eid": 271,
+      "aid": 598
+    },
+    {
+      "id": "b5137252-77b0-46a6-b4cd-88b58614c482",
+      "type": "PERSON",
+      "canonical": "King Louis XVI",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:43.473Z",
+      "eid": 517,
+      "aid": 929
+    },
+    {
+      "id": "29a2e1d6-ecd7-4d12-b83e-74f0e99229d0",
+      "type": "DATE",
+      "canonical": "March",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:43.712Z",
+      "eid": 267,
+      "aid": 586
+    },
+    {
+      "id": "e480750f-6c49-4721-a902-1f346231d972",
+      "type": "PERSON",
+      "canonical": "Explain",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:43.932Z",
+      "eid": 529,
+      "aid": 945
+    },
+    {
+      "id": "1a0ef256-111a-406c-818d-85521a84a7b7",
+      "type": "PERSON",
+      "canonical": "Save",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:44.107Z",
+      "eid": 530,
+      "aid": 946
+    },
+    {
+      "id": "3259d41d-0059-4845-b24a-18a4d6e37507",
+      "type": "PERSON",
+      "canonical": "Lyon",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:44.344Z",
+      "eid": 531,
+      "aid": 947
+    },
+    {
+      "id": "ccf0419b-f828-44aa-8b97-c52edf91d4b2",
+      "type": "PERSON",
+      "canonical": "In Geneva",
+      "aliases": [
+        "geneva"
+      ],
+      "created_at": "2025-11-08T05:19:44.344Z",
+      "eid": 532,
+      "aid": 948
+    },
+    {
+      "id": "a79b3963-4ef7-4eb0-820d-53b5455163e5",
+      "type": "PERSON",
+      "canonical": "Committee of Public Safety",
+      "aliases": [
+        "Committee of Public Safety"
+      ],
+      "created_at": "2025-11-08T05:19:44.511Z",
+      "eid": 533,
+      "aid": 949
+    },
+    {
+      "id": "652193cb-7bf9-436a-abaf-52c495c21a56",
+      "type": "PERSON",
+      "canonical": "Citizens",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:44.572Z",
+      "eid": 534,
+      "aid": 950
+    },
+    {
+      "id": "b9a2a3cd-d2d6-4f54-bfeb-c47e949fdba0",
+      "type": "DATE",
+      "canonical": "April",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:44.638Z",
+      "eid": 223,
+      "aid": 661
+    },
+    {
+      "id": "b9de05c8-5861-44cc-861b-6c7d6149e063",
+      "type": "PLACE",
+      "canonical": "Tuileries Palace",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:44.638Z",
+      "eid": 535,
+      "aid": 951
+    },
+    {
+      "id": "95069f5b-d0ef-4340-b083-abd216690a98",
+      "type": "PERSON",
+      "canonical": "Refusal",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:45.434Z",
+      "eid": 536,
+      "aid": 952
+    },
+    {
+      "id": "6de8669d-e03c-4ac8-ba3b-cbff7ce31700",
+      "type": "PERSON",
+      "canonical": "Papers",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:46.009Z",
+      "eid": 537,
+      "aid": 953
+    },
+    {
+      "id": "c99a70aa-3235-4ed4-8b85-d85bf798cfde",
+      "type": "PERSON",
+      "canonical": "Near the Swiss",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:46.009Z",
+      "eid": 538,
+      "aid": 954
+    },
+    {
+      "id": "3ec8cb56-be70-45ab-85bd-5421e259a908",
+      "type": "PERSON",
+      "canonical": "Pierre Fontaine",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:46.068Z",
+      "eid": 539,
+      "aid": 955
+    },
+    {
+      "id": "71851c65-720c-42db-8df8-8a63060dc08b",
+      "type": "PERSON",
+      "canonical": "Bordeaux",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:46.068Z",
+      "eid": 540,
+      "aid": 956
+    },
+    {
+      "id": "a65064b2-ea1d-4223-9082-e72fd43d5d4c",
+      "type": "PLACE",
+      "canonical": "Geneva",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:46.296Z",
+      "eid": 532,
+      "aid": 957
+    },
+    {
+      "id": "faa13809-0c4c-4c5c-8b8f-3d3199516d63",
+      "type": "PERSON",
+      "canonical": "Switzerland",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:46.458Z",
+      "eid": 264,
+      "aid": 582
+    },
+    {
+      "id": "90f024a0-5633-42ac-99eb-748ec9585c68",
+      "type": "DATE",
+      "canonical": "June",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:46.458Z",
+      "eid": 541,
+      "aid": 958
+    },
+    {
+      "id": "0de595f8-aad9-4ee0-81fa-779b6df3a206",
+      "type": "PERSON",
+      "canonical": "News",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:46.781Z",
+      "eid": 542,
+      "aid": 959
+    },
+    {
+      "id": "7358d8f9-bc7e-4915-bba1-41dcf0d48f38",
+      "type": "PERSON",
+      "canonical": "Terror",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:46.827Z",
+      "eid": 543,
+      "aid": 960
+    },
+    {
+      "id": "32574124-5bc0-447a-b1cf-55dad05e41eb",
+      "type": "PERSON",
+      "canonical": "French",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:47.175Z",
+      "eid": 544,
+      "aid": 961
+    },
+    {
+      "id": "1d853ae1-0f19-4625-9a82-6e89185e6f6b",
+      "type": "ORG",
+      "canonical": "France",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:47.230Z",
+      "eid": 502,
+      "aid": 911
+    },
+    {
+      "id": "d53ff75f-15f9-47dd-8c21-d168047f9202",
+      "type": "PERSON",
+      "canonical": "Directory",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:47.230Z",
+      "eid": 545,
+      "aid": 962
+    },
+    {
+      "id": "0f125475-ae30-4266-b0c0-5e03bdfed6a1",
+      "type": "PERSON",
+      "canonical": "France",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:47.640Z",
+      "eid": 502,
+      "aid": 911
+    },
+    {
+      "id": "798b0f12-68d1-4487-a49a-63097177359a",
+      "type": "PERSON",
+      "canonical": "Napoleon Bonaparte",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:47.835Z",
+      "eid": 546,
+      "aid": 963
+    },
+    {
+      "id": "11c7ab1d-75b9-4842-921f-894391f50697",
+      "type": "PERSON",
+      "canonical": "Another",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:47.886Z",
+      "eid": 547,
+      "aid": 964
+    },
+    {
+      "id": "f12049bb-13f2-4abd-976c-91674528719d",
+      "type": "PLACE",
+      "canonical": "Will France",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:47.937Z",
+      "eid": 502,
+      "aid": 965
+    },
+    {
+      "id": "0db73401-909f-40a9-a13c-6833a6c6b9f6",
+      "type": "PLACE",
+      "canonical": "Cathedral of Saint-",
+      "aliases": [
+        "Cathedral of Saint"
+      ],
+      "created_at": "2025-11-08T05:19:48.158Z",
+      "eid": 501,
+      "aid": 966
+    },
+    {
+      "id": "a0b42504-4f6c-4dd1-94a4-cb65a790fbe2",
+      "type": "PERSON",
+      "canonical": "Looking",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:48.158Z",
+      "eid": 483,
+      "aid": 885
+    },
+    {
+      "id": "8e40c7fd-fd40-40e5-8170-f7a2c3772602",
+      "type": "PLACE",
+      "canonical": "Lake Geneva",
+      "aliases": [],
+      "created_at": "2025-11-08T05:19:48.271Z",
+      "eid": 532,
+      "aid": 967
+    }
+  ],
+  "relations": [
+    {
+      "id": "e1a5a0e5-3853-4668-9ebb-eaee9f3137ae",
+      "subj": "0de595f8-aad9-4ee0-81fa-779b6df3a206",
+      "pred": "born_in",
+      "obj": "712250f6-e8bd-446a-9c44-d3608cce9691",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 200,
+            "end": 216,
+            "text": "l for every ordinary day without fear.\n\nNews from France continued to reach Geneva. The Reign of"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.9,
+      "extractor": "dep"
+    },
+    {
+      "id": "2681eb45-1a88-49ca-9772-2775e3e020c0",
+      "subj": "df356486-902f-4456-a654-5939211c5c3d",
+      "pred": "married_to",
+      "obj": "6d0b7381-49ba-4eb2-acb9-4df9f66594b0",
+      "evidence": [
+        {
+          "doc_id": "historical-chapter-01.txt",
+          "span": {
+            "start": 3420,
+            "end": 3434,
+            "text": "his wife Claire"
+          },
+          "sentence_index": 49,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "8a008b02-973f-4264-b336-73ec8cf20953",
+      "subj": "6d0b7381-49ba-4eb2-acb9-4df9f66594b0",
+      "pred": "married_to",
+      "obj": "df356486-902f-4456-a654-5939211c5c3d",
+      "evidence": [
+        {
+          "doc_id": "historical-chapter-01.txt",
+          "span": {
+            "start": 3420,
+            "end": 3434,
+            "text": "his wife Claire"
+          },
+          "sentence_index": 49,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    }
+  ]
+}

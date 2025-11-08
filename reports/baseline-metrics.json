@@ -1,0 +1,80 @@
+[
+  {
+    "fileName": "complex-narrative-01.txt",
+    "wordCount": 2434,
+    "processingTimeMs": 20908,
+    "entityCount": 18,
+    "relationCount": 16,
+    "entitiesByType": {
+      "PERSON": 18
+    },
+    "relationsByPredicate": {
+      "enemy_of": 10,
+      "married_to": 2,
+      "parent_of": 2,
+      "child_of": 2
+    },
+    "uniqueEntityCount": 17,
+    "memoryUsageMB": 18.99
+  },
+  {
+    "fileName": "contemporary-chapter-01.txt",
+    "wordCount": 2314,
+    "processingTimeMs": 19154,
+    "entityCount": 75,
+    "relationCount": 9,
+    "entitiesByType": {
+      "PERSON": 57,
+      "ORG": 4,
+      "PLACE": 11,
+      "DATE": 3
+    },
+    "relationsByPredicate": {
+      "lives_in": 1,
+      "child_of": 2,
+      "parent_of": 2,
+      "sibling_of": 2,
+      "married_to": 2
+    },
+    "uniqueEntityCount": 72,
+    "memoryUsageMB": 26.21
+  },
+  {
+    "fileName": "fantasy-chapter-01.txt",
+    "wordCount": 2515,
+    "processingTimeMs": 16862,
+    "entityCount": 86,
+    "relationCount": 2,
+    "entitiesByType": {
+      "PERSON": 71,
+      "PLACE": 7,
+      "EVENT": 4,
+      "ORG": 3,
+      "WORK": 1
+    },
+    "relationsByPredicate": {
+      "enemy_of": 2
+    },
+    "uniqueEntityCount": 82,
+    "memoryUsageMB": 16.2
+  },
+  {
+    "fileName": "historical-chapter-01.txt",
+    "wordCount": 2304,
+    "processingTimeMs": 15209,
+    "entityCount": 74,
+    "relationCount": 3,
+    "entitiesByType": {
+      "PERSON": 54,
+      "ORG": 5,
+      "PLACE": 10,
+      "DATE": 5
+    },
+    "relationsByPredicate": {
+      "born_in": 1,
+      "married_to": 2
+    },
+    "uniqueEntityCount": 69,
+    "memoryUsageMB": 13.61
+  }
+]

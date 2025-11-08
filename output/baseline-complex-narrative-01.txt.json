@@ -1,0 +1,494 @@
+{
+  "entities": [
+    {
+      "id": "e57e7849-28ba-4314-9c7c-7fd4cbde817d",
+      "type": "PERSON",
+      "canonical": "Detective Raymond Cole",
+      "aliases": [
+        "raymond cole"
+      ],
+      "created_at": "2025-11-08T05:18:41.588Z",
+      "eid": 372,
+      "aid": 741
+    },
+    {
+      "id": "eb242155-337a-426f-947a-b4aef05b0e58",
+      "type": "PERSON",
+      "canonical": "Detective Lisa Park",
+      "aliases": [],
+      "created_at": "2025-11-08T05:18:41.929Z",
+      "eid": 373,
+      "aid": 742
+    },
+    {
+      "id": "0e632cfa-4ad5-4d95-bdee-ebdd06a2ab9b",
+      "type": "PERSON",
+      "canonical": "Marcus Reed",
+      "aliases": [],
+      "created_at": "2025-11-08T05:18:42.210Z",
+      "eid": 374,
+      "aid": 743
+    },
+    {
+      "id": "69b92509-807e-49fd-979e-460d0084d7c3",
+      "type": "PERSON",
+      "canonical": "Professor Chen",
+      "aliases": [
+        "chen"
+      ],
+      "created_at": "2025-11-08T05:18:42.266Z",
+      "eid": 265,
+      "aid": 744
+    },
+    {
+      "id": "9d474176-ee1b-47ed-b63a-caee7bc4f69f",
+      "type": "PERSON",
+      "canonical": "Karen",
+      "aliases": [],
+      "created_at": "2025-11-08T05:18:42.745Z",
+      "eid": 130,
+      "aid": 745
+    },
+    {
+      "id": "7956738d-e003-4675-a255-774c61126994",
+      "type": "PERSON",
+      "canonical": "Thomas Gardner",
+      "aliases": [],
+      "created_at": "2025-11-08T05:18:43.083Z",
+      "eid": 375,
+      "aid": 746
+    },
+    {
+      "id": "24a85412-7472-4bdb-9e26-a230bf83c876",
+      "type": "PERSON",
+      "canonical": "Victoria Brennan",
+      "aliases": [],
+      "created_at": "2025-11-08T05:18:43.832Z",
+      "eid": 376,
+      "aid": 747
+    },
+    {
+      "id": "e0e4aa30-f959-41b4-8d4c-72b3636dd358",
+      "type": "PERSON",
+      "canonical": "Complicated",
+      "aliases": [],
+      "created_at": "2025-11-08T05:18:43.979Z",
+      "eid": 377,
+      "aid": 748
+    },
+    {
+      "id": "98e47fa8-98ec-4a7a-8813-a525506ffb91",
+      "type": "PERSON",
+      "canonical": "Five PM",
+      "aliases": [
+        "pm"
+      ],
+      "created_at": "2025-11-08T05:18:45.832Z",
+      "eid": 378,
+      "aid": 749
+    },
+    {
+      "id": "c7d47185-f720-44b5-b7bb-8618af236bc0",
+      "type": "PERSON",
+      "canonical": "Verified",
+      "aliases": [],
+      "created_at": "2025-11-08T05:18:45.885Z",
+      "eid": 379,
+      "aid": 750
+    },
+    {
+      "id": "86c13b90-a53c-45bd-945b-f52c9691bc8d",
+      "type": "PERSON",
+      "canonical": "Jennifer",
+      "aliases": [],
+      "created_at": "2025-11-08T05:18:45.938Z",
+      "eid": 380,
+      "aid": 751
+    },
+    {
+      "id": "9e4b463e-c71e-45da-bd03-5547e2bf40f1",
+      "type": "PERSON",
+      "canonical": "Sophie",
+      "aliases": [],
+      "created_at": "2025-11-08T05:18:46.372Z",
+      "eid": 381,
+      "aid": 752
+    },
+    {
+      "id": "c389c47b-18ff-41a6-b383-b0049c8af8a6",
+      "type": "PERSON",
+      "canonical": "DNA",
+      "aliases": [],
+      "created_at": "2025-11-08T05:18:47.017Z",
+      "eid": 382,
+      "aid": 753
+    },
+    {
+      "id": "1760010a-ebd7-4156-8eda-ad04a65ad16a",
+      "type": "PERSON",
+      "canonical": "Antonio Valdez",
+      "aliases": [],
+      "created_at": "2025-11-08T05:18:47.230Z",
+      "eid": 383,
+      "aid": 754
+    },
+    {
+      "id": "e3af82b6-33ee-495e-b0c1-6f57b633a07d",
+      "type": "PERSON",
+      "canonical": "Morettis",
+      "aliases": [],
+      "created_at": "2025-11-08T05:18:47.551Z",
+      "eid": 384,
+      "aid": 755
+    },
+    {
+      "id": "db6dff44-bd8a-4caf-a5c3-945412c0857f",
+      "type": "PERSON",
+      "canonical": "Derek Walsh",
+      "aliases": [],
+      "created_at": "2025-11-08T05:18:49.654Z",
+      "eid": 385,
+      "aid": 756
+    },
+    {
+      "id": "e9ba0e44-5ff2-49e0-b46c-9b4560f04004",
+      "type": "PERSON",
+      "canonical": "Dad",
+      "aliases": [],
+      "created_at": "2025-11-08T05:18:54.057Z",
+      "eid": 74,
+      "aid": 757
+    },
+    {
+      "id": "b1bcc7a8-4fb1-4d10-a40f-bc4b67d809ac",
+      "type": "PERSON",
+      "canonical": "Detective Raymond Cole",
+      "aliases": [],
+      "created_at": "2025-11-08T05:18:55.154Z",
+      "eid": 372,
+      "aid": 741
+    }
+  ],
+  "relations": [
+    {
+      "id": "a363300d-4542-45fc-ab9a-7d906133027a",
+      "subj": "b1bcc7a8-4fb1-4d10-a40f-bc4b67d809ac",
+      "pred": "enemy_of",
+      "obj": "7956738d-e003-4675-a255-774c61126994",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 389,
+            "end": 406,
+            "text": "idential. We argued about it, sure, but I didn't kill him.\"\n\nHayes had an alibi—he'd been at a ci"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.793286884626901,
+      "extractor": "dep"
+    },
+    {
+      "id": "6089b648-c378-4ab1-9538-a5c7462e170f",
+      "subj": "7956738d-e003-4675-a255-774c61126994",
+      "pred": "enemy_of",
+      "obj": "b1bcc7a8-4fb1-4d10-a40f-bc4b67d809ac",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 389,
+            "end": 406,
+            "text": "idential. We argued about it, sure, but I didn't kill him.\"\n\nHayes had an alibi—he'd been at a ci"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.793286884626901,
+      "extractor": "dep"
+    },
+    {
+      "id": "f8e66e62-ae90-49be-b37c-6e930166e6c1",
+      "subj": "86c13b90-a53c-45bd-945b-f52c9691bc8d",
+      "pred": "enemy_of",
+      "obj": "7956738d-e003-4675-a255-774c61126994",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 274,
+            "end": 291,
+            "text": "idential. We argued about it, sure, but I didn't kill him.\"\n\nHayes had an alibi—he'd been at a ci"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.793286884626901,
+      "extractor": "dep"
+    },
+    {
+      "id": "a5e717e7-807f-4f73-ba66-b2c56c72c7c4",
+      "subj": "7956738d-e003-4675-a255-774c61126994",
+      "pred": "enemy_of",
+      "obj": "86c13b90-a53c-45bd-945b-f52c9691bc8d",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 274,
+            "end": 291,
+            "text": "idential. We argued about it, sure, but I didn't kill him.\"\n\nHayes had an alibi—he'd been at a ci"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.793286884626901,
+      "extractor": "dep"
+    },
+    {
+      "id": "03fe9813-5433-476c-b0d8-4b8558c15152",
+      "subj": "1760010a-ebd7-4156-8eda-ad04a65ad16a",
+      "pred": "enemy_of",
+      "obj": "7956738d-e003-4675-a255-774c61126994",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 350,
+            "end": 400,
+            "text": ".\n\nCole looked up sharply. \"Explain.\"\n\n\"Valdez or someone from the Morettis killed Gardner—that explains the DNA and the motive. B"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.5520755636030904,
+      "extractor": "dep"
+    },
+    {
+      "id": "d0b60770-c1ae-43e3-942e-024caa8a7eab",
+      "subj": "7956738d-e003-4675-a255-774c61126994",
+      "pred": "enemy_of",
+      "obj": "1760010a-ebd7-4156-8eda-ad04a65ad16a",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 350,
+            "end": 400,
+            "text": ".\n\nCole looked up sharply. \"Explain.\"\n\n\"Valdez or someone from the Morettis killed Gardner—that explains the DNA and the motive. B"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.5520755636030904,
+      "extractor": "dep"
+    },
+    {
+      "id": "fa2d1899-5a59-4993-ad27-0f5551bc70ea",
+      "subj": "e3af82b6-33ee-495e-b0c1-6f57b633a07d",
+      "pred": "enemy_of",
+      "obj": "7956738d-e003-4675-a255-774c61126994",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 377,
+            "end": 400,
+            "text": "\"Explain.\"\n\n\"Valdez or someone from the Morettis killed Gardner—that explains the DNA and the motive. B"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "8c333419-a0dc-4970-9286-85fda08302f1",
+      "subj": "7956738d-e003-4675-a255-774c61126994",
+      "pred": "enemy_of",
+      "obj": "e3af82b6-33ee-495e-b0c1-6f57b633a07d",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 377,
+            "end": 400,
+            "text": "\"Explain.\"\n\n\"Valdez or someone from the Morettis killed Gardner—that explains the DNA and the motive. B"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "ca1e9bf5-2fd3-46af-911f-ae9b37a84acf",
+      "subj": "db6dff44-bd8a-4caf-a5c3-945412c0857f",
+      "pred": "enemy_of",
+      "obj": "7956738d-e003-4675-a255-774c61126994",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 432,
+            "end": 452,
+            "text": "y from falling apart was important too. Walsh killed Gardner partly because he was isolated, alone, "
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8032652052630013,
+      "extractor": "dep"
+    },
+    {
+      "id": "e9ea737b-3004-4d75-9f83-956da891dd60",
+      "subj": "7956738d-e003-4675-a255-774c61126994",
+      "pred": "enemy_of",
+      "obj": "db6dff44-bd8a-4caf-a5c3-945412c0857f",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 432,
+            "end": 452,
+            "text": "y from falling apart was important too. Walsh killed Gardner partly because he was isolated, alone, "
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8032652052630013,
+      "extractor": "dep"
+    },
+    {
+      "id": "141000e4-f495-4a3f-ab9f-922a8ffe7308",
+      "subj": "98e47fa8-98ec-4a7a-8813-a525506ffb91",
+      "pred": "married_to",
+      "obj": "c7d47185-f720-44b5-b7bb-8618af236bc0",
+      "evidence": [
+        {
+          "doc_id": "complex-narrative-01.txt",
+          "span": {
+            "start": 5050,
+            "end": 5066,
+            "text": "his wife Verified"
+          },
+          "sentence_index": 100,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "8349c450-dc75-472d-a54c-6d6f570c7566",
+      "subj": "e57e7849-28ba-4314-9c7c-7fd4cbde817d",
+      "pred": "parent_of",
+      "obj": "9e4b463e-c71e-45da-bd03-5547e2bf40f1",
+      "evidence": [
+        {
+          "doc_id": "complex-narrative-01.txt",
+          "span": {
+            "start": 5630,
+            "end": 5648,
+            "text": "his daughter Sophie"
+          },
+          "sentence_index": 114,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "a0a616c2-dc75-4069-b875-03c8463a229c",
+      "subj": "9e4b463e-c71e-45da-bd03-5547e2bf40f1",
+      "pred": "parent_of",
+      "obj": "e9ba0e44-5ff2-49e0-b46c-9b4560f04004",
+      "evidence": [
+        {
+          "doc_id": "complex-narrative-01.txt",
+          "span": {
+            "start": 14040,
+            "end": 14055,
+            "text": "his daughter Dad"
+          },
+          "sentence_index": 296,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "d3840cb2-6e96-4cbe-a81e-6f65e6da49eb",
+      "subj": "c7d47185-f720-44b5-b7bb-8618af236bc0",
+      "pred": "married_to",
+      "obj": "98e47fa8-98ec-4a7a-8813-a525506ffb91",
+      "evidence": [
+        {
+          "doc_id": "complex-narrative-01.txt",
+          "span": {
+            "start": 5050,
+            "end": 5066,
+            "text": "his wife Verified"
+          },
+          "sentence_index": 100,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "ed09edf1-b7d4-4972-bda3-3ae1febb3204",
+      "subj": "9e4b463e-c71e-45da-bd03-5547e2bf40f1",
+      "pred": "child_of",
+      "obj": "e57e7849-28ba-4314-9c7c-7fd4cbde817d",
+      "evidence": [
+        {
+          "doc_id": "complex-narrative-01.txt",
+          "span": {
+            "start": 5630,
+            "end": 5648,
+            "text": "his daughter Sophie"
+          },
+          "sentence_index": 114,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    },
+    {
+      "id": "c9d82fac-5c24-4b16-91ad-1ea06f4339b5",
+      "subj": "e9ba0e44-5ff2-49e0-b46c-9b4560f04004",
+      "pred": "child_of",
+      "obj": "9e4b463e-c71e-45da-bd03-5547e2bf40f1",
+      "evidence": [
+        {
+          "doc_id": "complex-narrative-01.txt",
+          "span": {
+            "start": 14040,
+            "end": 14055,
+            "text": "his daughter Dad"
+          },
+          "sentence_index": 296,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.8,
+      "extractor": "regex"
+    }
+  ]
+}
