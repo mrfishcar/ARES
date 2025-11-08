@@ -1,26 +1,24 @@
-import { appendDoc, loadGraph, clearStorage } from './app/storage/storage';
+import { extractEntities } from './app/engine/extract/entities';
+
+const text = `Aragorn, son of Arathorn, married Arwen in 3019. Gandalf the Grey traveled to Minas Tirith.`;
 
 async function debug() {
-  const testPath = '/tmp/debug-gandalf.json';
-  clearStorage(testPath);
+  const { entities, spans } = await extractEntities(text);
 
-  const text = "Gandalf traveled to Rivendell. Elrond lived there. He welcomed Gandalf.";
-  console.log(`\nText: "${text}"\n`);
-
-  await appendDoc('test', text, testPath);
-  const graph = loadGraph(testPath);
-
-  console.log('Entities:');
-  for (const e of graph!.entities) {
-    console.log(`  ${e.canonical} (${e.type}) - aliases: [${e.aliases.join(', ')}]`);
+  console.log('\nExtracted Entities:');
+  for (const e of entities) {
+    console.log(`  - ${e.canonical} (${e.type})`);
   }
 
-  console.log('\nExpected:');
-  console.log('  Gandalf (PERSON)');
-  console.log('  Rivendell (PLACE)');
-  console.log('  Elrond (PERSON)');
+  console.log(`\nTotal entities: ${entities.length}`);
+  console.log(`Total spans: ${spans.length}`);
 
-  clearStorage(testPath);
+  console.log('\nSpans:');
+  for (const span of spans) {
+    const entity = entities.find(e => e.id === span.entity_id);
+    const textSpan = text.slice(span.start, span.end);
+    console.log(`  [${span.start}-${span.end}] "${textSpan}" → ${entity?.canonical} (${entity?.type})`);
+  }
 }
 
-debug().catch(console.error);
+debug();

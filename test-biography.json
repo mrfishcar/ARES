@@ -1,0 +1,376 @@
+{
+  "entities": [
+    {
+      "id": "global_person_0",
+      "type": "PERSON",
+      "canonical": "Arwen",
+      "aliases": [],
+      "created_at": "2025-11-08T04:45:20.455Z",
+      "centrality": 1
+    },
+    {
+      "id": "global_person_1",
+      "type": "PERSON",
+      "canonical": "Aragorn",
+      "aliases": [],
+      "created_at": "2025-11-08T04:45:20.455Z",
+      "centrality": 1
+    },
+    {
+      "id": "global_person_2",
+      "type": "PERSON",
+      "canonical": "Arathorn",
+      "aliases": [],
+      "created_at": "2025-11-08T04:45:20.455Z",
+      "centrality": 0
+    }
+  ],
+  "relations": [
+    {
+      "id": "da470497-d3c6-46c9-a616-6814e64698ae",
+      "subj": "global_person_1",
+      "pred": "married_to",
+      "obj": "global_person_0",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 0,
+            "end": 21,
+            "text": "Aragorn married Arwen in 3019."
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.7737005616586928,
+      "extractor": "dep",
+      "qualifiers": [
+        {
+          "type": "time",
+          "value": "3019",
+          "entity_id": "4836c5ad-fca7-4460-bc51-fda78ffa652b",
+          "span": [
+            25,
+            29
+          ]
+        }
+      ]
+    },
+    {
+      "id": "a6da5271-5626-490a-8cdd-d87e28901229",
+      "subj": "global_person_0",
+      "pred": "married_to",
+      "obj": "global_person_1",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 0,
+            "end": 21,
+            "text": "Aragorn married Arwen in 3019."
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.7737005616586928,
+      "extractor": "dep",
+      "qualifiers": [
+        {
+          "type": "time",
+          "value": "3019",
+          "entity_id": "4836c5ad-fca7-4460-bc51-fda78ffa652b",
+          "span": [
+            25,
+            29
+          ]
+        }
+      ]
+    },
+    {
+      "id": "2dfb8d3f-b939-4603-a9f8-1c07188e8627",
+      "subj": "global_person_1",
+      "pred": "married_to",
+      "obj": "global_person_0",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 0,
+            "end": 39,
+            "text": "Aragorn, son of Arathorn, married Arwen in 3019."
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.6178124469477058,
+      "extractor": "dep",
+      "qualifiers": [
+        {
+          "type": "time",
+          "value": "3019",
+          "entity_id": "9da56400-e71b-4f3d-8492-9db36bdd898e",
+          "span": [
+            43,
+            47
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bb4541c7-2a39-4ad5-9976-cbd46885552f",
+      "subj": "global_person_0",
+      "pred": "married_to",
+      "obj": "global_person_1",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 0,
+            "end": 39,
+            "text": "Aragorn, son of Arathorn, married Arwen in 3019."
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.6178124469477058,
+      "extractor": "dep",
+      "qualifiers": [
+        {
+          "type": "time",
+          "value": "3019",
+          "entity_id": "9da56400-e71b-4f3d-8492-9db36bdd898e",
+          "span": [
+            43,
+            47
+          ]
+        }
+      ]
+    },
+    {
+      "id": "39073fc2-02a1-4652-b757-2e4468409b1b",
+      "subj": "global_person_1",
+      "pred": "child_of",
+      "obj": "global_person_2",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 0,
+            "end": 24,
+            "text": "Aragorn, son of Arathorn, married Arwen in 3019."
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "c5920590-a29d-4e51-a41c-06c17c9485ef",
+      "subj": "global_person_2",
+      "pred": "parent_of",
+      "obj": "global_person_1",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 0,
+            "end": 24,
+            "text": "Aragorn, son of Arathorn, married Arwen in 3019."
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    }
+  ],
+  "conflicts": [
+    {
+      "type": "cycle",
+      "severity": 3,
+      "description": "Cycle detected in parent_of/child_of: global_person_1 → global_person_2 → global_person_1",
+      "relations": [
+        {
+          "id": "39073fc2-02a1-4652-b757-2e4468409b1b",
+          "subj": "global_person_1",
+          "pred": "child_of",
+          "obj": "global_person_2",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 0,
+                "end": 24,
+                "text": "Aragorn, son of Arathorn, married Arwen in 3019."
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "c5920590-a29d-4e51-a41c-06c17c9485ef",
+          "subj": "global_person_2",
+          "pred": "parent_of",
+          "obj": "global_person_1",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 0,
+                "end": 24,
+                "text": "Aragorn, son of Arathorn, married Arwen in 3019."
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        }
+      ]
+    }
+  ],
+  "provenance": {
+    "doc1_entity_0": {
+      "global_id": "global_person_0",
+      "doc_id": "doc1",
+      "merged_at": "2025-11-08T04:45:15.073Z",
+      "local_canonical": "Arwen"
+    },
+    "doc1_entity_1": {
+      "global_id": "global_person_1",
+      "doc_id": "doc1",
+      "merged_at": "2025-11-08T04:45:15.073Z",
+      "local_canonical": "Aragorn"
+    },
+    "doc2_entity_0": {
+      "global_id": "global_person_2",
+      "doc_id": "doc2",
+      "merged_at": "2025-11-08T04:45:20.455Z",
+      "local_canonical": "Arathorn"
+    },
+    "doc2_entity_1": {
+      "global_id": "global_person_0",
+      "doc_id": "doc2",
+      "merged_at": "2025-11-08T04:45:20.455Z",
+      "local_canonical": "Arwen"
+    },
+    "doc2_entity_2": {
+      "global_id": "global_person_1",
+      "doc_id": "doc2",
+      "merged_at": "2025-11-08T04:45:20.455Z",
+      "local_canonical": "Aragorn"
+    }
+  },
+  "profiles": {
+    "360178d6-602f-46d8-a98e-28ea0e71422b": {
+      "entity_id": "360178d6-602f-46d8-a98e-28ea0e71422b",
+      "entity_type": "PERSON",
+      "canonical": "Arwen",
+      "descriptors": [],
+      "titles": [
+        "Arwen"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Aragorn married Arwen in 3019."
+      ],
+      "mention_count": 1,
+      "first_seen": "doc1",
+      "last_seen": "doc1",
+      "confidence_score": 0.55
+    },
+    "97ff5766-d077-43ec-a5ab-bdef1edbd431": {
+      "entity_id": "97ff5766-d077-43ec-a5ab-bdef1edbd431",
+      "entity_type": "PERSON",
+      "canonical": "Aragorn",
+      "descriptors": [],
+      "titles": [
+        "Aragorn"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Aragorn married Arwen in 3019."
+      ],
+      "mention_count": 1,
+      "first_seen": "doc1",
+      "last_seen": "doc1",
+      "confidence_score": 0.55
+    },
+    "aeb0e83b-93d0-4bfc-8e54-8de7bcfec1e3": {
+      "entity_id": "aeb0e83b-93d0-4bfc-8e54-8de7bcfec1e3",
+      "entity_type": "PERSON",
+      "canonical": "Arathorn",
+      "descriptors": [],
+      "titles": [
+        "Arathorn"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Aragorn, son of Arathorn, married Arwen in 3019."
+      ],
+      "mention_count": 1,
+      "first_seen": "doc2",
+      "last_seen": "doc2",
+      "confidence_score": 0.55
+    },
+    "efd76844-b663-4cbf-89c3-fcfbae1afec5": {
+      "entity_id": "efd76844-b663-4cbf-89c3-fcfbae1afec5",
+      "entity_type": "PERSON",
+      "canonical": "Arwen",
+      "descriptors": [],
+      "titles": [
+        "Arwen"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Aragorn, son of Arathorn, married Arwen in 3019."
+      ],
+      "mention_count": 1,
+      "first_seen": "doc2",
+      "last_seen": "doc2",
+      "confidence_score": 0.55
+    },
+    "96f0e698-258f-4ff9-a432-7fc979cac06c": {
+      "entity_id": "96f0e698-258f-4ff9-a432-7fc979cac06c",
+      "entity_type": "PERSON",
+      "canonical": "Aragorn",
+      "descriptors": [],
+      "titles": [
+        "Aragorn"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Aragorn, son of Arathorn, married Arwen in 3019."
+      ],
+      "mention_count": 1,
+      "first_seen": "doc2",
+      "last_seen": "doc2",
+      "confidence_score": 0.55
+    }
+  },
+  "metadata": {
+    "created_at": "2025-11-08T04:45:11.321Z",
+    "updated_at": "2025-11-08T04:45:20.455Z",
+    "doc_count": 2,
+    "doc_ids": [
+      "doc1",
+      "doc2"
+    ]
+  }
+}

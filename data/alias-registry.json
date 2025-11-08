@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextAID": 730,
+  "nextAID": 741,
   "mappings": [
     {
       "aid": 554,
@@ -1761,11 +1761,121 @@
       "last_seen": "2025-11-08T04:19:57.083Z",
       "occurrence_count": 1,
       "confidence": 1
+    },
+    {
+      "aid": 730,
+      "surfaceForm": "Aria",
+      "normalizedKey": "aria",
+      "eid": 363,
+      "created_at": "2025-11-08T04:44:21.690Z",
+      "last_seen": "2025-11-08T04:44:21.690Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 731,
+      "surfaceForm": "Elias",
+      "normalizedKey": "elias",
+      "eid": 364,
+      "created_at": "2025-11-08T04:44:21.690Z",
+      "last_seen": "2025-11-08T04:44:21.690Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 732,
+      "surfaceForm": "Mistward River",
+      "normalizedKey": "mistward river",
+      "eid": 365,
+      "created_at": "2025-11-08T04:44:21.690Z",
+      "last_seen": "2025-11-08T04:44:21.690Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 733,
+      "surfaceForm": "Thames River",
+      "normalizedKey": "thames river",
+      "eid": 366,
+      "created_at": "2025-11-08T04:44:26.845Z",
+      "last_seen": "2025-11-08T04:44:26.845Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 734,
+      "surfaceForm": "Crystal River",
+      "normalizedKey": "crystal river",
+      "eid": 367,
+      "created_at": "2025-11-08T04:44:33.421Z",
+      "last_seen": "2025-11-08T04:44:33.421Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 735,
+      "surfaceForm": "Harper Creek",
+      "normalizedKey": "harper creek",
+      "eid": 368,
+      "created_at": "2025-11-08T04:44:33.422Z",
+      "last_seen": "2025-11-08T04:44:33.422Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 736,
+      "surfaceForm": "Mount Silverpeak",
+      "normalizedKey": "mount silverpeak",
+      "eid": 369,
+      "created_at": "2025-11-08T04:44:41.305Z",
+      "last_seen": "2025-11-08T04:44:41.305Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 737,
+      "surfaceForm": "Meridian Ridge",
+      "normalizedKey": "meridian ridge",
+      "eid": 370,
+      "created_at": "2025-11-08T04:44:50.198Z",
+      "last_seen": "2025-11-08T04:44:50.198Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 738,
+      "surfaceForm": "Crystal Falls",
+      "normalizedKey": "crystal falls",
+      "eid": 265,
+      "created_at": "2025-11-08T04:44:56.816Z",
+      "last_seen": "2025-11-08T04:44:56.816Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 739,
+      "surfaceForm": "Meridian Academy",
+      "normalizedKey": "meridian academy",
+      "eid": 371,
+      "created_at": "2025-11-08T04:45:05.686Z",
+      "last_seen": "2025-11-08T04:45:05.686Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 740,
+      "surfaceForm": "Jordan Smith",
+      "normalizedKey": "jordan smith",
+      "eid": 255,
+      "created_at": "2025-11-08T04:45:19.868Z",
+      "last_seen": "2025-11-08T04:45:19.868Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
     }
   ],
   "metadata": {
-    "total_aliases": 176,
-    "total_entities": 144,
-    "last_updated": "2025-11-08T04:20:26.985Z"
+    "total_aliases": 187,
+    "total_entities": 153,
+    "last_updated": "2025-11-08T04:45:21.686Z"
   }
 }
