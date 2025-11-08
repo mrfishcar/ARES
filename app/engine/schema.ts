@@ -48,7 +48,20 @@ export type Predicate =
   | 'mentions'
   | 'part_of'
   | 'spoke_to'  // Fiction: dialogue/communication
-  | 'met';      // Fiction: encounters
+  | 'met'      // Fiction: character encounters
+  | 'mentored'  // Fiction: X mentored Y
+  | 'mentored_by'  // Fiction: Y mentored_by X
+  | 'guards'  // Fiction: X guards Y (artifact/place)
+  | 'seeks'  // Fiction: X seeks Y (artifact)
+  | 'possesses'  // Fiction: X possesses/holds Y
+  | 'defeated'  // Fiction: X defeated Y in combat
+  | 'killed'  // Fiction: X killed Y
+  | 'imprisoned_in'  // Fiction: X imprisoned in Y
+  | 'freed_from'  // Fiction: X freed from Y
+  | 'summoned'  // Fiction: X summoned Y
+  | 'located_at'  // Fiction: X located at Y
+  | 'located_beneath'  // Fiction: X located beneath Y
+  | 'hidden_in';  // Fiction: X hidden in Y
 
 // Evidence Source
 export interface Evidence {
@@ -142,7 +155,20 @@ export const GUARD: Record<Predicate, { subj: EntityType[]; obj: EntityType[] }>
   friends_with: { subj: ['PERSON'], obj: ['PERSON'] },
   part_of: { subj: ['ORG', 'HOUSE', 'TRIBE'], obj: ['PLACE', 'ORG'] },
   spoke_to: { subj: ['PERSON'], obj: ['PERSON'] },  // Fiction: dialogue/communication
-  met: { subj: ['PERSON'], obj: ['PERSON'] }  // Fiction: character encounters
+  met: { subj: ['PERSON'], obj: ['PERSON'] },  // Fiction: character encounters
+  mentored: { subj: ['PERSON'], obj: ['PERSON'] },  // X mentored Y
+  mentored_by: { subj: ['PERSON'], obj: ['PERSON'] },  // Y mentored by X
+  guards: { subj: ['PERSON'], obj: ['ITEM', 'PLACE', 'ORG'] },  // X guards Y
+  seeks: { subj: ['PERSON', 'ORG'], obj: ['ITEM', 'PERSON', 'PLACE'] },  // X seeks Y
+  possesses: { subj: ['PERSON', 'ORG'], obj: ['ITEM'] },  // X possesses Y
+  defeated: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG'] },  // X defeated Y
+  killed: { subj: ['PERSON'], obj: ['PERSON'] },  // X killed Y
+  imprisoned_in: { subj: ['PERSON'], obj: ['PLACE'] },  // X imprisoned in Y
+  freed_from: { subj: ['PERSON'], obj: ['PLACE'] },  // X freed from Y
+  summoned: { subj: ['PERSON', 'ORG'], obj: ['PERSON'] },  // X summoned Y
+  located_at: { subj: ['PERSON', 'ORG', 'ITEM', 'PLACE'], obj: ['PLACE'] },  // X located at Y
+  located_beneath: { subj: ['PLACE', 'ITEM', 'ORG'], obj: ['PLACE'] },  // X beneath Y
+  hidden_in: { subj: ['ITEM', 'PERSON'], obj: ['PLACE'] }  // X hidden in Y
 };
 
 // Inverse predicates
@@ -156,11 +182,15 @@ export const INVERSE: Partial<Record<Predicate, Predicate>> = {
   friends_with: 'friends_with',
   alias_of: 'alias_of',
   spoke_to: 'spoke_to',  // Symmetric: if A spoke to B, B spoke to A
-  met: 'met'  // Symmetric: if A met B, B met A
+  met: 'met',  // Symmetric: if A met B, B met A
+  mentored: 'mentored_by',
+  mentored_by: 'mentored',
+  defeated: 'defeated',  // Asymmetric but can be symmetric in conflict
+  killed: 'killed'  // No inverse - death is one-way
 };
 
 // Single-valued predicates (for conflict detection)
-export const SINGLE_VALUED: Set<Predicate> = new Set([
+export const SINGLE_VALUED: Set<Predicate> = new Set<Predicate>([
   'parent_of',
   'married_to',
   'born_in',
