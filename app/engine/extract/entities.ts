@@ -36,6 +36,94 @@ const traceSpan = (stage: string, source: string, start: number, end: number, va
   }
 };
 
+/**
+ * Validate that a span's positions actually extract the expected text from the source
+ * This prevents corrupted entity names when token boundaries are misaligned
+ */
+function validateSpan(
+  text: string,
+  span: { text: string; start: number; end: number },
+  context: string
+): { valid: boolean; extracted: string } {
+  // Extract actual text at this position
+  const extracted = text.slice(span.start, span.end);
+  const normalizedExtracted = normalizeName(extracted);
+  const normalizedExpected = normalizeName(span.text);
+
+  // Check if normalized versions match
+  let valid = normalizedExtracted === normalizedExpected;
+
+  // Additional check: ensure extracted text doesn't contain extra words
+  // This catches cases where span.end extends beyond the entity
+  if (valid) {
+    // Compare NORMALIZED word counts (since normalizeName removes "House", "family", etc.)
+    const normalizedExtractedWords = normalizedExtracted.split(/\s+/).filter(Boolean);
+    const normalizedExpectedWords = normalizedExpected.split(/\s+/).filter(Boolean);
+
+    // Check if normalized extracted has more words than normalized expected
+    // This catches cases like "Slytherin. He" → ["Slytherin", "He"] when expecting just "Slytherin"
+    if (normalizedExtractedWords.length > normalizedExpectedWords.length) {
+      // Allow a small difference for particles, but reject significant word count mismatches
+      const wordCountDiff = normalizedExtractedWords.length - normalizedExpectedWords.length;
+      if (wordCountDiff > 1) {
+        // Too many extra words - likely corruption
+        valid = false;
+      } else if (wordCountDiff === 1) {
+        // One extra word - check if it's a pronoun or common word that indicates corruption
+        const extraWord = normalizedExtractedWords[normalizedExtractedWords.length - 1].toLowerCase();
+        const pronouns = ['he', 'she', 'it', 'they', 'i', 'you', 'we', 'the', 'a', 'an'];
+        if (pronouns.includes(extraWord)) {
+          // Extracted text includes a pronoun after the entity - this is corruption
+          valid = false;
+        }
+      }
+    }
+
+    // Check for common corruption patterns in the RAW extracted text
+    // Pattern 1: Ends with ". [Word]" (entity spans past sentence boundary)
+    if (/\.\s+[A-Z][a-z]+\s*$/.test(extracted)) {
+      // Example: "Slytherin. He" or "Granger. The"
+      valid = false;
+    }
+
+    // Pattern 2: Word fragments being concatenated (e.g., "WeasleRon", "SlytheriHe")
+    // This is detected by finding capitalized letters in the middle of a word
+    const extractedWords = extracted.split(/\s+/).filter(Boolean);
+    for (const word of extractedWords) {
+      if (/[a-z][A-Z]/.test(word)) {
+        // Found lowercase followed by uppercase - likely corruption
+        valid = false;
+        break;
+      }
+    }
+  }
+
+  // Log validation failures
+  if (!valid && process.env.L3_DEBUG === "1") {
+    try {
+      const debugInfo = {
+        context,
+        expected: span.text,
+        expectedNormalized: normalizedExpected,
+        extracted,
+        extractedNormalized: normalizedExtracted,
+        start: span.start,
+        end: span.end,
+        timestamp: new Date().toISOString()
+      };
+      fs.appendFileSync(
+        "tmp/span-validation-errors.log",
+        JSON.stringify(debugInfo) + "\n",
+        "utf-8"
+      );
+    } catch {
+      // ignore debug logging errors
+    }
+  }
+
+  return { valid, extracted };
+}
+
 // Organization hint keywords
 const ORG_HINTS = /\b(school|university|academy|seminary|ministry|department|institute|college|inc\.?|corp\.?|llc|company|corporation|ltd\.?|technologies|labs|capital|ventures|partners|group|holdings|systems|solutions|consulting|associates|enterprises|industries|bank|financial|investment|fund|computing|software|networks|media|communications|pharmaceuticals|biotech|aerospace|robotics|semiconductor|electronics)\b/i;
 
@@ -1092,8 +1180,23 @@ export async function extractEntities(text: string): Promise<{
     ...families.map(s => ({ ...s, source: 'DEP' as ExtractorSource })) // Treat family patterns as DEP-quality
   ];
   const rawSpans = taggedSpans;
+
+  const deduped = dedupe(rawSpans);
+
+  // Validate all spans before processing to prevent corruption
+  const validated = deduped.filter(span => {
+    const validation = validateSpan(text, span, "pre-entity-creation");
+    if (!validation.valid) {
+      // Skip corrupted spans to prevent bad data in registries
+      return false;
+    }
+    return true;
+  });
+
+  // Build positionsByKey from VALIDATED spans only (not raw spans)
+  // This ensures we don't carry forward corrupted span positions
   const positionsByKey = new Map<string, Array<{ start: number; end: number }>>();
-  for (const span of rawSpans) {
+  for (const span of validated) {
     const key = `${span.type}:${span.text.toLowerCase()}`;
     if (!positionsByKey.has(key)) {
       positionsByKey.set(key, []);
@@ -1103,8 +1206,6 @@ export async function extractEntities(text: string): Promise<{
       list.push({ start: span.start, end: span.end });
     }
   }
-
-  const deduped = dedupe(rawSpans);
 
   // 6) Build Entity objects, merging short/long variants (e.g., "Gandalf" vs "Gandalf the Grey")
   type EntityEntry = {
@@ -1223,7 +1324,7 @@ const chooseCanonical = (names: Set<string>): string => {
 
   const toLower = (value: string) => value.toLowerCase();
 
-  for (const span of deduped) {
+  for (const span of validated) {
     const textLower = toLower(span.text);
     const key = `${span.type}:${textLower}`;
     let matched = false;
@@ -1455,13 +1556,26 @@ const chooseCanonical = (names: Set<string>): string => {
     // Ensure aliases are unique
     const nameSet = new Set<string>([entry.entity.canonical, ...entry.entity.aliases]);
     const candidateRawByNormalized = new Map<string, string>();
-    for (const span of entry.spanList) {
+
+    // Validate and filter out corrupted spans before processing
+    const validSpans = entry.spanList.filter(span => {
+      // Basic sanity check: start < end and within text bounds
+      if (span.start < 0 || span.end > text.length || span.start >= span.end) {
+        return false;
+      }
+      return true;
+    });
+
+    for (const span of validSpans) {
       const rawSegment = text.slice(span.start, span.end);
       const normalizedSegment = normalizeName(rawSegment);
       if (normalizedSegment) {
         candidateRawByNormalized.set(normalizedSegment.toLowerCase(), rawSegment);
       }
     }
+
+    // Update entry.spanList to only include valid spans
+    entry.spanList = validSpans;
 
     const allowedLower = new Set(['the', 'of', 'and', '&', 'family', 'house', 'order', 'clan']);
     const isSuspicious = entry.spanList.length > 0 && entry.spanList.every(span => {
