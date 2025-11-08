@@ -135,7 +135,7 @@ export const GUARD: Record<Predicate, { subj: EntityType[]; obj: EntityType[] }>
   wields: { subj: ['PERSON'], obj: ['ITEM'] },
   owns: { subj: ['PERSON', 'ORG'], obj: ['ITEM', 'ORG'] }, // Allow owning companies
   uses: { subj: ['PERSON'], obj: ['ITEM'] },
-  traveled_to: { subj: ['PERSON', 'ORG'], obj: ['PLACE'] },
+  traveled_to: { subj: ['PERSON', 'ORG'], obj: ['PLACE', 'ORG'] },
   fought_in: { subj: ['PERSON', 'ORG'], obj: ['PLACE', 'EVENT'] },
   authored: { subj: ['PERSON', 'ORG'], obj: ['WORK'] },
   mentions: { subj: ['WORK'], obj: ['PERSON', 'ORG', 'PLACE', 'ITEM'] },

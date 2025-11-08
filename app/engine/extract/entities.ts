@@ -299,6 +299,11 @@ function refineEntityType(type: EntityType, text: string): EntityType {
     return 'ORG';
   }
 
+  // Battle/War/Siege patterns should always be EVENT (even if tagged as PERSON)
+  if (/\b(battle|war|conflict|siege|skirmish)\s+of\b/i.test(trimmed)) {
+    return 'EVENT';
+  }
+
   if (/^house of\b/i.test(trimmed)) {
     return 'HOUSE';
   }
@@ -994,7 +999,7 @@ function fallbackNames(text: string): Array<{ text: string; type: EntityType; st
 
 function extractYearSpans(text: string): Array<{ text: string; type: EntityType; start: number; end: number }> {
   const spans: { text: string; type: EntityType; start: number; end: number }[] = [];
-  const yearPattern = /\b(1[6-9]\d{2}|20\d{2})\b/g;
+  const yearPattern = /\b(1[6-9]\d{2}|20\d{2}|[3-9]\d{3})\b/g;
   let match: RegExpExecArray | null;
 
   while ((match = yearPattern.exec(text))) {

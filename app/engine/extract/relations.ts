@@ -2712,8 +2712,8 @@ function extractRegexRelations(
     ));
   }
 
-  // Pattern 7: "X dwelt/lived in Y"
-  const dweltPattern = /\b([A-Z][A-Za-z'’]+(?:\s+[A-Z][A-Za-z'’]+){0,2})\s+(?:dwelt|lived|resides|resided)\s+(?:in|at)\s+([A-Z][A-Za-z'’]+(?:\s+[A-Z][A-Za-z'’]+){0,2})/g;
+  // Pattern 7: "X dwelt/lived/lives in Y"
+  const dweltPattern = /\b([A-Z][A-Za-z'']+(?:\s+[A-Z][A-Za-z'']+){0,2})\s+(?:dwelt|live|lives|lived|resides|resided|residing)\s+(?:in|at)\s+([A-Z][A-Za-z'']+(?:\s+[A-Z][A-Za-z'']+){0,2})/g;
   while ((match = dweltPattern.exec(text))) {
     const person = match[1];
     const place = match[2];

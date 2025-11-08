@@ -333,6 +333,9 @@ const PATH_PATTERNS: PathPattern[] = [
   // "X lives in Y"
   { signature: /^(\w+):↑nsubj:(live|reside):↓prep:in:↓pobj:(\w+)$/, predicate: 'lives_in', subjectFirst: true },
 
+  // "X fought in Y" (battles, wars)
+  { signature: /^(\w+):↑nsubj:(fight|fought):↓prep:in:↓pobj:(\w+)$/, predicate: 'fought_in', subjectFirst: true },
+
   // "X moved to Y"
   { signature: /^(\w+):↑nsubj:(move|relocate|migrate):↓prep:to:↓pobj:(\w+)$/, predicate: 'lives_in', subjectFirst: true },
 
