@@ -317,6 +317,11 @@ const PATH_PATTERNS: PathPattern[] = [
   // "X and Y collaborated" (coordination)
   { signature: /^(\w+):↑conj:(\w+):↑nsubj:(collaborate|partner|work)$/, predicate: 'ally_of', subjectFirst: true },
 
+  // === GOVERNANCE ===
+
+  // "X ruled/reigned/governed Y"
+  { signature: /^(\w+):↑nsubj:(rule|reign|govern):↓(dobj|obj):(\w+)$/, predicate: 'rules', subjectFirst: true },
+
   // === ACADEMIC (EXTENDED) ===
 
   // "X graduated from Y"
@@ -330,8 +335,8 @@ const PATH_PATTERNS: PathPattern[] = [
 
   // === GEOGRAPHIC / LOCATION ===
 
-  // "X lives in Y"
-  { signature: /^(\w+):↑nsubj:(live|reside):↓prep:in:↓pobj:(\w+)$/, predicate: 'lives_in', subjectFirst: true },
+  // "X lives/dwells in Y"
+  { signature: /^(\w+):↑nsubj:(live|reside|dwell):↓prep:in:↓pobj:(\w+)$/, predicate: 'lives_in', subjectFirst: true },
 
   // "X moved to Y"
   { signature: /^(\w+):↑nsubj:(move|relocate|migrate):↓prep:to:↓pobj:(\w+)$/, predicate: 'lives_in', subjectFirst: true },
