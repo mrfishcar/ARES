@@ -318,8 +318,8 @@ export function classifyWithContext(
   }
 
   // Rule 5: Lexical Markers (intrinsic to entity name)
-  // Geographic markers
-  if (/\b(river|creek|stream|mountain|mount|peak|hill|valley|lake|sea|ocean|island|forest|desert|plain|city|town|village|kingdom|realm|land)\b/i.test(entityText)) {
+  // Geographic markers (includes plurals and fantasy/narrative suffixes)
+  if (/\b(rivers?|creeks?|streams?|mountains?|mounts?|peaks?|hills?|hillside|valleys?|lakes?|seas?|oceans?|islands?|isles?|forests?|woods?|deserts?|plains?|prairies?|cities|city|towns?|villages?|kingdoms?|realms?|lands?|cliffs?|ridges?|canyons?|gorges?|fjords?|havens?|harbors?|bays?|coves?|groves?|glades?|dales?|moors?|heaths?|marshes?|swamps?|wastes?|wilds?|reaches?|highlands?|lowlands?|borderlands?)\b/i.test(entityText)) {
     return 'PLACE';
   }
 
