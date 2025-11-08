@@ -139,7 +139,9 @@ export function analyzeEntityContext(
     return { nearbyVerbs: [], nearbyPreps: [] };
   }
 
-  const mainToken = entityTokens[0]; // Use first token as representative
+  // Find the syntactic head token (not a compound modifier)
+  // For multi-word entities like "Eastern Reaches", use "Reaches" (dep=pobj), not "Eastern" (dep=compound)
+  const mainToken = entityTokens.find(t => t.dep !== 'compound') || entityTokens[entityTokens.length - 1];
   const hints: ContextHints = {
     nearbyVerbs: [],
     nearbyPreps: [],
@@ -300,14 +302,18 @@ export function classifyWithContext(
   // Rule 4: Dependency Role Heuristics
   if (context.dependencyRole === 'nsubj') {
     // Nominal subjects of action verbs are usually PERSON
+    // BUT check for geographic markers first (e.g., "The Highlands are treacherous")
     if (context.nearbyVerbs.length > 0) {
-      return 'PERSON';
+      // Check if entity has geographic markers before defaulting to PERSON
+      if (!/(rivers?|creeks?|streams?|mountains?|mounts?|peaks?|hills?|hillside|valleys?|lakes?|seas?|oceans?|islands?|isles?|forests?|woods?|deserts?|plains?|prairies?|cities|city|towns?|villages?|kingdoms?|realms?|lands?|cliffs?|ridges?|canyons?|gorges?|fjords?|havens?|harbors?|bays?|coves?|groves?|glades?|dales?|moors?|heaths?|marshes?|swamps?|wastes?|wilds?|reaches?|highlands?|lowlands?|borderlands?)\b/i.test(entityText)) {
+        return 'PERSON';
+      }
     }
   }
 
   if (context.dependencyRole === 'pobj') {
     // Prepositional objects after location preps are usually PLACE
-    if (prep && ['in', 'to', 'from', 'near', 'at'].includes(prep)) {
+    if (prep && ['in', 'to', 'from', 'near', 'at', 'into', 'through', 'across', 'around', 'beyond', 'over', 'under', 'along', 'beside', 'within'].includes(prep)) {
       // But "at" with work/study verbs → ORG
       if (prep === 'at' && verbLemma &&
           ['work', 'study', 'teach', 'attend', 'learn'].includes(verbLemma)) {
@@ -319,7 +325,8 @@ export function classifyWithContext(
 
   // Rule 5: Lexical Markers (intrinsic to entity name)
   // Geographic markers (includes plurals and fantasy/narrative suffixes)
-  if (/\b(rivers?|creeks?|streams?|mountains?|mounts?|peaks?|hills?|hillside|valleys?|lakes?|seas?|oceans?|islands?|isles?|forests?|woods?|deserts?|plains?|prairies?|cities|city|towns?|villages?|kingdoms?|realms?|lands?|cliffs?|ridges?|canyons?|gorges?|fjords?|havens?|harbors?|bays?|coves?|groves?|glades?|dales?|moors?|heaths?|marshes?|swamps?|wastes?|wilds?|reaches?|highlands?|lowlands?|borderlands?)\b/i.test(entityText)) {
+  // Note: No \b at start to match compound words like "Shadowcliffs"
+  if (/(rivers?|creeks?|streams?|mountains?|mounts?|peaks?|hills?|hillside|valleys?|lakes?|seas?|oceans?|islands?|isles?|forests?|woods?|deserts?|plains?|prairies?|cities|city|towns?|villages?|kingdoms?|realms?|lands?|cliffs?|ridges?|canyons?|gorges?|fjords?|havens?|harbors?|bays?|coves?|groves?|glades?|dales?|moors?|heaths?|marshes?|swamps?|wastes?|wilds?|reaches?|highlands?|lowlands?|borderlands?)\b/i.test(entityText)) {
     return 'PLACE';
   }
 

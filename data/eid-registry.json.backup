@@ -1,0 +1,410 @@
+{
+  "version": 1,
+  "nextEID": 51,
+  "mappings": [
+    {
+      "eid": 1,
+      "canonical": "Gathering Storm",
+      "normalizedKey": "gathering storm",
+      "created_at": "2025-11-08T16:33:13.067Z",
+      "last_seen": "2025-11-08T16:33:13.067Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 2,
+      "canonical": "Elara Moonwhisper",
+      "normalizedKey": "elara moonwhisper",
+      "created_at": "2025-11-08T16:33:13.068Z",
+      "last_seen": "2025-11-08T16:33:13.068Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 3,
+      "canonical": "Crystal Cliffs",
+      "normalizedKey": "crystal cliffs",
+      "created_at": "2025-11-08T16:33:13.069Z",
+      "last_seen": "2025-11-08T16:33:13.069Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 4,
+      "canonical": "Alderan",
+      "normalizedKey": "alderan",
+      "created_at": "2025-11-08T16:33:13.069Z",
+      "last_seen": "2025-11-08T16:33:13.069Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 5,
+      "canonical": "Crimson Sea",
+      "normalizedKey": "crimson sea",
+      "created_at": "2025-11-08T16:33:13.069Z",
+      "last_seen": "2025-11-08T16:33:13.069Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 6,
+      "canonical": "Northern Reaches",
+      "normalizedKey": "northern reaches",
+      "created_at": "2025-11-08T16:33:13.069Z",
+      "last_seen": "2025-11-08T16:33:13.069Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 7,
+      "canonical": "Master Theron Brightforge",
+      "normalizedKey": "master theron brightforge",
+      "created_at": "2025-11-08T16:33:13.069Z",
+      "last_seen": "2025-11-08T16:33:13.069Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 8,
+      "canonical": "Council of Seven",
+      "normalizedKey": "council of seven",
+      "created_at": "2025-11-08T16:33:13.069Z",
+      "last_seen": "2025-11-08T16:33:13.069Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 9,
+      "canonical": "Seven Stars",
+      "normalizedKey": "seven stars",
+      "created_at": "2025-11-08T16:33:13.069Z",
+      "last_seen": "2025-11-08T16:33:13.069Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 10,
+      "canonical": "Shadow King",
+      "normalizedKey": "shadow king",
+      "created_at": "2025-11-08T16:33:13.069Z",
+      "last_seen": "2025-11-08T16:33:13.069Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 11,
+      "canonical": "Lord Malachar",
+      "normalizedKey": "lord malachar",
+      "created_at": "2025-11-08T16:33:13.070Z",
+      "last_seen": "2025-11-08T16:33:13.070Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 12,
+      "canonical": "Void",
+      "normalizedKey": "void",
+      "created_at": "2025-11-08T16:33:13.070Z",
+      "last_seen": "2025-11-08T16:33:13.070Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 13,
+      "canonical": "Battle of Starfall Ridge",
+      "normalizedKey": "battle of starfall ridge",
+      "created_at": "2025-11-08T16:33:13.070Z",
+      "last_seen": "2025-11-08T16:33:13.070Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 14,
+      "canonical": "Obsidian Mountains",
+      "normalizedKey": "obsidian mountains",
+      "created_at": "2025-11-08T16:33:13.070Z",
+      "last_seen": "2025-11-08T16:33:13.070Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 15,
+      "canonical": "Orb of Eternal Night",
+      "normalizedKey": "orb of eternal night",
+      "created_at": "2025-11-08T16:33:13.070Z",
+      "last_seen": "2025-11-08T16:33:13.070Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 16,
+      "canonical": "King Aldric",
+      "normalizedKey": "king aldric",
+      "created_at": "2025-11-08T16:33:13.070Z",
+      "last_seen": "2025-11-08T16:33:13.070Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 17,
+      "canonical": "Silverhaven",
+      "normalizedKey": "silverhaven",
+      "created_at": "2025-11-08T16:33:13.070Z",
+      "last_seen": "2025-11-08T16:33:13.070Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 18,
+      "canonical": "Lyssa Moonwhisper",
+      "normalizedKey": "lyssa moonwhisper",
+      "created_at": "2025-11-08T16:33:13.070Z",
+      "last_seen": "2025-11-08T16:33:13.070Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 19,
+      "canonical": "Cassandra Stormweaver",
+      "normalizedKey": "cassandra stormweaver",
+      "created_at": "2025-11-08T16:33:13.070Z",
+      "last_seen": "2025-11-08T16:33:13.070Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 20,
+      "canonical": "High Priestess",
+      "normalizedKey": "high priestess",
+      "created_at": "2025-11-08T16:33:13.070Z",
+      "last_seen": "2025-11-08T16:33:13.070Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 21,
+      "canonical": "Thornhaven",
+      "normalizedKey": "thornhaven",
+      "created_at": "2025-11-08T16:33:13.071Z",
+      "last_seen": "2025-11-08T16:33:13.071Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 22,
+      "canonical": "Vex the Bloodless",
+      "normalizedKey": "vex the bloodless",
+      "created_at": "2025-11-08T16:33:13.071Z",
+      "last_seen": "2025-11-08T16:33:13.071Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 23,
+      "canonical": "Tower",
+      "normalizedKey": "tower",
+      "created_at": "2025-11-08T16:33:13.071Z",
+      "last_seen": "2025-11-08T16:33:13.071Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 24,
+      "canonical": "Lake Serenity",
+      "normalizedKey": "lake serenity",
+      "created_at": "2025-11-08T16:33:13.071Z",
+      "last_seen": "2025-11-08T16:33:13.071Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 25,
+      "canonical": "Evocation Transmutation Divination Necromancy",
+      "normalizedKey": "evocation transmutation divination necromancy",
+      "created_at": "2025-11-08T16:33:13.071Z",
+      "last_seen": "2025-11-08T16:33:13.071Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 26,
+      "canonical": "Conjuration",
+      "normalizedKey": "conjuration",
+      "created_at": "2025-11-08T16:33:13.071Z",
+      "last_seen": "2025-11-08T16:33:13.071Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 27,
+      "canonical": "Enchantment",
+      "normalizedKey": "enchantment",
+      "created_at": "2025-11-08T16:33:13.072Z",
+      "last_seen": "2025-11-08T16:33:13.072Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 28,
+      "canonical": "Illusion",
+      "normalizedKey": "illusion",
+      "created_at": "2025-11-08T16:33:13.072Z",
+      "last_seen": "2025-11-08T16:33:13.072Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 29,
+      "canonical": "Arcturus Ironmind",
+      "normalizedKey": "arcturus ironmind",
+      "created_at": "2025-11-08T16:33:13.072Z",
+      "last_seen": "2025-11-08T16:33:13.072Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 30,
+      "canonical": "Lysander Shadowmere",
+      "normalizedKey": "lysander shadowmere",
+      "created_at": "2025-11-08T16:33:13.072Z",
+      "last_seen": "2025-11-08T16:33:13.072Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 31,
+      "canonical": "Necromancer",
+      "normalizedKey": "necromancer",
+      "created_at": "2025-11-08T16:33:13.072Z",
+      "last_seen": "2025-11-08T16:33:13.072Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 32,
+      "canonical": "Meridian Starseeker",
+      "normalizedKey": "meridian starseeker",
+      "created_at": "2025-11-08T16:33:13.072Z",
+      "last_seen": "2025-11-08T16:33:13.072Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 33,
+      "canonical": "Diviner",
+      "normalizedKey": "diviner",
+      "created_at": "2025-11-08T16:33:13.072Z",
+      "last_seen": "2025-11-08T16:33:13.072Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 34,
+      "canonical": "Isolde Dreamweaver",
+      "normalizedKey": "isolde dreamweaver",
+      "created_at": "2025-11-08T16:33:13.073Z",
+      "last_seen": "2025-11-08T16:33:13.073Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 35,
+      "canonical": "Korvan the Summoner",
+      "normalizedKey": "korvan the summoner",
+      "created_at": "2025-11-08T16:33:13.073Z",
+      "last_seen": "2025-11-08T16:33:13.073Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 36,
+      "canonical": "Forgotten Wastes",
+      "normalizedKey": "forgotten wastes",
+      "created_at": "2025-11-08T16:33:13.073Z",
+      "last_seen": "2025-11-08T16:33:13.073Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 37,
+      "canonical": "Sir Gareth Stonehelm",
+      "normalizedKey": "sir gareth stonehelm",
+      "created_at": "2025-11-08T16:33:13.073Z",
+      "last_seen": "2025-11-08T16:33:13.073Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 38,
+      "canonical": "Your Wisdoms",
+      "normalizedKey": "your wisdoms",
+      "created_at": "2025-11-08T16:33:13.073Z",
+      "last_seen": "2025-11-08T16:33:13.073Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 39,
+      "canonical": "Academy of Mystic Arts",
+      "normalizedKey": "academy of mystic arts",
+      "created_at": "2025-11-08T16:33:13.073Z",
+      "last_seen": "2025-11-08T16:33:13.073Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 40,
+      "canonical": "Whispering Woods",
+      "normalizedKey": "whispering woods",
+      "created_at": "2025-11-08T16:33:13.073Z",
+      "last_seen": "2025-11-08T16:33:13.073Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 41,
+      "canonical": "Archmagus Talen",
+      "normalizedKey": "archmagus talen",
+      "created_at": "2025-11-08T16:33:13.073Z",
+      "last_seen": "2025-11-08T16:33:13.073Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 42,
+      "canonical": "Raven Nightshade",
+      "normalizedKey": "raven nightshade",
+      "created_at": "2025-11-08T16:33:13.074Z",
+      "last_seen": "2025-11-08T16:33:13.074Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 43,
+      "canonical": "Valdris",
+      "normalizedKey": "valdris",
+      "created_at": "2025-11-08T16:33:13.074Z",
+      "last_seen": "2025-11-08T16:33:13.074Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 44,
+      "canonical": "Stormchaser",
+      "normalizedKey": "stormchaser",
+      "created_at": "2025-11-08T16:33:13.074Z",
+      "last_seen": "2025-11-08T16:33:13.074Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 45,
+      "canonical": "Dreadspire Fortress",
+      "normalizedKey": "dreadspire fortress",
+      "created_at": "2025-11-08T16:33:13.074Z",
+      "last_seen": "2025-11-08T16:33:13.074Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 46,
+      "canonical": "Shadowcliffs",
+      "normalizedKey": "shadowcliffs",
+      "created_at": "2025-11-08T16:41:48.983Z",
+      "last_seen": "2025-11-08T16:41:48.983Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 47,
+      "canonical": "Stormhaven",
+      "normalizedKey": "stormhaven",
+      "created_at": "2025-11-08T16:41:49.016Z",
+      "last_seen": "2025-11-08T16:41:49.016Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 48,
+      "canonical": "Eastern Reaches",
+      "normalizedKey": "eastern reaches",
+      "created_at": "2025-11-08T16:41:49.045Z",
+      "last_seen": "2025-11-08T16:41:49.045Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 49,
+      "canonical": "Scorched Wastes",
+      "normalizedKey": "scorched wastes",
+      "created_at": "2025-11-08T16:41:49.071Z",
+      "last_seen": "2025-11-08T16:41:49.071Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 50,
+      "canonical": "Dragonhighe Highlands",
+      "normalizedKey": "dragonhighe highlands",
+      "created_at": "2025-11-08T16:41:49.093Z",
+      "last_seen": "2025-11-08T16:41:49.093Z",
+      "occurrence_count": 1
+    }
+  ],
+  "metadata": {
+    "total_entities": 50,
+    "last_updated": "2025-11-08T16:42:18.898Z"
+  }
+}
