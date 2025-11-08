@@ -6,8 +6,6 @@
   },
   "deploy": {
     "startCommand": "sh -c 'python3 scripts/parser_service.py & sleep 3 && node dist/app/api/graphql.js'",
-    "healthcheckPath": "/healthz",
-    "healthcheckTimeout": 100,
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   }

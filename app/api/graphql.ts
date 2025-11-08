@@ -4,10 +4,7 @@
  */
 
 import { ApolloServer } from '@apollo/server';
-import { expressMiddleware } from '@apollo/server/express4';
-import express from 'express';
-import cors from 'cors';
-import bodyParser from 'body-parser';
+import { startStandaloneServer } from '@apollo/server/standalone';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
@@ -563,172 +560,34 @@ export async function startGraphQLServer(port: number = 4000, storagePath?: stri
     logger.error({ msg: 'uncaughtException', err: err?.stack || String(err) });
   });
 
-  // Start Apollo Server
-  await server.start();
-  logger.info({ msg: 'apollo_server_started' });
+  // Start Apollo standalone server
+  const { url } = await startStandaloneServer(server, {
+    listen: { port, host: '0.0.0.0' },
+    context: async ({ req }) => {
+      // Rate limiting check
+      const clientId = extractClientId(req.headers as Record<string, string | string[] | undefined>);
+      const rateLimitResult = globalRateLimiter.checkLimit(clientId);
 
-  // Create Express app
-  const app = express();
-
-  // Health check endpoints (before body parser to keep them fast)
-  app.get('/healthz', (req, res) => {
-    logger.info({ msg: 'healthz_request_received' });
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('ok');
-  });
-
-  app.get('/readyz', (req, res) => {
-    logger.info({ msg: 'readyz_request_received' });
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('ready');
-  });
-
-  // Metrics endpoint
-  app.get('/metrics', async (req, res) => {
-    const { getPrometheusMetrics } = await import('../monitor/metrics');
-    res.set('Content-Type', 'text/plain; version=0.0.4');
-    res.send(getPrometheusMetrics());
-  });
-
-  // Apply middleware
-  app.use(cors());
-  app.use(bodyParser.json({ limit: '50mb' }));
-
-  // GraphQL endpoint
-  app.use(
-    '/graphql',
-    expressMiddleware(server, {
-      context: async ({ req }) => {
-        // Rate limiting check
-        const clientId = extractClientId(req.headers as Record<string, string | string[] | undefined>);
-        const rateLimitResult = globalRateLimiter.checkLimit(clientId);
-
-        if (!rateLimitResult.allowed) {
-          throw new Error(`Rate limit exceeded. Retry after ${rateLimitResult.retryAfter} seconds.`);
-        }
-
-        // Generate request_id
-        const request_id = (req.headers['x-request-id'] as string) || crypto.randomUUID();
-        const log = withRequest(logger, request_id);
-
-        // Log request (operation name not available at this stage)
-        log.info({ msg: 'graphql_request', request_id });
-
-        // Load graph for each request
-        const graph = loadGraph(storagePath);
-        return { graph, log, request_id };
+      if (!rateLimitResult.allowed) {
+        throw new Error(`Rate limit exceeded. Retry after ${rateLimitResult.retryAfter} seconds.`);
       }
-    })
-  );
 
-  // Wiki file serving endpoint
-  app.get('/wiki-file', (req, res) => {
-    const project = req.query.project as string;
-    const id = req.query.id as string;
+      // Generate request_id
+      const request_id = (req.headers['x-request-id'] as string) || crypto.randomUUID();
+      const log = withRequest(logger, request_id);
 
-    if (!project || !id) {
-      return res.status(400).json({ error: 'Missing project or id parameter' });
+      // Log request (operation name not available at this stage)
+      log.info({ msg: 'graphql_request', request_id });
+
+      // Load graph for each request
+      const graph = loadGraph(storagePath);
+      return { graph, log, request_id };
     }
-
-    // Validate project and id (no path traversal)
-    if (project.includes('..') || project.includes('/') || project.includes('\\')) {
-      return res.status(400).json({ error: 'Invalid project name' });
-    }
-
-    if (id.includes('..') || id.includes('/') || id.includes('\\')) {
-      return res.status(400).json({ error: 'Invalid entity id' });
-    }
-
-    // Build and validate path
-    const wikiBase = path.join(process.cwd(), 'data', 'projects', project, 'wiki');
-    const wikiFile = path.join(wikiBase, `${id}.md`);
-    const resolvedPath = path.resolve(wikiFile);
-    const resolvedBase = path.resolve(wikiBase);
-
-    // Verify path is within wiki directory
-    if (!resolvedPath.startsWith(resolvedBase)) {
-      return res.status(400).json({ error: 'Path traversal attempt detected' });
-    }
-
-    // Check if file exists
-    if (!fs.existsSync(resolvedPath)) {
-      return res.status(404).json({ error: 'Wiki file not found' });
-    }
-
-    // Serve file
-    const content = fs.readFileSync(resolvedPath, 'utf-8');
-    res.set('Content-Type', 'text/markdown; charset=utf-8');
-    res.send(content);
   });
 
-  // Download endpoint
-  app.get('/download', (req, res) => {
-    const filePath = req.query.path as string;
-
-    if (!filePath) {
-      return res.status(400).json({ error: 'Missing path parameter' });
-    }
-
-    // Reject absolute paths
-    if (path.isAbsolute(filePath)) {
-      return res.status(400).json({ error: 'Absolute paths not allowed' });
-    }
-
-    // Reject path traversal
-    if (filePath.includes('..')) {
-      return res.status(400).json({ error: 'Path traversal not allowed' });
-    }
-
-    // Whitelist: only out/ directory
-    const outBase = path.join(process.cwd(), 'out');
-    const fullPath = path.join(outBase, filePath);
-    const resolvedPath = path.resolve(fullPath);
-    const resolvedBase = path.resolve(outBase);
-
-    // Verify path is within out/ directory
-    if (!resolvedPath.startsWith(resolvedBase)) {
-      return res.status(400).json({ error: 'Access denied: only out/ directory allowed' });
-    }
-
-    // Check if file exists
-    if (!fs.existsSync(resolvedPath)) {
-      return res.status(404).json({ error: 'File not found' });
-    }
-
-    // Serve file with download header
-    const basename = path.basename(resolvedPath);
-    const content = fs.readFileSync(resolvedPath);
-    res.set('Content-Type', 'application/octet-stream');
-    res.set('Content-Disposition', `attachment; filename="${basename}"`);
-    res.send(content);
-  });
-
-  // Upload endpoint - needs raw http.IncomingMessage
-  app.post('/upload', (req, res) => {
-    handleUpload(req as any, res as any);
-  });
-
-  // Media file serving
-  app.get('/media/*', (req, res) => {
-    const filepath = req.path.replace('/media/', '');
-    handleMediaServe(req as any, res as any, filepath);
-  });
-
-  // Start Express server on the main port
-  await new Promise<void>((resolve, reject) => {
-    const httpServer = app.listen(port, '0.0.0.0', () => {
-      logger.info({ msg: 'express_server_listening', port, host: '0.0.0.0', address: httpServer.address() });
-      console.log(`✅ Express server listening on http://0.0.0.0:${port}`);
-      console.log(`✅ Health check available at http://0.0.0.0:${port}/healthz`);
-      resolve();
-    });
-
-    httpServer.on('error', (err) => {
-      logger.error({ msg: 'express_server_error', err: err.message });
-      console.error('❌ Express server error:', err);
-      reject(err);
-    });
-  });
+  logger.info({ msg: 'graphql_server_ready', url, port, host: '0.0.0.0' });
+  console.log(`✅ GraphQL server ready at ${url}`);
+  console.log(`✅ Railway will check if port ${port} is listening (no HTTP health check needed)`);
 
   return server;
 }
