@@ -30,6 +30,9 @@ COPY . .
 # Continue even if tsc reports type errors (output files are still created)
 RUN npx tsc || true
 
+# Copy GraphQL schema file (TypeScript doesn't copy .graphql files)
+RUN cp app/api/schema.graphql dist/app/api/schema.graphql
+
 # Create data directories
 RUN mkdir -p /app/data/projects /app/incoming /app/wiki
 
