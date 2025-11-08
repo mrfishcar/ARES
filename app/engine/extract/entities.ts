@@ -404,27 +404,49 @@ export function normalizeName(s: string): string {
 }
 
 /**
+ * Title words that should be included with person names
+ */
+const TITLE_WORDS = new Set([
+  'mr', 'mrs', 'miss', 'ms', 'dr', 'doctor', 'prof', 'professor',
+  'sir', 'madam', 'lord', 'lady', 'king', 'queen', 'prince', 'princess',
+  'duke', 'duchess', 'baron', 'baroness', 'count', 'countess',
+  'captain', 'commander', 'general', 'admiral', 'colonel', 'major',
+  'sergeant', 'lieutenant', 'father', 'mother', 'brother', 'sister',
+  'master', 'archmagus', 'wizard', 'mage', 'sorcerer', 'sorceress'
+]);
+
+/**
  * Extract NER spans from parsed sentence
  */
 function nerSpans(sent: ParsedSentence): Array<{ text: string; type: EntityType; start: number; end: number }> {
   const spans: { text: string; type: EntityType; start: number; end: number }[] = [];
   let i = 0;
-  
+
   while (i < sent.tokens.length) {
     const t = sent.tokens[i];
     const mapped = mapEnt(t.ent);
-    
+
     if (!mapped) {
       i++;
       continue;
     }
-    
+
     let j = i + 1;
     while (j < sent.tokens.length && sent.tokens[j].ent === t.ent) {
       j++;
     }
-    
-    const spanTokens = sent.tokens.slice(i, j);
+
+    // Expand span backwards to include title words for PERSON entities
+    let spanStart = i;
+    if (mapped === 'PERSON' && i > 0) {
+      const prevToken = sent.tokens[i - 1];
+      if (prevToken.pos === 'PROPN' && !prevToken.ent &&
+          TITLE_WORDS.has(prevToken.text.toLowerCase())) {
+        spanStart = i - 1;
+      }
+    }
+
+    const spanTokens = sent.tokens.slice(spanStart, j);
     let text = normalizeName(spanTokens.map(x => x.text).join(" "));
     const start = spanTokens[0].start;
     const end = spanTokens[spanTokens.length - 1].end;
