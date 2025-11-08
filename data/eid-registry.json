@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextEID": 352,
+  "nextEID": 356,
   "mappings": [
     {
       "eid": 1,
@@ -1047,8 +1047,8 @@
       "canonical": "London",
       "normalizedKey": "london",
       "created_at": "2025-10-30T03:57:03.544Z",
-      "last_seen": "2025-10-30T13:31:22.950Z",
-      "occurrence_count": 4
+      "last_seen": "2025-11-08T02:55:29.773Z",
+      "occurrence_count": 5
     },
     {
       "eid": 132,
@@ -2809,10 +2809,42 @@
       "created_at": "2025-11-01T19:26:32.577Z",
       "last_seen": "2025-11-01T19:26:32.577Z",
       "occurrence_count": 1
+    },
+    {
+      "eid": 352,
+      "canonical": "Harry",
+      "normalizedKey": "harry",
+      "created_at": "2025-11-08T02:54:19.584Z",
+      "last_seen": "2025-11-08T02:54:19.584Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 353,
+      "canonical": "Hogwarts",
+      "normalizedKey": "hogwarts",
+      "created_at": "2025-11-08T02:54:19.585Z",
+      "last_seen": "2025-11-08T02:54:19.585Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 354,
+      "canonical": "Hermione",
+      "normalizedKey": "hermione",
+      "created_at": "2025-11-08T02:55:29.773Z",
+      "last_seen": "2025-11-08T02:55:29.773Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 355,
+      "canonical": "Arwen",
+      "normalizedKey": "arwen",
+      "created_at": "2025-11-08T02:55:29.779Z",
+      "last_seen": "2025-11-08T02:55:29.779Z",
+      "occurrence_count": 1
     }
   ],
   "metadata": {
-    "total_entities": 351,
-    "last_updated": "2025-11-01T19:26:37.842Z"
+    "total_entities": 355,
+    "last_updated": "2025-11-08T02:55:59.686Z"
   }
 }

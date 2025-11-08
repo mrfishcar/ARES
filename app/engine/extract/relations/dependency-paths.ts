@@ -446,6 +446,9 @@ const PATH_PATTERNS: PathPattern[] = [
   // "X studied at Y"
   { signature: /^(\w+):↑nsubj:study:↓prep:at:↓pobj:(\w+)$/, predicate: 'studies_at', subjectFirst: true },
 
+  // "X studied [object] there/here" (locative adverb as place)
+  { signature: /^(\w+):↑nsubj:study:↓advmod:(there|here)$/, predicate: 'studies_at', subjectFirst: true },
+
   // === EMPLOYMENT - PAST TENSE ===
 
   // "X worked at Y"

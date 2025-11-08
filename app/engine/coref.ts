@@ -23,7 +23,7 @@ export interface Mention {
   start: number;
   end: number;
   sentence_index: number;
-  type: 'pronoun' | 'title' | 'nominal' | 'name' | 'quote';
+  type: 'pronoun' | 'title' | 'nominal' | 'name' | 'quote' | 'deictic';
 }
 
 /**
@@ -33,7 +33,7 @@ export interface CorefLink {
   mention: Mention;
   entity_id: string;
   confidence: number;
-  method: 'pronoun_stack' | 'title_match' | 'nominal_match' | 'quote_attr' | 'coordination';
+  method: 'pronoun_stack' | 'title_match' | 'nominal_match' | 'quote_attr' | 'coordination' | 'deictic_ref';
 }
 
 /**
@@ -290,6 +290,22 @@ function extractMentions(sentences: Sentence[], text: string): Mention[] {
         end,
         sentence_index: si,
         type: 'quote',
+      });
+    }
+
+    // Extract deictic adverbs ("there", "here")
+    const deicticPattern = /\b(there|here)\b/gi;
+
+    while ((match = deicticPattern.exec(sentText))) {
+      const start = sentence.start + match.index;
+      const end = start + match[0].length;
+
+      mentions.push({
+        text: match[0],
+        start,
+        end,
+        sentence_index: si,
+        type: 'deictic',
       });
     }
   }
@@ -730,6 +746,53 @@ function resolveCoordination(
 }
 
 /**
+ * Resolve deictic adverbs ("there", "here") to recent locations
+ */
+function resolveDeicticAdverbs(
+  mentions: Mention[],
+  entities: Entity[],
+  entitySpans: Array<{ entity_id: string; start: number; end: number }>,
+  sentences: Sentence[],
+  text: string
+): CorefLink[] {
+  const links: CorefLink[] = [];
+  const LOCATION_TYPES: Set<EntityType> = new Set(['PLACE', 'ORG']);
+  const MAX_DISTANCE = 500; // Look back up to 500 characters
+
+  for (const mention of mentions) {
+    if (mention.type !== 'deictic') continue;
+
+    // Find the most recent PLACE/ORG entity before this mention
+    const candidateSpans = entitySpans
+      .filter(span => {
+        // Must be before the deictic mention
+        if (span.end >= mention.start) return false;
+
+        // Must be within MAX_DISTANCE characters
+        if (mention.start - span.end > MAX_DISTANCE) return false;
+
+        // Must be a location type
+        const entity = entities.find(e => e.id === span.entity_id);
+        return entity && LOCATION_TYPES.has(entity.type);
+      })
+      .sort((a, b) => b.end - a.end); // Sort by recency (most recent first)
+
+    if (candidateSpans.length > 0) {
+      const nearestSpan = candidateSpans[0];
+
+      links.push({
+        mention,
+        entity_id: nearestSpan.entity_id,
+        confidence: 0.75,
+        method: 'deictic_ref',
+      });
+    }
+  }
+
+  return links;
+}
+
+/**
  * Main coreference resolution function
  */
 export function resolveCoref(
@@ -748,6 +811,7 @@ export function resolveCoref(
   const nominalLinks = resolveNominalBackLinks(mentions, entities, entitySpans, sentences, text, profiles);
   const { links: quoteLinks, quotes } = resolveQuoteAttribution(mentions, entities, entitySpans, sentences, text);
   const coordinationLinks = resolveCoordination(entities, entitySpans, sentences, text);
+  const deicticLinks = resolveDeicticAdverbs(mentions, entities, entitySpans, sentences, text);
 
   // Merge all links
   const allLinks = [
@@ -756,6 +820,7 @@ export function resolveCoref(
     ...nominalLinks,
     ...quoteLinks,
     ...coordinationLinks,
+    ...deicticLinks,
   ];
 
   // Deduplicate links (prefer higher confidence)

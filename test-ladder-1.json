@@ -5,7 +5,7 @@
       "type": "PERSON",
       "canonical": "Elrond",
       "aliases": [],
-      "created_at": "2025-11-08T03:12:59.905Z",
+      "created_at": "2025-11-08T02:52:06.681Z",
       "centrality": 0
     },
     {
@@ -13,13 +13,13 @@
       "type": "PLACE",
       "canonical": "Rivendell",
       "aliases": [],
-      "created_at": "2025-11-08T03:12:59.905Z",
+      "created_at": "2025-11-08T02:52:06.681Z",
       "centrality": 0
     }
   ],
   "relations": [
     {
-      "id": "e73877bb-62ce-4a61-951e-4087d1a7e426",
+      "id": "0372589d-972c-4ef2-a256-c2dcae3323ed",
       "subj": "global_person_0",
       "pred": "lives_in",
       "obj": "global_place_1",
@@ -29,7 +29,7 @@
           "span": {
             "start": 0,
             "end": 25,
-            "text": "Elrond dwelt in Rivendell. The elf lord welcomed travelers. He wa"
+            "text": "Elrond dwelt in Rivendell."
           },
           "sentence_index": 0,
           "source": "RAW"
@@ -41,22 +41,22 @@
   ],
   "conflicts": [],
   "provenance": {
-    "2.15_entity_0": {
+    "1.20_entity_0": {
       "global_id": "global_person_0",
-      "doc_id": "2.15",
-      "merged_at": "2025-11-08T03:12:59.905Z",
+      "doc_id": "1.20",
+      "merged_at": "2025-11-08T02:52:06.681Z",
       "local_canonical": "Elrond"
     },
-    "2.15_entity_1": {
+    "1.20_entity_1": {
       "global_id": "global_place_1",
-      "doc_id": "2.15",
-      "merged_at": "2025-11-08T03:12:59.905Z",
+      "doc_id": "1.20",
+      "merged_at": "2025-11-08T02:52:06.681Z",
       "local_canonical": "Rivendell"
     }
   },
   "profiles": {
-    "36088038-fc57-4517-be1e-ef732762219a": {
-      "entity_id": "36088038-fc57-4517-be1e-ef732762219a",
+    "7438ed61-ea80-448a-801f-d4ced84af153": {
+      "entity_id": "7438ed61-ea80-448a-801f-d4ced84af153",
       "entity_type": "PERSON",
       "canonical": "Elrond",
       "descriptors": [],
@@ -69,12 +69,12 @@
         "Elrond dwelt in Rivendell."
       ],
       "mention_count": 1,
-      "first_seen": "2.15",
-      "last_seen": "2.15",
+      "first_seen": "1.20",
+      "last_seen": "1.20",
       "confidence_score": 0.55
     },
-    "2a1e3499-ce02-4461-b52e-7588e9bca967": {
-      "entity_id": "2a1e3499-ce02-4461-b52e-7588e9bca967",
+    "2da116f1-f55a-46db-b7c3-37fd4b75ab0d": {
+      "entity_id": "2da116f1-f55a-46db-b7c3-37fd4b75ab0d",
       "entity_type": "PLACE",
       "canonical": "Rivendell",
       "descriptors": [],
@@ -84,21 +84,20 @@
       "roles": [],
       "attributes": {},
       "contexts": [
-        "Elrond dwelt in Rivendell.",
         "Elrond dwelt in Rivendell."
       ],
-      "mention_count": 2,
-      "first_seen": "2.15",
-      "last_seen": "2.15",
-      "confidence_score": 0.6
+      "mention_count": 1,
+      "first_seen": "1.20",
+      "last_seen": "1.20",
+      "confidence_score": 0.55
     }
   },
   "metadata": {
-    "created_at": "2025-11-08T03:12:59.902Z",
-    "updated_at": "2025-11-08T03:12:59.905Z",
+    "created_at": "2025-11-08T02:52:06.679Z",
+    "updated_at": "2025-11-08T02:52:06.681Z",
     "doc_count": 1,
     "doc_ids": [
-      "2.15"
+      "1.20"
     ]
   }
 }
