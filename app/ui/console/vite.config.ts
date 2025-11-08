@@ -11,10 +11,10 @@ export default defineConfig({
   server: {
     port: 3001,
     proxy: {
-      '/graphql': 'http://localhost:4000',
-      '/wiki-file': 'http://localhost:4000',
-      '/download': 'http://localhost:4000',
-      '/metrics': 'http://localhost:4100'
+      '/graphql': process.env.VITE_API_URL || 'https://ares-production-72ea.up.railway.app',
+      '/wiki-file': process.env.VITE_API_URL || 'https://ares-production-72ea.up.railway.app',
+      '/download': process.env.VITE_API_URL || 'https://ares-production-72ea.up.railway.app',
+      '/metrics': process.env.VITE_API_URL || 'https://ares-production-72ea.up.railway.app'
     }
   }
 });
