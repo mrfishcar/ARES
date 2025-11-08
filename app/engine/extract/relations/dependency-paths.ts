@@ -348,6 +348,9 @@ const PATH_PATTERNS: PathPattern[] = [
   // "X visited Y"
   { signature: /^(\w+):↑nsubj:visit:↓(dobj|obj):(\w+)$/, predicate: 'traveled_to', subjectFirst: true },
 
+  // "X fought in Y" (battles/events)
+  { signature: /^(\w+):↑nsubj:fight:↓prep:in:↓pobj:(\w+)$/, predicate: 'fought_in', subjectFirst: true },
+
   // "X based in Y" (org/company location)
   { signature: /^(\w+):↓relcl:base:↓prep:in:↓pobj:(\w+)$/, predicate: 'lives_in', subjectFirst: true }, // Using lives_in for now
 

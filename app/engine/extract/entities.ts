@@ -332,9 +332,11 @@ function refineEntityType(type: EntityType, text: string): EntityType {
     return 'ORG';
   }
 
-  // Battle/war/conflict mentions should be EVENT, not WORK
-  if (type === "WORK" && /\b(battle|war|conflict|siege|skirmish|fight)\b/i.test(text)) {
-    return "EVENT";
+  // Battle/war/conflict mentions should be EVENT, not WORK or PERSON
+  if (/\b(battle|war|conflict|siege|skirmish|fight)\b/i.test(text)) {
+    if (type === "WORK" || type === "PERSON") {
+      return "EVENT";
+    }
   }
   return type;
 }
@@ -994,7 +996,8 @@ function fallbackNames(text: string): Array<{ text: string; type: EntityType; st
 
 function extractYearSpans(text: string): Array<{ text: string; type: EntityType; start: number; end: number }> {
   const spans: { text: string; type: EntityType; start: number; end: number }[] = [];
-  const yearPattern = /\b(1[6-9]\d{2}|20\d{2})\b/g;
+  // Match years: 1600-1999, 2000-2099, or 3000-9999 (for fantasy/sci-fi dates)
+  const yearPattern = /\b(1[6-9]\d{2}|20\d{2}|[3-9]\d{3})\b/g;
   let match: RegExpExecArray | null;
 
   while ((match = yearPattern.exec(text))) {
