@@ -664,12 +664,18 @@ function hasSemanticMarker(
   return markers.some(m => pathText.includes(m));
 }
 
+const DEBUG_PATTERNS = process.env.DEBUG_PATTERNS === '1';
+
 /**
  * Match a dependency path against known patterns
  */
 export function matchDependencyPath(
   path: DependencyPath
 ): { predicate: Predicate; confidence: number; subjectFirst: boolean } | null {
+
+  if (DEBUG_PATTERNS) {
+    console.log(`[PATTERN-MATCH] Testing path signature: ${path.signature}`);
+  }
 
   for (const pattern of PATH_PATTERNS) {
     let match: RegExpMatchArray | null = null;
@@ -683,12 +689,19 @@ export function matchDependencyPath(
     }
 
     if (match) {
+      if (DEBUG_PATTERNS) {
+        console.log(`[PATTERN-MATCH] ✓ MATCHED: ${pattern.predicate} (pattern: ${pattern.signature})`);
+      }
       return {
         predicate: pattern.predicate,
         confidence: 0.9, // High confidence for pattern match
         subjectFirst: pattern.subjectFirst
       };
     }
+  }
+
+  if (DEBUG_PATTERNS) {
+    console.log(`[PATTERN-MATCH] ✗ No pattern matched`);
   }
 
   // Semantic fallbacks: if path structure matches but needs context
