@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextAID": 741,
+  "nextAID": 968,
   "mappings": [
     {
       "aid": 554,
@@ -1871,11 +1871,2281 @@
       "last_seen": "2025-11-08T04:45:19.868Z",
       "occurrence_count": 1,
       "confidence": 0.9
+    },
+    {
+      "aid": 741,
+      "surfaceForm": "Detective Raymond Cole",
+      "normalizedKey": "detective raymond cole",
+      "eid": 372,
+      "created_at": "2025-11-08T05:17:37.121Z",
+      "last_seen": "2025-11-08T05:17:37.121Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 742,
+      "surfaceForm": "Detective Lisa Park",
+      "normalizedKey": "detective lisa park",
+      "eid": 373,
+      "created_at": "2025-11-08T05:17:37.121Z",
+      "last_seen": "2025-11-08T05:17:37.121Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 743,
+      "surfaceForm": "Marcus Reed",
+      "normalizedKey": "marcus reed",
+      "eid": 374,
+      "created_at": "2025-11-08T05:17:37.122Z",
+      "last_seen": "2025-11-08T05:17:37.122Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 744,
+      "surfaceForm": "Professor Chen",
+      "normalizedKey": "professor chen",
+      "eid": 265,
+      "created_at": "2025-11-08T05:17:37.122Z",
+      "last_seen": "2025-11-08T05:17:37.122Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 745,
+      "surfaceForm": "Karen",
+      "normalizedKey": "karen",
+      "eid": 130,
+      "created_at": "2025-11-08T05:17:37.122Z",
+      "last_seen": "2025-11-08T05:17:37.122Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 746,
+      "surfaceForm": "Thomas Gardner",
+      "normalizedKey": "thomas gardner",
+      "eid": 375,
+      "created_at": "2025-11-08T05:17:37.122Z",
+      "last_seen": "2025-11-08T05:17:37.122Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 747,
+      "surfaceForm": "Victoria Brennan",
+      "normalizedKey": "victoria brennan",
+      "eid": 376,
+      "created_at": "2025-11-08T05:17:37.123Z",
+      "last_seen": "2025-11-08T05:17:37.123Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 748,
+      "surfaceForm": "Complicated",
+      "normalizedKey": "complicated",
+      "eid": 377,
+      "created_at": "2025-11-08T05:17:37.123Z",
+      "last_seen": "2025-11-08T05:17:37.123Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 749,
+      "surfaceForm": "Five PM",
+      "normalizedKey": "five pm",
+      "eid": 378,
+      "created_at": "2025-11-08T05:17:37.123Z",
+      "last_seen": "2025-11-08T05:17:37.123Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 750,
+      "surfaceForm": "Verified",
+      "normalizedKey": "verified",
+      "eid": 379,
+      "created_at": "2025-11-08T05:17:37.124Z",
+      "last_seen": "2025-11-08T05:17:37.124Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 751,
+      "surfaceForm": "Jennifer",
+      "normalizedKey": "jennifer",
+      "eid": 380,
+      "created_at": "2025-11-08T05:17:37.124Z",
+      "last_seen": "2025-11-08T05:17:37.124Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 752,
+      "surfaceForm": "Sophie",
+      "normalizedKey": "sophie",
+      "eid": 381,
+      "created_at": "2025-11-08T05:17:37.124Z",
+      "last_seen": "2025-11-08T05:17:37.124Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 753,
+      "surfaceForm": "DNA",
+      "normalizedKey": "dna",
+      "eid": 382,
+      "created_at": "2025-11-08T05:17:37.124Z",
+      "last_seen": "2025-11-08T05:17:37.124Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 754,
+      "surfaceForm": "Antonio Valdez",
+      "normalizedKey": "antonio valdez",
+      "eid": 383,
+      "created_at": "2025-11-08T05:17:37.125Z",
+      "last_seen": "2025-11-08T05:17:37.125Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 755,
+      "surfaceForm": "Morettis",
+      "normalizedKey": "morettis",
+      "eid": 384,
+      "created_at": "2025-11-08T05:17:37.125Z",
+      "last_seen": "2025-11-08T05:17:37.125Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 756,
+      "surfaceForm": "Derek Walsh",
+      "normalizedKey": "derek walsh",
+      "eid": 385,
+      "created_at": "2025-11-08T05:17:37.125Z",
+      "last_seen": "2025-11-08T05:17:37.125Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 757,
+      "surfaceForm": "Dad",
+      "normalizedKey": "dad",
+      "eid": 74,
+      "created_at": "2025-11-08T05:17:37.126Z",
+      "last_seen": "2025-11-08T05:17:37.126Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 758,
+      "surfaceForm": "Last Summer",
+      "normalizedKey": "last summer",
+      "eid": 386,
+      "created_at": "2025-11-08T05:17:56.092Z",
+      "last_seen": "2025-11-08T05:17:56.092Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 759,
+      "surfaceForm": "And Sarah Chen",
+      "normalizedKey": "and sarah chen",
+      "eid": 265,
+      "created_at": "2025-11-08T05:17:56.092Z",
+      "last_seen": "2025-11-08T05:17:56.092Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 760,
+      "surfaceForm": "Boston Memorial Hospital",
+      "normalizedKey": "boston memorial hospital",
+      "eid": 387,
+      "created_at": "2025-11-08T05:17:56.093Z",
+      "last_seen": "2025-11-08T05:17:56.093Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 761,
+      "surfaceForm": "Marcus Williams",
+      "normalizedKey": "marcus williams",
+      "eid": 388,
+      "created_at": "2025-11-08T05:17:56.093Z",
+      "last_seen": "2025-11-08T05:17:56.093Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 762,
+      "surfaceForm": "Patterson",
+      "normalizedKey": "patterson",
+      "eid": 389,
+      "created_at": "2025-11-08T05:17:56.093Z",
+      "last_seen": "2025-11-08T05:17:56.093Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 763,
+      "surfaceForm": "Lily",
+      "normalizedKey": "lily",
+      "eid": 390,
+      "created_at": "2025-11-08T05:17:56.093Z",
+      "last_seen": "2025-11-08T05:17:56.093Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 764,
+      "surfaceForm": "David",
+      "normalizedKey": "david",
+      "eid": 330,
+      "created_at": "2025-11-08T05:17:56.093Z",
+      "last_seen": "2025-11-08T05:17:56.093Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 765,
+      "surfaceForm": "Maine",
+      "normalizedKey": "maine",
+      "eid": 391,
+      "created_at": "2025-11-08T05:17:56.094Z",
+      "last_seen": "2025-11-08T05:17:56.094Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 766,
+      "surfaceForm": "Oceanside",
+      "normalizedKey": "oceanside",
+      "eid": 392,
+      "created_at": "2025-11-08T05:17:56.094Z",
+      "last_seen": "2025-11-08T05:17:56.094Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 767,
+      "surfaceForm": "Seabrook Medical Clinic",
+      "normalizedKey": "seabrook medical clinic",
+      "eid": 393,
+      "created_at": "2025-11-08T05:17:56.094Z",
+      "last_seen": "2025-11-08T05:17:56.094Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 768,
+      "surfaceForm": "Boston",
+      "normalizedKey": "boston",
+      "eid": 387,
+      "created_at": "2025-11-08T05:17:56.094Z",
+      "last_seen": "2025-11-08T05:17:56.094Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 769,
+      "surfaceForm": "Complete",
+      "normalizedKey": "complete",
+      "eid": 394,
+      "created_at": "2025-11-08T05:17:56.094Z",
+      "last_seen": "2025-11-08T05:17:56.094Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 770,
+      "surfaceForm": "Cambridge",
+      "normalizedKey": "cambridge",
+      "eid": 273,
+      "created_at": "2025-11-08T05:17:56.094Z",
+      "last_seen": "2025-11-08T05:17:56.094Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 771,
+      "surfaceForm": "Kids",
+      "normalizedKey": "kids",
+      "eid": 395,
+      "created_at": "2025-11-08T05:17:56.094Z",
+      "last_seen": "2025-11-08T05:17:56.094Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 772,
+      "surfaceForm": "Same",
+      "normalizedKey": "same",
+      "eid": 396,
+      "created_at": "2025-11-08T05:17:56.095Z",
+      "last_seen": "2025-11-08T05:17:56.095Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 773,
+      "surfaceForm": "Imposing",
+      "normalizedKey": "imposing",
+      "eid": 397,
+      "created_at": "2025-11-08T05:17:56.095Z",
+      "last_seen": "2025-11-08T05:17:56.095Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 774,
+      "surfaceForm": "Even Patricia Monroe",
+      "normalizedKey": "even patricia monroe",
+      "eid": 398,
+      "created_at": "2025-11-08T05:17:56.095Z",
+      "last_seen": "2025-11-08T05:17:56.095Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 775,
+      "surfaceForm": "Boston Memorial",
+      "normalizedKey": "boston memorial",
+      "eid": 387,
+      "created_at": "2025-11-08T05:17:56.095Z",
+      "last_seen": "2025-11-08T05:17:56.095Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 776,
+      "surfaceForm": "Selfish",
+      "normalizedKey": "selfish",
+      "eid": 399,
+      "created_at": "2025-11-08T05:17:56.095Z",
+      "last_seen": "2025-11-08T05:17:56.095Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 777,
+      "surfaceForm": "Help",
+      "normalizedKey": "help",
+      "eid": 400,
+      "created_at": "2025-11-08T05:17:56.096Z",
+      "last_seen": "2025-11-08T05:17:56.096Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 778,
+      "surfaceForm": "Jennifer Park",
+      "normalizedKey": "jennifer park",
+      "eid": 380,
+      "created_at": "2025-11-08T05:17:56.096Z",
+      "last_seen": "2025-11-08T05:17:56.096Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 779,
+      "surfaceForm": "Johns Hopkins",
+      "normalizedKey": "johns hopkins",
+      "eid": 401,
+      "created_at": "2025-11-08T05:17:56.096Z",
+      "last_seen": "2025-11-08T05:17:56.096Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 780,
+      "surfaceForm": "Take Mrs",
+      "normalizedKey": "take mrs",
+      "eid": 336,
+      "created_at": "2025-11-08T05:17:56.096Z",
+      "last_seen": "2025-11-08T05:17:56.096Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 781,
+      "surfaceForm": "Agnes Foster",
+      "normalizedKey": "agnes foster",
+      "eid": 402,
+      "created_at": "2025-11-08T05:17:56.096Z",
+      "last_seen": "2025-11-08T05:17:56.096Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 782,
+      "surfaceForm": "Stage",
+      "normalizedKey": "stage",
+      "eid": 403,
+      "created_at": "2025-11-08T05:17:56.097Z",
+      "last_seen": "2025-11-08T05:17:56.097Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 783,
+      "surfaceForm": "Know",
+      "normalizedKey": "know",
+      "eid": 404,
+      "created_at": "2025-11-08T05:17:56.097Z",
+      "last_seen": "2025-11-08T05:17:56.097Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 784,
+      "surfaceForm": "Patients",
+      "normalizedKey": "patients",
+      "eid": 405,
+      "created_at": "2025-11-08T05:17:56.097Z",
+      "last_seen": "2025-11-08T05:17:56.097Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 785,
+      "surfaceForm": "Grandmother Rose",
+      "normalizedKey": "grandmother rose",
+      "eid": 406,
+      "created_at": "2025-11-08T05:17:56.097Z",
+      "last_seen": "2025-11-08T05:17:56.097Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 786,
+      "surfaceForm": "Atlantic Ocean",
+      "normalizedKey": "atlantic ocean",
+      "eid": 407,
+      "created_at": "2025-11-08T05:17:56.097Z",
+      "last_seen": "2025-11-08T05:17:56.097Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 787,
+      "surfaceForm": "Absolutely",
+      "normalizedKey": "absolutely",
+      "eid": 408,
+      "created_at": "2025-11-08T05:17:56.097Z",
+      "last_seen": "2025-11-08T05:17:56.097Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 788,
+      "surfaceForm": "But Tom",
+      "normalizedKey": "but tom",
+      "eid": 409,
+      "created_at": "2025-11-08T05:17:56.097Z",
+      "last_seen": "2025-11-08T05:17:56.097Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 789,
+      "surfaceForm": "San Francisco",
+      "normalizedKey": "san francisco",
+      "eid": 64,
+      "created_at": "2025-11-08T05:17:56.098Z",
+      "last_seen": "2025-11-08T05:17:56.098Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 790,
+      "surfaceForm": "Vietnamese",
+      "normalizedKey": "vietnamese",
+      "eid": 410,
+      "created_at": "2025-11-08T05:17:56.098Z",
+      "last_seen": "2025-11-08T05:17:56.098Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 791,
+      "surfaceForm": "Allston",
+      "normalizedKey": "allston",
+      "eid": 411,
+      "created_at": "2025-11-08T05:17:56.098Z",
+      "last_seen": "2025-11-08T05:17:56.098Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 792,
+      "surfaceForm": "August",
+      "normalizedKey": "august",
+      "eid": 412,
+      "created_at": "2025-11-08T05:17:56.098Z",
+      "last_seen": "2025-11-08T05:17:56.098Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 793,
+      "surfaceForm": "Colleagues",
+      "normalizedKey": "colleagues",
+      "eid": 413,
+      "created_at": "2025-11-08T05:17:56.098Z",
+      "last_seen": "2025-11-08T05:17:56.098Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 794,
+      "surfaceForm": "Nurses",
+      "normalizedKey": "nurses",
+      "eid": 414,
+      "created_at": "2025-11-08T05:17:56.098Z",
+      "last_seen": "2025-11-08T05:17:56.098Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 795,
+      "surfaceForm": "On Christmas Eve",
+      "normalizedKey": "on christmas eve",
+      "eid": 415,
+      "created_at": "2025-11-08T05:17:56.099Z",
+      "last_seen": "2025-11-08T05:17:56.099Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 796,
+      "surfaceForm": "Keep",
+      "normalizedKey": "keep",
+      "eid": 416,
+      "created_at": "2025-11-08T05:17:56.099Z",
+      "last_seen": "2025-11-08T05:17:56.099Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 797,
+      "surfaceForm": "Interstate",
+      "normalizedKey": "interstate",
+      "eid": 417,
+      "created_at": "2025-11-08T05:17:56.099Z",
+      "last_seen": "2025-11-08T05:17:56.099Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 798,
+      "surfaceForm": "New Hampshire",
+      "normalizedKey": "new hampshire",
+      "eid": 22,
+      "created_at": "2025-11-08T05:17:56.099Z",
+      "last_seen": "2025-11-08T05:17:56.099Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 799,
+      "surfaceForm": "Seabrook",
+      "normalizedKey": "seabrook",
+      "eid": 393,
+      "created_at": "2025-11-08T05:17:56.099Z",
+      "last_seen": "2025-11-08T05:17:56.099Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 800,
+      "surfaceForm": "Neighbors",
+      "normalizedKey": "neighbors",
+      "eid": 418,
+      "created_at": "2025-11-08T05:17:56.099Z",
+      "last_seen": "2025-11-08T05:17:56.099Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 801,
+      "surfaceForm": "Harold Jenkins",
+      "normalizedKey": "harold jenkins",
+      "eid": 419,
+      "created_at": "2025-11-08T05:17:56.099Z",
+      "last_seen": "2025-11-08T05:17:56.099Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 802,
+      "surfaceForm": "Emma Torres",
+      "normalizedKey": "emma torres",
+      "eid": 420,
+      "created_at": "2025-11-08T05:17:56.100Z",
+      "last_seen": "2025-11-08T05:17:56.100Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 803,
+      "surfaceForm": "Jason Torres",
+      "normalizedKey": "jason torres",
+      "eid": 421,
+      "created_at": "2025-11-08T05:17:56.100Z",
+      "last_seen": "2025-11-08T05:17:56.100Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 804,
+      "surfaceForm": "Martha Quinn",
+      "normalizedKey": "martha quinn",
+      "eid": 422,
+      "created_at": "2025-11-08T05:17:56.100Z",
+      "last_seen": "2025-11-08T05:17:56.100Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 805,
+      "surfaceForm": "Robert Sullivan",
+      "normalizedKey": "robert sullivan",
+      "eid": 423,
+      "created_at": "2025-11-08T05:17:56.100Z",
+      "last_seen": "2025-11-08T05:17:56.100Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 806,
+      "surfaceForm": "Portland",
+      "normalizedKey": "portland",
+      "eid": 424,
+      "created_at": "2025-11-08T05:17:56.100Z",
+      "last_seen": "2025-11-08T05:17:56.100Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 807,
+      "surfaceForm": "Right",
+      "normalizedKey": "right",
+      "eid": 425,
+      "created_at": "2025-11-08T05:17:56.100Z",
+      "last_seen": "2025-11-08T05:17:56.100Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 808,
+      "surfaceForm": "Twenty",
+      "normalizedKey": "twenty",
+      "eid": 426,
+      "created_at": "2025-11-08T05:17:56.101Z",
+      "last_seen": "2025-11-08T05:17:56.101Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 809,
+      "surfaceForm": "Patrick O'Malley",
+      "normalizedKey": "patrick o'malley",
+      "eid": 427,
+      "created_at": "2025-11-08T05:17:56.101Z",
+      "last_seen": "2025-11-08T05:17:56.101Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 810,
+      "surfaceForm": "Rachel Morrison",
+      "normalizedKey": "rachel morrison",
+      "eid": 428,
+      "created_at": "2025-11-08T05:17:56.101Z",
+      "last_seen": "2025-11-08T05:17:56.101Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 811,
+      "surfaceForm": "Sophie Kim",
+      "normalizedKey": "sophie kim",
+      "eid": 381,
+      "created_at": "2025-11-08T05:17:56.101Z",
+      "last_seen": "2025-11-08T05:17:56.101Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 812,
+      "surfaceForm": "Atlantic",
+      "normalizedKey": "atlantic",
+      "eid": 407,
+      "created_at": "2025-11-08T05:17:56.101Z",
+      "last_seen": "2025-11-08T05:17:56.101Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 813,
+      "surfaceForm": "High",
+      "normalizedKey": "high",
+      "eid": 429,
+      "created_at": "2025-11-08T05:17:56.102Z",
+      "last_seen": "2025-11-08T05:17:56.102Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 814,
+      "surfaceForm": "Like",
+      "normalizedKey": "like",
+      "eid": 430,
+      "created_at": "2025-11-08T05:17:56.102Z",
+      "last_seen": "2025-11-08T05:17:56.102Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 815,
+      "surfaceForm": "Peterson",
+      "normalizedKey": "peterson",
+      "eid": 261,
+      "created_at": "2025-11-08T05:17:56.102Z",
+      "last_seen": "2025-11-08T05:17:56.102Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 816,
+      "surfaceForm": "Oh",
+      "normalizedKey": "oh",
+      "eid": 69,
+      "created_at": "2025-11-08T05:17:56.102Z",
+      "last_seen": "2025-11-08T05:17:56.102Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 817,
+      "surfaceForm": "Remission",
+      "normalizedKey": "remission",
+      "eid": 431,
+      "created_at": "2025-11-08T05:17:56.102Z",
+      "last_seen": "2025-11-08T05:17:56.102Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 818,
+      "surfaceForm": "Tears",
+      "normalizedKey": "tears",
+      "eid": 432,
+      "created_at": "2025-11-08T05:17:56.102Z",
+      "last_seen": "2025-11-08T05:17:56.102Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 819,
+      "surfaceForm": "Kyle Anderson",
+      "normalizedKey": "kyle anderson",
+      "eid": 433,
+      "created_at": "2025-11-08T05:17:56.102Z",
+      "last_seen": "2025-11-08T05:17:56.102Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 820,
+      "surfaceForm": "Susan Anderson",
+      "normalizedKey": "susan anderson",
+      "eid": 434,
+      "created_at": "2025-11-08T05:17:56.102Z",
+      "last_seen": "2025-11-08T05:17:56.102Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 821,
+      "surfaceForm": "Christmas",
+      "normalizedKey": "christmas",
+      "eid": 415,
+      "created_at": "2025-11-08T05:17:56.103Z",
+      "last_seen": "2025-11-08T05:17:56.103Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 822,
+      "surfaceForm": "Snow",
+      "normalizedKey": "snow",
+      "eid": 435,
+      "created_at": "2025-11-08T05:17:56.103Z",
+      "last_seen": "2025-11-08T05:17:56.103Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 823,
+      "surfaceForm": "Learn",
+      "normalizedKey": "learn",
+      "eid": 436,
+      "created_at": "2025-11-08T05:17:56.103Z",
+      "last_seen": "2025-11-08T05:17:56.103Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 824,
+      "surfaceForm": "Get",
+      "normalizedKey": "get",
+      "eid": 437,
+      "created_at": "2025-11-08T05:17:56.103Z",
+      "last_seen": "2025-11-08T05:17:56.103Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 825,
+      "surfaceForm": "Gathering Storm",
+      "normalizedKey": "gathering storm",
+      "eid": 252,
+      "created_at": "2025-11-08T05:18:13.025Z",
+      "last_seen": "2025-11-08T05:18:13.025Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 826,
+      "surfaceForm": "Elara Moonwhisper",
+      "normalizedKey": "elara moonwhisper",
+      "eid": 438,
+      "created_at": "2025-11-08T05:18:13.025Z",
+      "last_seen": "2025-11-08T05:18:13.025Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 827,
+      "surfaceForm": "Crystal Cliffs",
+      "normalizedKey": "crystal cliffs",
+      "eid": 439,
+      "created_at": "2025-11-08T05:18:13.025Z",
+      "last_seen": "2025-11-08T05:18:13.025Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 828,
+      "surfaceForm": "Alderan",
+      "normalizedKey": "alderan",
+      "eid": 440,
+      "created_at": "2025-11-08T05:18:13.025Z",
+      "last_seen": "2025-11-08T05:18:13.025Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 829,
+      "surfaceForm": "Crimson Sea",
+      "normalizedKey": "crimson sea",
+      "eid": 441,
+      "created_at": "2025-11-08T05:18:13.025Z",
+      "last_seen": "2025-11-08T05:18:13.025Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 830,
+      "surfaceForm": "Northern Reaches",
+      "normalizedKey": "northern reaches",
+      "eid": 442,
+      "created_at": "2025-11-08T05:18:13.030Z",
+      "last_seen": "2025-11-08T05:18:13.030Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 831,
+      "surfaceForm": "Master Theron Brightforge",
+      "normalizedKey": "master theron brightforge",
+      "eid": 340,
+      "created_at": "2025-11-08T05:18:13.030Z",
+      "last_seen": "2025-11-08T05:18:13.030Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 832,
+      "surfaceForm": "Council of Seven",
+      "normalizedKey": "council of seven",
+      "eid": 443,
+      "created_at": "2025-11-08T05:18:13.030Z",
+      "last_seen": "2025-11-08T05:18:13.030Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 833,
+      "surfaceForm": "Seven Stars",
+      "normalizedKey": "seven stars",
+      "eid": 444,
+      "created_at": "2025-11-08T05:18:13.031Z",
+      "last_seen": "2025-11-08T05:18:13.031Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 834,
+      "surfaceForm": "Shadow King",
+      "normalizedKey": "shadow king",
+      "eid": 445,
+      "created_at": "2025-11-08T05:18:13.031Z",
+      "last_seen": "2025-11-08T05:18:13.031Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 835,
+      "surfaceForm": "Lord Malachar",
+      "normalizedKey": "lord malachar",
+      "eid": 446,
+      "created_at": "2025-11-08T05:18:13.031Z",
+      "last_seen": "2025-11-08T05:18:13.031Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 836,
+      "surfaceForm": "Void",
+      "normalizedKey": "void",
+      "eid": 447,
+      "created_at": "2025-11-08T05:18:13.031Z",
+      "last_seen": "2025-11-08T05:18:13.031Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 837,
+      "surfaceForm": "Battle of Starfall Ridge",
+      "normalizedKey": "battle of starfall ridge",
+      "eid": 266,
+      "created_at": "2025-11-08T05:18:13.031Z",
+      "last_seen": "2025-11-08T05:18:13.031Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 838,
+      "surfaceForm": "Starfall Ridge",
+      "normalizedKey": "starfall ridge",
+      "eid": 266,
+      "created_at": "2025-11-08T05:18:13.031Z",
+      "last_seen": "2025-11-08T05:18:13.031Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 839,
+      "surfaceForm": "Obsidian Mountains",
+      "normalizedKey": "obsidian mountains",
+      "eid": 448,
+      "created_at": "2025-11-08T05:18:13.032Z",
+      "last_seen": "2025-11-08T05:18:13.032Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 840,
+      "surfaceForm": "Orb of Eternal Night",
+      "normalizedKey": "orb of eternal night",
+      "eid": 449,
+      "created_at": "2025-11-08T05:18:13.032Z",
+      "last_seen": "2025-11-08T05:18:13.032Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 841,
+      "surfaceForm": "Hidden",
+      "normalizedKey": "hidden",
+      "eid": 450,
+      "created_at": "2025-11-08T05:18:13.032Z",
+      "last_seen": "2025-11-08T05:18:13.032Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 842,
+      "surfaceForm": "King Aldric",
+      "normalizedKey": "king aldric",
+      "eid": 451,
+      "created_at": "2025-11-08T05:18:13.032Z",
+      "last_seen": "2025-11-08T05:18:13.032Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 843,
+      "surfaceForm": "Silverhaven",
+      "normalizedKey": "silverhaven",
+      "eid": 452,
+      "created_at": "2025-11-08T05:18:13.032Z",
+      "last_seen": "2025-11-08T05:18:13.032Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 844,
+      "surfaceForm": "Lyssa Moonwhisper",
+      "normalizedKey": "lyssa moonwhisper",
+      "eid": 453,
+      "created_at": "2025-11-08T05:18:13.032Z",
+      "last_seen": "2025-11-08T05:18:13.032Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 845,
+      "surfaceForm": "Before Elara",
+      "normalizedKey": "before elara",
+      "eid": 454,
+      "created_at": "2025-11-08T05:18:13.032Z",
+      "last_seen": "2025-11-08T05:18:13.032Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 846,
+      "surfaceForm": "Cassandra Stormweaver",
+      "normalizedKey": "cassandra stormweaver",
+      "eid": 455,
+      "created_at": "2025-11-08T05:18:13.033Z",
+      "last_seen": "2025-11-08T05:18:13.033Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 847,
+      "surfaceForm": "High Priestess",
+      "normalizedKey": "high priestess",
+      "eid": 429,
+      "created_at": "2025-11-08T05:18:13.033Z",
+      "last_seen": "2025-11-08T05:18:13.033Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 848,
+      "surfaceForm": "Forgive",
+      "normalizedKey": "forgive",
+      "eid": 329,
+      "created_at": "2025-11-08T05:18:13.033Z",
+      "last_seen": "2025-11-08T05:18:13.033Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 849,
+      "surfaceForm": "Thornhaven",
+      "normalizedKey": "thornhaven",
+      "eid": 456,
+      "created_at": "2025-11-08T05:18:13.033Z",
+      "last_seen": "2025-11-08T05:18:13.033Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 850,
+      "surfaceForm": "Vex the Bloodless",
+      "normalizedKey": "vex the bloodless",
+      "eid": 457,
+      "created_at": "2025-11-08T05:18:13.033Z",
+      "last_seen": "2025-11-08T05:18:13.033Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 851,
+      "surfaceForm": "Fifty",
+      "normalizedKey": "fifty",
+      "eid": 458,
+      "created_at": "2025-11-08T05:18:13.033Z",
+      "last_seen": "2025-11-08T05:18:13.033Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 852,
+      "surfaceForm": "Tower",
+      "normalizedKey": "tower",
+      "eid": 459,
+      "created_at": "2025-11-08T05:18:13.033Z",
+      "last_seen": "2025-11-08T05:18:13.033Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 853,
+      "surfaceForm": "Lake Serenity",
+      "normalizedKey": "lake serenity",
+      "eid": 460,
+      "created_at": "2025-11-08T05:18:13.034Z",
+      "last_seen": "2025-11-08T05:18:13.034Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 854,
+      "surfaceForm": "Evocation Transmutation Divination Necromancy",
+      "normalizedKey": "evocation transmutation divination necromancy",
+      "eid": 461,
+      "created_at": "2025-11-08T05:18:13.034Z",
+      "last_seen": "2025-11-08T05:18:13.034Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 855,
+      "surfaceForm": "Conjuration",
+      "normalizedKey": "conjuration",
+      "eid": 462,
+      "created_at": "2025-11-08T05:18:13.034Z",
+      "last_seen": "2025-11-08T05:18:13.034Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 856,
+      "surfaceForm": "Located",
+      "normalizedKey": "located",
+      "eid": 463,
+      "created_at": "2025-11-08T05:18:13.034Z",
+      "last_seen": "2025-11-08T05:18:13.034Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 857,
+      "surfaceForm": "Evocation",
+      "normalizedKey": "evocation",
+      "eid": 461,
+      "created_at": "2025-11-08T05:18:13.034Z",
+      "last_seen": "2025-11-08T05:18:13.034Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 858,
+      "surfaceForm": "Transmutation",
+      "normalizedKey": "transmutation",
+      "eid": 461,
+      "created_at": "2025-11-08T05:18:13.035Z",
+      "last_seen": "2025-11-08T05:18:13.035Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 859,
+      "surfaceForm": "Divination",
+      "normalizedKey": "divination",
+      "eid": 461,
+      "created_at": "2025-11-08T05:18:13.035Z",
+      "last_seen": "2025-11-08T05:18:13.035Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 860,
+      "surfaceForm": "Necromancy",
+      "normalizedKey": "necromancy",
+      "eid": 461,
+      "created_at": "2025-11-08T05:18:13.035Z",
+      "last_seen": "2025-11-08T05:18:13.035Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 861,
+      "surfaceForm": "Enchantment",
+      "normalizedKey": "enchantment",
+      "eid": 464,
+      "created_at": "2025-11-08T05:18:13.035Z",
+      "last_seen": "2025-11-08T05:18:13.035Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 862,
+      "surfaceForm": "Illusion",
+      "normalizedKey": "illusion",
+      "eid": 465,
+      "created_at": "2025-11-08T05:18:13.035Z",
+      "last_seen": "2025-11-08T05:18:13.035Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 863,
+      "surfaceForm": "Arcturus Ironmind",
+      "normalizedKey": "arcturus ironmind",
+      "eid": 466,
+      "created_at": "2025-11-08T05:18:13.035Z",
+      "last_seen": "2025-11-08T05:18:13.035Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 864,
+      "surfaceForm": "Lysander Shadowmere",
+      "normalizedKey": "lysander shadowmere",
+      "eid": 467,
+      "created_at": "2025-11-08T05:18:13.036Z",
+      "last_seen": "2025-11-08T05:18:13.036Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 865,
+      "surfaceForm": "Necromancer",
+      "normalizedKey": "necromancer",
+      "eid": 468,
+      "created_at": "2025-11-08T05:18:13.036Z",
+      "last_seen": "2025-11-08T05:18:13.036Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 866,
+      "surfaceForm": "Meridian Starseeker",
+      "normalizedKey": "meridian starseeker",
+      "eid": 469,
+      "created_at": "2025-11-08T05:18:13.036Z",
+      "last_seen": "2025-11-08T05:18:13.036Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 867,
+      "surfaceForm": "Diviner",
+      "normalizedKey": "diviner",
+      "eid": 470,
+      "created_at": "2025-11-08T05:18:13.036Z",
+      "last_seen": "2025-11-08T05:18:13.036Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 868,
+      "surfaceForm": "Isolde Dreamweaver",
+      "normalizedKey": "isolde dreamweaver",
+      "eid": 471,
+      "created_at": "2025-11-08T05:18:13.036Z",
+      "last_seen": "2025-11-08T05:18:13.036Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 869,
+      "surfaceForm": "Illusions",
+      "normalizedKey": "illusions",
+      "eid": 465,
+      "created_at": "2025-11-08T05:18:13.036Z",
+      "last_seen": "2025-11-08T05:18:13.036Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 870,
+      "surfaceForm": "Korvan the Summoner",
+      "normalizedKey": "korvan the summoner",
+      "eid": 472,
+      "created_at": "2025-11-08T05:18:13.037Z",
+      "last_seen": "2025-11-08T05:18:13.037Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 871,
+      "surfaceForm": "Three",
+      "normalizedKey": "three",
+      "eid": 473,
+      "created_at": "2025-11-08T05:18:13.037Z",
+      "last_seen": "2025-11-08T05:18:13.037Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 872,
+      "surfaceForm": "Forgotten Wastes",
+      "normalizedKey": "forgotten wastes",
+      "eid": 474,
+      "created_at": "2025-11-08T05:18:13.037Z",
+      "last_seen": "2025-11-08T05:18:13.037Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 873,
+      "surfaceForm": "Sir Gareth Stonehelm",
+      "normalizedKey": "sir gareth stonehelm",
+      "eid": 475,
+      "created_at": "2025-11-08T05:18:13.037Z",
+      "last_seen": "2025-11-08T05:18:13.037Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 874,
+      "surfaceForm": "Your Wisdoms",
+      "normalizedKey": "your wisdoms",
+      "eid": 476,
+      "created_at": "2025-11-08T05:18:13.037Z",
+      "last_seen": "2025-11-08T05:18:13.037Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 875,
+      "surfaceForm": "Whoever",
+      "normalizedKey": "whoever",
+      "eid": 477,
+      "created_at": "2025-11-08T05:18:13.037Z",
+      "last_seen": "2025-11-08T05:18:13.037Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 876,
+      "surfaceForm": "Perhaps",
+      "normalizedKey": "perhaps",
+      "eid": 478,
+      "created_at": "2025-11-08T05:18:13.037Z",
+      "last_seen": "2025-11-08T05:18:13.037Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 877,
+      "surfaceForm": "Academy of Mystic Arts",
+      "normalizedKey": "academy of mystic arts",
+      "eid": 479,
+      "created_at": "2025-11-08T05:18:13.038Z",
+      "last_seen": "2025-11-08T05:18:13.038Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 878,
+      "surfaceForm": "Mystic Arts",
+      "normalizedKey": "mystic arts",
+      "eid": 479,
+      "created_at": "2025-11-08T05:18:13.038Z",
+      "last_seen": "2025-11-08T05:18:13.038Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 879,
+      "surfaceForm": "Take Sir Gareth",
+      "normalizedKey": "take sir gareth",
+      "eid": 336,
+      "created_at": "2025-11-08T05:18:13.038Z",
+      "last_seen": "2025-11-08T05:18:13.038Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 880,
+      "surfaceForm": "If Malachar",
+      "normalizedKey": "if malachar",
+      "eid": 446,
+      "created_at": "2025-11-08T05:18:13.038Z",
+      "last_seen": "2025-11-08T05:18:13.038Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 881,
+      "surfaceForm": "Whispering Woods",
+      "normalizedKey": "whispering woods",
+      "eid": 252,
+      "created_at": "2025-11-08T05:18:13.038Z",
+      "last_seen": "2025-11-08T05:18:13.038Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 882,
+      "surfaceForm": "Inside",
+      "normalizedKey": "inside",
+      "eid": 480,
+      "created_at": "2025-11-08T05:18:13.038Z",
+      "last_seen": "2025-11-08T05:18:13.038Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 883,
+      "surfaceForm": "Bodies",
+      "normalizedKey": "bodies",
+      "eid": 481,
+      "created_at": "2025-11-08T05:18:13.038Z",
+      "last_seen": "2025-11-08T05:18:13.038Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 884,
+      "surfaceForm": "Archmagus Talen",
+      "normalizedKey": "archmagus talen",
+      "eid": 482,
+      "created_at": "2025-11-08T05:18:13.039Z",
+      "last_seen": "2025-11-08T05:18:13.039Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 885,
+      "surfaceForm": "Looking",
+      "normalizedKey": "looking",
+      "eid": 483,
+      "created_at": "2025-11-08T05:18:13.039Z",
+      "last_seen": "2025-11-08T05:18:13.039Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 886,
+      "surfaceForm": "Gather the Council",
+      "normalizedKey": "gather the council",
+      "eid": 325,
+      "created_at": "2025-11-08T05:18:13.039Z",
+      "last_seen": "2025-11-08T05:18:13.039Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 887,
+      "surfaceForm": "Council",
+      "normalizedKey": "council",
+      "eid": 270,
+      "created_at": "2025-11-08T05:18:13.039Z",
+      "last_seen": "2025-11-08T05:18:13.039Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 888,
+      "surfaceForm": "Finally",
+      "normalizedKey": "finally",
+      "eid": 484,
+      "created_at": "2025-11-08T05:18:13.039Z",
+      "last_seen": "2025-11-08T05:18:13.039Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 889,
+      "surfaceForm": "Raven Nightshade",
+      "normalizedKey": "raven nightshade",
+      "eid": 485,
+      "created_at": "2025-11-08T05:18:13.039Z",
+      "last_seen": "2025-11-08T05:18:13.039Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 890,
+      "surfaceForm": "Valdris",
+      "normalizedKey": "valdris",
+      "eid": 486,
+      "created_at": "2025-11-08T05:18:13.039Z",
+      "last_seen": "2025-11-08T05:18:13.039Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 891,
+      "surfaceForm": "Stormchaser",
+      "normalizedKey": "stormchaser",
+      "eid": 487,
+      "created_at": "2025-11-08T05:18:13.039Z",
+      "last_seen": "2025-11-08T05:18:13.039Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 892,
+      "surfaceForm": "Entire",
+      "normalizedKey": "entire",
+      "eid": 488,
+      "created_at": "2025-11-08T05:18:13.040Z",
+      "last_seen": "2025-11-08T05:18:13.040Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 893,
+      "surfaceForm": "Fields",
+      "normalizedKey": "fields",
+      "eid": 279,
+      "created_at": "2025-11-08T05:18:13.040Z",
+      "last_seen": "2025-11-08T05:18:13.040Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 894,
+      "surfaceForm": "Livestock",
+      "normalizedKey": "livestock",
+      "eid": 489,
+      "created_at": "2025-11-08T05:18:13.040Z",
+      "last_seen": "2025-11-08T05:18:13.040Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 895,
+      "surfaceForm": "Dreadspire Fortress",
+      "normalizedKey": "dreadspire fortress",
+      "eid": 490,
+      "created_at": "2025-11-08T05:18:13.040Z",
+      "last_seen": "2025-11-08T05:18:13.040Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 896,
+      "surfaceForm": "Chose",
+      "normalizedKey": "chose",
+      "eid": 491,
+      "created_at": "2025-11-08T05:18:13.040Z",
+      "last_seen": "2025-11-08T05:18:13.040Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 897,
+      "surfaceForm": "Join",
+      "normalizedKey": "join",
+      "eid": 492,
+      "created_at": "2025-11-08T05:18:13.040Z",
+      "last_seen": "2025-11-08T05:18:13.040Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 898,
+      "surfaceForm": "Release",
+      "normalizedKey": "release",
+      "eid": 493,
+      "created_at": "2025-11-08T05:18:13.040Z",
+      "last_seen": "2025-11-08T05:18:13.040Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 899,
+      "surfaceForm": "Long",
+      "normalizedKey": "long",
+      "eid": 494,
+      "created_at": "2025-11-08T05:18:13.041Z",
+      "last_seen": "2025-11-08T05:18:13.041Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 900,
+      "surfaceForm": "YOU DARED TO",
+      "normalizedKey": "you dared to",
+      "eid": 495,
+      "created_at": "2025-11-08T05:18:13.041Z",
+      "last_seen": "2025-11-08T05:18:13.041Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 901,
+      "surfaceForm": "USE MY POWER",
+      "normalizedKey": "use my power",
+      "eid": 496,
+      "created_at": "2025-11-08T05:18:13.041Z",
+      "last_seen": "2025-11-08T05:18:13.041Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 902,
+      "surfaceForm": "Run",
+      "normalizedKey": "run",
+      "eid": 497,
+      "created_at": "2025-11-08T05:18:13.041Z",
+      "last_seen": "2025-11-08T05:18:13.041Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 903,
+      "surfaceForm": "Tower of Seven Stars",
+      "normalizedKey": "tower of seven stars",
+      "eid": 444,
+      "created_at": "2025-11-08T05:18:13.041Z",
+      "last_seen": "2025-11-08T05:18:13.041Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 904,
+      "surfaceForm": "Brilliant",
+      "normalizedKey": "brilliant",
+      "eid": 498,
+      "created_at": "2025-11-08T05:18:13.041Z",
+      "last_seen": "2025-11-08T05:18:13.041Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 905,
+      "surfaceForm": "Rebuild",
+      "normalizedKey": "rebuild",
+      "eid": 499,
+      "created_at": "2025-11-08T05:18:13.042Z",
+      "last_seen": "2025-11-08T05:18:13.042Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 906,
+      "surfaceForm": "Architect of Revolution Paris",
+      "normalizedKey": "architect of revolution paris",
+      "eid": 500,
+      "created_at": "2025-11-08T05:18:28.259Z",
+      "last_seen": "2025-11-08T05:18:28.259Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 907,
+      "surfaceForm": "Jean-Baptiste Moreau",
+      "normalizedKey": "jean-baptiste moreau",
+      "eid": 258,
+      "created_at": "2025-11-08T05:18:28.259Z",
+      "last_seen": "2025-11-08T05:18:28.259Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 908,
+      "surfaceForm": "Saint-",
+      "normalizedKey": "saint",
+      "eid": 501,
+      "created_at": "2025-11-08T05:18:28.259Z",
+      "last_seen": "2025-11-08T05:18:28.259Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 909,
+      "surfaceForm": "Baptiste",
+      "normalizedKey": "baptiste",
+      "eid": 258,
+      "created_at": "2025-11-08T05:18:28.259Z",
+      "last_seen": "2025-11-08T05:18:28.259Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 910,
+      "surfaceForm": "Jean-Baptiste",
+      "normalizedKey": "jean-baptiste",
+      "eid": 258,
+      "created_at": "2025-11-08T05:18:28.259Z",
+      "last_seen": "2025-11-08T05:18:28.259Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 911,
+      "surfaceForm": "France",
+      "normalizedKey": "france",
+      "eid": 502,
+      "created_at": "2025-11-08T05:18:28.260Z",
+      "last_seen": "2025-11-08T05:18:28.260Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 912,
+      "surfaceForm": "Gothic",
+      "normalizedKey": "gothic",
+      "eid": 503,
+      "created_at": "2025-11-08T05:18:28.260Z",
+      "last_seen": "2025-11-08T05:18:28.260Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 913,
+      "surfaceForm": "Monsieur Moreau",
+      "normalizedKey": "monsieur moreau",
+      "eid": 504,
+      "created_at": "2025-11-08T05:18:28.261Z",
+      "last_seen": "2025-11-08T05:18:28.261Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 914,
+      "surfaceForm": "Pierre Dubois",
+      "normalizedKey": "pierre dubois",
+      "eid": 505,
+      "created_at": "2025-11-08T05:18:28.261Z",
+      "last_seen": "2025-11-08T05:18:28.261Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 915,
+      "surfaceForm": "Burgundy",
+      "normalizedKey": "burgundy",
+      "eid": 506,
+      "created_at": "2025-11-08T05:18:28.261Z",
+      "last_seen": "2025-11-08T05:18:28.261Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 916,
+      "surfaceForm": "Again",
+      "normalizedKey": "again",
+      "eid": 507,
+      "created_at": "2025-11-08T05:18:28.262Z",
+      "last_seen": "2025-11-08T05:18:28.262Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 917,
+      "surfaceForm": "Peasants",
+      "normalizedKey": "peasants",
+      "eid": 508,
+      "created_at": "2025-11-08T05:18:28.262Z",
+      "last_seen": "2025-11-08T05:18:28.262Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 918,
+      "surfaceForm": "Versailles",
+      "normalizedKey": "versailles",
+      "eid": 509,
+      "created_at": "2025-11-08T05:18:28.262Z",
+      "last_seen": "2025-11-08T05:18:28.262Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 919,
+      "surfaceForm": "Paris",
+      "normalizedKey": "paris",
+      "eid": 500,
+      "created_at": "2025-11-08T05:18:28.263Z",
+      "last_seen": "2025-11-08T05:18:28.263Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 920,
+      "surfaceForm": "Luxembourg Gardens",
+      "normalizedKey": "luxembourg gardens",
+      "eid": 510,
+      "created_at": "2025-11-08T05:18:28.263Z",
+      "last_seen": "2025-11-08T05:18:28.263Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 921,
+      "surfaceForm": "Valmont",
+      "normalizedKey": "valmont",
+      "eid": 511,
+      "created_at": "2025-11-08T05:18:28.263Z",
+      "last_seen": "2025-11-08T05:18:28.263Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 922,
+      "surfaceForm": "Effective",
+      "normalizedKey": "effective",
+      "eid": 512,
+      "created_at": "2025-11-08T05:18:28.264Z",
+      "last_seen": "2025-11-08T05:18:28.264Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 923,
+      "surfaceForm": "National Assembly",
+      "normalizedKey": "national assembly",
+      "eid": 513,
+      "created_at": "2025-11-08T05:18:28.264Z",
+      "last_seen": "2025-11-08T05:18:28.264Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 924,
+      "surfaceForm": "Read",
+      "normalizedKey": "read",
+      "eid": 490,
+      "created_at": "2025-11-08T05:18:28.265Z",
+      "last_seen": "2025-11-08T05:18:28.265Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 925,
+      "surfaceForm": "Jean-",
+      "normalizedKey": "jean",
+      "eid": 258,
+      "created_at": "2025-11-08T05:18:28.265Z",
+      "last_seen": "2025-11-08T05:18:28.265Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 926,
+      "surfaceForm": "Enough",
+      "normalizedKey": "enough",
+      "eid": 514,
+      "created_at": "2025-11-08T05:18:28.265Z",
+      "last_seen": "2025-11-08T05:18:28.265Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 927,
+      "surfaceForm": "Groups",
+      "normalizedKey": "groups",
+      "eid": 515,
+      "created_at": "2025-11-08T05:18:28.266Z",
+      "last_seen": "2025-11-08T05:18:28.266Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 928,
+      "surfaceForm": "Pamphlets",
+      "normalizedKey": "pamphlets",
+      "eid": 516,
+      "created_at": "2025-11-08T05:18:28.266Z",
+      "last_seen": "2025-11-08T05:18:28.266Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 929,
+      "surfaceForm": "King Louis XVI",
+      "normalizedKey": "king louis xvi",
+      "eid": 517,
+      "created_at": "2025-11-08T05:18:28.266Z",
+      "last_seen": "2025-11-08T05:18:28.266Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 930,
+      "surfaceForm": "Queen Marie Antoinette",
+      "normalizedKey": "queen marie antoinette",
+      "eid": 518,
+      "created_at": "2025-11-08T05:18:28.267Z",
+      "last_seen": "2025-11-08T05:18:28.267Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 931,
+      "surfaceForm": "Street",
+      "normalizedKey": "street",
+      "eid": 244,
+      "created_at": "2025-11-08T05:18:28.267Z",
+      "last_seen": "2025-11-08T05:18:28.267Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 932,
+      "surfaceForm": "Claire",
+      "normalizedKey": "claire",
+      "eid": 519,
+      "created_at": "2025-11-08T05:18:28.267Z",
+      "last_seen": "2025-11-08T05:18:28.267Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 933,
+      "surfaceForm": "Marais",
+      "normalizedKey": "marais",
+      "eid": 520,
+      "created_at": "2025-11-08T05:18:28.267Z",
+      "last_seen": "2025-11-08T05:18:28.267Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 934,
+      "surfaceForm": "Jacques Roussel",
+      "normalizedKey": "jacques roussel",
+      "eid": 521,
+      "created_at": "2025-11-08T05:18:28.268Z",
+      "last_seen": "2025-11-08T05:18:28.268Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 935,
+      "surfaceForm": "Bastille",
+      "normalizedKey": "bastille",
+      "eid": 522,
+      "created_at": "2025-11-08T05:18:28.268Z",
+      "last_seen": "2025-11-08T05:18:28.268Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 936,
+      "surfaceForm": "Third Estate",
+      "normalizedKey": "third estate",
+      "eid": 523,
+      "created_at": "2025-11-08T05:18:28.269Z",
+      "last_seen": "2025-11-08T05:18:28.269Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 937,
+      "surfaceForm": "Marchand",
+      "normalizedKey": "marchand",
+      "eid": 267,
+      "created_at": "2025-11-08T05:18:28.269Z",
+      "last_seen": "2025-11-08T05:18:28.269Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 938,
+      "surfaceForm": "Antoine Girard",
+      "normalizedKey": "antoine girard",
+      "eid": 524,
+      "created_at": "2025-11-08T05:18:28.269Z",
+      "last_seen": "2025-11-08T05:18:28.269Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 939,
+      "surfaceForm": "July",
+      "normalizedKey": "july",
+      "eid": 525,
+      "created_at": "2025-11-08T05:18:28.269Z",
+      "last_seen": "2025-11-08T05:18:28.269Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 940,
+      "surfaceForm": "Maximilien Robespierre",
+      "normalizedKey": "maximilien robespierre",
+      "eid": 526,
+      "created_at": "2025-11-08T05:18:28.269Z",
+      "last_seen": "2025-11-08T05:18:28.269Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 941,
+      "surfaceForm": "Notre-",
+      "normalizedKey": "notre",
+      "eid": 527,
+      "created_at": "2025-11-08T05:18:28.270Z",
+      "last_seen": "2025-11-08T05:18:28.270Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 942,
+      "surfaceForm": "Dame",
+      "normalizedKey": "dame",
+      "eid": 528,
+      "created_at": "2025-11-08T05:18:28.270Z",
+      "last_seen": "2025-11-08T05:18:28.270Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 943,
+      "surfaceForm": "Notre-Dame",
+      "normalizedKey": "notre-dame",
+      "eid": 527,
+      "created_at": "2025-11-08T05:18:28.270Z",
+      "last_seen": "2025-11-08T05:18:28.270Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 944,
+      "surfaceForm": "September Massacres",
+      "normalizedKey": "september massacres",
+      "eid": 287,
+      "created_at": "2025-11-08T05:18:28.270Z",
+      "last_seen": "2025-11-08T05:18:28.270Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 945,
+      "surfaceForm": "Explain",
+      "normalizedKey": "explain",
+      "eid": 529,
+      "created_at": "2025-11-08T05:18:28.270Z",
+      "last_seen": "2025-11-08T05:18:28.270Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 946,
+      "surfaceForm": "Save",
+      "normalizedKey": "save",
+      "eid": 530,
+      "created_at": "2025-11-08T05:18:28.270Z",
+      "last_seen": "2025-11-08T05:18:28.270Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 947,
+      "surfaceForm": "Lyon",
+      "normalizedKey": "lyon",
+      "eid": 531,
+      "created_at": "2025-11-08T05:18:28.271Z",
+      "last_seen": "2025-11-08T05:18:28.271Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 948,
+      "surfaceForm": "In Geneva",
+      "normalizedKey": "in geneva",
+      "eid": 532,
+      "created_at": "2025-11-08T05:18:28.271Z",
+      "last_seen": "2025-11-08T05:18:28.271Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 949,
+      "surfaceForm": "Committee of Public Safety",
+      "normalizedKey": "committee of public safety",
+      "eid": 533,
+      "created_at": "2025-11-08T05:18:28.271Z",
+      "last_seen": "2025-11-08T05:18:28.271Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 950,
+      "surfaceForm": "Citizens",
+      "normalizedKey": "citizens",
+      "eid": 534,
+      "created_at": "2025-11-08T05:18:28.271Z",
+      "last_seen": "2025-11-08T05:18:28.271Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 951,
+      "surfaceForm": "Tuileries Palace",
+      "normalizedKey": "tuileries palace",
+      "eid": 535,
+      "created_at": "2025-11-08T05:18:28.271Z",
+      "last_seen": "2025-11-08T05:18:28.271Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 952,
+      "surfaceForm": "Refusal",
+      "normalizedKey": "refusal",
+      "eid": 536,
+      "created_at": "2025-11-08T05:18:28.271Z",
+      "last_seen": "2025-11-08T05:18:28.271Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 953,
+      "surfaceForm": "Papers",
+      "normalizedKey": "papers",
+      "eid": 537,
+      "created_at": "2025-11-08T05:18:28.272Z",
+      "last_seen": "2025-11-08T05:18:28.272Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 954,
+      "surfaceForm": "Near the Swiss",
+      "normalizedKey": "near the swiss",
+      "eid": 538,
+      "created_at": "2025-11-08T05:18:28.272Z",
+      "last_seen": "2025-11-08T05:18:28.272Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 955,
+      "surfaceForm": "Pierre Fontaine",
+      "normalizedKey": "pierre fontaine",
+      "eid": 539,
+      "created_at": "2025-11-08T05:18:28.272Z",
+      "last_seen": "2025-11-08T05:18:28.272Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 956,
+      "surfaceForm": "Bordeaux",
+      "normalizedKey": "bordeaux",
+      "eid": 540,
+      "created_at": "2025-11-08T05:18:28.272Z",
+      "last_seen": "2025-11-08T05:18:28.272Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 957,
+      "surfaceForm": "Geneva",
+      "normalizedKey": "geneva",
+      "eid": 532,
+      "created_at": "2025-11-08T05:18:28.272Z",
+      "last_seen": "2025-11-08T05:18:28.272Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 958,
+      "surfaceForm": "June",
+      "normalizedKey": "june",
+      "eid": 541,
+      "created_at": "2025-11-08T05:18:28.273Z",
+      "last_seen": "2025-11-08T05:18:28.273Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 959,
+      "surfaceForm": "News",
+      "normalizedKey": "news",
+      "eid": 542,
+      "created_at": "2025-11-08T05:18:28.273Z",
+      "last_seen": "2025-11-08T05:18:28.273Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 960,
+      "surfaceForm": "Terror",
+      "normalizedKey": "terror",
+      "eid": 543,
+      "created_at": "2025-11-08T05:18:28.273Z",
+      "last_seen": "2025-11-08T05:18:28.273Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 961,
+      "surfaceForm": "French",
+      "normalizedKey": "french",
+      "eid": 544,
+      "created_at": "2025-11-08T05:18:28.273Z",
+      "last_seen": "2025-11-08T05:18:28.273Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 962,
+      "surfaceForm": "Directory",
+      "normalizedKey": "directory",
+      "eid": 545,
+      "created_at": "2025-11-08T05:18:28.273Z",
+      "last_seen": "2025-11-08T05:18:28.273Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 963,
+      "surfaceForm": "Napoleon Bonaparte",
+      "normalizedKey": "napoleon bonaparte",
+      "eid": 546,
+      "created_at": "2025-11-08T05:18:28.274Z",
+      "last_seen": "2025-11-08T05:18:28.274Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 964,
+      "surfaceForm": "Another",
+      "normalizedKey": "another",
+      "eid": 547,
+      "created_at": "2025-11-08T05:18:28.274Z",
+      "last_seen": "2025-11-08T05:18:28.274Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 965,
+      "surfaceForm": "Will France",
+      "normalizedKey": "will france",
+      "eid": 502,
+      "created_at": "2025-11-08T05:18:28.274Z",
+      "last_seen": "2025-11-08T05:18:28.274Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 966,
+      "surfaceForm": "Cathedral of Saint-",
+      "normalizedKey": "cathedral of saint",
+      "eid": 501,
+      "created_at": "2025-11-08T05:18:28.274Z",
+      "last_seen": "2025-11-08T05:18:28.274Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 967,
+      "surfaceForm": "Lake Geneva",
+      "normalizedKey": "lake geneva",
+      "eid": 532,
+      "created_at": "2025-11-08T05:18:28.274Z",
+      "last_seen": "2025-11-08T05:18:28.274Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
     }
   ],
   "metadata": {
-    "total_aliases": 187,
-    "total_entities": 153,
-    "last_updated": "2025-11-08T04:45:21.686Z"
+    "total_aliases": 414,
+    "total_entities": 333,
+    "last_updated": "2025-11-08T05:18:28.285Z"
   }
 }
