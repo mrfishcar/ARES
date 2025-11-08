@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextEID": 548,
+  "nextEID": 556,
   "mappings": [
     {
       "eid": 1,
@@ -4377,10 +4377,74 @@
       "created_at": "2025-11-08T05:18:28.274Z",
       "last_seen": "2025-11-08T05:18:28.274Z",
       "occurrence_count": 1
+    },
+    {
+      "eid": 548,
+      "canonical": "Royal Academy",
+      "normalizedKey": "royal academy",
+      "created_at": "2025-11-08T16:16:12.272Z",
+      "last_seen": "2025-11-08T16:16:12.272Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 549,
+      "canonical": "rince",
+      "normalizedKey": "rince",
+      "created_at": "2025-11-08T16:16:12.273Z",
+      "last_seen": "2025-11-08T16:16:12.273Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 550,
+      "canonical": "General",
+      "normalizedKey": "general",
+      "created_at": "2025-11-08T16:16:12.274Z",
+      "last_seen": "2025-11-08T16:16:12.274Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 551,
+      "canonical": "Elena",
+      "normalizedKey": "elena",
+      "created_at": "2025-11-08T16:16:12.275Z",
+      "last_seen": "2025-11-08T16:16:12.275Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 552,
+      "canonical": "om",
+      "normalizedKey": "om",
+      "created_at": "2025-11-08T16:16:12.276Z",
+      "last_seen": "2025-11-08T16:16:12.276Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 553,
+      "canonical": "Eastern Realm",
+      "normalizedKey": "eastern realm",
+      "created_at": "2025-11-08T16:20:15.708Z",
+      "last_seen": "2025-11-08T16:20:15.708Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 554,
+      "canonical": "Silver Order",
+      "normalizedKey": "silver order",
+      "created_at": "2025-11-08T16:20:15.709Z",
+      "last_seen": "2025-11-08T16:20:15.709Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 555,
+      "canonical": "lm",
+      "normalizedKey": "lm",
+      "created_at": "2025-11-08T16:20:15.710Z",
+      "last_seen": "2025-11-08T16:20:15.710Z",
+      "occurrence_count": 1
     }
   ],
   "metadata": {
-    "total_entities": 547,
-    "last_updated": "2025-11-08T05:18:28.284Z"
+    "total_entities": 555,
+    "last_updated": "2025-11-08T16:20:45.617Z"
   }
 }

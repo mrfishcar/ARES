@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextAID": 973,
+  "nextAID": 988,
   "mappings": [
     {
       "aid": 554,
@@ -4191,11 +4191,161 @@
       "last_seen": "2025-11-08T15:41:43.879Z",
       "occurrence_count": 1,
       "confidence": 0.9
+    },
+    {
+      "aid": 973,
+      "surfaceForm": "Royal Academy",
+      "normalizedKey": "royal academy",
+      "eid": 548,
+      "created_at": "2025-11-08T16:16:12.273Z",
+      "last_seen": "2025-11-08T16:16:12.273Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 974,
+      "surfaceForm": "rince",
+      "normalizedKey": "rince",
+      "eid": 549,
+      "created_at": "2025-11-08T16:16:12.273Z",
+      "last_seen": "2025-11-08T16:16:12.273Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 975,
+      "surfaceForm": "General",
+      "normalizedKey": "general",
+      "eid": 550,
+      "created_at": "2025-11-08T16:16:12.274Z",
+      "last_seen": "2025-11-08T16:16:12.274Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 976,
+      "surfaceForm": "Shadow",
+      "normalizedKey": "shadow",
+      "eid": 445,
+      "created_at": "2025-11-08T16:16:12.274Z",
+      "last_seen": "2025-11-08T16:16:12.274Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 977,
+      "surfaceForm": "Elena",
+      "normalizedKey": "elena",
+      "eid": 551,
+      "created_at": "2025-11-08T16:16:12.275Z",
+      "last_seen": "2025-11-08T16:16:12.275Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 978,
+      "surfaceForm": "Kingdom",
+      "normalizedKey": "kingdom",
+      "eid": 11,
+      "created_at": "2025-11-08T16:16:12.275Z",
+      "last_seen": "2025-11-08T16:16:12.275Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 979,
+      "surfaceForm": "Princess Aria",
+      "normalizedKey": "princess aria",
+      "eid": 363,
+      "created_at": "2025-11-08T16:16:12.276Z",
+      "last_seen": "2025-11-08T16:16:12.276Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 980,
+      "surfaceForm": "om",
+      "normalizedKey": "om",
+      "eid": 552,
+      "created_at": "2025-11-08T16:16:12.276Z",
+      "last_seen": "2025-11-08T16:16:12.276Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 981,
+      "surfaceForm": "Prince Zachary",
+      "normalizedKey": "prince zachary",
+      "eid": 549,
+      "created_at": "2025-11-08T16:20:15.705Z",
+      "last_seen": "2025-11-08T16:20:15.705Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 982,
+      "surfaceForm": "Princess Isabella",
+      "normalizedKey": "princess isabella",
+      "eid": 549,
+      "created_at": "2025-11-08T16:20:15.706Z",
+      "last_seen": "2025-11-08T16:20:15.706Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 983,
+      "surfaceForm": "Dark",
+      "normalizedKey": "dark",
+      "eid": 310,
+      "created_at": "2025-11-08T16:20:15.706Z",
+      "last_seen": "2025-11-08T16:20:15.706Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 984,
+      "surfaceForm": "Eastern Realm",
+      "normalizedKey": "eastern realm",
+      "eid": 553,
+      "created_at": "2025-11-08T16:20:15.708Z",
+      "last_seen": "2025-11-08T16:20:15.708Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 985,
+      "surfaceForm": "Queen",
+      "normalizedKey": "queen",
+      "eid": 518,
+      "created_at": "2025-11-08T16:20:15.709Z",
+      "last_seen": "2025-11-08T16:20:15.709Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 986,
+      "surfaceForm": "Silver Order",
+      "normalizedKey": "silver order",
+      "eid": 554,
+      "created_at": "2025-11-08T16:20:15.709Z",
+      "last_seen": "2025-11-08T16:20:15.709Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 987,
+      "surfaceForm": "lm",
+      "normalizedKey": "lm",
+      "eid": 555,
+      "created_at": "2025-11-08T16:20:15.710Z",
+      "last_seen": "2025-11-08T16:20:15.710Z",
+      "occurrence_count": 1,
+      "confidence": 1
     }
   ],
   "metadata": {
-    "total_aliases": 419,
-    "total_entities": 333,
-    "last_updated": "2025-11-08T15:42:13.847Z"
+    "total_aliases": 434,
+    "total_entities": 341,
+    "last_updated": "2025-11-08T16:20:45.679Z"
   }
 }
