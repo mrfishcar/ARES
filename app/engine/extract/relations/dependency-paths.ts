@@ -455,6 +455,9 @@ const PATH_PATTERNS: PathPattern[] = [
   // "X studied there/here" - location pronoun as direct modifier
   { signature: /^(\w+):↑nsubj:study:↓(advmod|npadvmod):(there|here)$/, predicate: 'studies_at', subjectFirst: true },
 
+  // "X studied [object] there/here" - e.g., "studied magic there"
+  { signature: /^(\w+):↑nsubj:study:↓(dobj|obj):\w+:↓(advmod|npadvmod):(there|here)$/, predicate: 'studies_at', subjectFirst: true },
+
   // "there/here" to study verb (reverse direction)
   { signature: /^(there|here):↑(advmod|npadvmod):study:↑nsubj:(\w+)$/, predicate: 'studies_at', subjectFirst: false },
 
