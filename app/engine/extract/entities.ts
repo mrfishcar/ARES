@@ -266,6 +266,28 @@ const FANTASY_WHITELIST = new Map<string, EntityType>([
   ['Quibbler', 'WORK']
 ]);
 
+/**
+ * Case-insensitive lookup in FANTASY_WHITELIST
+ * Returns the entity type and properly capitalized name if found
+ */
+function lookupWhitelist(text: string): { type: EntityType; canonical: string } | null {
+  // Try exact match first (fast path)
+  const exactType = FANTASY_WHITELIST.get(text);
+  if (exactType) {
+    return { type: exactType, canonical: text };
+  }
+
+  // Try case-insensitive match
+  const lowerText = text.toLowerCase();
+  for (const [key, type] of FANTASY_WHITELIST.entries()) {
+    if (key.toLowerCase() === lowerText) {
+      return { type, canonical: key }; // Return the properly capitalized version from whitelist
+    }
+  }
+
+  return null;
+}
+
 // Stopwords, pronouns, months (expanded to prevent false positives)
 const STOP = new Set([
   "The","A","An","And","But","Or","On","In","At","To","From","With","Of","For","As","By","Is","Was","Were","Be","Been","Being",
@@ -410,10 +432,10 @@ function refineEntityType(type: EntityType, text: string): EntityType {
   const trimmed = text.trim();
   const lowered = trimmed.toLowerCase();
 
-  // Whitelist has absolute highest priority - don't override whitelisted types
-  const whitelistType = FANTASY_WHITELIST.get(trimmed);
-  if (whitelistType) {
-    return whitelistType;
+  // Whitelist has absolute highest priority - don't override whitelisted types (case-insensitive)
+  const whitelistMatch = lookupWhitelist(trimmed);
+  if (whitelistMatch) {
+    return whitelistMatch.type;
   }
 
   // Override with KNOWN_ORGS first (highest priority)
@@ -470,6 +492,26 @@ function refineEntityType(type: EntityType, text: string): EntityType {
     return "EVENT";
   }
   return type;
+}
+
+/**
+ * Capitalize entity name to proper case (Title Case)
+ * Handles multi-word names and preserves particles like "of", "the", "de", etc.
+ */
+function capitalizeEntityName(name: string): string {
+  // Particles that should stay lowercase in the middle of names
+  const particles = new Set(['of', 'the', 'de', 'da', 'di', 'du', 'del', 'van', 'von', 'der', 'den', 'la', 'le', 'lo']);
+
+  const words = name.trim().split(/\s+/);
+  return words.map((word, index) => {
+    const lower = word.toLowerCase();
+    // Keep particles lowercase (except at the start)
+    if (index > 0 && particles.has(lower)) {
+      return lower;
+    }
+    // Capitalize first letter, keep rest lowercase
+    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+  }).join(' ');
 }
 
 export function normalizeName(s: string): string {
@@ -542,10 +584,11 @@ function nerSpans(sent: ParsedSentence): Array<{ text: string; type: EntityType;
     // Refine type based on text content (e.g., "Battle of X" → EVENT)
     let refinedType = refineEntityType(mapped, text);
 
-    // Apply whitelist override (e.g., "Hogwarts" → ORG, not PLACE)
-    const whitelistType = FANTASY_WHITELIST.get(text);
-    if (whitelistType) {
-      refinedType = whitelistType;
+    // Apply whitelist override (case-insensitive, e.g., "Hogwarts" → ORG, not PLACE)
+    const whitelistMatch = lookupWhitelist(text);
+    if (whitelistMatch) {
+      refinedType = whitelistMatch.type;
+      // Note: Don't change text to canonical here - keep original case for span validation
     }
 
     const nextToken = sent.tokens[j];
@@ -558,6 +601,8 @@ function nerSpans(sent: ParsedSentence): Array<{ text: string; type: EntityType;
       text = text.replace(/\s+House$/i, '');
     }
 
+    // IMPORTANT: Store text with original case for span validation
+    // Capitalization will happen later during entity creation
     spans.push({ text, type: refinedType, start, end });
     traceSpan("ner", sent.tokens.map(tok => tok.text).join(" "), start, end, text);
     i = j;
@@ -708,13 +753,19 @@ function depBasedEntities(sent: ParsedSentence): Array<{ text: string; type: Ent
   for (let i = 0; i < tokens.length; i++) {
     const tok = tokens[i];
 
-    // Only process capitalized words (potential entities)
-    if (!/^[A-Z]/.test(tok.text)) {
+    // Skip stopwords, pronouns, months (case-insensitive)
+    const tokLower = tok.text.toLowerCase();
+    if (STOP.has(tok.text) || PRON.has(tok.text) || MONTH.has(tok.text)) {
       continue;
     }
 
-    // Skip stopwords, pronouns, months
-    if (STOP.has(tok.text) || PRON.has(tok.text) || MONTH.has(tok.text)) {
+    // Accept both capitalized and lowercase words (context check will filter later)
+    // This allows detection of lowercase entity names like "harry potter"
+    const isCapitalized = /^[A-Z]/.test(tok.text);
+    const isLowercase = /^[a-z]/.test(tok.text);
+
+    if (!isCapitalized && !isLowercase) {
+      // Skip numbers, punctuation, etc.
       continue;
     }
 
@@ -741,7 +792,8 @@ function depBasedEntities(sent: ParsedSentence): Array<{ text: string; type: Ent
     }
 
     const spanTokens = tokens.slice(startIdx, endIdx + 1);
-    const text = normalizeName(spanTokens.map(t => t.text).join(' '));
+    const rawText = spanTokens.map(t => t.text).join(' ');
+    const text = normalizeName(rawText);
 
     // Skip single-word spans preceded by articles/prepositions
     if (spanTokens.length === 1) {
@@ -764,14 +816,15 @@ function depBasedEntities(sent: ParsedSentence): Array<{ text: string; type: Ent
       continue;
     }
 
-    // Check whitelist FIRST (for known ambiguous cases)
+
+    // Check whitelist FIRST (for known ambiguous cases, case-insensitive)
     // This allows manual overrides for entities that are hard to classify
-    const whitelistType = FANTASY_WHITELIST.get(text);
+    const whitelistMatch = lookupWhitelist(text);
     let entityType: EntityType;
 
-    if (whitelistType) {
+    if (whitelistMatch) {
       // Whitelist entry exists, use it
-      entityType = whitelistType;
+      entityType = whitelistMatch.type;
     } else {
       // Use context-aware classification
       entityType = classifyWithContext(text, context);
@@ -782,7 +835,7 @@ function depBasedEntities(sent: ParsedSentence): Array<{ text: string; type: Ent
       continue;
     }
 
-    // Clean up entity text
+    // Clean up entity text (House suffix) - but keep original case for span validation
     let cleanedText = text;
     if (entityType === 'ORG' && /\bHouse$/i.test(cleanedText)) {
       cleanedText = cleanedText.replace(/\s+House$/i, '');
@@ -791,6 +844,8 @@ function depBasedEntities(sent: ParsedSentence): Array<{ text: string; type: Ent
     const start = spanTokens[0].start;
     const end = spanTokens[spanTokens.length - 1].end;
 
+    // IMPORTANT: Store the text with original case for span validation
+    // Capitalization will happen later during entity creation
     spans.push({ text: cleanedText, type: entityType, start, end });
     traceSpan("dep", sent.tokens.map(tok => tok.text).join(" "), start, end, cleanedText);
   }
@@ -806,9 +861,9 @@ function depBasedEntities(sent: ParsedSentence): Array<{ text: string; type: Ent
  * without relying on whitelists for most cases.
  */
 function classifyName(text: string, surface: string, start: number, end: number): EntityType | null {
-  // 1) Check whitelist first (for known ambiguous cases only)
-  const whitelisted = FANTASY_WHITELIST.get(surface);
-  if (whitelisted) return whitelisted;
+  // 1) Check whitelist first (case-insensitive, for known ambiguous cases only)
+  const whitelistMatch = lookupWhitelist(surface);
+  if (whitelistMatch) return whitelistMatch.type;
 
   // 2) Check known places/orgs (real-world entities)
   if (KNOWN_PLACES.has(surface)) {
@@ -1378,11 +1433,16 @@ const chooseCanonical = (names: Set<string>): string => {
     if (!matched) {
       const id = uuid();
       const positions = positionsByKey.get(key) ?? [{ start: span.start, end: span.end }];
+      // Capitalize entity name if needed (for lowercase entities from case-insensitive extraction)
+      const capitalizedText = (span.text.length > 0 && /^[a-z]/.test(span.text))
+        ? capitalizeEntityName(span.text)
+        : span.text;
+
       const entry: EntityEntry = {
         entity: {
           id,
           type: span.type,
-          canonical: span.text,
+          canonical: capitalizedText,
           aliases: [],
           created_at: now
         },
@@ -1577,21 +1637,8 @@ const chooseCanonical = (names: Set<string>): string => {
     // Update entry.spanList to only include valid spans
     entry.spanList = validSpans;
 
-    const allowedLower = new Set(['the', 'of', 'and', '&', 'family', 'house', 'order', 'clan']);
-    const isSuspicious = entry.spanList.length > 0 && entry.spanList.every(span => {
-      const rawSegment = text.slice(span.start, span.end).replace(/\s+/g, ' ').trim();
-      const tokens = rawSegment.split(/\s+/).filter(Boolean);
-      return tokens.some(token => {
-        const lettersOnly = token.replace(/[^A-Za-z]/g, '');
-        if (!lettersOnly) return false;
-        const lower = lettersOnly.toLowerCase();
-        if (allowedLower.has(lower)) return false;
-        return lettersOnly === lower;
-      });
-    });
-    if (isSuspicious) {
-      continue;
-    }
+    // NOTE: Removed "isSuspicious" check that filtered out lowercase entities
+    // With case-insensitive extraction, lowercase entity names are now valid and intentional
 
     const normalizedMap = new Map<string, string>();
     for (const name of nameSet) {
@@ -1603,10 +1650,7 @@ const chooseCanonical = (names: Set<string>): string => {
         name;
       const cleanedRawCandidate = normalizeName(rawCandidate) || normalized;
       const cleanedRaw = cleanedRawCandidate.replace(/\s+/g, ' ').trim();
-      const rawWithoutAllowed = cleanedRaw.replace(/\b(the|of|and|&|family|house|order|clan)\b/gi, '').trim();
-      if (/\b[a-z]+\b/.test(rawWithoutAllowed)) {
-        continue;
-      }
+      // NOTE: Removed lowercase check - with case-insensitive extraction, lowercase names are valid
       if (!normalizedMap.has(normalized)) {
         normalizedMap.set(normalized, cleanedRaw);
       }
