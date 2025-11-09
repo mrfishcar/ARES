@@ -468,8 +468,8 @@ export async function extractFromSegments(
 
   // 7.8. Filter appositive false positives
   // When multiple relations have same pred+obj but different subjects,
-  // prefer the subject that appears first in the sentence (likely main subject, not appositive)
-  const predObjToSubjects = new Map<string, Array<{ rel: Relation; position: number }>>();
+  // check if they're coordinated (both should be kept) or appositives (keep first only)
+  const predObjToSubjects = new Map<string, Array<{ rel: Relation; position: number; subjectCanonical: string }>>();
 
   for (const rel of allRelationsWithInverses) {
     const predObjKey = `${rel.pred}::${rel.obj}`;
@@ -478,23 +478,69 @@ export async function extractFromSegments(
     const subjEntity = allEntities.find(e => e.id === rel.subj);
     const subjSpan = allSpans.find(s => s.entity_id === rel.subj);
     const position = subjSpan ? subjSpan.start : Infinity;
+    const subjectCanonical = subjEntity?.canonical.toLowerCase() || '';
 
     if (!predObjToSubjects.has(predObjKey)) {
       predObjToSubjects.set(predObjKey, []);
     }
-    predObjToSubjects.get(predObjKey)!.push({ rel, position });
+    predObjToSubjects.get(predObjKey)!.push({ rel, position, subjectCanonical });
   }
 
-  // For each pred+obj group, keep only the subject that appears first
+  // For each pred+obj group, decide whether to keep all (coordination) or just first (appositive)
   const appositiveFilteredRelations: Relation[] = [];
   for (const [predObjKey, group] of predObjToSubjects.entries()) {
     if (group.length === 1) {
       // No conflict, keep the relation
       appositiveFilteredRelations.push(group[0].rel);
     } else {
-      // Multiple subjects for same pred+obj - keep the one that appears first
+      // Check if subjects are likely coordinated (different entities close together)
+      // vs appositive (one name inside another, like "Aragorn, son of Arathorn")
       group.sort((a, b) => a.position - b.position);
-      appositiveFilteredRelations.push(group[0].rel);
+
+      console.log(`[APPOS-FILTER] Checking ${predObjKey} with ${group.length} subjects:`);
+      for (const item of group) {
+        console.log(`  - ${item.subjectCanonical} at position ${item.position}`);
+      }
+
+      // If subjects are simple names (no shared substring overlap beyond 50%),
+      // they're likely coordinated entities, so keep all
+      const isCoordination = group.every((item, idx) => {
+        if (idx === 0) return true; // First item is always kept
+        const prevCanonical = group[idx - 1].subjectCanonical;
+        const currCanonical = item.subjectCanonical;
+        const prevPosition = group[idx - 1].position;
+        const currPosition = item.position;
+
+        // Skip exact duplicates (same entity at same position - these will be deduped later)
+        if (prevCanonical === currCanonical && prevPosition === currPosition) {
+          console.log(`[APPOS-FILTER]   ${currCanonical} at ${currPosition} is duplicate - SKIP`);
+          return true; // Don't treat as appositive
+        }
+
+        // If one is a substring of the other AND at different positions, it's likely appositive
+        if (prevCanonical !== currCanonical && (prevCanonical.includes(currCanonical) || currCanonical.includes(prevCanonical))) {
+          console.log(`[APPOS-FILTER]   ${currCanonical} substring of ${prevCanonical} - APPOSITIVE`);
+          return false;
+        }
+        // If they're very close (within 50 chars), likely coordination
+        const distance = Math.abs(currPosition - prevPosition);
+        console.log(`[APPOS-FILTER]   Distance between ${prevCanonical} and ${currCanonical}: ${distance}`);
+        return distance < 50;
+      });
+
+      console.log(`[APPOS-FILTER]   isCoordination: ${isCoordination}`);
+
+      if (isCoordination) {
+        // Keep all coordinated subjects
+        console.log(`[APPOS-FILTER]   Keeping all ${group.length} subjects`);
+        for (const item of group) {
+          appositiveFilteredRelations.push(item.rel);
+        }
+      } else {
+        // Appositive case - keep only the first subject
+        console.log(`[APPOS-FILTER]   Appositive detected - keeping only first subject`);
+        appositiveFilteredRelations.push(group[0].rel);
+      }
     }
   }
 
