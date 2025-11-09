@@ -455,6 +455,9 @@ const PATH_PATTERNS: PathPattern[] = [
   // "X studied there/here" - location pronoun as direct modifier
   { signature: /^(\w+):↑nsubj:study:↓(advmod|npadvmod):(there|here)$/, predicate: 'studies_at', subjectFirst: true },
 
+  // "X studied there/here" - when spaCy incorrectly parses "there" as dobj (handles both "study" and "studied" lemmas)
+  { signature: /^(\w+):↑nsubj:(study|studied):↓(dobj|obj):(there|here)$/, predicate: 'studies_at', subjectFirst: true },
+
   // "X studied [object] there/here" - e.g., "studied magic there"
   { signature: /^(\w+):↑nsubj:study:↓(dobj|obj):\w+:↓(advmod|npadvmod):(there|here)$/, predicate: 'studies_at', subjectFirst: true },
 
