@@ -79,6 +79,11 @@ const PRONOUNS = new Map<string, { gender: Gender; number: Number }>([
 ]);
 
 /**
+ * Location pronouns that refer to places
+ */
+const LOCATION_PRONOUNS = new Set(['there', 'here']);
+
+/**
  * Title keywords that suggest roles
  */
 const TITLES = new Map<string, string[]>([
@@ -217,14 +222,14 @@ function extractMentions(sentences: Sentence[], text: string): Mention[] {
     const sentence = sentences[si];
     const sentText = sentence.text;
 
-    // Extract pronouns
+    // Extract pronouns (person and location)
     const words = sentText.split(/\b/);
     let offset = sentence.start;
 
     for (const word of words) {
       const lower = word.toLowerCase();
 
-      if (PRONOUNS.has(lower)) {
+      if (PRONOUNS.has(lower) || LOCATION_PRONOUNS.has(lower)) {
         const start = text.indexOf(word, offset);
         if (start >= sentence.start && start < sentence.end) {
           mentions.push({
@@ -314,6 +319,34 @@ function resolvePronounStacks(
     if (mention.type !== 'pronoun') continue;
 
     const pronoun = mention.text.toLowerCase();
+
+    // Check if it's a location pronoun
+    if (LOCATION_PRONOUNS.has(pronoun)) {
+      // Resolve to most recent PLACE or ORG entity
+      const candidateSpans = entitySpans.filter(span => {
+        const entity = entities.find(e => e.id === span.entity_id);
+        return entity && (entity.type === 'PLACE' || entity.type === 'ORG') && span.start < mention.start;
+      });
+
+      // Sort by position (most recent = last in text before pronoun)
+      candidateSpans.sort((a, b) => a.start - b.start);
+
+      if (candidateSpans.length > 0) {
+        const lastSpan = candidateSpans[candidateSpans.length - 1];
+        const entity = entities.find(e => e.id === lastSpan.entity_id);
+
+        if (entity) {
+          links.push({
+            mention,
+            entity_id: entity.id,
+            confidence: 0.75,
+            method: 'pronoun_stack',
+          });
+        }
+      }
+      continue;
+    }
+
     const pronounInfo = PRONOUNS.get(pronoun);
     if (!pronounInfo) continue;
 

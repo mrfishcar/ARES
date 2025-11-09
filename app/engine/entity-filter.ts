@@ -60,6 +60,8 @@ const BAD_PATTERNS = [
   /^(and|or|but|the|a|an|when|where|seeing|meeting|before|after|if|take|gather|located)\s+/i,
   // Trailing verbs
   /\s+(said|asked|replied|moved|came|went|told)$/i,
+  // Trailing location words (e.g., "magic there", "something here")
+  /\s+(there|here)$/i,
   // Just punctuation/numbers
   /^[^a-z]+$/i,
   // Single letters (unless well-known acronyms)

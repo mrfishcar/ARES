@@ -347,6 +347,13 @@ export async function extractFromSegments(
   // Pass profiles to enable descriptor-based resolution ("the wizard" → Gandalf)
   const corefLinks = resolveCoref(sentences, allEntities, allSpans, fullText, profiles);
 
+  // DEBUG: Log coreference links
+  console.log(`[COREF] Found ${corefLinks.links.length} coreference links`);
+  for (const link of corefLinks.links) {
+    const entity = allEntities.find(e => e.id === link.entity_id);
+    console.log(`[COREF] "${link.mention.text}" [${link.mention.start},${link.mention.end}] -> ${entity?.canonical} (${link.method}, conf=${link.confidence.toFixed(2)})`);
+  }
+
   // 5. Create virtual entity spans for pronouns that were resolved
   // This allows relation extraction to "see" pronouns as entity mentions
   const virtualSpans: Array<{ entity_id: string; start: number; end: number }> = [];
@@ -413,6 +420,12 @@ export async function extractFromSegments(
   }
 
   // Combine original relations with coref-enhanced relations
+  console.log(`[COREF] Found ${corefRelations.length} coref-enhanced relations`);
+  for (const rel of corefRelations) {
+    const subj = allEntities.find(e => e.id === rel.subj);
+    const obj = allEntities.find(e => e.id === rel.obj);
+    console.log(`[COREF] ${subj?.canonical} --[${rel.pred}]--> ${obj?.canonical}`);
+  }
   const combinedRelations = [...allRelations, ...corefRelations];
 
   // 7. Extract narrative relations (pattern-based extraction)
