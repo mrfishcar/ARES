@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextEID": 66,
+  "nextEID": 83,
   "mappings": [
     {
       "eid": 1,
@@ -521,10 +521,146 @@
       "created_at": "2025-11-09T07:07:43.245Z",
       "last_seen": "2025-11-09T07:07:43.245Z",
       "occurrence_count": 1
+    },
+    {
+      "eid": 66,
+      "canonical": "Dumbledore",
+      "normalizedKey": "dumbledore",
+      "created_at": "2025-11-09T14:47:16.845Z",
+      "last_seen": "2025-11-09T14:47:16.845Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 67,
+      "canonical": "Ron",
+      "normalizedKey": "ron",
+      "created_at": "2025-11-09T14:47:16.848Z",
+      "last_seen": "2025-11-09T14:47:16.848Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 68,
+      "canonical": "Gondor",
+      "normalizedKey": "gondor",
+      "created_at": "2025-11-09T14:47:16.855Z",
+      "last_seen": "2025-11-09T14:47:16.855Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 69,
+      "canonical": "Theoden",
+      "normalizedKey": "theoden",
+      "created_at": "2025-11-09T14:47:16.857Z",
+      "last_seen": "2025-11-09T14:47:16.857Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 70,
+      "canonical": "Rohan",
+      "normalizedKey": "rohan",
+      "created_at": "2025-11-09T14:47:16.858Z",
+      "last_seen": "2025-11-09T14:47:16.858Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 71,
+      "canonical": "Legolas",
+      "normalizedKey": "legolas",
+      "created_at": "2025-11-09T14:47:16.860Z",
+      "last_seen": "2025-11-09T14:47:16.860Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 72,
+      "canonical": "Gimli",
+      "normalizedKey": "gimli",
+      "created_at": "2025-11-09T14:47:16.860Z",
+      "last_seen": "2025-11-09T14:47:16.860Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 73,
+      "canonical": "Gollum",
+      "normalizedKey": "gollum",
+      "created_at": "2025-11-09T14:47:16.865Z",
+      "last_seen": "2025-11-09T14:47:16.865Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 74,
+      "canonical": "Minas Tirith",
+      "normalizedKey": "minas tirith",
+      "created_at": "2025-11-09T14:47:16.872Z",
+      "last_seen": "2025-11-09T14:47:16.872Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 75,
+      "canonical": "Bag End",
+      "normalizedKey": "bag end",
+      "created_at": "2025-11-09T14:47:16.878Z",
+      "last_seen": "2025-11-09T14:47:16.878Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 76,
+      "canonical": "Sam",
+      "normalizedKey": "sam",
+      "created_at": "2025-11-09T14:47:16.881Z",
+      "last_seen": "2025-11-09T14:47:16.881Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 77,
+      "canonical": "Boromir",
+      "normalizedKey": "boromir",
+      "created_at": "2025-11-09T14:47:16.883Z",
+      "last_seen": "2025-11-09T14:47:16.883Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 78,
+      "canonical": "Denethor",
+      "normalizedKey": "denethor",
+      "created_at": "2025-11-09T14:47:16.883Z",
+      "last_seen": "2025-11-09T14:47:16.883Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 79,
+      "canonical": "Eowyn",
+      "normalizedKey": "eowyn",
+      "created_at": "2025-11-09T14:47:16.887Z",
+      "last_seen": "2025-11-09T14:47:16.887Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 80,
+      "canonical": "Pelennor Fields",
+      "normalizedKey": "pelennor fields",
+      "created_at": "2025-11-09T14:47:16.888Z",
+      "last_seen": "2025-11-09T14:47:16.888Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 81,
+      "canonical": "Elrond",
+      "normalizedKey": "elrond",
+      "created_at": "2025-11-09T14:47:16.890Z",
+      "last_seen": "2025-11-09T14:47:16.890Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 82,
+      "canonical": "London",
+      "normalizedKey": "london",
+      "created_at": "2025-11-09T15:06:11.789Z",
+      "last_seen": "2025-11-09T15:06:11.789Z",
+      "occurrence_count": 1
     }
   ],
   "metadata": {
-    "total_entities": 65,
-    "last_updated": "2025-11-09T07:08:13.129Z"
+    "total_entities": 82,
+    "last_updated": "2025-11-09T15:06:41.709Z"
   }
 }

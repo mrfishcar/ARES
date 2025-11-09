@@ -5,72 +5,46 @@
       "type": "ORG",
       "canonical": "Hogwarts School",
       "aliases": [],
-      "created_at": "2025-11-08T05:00:58.967Z",
+      "created_at": "2025-11-09T15:04:59.133Z",
       "centrality": 0
     },
     {
       "id": "global_org_1",
       "type": "ORG",
-      "canonical": "Slytherin",
+      "canonical": "Gryffindor",
       "aliases": [],
-      "created_at": "2025-11-08T05:00:58.967Z",
+      "created_at": "2025-11-09T15:04:59.133Z",
       "centrality": 0
     },
     {
       "id": "global_org_2",
       "type": "ORG",
-      "canonical": "Hufflepuff",
+      "canonical": "Slytherin",
       "aliases": [],
-      "created_at": "2025-11-08T05:00:58.967Z",
+      "created_at": "2025-11-09T15:04:59.133Z",
       "centrality": 0
     },
     {
       "id": "global_org_3",
       "type": "ORG",
-      "canonical": "Gryffindor",
+      "canonical": "Hufflepuff",
       "aliases": [],
-      "created_at": "2025-11-08T05:00:58.967Z",
+      "created_at": "2025-11-09T15:04:59.133Z",
       "centrality": 0
     },
     {
-      "id": "global_org_4",
-      "type": "ORG",
-      "canonical": "Ravenclaw",
-      "aliases": [],
-      "created_at": "2025-11-08T05:00:58.967Z",
-      "centrality": 0
-    },
-    {
-      "id": "global_place_5",
-      "type": "PLACE",
-      "canonical": "Scotland",
-      "aliases": [],
-      "created_at": "2025-11-08T05:00:58.967Z",
-      "centrality": 0
-    },
-    {
-      "id": "global_item_6",
+      "id": "global_item_4",
       "type": "ITEM",
       "canonical": "Hogwarts Express",
       "aliases": [],
-      "created_at": "2025-11-08T05:00:58.967Z",
-      "centrality": 0
-    },
-    {
-      "id": "global_person_7",
-      "type": "PERSON",
-      "canonical": "Ravenclaw",
-      "aliases": [
-        "RavenclaEach"
-      ],
-      "created_at": "2025-11-08T05:00:58.967Z",
+      "created_at": "2025-11-09T15:04:59.133Z",
       "centrality": 0
     }
   ],
   "relations": [
     {
-      "id": "77489b44-148b-4302-a8c8-14ba7a69017c",
-      "subj": "global_org_3",
+      "id": "99c306c3-911a-479a-9421-4df4de5116bd",
+      "subj": "global_org_1",
       "pred": "part_of",
       "obj": "global_org_0",
       "evidence": [
@@ -89,8 +63,8 @@
       "extractor": "regex"
     },
     {
-      "id": "c39c158c-d35c-42f9-b3d6-2571920e23ef",
-      "subj": "global_org_1",
+      "id": "73c1e528-4ffa-4055-bbfb-b47bc39513c1",
+      "subj": "global_org_2",
       "pred": "part_of",
       "obj": "global_org_0",
       "evidence": [
@@ -109,8 +83,8 @@
       "extractor": "regex"
     },
     {
-      "id": "699094f3-e4ed-4b70-8c28-048623a64b4b",
-      "subj": "global_org_2",
+      "id": "549871dc-42bc-4306-bc34-0859f298761d",
+      "subj": "global_org_3",
       "pred": "part_of",
       "obj": "global_org_0",
       "evidence": [
@@ -127,26 +101,6 @@
       ],
       "confidence": 0.7,
       "extractor": "regex"
-    },
-    {
-      "id": "9505f532-fff0-4e2d-b8ce-fc09e2782496",
-      "subj": "global_org_4",
-      "pred": "part_of",
-      "obj": "global_org_0",
-      "evidence": [
-        {
-          "doc_id": "default",
-          "span": {
-            "start": 0,
-            "end": 195,
-            "text": "Hogwarts School was located in Scotland. Students traveled there via the Hogwarts Express from Platform 9¾.\n\n The castle had four houses: Gryffindor, Slytherin, Hufflepuff, and Ravenclaw.aw. Each"
-          },
-          "sentence_index": 0,
-          "source": "RAW"
-        }
-      ],
-      "confidence": 0.7,
-      "extractor": "regex"
     }
   ],
   "conflicts": [],
@@ -154,55 +108,37 @@
     "3.10_entity_0": {
       "global_id": "global_org_0",
       "doc_id": "3.10",
-      "merged_at": "2025-11-08T05:00:58.967Z",
+      "merged_at": "2025-11-09T15:04:59.133Z",
       "local_canonical": "Hogwarts School"
     },
-    "3.10_entity_1": {
-      "global_id": "global_place_5",
-      "doc_id": "3.10",
-      "merged_at": "2025-11-08T05:00:58.967Z",
-      "local_canonical": "Scotland"
-    },
     "3.10_entity_2": {
-      "global_id": "global_item_6",
+      "global_id": "global_item_4",
       "doc_id": "3.10",
-      "merged_at": "2025-11-08T05:00:58.967Z",
+      "merged_at": "2025-11-09T15:04:59.133Z",
       "local_canonical": "Hogwarts Express"
     },
     "3.10_entity_3": {
       "global_id": "global_org_1",
       "doc_id": "3.10",
-      "merged_at": "2025-11-08T05:00:58.967Z",
-      "local_canonical": "Slytherin"
+      "merged_at": "2025-11-09T15:04:59.133Z",
+      "local_canonical": "Gryffindor"
     },
     "3.10_entity_4": {
       "global_id": "global_org_2",
       "doc_id": "3.10",
-      "merged_at": "2025-11-08T05:00:58.967Z",
-      "local_canonical": "Hufflepuff"
+      "merged_at": "2025-11-09T15:04:59.133Z",
+      "local_canonical": "Slytherin"
     },
     "3.10_entity_5": {
       "global_id": "global_org_3",
       "doc_id": "3.10",
-      "merged_at": "2025-11-08T05:00:58.967Z",
-      "local_canonical": "Gryffindor"
-    },
-    "3.10_entity_6": {
-      "global_id": "global_org_4",
-      "doc_id": "3.10",
-      "merged_at": "2025-11-08T05:00:58.967Z",
-      "local_canonical": "Ravenclaw"
-    },
-    "3.10_entity_7": {
-      "global_id": "global_person_7",
-      "doc_id": "3.10",
-      "merged_at": "2025-11-08T05:00:58.967Z",
-      "local_canonical": "Ravenclaw"
+      "merged_at": "2025-11-09T15:04:59.133Z",
+      "local_canonical": "Hufflepuff"
     }
   },
   "profiles": {
-    "ea5b86e4-9c23-49f2-922b-08e2649e708e": {
-      "entity_id": "ea5b86e4-9c23-49f2-922b-08e2649e708e",
+    "a1f35ef0-3e4d-4efe-86d7-a095cad55bdd": {
+      "entity_id": "a1f35ef0-3e4d-4efe-86d7-a095cad55bdd",
       "entity_type": "ORG",
       "canonical": "Hogwarts School",
       "descriptors": [],
@@ -219,26 +155,30 @@
       "last_seen": "3.10",
       "confidence_score": 0.55
     },
-    "4e52c139-4e9e-4069-8526-506248a62299": {
-      "entity_id": "4e52c139-4e9e-4069-8526-506248a62299",
-      "entity_type": "PLACE",
-      "canonical": "Scotland",
+    "611eff79-4b43-4bb6-b8d7-3995876f334b": {
+      "entity_id": "611eff79-4b43-4bb6-b8d7-3995876f334b",
+      "entity_type": "PERSON",
+      "canonical": "there via",
       "descriptors": [],
       "titles": [
-        "Scotland"
+        "there via",
+        "there via the Hogwarts",
+        "There Via"
       ],
-      "roles": [],
+      "roles": [
+        "student"
+      ],
       "attributes": {},
       "contexts": [
-        "Hogwarts School was located in Scotland."
+        "Students traveled there via the Hogwarts Express from Platform 9¾."
       ],
       "mention_count": 1,
       "first_seen": "3.10",
       "last_seen": "3.10",
       "confidence_score": 0.55
     },
-    "39116508-457b-4680-9f4d-6d9853383110": {
-      "entity_id": "39116508-457b-4680-9f4d-6d9853383110",
+    "6a8183e7-d936-4a8e-96c3-4cb9ad77341b": {
+      "entity_id": "6a8183e7-d936-4a8e-96c3-4cb9ad77341b",
       "entity_type": "ITEM",
       "canonical": "Hogwarts Express",
       "descriptors": [],
@@ -257,44 +197,8 @@
       "last_seen": "3.10",
       "confidence_score": 0.55
     },
-    "1f9eeefa-e0f4-4174-896d-640676d4999b": {
-      "entity_id": "1f9eeefa-e0f4-4174-896d-640676d4999b",
-      "entity_type": "ORG",
-      "canonical": "Slytherin",
-      "descriptors": [],
-      "titles": [
-        "Slytherin"
-      ],
-      "roles": [],
-      "attributes": {},
-      "contexts": [
-        "The castle had four houses: Gryffindor, Slytherin, Hufflepuff, and Ravenclaw."
-      ],
-      "mention_count": 1,
-      "first_seen": "3.10",
-      "last_seen": "3.10",
-      "confidence_score": 0.55
-    },
-    "d0bb654a-2532-4b70-917a-add166147684": {
-      "entity_id": "d0bb654a-2532-4b70-917a-add166147684",
-      "entity_type": "ORG",
-      "canonical": "Hufflepuff",
-      "descriptors": [],
-      "titles": [
-        "Hufflepuff"
-      ],
-      "roles": [],
-      "attributes": {},
-      "contexts": [
-        "The castle had four houses: Gryffindor, Slytherin, Hufflepuff, and Ravenclaw."
-      ],
-      "mention_count": 1,
-      "first_seen": "3.10",
-      "last_seen": "3.10",
-      "confidence_score": 0.55
-    },
-    "d1ef0cc7-2572-4c4f-a831-0b5766f005db": {
-      "entity_id": "d1ef0cc7-2572-4c4f-a831-0b5766f005db",
+    "4f8500e4-64f2-4fe5-8193-253e5918ea10": {
+      "entity_id": "4f8500e4-64f2-4fe5-8193-253e5918ea10",
       "entity_type": "ORG",
       "canonical": "Gryffindor",
       "descriptors": [],
@@ -311,13 +215,13 @@
       "last_seen": "3.10",
       "confidence_score": 0.55
     },
-    "5d272728-03f7-4496-b06f-31adc7c7807c": {
-      "entity_id": "5d272728-03f7-4496-b06f-31adc7c7807c",
+    "bd9df165-44eb-46e6-9d4c-3ea782143435": {
+      "entity_id": "bd9df165-44eb-46e6-9d4c-3ea782143435",
       "entity_type": "ORG",
-      "canonical": "Ravenclaw",
+      "canonical": "Slytherin",
       "descriptors": [],
       "titles": [
-        "Ravenclaw"
+        "Slytherin"
       ],
       "roles": [],
       "attributes": {},
@@ -329,14 +233,13 @@
       "last_seen": "3.10",
       "confidence_score": 0.55
     },
-    "494daa83-e078-4612-af4c-d6625583b25c": {
-      "entity_id": "494daa83-e078-4612-af4c-d6625583b25c",
-      "entity_type": "PERSON",
-      "canonical": "Ravenclaw",
+    "4bb86a93-4ee0-4b03-9616-536e08d4b743": {
+      "entity_id": "4bb86a93-4ee0-4b03-9616-536e08d4b743",
+      "entity_type": "ORG",
+      "canonical": "Hufflepuff",
       "descriptors": [],
       "titles": [
-        "Ravenclaw",
-        "RavenclaEach"
+        "Hufflepuff"
       ],
       "roles": [],
       "attributes": {},
@@ -350,8 +253,8 @@
     }
   },
   "metadata": {
-    "created_at": "2025-11-08T05:00:58.785Z",
-    "updated_at": "2025-11-08T05:00:58.967Z",
+    "created_at": "2025-11-09T15:04:59.117Z",
+    "updated_at": "2025-11-09T15:04:59.133Z",
     "doc_count": 1,
     "doc_ids": [
       "3.10"

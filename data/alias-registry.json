@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextAID": 75,
+  "nextAID": 96,
   "mappings": [
     {
       "aid": 1,
@@ -741,11 +741,221 @@
       "last_seen": "2025-11-09T07:07:43.245Z",
       "occurrence_count": 1,
       "confidence": 1
+    },
+    {
+      "aid": 75,
+      "surfaceForm": "Dumbledore",
+      "normalizedKey": "dumbledore",
+      "eid": 66,
+      "created_at": "2025-11-09T14:47:16.845Z",
+      "last_seen": "2025-11-09T14:47:16.845Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 76,
+      "surfaceForm": "Ron",
+      "normalizedKey": "ron",
+      "eid": 67,
+      "created_at": "2025-11-09T14:47:16.848Z",
+      "last_seen": "2025-11-09T14:47:16.848Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 77,
+      "surfaceForm": "Gondor",
+      "normalizedKey": "gondor",
+      "eid": 68,
+      "created_at": "2025-11-09T14:47:16.855Z",
+      "last_seen": "2025-11-09T14:47:16.855Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 78,
+      "surfaceForm": "Theoden",
+      "normalizedKey": "theoden",
+      "eid": 69,
+      "created_at": "2025-11-09T14:47:16.857Z",
+      "last_seen": "2025-11-09T14:47:16.857Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 79,
+      "surfaceForm": "Rohan",
+      "normalizedKey": "rohan",
+      "eid": 70,
+      "created_at": "2025-11-09T14:47:16.858Z",
+      "last_seen": "2025-11-09T14:47:16.858Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 80,
+      "surfaceForm": "Legolas",
+      "normalizedKey": "legolas",
+      "eid": 71,
+      "created_at": "2025-11-09T14:47:16.860Z",
+      "last_seen": "2025-11-09T14:47:16.860Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 81,
+      "surfaceForm": "Gimli",
+      "normalizedKey": "gimli",
+      "eid": 72,
+      "created_at": "2025-11-09T14:47:16.860Z",
+      "last_seen": "2025-11-09T14:47:16.860Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 82,
+      "surfaceForm": "Gollum",
+      "normalizedKey": "gollum",
+      "eid": 73,
+      "created_at": "2025-11-09T14:47:16.865Z",
+      "last_seen": "2025-11-09T14:47:16.865Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 83,
+      "surfaceForm": "Minas Tirith",
+      "normalizedKey": "minas tirith",
+      "eid": 74,
+      "created_at": "2025-11-09T14:47:16.872Z",
+      "last_seen": "2025-11-09T14:47:16.872Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 84,
+      "surfaceForm": "Harry Potter",
+      "normalizedKey": "harry potter",
+      "eid": 51,
+      "created_at": "2025-11-09T14:47:16.875Z",
+      "last_seen": "2025-11-09T14:47:16.875Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 85,
+      "surfaceForm": "Hogwarts School",
+      "normalizedKey": "hogwarts school",
+      "eid": 62,
+      "created_at": "2025-11-09T14:47:16.875Z",
+      "last_seen": "2025-11-09T14:47:16.875Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 86,
+      "surfaceForm": "Frodo Baggins",
+      "normalizedKey": "frodo baggins",
+      "eid": 56,
+      "created_at": "2025-11-09T14:47:16.878Z",
+      "last_seen": "2025-11-09T14:47:16.878Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 87,
+      "surfaceForm": "Bag End",
+      "normalizedKey": "bag end",
+      "eid": 75,
+      "created_at": "2025-11-09T14:47:16.878Z",
+      "last_seen": "2025-11-09T14:47:16.878Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 88,
+      "surfaceForm": "Sam",
+      "normalizedKey": "sam",
+      "eid": 76,
+      "created_at": "2025-11-09T14:47:16.881Z",
+      "last_seen": "2025-11-09T14:47:16.881Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 89,
+      "surfaceForm": "Boromir",
+      "normalizedKey": "boromir",
+      "eid": 77,
+      "created_at": "2025-11-09T14:47:16.883Z",
+      "last_seen": "2025-11-09T14:47:16.883Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 90,
+      "surfaceForm": "Denethor",
+      "normalizedKey": "denethor",
+      "eid": 78,
+      "created_at": "2025-11-09T14:47:16.883Z",
+      "last_seen": "2025-11-09T14:47:16.883Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 91,
+      "surfaceForm": "Eowyn",
+      "normalizedKey": "eowyn",
+      "eid": 79,
+      "created_at": "2025-11-09T14:47:16.887Z",
+      "last_seen": "2025-11-09T14:47:16.887Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 92,
+      "surfaceForm": "Battle",
+      "normalizedKey": "battle",
+      "eid": 13,
+      "created_at": "2025-11-09T14:47:16.888Z",
+      "last_seen": "2025-11-09T14:47:16.888Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 93,
+      "surfaceForm": "Pelennor Fields",
+      "normalizedKey": "pelennor fields",
+      "eid": 80,
+      "created_at": "2025-11-09T14:47:16.888Z",
+      "last_seen": "2025-11-09T14:47:16.888Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 94,
+      "surfaceForm": "Elrond",
+      "normalizedKey": "elrond",
+      "eid": 81,
+      "created_at": "2025-11-09T14:47:16.890Z",
+      "last_seen": "2025-11-09T14:47:16.890Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 95,
+      "surfaceForm": "London",
+      "normalizedKey": "london",
+      "eid": 82,
+      "created_at": "2025-11-09T15:06:11.789Z",
+      "last_seen": "2025-11-09T15:06:11.789Z",
+      "occurrence_count": 1,
+      "confidence": 1
     }
   ],
   "metadata": {
-    "total_aliases": 74,
-    "total_entities": 65,
-    "last_updated": "2025-11-09T07:08:13.190Z"
+    "total_aliases": 95,
+    "total_entities": 82,
+    "last_updated": "2025-11-09T15:06:41.765Z"
   }
 }
