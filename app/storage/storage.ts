@@ -228,7 +228,18 @@ export async function appendDoc(
     ...localEntities
   ];
 
-  const { globals, idMap } = mergeEntitiesAcrossDocs(allLocalEntities);
+  const mergeResult = mergeEntitiesAcrossDocs(allLocalEntities);
+  const { globals, idMap, stats } = mergeResult;
+
+  // Log merge statistics for debugging
+  if (process.env.DEBUG_MERGE === '1') {
+    console.log('[merge] stats:', stats);
+    console.log(`[merge] merged ${stats.total_entities} entities into ${stats.merged_clusters} clusters`);
+    console.log(`[merge] avg confidence: ${stats.avg_confidence.toFixed(3)}`);
+    if (stats.low_confidence_count > 0) {
+      console.log(`[merge] warning: ${stats.low_confidence_count} low-confidence merges (< 0.7)`);
+    }
+  }
 
   // Update provenance for existing local entities with new global IDs
   for (const [localId, info] of graph.provenance.entries()) {
