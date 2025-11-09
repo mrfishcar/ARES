@@ -18,7 +18,7 @@ import { hybridExtraction } from '../llm-extractor';
 import { getLLMConfig, validateLLMConfig, DEFAULT_LLM_CONFIG, type LLMConfig } from '../llm-config';
 import { applyPatterns, type Pattern } from '../bootstrap';
 import type { PatternLibrary } from '../pattern-library';
-import { isValidEntity } from '../entity-filter';
+import { isValidEntity, correctEntityType } from '../entity-filter';
 
 /**
  * Extract entities and relations from segments with context windows
@@ -201,9 +201,13 @@ export async function extractFromSegments(
           continue;
         }
 
+        // Force-correct entity type based on lexical markers (e.g., "River" → PLACE)
+        const correctedType = correctEntityType(canonicalText, entity.type);
+
         // New entity - use canonical text from absolute position
         const correctedEntity: Entity = {
           ...entity,
+          type: correctedType,
           canonical: canonicalText
         };
         if (

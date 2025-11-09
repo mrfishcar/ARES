@@ -107,6 +107,39 @@ const TYPE_SPECIFIC_BLOCKLIST: Partial<Record<EntityType, Set<string>>> = {
 };
 
 /**
+ * Force-correct entity type based on strong lexical markers
+ * This overrides spaCy classifications when we have high confidence
+ */
+export function correctEntityType(
+  canonical: string,
+  currentType: EntityType
+): EntityType {
+  const normalized = canonical.toLowerCase();
+
+  // Geographic markers - MUST be PLACE
+  if (/(river|creek|stream|mountain|mount|peak|hill|hillside|valley|lake|sea|ocean|island|isle|forest|wood|desert|plain|prairie|city|town|village|kingdom|realm|land|cliff|ridge|canyon|gorge|fjord|haven|harbor|bay|cove|grove|glade|dale|moor|heath|marsh|swamp|waste|wild|reach|highland|lowland|borderland)s?\b/i.test(canonical)) {
+    return 'PLACE';
+  }
+
+  // Educational/organizational markers
+  if (/(school|university|academy|college|ministry|department|company|corporation|inc|llc|corp|ltd|bank|institute)\b/i.test(canonical)) {
+    return 'ORG';
+  }
+
+  // House/Order markers
+  if (/\b(house|order|clan|tribe|dynasty)\b/i.test(canonical)) {
+    return 'HOUSE';
+  }
+
+  // Event markers
+  if (/\b(battle|war|treaty|accord|council|conference|summit)\s+of\b/i.test(canonical)) {
+    return 'EVENT';
+  }
+
+  return currentType;
+}
+
+/**
  * Check if entity is a valid extraction
  */
 export function isValidEntity(

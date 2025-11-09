@@ -3,17 +3,17 @@
     {
       "id": "global_person_0",
       "type": "PERSON",
-      "canonical": "Elias",
+      "canonical": "Aria",
       "aliases": [],
-      "created_at": "2025-11-09T15:05:05.316Z",
+      "created_at": "2025-11-09T17:30:19.849Z",
       "centrality": 0
     },
     {
       "id": "global_person_1",
       "type": "PERSON",
-      "canonical": "Aria",
+      "canonical": "Elias",
       "aliases": [],
-      "created_at": "2025-11-09T15:05:05.316Z",
+      "created_at": "2025-11-09T17:30:19.849Z",
       "centrality": 0
     },
     {
@@ -21,13 +21,13 @@
       "type": "PLACE",
       "canonical": "Mistward River",
       "aliases": [],
-      "created_at": "2025-11-09T15:05:05.316Z",
+      "created_at": "2025-11-09T17:30:19.849Z",
       "centrality": 0
     }
   ],
   "relations": [
     {
-      "id": "19a1f40a-e5a8-4e71-a37e-ff6bd5a5267f",
+      "id": "17cdd7be-758d-44a3-8c23-4057e4c76f6e",
       "subj": "global_person_0",
       "pred": "lives_in",
       "obj": "global_place_2",
@@ -52,25 +52,43 @@
     "test-mega-context_entity_0": {
       "global_id": "global_person_0",
       "doc_id": "test-mega-context",
-      "merged_at": "2025-11-09T15:05:05.316Z",
+      "merged_at": "2025-11-09T17:30:19.849Z",
+      "local_canonical": "Aria"
+    },
+    "test-mega-context_entity_1": {
+      "global_id": "global_person_1",
+      "doc_id": "test-mega-context",
+      "merged_at": "2025-11-09T17:30:19.849Z",
       "local_canonical": "Elias"
     },
     "test-mega-context_entity_2": {
       "global_id": "global_place_2",
       "doc_id": "test-mega-context",
-      "merged_at": "2025-11-09T15:05:05.316Z",
+      "merged_at": "2025-11-09T17:30:19.849Z",
       "local_canonical": "Mistward River"
-    },
-    "test-mega-context_entity_3": {
-      "global_id": "global_person_1",
-      "doc_id": "test-mega-context",
-      "merged_at": "2025-11-09T15:05:05.316Z",
-      "local_canonical": "Aria"
     }
   },
   "profiles": {
-    "dc645925-fe27-4241-8f4c-322b27628c89": {
-      "entity_id": "dc645925-fe27-4241-8f4c-322b27628c89",
+    "0db1fdfa-5c3a-4b23-a6ea-9e422d24a935": {
+      "entity_id": "0db1fdfa-5c3a-4b23-a6ea-9e422d24a935",
+      "entity_type": "PERSON",
+      "canonical": "Aria",
+      "descriptors": [],
+      "titles": [
+        "Aria"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Aria and Elias lived in a copper-roofed house overlooking the Mistward River."
+      ],
+      "mention_count": 1,
+      "first_seen": "test-mega-context",
+      "last_seen": "test-mega-context",
+      "confidence_score": 0.55
+    },
+    "bb82ee40-ebf5-48ef-b214-93c82a9f3fdc": {
+      "entity_id": "bb82ee40-ebf5-48ef-b214-93c82a9f3fdc",
       "entity_type": "PERSON",
       "canonical": "Elias",
       "descriptors": [],
@@ -89,30 +107,8 @@
       "last_seen": "test-mega-context",
       "confidence_score": 0.55
     },
-    "2689213c-0522-4a06-b836-406154ab1a37": {
-      "entity_id": "2689213c-0522-4a06-b836-406154ab1a37",
-      "entity_type": "PLACE",
-      "canonical": "house overlooking",
-      "descriptors": [],
-      "titles": [
-        "house overlooking",
-        "house overlooking the Mistward",
-        "House Overlooking"
-      ],
-      "roles": [
-        "king"
-      ],
-      "attributes": {},
-      "contexts": [
-        "Aria and Elias lived in a copper-roofed house overlooking the Mistward River."
-      ],
-      "mention_count": 1,
-      "first_seen": "test-mega-context",
-      "last_seen": "test-mega-context",
-      "confidence_score": 0.55
-    },
-    "d857507f-5291-4faa-ab8c-4935eaa2edb1": {
-      "entity_id": "d857507f-5291-4faa-ab8c-4935eaa2edb1",
+    "21cdbffd-3f83-4704-9f96-f2f97a4e68c9": {
+      "entity_id": "21cdbffd-3f83-4704-9f96-f2f97a4e68c9",
       "entity_type": "PLACE",
       "canonical": "Mistward River",
       "descriptors": [],
@@ -131,18 +127,19 @@
       "last_seen": "test-mega-context",
       "confidence_score": 0.55
     },
-    "65d409eb-4d6b-471d-b2a9-01bc5dab3d9c": {
-      "entity_id": "65d409eb-4d6b-471d-b2a9-01bc5dab3d9c",
+    "2471712c-101a-47af-a072-08ef6bdbb7ef": {
+      "entity_id": "2471712c-101a-47af-a072-08ef6bdbb7ef",
       "entity_type": "PERSON",
-      "canonical": "Aria",
+      "canonical": "home",
       "descriptors": [],
       "titles": [
-        "Aria"
+        "home",
+        "Home"
       ],
       "roles": [],
       "attributes": {},
       "contexts": [
-        "Aria and Elias lived in a copper-roofed house overlooking the Mistward River."
+        "Their home doubled as a workshop stocked with sextants."
       ],
       "mention_count": 1,
       "first_seen": "test-mega-context",
@@ -151,8 +148,8 @@
     }
   },
   "metadata": {
-    "created_at": "2025-11-09T15:05:05.304Z",
-    "updated_at": "2025-11-09T15:05:05.316Z",
+    "created_at": "2025-11-09T17:30:19.655Z",
+    "updated_at": "2025-11-09T17:30:19.849Z",
     "doc_count": 1,
     "doc_ids": [
       "test-mega-context"

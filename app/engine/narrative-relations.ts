@@ -112,6 +112,41 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
   },
 
+  // === FAMILY/PARENT PATTERNS ===
+  // Pattern: "child of X and Y" - First parent relation
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)[^.]{0,100}?\b(?:child|daughter|son)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+and\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'parent_of',
+    extractSubj: 2,  // First parent
+    extractObj: 1,   // Child
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // Pattern: "child of X and Y" - Second parent relation (same regex, different extraction)
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)[^.]{0,100}?\b(?:child|daughter|son)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+and\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'parent_of',
+    extractSubj: 3,  // Second parent (group 3)
+    extractObj: 1,   // Child
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // Pattern: "Mira, daughter of Aria" or "Cael, son of Elias"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*,?\s+(?:the\s+)?(?:daughter|son|child)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'parent_of',
+    extractSubj: 2,  // Parent is object of "of"
+    extractObj: 1,   // Child is subject
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // Pattern: "The couple's daughter, Mira" or "Their son, Cael"
+  // Note: This requires special handling - need to resolve "couple"/"their" first
+  {
+    regex: /\b(the\s+couple'?s?|their)\s+(?:daughter|son|child|children)\s*,?\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/gi,
+    predicate: 'parent_of',
+    extractSubj: 1,  // This will be "their" or "the couple's" - needs coreference
+    extractObj: 2,   // This is the child name
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+
   // === EDUCATION PATTERNS ===
   // "Aria studied at Meridian Academy", "Mira studying at..."
   {

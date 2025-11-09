@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextAID": 96,
+  "nextAID": 108,
   "mappings": [
     {
       "aid": 1,
@@ -951,11 +951,131 @@
       "last_seen": "2025-11-09T15:06:11.789Z",
       "occurrence_count": 1,
       "confidence": 1
+    },
+    {
+      "aid": 96,
+      "surfaceForm": "Aria",
+      "normalizedKey": "aria",
+      "eid": 83,
+      "created_at": "2025-11-09T17:26:25.753Z",
+      "last_seen": "2025-11-09T17:26:25.753Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 97,
+      "surfaceForm": "Mira",
+      "normalizedKey": "mira",
+      "eid": 84,
+      "created_at": "2025-11-09T17:26:25.754Z",
+      "last_seen": "2025-11-09T17:26:25.754Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 98,
+      "surfaceForm": "Elias",
+      "normalizedKey": "elias",
+      "eid": 85,
+      "created_at": "2025-11-09T17:26:27.109Z",
+      "last_seen": "2025-11-09T17:26:27.109Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 99,
+      "surfaceForm": "Cael",
+      "normalizedKey": "cael",
+      "eid": 86,
+      "created_at": "2025-11-09T17:26:27.109Z",
+      "last_seen": "2025-11-09T17:26:27.109Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 100,
+      "surfaceForm": "mechanics",
+      "normalizedKey": "mechanics",
+      "eid": 87,
+      "created_at": "2025-11-09T17:26:50.189Z",
+      "last_seen": "2025-11-09T17:26:50.189Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 101,
+      "surfaceForm": "brother",
+      "normalizedKey": "brother",
+      "eid": 88,
+      "created_at": "2025-11-09T17:27:14.253Z",
+      "last_seen": "2025-11-09T17:27:14.253Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 102,
+      "surfaceForm": "sister",
+      "normalizedKey": "sister",
+      "eid": 89,
+      "created_at": "2025-11-09T17:27:22.598Z",
+      "last_seen": "2025-11-09T17:27:22.598Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 103,
+      "surfaceForm": "parents",
+      "normalizedKey": "parents",
+      "eid": 90,
+      "created_at": "2025-11-09T17:27:53.052Z",
+      "last_seen": "2025-11-09T17:27:53.052Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 104,
+      "surfaceForm": "anical grammar",
+      "normalizedKey": "anical grammar",
+      "eid": 91,
+      "created_at": "2025-11-09T17:27:53.052Z",
+      "last_seen": "2025-11-09T17:27:53.052Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 105,
+      "surfaceForm": "nsisting",
+      "normalizedKey": "nsisting",
+      "eid": 92,
+      "created_at": "2025-11-09T17:27:53.053Z",
+      "last_seen": "2025-11-09T17:27:53.053Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 106,
+      "surfaceForm": "Mira Calder",
+      "normalizedKey": "mira calder",
+      "eid": 84,
+      "created_at": "2025-11-09T17:27:53.053Z",
+      "last_seen": "2025-11-09T17:27:53.053Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 107,
+      "surfaceForm": "the",
+      "normalizedKey": "the",
+      "eid": 93,
+      "created_at": "2025-11-09T17:27:53.053Z",
+      "last_seen": "2025-11-09T17:27:53.053Z",
+      "occurrence_count": 1,
+      "confidence": 1
     }
   ],
   "metadata": {
-    "total_aliases": 95,
-    "total_entities": 82,
-    "last_updated": "2025-11-09T15:06:41.765Z"
+    "total_aliases": 107,
+    "total_entities": 93,
+    "last_updated": "2025-11-09T17:27:55.739Z"
   }
 }
