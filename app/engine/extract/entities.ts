@@ -158,6 +158,24 @@ const PERSON_ROLES = new Set([
 // Geographic markers that indicate PLACE entities
 const GEO_MARKERS = /\b(river|creek|stream|brook|mountain|mount|peak|hill|ridge|valley|canyon|gorge|lake|sea|ocean|bay|gulf|island|isle|peninsula|cape|plateau|desert|forest|woods|falls|waterfall|cliff|bluff|mesa|butte|fjord|glacier|volcano|plain|prairie|savanna|swamp|marsh|wetland|delta|strait|harbor|port|coast|shore|beach|plaza|square|commons|garden|courtyard|terrace|promenade|avenue|boulevard|road|street|lane|alley|bridge|gate|tower|keep|basilica|cathedral|abbey|monastery|chapel|church|palace|castle|citadel)\b/i;
 
+// Common place names gazetteer (for cases where spaCy misses GPE/LOC)
+const PLACE_GAZETTEER = new Set([
+  // Major world cities
+  'london', 'paris', 'rome', 'berlin', 'madrid', 'moscow', 'beijing', 'tokyo', 'seoul',
+  'delhi', 'mumbai', 'bangkok', 'istanbul', 'cairo', 'lagos', 'johannesburg',
+  'new york', 'los angeles', 'chicago', 'houston', 'toronto', 'vancouver',
+  'sydney', 'melbourne', 'auckland',
+  'buenos aires', 'rio de janeiro', 'sao paulo', 'mexico city',
+
+  // Countries
+  'england', 'france', 'germany', 'spain', 'italy', 'russia', 'china', 'japan', 'india',
+  'australia', 'canada', 'usa', 'america', 'united states', 'brazil', 'argentina',
+
+  // Fictional places (common in test data)
+  'hogwarts', 'shire', 'mordor', 'gondor', 'rohan', 'rivendell', 'lothlorien',
+  'narnia', 'westeros', 'middle-earth', 'asgard', 'wakanda'
+]);
+
 // Keywords that usually signal an EVENT (treaties, accords, councils, etc.)
 const EVENT_KEYWORDS = /\b(treaty|accord|agreement|pact|armistice|charter|decree|edict|truce|capitulation|convention|summit|protocol|compact|conference|council|synod|concordat|peace)\b/i;
 
@@ -1015,6 +1033,35 @@ function classifyName(text: string, surface: string, start: number, end: number)
 /**
  * Fallback: Extract capitalized 1-3 word patterns with context classification
  */
+/**
+ * Extract places from gazetteer
+ * Catches common place names that spaCy might miss (e.g., "London" in certain contexts)
+ */
+function gazetterPlaces(text: string): Array<{ text: string; type: EntityType; start: number; end: number }> {
+  const spans: { text: string; type: EntityType; start: number; end: number }[] = [];
+
+  // Match capitalized words that might be places
+  const wordPattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b/g;
+  let match: RegExpExecArray | null;
+
+  while ((match = wordPattern.exec(text))) {
+    const word = match[1];
+    const normalized = word.toLowerCase();
+
+    // Check if it's in our gazetteer
+    if (PLACE_GAZETTEER.has(normalized)) {
+      spans.push({
+        text: word,
+        type: 'PLACE',
+        start: match.index,
+        end: match.index + word.length
+      });
+    }
+  }
+
+  return spans;
+}
+
 function fallbackNames(text: string): Array<{ text: string; type: EntityType; start: number; end: number }> {
   const spans: { text: string; type: EntityType; start: number; end: number }[] = [];
 
@@ -1201,10 +1248,13 @@ export async function extractEntities(text: string): Promise<{
   // 3) Dependency-based extraction (uses syntactic patterns)
   const dep = parsed.sentences.flatMap(depBasedEntities);
 
-  // 4) Fallback: capitalized names with context classification
+  // 4) Gazetteer-based place extraction
+  const gazPlaces = gazetterPlaces(text);
+
+  // 5) Fallback: capitalized names with context classification
   const fb = fallbackNames(text);
 
-  // 5) Merge all sources, deduplicate
+  // 6) Merge all sources, deduplicate
   // Priority: dependency-based > NER > fallback
   // Dependency patterns are most reliable, then spaCy NER, then regex fallback
   const years = extractYearSpans(text);
@@ -1225,6 +1275,7 @@ export async function extractEntities(text: string): Promise<{
       const isWhitelisted = FANTASY_WHITELIST.has(normalized) || FANTASY_WHITELIST.has(s.text);
       return { ...s, source: (isWhitelisted ? 'WHITELIST' : 'NER') as ExtractorSource };
     }),
+    ...gazPlaces.map(s => ({ ...s, source: 'NER' as ExtractorSource })), // Treat gazetteer as NER-quality
     ...fb.map(s => {
       // Check if this span is from whitelist (normalize for matching)
       const normalized = normalizeName(s.text);
