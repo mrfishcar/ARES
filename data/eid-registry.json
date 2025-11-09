@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextEID": 62,
+  "nextEID": 66,
   "mappings": [
     {
       "eid": 1,
@@ -489,10 +489,42 @@
       "created_at": "2025-11-09T07:00:19.969Z",
       "last_seen": "2025-11-09T07:00:19.969Z",
       "occurrence_count": 1
+    },
+    {
+      "eid": 62,
+      "canonical": "Hogwarts",
+      "normalizedKey": "hogwarts",
+      "created_at": "2025-11-09T07:07:43.226Z",
+      "last_seen": "2025-11-09T07:07:43.226Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 63,
+      "canonical": "magic there",
+      "normalizedKey": "magic there",
+      "created_at": "2025-11-09T07:07:43.227Z",
+      "last_seen": "2025-11-09T07:07:43.227Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 64,
+      "canonical": "Hermione",
+      "normalizedKey": "hermione",
+      "created_at": "2025-11-09T07:07:43.238Z",
+      "last_seen": "2025-11-09T07:07:43.238Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 65,
+      "canonical": "Mordor",
+      "normalizedKey": "mordor",
+      "created_at": "2025-11-09T07:07:43.245Z",
+      "last_seen": "2025-11-09T07:07:43.245Z",
+      "occurrence_count": 1
     }
   ],
   "metadata": {
-    "total_entities": 61,
-    "last_updated": "2025-11-09T07:00:49.875Z"
+    "total_entities": 65,
+    "last_updated": "2025-11-09T07:08:13.129Z"
   }
 }
