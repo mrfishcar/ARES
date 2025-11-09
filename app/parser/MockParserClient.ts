@@ -35,13 +35,29 @@ const ACTION_VERBS = new Set([
   'said', 'asked', 'replied', 'answered', 'whispered', 'shouted', 'thought', 'felt',
   'went', 'came', 'walked', 'ran', 'stood', 'sat', 'moved', 'traveled',
   'was', 'were', 'had', 'has', 'did', 'does', 'could', 'would', 'should',
-  'wrote', 'made', 'built', 'created', 'founded', 'started', 'joined', 'left'
+  'wrote', 'made', 'built', 'created', 'founded', 'started', 'joined', 'left',
+  // Marriage and family verbs
+  'married', 'wed', 'wedded',
+  // Location verbs
+  'lived', 'dwelt', 'resided', 'stayed',
+  // Social verbs
+  'fought', 'befriended',
+  // Leadership verbs
+  'ruled', 'governed', 'became',
+  // Education verbs
+  'studied', 'attended', 'teaches', 'learned'
 ]);
 
 function buildTokens(sentenceText: string, offset: number): Token[] {
   const tokens: Token[] = [];
   let match: RegExpExecArray | null;
   let index = 0;
+
+  // Determiners (articles)
+  const DETERMINERS = new Set(['the', 'a', 'an']);
+
+  // Prepositions
+  const PREPOSITIONS = new Set(['of', 'in', 'at', 'to', 'from', 'by', 'with', 'for', 'on']);
 
   // First pass: create tokens
   while ((match = WORD_REGEX.exec(sentenceText)) !== null) {
@@ -50,13 +66,35 @@ function buildTokens(sentenceText: string, offset: number): Token[] {
     const end = start + raw.length;
     const isCapitalized = /^[A-Z]/.test(raw);
     const isLowercase = /^[a-z]/.test(raw);
+    const lowerRaw = raw.toLowerCase();
+
+    // Determine POS tag
+    let pos: string;
+    let tag: string;
+
+    if (DETERMINERS.has(lowerRaw)) {
+      pos = "DET";
+      tag = "DT";
+    } else if (PREPOSITIONS.has(lowerRaw)) {
+      pos = "ADP";
+      tag = "IN";
+    } else if (isCapitalized) {
+      pos = "PROPN";
+      tag = "NNP";
+    } else if (isLowercase && ACTION_VERBS.has(lowerRaw)) {
+      pos = "VERB";
+      tag = "VBD";
+    } else {
+      pos = "NOUN";
+      tag = "NN";
+    }
 
     tokens.push({
       i: index,
       text: raw,
-      lemma: raw.toLowerCase(),
-      pos: isCapitalized ? "PROPN" : (isLowercase && ACTION_VERBS.has(raw.toLowerCase()) ? "VERB" : "NOUN"),
-      tag: isCapitalized ? "NNP" : (isLowercase && ACTION_VERBS.has(raw.toLowerCase()) ? "VBD" : "NN"),
+      lemma: lowerRaw,
+      pos,
+      tag,
       dep: "dep", // Will be refined below
       head: 0,   // Will be refined below
       ent: "",
@@ -94,39 +132,91 @@ function buildTokens(sentenceText: string, offset: number): Token[] {
   tokens[verbIdx].head = verbIdx;
 
   // Assign dependencies for tokens before the verb
+  // Strategy: Find the actual subject (usually the first PROPN), not compounds within appositives
+  let subjectIdx = -1;
   for (let i = 0; i < verbIdx; i++) {
     const curr = tokens[i];
-    const next = tokens[i + 1];
 
-    // Multi-word name patterns: consecutive NOUN/PROPN tokens are compounds
+    // Skip prepositions
+    if (curr.pos === "ADP") {
+      curr.dep = "prep";
+      // Attach to next noun
+      const nextNoun = tokens.slice(i + 1, verbIdx).findIndex(t => t.pos === "NOUN" || t.pos === "PROPN");
+      curr.head = nextNoun !== -1 ? i + 1 + nextNoun : verbIdx;
+      continue;
+    }
+
+    // Skip determiners
+    if (curr.pos === "DET") {
+      curr.dep = "det";
+      // Attach to next noun
+      const nextNoun = tokens.slice(i + 1, verbIdx).findIndex(t => t.pos === "NOUN" || t.pos === "PROPN");
+      curr.head = nextNoun !== -1 ? i + 1 + nextNoun : verbIdx;
+      continue;
+    }
+
+    // Multi-word names: consecutive PROPN/NOUN
+    const next = tokens[i + 1];
     if (i + 1 < verbIdx &&
         (curr.pos === "NOUN" || curr.pos === "PROPN") &&
-        (next.pos === "NOUN" || next.pos === "PROPN")) {
-      // Current token is compound of next token
+        next && (next.pos === "NOUN" || next.pos === "PROPN")) {
+      // This is part of a compound name
       curr.dep = "compound";
       curr.head = next.i;
-    } else {
-      // Last token before verb is subject
-      curr.dep = "nsubj";
-      curr.head = verbIdx;
+    } else if (curr.pos === "NOUN" || curr.pos === "PROPN") {
+      // This is a potential subject or appositive
+      if (subjectIdx === -1) {
+        // First name is the subject
+        subjectIdx = i;
+        curr.dep = "nsubj";
+        curr.head = verbIdx;
+      } else {
+        // Subsequent names could be appositives, but for simplicity attach to verb
+        curr.dep = "appos";
+        curr.head = subjectIdx;
+      }
     }
   }
 
   // Assign dependencies for tokens after the verb
+  let lastPrepIdx = -1;
   for (let i = verbIdx + 1; i < tokens.length; i++) {
     const curr = tokens[i];
-    const prev = tokens[i - 1];
 
-    // Multi-word name patterns: consecutive NOUN/PROPN tokens are compounds
+    // Track prepositions
+    if (curr.pos === "ADP") {
+      curr.dep = "prep";
+      curr.head = verbIdx;
+      lastPrepIdx = i;
+      continue;
+    }
+
+    // Skip determiners
+    if (curr.pos === "DET") {
+      curr.dep = "det";
+      // Attach to next noun
+      const nextNoun = tokens.slice(i + 1).findIndex(t => t.pos === "NOUN" || t.pos === "PROPN");
+      curr.head = nextNoun !== -1 ? i + 1 + nextNoun : verbIdx;
+      continue;
+    }
+
+    // Multi-word names: consecutive PROPN/NOUN
     if (i + 1 < tokens.length &&
         (curr.pos === "NOUN" || curr.pos === "PROPN") &&
         (tokens[i + 1].pos === "NOUN" || tokens[i + 1].pos === "PROPN")) {
       curr.dep = "compound";
       curr.head = tokens[i + 1].i;
     } else if (curr.pos === "NOUN" || curr.pos === "PROPN") {
-      // Last token in a noun phrase sequence is direct object
-      curr.dep = "dobj";
-      curr.head = verbIdx;
+      // Check if this is a prepositional object
+      if (lastPrepIdx !== -1 && i > lastPrepIdx) {
+        curr.dep = "pobj";
+        curr.head = lastPrepIdx;
+        lastPrepIdx = -1; // Reset after consuming
+      } else {
+        // Direct object
+        curr.dep = "dobj";
+        curr.head = verbIdx;
+      }
     } else {
       // Other tokens depend on verb
       curr.dep = "dep";

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextAID": 60,
+  "nextAID": 71,
   "mappings": [
     {
       "aid": 1,
@@ -591,11 +591,121 @@
       "last_seen": "2025-11-08T16:41:49.094Z",
       "occurrence_count": 1,
       "confidence": 1
+    },
+    {
+      "aid": 60,
+      "surfaceForm": "Harry",
+      "normalizedKey": "harry",
+      "eid": 51,
+      "created_at": "2025-11-09T06:45:07.982Z",
+      "last_seen": "2025-11-09T06:45:07.982Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 61,
+      "surfaceForm": "Ginny",
+      "normalizedKey": "ginny",
+      "eid": 52,
+      "created_at": "2025-11-09T06:45:07.982Z",
+      "last_seen": "2025-11-09T06:45:07.982Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 62,
+      "surfaceForm": "Aragorn",
+      "normalizedKey": "aragorn",
+      "eid": 53,
+      "created_at": "2025-11-09T06:45:07.993Z",
+      "last_seen": "2025-11-09T06:45:07.993Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 63,
+      "surfaceForm": "Arathorn",
+      "normalizedKey": "arathorn",
+      "eid": 54,
+      "created_at": "2025-11-09T06:45:07.993Z",
+      "last_seen": "2025-11-09T06:45:07.993Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 64,
+      "surfaceForm": "Arwen",
+      "normalizedKey": "arwen",
+      "eid": 55,
+      "created_at": "2025-11-09T06:45:07.993Z",
+      "last_seen": "2025-11-09T06:45:07.993Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 65,
+      "surfaceForm": "Frodo",
+      "normalizedKey": "frodo",
+      "eid": 56,
+      "created_at": "2025-11-09T06:50:17.024Z",
+      "last_seen": "2025-11-09T06:50:17.024Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 66,
+      "surfaceForm": "Drogo",
+      "normalizedKey": "drogo",
+      "eid": 57,
+      "created_at": "2025-11-09T06:50:17.025Z",
+      "last_seen": "2025-11-09T06:50:17.025Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 67,
+      "surfaceForm": "Gandalf",
+      "normalizedKey": "gandalf",
+      "eid": 58,
+      "created_at": "2025-11-09T06:50:17.034Z",
+      "last_seen": "2025-11-09T06:50:17.034Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 68,
+      "surfaceForm": "Rivendell",
+      "normalizedKey": "rivendell",
+      "eid": 59,
+      "created_at": "2025-11-09T06:50:17.035Z",
+      "last_seen": "2025-11-09T06:50:17.035Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 69,
+      "surfaceForm": "Bilbo",
+      "normalizedKey": "bilbo",
+      "eid": 60,
+      "created_at": "2025-11-09T06:50:17.040Z",
+      "last_seen": "2025-11-09T06:50:17.040Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 70,
+      "surfaceForm": "Shire",
+      "normalizedKey": "shire",
+      "eid": 61,
+      "created_at": "2025-11-09T07:00:19.969Z",
+      "last_seen": "2025-11-09T07:00:19.969Z",
+      "occurrence_count": 1,
+      "confidence": 1
     }
   ],
   "metadata": {
-    "total_aliases": 59,
-    "total_entities": 50,
-    "last_updated": "2025-11-08T16:42:18.958Z"
+    "total_aliases": 70,
+    "total_entities": 61,
+    "last_updated": "2025-11-09T07:00:49.943Z"
   }
 }

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextEID": 51,
+  "nextEID": 62,
   "mappings": [
     {
       "eid": 1,
@@ -401,10 +401,98 @@
       "created_at": "2025-11-08T16:41:49.093Z",
       "last_seen": "2025-11-08T16:41:49.093Z",
       "occurrence_count": 1
+    },
+    {
+      "eid": 51,
+      "canonical": "Harry",
+      "normalizedKey": "harry",
+      "created_at": "2025-11-09T06:45:07.982Z",
+      "last_seen": "2025-11-09T06:45:07.982Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 52,
+      "canonical": "Ginny",
+      "normalizedKey": "ginny",
+      "created_at": "2025-11-09T06:45:07.982Z",
+      "last_seen": "2025-11-09T06:45:07.982Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 53,
+      "canonical": "Aragorn",
+      "normalizedKey": "aragorn",
+      "created_at": "2025-11-09T06:45:07.992Z",
+      "last_seen": "2025-11-09T06:45:07.992Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 54,
+      "canonical": "Arathorn",
+      "normalizedKey": "arathorn",
+      "created_at": "2025-11-09T06:45:07.993Z",
+      "last_seen": "2025-11-09T06:45:07.993Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 55,
+      "canonical": "Arwen",
+      "normalizedKey": "arwen",
+      "created_at": "2025-11-09T06:45:07.993Z",
+      "last_seen": "2025-11-09T06:45:07.993Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 56,
+      "canonical": "Frodo",
+      "normalizedKey": "frodo",
+      "created_at": "2025-11-09T06:50:17.024Z",
+      "last_seen": "2025-11-09T06:50:17.024Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 57,
+      "canonical": "Drogo",
+      "normalizedKey": "drogo",
+      "created_at": "2025-11-09T06:50:17.025Z",
+      "last_seen": "2025-11-09T06:50:17.025Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 58,
+      "canonical": "Gandalf",
+      "normalizedKey": "gandalf",
+      "created_at": "2025-11-09T06:50:17.034Z",
+      "last_seen": "2025-11-09T06:50:17.034Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 59,
+      "canonical": "Rivendell",
+      "normalizedKey": "rivendell",
+      "created_at": "2025-11-09T06:50:17.034Z",
+      "last_seen": "2025-11-09T06:50:17.034Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 60,
+      "canonical": "Bilbo",
+      "normalizedKey": "bilbo",
+      "created_at": "2025-11-09T06:50:17.040Z",
+      "last_seen": "2025-11-09T06:50:17.040Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 61,
+      "canonical": "Shire",
+      "normalizedKey": "shire",
+      "created_at": "2025-11-09T07:00:19.969Z",
+      "last_seen": "2025-11-09T07:00:19.969Z",
+      "occurrence_count": 1
     }
   ],
   "metadata": {
-    "total_entities": 50,
-    "last_updated": "2025-11-08T16:42:18.898Z"
+    "total_entities": 61,
+    "last_updated": "2025-11-09T07:00:49.875Z"
   }
 }
