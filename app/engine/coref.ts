@@ -403,10 +403,33 @@ function resolvePronounStacks(
     // Sort by position (most recent = last in text before pronoun)
     localCandidateSpans.sort((a, b) => a.start - b.start);
 
-    // Find last compatible entity (reverse order)
+    // Find last compatible entity, preferring sentence subjects
+    // Heuristic: Entities near the start of their sentence (first 30% of sentence length)
+    // are more likely to be subjects, so prioritize them over entities in appositives
     let foundLocal = false;
-    for (let i = localCandidateSpans.length - 1; i >= 0; i--) {
-      const span = localCandidateSpans[i];
+
+    // Separate candidates into "likely subjects" and "others"
+    const subjectCandidates: typeof localCandidateSpans = [];
+    const otherCandidates: typeof localCandidateSpans = [];
+
+    for (const span of localCandidateSpans) {
+      const sentIndex = sentences.findIndex(s => span.start >= s.start && span.start < s.end);
+      if (sentIndex !== -1) {
+        const sent = sentences[sentIndex];
+        const relativePos = (span.start - sent.start) / (sent.end - sent.start);
+
+        // If entity appears in first 30% of sentence, likely a subject
+        if (relativePos < 0.3) {
+          subjectCandidates.push(span);
+        } else {
+          otherCandidates.push(span);
+        }
+      }
+    }
+
+    // Try subject candidates first (reverse order = most recent)
+    for (let i = subjectCandidates.length - 1; i >= 0; i--) {
+      const span = subjectCandidates[i];
       const entity = entities.find(e => e.id === span.entity_id);
 
       if (entity && matchesGenderNumber(entity, pronounInfo.gender, pronounInfo.number)) {
@@ -418,6 +441,25 @@ function resolvePronounStacks(
         });
         foundLocal = true;
         break;
+      }
+    }
+
+    // If no subject match, fall back to other candidates
+    if (!foundLocal) {
+      for (let i = otherCandidates.length - 1; i >= 0; i--) {
+        const span = otherCandidates[i];
+        const entity = entities.find(e => e.id === span.entity_id);
+
+        if (entity && matchesGenderNumber(entity, pronounInfo.gender, pronounInfo.number)) {
+          links.push({
+            mention,
+            entity_id: entity.id,
+            confidence: 0.65, // Slightly lower confidence for non-subject entities
+            method: 'pronoun_stack',
+          });
+          foundLocal = true;
+          break;
+        }
       }
     }
 

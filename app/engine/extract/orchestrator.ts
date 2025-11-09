@@ -466,9 +466,41 @@ export async function extractFromSegments(
   }
   const allRelationsWithInverses = [...allRelationSources, ...inversesToAdd];
 
+  // 7.8. Filter appositive false positives
+  // When multiple relations have same pred+obj but different subjects,
+  // prefer the subject that appears first in the sentence (likely main subject, not appositive)
+  const predObjToSubjects = new Map<string, Array<{ rel: Relation; position: number }>>();
+
+  for (const rel of allRelationsWithInverses) {
+    const predObjKey = `${rel.pred}::${rel.obj}`;
+
+    // Find the position of the subject entity in the text
+    const subjEntity = allEntities.find(e => e.id === rel.subj);
+    const subjSpan = allSpans.find(s => s.entity_id === rel.subj);
+    const position = subjSpan ? subjSpan.start : Infinity;
+
+    if (!predObjToSubjects.has(predObjKey)) {
+      predObjToSubjects.set(predObjKey, []);
+    }
+    predObjToSubjects.get(predObjKey)!.push({ rel, position });
+  }
+
+  // For each pred+obj group, keep only the subject that appears first
+  const appositiveFilteredRelations: Relation[] = [];
+  for (const [predObjKey, group] of predObjToSubjects.entries()) {
+    if (group.length === 1) {
+      // No conflict, keep the relation
+      appositiveFilteredRelations.push(group[0].rel);
+    } else {
+      // Multiple subjects for same pred+obj - keep the one that appears first
+      group.sort((a, b) => a.position - b.position);
+      appositiveFilteredRelations.push(group[0].rel);
+    }
+  }
+
   // 8. Deduplicate relations (same predicate + subject + object)
   const uniqueRelations = new Map<string, Relation>();
-  for (const rel of allRelationsWithInverses) {
+  for (const rel of appositiveFilteredRelations) {
     const key = `${rel.subj}::${rel.pred}::${rel.obj}`;
     if (!uniqueRelations.has(key)) {
       uniqueRelations.set(key, rel);

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextEID": 136,
+  "nextEID": 138,
   "mappings": [
     {
       "eid": 1,
@@ -1081,10 +1081,26 @@
       "created_at": "2025-11-09T19:04:52.750Z",
       "last_seen": "2025-11-09T19:04:52.750Z",
       "occurrence_count": 1
+    },
+    {
+      "eid": 136,
+      "canonical": "wisely",
+      "normalizedKey": "wisely",
+      "created_at": "2025-11-09T19:38:16.708Z",
+      "last_seen": "2025-11-09T19:38:16.708Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 137,
+      "canonical": "together",
+      "normalizedKey": "together",
+      "created_at": "2025-11-09T19:38:16.726Z",
+      "last_seen": "2025-11-09T19:38:16.726Z",
+      "occurrence_count": 1
     }
   ],
   "metadata": {
-    "total_entities": 135,
-    "last_updated": "2025-11-09T19:05:03.377Z"
+    "total_entities": 137,
+    "last_updated": "2025-11-09T19:38:46.561Z"
   }
 }

@@ -426,7 +426,7 @@ export function serializeProfiles(profiles: Map<string, EntityProfile> | any): a
       titles: Array.from(profile.titles),
       roles: Array.from(profile.roles),
       attributes: Object.fromEntries(
-        Array.from(profile.attributes.entries()).map(([k, v]) => [k, Array.from(v)])
+        (Array.from(profile.attributes.entries()) as [string, Set<string>][]).map(([k, v]) => [k, Array.from(v)])
       ),
       contexts: profile.contexts,
       mention_count: profile.mention_count,
