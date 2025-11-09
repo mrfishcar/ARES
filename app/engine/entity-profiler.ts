@@ -394,9 +394,29 @@ export function mergeProfiles(
 /**
  * Serialize profiles to JSON (for storage)
  */
-export function serializeProfiles(profiles: Map<string, EntityProfile>): any {
+export function serializeProfiles(profiles: Map<string, EntityProfile> | any): any {
   const serialized: any = {};
 
+  // Validate input type - handle non-Map types gracefully
+  if (!profiles) {
+    return {};
+  }
+
+  // If it's already a plain object (deserialized JSON), return as-is
+  if (typeof profiles === 'object' && !(profiles instanceof Map)) {
+    // It's already serialized or is a plain object
+    if (Object.keys(profiles).length === 0) {
+      return {};
+    }
+    // Check if it looks like already-serialized profiles
+    const firstKey = Object.keys(profiles)[0];
+    if (firstKey && profiles[firstKey] && typeof profiles[firstKey] === 'object') {
+      return profiles; // Already serialized
+    }
+    return {}; // Unknown format, return empty
+  }
+
+  // It's a Map - serialize it
   for (const [entityId, profile] of profiles) {
     serialized[entityId] = {
       entity_id: profile.entity_id,

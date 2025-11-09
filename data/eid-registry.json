@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextEID": 94,
+  "nextEID": 136,
   "mappings": [
     {
       "eid": 1,
@@ -745,10 +745,346 @@
       "created_at": "2025-11-09T17:27:53.053Z",
       "last_seen": "2025-11-09T17:27:53.053Z",
       "occurrence_count": 1
+    },
+    {
+      "eid": 94,
+      "canonical": "Mistward River",
+      "normalizedKey": "mistward river",
+      "created_at": "2025-11-09T18:53:42.010Z",
+      "last_seen": "2025-11-09T18:53:42.010Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 95,
+      "canonical": "Thames River",
+      "normalizedKey": "thames river",
+      "created_at": "2025-11-09T18:53:47.305Z",
+      "last_seen": "2025-11-09T18:53:47.305Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 96,
+      "canonical": "Crystal River",
+      "normalizedKey": "crystal river",
+      "created_at": "2025-11-09T18:53:54.018Z",
+      "last_seen": "2025-11-09T18:53:54.018Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 97,
+      "canonical": "Harper Creek",
+      "normalizedKey": "harper creek",
+      "created_at": "2025-11-09T18:53:54.019Z",
+      "last_seen": "2025-11-09T18:53:54.019Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 98,
+      "canonical": "Jordan River",
+      "normalizedKey": "jordan river",
+      "created_at": "2025-11-09T18:53:54.019Z",
+      "last_seen": "2025-11-09T18:53:54.019Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 99,
+      "canonical": "Mount Silverpeak",
+      "normalizedKey": "mount silverpeak",
+      "created_at": "2025-11-09T18:54:02.622Z",
+      "last_seen": "2025-11-09T18:54:02.622Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 100,
+      "canonical": "Meridian Ridge",
+      "normalizedKey": "meridian ridge",
+      "created_at": "2025-11-09T18:54:10.130Z",
+      "last_seen": "2025-11-09T18:54:10.130Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 101,
+      "canonical": "Crystal Falls",
+      "normalizedKey": "crystal falls",
+      "created_at": "2025-11-09T18:54:16.631Z",
+      "last_seen": "2025-11-09T18:54:16.631Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 102,
+      "canonical": "Meridian Academy",
+      "normalizedKey": "meridian academy",
+      "created_at": "2025-11-09T18:54:25.341Z",
+      "last_seen": "2025-11-09T18:54:25.341Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 103,
+      "canonical": "Jordan Smith",
+      "normalizedKey": "jordan smith",
+      "created_at": "2025-11-09T18:54:39.402Z",
+      "last_seen": "2025-11-09T18:54:39.402Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 104,
+      "canonical": "Mildred",
+      "normalizedKey": "mildred",
+      "created_at": "2025-11-09T19:01:52.177Z",
+      "last_seen": "2025-11-09T19:01:52.177Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 105,
+      "canonical": "Heavenly Havens",
+      "normalizedKey": "heavenly havens",
+      "created_at": "2025-11-09T19:01:52.178Z",
+      "last_seen": "2025-11-09T19:01:52.178Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 106,
+      "canonical": "Lived",
+      "normalizedKey": "lived",
+      "created_at": "2025-11-09T19:01:52.178Z",
+      "last_seen": "2025-11-09T19:01:52.178Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 107,
+      "canonical": "Elliot She",
+      "normalizedKey": "elliot she",
+      "created_at": "2025-11-09T19:01:52.178Z",
+      "last_seen": "2025-11-09T19:01:52.178Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 108,
+      "canonical": "Mark",
+      "normalizedKey": "mark",
+      "created_at": "2025-11-09T19:01:52.178Z",
+      "last_seen": "2025-11-09T19:01:52.178Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 109,
+      "canonical": "Anne",
+      "normalizedKey": "anne",
+      "created_at": "2025-11-09T19:01:52.178Z",
+      "last_seen": "2025-11-09T19:01:52.178Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 110,
+      "canonical": "Moria",
+      "normalizedKey": "moria",
+      "created_at": "2025-11-09T19:02:23.213Z",
+      "last_seen": "2025-11-09T19:02:23.213Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 111,
+      "canonical": "Lothlorien",
+      "normalizedKey": "lothlorien",
+      "created_at": "2025-11-09T19:02:23.213Z",
+      "last_seen": "2025-11-09T19:02:23.213Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 112,
+      "canonical": "Hobbiton",
+      "normalizedKey": "hobbiton",
+      "created_at": "2025-11-09T19:02:23.214Z",
+      "last_seen": "2025-11-09T19:02:23.214Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 113,
+      "canonical": "Merry",
+      "normalizedKey": "merry",
+      "created_at": "2025-11-09T19:02:23.214Z",
+      "last_seen": "2025-11-09T19:02:23.214Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 114,
+      "canonical": "Faramir",
+      "normalizedKey": "faramir",
+      "created_at": "2025-11-09T19:02:23.214Z",
+      "last_seen": "2025-11-09T19:02:23.214Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 115,
+      "canonical": "Isengard",
+      "normalizedKey": "isengard",
+      "created_at": "2025-11-09T19:02:23.214Z",
+      "last_seen": "2025-11-09T19:02:23.214Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 116,
+      "canonical": "Free Peoples",
+      "normalizedKey": "free peoples",
+      "created_at": "2025-11-09T19:02:23.215Z",
+      "last_seen": "2025-11-09T19:02:23.215Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 117,
+      "canonical": "Galadriel",
+      "normalizedKey": "galadriel",
+      "created_at": "2025-11-09T19:02:23.215Z",
+      "last_seen": "2025-11-09T19:02:23.215Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 118,
+      "canonical": "Middle Earth",
+      "normalizedKey": "middle earth",
+      "created_at": "2025-11-09T19:02:23.215Z",
+      "last_seen": "2025-11-09T19:02:23.215Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 119,
+      "canonical": "Dark Lord Sauron",
+      "normalizedKey": "dark lord sauron",
+      "created_at": "2025-11-09T19:02:23.215Z",
+      "last_seen": "2025-11-09T19:02:23.215Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 120,
+      "canonical": "Third Age",
+      "normalizedKey": "third age",
+      "created_at": "2025-11-09T19:02:23.215Z",
+      "last_seen": "2025-11-09T19:02:23.215Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 121,
+      "canonical": "nature",
+      "normalizedKey": "nature",
+      "created_at": "2025-11-09T19:02:23.216Z",
+      "last_seen": "2025-11-09T19:02:23.216Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 122,
+      "canonical": "Mount Doom",
+      "normalizedKey": "mount doom",
+      "created_at": "2025-11-09T19:02:23.216Z",
+      "last_seen": "2025-11-09T19:02:23.216Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 123,
+      "canonical": "Elven",
+      "normalizedKey": "elven",
+      "created_at": "2025-11-09T19:02:23.216Z",
+      "last_seen": "2025-11-09T19:02:23.216Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 124,
+      "canonical": "Second Age",
+      "normalizedKey": "second age",
+      "created_at": "2025-11-09T19:02:23.216Z",
+      "last_seen": "2025-11-09T19:02:23.216Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 125,
+      "canonical": "David",
+      "normalizedKey": "david",
+      "created_at": "2025-11-09T19:04:33.388Z",
+      "last_seen": "2025-11-09T19:04:33.388Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 126,
+      "canonical": "Jesse",
+      "normalizedKey": "jesse",
+      "created_at": "2025-11-09T19:04:33.388Z",
+      "last_seen": "2025-11-09T19:04:33.388Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 127,
+      "canonical": "Bethlehem",
+      "normalizedKey": "bethlehem",
+      "created_at": "2025-11-09T19:04:33.388Z",
+      "last_seen": "2025-11-09T19:04:33.388Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 128,
+      "canonical": "BCE",
+      "normalizedKey": "bce",
+      "created_at": "2025-11-09T19:04:33.389Z",
+      "last_seen": "2025-11-09T19:04:33.389Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 129,
+      "canonical": "Michal",
+      "normalizedKey": "michal",
+      "created_at": "2025-11-09T19:04:36.455Z",
+      "last_seen": "2025-11-09T19:04:36.455Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 130,
+      "canonical": "Saul",
+      "normalizedKey": "saul",
+      "created_at": "2025-11-09T19:04:36.456Z",
+      "last_seen": "2025-11-09T19:04:36.456Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 131,
+      "canonical": "Israel",
+      "normalizedKey": "israel",
+      "created_at": "2025-11-09T19:04:40.770Z",
+      "last_seen": "2025-11-09T19:04:40.770Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 132,
+      "canonical": "Valley of Elah",
+      "normalizedKey": "valley of elah",
+      "created_at": "2025-11-09T19:04:45.326Z",
+      "last_seen": "2025-11-09T19:04:45.326Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 133,
+      "canonical": "Hebron",
+      "normalizedKey": "hebron",
+      "created_at": "2025-11-09T19:04:48.256Z",
+      "last_seen": "2025-11-09T19:04:48.256Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 134,
+      "canonical": "Goliath",
+      "normalizedKey": "goliath",
+      "created_at": "2025-11-09T19:04:50.635Z",
+      "last_seen": "2025-11-09T19:04:50.635Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 135,
+      "canonical": "Book of Psalms",
+      "normalizedKey": "book of psalms",
+      "created_at": "2025-11-09T19:04:52.750Z",
+      "last_seen": "2025-11-09T19:04:52.750Z",
+      "occurrence_count": 1
     }
   ],
   "metadata": {
-    "total_entities": 93,
-    "last_updated": "2025-11-09T17:27:55.681Z"
+    "total_entities": 135,
+    "last_updated": "2025-11-09T19:05:03.377Z"
   }
 }

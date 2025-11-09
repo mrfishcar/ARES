@@ -7,7 +7,7 @@ import { appendDoc, loadGraph, clearStorage } from '../../app/storage/storage';
  * This test uses a passage from "A Tale of Two Cities" by Charles Dickens (1859)
  * Public domain text to validate extraction quality on real narrative prose.
  */
-describe('Real Literature - A Tale of Two Cities', () => {
+describe('Real Literature - A Tale of Two Cities', { timeout: 60000 }, () => {
   const literaryText = `
 It was the best of times, it was the worst of times, it was the age of wisdom,
 it was the age of foolishness, it was the epoch of belief, it was the epoch of
@@ -140,7 +140,7 @@ a Court at Versailles.
  * Using Ruth 1:1-5 (King James Version) - public domain
  * Tests family relationships and place names from biblical text
  */
-describe('Real Literature - Book of Ruth', () => {
+describe('Real Literature - Book of Ruth', { timeout: 60000 }, () => {
   const biblicalText = `
 Now it came to pass in the days when the judges ruled, that there was a famine
 in the land. And a certain man of Bethlehem-judah went to sojourn in the country

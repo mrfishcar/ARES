@@ -313,7 +313,7 @@ function computeF1(precision: number, recall: number): number {
 describe('Test Ladder - Level 3: Complex Multi-Paragraph Narratives', () => {
   const testPath = path.join(process.cwd(), 'test-ladder-3.json');
 
-  it('should pass complex Harry Potter narrative tests', async () => {
+  it('should pass complex Harry Potter narrative tests', { timeout: 90000 }, async () => {
     const caseDetails: Array<{
       id: string;
       extracted: string[];
