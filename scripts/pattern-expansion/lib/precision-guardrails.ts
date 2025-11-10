@@ -1,4 +1,9 @@
-export interface Entity { type?: string }
+export interface Entity {
+  type?: string;         // existing upstream type, if any
+  start?: number;        // char offset (optional)
+  end?: number;          // char offset (optional)
+  nearestType?: string;  // projected type from hints (optional)
+}
 export interface Relation {
   family: string;
   subject: Entity;
@@ -7,10 +12,16 @@ export interface Relation {
   surface?: string;
 }
 
+function effectiveType(primary?: string, fallback?: string): string {
+  const p = (primary || '').toUpperCase();
+  const f = (fallback || '').toUpperCase();
+  return p || f || '';
+}
+
 export function guard(r: Relation): boolean {
   const fam = r.family.toLowerCase();
-  const sType = (r.subject.type || '').toUpperCase();
-  const oType = (r.object.type || '').toUpperCase();
+  const sType = effectiveType(r.subject.type, r.subject.nearestType);
+  const oType = effectiveType(r.object.type, r.object.nearestType);
   const pathLen = r.depPathLen ?? 0;
   const surf = r.surface?.toLowerCase() || '';
 
