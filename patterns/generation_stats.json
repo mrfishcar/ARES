@@ -1,0 +1,66 @@
+{
+  "generated": 472,
+  "skipped": 38,
+  "by_family": {
+    "kinship": {
+      "new": 29,
+      "skipped": 5
+    },
+    "ownership": {
+      "new": 29,
+      "skipped": 5
+    },
+    "employment": {
+      "new": 31,
+      "skipped": 3
+    },
+    "creation": {
+      "new": 32,
+      "skipped": 2
+    },
+    "location": {
+      "new": 34,
+      "skipped": 0
+    },
+    "temporal": {
+      "new": 34,
+      "skipped": 0
+    },
+    "causation": {
+      "new": 31,
+      "skipped": 3
+    },
+    "part_whole": {
+      "new": 31,
+      "skipped": 3
+    },
+    "identity": {
+      "new": 31,
+      "skipped": 3
+    },
+    "event": {
+      "new": 30,
+      "skipped": 4
+    },
+    "communication": {
+      "new": 34,
+      "skipped": 0
+    },
+    "power": {
+      "new": 31,
+      "skipped": 3
+    },
+    "comparison": {
+      "new": 32,
+      "skipped": 2
+    },
+    "emotional": {
+      "new": 32,
+      "skipped": 2
+    },
+    "negation": {
+      "new": 31,
+      "skipped": 3
+    }
+  }
+}

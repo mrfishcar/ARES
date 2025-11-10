@@ -1,0 +1,2204 @@
+[
+  {
+    "id": "dep_0000",
+    "signature_regex": "(\\w+):↑nsubj:marry:↓(dobj|obj):(\\w+)",
+    "predicate": "married_to",
+    "family": "kinship",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [
+      "marry"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0001",
+    "signature_regex": "(\\w+):↑nsubj:wed:↓(dobj|obj):(\\w+)",
+    "predicate": "married_to",
+    "family": "kinship",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [
+      "wed"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0002",
+    "signature_regex": "(\\w+):↑nsubjpass:marry:↓agent:by:↓pobj:(\\w+)",
+    "predicate": "married_to",
+    "family": "kinship",
+    "dep_roles": [
+      "nsubjpass",
+      "agent",
+      "pobj"
+    ],
+    "lemmas": [
+      "marry",
+      "by"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0003",
+    "signature_regex": "(\\w+):↑nsubj:make:↓(dobj|obj):(\\w+)",
+    "predicate": "married_to",
+    "family": "kinship",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [
+      "make"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0004",
+    "signature_regex": "(\\w+):↑nsubj:make:↓(dobj|obj):(\\w+):↓attr:(husband|wife)",
+    "predicate": "married_to",
+    "family": "kinship",
+    "dep_roles": [
+      "nsubj",
+      "attr"
+    ],
+    "lemmas": [
+      "make"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0005",
+    "signature_regex": "(\\w+):↑nsubj:become:↓attr:(husband|wife):↓poss:(\\w+)",
+    "predicate": "married_to",
+    "family": "kinship",
+    "dep_roles": [
+      "nsubj",
+      "attr",
+      "poss"
+    ],
+    "lemmas": [
+      "become"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0006",
+    "signature_regex": "(\\w+):↑nsubj:take:↓(dobj|obj):(\\w+):↓prep:as:↓pobj:(husband|wife)",
+    "predicate": "married_to",
+    "family": "kinship",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "take",
+      "as"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0007",
+    "signature_regex": "(\\w+):↑nsubj:(found|create|establish|start|launch|build|form):↓(dobj|obj):(\\w+)",
+    "predicate": "leads",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0008",
+    "signature_regex": "(\\w+):↑nsubjpass:(found|create|establish|start|launch):↓agent:by:↓pobj:(\\w+)",
+    "predicate": "leads",
+    "family": "employment",
+    "dep_roles": [
+      "nsubjpass",
+      "agent",
+      "pobj"
+    ],
+    "lemmas": [
+      "by"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0009",
+    "signature_regex": "(\\w+):↓relcl:(found|create|establish|start|launch):↓agent:by:↓pobj:(\\w+)",
+    "predicate": "leads",
+    "family": "employment",
+    "dep_roles": [
+      "relcl",
+      "agent",
+      "pobj"
+    ],
+    "lemmas": [
+      "by"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0010",
+    "signature_regex": "(\\w+):↑compound:(\\w+):↓relcl:(found|create|establish|start|launch):↓agent:by:↓pobj:(\\w+)",
+    "predicate": "leads",
+    "family": "employment",
+    "dep_roles": [
+      "compound",
+      "relcl",
+      "agent",
+      "pobj"
+    ],
+    "lemmas": [
+      "by"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0011",
+    "signature_regex": "(\\w+):↓poss:(\\w+):↑nsubj:brainchild",
+    "predicate": "leads",
+    "family": "employment",
+    "dep_roles": [
+      "poss",
+      "nsubj"
+    ],
+    "lemmas": [
+      "brainchild"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0012",
+    "signature_regex": "(\\w+):↑appos:(co-founder|founder):↓prep:of:↓pobj:(\\w+)",
+    "predicate": "leads",
+    "family": "employment",
+    "dep_roles": [
+      "appos",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "of"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0013",
+    "signature_regex": "(\\w+):↑nsubj:(acquire|purchase|buy):↓(dobj|obj):(\\w+)",
+    "predicate": "acquired",
+    "family": "ownership",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0014",
+    "signature_regex": "(\\w+):↑nsubjpass:(acquire|purchase|buy):↓agent:by:↓pobj:(\\w+)",
+    "predicate": "acquired",
+    "family": "ownership",
+    "dep_roles": [
+      "nsubjpass",
+      "agent",
+      "pobj"
+    ],
+    "lemmas": [
+      "by"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0015",
+    "signature_regex": "(\\w+):↑pobj:(acquisition|purchase):↓agent:by:↓pobj:(\\w+)",
+    "predicate": "acquired",
+    "family": "ownership",
+    "dep_roles": [
+      "pobj",
+      "agent",
+      "pobj"
+    ],
+    "lemmas": [
+      "by"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0016",
+    "signature_regex": "(\\w+):↑nsubj:invest:↓prep:in:↓pobj:(\\w+)",
+    "predicate": "invested_in",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "invest",
+      "in"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0017",
+    "signature_regex": "(\\w+):↑nsubj:lead:↓(dobj|obj):(round|funding|investment):↓poss:(\\w+)",
+    "predicate": "invested_in",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj",
+      "poss"
+    ],
+    "lemmas": [
+      "lead"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0018",
+    "signature_regex": "(\\w+):↑nsubj:participate:↓prep:in:↓pobj:(\\w+)",
+    "predicate": "invested_in",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "participate",
+      "in"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0019",
+    "signature_regex": "(\\w+):↑pobj:from:↑prep:investment:↑nsubj:go:↓prep:to:↓pobj:(\\w+)",
+    "predicate": "invested_in",
+    "family": "employment",
+    "dep_roles": [
+      "pobj",
+      "prep",
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "from",
+      "investment",
+      "go",
+      "to"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0020",
+    "signature_regex": "(\\w+):↑nsubj:champion:↓(dobj|obj):deal",
+    "predicate": "invested_in",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [
+      "champion",
+      "deal"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0021",
+    "signature_regex": "(funding|round|investment):↓(nsubjpass|dep):lead:↓agent:by:↓pobj:(\\w+)",
+    "predicate": "invested_in",
+    "family": "employment",
+    "dep_roles": [
+      "agent",
+      "pobj"
+    ],
+    "lemmas": [
+      "lead",
+      "by"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0022",
+    "signature_regex": "(\\w+):↑nsubj:(advise|mentor|guide|counsel):↓(dobj|obj):(\\w+)",
+    "predicate": "advised_by",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0023",
+    "signature_regex": "(\\w+):↑nsubj:(advise|mentor|guide|counsel):↓(dobj|obj):(\\w+):↓prep:like:↓pobj:(\\w+)",
+    "predicate": "advised_by",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "like"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0024",
+    "signature_regex": "(\\w+):↑appos:(advisor|adviser|mentor|counselor):↓prep:to:↓pobj:(\\w+)",
+    "predicate": "advised_by",
+    "family": "employment",
+    "dep_roles": [
+      "appos",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "to"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0025",
+    "signature_regex": "(advisor|adviser|mentor):↓poss:(\\w+)",
+    "predicate": "advised_by",
+    "family": "employment",
+    "dep_roles": [
+      "poss"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0026",
+    "signature_regex": "(\\w+):↓prep:under:↓pobj:(supervision|guidance):↓prep:of:↓pobj:(\\w+)",
+    "predicate": "advised_by",
+    "family": "employment",
+    "dep_roles": [
+      "prep",
+      "pobj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "under",
+      "of"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0027",
+    "signature_regex": "(\\w+):↑nsubj:(complete|finish):↓prep:under:↓pobj:(\\w+)",
+    "predicate": "advised_by",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "under"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0028",
+    "signature_regex": "(\\w+):↑nsubj:(complete|finish):↓prep:at:↓pobj:(\\w+):↓prep:under:↓pobj:(\\w+)",
+    "predicate": "advised_by",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "at",
+      "under"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0029",
+    "signature_regex": "(\\w+):↑nsubj:be:↓attr:mentor:↓poss:(\\w+)",
+    "predicate": "advised_by",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj",
+      "attr",
+      "poss"
+    ],
+    "lemmas": [
+      "be",
+      "mentor"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0030",
+    "signature_regex": "(\\w+):↑nsubj:serve:↓prep:as:↓pobj:advisor",
+    "predicate": "advised_by",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "serve",
+      "as",
+      "advisor"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0031",
+    "signature_regex": "(\\w+):↑nsubj:(work|join|employ):↓prep:(at|for):↓pobj:(\\w+)",
+    "predicate": "member_of",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0032",
+    "signature_regex": "(\\w+):↑nsubjpass:(hire|recruit|employ):↓agent:by:↓pobj:(\\w+)",
+    "predicate": "member_of",
+    "family": "employment",
+    "dep_roles": [
+      "nsubjpass",
+      "agent",
+      "pobj"
+    ],
+    "lemmas": [
+      "by"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0033",
+    "signature_regex": "(\\w+):↑(dobj|obj):(hire|recruit):↑nsubj:(\\w+)",
+    "predicate": "member_of",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0034",
+    "signature_regex": "(\\w+):↑nsubj:(own|control|possess):↓(dobj|obj):(\\w+)",
+    "predicate": "owns",
+    "family": "ownership",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0035",
+    "signature_regex": "(\\w+):↑nsubjpass:(own|control):↓agent:by:↓pobj:(\\w+)",
+    "predicate": "owns",
+    "family": "ownership",
+    "dep_roles": [
+      "nsubjpass",
+      "agent",
+      "pobj"
+    ],
+    "lemmas": [
+      "by"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0036",
+    "signature_regex": "(\\w+):↓relcl:(own|control):↓agent:by:↓pobj:(\\w+)",
+    "predicate": "owns",
+    "family": "ownership",
+    "dep_roles": [
+      "relcl",
+      "agent",
+      "pobj"
+    ],
+    "lemmas": [
+      "by"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0037",
+    "signature_regex": "(\\w+):↓poss:(company|organization|firm|business|startup):↑compound:(\\w+)",
+    "predicate": "owns",
+    "family": "ownership",
+    "dep_roles": [
+      "poss",
+      "compound"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0038",
+    "signature_regex": "(\\w+):↑nsubj:become:↓attr:friend:↓prep:with:↓pobj:(\\w+)",
+    "predicate": "friends_with",
+    "family": "social",
+    "dep_roles": [
+      "nsubj",
+      "attr",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "become",
+      "friend",
+      "with"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0039",
+    "signature_regex": "(\\w+):↑conj:(\\w+):↑nsubj:become:↓attr:friend",
+    "predicate": "friends_with",
+    "family": "social",
+    "dep_roles": [
+      "conj",
+      "nsubj",
+      "attr"
+    ],
+    "lemmas": [
+      "become",
+      "friend"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0040",
+    "signature_regex": "(\\w+):↑nsubj:befriend:↓(dobj|obj):(\\w+)",
+    "predicate": "friends_with",
+    "family": "social",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [
+      "befriend"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0041",
+    "signature_regex": "(\\w+):↑nsubj:be:↓attr:friend:↓prep:with:↓pobj:(\\w+)",
+    "predicate": "friends_with",
+    "family": "social",
+    "dep_roles": [
+      "nsubj",
+      "attr",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "be",
+      "friend",
+      "with"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0042",
+    "signature_regex": "(\\w+):↑conj:(\\w+):↑nsubj:be:↓attr:friend",
+    "predicate": "friends_with",
+    "family": "social",
+    "dep_roles": [
+      "conj",
+      "nsubj",
+      "attr"
+    ],
+    "lemmas": [
+      "be",
+      "friend"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0043",
+    "signature_regex": "(\\w+):↑nsubj:rival:↓(dobj|obj):(\\w+)",
+    "predicate": "enemy_of",
+    "family": "social",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [
+      "rival"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0044",
+    "signature_regex": "(\\w+):↑nsubj:become:↓attr:rival:↓prep:to:↓pobj:(\\w+)",
+    "predicate": "enemy_of",
+    "family": "social",
+    "dep_roles": [
+      "nsubj",
+      "attr",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "become",
+      "rival",
+      "to"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0045",
+    "signature_regex": "(\\w+):↑appos:rival:↓prep:(of|to):↓pobj:(\\w+)",
+    "predicate": "enemy_of",
+    "family": "social",
+    "dep_roles": [
+      "appos",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "rival"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0046",
+    "signature_regex": "(\\w+):↑nsubj:(manage|oversee|supervise|lead):↓(dobj|obj):(\\w+)",
+    "predicate": "leads",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0047",
+    "signature_regex": "(\\w+):↑nsubjpass:(manage|oversee|supervise):↓agent:by:↓pobj:(\\w+)",
+    "predicate": "leads",
+    "family": "employment",
+    "dep_roles": [
+      "nsubjpass",
+      "agent",
+      "pobj"
+    ],
+    "lemmas": [
+      "by"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0048",
+    "signature_regex": "(\\w+):↑appos:(manager|supervisor|director):↓prep:of:↓pobj:(\\w+)",
+    "predicate": "leads",
+    "family": "employment",
+    "dep_roles": [
+      "appos",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "of"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0049",
+    "signature_regex": "(manager|supervisor|director|boss):↓poss:(\\w+)",
+    "predicate": "leads",
+    "family": "employment",
+    "dep_roles": [
+      "poss"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0050",
+    "signature_regex": "(\\w+):↑nsubj:report:↓prep:to:↓pobj:(\\w+)",
+    "predicate": "member_of",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "report",
+      "to"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0051",
+    "signature_regex": "(\\w+):↑nsubj:work:↓prep:with:↓pobj:(\\w+)",
+    "predicate": "ally_of",
+    "family": "social",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "work",
+      "with"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0052",
+    "signature_regex": "(\\w+):↑nsubj:(collaborate|partner):↓prep:with:↓pobj:(\\w+)",
+    "predicate": "ally_of",
+    "family": "social",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "with"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0053",
+    "signature_regex": "(\\w+):↑conj:(\\w+):↑nsubj:(collaborate|partner|work)",
+    "predicate": "ally_of",
+    "family": "social",
+    "dep_roles": [
+      "conj",
+      "nsubj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0054",
+    "signature_regex": "(\\w+):↑nsubj:graduate:↓prep:from:↓pobj:(\\w+)",
+    "predicate": "attended",
+    "family": "event",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "graduate",
+      "from"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0055",
+    "signature_regex": "(\\w+):↑nsubj:receive:↓(dobj|obj):(degree|diploma|phd|masters|mba):↓prep:from:↓pobj:(\\w+)",
+    "predicate": "attended",
+    "family": "event",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "receive",
+      "from"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0056",
+    "signature_regex": "(\\w+):↑nsubj:research:↓prep:at:↓pobj:(\\w+)",
+    "predicate": "member_of",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "research",
+      "at"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0057",
+    "signature_regex": "(\\w+):↑nsubj:(live|reside):↓prep:in:↓pobj:(\\w+)",
+    "predicate": "lives_in",
+    "family": "location",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "in"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0058",
+    "signature_regex": "(\\w+):↑nsubj:(fight|fought):↓prep:in:↓pobj:(\\w+)",
+    "predicate": "fought_in",
+    "family": "event",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "in"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0059",
+    "signature_regex": "(\\w+):↑nsubj:(move|relocate|migrate):↓prep:to:↓pobj:(\\w+)",
+    "predicate": "lives_in",
+    "family": "location",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "to"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0060",
+    "signature_regex": "(\\w+):↑nsubjpass:bear:↓prep:in:↓pobj:(\\w+)",
+    "predicate": "born_in",
+    "family": "location",
+    "dep_roles": [
+      "nsubjpass",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "bear",
+      "in"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0061",
+    "signature_regex": "(\\w+):↓relcl:bear:↓prep:in:↓pobj:(\\w+)",
+    "predicate": "born_in",
+    "family": "location",
+    "dep_roles": [
+      "relcl",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "bear",
+      "in"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0062",
+    "signature_regex": "(\\w+):↑nsubj:(travel|journey|go):↓prep:to:↓pobj:(\\w+)",
+    "predicate": "traveled_to",
+    "family": "event",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "to"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0063",
+    "signature_regex": "(\\w+):↑nsubj:visit:↓(dobj|obj):(\\w+)",
+    "predicate": "traveled_to",
+    "family": "event",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [
+      "visit"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0064",
+    "signature_regex": "(\\w+):↓relcl:base:↓prep:in:↓pobj:(\\w+)",
+    "predicate": "lives_in",
+    "family": "location",
+    "dep_roles": [
+      "relcl",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "base",
+      "in"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0065",
+    "signature_regex": "(\\w+):↓prep:from:↓pobj:(\\w+)",
+    "predicate": "born_in",
+    "family": "location",
+    "dep_roles": [
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "from"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0066",
+    "signature_regex": "(\\w+):↓prep:at:↓pobj:(\\w+)",
+    "predicate": "lives_in",
+    "family": "location",
+    "dep_roles": [
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "at"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0067",
+    "signature_regex": "(\\w+):↓prep:in:↓pobj:(\\w+)",
+    "predicate": "lives_in",
+    "family": "location",
+    "dep_roles": [
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "in"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0068",
+    "signature_regex": "(\\w+):↓appos:(ceo|cto|cfo|president|director|vp|chairman|chief):↓prep:of:↓pobj:(\\w+)",
+    "predicate": "leads",
+    "family": "employment",
+    "dep_roles": [
+      "appos",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "of"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0069",
+    "signature_regex": "(\\w+):↓appos:(founder|co-founder|cofounder):↓prep:of:↓pobj:(\\w+)",
+    "predicate": "leads",
+    "family": "employment",
+    "dep_roles": [
+      "appos",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "of"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0070",
+    "signature_regex": "(\\w+):↓appos:(professor|lecturer|instructor):↓prep:(at|with):↓pobj:(\\w+)",
+    "predicate": "teaches_at",
+    "family": "employment",
+    "dep_roles": [
+      "appos",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0071",
+    "signature_regex": "(\\w+):↓appos:(employee|engineer|scientist|analyst|developer):↓prep:(at|of|with):↓pobj:(\\w+)",
+    "predicate": "member_of",
+    "family": "employment",
+    "dep_roles": [
+      "appos",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0072",
+    "signature_regex": "(\\w+):↓appos:researcher:↓prep:at:↓pobj:(\\w+)",
+    "predicate": "member_of",
+    "family": "employment",
+    "dep_roles": [
+      "appos",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "researcher",
+      "at"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0073",
+    "signature_regex": "(\\w+):↓appos:(student|scholar|fellow):↓prep:at:↓pobj:(\\w+)",
+    "predicate": "studies_at",
+    "family": "employment",
+    "dep_roles": [
+      "appos",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "at"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0074",
+    "signature_regex": "(\\w+):↓appos:(graduate|alumnus|alumni):↓prep:of:↓pobj:(\\w+)",
+    "predicate": "attended",
+    "family": "event",
+    "dep_roles": [
+      "appos",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "of"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0075",
+    "signature_regex": "(\\w+):↑appos:partner:↓prep:at:↓pobj:(\\w+)",
+    "predicate": "member_of",
+    "family": "employment",
+    "dep_roles": [
+      "appos",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "partner",
+      "at"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0076",
+    "signature_regex": "(\\w+):↑nsubj:be:↓attr:(manager|engineer|scientist|analyst|developer|programmer|designer|architect|consultant):↓prep:at:↓pobj:(\\w+)",
+    "predicate": "member_of",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj",
+      "attr",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "be",
+      "at"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0077",
+    "signature_regex": "(\\w+):↑nsubj:be:↓attr:(professor|lecturer|instructor|teacher):↓prep:at:↓pobj:(\\w+)",
+    "predicate": "teaches_at",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj",
+      "attr",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "be",
+      "at"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0078",
+    "signature_regex": "(\\w+):↑nsubj:be:↓attr:student:↓prep:at:↓pobj:(\\w+)",
+    "predicate": "studies_at",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj",
+      "attr",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "be",
+      "student",
+      "at"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0079",
+    "signature_regex": "(\\w+):↑nsubj:work:↓prep:at:↓pobj:(\\w+)",
+    "predicate": "member_of",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "work",
+      "at"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0080",
+    "signature_regex": "(\\w+):↑nsubj:(leave|quit|resign):↓(dobj|obj):position:↓prep:at:↓pobj:(\\w+)",
+    "predicate": "member_of",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "position",
+      "at"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0081",
+    "signature_regex": "graduate:↓prep:like:↓pobj:(\\w+)",
+    "predicate": "attended",
+    "family": "event",
+    "dep_roles": [
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "like"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0082",
+    "signature_regex": "(founder|co-founder|cofounder):↓prep:of:↓pobj:(\\w+)",
+    "predicate": "leads",
+    "family": "employment",
+    "dep_roles": [
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "of"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0083",
+    "signature_regex": "(employee|engineer|manager|director|analyst):↓prep:(at|with):↓pobj:(\\w+)",
+    "predicate": "member_of",
+    "family": "employment",
+    "dep_roles": [
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0084",
+    "signature_regex": "(professor|lecturer|instructor):↓prep:at:↓pobj:(\\w+)",
+    "predicate": "teaches_at",
+    "family": "employment",
+    "dep_roles": [
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "at"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0085",
+    "signature_regex": "student:↓prep:at:↓pobj:(\\w+)",
+    "predicate": "studies_at",
+    "family": "employment",
+    "dep_roles": [
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "at"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0086",
+    "signature_regex": "graduate:↓prep:(of|from):↓pobj:(\\w+)",
+    "predicate": "attended",
+    "family": "event",
+    "dep_roles": [
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0087",
+    "signature_regex": "(\\w+):↑nsubj:graduate:↓prep:(from|of):↓pobj:(\\w+)",
+    "predicate": "attended",
+    "family": "event",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "graduate"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0088",
+    "signature_regex": "(\\w+):↓relcl:graduate:↓prep:(from|of):↓pobj:(\\w+)",
+    "predicate": "attended",
+    "family": "event",
+    "dep_roles": [
+      "relcl",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "graduate"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0089",
+    "signature_regex": "(\\w+):↑nsubj:study:↓prep:at:↓pobj:(\\w+)",
+    "predicate": "studies_at",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "study",
+      "at"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0090",
+    "signature_regex": "(\\w+):↑nsubj:study:↓(dobj|obj):\\w+:↓prep:(at|in):↓pobj:(\\w+)",
+    "predicate": "studies_at",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "study"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0091",
+    "signature_regex": "(\\w+):↑nsubj:study:↓(advmod|npadvmod):(there|here)",
+    "predicate": "studies_at",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [
+      "study"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0092",
+    "signature_regex": "(\\w+):↑nsubj:(study|studied):↓(dobj|obj):(there|here)",
+    "predicate": "studies_at",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0093",
+    "signature_regex": "(\\w+):↑nsubj:study:↓(dobj|obj):\\w+:↓(advmod|npadvmod):(there|here)",
+    "predicate": "studies_at",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [
+      "study"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0094",
+    "signature_regex": "(there|here):↑(advmod|npadvmod):study:↑nsubj:(\\w+)",
+    "predicate": "studies_at",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [
+      "study"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0095",
+    "signature_regex": "(\\w+):↑nsubj:work:↓prep:(at|for):↓pobj:(\\w+)",
+    "predicate": "member_of",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "work"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0096",
+    "signature_regex": "(\\w+):↓relcl:work:↓prep:(at|for):↓pobj:(\\w+)",
+    "predicate": "member_of",
+    "family": "employment",
+    "dep_roles": [
+      "relcl",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "work"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0097",
+    "signature_regex": "(\\w+):↓appos:\\w+:↓relcl:work:↓prep:(at|for):↓pobj:(\\w+)",
+    "predicate": "member_of",
+    "family": "employment",
+    "dep_roles": [
+      "appos",
+      "relcl",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "work"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0098",
+    "signature_regex": "(\\w+):↑nsubj:leave:↓prep:(at|from):↓pobj:(\\w+)",
+    "predicate": "member_of",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "leave"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0099",
+    "signature_regex": "(\\w+):↑nsubj:join:↓dobj:(\\w+)",
+    "predicate": "member_of",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj",
+      "dobj"
+    ],
+    "lemmas": [
+      "join"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0100",
+    "signature_regex": "(\\w+):↑nsubj:acquire:↓dobj:(\\w+)",
+    "predicate": "acquired",
+    "family": "ownership",
+    "dep_roles": [
+      "nsubj",
+      "dobj"
+    ],
+    "lemmas": [
+      "acquire"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0101",
+    "signature_regex": "(\\w+):↑nsubj:(found|start|establish):↓dobj:(\\w+)",
+    "predicate": "leads",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj",
+      "dobj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0102",
+    "signature_regex": "(\\w+):↓relcl:(found|start|establish):↓dobj:(\\w+)",
+    "predicate": "leads",
+    "family": "employment",
+    "dep_roles": [
+      "relcl",
+      "dobj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0103",
+    "signature_regex": "(\\w+):↑nsubj:study:↓prep:under:↓pobj:(\\w+)",
+    "predicate": "advised_by",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "study",
+      "under"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0104",
+    "signature_regex": "(\\w+):↓relcl:study:↓prep:under:↓pobj:(\\w+)",
+    "predicate": "advised_by",
+    "family": "employment",
+    "dep_roles": [
+      "relcl",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "study",
+      "under"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0105",
+    "signature_regex": "(\\w+):↑nsubj:be:↓attr:(parent|mother|father|son|daughter):↓prep:of:↓pobj:(\\w+)",
+    "predicate": "parent_of",
+    "family": "kinship",
+    "dep_roles": [
+      "nsubj",
+      "attr",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "be",
+      "of"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0106",
+    "signature_regex": "(\\w+):↑appos:(parent|mother|father):↓prep:of:↓pobj:(\\w+)",
+    "predicate": "parent_of",
+    "family": "kinship",
+    "dep_roles": [
+      "appos",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "of"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0107",
+    "signature_regex": "(son|daughter|child):↓poss:(\\w+)",
+    "predicate": "parent_of",
+    "family": "kinship",
+    "dep_roles": [
+      "poss"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0108",
+    "signature_regex": "(mother|father|parent):↓poss:(\\w+)",
+    "predicate": "child_of",
+    "family": "kinship",
+    "dep_roles": [
+      "poss"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0109",
+    "signature_regex": "(\\w+):↑appos:(son|daughter|child):↓prep:of:↓pobj:(\\w+)",
+    "predicate": "child_of",
+    "family": "kinship",
+    "dep_roles": [
+      "appos",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "of"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0110",
+    "signature_regex": "(\\w+):↑appos:child:↓prep:of:↓pobj:(\\w+)",
+    "predicate": "child_of",
+    "family": "kinship",
+    "dep_roles": [
+      "appos",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "child",
+      "of"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0111",
+    "signature_regex": "(\\w+):↑conj:(\\w+):↑nsubj:be:↓attr:sibling",
+    "predicate": "sibling_of",
+    "family": "kinship",
+    "dep_roles": [
+      "conj",
+      "nsubj",
+      "attr"
+    ],
+    "lemmas": [
+      "be",
+      "sibling"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0112",
+    "signature_regex": "(brother|sister|sibling):↓poss:(\\w+)",
+    "predicate": "sibling_of",
+    "family": "kinship",
+    "dep_roles": [
+      "poss"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0113",
+    "signature_regex": "(\\w+):↑nsubj:(mentor|train|teach):↓(dobj|obj):(\\w+)",
+    "predicate": "mentored",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0114",
+    "signature_regex": "(\\w+):↓relcl:(mentor|train|teach):↓(dobj|obj):(\\w+)",
+    "predicate": "mentored",
+    "family": "employment",
+    "dep_roles": [
+      "relcl"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0115",
+    "signature_regex": "(\\w+):↑nsubj:(train|study):↓prep:under:↓pobj:(\\w+)",
+    "predicate": "mentored_by",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "under"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0116",
+    "signature_regex": "(\\w+):↑nsubj:mentor:↓(dobj|obj):(\\w+)",
+    "predicate": "mentored",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [
+      "mentor"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0117",
+    "signature_regex": "(\\w+):↑nsubj:(rule|govern|reign):↓(dobj|obj):(\\w+)",
+    "predicate": "rules",
+    "family": "power",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0118",
+    "signature_regex": "(\\w+):↑nsubj:(rule|reign):↓prep:over:↓pobj:(\\w+)",
+    "predicate": "rules",
+    "family": "power",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "over"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0119",
+    "signature_regex": "(\\w+):↑appos:(ruler|king|queen|lord|emperor|monarch):↓prep:of:↓pobj:(\\w+)",
+    "predicate": "rules",
+    "family": "power",
+    "dep_roles": [
+      "appos",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "of"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0120",
+    "signature_regex": "(king|queen|lord|emperor):↑compound:(\\w+):↓prep:of:↓pobj:(\\w+)",
+    "predicate": "rules",
+    "family": "power",
+    "dep_roles": [
+      "compound",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "of"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0121",
+    "signature_regex": "(\\w+):↑nsubj:guard:↓(dobj|obj):(\\w+)",
+    "predicate": "guards",
+    "family": "power",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [
+      "guard"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0122",
+    "signature_regex": "(\\w+):↑nsubj:(seek|search|hunt):↓(dobj|obj):(\\w+)",
+    "predicate": "seeks",
+    "family": "event",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0123",
+    "signature_regex": "(\\w+):↑nsubj:(seek|search|hunt):↓prep:for:↓pobj:(\\w+)",
+    "predicate": "seeks",
+    "family": "event",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "for"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0124",
+    "signature_regex": "(\\w+):↑nsubj:(possess|hold|wield|carry):↓(dobj|obj):(\\w+)",
+    "predicate": "possesses",
+    "family": "ownership",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0125",
+    "signature_regex": "(\\w+):↑nsubj:(obtain|acquire|take|seize|steal):↓(dobj|obj):(\\w+)",
+    "predicate": "possesses",
+    "family": "ownership",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0126",
+    "signature_regex": "(\\w+):↑nsubj:(fight|battle|combat):↓(dobj|obj):(\\w+)",
+    "predicate": "enemy_of",
+    "family": "social",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0127",
+    "signature_regex": "(\\w+):↑nsubj:(attack|assault|strike):↓(dobj|obj):(\\w+)",
+    "predicate": "enemy_of",
+    "family": "social",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0128",
+    "signature_regex": "(\\w+):↑nsubj:(defeat|destroy|vanquish|conquer):↓(dobj|obj):(\\w+)",
+    "predicate": "defeated",
+    "family": "power",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0129",
+    "signature_regex": "(\\w+):↑nsubjpass:(defeat|destroy|vanquish):↓agent:by:↓pobj:(\\w+)",
+    "predicate": "defeated",
+    "family": "power",
+    "dep_roles": [
+      "nsubjpass",
+      "agent",
+      "pobj"
+    ],
+    "lemmas": [
+      "by"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0130",
+    "signature_regex": "(\\w+):↑nsubj:(kill|slay|murder|assassinate):↓(dobj|obj):(\\w+)",
+    "predicate": "killed",
+    "family": "power",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0131",
+    "signature_regex": "(\\w+):↑nsubjpass:(kill|slay|murder):↓agent:by:↓pobj:(\\w+)",
+    "predicate": "killed",
+    "family": "power",
+    "dep_roles": [
+      "nsubjpass",
+      "agent",
+      "pobj"
+    ],
+    "lemmas": [
+      "by"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0132",
+    "signature_regex": "(\\w+):↑nsubj:be:↓attr:enemy:↓prep:of:↓pobj:(\\w+)",
+    "predicate": "enemy_of",
+    "family": "social",
+    "dep_roles": [
+      "nsubj",
+      "attr",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "be",
+      "enemy",
+      "of"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0133",
+    "signature_regex": "(\\w+):↑appos:enemy:↓prep:of:↓pobj:(\\w+)",
+    "predicate": "enemy_of",
+    "family": "social",
+    "dep_roles": [
+      "appos",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "enemy",
+      "of"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0134",
+    "signature_regex": "(\\w+):↑nsubj:ally:↓prep:with:↓pobj:(\\w+)",
+    "predicate": "ally_of",
+    "family": "social",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "ally",
+      "with"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0135",
+    "signature_regex": "(\\w+):↑nsubj:be:↓attr:ally:↓prep:of:↓pobj:(\\w+)",
+    "predicate": "ally_of",
+    "family": "social",
+    "dep_roles": [
+      "nsubj",
+      "attr",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "be",
+      "ally",
+      "of"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0136",
+    "signature_regex": "(\\w+):↑nsubj:(accompany|join|follow):↓(dobj|obj):(\\w+)",
+    "predicate": "ally_of",
+    "family": "social",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0137",
+    "signature_regex": "(\\w+):↑nsubjpass:(imprison|confine|trap|lock):↓prep:in:↓pobj:(\\w+)",
+    "predicate": "imprisoned_in",
+    "family": "power",
+    "dep_roles": [
+      "nsubjpass",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "in"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0138",
+    "signature_regex": "(\\w+):↑nsubj:break:↓acomp:free:↓prep:from:↓pobj:(\\w+)",
+    "predicate": "freed_from",
+    "family": "power",
+    "dep_roles": [
+      "nsubj",
+      "acomp",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "break",
+      "free",
+      "from"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0139",
+    "signature_regex": "(\\w+):↑nsubj:escape:↓prep:from:↓pobj:(\\w+)",
+    "predicate": "freed_from",
+    "family": "power",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "escape",
+      "from"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0140",
+    "signature_regex": "(\\w+):↑nsubj:join:↓(dobj|obj):(\\w+)",
+    "predicate": "member_of",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [
+      "join"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0141",
+    "signature_regex": "(\\w+):↑appos:member:↓prep:of:↓pobj:(\\w+)",
+    "predicate": "member_of",
+    "family": "employment",
+    "dep_roles": [
+      "appos",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "member",
+      "of"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0142",
+    "signature_regex": "(\\w+):↑nsubj:send:↓prep:for:↓pobj:(\\w+)",
+    "predicate": "summoned",
+    "family": "power",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "send",
+      "for"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0143",
+    "signature_regex": "(\\w+):↑nsubj:require:↓(dobj|obj):(\\w+)",
+    "predicate": "summoned",
+    "family": "power",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [
+      "require"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0144",
+    "signature_regex": "(\\w+):↓prep:(at|in|on):↓pobj:(\\w+)",
+    "predicate": "located_at",
+    "family": "location",
+    "dep_roles": [
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0145",
+    "signature_regex": "(\\w+):↑nsubj:stand:↓prep:(on|at):↓pobj:(\\w+)",
+    "predicate": "located_at",
+    "family": "location",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "stand"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0146",
+    "signature_regex": "(\\w+):↓prep:(beneath|under|below):↓pobj:(\\w+)",
+    "predicate": "located_beneath",
+    "family": "location",
+    "dep_roles": [
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0147",
+    "signature_regex": "(\\w+):↑nsubjpass:hide:↓prep:in:↓pobj:(\\w+)",
+    "predicate": "hidden_in",
+    "family": "location",
+    "dep_roles": [
+      "nsubjpass",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "hide",
+      "in"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0148",
+    "signature_regex": "(\\w+):↑nsubj:gather:↓prep:in:↓pobj:(\\w+)",
+    "predicate": "located_at",
+    "family": "location",
+    "dep_roles": [
+      "nsubj",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "gather",
+      "in"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0149",
+    "signature_regex": "(\\w+):↑nsubj:lead:↓(dobj|obj):(\\w+)",
+    "predicate": "leads",
+    "family": "employment",
+    "dep_roles": [
+      "nsubj"
+    ],
+    "lemmas": [
+      "lead"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0150",
+    "signature_regex": "(\\w+):↑appos:leader:↓prep:of:↓pobj:(\\w+)",
+    "predicate": "leads",
+    "family": "employment",
+    "dep_roles": [
+      "appos",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "leader",
+      "of"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0151",
+    "signature_regex": "(leader|general|commander|captain):↓poss:(\\w+)",
+    "predicate": "leads",
+    "family": "employment",
+    "dep_roles": [
+      "poss"
+    ],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "dep_0152",
+    "signature_regex": "(\\w+):↑nsubjpass:lead:↓agent:by:↓pobj:(\\w+)",
+    "predicate": "leads",
+    "family": "employment",
+    "dep_roles": [
+      "nsubjpass",
+      "agent",
+      "pobj"
+    ],
+    "lemmas": [
+      "lead",
+      "by"
+    ],
+    "examples": []
+  }
+]
