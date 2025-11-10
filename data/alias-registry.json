@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextAID": 5,
+  "nextAID": 12,
   "mappings": [
     {
       "aid": 1,
@@ -41,11 +41,81 @@
       "last_seen": "2025-11-10T04:26:11.913Z",
       "occurrence_count": 1,
       "confidence": 1
+    },
+    {
+      "aid": 5,
+      "surfaceForm": "King Theron",
+      "normalizedKey": "king theron",
+      "eid": 5,
+      "created_at": "2025-11-10T04:49:20.236Z",
+      "last_seen": "2025-11-10T04:49:20.236Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 6,
+      "surfaceForm": "Lyra",
+      "normalizedKey": "lyra",
+      "eid": 6,
+      "created_at": "2025-11-10T04:49:20.251Z",
+      "last_seen": "2025-11-10T04:49:20.251Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 7,
+      "surfaceForm": "Marcus",
+      "normalizedKey": "marcus",
+      "eid": 7,
+      "created_at": "2025-11-10T04:49:20.271Z",
+      "last_seen": "2025-11-10T04:49:20.271Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 8,
+      "surfaceForm": "Elena",
+      "normalizedKey": "elena",
+      "eid": 8,
+      "created_at": "2025-11-10T04:49:20.271Z",
+      "last_seen": "2025-11-10T04:49:20.271Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 9,
+      "surfaceForm": "Helena",
+      "normalizedKey": "helena",
+      "eid": 8,
+      "created_at": "2025-11-10T04:49:20.271Z",
+      "last_seen": "2025-11-10T04:49:20.271Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 10,
+      "surfaceForm": "Aldric",
+      "normalizedKey": "aldric",
+      "eid": 9,
+      "created_at": "2025-11-10T04:49:20.271Z",
+      "last_seen": "2025-11-10T04:49:20.271Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 11,
+      "surfaceForm": "Queen Isolde",
+      "normalizedKey": "queen isolde",
+      "eid": 10,
+      "created_at": "2025-11-10T04:49:20.271Z",
+      "last_seen": "2025-11-10T04:49:20.271Z",
+      "occurrence_count": 1,
+      "confidence": 1
     }
   ],
   "metadata": {
-    "total_aliases": 4,
-    "total_entities": 4,
-    "last_updated": "2025-11-10T04:26:28.657Z"
+    "total_aliases": 11,
+    "total_entities": 10,
+    "last_updated": "2025-11-10T04:49:50.228Z"
   }
 }
