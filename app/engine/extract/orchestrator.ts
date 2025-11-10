@@ -19,6 +19,12 @@ import { getLLMConfig, validateLLMConfig, DEFAULT_LLM_CONFIG, type LLMConfig } f
 import { applyPatterns, type Pattern } from '../bootstrap';
 import type { PatternLibrary } from '../pattern-library';
 import { isValidEntity, correctEntityType } from '../entity-filter';
+import { loadRelationPatterns, type PatternsMode } from './load-relations';
+
+// Select relation patterns mode from environment (baseline | expanded | hybrid)
+const PATTERNS_MODE: PatternsMode = (process.env.RELATION_PATTERNS_MODE as PatternsMode) || 'baseline';
+// Note: Pattern loading available via loadRelationPatterns(PATTERNS_MODE)
+// Currently using hardcoded extraction; patterns ready for future integration
 
 /**
  * Extract entities and relations from segments with context windows

@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ARES Heartbeat",
+  "type": "object",
+  "required": ["meta", "metrics", "counts", "errors", "uncovered", "change_log", "recommendations"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["timestamp", "commit", "families", "synthetic_size", "canary_size"],
+      "properties": {
+        "timestamp": {"type": "string"},
+        "commit": {"type": "string"},
+        "families": {"type": "array", "items": {"type": "string"}},
+        "synthetic_size": {"type": "integer"},
+        "canary_size": {"type": "integer"}
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z_]+$": {
+          "type": "object",
+          "required": ["synthetic", "canary"],
+          "properties": {
+            "synthetic": {"$ref": "#/definitions/metric"},
+            "canary": {"$ref": "#/definitions/metric"}
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "counts": {
+      "type": "object",
+      "required": ["generated", "skipped_duplicates", "evaluated"],
+      "properties": {
+        "generated": {"type": "object", "additionalProperties": {"type": "integer"}},
+        "skipped_duplicates": {"type": "object", "additionalProperties": {"type": "integer"}},
+        "evaluated": {"type": "object", "additionalProperties": {"type": "integer"}}
+      }
+    },
+    "errors": {
+      "type": "object",
+      "properties": {
+        "false_negatives": {"$ref": "#/definitions/errorBucket"},
+        "false_positives": {"$ref": "#/definitions/errorBucket"}
+      }
+    },
+    "uncovered": {
+      "type": "object",
+      "properties": {
+        "surface_ngrams": {"type": "array", "items": {"type": "string"}},
+        "dep_motifs": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "change_log": {"type": "array", "items": {"type": "string"}},
+    "recommendations": {"type": "array", "items": {"type": "string"}, "maxItems": 3}
+  },
+  "definitions": {
+    "metric": {
+      "type": "object",
+      "required": ["precision", "recall", "f1", "support"],
+      "properties": {
+        "precision": {"type": "number"},
+        "recall": {"type": "number"},
+        "f1": {"type": "number"},
+        "support": {"type": "integer"}
+      }
+    },
+    "errorItem": {
+      "type": "object",
+      "required": ["text", "pattern_id", "reason"],
+      "properties": {
+        "text": {"type": "string"},
+        "pattern_id": {"type": "string"},
+        "reason": {"type": "string"}
+      }
+    },
+    "errorBucket": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z_]+$": {
+          "type": "array",
+          "items": {"$ref": "#/definitions/errorItem"},
+          "maxItems": 10
+        }
+      }
+    }
+  }
+}
