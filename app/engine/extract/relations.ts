@@ -1201,8 +1201,8 @@ function extractDepRelations(
         }
       }
 
-      // Pattern 2: child_of via "son/daughter of"
-      if (lemma === 'son' || lemma === 'daughter') {
+      // Pattern 2: child_of via "son/daughter/child of"
+      if (lemma === 'son' || lemma === 'daughter' || lemma === 'child') {
         const ofPrep = tokens.find(t => t.dep === 'prep' && t.head === tok.i && t.text.toLowerCase() === 'of');
         if (ofPrep) {
           const parentTok = tokens.find(t => t.dep === 'pobj' && t.head === ofPrep.i);
@@ -1260,6 +1260,7 @@ function extractDepRelations(
             }
             updateLastNamedSubject(childToken);
             const childSpan = expandNP(childToken, tokens);
+
 
             for (const parentCandidate of parentCandidates) {
               const parentSpan = expandNP(parentCandidate, tokens);

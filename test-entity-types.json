@@ -5,7 +5,7 @@
       "type": "PERSON",
       "canonical": "Elias",
       "aliases": [],
-      "created_at": "2025-11-10T00:00:40.901Z",
+      "created_at": "2025-11-10T04:34:48.785Z",
       "centrality": 0
     },
     {
@@ -13,7 +13,7 @@
       "type": "PERSON",
       "canonical": "Aria",
       "aliases": [],
-      "created_at": "2025-11-10T00:00:40.901Z",
+      "created_at": "2025-11-10T04:34:48.785Z",
       "centrality": 0
     },
     {
@@ -21,13 +21,13 @@
       "type": "PLACE",
       "canonical": "Mistward River",
       "aliases": [],
-      "created_at": "2025-11-10T00:00:40.901Z",
+      "created_at": "2025-11-10T04:34:48.785Z",
       "centrality": 0
     }
   ],
   "relations": [
     {
-      "id": "f60872b2-0c93-43be-9e74-e266812f7e18",
+      "id": "3b1846b1-72dc-478b-87e8-b0ed48df66a4",
       "subj": "global_person_0",
       "pred": "lives_in",
       "obj": "global_place_2",
@@ -52,25 +52,25 @@
     "test-mega-context_entity_0": {
       "global_id": "global_person_0",
       "doc_id": "test-mega-context",
-      "merged_at": "2025-11-10T00:00:40.901Z",
+      "merged_at": "2025-11-10T04:34:48.785Z",
       "local_canonical": "Elias"
     },
     "test-mega-context_entity_2": {
       "global_id": "global_place_2",
       "doc_id": "test-mega-context",
-      "merged_at": "2025-11-10T00:00:40.901Z",
+      "merged_at": "2025-11-10T04:34:48.785Z",
       "local_canonical": "Mistward River"
     },
     "test-mega-context_entity_3": {
       "global_id": "global_person_1",
       "doc_id": "test-mega-context",
-      "merged_at": "2025-11-10T00:00:40.901Z",
+      "merged_at": "2025-11-10T04:34:48.785Z",
       "local_canonical": "Aria"
     }
   },
   "profiles": {
-    "c3cf9368-2137-4272-85eb-1642548a7362": {
-      "entity_id": "c3cf9368-2137-4272-85eb-1642548a7362",
+    "d6e677bd-dce1-4d0d-84eb-e3cbc1cb0b3c": {
+      "entity_id": "d6e677bd-dce1-4d0d-84eb-e3cbc1cb0b3c",
       "entity_type": "PERSON",
       "canonical": "Elias",
       "descriptors": [],
@@ -89,8 +89,8 @@
       "last_seen": "test-mega-context",
       "confidence_score": 0.55
     },
-    "aff35848-fd3c-4c50-a844-0f8a9e0c736a": {
-      "entity_id": "aff35848-fd3c-4c50-a844-0f8a9e0c736a",
+    "0c70f364-5241-4c93-9a3f-7ed679db88b1": {
+      "entity_id": "0c70f364-5241-4c93-9a3f-7ed679db88b1",
       "entity_type": "HOUSE",
       "canonical": "house overlooking",
       "descriptors": [],
@@ -111,8 +111,8 @@
       "last_seen": "test-mega-context",
       "confidence_score": 0.55
     },
-    "6311e0b6-6afd-48a2-981f-b80952adf9e7": {
-      "entity_id": "6311e0b6-6afd-48a2-981f-b80952adf9e7",
+    "f4682fcb-f1f1-41a6-b756-26e3328e5999": {
+      "entity_id": "f4682fcb-f1f1-41a6-b756-26e3328e5999",
       "entity_type": "PLACE",
       "canonical": "Mistward River",
       "descriptors": [],
@@ -131,8 +131,8 @@
       "last_seen": "test-mega-context",
       "confidence_score": 0.55
     },
-    "929d4356-fdd4-4c90-b494-07b328a2e568": {
-      "entity_id": "929d4356-fdd4-4c90-b494-07b328a2e568",
+    "420da557-5b31-4b44-a98a-550e2ef80518": {
+      "entity_id": "420da557-5b31-4b44-a98a-550e2ef80518",
       "entity_type": "PERSON",
       "canonical": "Aria",
       "descriptors": [],
@@ -151,8 +151,8 @@
     }
   },
   "metadata": {
-    "created_at": "2025-11-10T00:00:40.758Z",
-    "updated_at": "2025-11-10T00:00:40.901Z",
+    "created_at": "2025-11-10T04:34:48.764Z",
+    "updated_at": "2025-11-10T04:34:48.785Z",
     "doc_count": 1,
     "doc_ids": [
       "test-mega-context"

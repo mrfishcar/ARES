@@ -5,7 +5,7 @@
       "type": "PERSON",
       "canonical": "Elrond",
       "aliases": [],
-      "created_at": "2025-11-10T00:00:34.577Z",
+      "created_at": "2025-11-10T04:34:42.724Z",
       "centrality": 0
     },
     {
@@ -13,13 +13,13 @@
       "type": "PLACE",
       "canonical": "Rivendell",
       "aliases": [],
-      "created_at": "2025-11-10T00:00:34.577Z",
+      "created_at": "2025-11-10T04:34:42.724Z",
       "centrality": 0
     }
   ],
   "relations": [
     {
-      "id": "730cc3c1-4468-4e07-add3-f8f2595f0040",
+      "id": "da5860b2-43df-41da-9448-60bf1cd7fee9",
       "subj": "global_person_0",
       "pred": "lives_in",
       "obj": "global_place_1",
@@ -44,19 +44,19 @@
     "2.15_entity_0": {
       "global_id": "global_person_0",
       "doc_id": "2.15",
-      "merged_at": "2025-11-10T00:00:34.577Z",
+      "merged_at": "2025-11-10T04:34:42.724Z",
       "local_canonical": "Elrond"
     },
     "2.15_entity_1": {
       "global_id": "global_place_1",
       "doc_id": "2.15",
-      "merged_at": "2025-11-10T00:00:34.577Z",
+      "merged_at": "2025-11-10T04:34:42.724Z",
       "local_canonical": "Rivendell"
     }
   },
   "profiles": {
-    "741b6da4-8a16-4eb8-85c1-f50c9519f913": {
-      "entity_id": "741b6da4-8a16-4eb8-85c1-f50c9519f913",
+    "dfc813f0-fed2-4b8c-899a-81f16e23d5f2": {
+      "entity_id": "dfc813f0-fed2-4b8c-899a-81f16e23d5f2",
       "entity_type": "PERSON",
       "canonical": "Elrond",
       "descriptors": [],
@@ -73,8 +73,8 @@
       "last_seen": "2.15",
       "confidence_score": 0.55
     },
-    "6e7b6b87-1c32-4db1-8b92-3aea6368dbc1": {
-      "entity_id": "6e7b6b87-1c32-4db1-8b92-3aea6368dbc1",
+    "5e1a848f-a255-4a02-83a6-cde67d6ebddc": {
+      "entity_id": "5e1a848f-a255-4a02-83a6-cde67d6ebddc",
       "entity_type": "PLACE",
       "canonical": "Rivendell",
       "descriptors": [],
@@ -93,8 +93,8 @@
     }
   },
   "metadata": {
-    "created_at": "2025-11-10T00:00:34.558Z",
-    "updated_at": "2025-11-10T00:00:34.577Z",
+    "created_at": "2025-11-10T04:34:42.637Z",
+    "updated_at": "2025-11-10T04:34:42.724Z",
     "doc_count": 1,
     "doc_ids": [
       "2.15"

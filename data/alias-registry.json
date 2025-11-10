@@ -1,14 +1,14 @@
 {
   "version": 1,
-  "nextAID": 9,
+  "nextAID": 5,
   "mappings": [
     {
       "aid": 1,
       "surfaceForm": "Mira",
       "normalizedKey": "mira",
       "eid": 1,
-      "created_at": "2025-11-09T23:54:12.777Z",
-      "last_seen": "2025-11-09T23:54:12.777Z",
+      "created_at": "2025-11-10T04:26:11.913Z",
+      "last_seen": "2025-11-10T04:26:11.913Z",
       "occurrence_count": 1,
       "confidence": 1
     },
@@ -17,8 +17,8 @@
       "surfaceForm": "that she",
       "normalizedKey": "that she",
       "eid": 2,
-      "created_at": "2025-11-09T23:54:12.777Z",
-      "last_seen": "2025-11-09T23:54:12.777Z",
+      "created_at": "2025-11-10T04:26:11.913Z",
+      "last_seen": "2025-11-10T04:26:11.913Z",
       "occurrence_count": 1,
       "confidence": 1
     },
@@ -27,8 +27,8 @@
       "surfaceForm": "Aria",
       "normalizedKey": "aria",
       "eid": 3,
-      "created_at": "2025-11-09T23:54:12.777Z",
-      "last_seen": "2025-11-09T23:54:12.777Z",
+      "created_at": "2025-11-10T04:26:11.913Z",
+      "last_seen": "2025-11-10T04:26:11.913Z",
       "occurrence_count": 1,
       "confidence": 1
     },
@@ -37,55 +37,15 @@
       "surfaceForm": "Elias",
       "normalizedKey": "elias",
       "eid": 4,
-      "created_at": "2025-11-09T23:54:12.777Z",
-      "last_seen": "2025-11-09T23:54:12.777Z",
-      "occurrence_count": 1,
-      "confidence": 1
-    },
-    {
-      "aid": 5,
-      "surfaceForm": "Ron",
-      "normalizedKey": "ron",
-      "eid": 5,
-      "created_at": "2025-11-09T23:57:35.227Z",
-      "last_seen": "2025-11-09T23:57:35.227Z",
-      "occurrence_count": 1,
-      "confidence": 1
-    },
-    {
-      "aid": 6,
-      "surfaceForm": "Hogwarts",
-      "normalizedKey": "hogwarts",
-      "eid": 6,
-      "created_at": "2025-11-09T23:57:35.228Z",
-      "last_seen": "2025-11-09T23:57:35.228Z",
-      "occurrence_count": 1,
-      "confidence": 1
-    },
-    {
-      "aid": 7,
-      "surfaceForm": "Harry",
-      "normalizedKey": "harry",
-      "eid": 7,
-      "created_at": "2025-11-09T23:57:35.228Z",
-      "last_seen": "2025-11-09T23:57:35.228Z",
-      "occurrence_count": 1,
-      "confidence": 1
-    },
-    {
-      "aid": 8,
-      "surfaceForm": "Boromir",
-      "normalizedKey": "boromir",
-      "eid": 8,
-      "created_at": "2025-11-09T23:58:58.214Z",
-      "last_seen": "2025-11-09T23:58:58.214Z",
+      "created_at": "2025-11-10T04:26:11.913Z",
+      "last_seen": "2025-11-10T04:26:11.913Z",
       "occurrence_count": 1,
       "confidence": 1
     }
   ],
   "metadata": {
-    "total_aliases": 8,
-    "total_entities": 8,
-    "last_updated": "2025-11-09T23:59:28.163Z"
+    "total_aliases": 4,
+    "total_entities": 4,
+    "last_updated": "2025-11-10T04:26:28.657Z"
   }
 }

@@ -813,6 +813,13 @@ function depBasedEntities(sent: ParsedSentence): Array<{ text: string; type: Ent
     const rawText = spanTokens.map(t => t.text).join(' ');
     const text = normalizeName(rawText);
 
+    // Skip spans ending with pronouns (e.g., "that she", "the he")
+    const lastToken = spanTokens[spanTokens.length - 1];
+    const lastTokenCapitalized = lastToken.text.charAt(0).toUpperCase() + lastToken.text.slice(1);
+    if (PRON.has(lastToken.text) || PRON.has(lastTokenCapitalized)) {
+      continue;
+    }
+
     // Skip single-word spans preceded by articles/prepositions
     if (spanTokens.length === 1) {
       const prevToken = tokens[startIdx - 1];
