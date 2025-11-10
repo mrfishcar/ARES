@@ -1,14 +1,14 @@
 {
   "kinship": {
     "family": "kinship",
-    "precision": 0.14285714285714285,
+    "precision": 0.42857142857142855,
     "recall": 0.3333333333333333,
-    "f1": 0.2,
+    "f1": 0.375,
     "tp": 3,
-    "fp": 18,
+    "fp": 4,
     "fn": 6,
     "total_gold": 9,
-    "total_extracted": 21,
+    "total_extracted": 7,
     "uncovered_phrases": [
       "Thomas and James are siblings.",
       "Prince Edward, heir of Queen Elizabeth, attended the ceremony.",
@@ -25,11 +25,10 @@
       "Isabella --[related_to]--> Ferdinand"
     ],
     "top_fp": [
-      "UNKNOWN --[child_of]--> UNKNOWN",
-      "UNKNOWN --[parent_of]--> UNKNOWN",
-      "UNKNOWN --[married_to]--> UNKNOWN",
-      "UNKNOWN --[married_to]--> UNKNOWN",
-      "UNKNOWN --[child_of]--> UNKNOWN"
+      "Marcus --[married_to]--> Elena",
+      "Elena --[married_to]--> Marcus",
+      "Marcus --[married_to]--> Elena",
+      "Elena --[married_to]--> Marcus"
     ]
   },
   "ownership": {
@@ -64,10 +63,10 @@
     "recall": 0,
     "f1": 0,
     "tp": 0,
-    "fp": 3,
+    "fp": 2,
     "fn": 9,
     "total_gold": 9,
-    "total_extracted": 3,
+    "total_extracted": 2,
     "uncovered_phrases": [
       "Sarah works for Google in Mountain View.",
       "Dr. Chen is employed by Stanford Hospital.",
@@ -87,9 +86,8 @@
       "Professor Smith --[affiliated_with]--> Harvard University"
     ],
     "top_fp": [
-      "UNKNOWN --[lives_in]--> UNKNOWN",
-      "UNKNOWN --[teaches_at]--> UNKNOWN",
-      "UNKNOWN --[teaches_at]--> UNKNOWN"
+      "Sarah --[lives_in]--> Mountain View",
+      "Smith --[teaches_at]--> Harvard"
     ]
   },
   "creation": {
@@ -127,10 +125,10 @@
     "recall": 0,
     "f1": 0,
     "tp": 0,
-    "fp": 7,
+    "fp": 2,
     "fn": 10,
     "total_gold": 10,
-    "total_extracted": 7,
+    "total_extracted": 2,
     "uncovered_phrases": [
       "Paris is located in France.",
       "The Eiffel Tower stands in Paris.",
@@ -151,11 +149,8 @@
       "Harvard University --[located_in]--> Cambridge"
     ],
     "top_fp": [
-      "UNKNOWN --[lives_in]--> UNKNOWN",
-      "UNKNOWN --[lives_in]--> UNKNOWN",
-      "UNKNOWN --[lives_in]--> UNKNOWN",
-      "UNKNOWN --[lives_in]--> UNKNOWN",
-      "UNKNOWN --[lives_in]--> UNKNOWN"
+      "Paris --[lives_in]--> Germany",
+      "Paris --[lives_in]--> France"
     ]
   },
   "temporal": {
@@ -319,10 +314,10 @@
     "recall": 0,
     "f1": 0,
     "tp": 0,
-    "fp": 3,
+    "fp": 0,
     "fn": 10,
     "total_gold": 10,
-    "total_extracted": 3,
+    "total_extracted": 0,
     "uncovered_phrases": [
       "Napoleon ruled France.",
       "Caesar commanded the Roman legions.",
@@ -342,11 +337,7 @@
       "Alexander --[ruled]--> Greek",
       "Genghis Khan --[ruled]--> Central Asia"
     ],
-    "top_fp": [
-      "UNKNOWN --[rules]--> UNKNOWN",
-      "UNKNOWN --[rules]--> UNKNOWN",
-      "UNKNOWN --[rules]--> UNKNOWN"
-    ]
+    "top_fp": []
   },
   "comparison": {
     "family": "comparison",

@@ -8,11 +8,10 @@
       "Isabella --[related_to]--> Ferdinand"
     ],
     "top_fp": [
-      "UNKNOWN --[child_of]--> UNKNOWN",
-      "UNKNOWN --[parent_of]--> UNKNOWN",
-      "UNKNOWN --[married_to]--> UNKNOWN",
-      "UNKNOWN --[married_to]--> UNKNOWN",
-      "UNKNOWN --[child_of]--> UNKNOWN"
+      "Marcus --[married_to]--> Elena",
+      "Elena --[married_to]--> Marcus",
+      "Marcus --[married_to]--> Elena",
+      "Elena --[married_to]--> Marcus"
     ]
   },
   "ownership": {
@@ -34,9 +33,8 @@
       "Professor Smith --[affiliated_with]--> Harvard University"
     ],
     "top_fp": [
-      "UNKNOWN --[lives_in]--> UNKNOWN",
-      "UNKNOWN --[teaches_at]--> UNKNOWN",
-      "UNKNOWN --[teaches_at]--> UNKNOWN"
+      "Sarah --[lives_in]--> Mountain View",
+      "Smith --[teaches_at]--> Harvard"
     ]
   },
   "creation": {
@@ -58,11 +56,8 @@
       "Harvard University --[located_in]--> Cambridge"
     ],
     "top_fp": [
-      "UNKNOWN --[lives_in]--> UNKNOWN",
-      "UNKNOWN --[lives_in]--> UNKNOWN",
-      "UNKNOWN --[lives_in]--> UNKNOWN",
-      "UNKNOWN --[lives_in]--> UNKNOWN",
-      "UNKNOWN --[lives_in]--> UNKNOWN"
+      "Paris --[lives_in]--> Germany",
+      "Paris --[lives_in]--> France"
     ]
   },
   "temporal": {
@@ -124,11 +119,7 @@
       "Alexander --[ruled]--> Greek",
       "Genghis Khan --[ruled]--> Central Asia"
     ],
-    "top_fp": [
-      "UNKNOWN --[rules]--> UNKNOWN",
-      "UNKNOWN --[rules]--> UNKNOWN",
-      "UNKNOWN --[rules]--> UNKNOWN"
-    ]
+    "top_fp": []
   },
   "comparison": {
     "top_fn": [

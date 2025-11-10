@@ -461,7 +461,7 @@
   {
     "id": "new_dep_creation_002",
     "signature_regex": "(\\w+):↑nsubj:wrote:↓(?:dobj|obj):(\\w+)",
-    "predicate": "written_by",
+    "predicate": "authored",
     "family": "creation",
     "dep_roles": [],
     "lemmas": [],

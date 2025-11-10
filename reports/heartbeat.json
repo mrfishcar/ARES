@@ -1,12 +1,12 @@
 {
-  "timestamp": "2025-11-10T05:31:39.659Z",
+  "timestamp": "2025-11-10T05:47:03.094Z",
   "ladder_rung": "R1 - Synthetic Coverage Baseline",
   "overall_synthetic": {
-    "precision": 0.08823529411764706,
+    "precision": 0.2727272727272727,
     "recall": 0.028846153846153848,
-    "f1": 0.04347826086956522,
+    "f1": 0.05217391304347826,
     "total_tp": 3,
-    "total_fp": 31,
+    "total_fp": 8,
     "total_fn": 101
   },
   "families": {
@@ -16,14 +16,14 @@
       "metrics": {
         "synthetic": {
           "family": "kinship",
-          "precision": 0.14285714285714285,
+          "precision": 0.42857142857142855,
           "recall": 0.3333333333333333,
-          "f1": 0.2,
+          "f1": 0.375,
           "tp": 3,
-          "fp": 18,
+          "fp": 4,
           "fn": 6,
           "total_gold": 9,
-          "total_extracted": 21,
+          "total_extracted": 7,
           "uncovered_phrases": [
             "Thomas and James are siblings.",
             "Prince Edward, heir of Queen Elizabeth, attended the ceremony.",
@@ -40,11 +40,10 @@
             "Isabella --[related_to]--> Ferdinand"
           ],
           "top_fp": [
-            "UNKNOWN --[child_of]--> UNKNOWN",
-            "UNKNOWN --[parent_of]--> UNKNOWN",
-            "UNKNOWN --[married_to]--> UNKNOWN",
-            "UNKNOWN --[married_to]--> UNKNOWN",
-            "UNKNOWN --[child_of]--> UNKNOWN"
+            "Marcus --[married_to]--> Elena",
+            "Elena --[married_to]--> Marcus",
+            "Marcus --[married_to]--> Elena",
+            "Elena --[married_to]--> Marcus"
           ]
         }
       },
@@ -78,41 +77,28 @@
         ],
         "top_fp_with_reason": [
           {
-            "example": "UNKNOWN --[child_of]--> UNKNOWN",
-            "reason": "Entity extraction failed - created relation with UNKNOWN entities",
-            "fix_hint": "Filter out relations where subject or object is UNKNOWN/empty"
+            "example": "Marcus --[married_to]--> Elena",
+            "reason": "Overly broad pattern matching",
+            "fix_hint": "Add type compatibility filters or increase pattern specificity"
           },
           {
-            "example": "UNKNOWN --[parent_of]--> UNKNOWN",
-            "reason": "Entity extraction failed - created relation with UNKNOWN entities",
-            "fix_hint": "Filter out relations where subject or object is UNKNOWN/empty"
+            "example": "Elena --[married_to]--> Marcus",
+            "reason": "Overly broad pattern matching",
+            "fix_hint": "Add type compatibility filters or increase pattern specificity"
           },
           {
-            "example": "UNKNOWN --[married_to]--> UNKNOWN",
-            "reason": "Entity extraction failed - created relation with UNKNOWN entities",
-            "fix_hint": "Filter out relations where subject or object is UNKNOWN/empty"
+            "example": "Marcus --[married_to]--> Elena",
+            "reason": "Overly broad pattern matching",
+            "fix_hint": "Add type compatibility filters or increase pattern specificity"
           },
           {
-            "example": "UNKNOWN --[married_to]--> UNKNOWN",
-            "reason": "Entity extraction failed - created relation with UNKNOWN entities",
-            "fix_hint": "Filter out relations where subject or object is UNKNOWN/empty"
-          },
-          {
-            "example": "UNKNOWN --[child_of]--> UNKNOWN",
-            "reason": "Entity extraction failed - created relation with UNKNOWN entities",
-            "fix_hint": "Filter out relations where subject or object is UNKNOWN/empty"
+            "example": "Elena --[married_to]--> Marcus",
+            "reason": "Overly broad pattern matching",
+            "fix_hint": "Add type compatibility filters or increase pattern specificity"
           }
         ]
       },
-      "recommended_guardrails": [
-        {
-          "type": "entity_type_filter",
-          "description": "Filter out relations with UNKNOWN or empty entities",
-          "examples": [
-            "if (rel.subject === \"UNKNOWN\" || !rel.subject) skip"
-          ]
-        }
-      ],
+      "recommended_guardrails": [],
       "hybrid_mode_ready": false
     },
     "ownership": {
@@ -198,10 +184,10 @@
           "recall": 0,
           "f1": 0,
           "tp": 0,
-          "fp": 3,
+          "fp": 2,
           "fn": 9,
           "total_gold": 9,
-          "total_extracted": 3,
+          "total_extracted": 2,
           "uncovered_phrases": [
             "Sarah works for Google in Mountain View.",
             "Dr. Chen is employed by Stanford Hospital.",
@@ -221,9 +207,8 @@
             "Professor Smith --[affiliated_with]--> Harvard University"
           ],
           "top_fp": [
-            "UNKNOWN --[lives_in]--> UNKNOWN",
-            "UNKNOWN --[teaches_at]--> UNKNOWN",
-            "UNKNOWN --[teaches_at]--> UNKNOWN"
+            "Sarah --[lives_in]--> Mountain View",
+            "Smith --[teaches_at]--> Harvard"
           ]
         }
       },
@@ -257,31 +242,18 @@
         ],
         "top_fp_with_reason": [
           {
-            "example": "UNKNOWN --[lives_in]--> UNKNOWN",
-            "reason": "Entity extraction failed - created relation with UNKNOWN entities",
-            "fix_hint": "Filter out relations where subject or object is UNKNOWN/empty"
+            "example": "Sarah --[lives_in]--> Mountain View",
+            "reason": "Overly broad pattern matching",
+            "fix_hint": "Add type compatibility filters or increase pattern specificity"
           },
           {
-            "example": "UNKNOWN --[teaches_at]--> UNKNOWN",
-            "reason": "Entity extraction failed - created relation with UNKNOWN entities",
-            "fix_hint": "Filter out relations where subject or object is UNKNOWN/empty"
-          },
-          {
-            "example": "UNKNOWN --[teaches_at]--> UNKNOWN",
-            "reason": "Entity extraction failed - created relation with UNKNOWN entities",
-            "fix_hint": "Filter out relations where subject or object is UNKNOWN/empty"
+            "example": "Smith --[teaches_at]--> Harvard",
+            "reason": "Overly broad pattern matching",
+            "fix_hint": "Add type compatibility filters or increase pattern specificity"
           }
         ]
       },
-      "recommended_guardrails": [
-        {
-          "type": "entity_type_filter",
-          "description": "Filter out relations with UNKNOWN or empty entities",
-          "examples": [
-            "if (rel.subject === \"UNKNOWN\" || !rel.subject) skip"
-          ]
-        }
-      ],
+      "recommended_guardrails": [],
       "hybrid_mode_ready": false
     },
     "creation": {
@@ -361,10 +333,10 @@
           "recall": 0,
           "f1": 0,
           "tp": 0,
-          "fp": 7,
+          "fp": 2,
           "fn": 10,
           "total_gold": 10,
-          "total_extracted": 7,
+          "total_extracted": 2,
           "uncovered_phrases": [
             "Paris is located in France.",
             "The Eiffel Tower stands in Paris.",
@@ -385,11 +357,8 @@
             "Harvard University --[located_in]--> Cambridge"
           ],
           "top_fp": [
-            "UNKNOWN --[lives_in]--> UNKNOWN",
-            "UNKNOWN --[lives_in]--> UNKNOWN",
-            "UNKNOWN --[lives_in]--> UNKNOWN",
-            "UNKNOWN --[lives_in]--> UNKNOWN",
-            "UNKNOWN --[lives_in]--> UNKNOWN"
+            "Paris --[lives_in]--> Germany",
+            "Paris --[lives_in]--> France"
           ]
         }
       },
@@ -423,40 +392,18 @@
         ],
         "top_fp_with_reason": [
           {
-            "example": "UNKNOWN --[lives_in]--> UNKNOWN",
-            "reason": "Entity extraction failed - created relation with UNKNOWN entities",
-            "fix_hint": "Filter out relations where subject or object is UNKNOWN/empty"
+            "example": "Paris --[lives_in]--> Germany",
+            "reason": "Location pattern incorrectly triggering on \"lives in\" (should be employment/residence)",
+            "fix_hint": "Add type filter: OBJECT must be GPE/LOC/FAC, block when \"lives\" is verb"
           },
           {
-            "example": "UNKNOWN --[lives_in]--> UNKNOWN",
-            "reason": "Entity extraction failed - created relation with UNKNOWN entities",
-            "fix_hint": "Filter out relations where subject or object is UNKNOWN/empty"
-          },
-          {
-            "example": "UNKNOWN --[lives_in]--> UNKNOWN",
-            "reason": "Entity extraction failed - created relation with UNKNOWN entities",
-            "fix_hint": "Filter out relations where subject or object is UNKNOWN/empty"
-          },
-          {
-            "example": "UNKNOWN --[lives_in]--> UNKNOWN",
-            "reason": "Entity extraction failed - created relation with UNKNOWN entities",
-            "fix_hint": "Filter out relations where subject or object is UNKNOWN/empty"
-          },
-          {
-            "example": "UNKNOWN --[lives_in]--> UNKNOWN",
-            "reason": "Entity extraction failed - created relation with UNKNOWN entities",
-            "fix_hint": "Filter out relations where subject or object is UNKNOWN/empty"
+            "example": "Paris --[lives_in]--> France",
+            "reason": "Location pattern incorrectly triggering on \"lives in\" (should be employment/residence)",
+            "fix_hint": "Add type filter: OBJECT must be GPE/LOC/FAC, block when \"lives\" is verb"
           }
         ]
       },
       "recommended_guardrails": [
-        {
-          "type": "entity_type_filter",
-          "description": "Filter out relations with UNKNOWN or empty entities",
-          "examples": [
-            "if (rel.subject === \"UNKNOWN\" || !rel.subject) skip"
-          ]
-        },
         {
           "type": "entity_type_filter",
           "description": "Object must be GPE, LOC, or FAC",
@@ -853,10 +800,10 @@
           "recall": 0,
           "f1": 0,
           "tp": 0,
-          "fp": 3,
+          "fp": 0,
           "fn": 10,
           "total_gold": 10,
-          "total_extracted": 3,
+          "total_extracted": 0,
           "uncovered_phrases": [
             "Napoleon ruled France.",
             "Caesar commanded the Roman legions.",
@@ -876,11 +823,7 @@
             "Alexander --[ruled]--> Greek",
             "Genghis Khan --[ruled]--> Central Asia"
           ],
-          "top_fp": [
-            "UNKNOWN --[rules]--> UNKNOWN",
-            "UNKNOWN --[rules]--> UNKNOWN",
-            "UNKNOWN --[rules]--> UNKNOWN"
-          ]
+          "top_fp": []
         }
       },
       "error_analysis": {
@@ -911,33 +854,9 @@
             "pattern_hint": "Add power patterns for this case"
           }
         ],
-        "top_fp_with_reason": [
-          {
-            "example": "UNKNOWN --[rules]--> UNKNOWN",
-            "reason": "Entity extraction failed - created relation with UNKNOWN entities",
-            "fix_hint": "Filter out relations where subject or object is UNKNOWN/empty"
-          },
-          {
-            "example": "UNKNOWN --[rules]--> UNKNOWN",
-            "reason": "Entity extraction failed - created relation with UNKNOWN entities",
-            "fix_hint": "Filter out relations where subject or object is UNKNOWN/empty"
-          },
-          {
-            "example": "UNKNOWN --[rules]--> UNKNOWN",
-            "reason": "Entity extraction failed - created relation with UNKNOWN entities",
-            "fix_hint": "Filter out relations where subject or object is UNKNOWN/empty"
-          }
-        ]
+        "top_fp_with_reason": []
       },
-      "recommended_guardrails": [
-        {
-          "type": "entity_type_filter",
-          "description": "Filter out relations with UNKNOWN or empty entities",
-          "examples": [
-            "if (rel.subject === \"UNKNOWN\" || !rel.subject) skip"
-          ]
-        }
-      ],
+      "recommended_guardrails": [],
       "hybrid_mode_ready": false
     },
     "comparison": {
@@ -1118,7 +1037,6 @@
       "Improve NER for multi-word entity names"
     ],
     "critical_fixes": [
-      "Filter UNKNOWN entities from relation extraction",
       "Add active voice patterns for: creation",
       "Improve NER for multi-word entity names"
     ]

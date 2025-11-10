@@ -603,10 +603,28 @@ export async function extractFromSegments(
   );
 
   // Filter relations to only include those where both subject and object entities exist
+  // AND have valid (non-empty, non-UNKNOWN) canonical names
   const filteredEntityIds = new Set(filteredEntities.map(e => e.id));
-  const filteredRelations = Array.from(uniqueRelations.values()).filter(rel =>
-    filteredEntityIds.has(rel.subj) && filteredEntityIds.has(rel.obj)
-  );
+  const entityIdToCanonical = new Map(filteredEntities.map(e => [e.id, e.canonical]));
+
+  const filteredRelations = Array.from(uniqueRelations.values()).filter(rel => {
+    // Check that both entities exist
+    if (!filteredEntityIds.has(rel.subj) || !filteredEntityIds.has(rel.obj)) {
+      return false;
+    }
+
+    // Check that both entities have valid canonical names (non-empty, not "UNKNOWN")
+    const subjCanonical = entityIdToCanonical.get(rel.subj);
+    const objCanonical = entityIdToCanonical.get(rel.obj);
+
+    if (!subjCanonical || !objCanonical ||
+        subjCanonical === 'UNKNOWN' || objCanonical === 'UNKNOWN' ||
+        subjCanonical.trim() === '' || objCanonical.trim() === '') {
+      return false;
+    }
+
+    return true;
+  });
 
   const fictionEntities = extractFictionEntities(fullText);
 

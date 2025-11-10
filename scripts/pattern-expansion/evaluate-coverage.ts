@@ -151,7 +151,16 @@ async function evaluateTestCase(
     await appendDoc(`test-${caseId}`, testCase.text, testPath);
     const graph = loadGraph(testPath);
 
-    const extractedRelations = graph?.relations || [];
+    // Build entity map for resolving relation subject/object
+    const entityById = new Map((graph?.entities || []).map(e => [e.id, e.canonical]));
+
+    // Convert relations to include resolved subject/object names
+    const extractedRelations = (graph?.relations || []).map(rel => ({
+      subject: entityById.get(rel.subj) || rel.subj || '',
+      predicate: rel.pred || rel.predicate || '',
+      object: entityById.get(rel.obj) || rel.obj || ''
+    }));
+
     const goldRelations = testCase.gold_relations;
 
     let tp = 0;
@@ -174,15 +183,14 @@ async function evaluateTestCase(
 
     // Count false positives (extracted but not in gold)
     for (const extRel of extractedRelations) {
-      const extRelData = {
-        subject: extRel.subject || 'UNKNOWN',
-        relation: extRel.predicate || extRel.pred || 'UNKNOWN',
-        object: extRel.object || 'UNKNOWN'
-      };
+      // Skip relations with empty subject or object (filtered out by orchestrator)
+      if (!extRel.subject || !extRel.object || !extRel.predicate) {
+        continue;
+      }
 
-      if (!isRelationExtracted(extRelData, goldRelations)) {
+      if (!isRelationExtracted(extRel, goldRelations)) {
         fp++;
-        fp_examples.push(`${extRelData.subject} --[${extRelData.relation}]--> ${extRelData.object}`);
+        fp_examples.push(`${extRel.subject} --[${extRel.predicate}]--> ${extRel.object}`);
       }
     }
 
