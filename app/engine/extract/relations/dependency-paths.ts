@@ -665,6 +665,125 @@ const PATH_PATTERNS: PathPattern[] = [
 
   // "Y led by X"
   { signature: /^(\w+):↑nsubjpass:lead:↓agent:by:↓pobj:(\w+)$/, predicate: 'leads', subjectFirst: false },
+
+  // === CREATION / AUTHORSHIP ===
+
+  // "X painted/wrote/composed/authored Y"
+  { signature: /^(\w+):↑nsubj:(paint|write|compose|author|create|invent|design|build|sculpt|craft):↓(dobj|obj):(\w+)$/, predicate: 'created_by', subjectFirst: false },
+
+  // "Y was painted/written by X" (passive)
+  { signature: /^(\w+):↑nsubjpass:(paint|write|compose|author|create|invent|design|build|sculpt|craft):↓agent:by:↓pobj:(\w+)$/, predicate: 'created_by', subjectFirst: true },
+
+  // === LOCATION (Enhanced) ===
+
+  // "X is located/situated in Y"
+  { signature: /^(\w+):↑nsubjpass:(locate|situate):↓prep:in:↓pobj:(\w+)$/, predicate: 'located_in', subjectFirst: true },
+
+  // "X stands in Y"
+  { signature: /^(\w+):↑nsubj:stand:↓prep:in:↓pobj:(\w+)$/, predicate: 'located_in', subjectFirst: true },
+
+  // "X is based in Y"
+  { signature: /^(\w+):↑nsubjpass:base:↓prep:in:↓pobj:(\w+)$/, predicate: 'located_in', subjectFirst: true },
+
+  // === COMMUNICATION ===
+
+  // "X wrote/told/spoke to Y"
+  { signature: /^(\w+):↑nsubj:(write|tell|speak|say|communicate):↓prep:to:↓pobj:(\w+)$/, predicate: 'wrote_to', subjectFirst: true },
+
+  // "X wrote/told Y" (direct object)
+  { signature: /^(\w+):↑nsubj:(tell|inform|notify):↓(dobj|obj):(\w+)$/, predicate: 'wrote_to', subjectFirst: true },
+
+  // "X asked/replied to Y"
+  { signature: /^(\w+):↑nsubj:(ask|reply|respond):↓prep:to:↓pobj:(\w+)$/, predicate: 'wrote_to', subjectFirst: true },
+
+  // "X reported Y to Z"
+  { signature: /^(\w+):↑nsubj:(report|convey):↓(dobj|obj):(\w+):↓prep:to:↓pobj:(\w+)$/, predicate: 'wrote_to', subjectFirst: true },
+
+  // === EVENT PARTICIPATION ===
+
+  // "X attended/participated in Y"
+  { signature: /^(\w+):↑nsubj:(attend|participate):↓prep:in:↓pobj:(\w+)$/, predicate: 'attended', subjectFirst: true },
+
+  // "X attended/performed at Y"
+  { signature: /^(\w+):↑nsubj:(attend|perform):↓prep:at:↓pobj:(\w+)$/, predicate: 'attended', subjectFirst: true },
+
+  // "X hosted/organized Y"
+  { signature: /^(\w+):↑nsubj:(host|organize|arrange|convene):↓(dobj|obj):(\w+)$/, predicate: 'hosted', subjectFirst: true },
+
+  // "X witnessed Y"
+  { signature: /^(\w+):↑nsubj:witness:↓(dobj|obj):(\w+)$/, predicate: 'attended', subjectFirst: true },
+
+  // === POWER / GOVERNANCE ===
+
+  // "X ruled/governed/controlled Y"
+  { signature: /^(\w+):↑nsubj:(rule|govern|control|command|dominate|reign):↓(dobj|obj):(\w+)$/, predicate: 'ruled_by', subjectFirst: false },
+
+  // "Y was ruled by X" (passive)
+  { signature: /^(\w+):↑nsubjpass:(rule|govern|control|command):↓agent:by:↓pobj:(\w+)$/, predicate: 'ruled_by', subjectFirst: true },
+
+  // === EMOTIONAL / SOCIAL ===
+
+  // "X loved/admired/respected Y"
+  { signature: /^(\w+):↑nsubj:(love|admire|respect|fear|hate|envy):↓(dobj|obj):(\w+)$/, predicate: 'loved', subjectFirst: true },
+
+  // === IDENTITY / EQUIVALENCE ===
+
+  // "X is Y" (copula for identity)
+  { signature: /^(\w+):↑nsubj:be:↓attr:(\w+)$/, predicate: 'is', subjectFirst: true },
+
+  // "X equals Y"
+  { signature: /^(\w+):↑nsubj:equal:↓(dobj|obj):(\w+)$/, predicate: 'is', subjectFirst: true },
+
+  // "X also known as Y"
+  { signature: /^(\w+):↑nsubjpass:know:↓prep:as:↓pobj:(\w+)$/, predicate: 'is', subjectFirst: true },
+
+  // "X was formerly Y"
+  { signature: /^(\w+):↑nsubj:be:↓advmod:formerly:↓attr:(\w+)$/, predicate: 'is', subjectFirst: true },
+
+  // "X was previously Y"
+  { signature: /^(\w+):↑nsubj:be:↓advmod:previously:↓attr:(\w+)$/, predicate: 'is', subjectFirst: true },
+
+  // === COMPARISON ===
+
+  // "X is larger/greater than Y"
+  { signature: /^(\w+):↑nsubj:be:↓acomp:(large|great|long|cold|hot|high|big):↓prep:than:↓pobj:(\w+)$/, predicate: 'greater_than', subjectFirst: true },
+
+  // "X has greater population than Y"
+  { signature: /^(\w+):↑nsubj:have:↓(dobj|obj):(population|size|area):↓amod:great:↓prep:than:↓pobj:(\w+)$/, predicate: 'greater_than', subjectFirst: true },
+
+  // === TEMPORAL ===
+
+  // "X followed/preceded Y"
+  { signature: /^(\w+):↑nsubj:(follow|precede):↓(dobj|obj):(\w+)$/, predicate: 'after', subjectFirst: true },
+
+  // "X began before Y"
+  { signature: /^(\w+):↑nsubj:begin:↓prep:before:↓pobj:(\w+)$/, predicate: 'before', subjectFirst: false },
+
+  // "X happened after Y"
+  { signature: /^(\w+):↑nsubj:happen:↓prep:after:↓pobj:(\w+)$/, predicate: 'after', subjectFirst: true },
+
+  // "X lived during Y"
+  { signature: /^(\w+):↑nsubj:live:↓prep:during:↓pobj:(\w+)$/, predicate: 'during', subjectFirst: true },
+
+  // "X arrived before Y"
+  { signature: /^(\w+):↑nsubj:arrive:↓prep:before:↓pobj:(\w+)$/, predicate: 'before', subjectFirst: false },
+
+  // "X existed before Y"
+  { signature: /^(\w+):↑nsubj:exist:↓prep:before:↓pobj:(\w+)$/, predicate: 'before', subjectFirst: false },
+
+  // "X ended after Y"
+  { signature: /^(\w+):↑nsubj:end:↓prep:after:↓pobj:(\w+)$/, predicate: 'after', subjectFirst: true },
+
+  // === PART-WHOLE ===
+
+  // "X is part of Y"
+  { signature: /^(\w+):↑nsubj:be:↓attr:part:↓prep:of:↓pobj:(\w+)$/, predicate: 'part_of', subjectFirst: true },
+
+  // "Y consists of X"
+  { signature: /^(\w+):↑nsubj:consist:↓prep:of:↓pobj:(\w+)$/, predicate: 'part_of', subjectFirst: false },
+
+  // "Y includes X"
+  { signature: /^(\w+):↑nsubj:include:↓(dobj|obj):(\w+)$/, predicate: 'part_of', subjectFirst: false },
 ];
 
 /**

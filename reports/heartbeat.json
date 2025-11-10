@@ -1,716 +1,1038 @@
 {
-  "meta": {
-    "timestamp": "2025-11-10T08:17:33.097Z",
-    "commit": "cb97d75",
-    "families": [
-      "kinship",
-      "ownership",
-      "employment",
-      "creation",
-      "location",
-      "temporal",
-      "causation",
-      "part_whole",
-      "identity",
-      "event",
-      "communication",
-      "power",
-      "comparison",
-      "emotional",
-      "negation"
-    ],
-    "synthetic_size": 300,
-    "canary_size": 25
+  "timestamp": "2025-11-10T13:49:48.301Z",
+  "ladder_rung": "R1 - Synthetic Coverage Baseline",
+  "overall_synthetic": {
+    "precision": 0.3333333333333333,
+    "recall": 0.030612244897959183,
+    "f1": 0.056074766355140186,
+    "total_tp": 3,
+    "total_fp": 6,
+    "total_fn": 95
   },
-  "metrics": {
+  "families": {
     "kinship": {
-      "synthetic": {
-        "precision": 0.42857142857142855,
-        "recall": 0.375,
-        "f1": 0.39999999999999997,
-        "support": 8
+      "family": "kinship",
+      "status": "blocked",
+      "metrics": {
+        "synthetic": {
+          "family": "kinship",
+          "precision": 0.42857142857142855,
+          "recall": 0.375,
+          "f1": 0.39999999999999997,
+          "tp": 3,
+          "fp": 4,
+          "fn": 5,
+          "total_gold": 8,
+          "total_extracted": 7,
+          "support": 8,
+          "uncovered_phrases": [
+            "Prince Edward, heir of Queen Elizabeth, attended the ceremony.",
+            "Sofia, offspring of Marcus, excelled in her studies.",
+            "King Arthur, descendant of Uther Pendragon, ruled the kingdom.",
+            "Isabella is the sister of Ferdinand.",
+            "Catherine and her brother William traveled together."
+          ],
+          "top_fn": [
+            "Prince Edward --[related_to]--> Queen Elizabeth",
+            "Sofia --[related_to]--> Marcus",
+            "King Arthur --[related_to]--> Uther Pendragon",
+            "Isabella --[related_to]--> Ferdinand",
+            "Catherine and --[related_to]--> William"
+          ],
+          "top_fp": [
+            "Marcus --[married_to]--> Elena",
+            "Elena --[married_to]--> Marcus",
+            "Marcus --[married_to]--> Elena",
+            "Elena --[married_to]--> Marcus"
+          ]
+        }
       },
-      "canary": {
-        "precision": 1,
-        "recall": 0.2,
-        "f1": 0.33333333333333337,
-        "support": 5
-      }
+      "error_analysis": {
+        "top_fn_with_reason": [
+          {
+            "example": "Prince Edward --[related_to]--> Queen Elizabeth",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add kinship patterns for this case"
+          },
+          {
+            "example": "Sofia --[related_to]--> Marcus",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add kinship patterns for this case"
+          },
+          {
+            "example": "King Arthur --[related_to]--> Uther Pendragon",
+            "reason": "Entity name split incorrectly (e.g., \"Leonardo\" instead of \"Leonardo da Vinci\")",
+            "pattern_hint": "Improve NER for multi-word entity names"
+          },
+          {
+            "example": "Isabella --[related_to]--> Ferdinand",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add kinship patterns for this case"
+          },
+          {
+            "example": "Catherine and --[related_to]--> William",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add kinship patterns for this case"
+          }
+        ],
+        "top_fp_with_reason": [
+          {
+            "example": "Marcus --[married_to]--> Elena",
+            "reason": "Overly broad pattern matching",
+            "fix_hint": "Add type compatibility filters or increase pattern specificity"
+          },
+          {
+            "example": "Elena --[married_to]--> Marcus",
+            "reason": "Overly broad pattern matching",
+            "fix_hint": "Add type compatibility filters or increase pattern specificity"
+          },
+          {
+            "example": "Marcus --[married_to]--> Elena",
+            "reason": "Overly broad pattern matching",
+            "fix_hint": "Add type compatibility filters or increase pattern specificity"
+          },
+          {
+            "example": "Elena --[married_to]--> Marcus",
+            "reason": "Overly broad pattern matching",
+            "fix_hint": "Add type compatibility filters or increase pattern specificity"
+          }
+        ]
+      },
+      "recommended_guardrails": [],
+      "hybrid_mode_ready": false
     },
     "ownership": {
-      "synthetic": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 5
+      "family": "ownership",
+      "status": "blocked",
+      "metrics": {
+        "synthetic": {
+          "family": "ownership",
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 5,
+          "total_gold": 5,
+          "total_extracted": 0,
+          "support": 5,
+          "uncovered_phrases": [
+            "Rockefeller owns Standard Oil Company.",
+            "The estate belongs to the Duke of Westminster.",
+            "Tesla acquired SolarCity in 2016.",
+            "The painting is the property of the Louvre Museum.",
+            "Musk owns Tesla and SpaceX."
+          ],
+          "top_fn": [
+            "Rockefeller --[owns]--> Standard Oil Company",
+            "The --[belongs_to]--> Duke of Westminster",
+            "Tesla --[possesses]--> Solar",
+            "The --[property_of]--> Louvre Museum",
+            "Musk --[owns]--> Tesla and Space"
+          ],
+          "top_fp": []
+        }
       },
-      "canary": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 1
-      }
+      "error_analysis": {
+        "top_fn_with_reason": [
+          {
+            "example": "Rockefeller --[owns]--> Standard Oil Company",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add ownership patterns for this case"
+          },
+          {
+            "example": "The --[belongs_to]--> Duke of Westminster",
+            "reason": "Entity name split incorrectly (e.g., \"Leonardo\" instead of \"Leonardo da Vinci\")",
+            "pattern_hint": "Improve NER for multi-word entity names"
+          },
+          {
+            "example": "Tesla --[possesses]--> Solar",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add ownership patterns for this case"
+          },
+          {
+            "example": "The --[property_of]--> Louvre Museum",
+            "reason": "Entity name split incorrectly (e.g., \"Leonardo\" instead of \"Leonardo da Vinci\")",
+            "pattern_hint": "Improve NER for multi-word entity names"
+          },
+          {
+            "example": "Musk --[owns]--> Tesla and Space",
+            "reason": "Entity name split incorrectly (e.g., \"Leonardo\" instead of \"Leonardo da Vinci\")",
+            "pattern_hint": "Improve NER for multi-word entity names"
+          }
+        ],
+        "top_fp_with_reason": []
+      },
+      "recommended_guardrails": [
+        {
+          "type": "entity_type_filter",
+          "description": "Subject must be PERSON or ORG; Object cannot be DATE or QUANTITY",
+          "examples": [
+            "SUBJECT ∈ {PERSON, ORG}",
+            "OBJECT ∉ {DATE, QUANTITY}"
+          ]
+        }
+      ],
+      "hybrid_mode_ready": false
     },
     "employment": {
-      "synthetic": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 8
+      "family": "employment",
+      "status": "blocked",
+      "metrics": {
+        "synthetic": {
+          "family": "employment",
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
+          "tp": 0,
+          "fp": 2,
+          "fn": 8,
+          "total_gold": 8,
+          "total_extracted": 2,
+          "support": 8,
+          "uncovered_phrases": [
+            "Sarah works for Google in Mountain View.",
+            "Dr. Chen is employed by Stanford Hospital.",
+            "Marcus is a member of the Board of Directors.",
+            "Elena serves as Chief Technology Officer.",
+            "Professor Smith teaches at Harvard University.",
+            "John manages the Sales Department.",
+            "Victoria is a partner at Goldman Sachs.",
+            "Thomas joined Microsoft in 2020."
+          ],
+          "top_fn": [
+            "Sarah --[works_for]--> Google",
+            "Dr --[employed_by]--> Chen",
+            "Marcus --[member_of]--> Board of Directors",
+            "Elena --[affiliated_with]--> Chief Technology Officer",
+            "Professor Smith --[affiliated_with]--> Harvard University"
+          ],
+          "top_fp": [
+            "Sarah --[lives_in]--> Mountain View",
+            "Smith --[teaches_at]--> Harvard"
+          ]
+        }
       },
-      "canary": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 1
-      }
+      "error_analysis": {
+        "top_fn_with_reason": [
+          {
+            "example": "Sarah --[works_for]--> Google",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add employment patterns for this case"
+          },
+          {
+            "example": "Dr --[employed_by]--> Chen",
+            "reason": "Entity name split incorrectly (e.g., \"Leonardo\" instead of \"Leonardo da Vinci\")",
+            "pattern_hint": "Improve NER for multi-word entity names"
+          },
+          {
+            "example": "Marcus --[member_of]--> Board of Directors",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add employment patterns for this case"
+          },
+          {
+            "example": "Elena --[affiliated_with]--> Chief Technology Officer",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add employment patterns for this case"
+          },
+          {
+            "example": "Professor Smith --[affiliated_with]--> Harvard University",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add employment patterns for this case"
+          }
+        ],
+        "top_fp_with_reason": [
+          {
+            "example": "Sarah --[lives_in]--> Mountain View",
+            "reason": "Overly broad pattern matching",
+            "fix_hint": "Add type compatibility filters or increase pattern specificity"
+          },
+          {
+            "example": "Smith --[teaches_at]--> Harvard",
+            "reason": "Overly broad pattern matching",
+            "fix_hint": "Add type compatibility filters or increase pattern specificity"
+          }
+        ]
+      },
+      "recommended_guardrails": [],
+      "hybrid_mode_ready": false
     },
     "creation": {
-      "synthetic": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 7
+      "family": "creation",
+      "status": "blocked",
+      "metrics": {
+        "synthetic": {
+          "family": "creation",
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 7,
+          "total_gold": 7,
+          "total_extracted": 0,
+          "support": 7,
+          "uncovered_phrases": [
+            "Leonardo da Vinci painted the Mona Lisa.",
+            "Shakespeare wrote Hamlet.",
+            "Mozart composed The Magic Flute.",
+            "Tolkien authored The Lord of the Rings.",
+            "Picasso painted Guernica.",
+            "Beethoven composed Symphony No. 9.",
+            "Michelangelo sculpted David."
+          ],
+          "top_fn": [
+            "Leonardo da Vinci --[painted]--> Mona Lisa",
+            "Shakespeare --[authored]--> Hamlet",
+            "Mozart --[composed]--> The Magic Flute",
+            "Tolkien --[created]--> The Lord of the Rings",
+            "Picasso --[painted]--> Guernica"
+          ],
+          "top_fp": []
+        }
       },
-      "canary": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 2
-      }
+      "error_analysis": {
+        "top_fn_with_reason": [
+          {
+            "example": "Leonardo da Vinci --[painted]--> Mona Lisa",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add creation patterns for this case"
+          },
+          {
+            "example": "Shakespeare --[authored]--> Hamlet",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add creation patterns for this case"
+          },
+          {
+            "example": "Mozart --[composed]--> The Magic Flute",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add creation patterns for this case"
+          },
+          {
+            "example": "Tolkien --[created]--> The Lord of the Rings",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add creation patterns for this case"
+          },
+          {
+            "example": "Picasso --[painted]--> Guernica",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add creation patterns for this case"
+          }
+        ],
+        "top_fp_with_reason": []
+      },
+      "recommended_guardrails": [],
+      "hybrid_mode_ready": false
     },
     "location": {
-      "synthetic": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 10
+      "family": "location",
+      "status": "blocked",
+      "metrics": {
+        "synthetic": {
+          "family": "location",
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 10,
+          "total_gold": 10,
+          "total_extracted": 0,
+          "support": 10,
+          "uncovered_phrases": [
+            "Paris is located in France.",
+            "The Eiffel Tower stands in Paris.",
+            "Silicon Valley is situated in California.",
+            "The Pyramids are located at Giza.",
+            "Harvard University is based in Cambridge.",
+            "The Louvre is located in Paris.",
+            "Tokyo is situated in Japan.",
+            "The White House stands in Washington DC.",
+            "Oxford is located near London.",
+            "Venice is situated in Italy."
+          ],
+          "top_fn": [
+            "Paris --[located_in]--> France",
+            "The Eiffel Tower --[located_in]--> Paris",
+            "Silicon Valley --[located_in]--> California",
+            "The Pyramids --[located_in]--> Giza",
+            "Harvard University --[located_in]--> Cambridge"
+          ],
+          "top_fp": []
+        }
       },
-      "canary": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 6
-      }
+      "error_analysis": {
+        "top_fn_with_reason": [
+          {
+            "example": "Paris --[located_in]--> France",
+            "reason": "Missing location patterns",
+            "pattern_hint": "Add patterns for: \"is located in\", \"stands in\", \"situated in\""
+          },
+          {
+            "example": "The Eiffel Tower --[located_in]--> Paris",
+            "reason": "Entity name split incorrectly (e.g., \"Leonardo\" instead of \"Leonardo da Vinci\")",
+            "pattern_hint": "Improve NER for multi-word entity names"
+          },
+          {
+            "example": "Silicon Valley --[located_in]--> California",
+            "reason": "Missing location patterns",
+            "pattern_hint": "Add patterns for: \"is located in\", \"stands in\", \"situated in\""
+          },
+          {
+            "example": "The Pyramids --[located_in]--> Giza",
+            "reason": "Entity name split incorrectly (e.g., \"Leonardo\" instead of \"Leonardo da Vinci\")",
+            "pattern_hint": "Improve NER for multi-word entity names"
+          },
+          {
+            "example": "Harvard University --[located_in]--> Cambridge",
+            "reason": "Missing location patterns",
+            "pattern_hint": "Add patterns for: \"is located in\", \"stands in\", \"situated in\""
+          }
+        ],
+        "top_fp_with_reason": []
+      },
+      "recommended_guardrails": [
+        {
+          "type": "entity_type_filter",
+          "description": "Object must be GPE, LOC, or FAC",
+          "examples": [
+            "OBJECT ∈ {GPE, LOC, FAC}"
+          ]
+        },
+        {
+          "type": "idiom_block",
+          "description": "Block idiomatic uses of \"in\"",
+          "examples": [
+            "\"in trouble\", \"in love\", \"in doubt\""
+          ]
+        }
+      ],
+      "hybrid_mode_ready": false
     },
     "temporal": {
-      "synthetic": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 7
+      "family": "temporal",
+      "status": "blocked",
+      "metrics": {
+        "synthetic": {
+          "family": "temporal",
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 7,
+          "total_gold": 7,
+          "total_extracted": 0,
+          "support": 7,
+          "uncovered_phrases": [
+            "The Renaissance followed the Middle Ages.",
+            "The French Revolution began before the American Civil War.",
+            "The Industrial Revolution happened after the Medieval period.",
+            "Shakespeare lived during the Elizabethan era.",
+            "Columbus arrived in America before the Pilgrims.",
+            "The Roman Empire existed before the Byzantine Empire.",
+            "The Cold War ended after the Vietnam War."
+          ],
+          "top_fn": [
+            "The Renaissance --[after]--> Middle Ages",
+            "The French Revolution --[after]--> American Civil War",
+            "The Industrial Revolution --[after]--> Medieval",
+            "Shakespeare --[after]--> Elizabethan",
+            "Columbus --[after]--> America"
+          ],
+          "top_fp": []
+        }
       },
-      "canary": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 0
-      }
+      "error_analysis": {
+        "top_fn_with_reason": [
+          {
+            "example": "The Renaissance --[after]--> Middle Ages",
+            "reason": "Entity name split incorrectly (e.g., \"Leonardo\" instead of \"Leonardo da Vinci\")",
+            "pattern_hint": "Improve NER for multi-word entity names"
+          },
+          {
+            "example": "The French Revolution --[after]--> American Civil War",
+            "reason": "Entity name split incorrectly (e.g., \"Leonardo\" instead of \"Leonardo da Vinci\")",
+            "pattern_hint": "Improve NER for multi-word entity names"
+          },
+          {
+            "example": "The Industrial Revolution --[after]--> Medieval",
+            "reason": "Entity name split incorrectly (e.g., \"Leonardo\" instead of \"Leonardo da Vinci\")",
+            "pattern_hint": "Improve NER for multi-word entity names"
+          },
+          {
+            "example": "Shakespeare --[after]--> Elizabethan",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add temporal patterns for this case"
+          },
+          {
+            "example": "Columbus --[after]--> America",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add temporal patterns for this case"
+          }
+        ],
+        "top_fp_with_reason": []
+      },
+      "recommended_guardrails": [],
+      "hybrid_mode_ready": false
     },
     "causation": {
-      "synthetic": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 0
+      "family": "causation",
+      "status": "blocked",
+      "metrics": {
+        "synthetic": {
+          "family": "causation",
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "total_gold": 0,
+          "total_extracted": 0,
+          "support": 0,
+          "uncovered_phrases": [],
+          "top_fn": [],
+          "top_fp": []
+        }
       },
-      "canary": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 0
-      }
+      "error_analysis": {
+        "top_fn_with_reason": [],
+        "top_fp_with_reason": []
+      },
+      "recommended_guardrails": [],
+      "hybrid_mode_ready": false
     },
     "part_whole": {
-      "synthetic": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 2
+      "family": "part_whole",
+      "status": "blocked",
+      "metrics": {
+        "synthetic": {
+          "family": "part_whole",
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 2,
+          "total_gold": 2,
+          "total_extracted": 0,
+          "support": 2,
+          "uncovered_phrases": [
+            "California is part of the United States.",
+            "Manhattan is part of New York City."
+          ],
+          "top_fn": [
+            "California --[part_of]--> United States",
+            "Manhattan --[part_of]--> New York City"
+          ],
+          "top_fp": []
+        }
       },
-      "canary": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 0
-      }
+      "error_analysis": {
+        "top_fn_with_reason": [
+          {
+            "example": "California --[part_of]--> United States",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add part_whole patterns for this case"
+          },
+          {
+            "example": "Manhattan --[part_of]--> New York City",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add part_whole patterns for this case"
+          }
+        ],
+        "top_fp_with_reason": []
+      },
+      "recommended_guardrails": [
+        {
+          "type": "lexicon",
+          "description": "Require head nouns in part-whole lexicon",
+          "examples": [
+            "chapter→book",
+            "wheel→car",
+            "state→country"
+          ]
+        }
+      ],
+      "hybrid_mode_ready": false
     },
     "identity": {
-      "synthetic": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 8
+      "family": "identity",
+      "status": "blocked",
+      "metrics": {
+        "synthetic": {
+          "family": "identity",
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 8,
+          "total_gold": 8,
+          "total_extracted": 0,
+          "support": 8,
+          "uncovered_phrases": [
+            "Mark Twain is Samuel Clemens.",
+            "Beijing equals Peking.",
+            "New York is also known as the Big Apple.",
+            "The USA is America.",
+            "Istanbul was formerly Constantinople.",
+            "Myanmar is also known as Burma.",
+            "The Netherlands is Holland.",
+            "Mumbai was previously Bombay."
+          ],
+          "top_fn": [
+            "Mark Twain --[is]--> Samuel Clemens",
+            "Beijing --[is]--> Peking",
+            "New York --[is]--> Big Apple",
+            "The U --[is]--> America",
+            "Istanbul --[is]--> Constantinople"
+          ],
+          "top_fp": []
+        }
       },
-      "canary": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 0
-      }
+      "error_analysis": {
+        "top_fn_with_reason": [
+          {
+            "example": "Mark Twain --[is]--> Samuel Clemens",
+            "reason": "Entity name split incorrectly (e.g., \"Leonardo\" instead of \"Leonardo da Vinci\")",
+            "pattern_hint": "Improve NER for multi-word entity names"
+          },
+          {
+            "example": "Beijing --[is]--> Peking",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add identity patterns for this case"
+          },
+          {
+            "example": "New York --[is]--> Big Apple",
+            "reason": "Entity name split incorrectly (e.g., \"Leonardo\" instead of \"Leonardo da Vinci\")",
+            "pattern_hint": "Improve NER for multi-word entity names"
+          },
+          {
+            "example": "The U --[is]--> America",
+            "reason": "Entity name split incorrectly (e.g., \"Leonardo\" instead of \"Leonardo da Vinci\")",
+            "pattern_hint": "Improve NER for multi-word entity names"
+          },
+          {
+            "example": "Istanbul --[is]--> Constantinople",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add identity patterns for this case"
+          }
+        ],
+        "top_fp_with_reason": []
+      },
+      "recommended_guardrails": [
+        {
+          "type": "entity_type_filter",
+          "description": "Subject and object must have type compatibility or alias evidence",
+          "examples": [
+            "Both PERSON or both GPE",
+            "Or one is alias of other"
+          ]
+        }
+      ],
+      "hybrid_mode_ready": false
     },
     "event": {
-      "synthetic": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 10
+      "family": "event",
+      "status": "blocked",
+      "metrics": {
+        "synthetic": {
+          "family": "event",
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 10,
+          "total_gold": 10,
+          "total_extracted": 0,
+          "support": 10,
+          "uncovered_phrases": [
+            "Churchill attended the Yalta Conference.",
+            "Mozart performed at the Vienna Opera.",
+            "Armstrong participated in the Apollo 11 mission.",
+            "Einstein attended the Solvay Conference.",
+            "Shakespeare performed at the Globe Theatre.",
+            "Roosevelt hosted the Teheran Conference.",
+            "Picasso exhibited at the Paris Salon.",
+            "Newton witnessed the Great Fire of London.",
+            "Lincoln attended the Gettysburg ceremony.",
+            "Gandhi organized the Salt March."
+          ],
+          "top_fn": [
+            "Churchill --[attended]--> Yalta Conference",
+            "Mozart --[attended]--> Vienna Opera",
+            "Armstrong --[attended]--> Apollo",
+            "Einstein --[attended]--> Solvay Conference",
+            "Shakespeare --[attended]--> Globe Theatre"
+          ],
+          "top_fp": []
+        }
       },
-      "canary": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 0
-      }
+      "error_analysis": {
+        "top_fn_with_reason": [
+          {
+            "example": "Churchill --[attended]--> Yalta Conference",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add event patterns for this case"
+          },
+          {
+            "example": "Mozart --[attended]--> Vienna Opera",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add event patterns for this case"
+          },
+          {
+            "example": "Armstrong --[attended]--> Apollo",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add event patterns for this case"
+          },
+          {
+            "example": "Einstein --[attended]--> Solvay Conference",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add event patterns for this case"
+          },
+          {
+            "example": "Shakespeare --[attended]--> Globe Theatre",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add event patterns for this case"
+          }
+        ],
+        "top_fp_with_reason": []
+      },
+      "recommended_guardrails": [],
+      "hybrid_mode_ready": false
     },
     "communication": {
-      "synthetic": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 10
+      "family": "communication",
+      "status": "blocked",
+      "metrics": {
+        "synthetic": {
+          "family": "communication",
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 10,
+          "total_gold": 10,
+          "total_extracted": 0,
+          "support": 10,
+          "uncovered_phrases": [
+            "Lincoln wrote a letter to Grant.",
+            "Einstein told Bohr about the theory.",
+            "Churchill spoke to Roosevelt about strategy.",
+            "Jefferson wrote to Adams regarding politics.",
+            "King asked Congress for civil rights legislation.",
+            "Darwin wrote to Wallace about evolution.",
+            "Newton replied to Leibniz about calculus.",
+            "Franklin informed Washington about developments.",
+            "Marx wrote to Engels about economics.",
+            "Galileo reported his findings to the Church."
+          ],
+          "top_fn": [
+            "Lincoln --[wrote_to]--> Grant",
+            "Einstein --[wrote_to]--> Bohr",
+            "Churchill --[wrote_to]--> Roosevelt",
+            "Jefferson --[wrote_to]--> Adams",
+            "King --[wrote_to]--> Congress"
+          ],
+          "top_fp": []
+        }
       },
-      "canary": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 3
-      }
+      "error_analysis": {
+        "top_fn_with_reason": [
+          {
+            "example": "Lincoln --[wrote_to]--> Grant",
+            "reason": "Missing communication patterns for \"wrote to\"",
+            "pattern_hint": "Add pattern: nsubj(wrote, SUBJ) + obl:to(wrote, OBJ)"
+          },
+          {
+            "example": "Einstein --[wrote_to]--> Bohr",
+            "reason": "Missing communication patterns for \"wrote to\"",
+            "pattern_hint": "Add pattern: nsubj(wrote, SUBJ) + obl:to(wrote, OBJ)"
+          },
+          {
+            "example": "Churchill --[wrote_to]--> Roosevelt",
+            "reason": "Missing communication patterns for \"wrote to\"",
+            "pattern_hint": "Add pattern: nsubj(wrote, SUBJ) + obl:to(wrote, OBJ)"
+          },
+          {
+            "example": "Jefferson --[wrote_to]--> Adams",
+            "reason": "Missing communication patterns for \"wrote to\"",
+            "pattern_hint": "Add pattern: nsubj(wrote, SUBJ) + obl:to(wrote, OBJ)"
+          },
+          {
+            "example": "King --[wrote_to]--> Congress",
+            "reason": "Entity name split incorrectly (e.g., \"Leonardo\" instead of \"Leonardo da Vinci\")",
+            "pattern_hint": "Improve NER for multi-word entity names"
+          }
+        ],
+        "top_fp_with_reason": []
+      },
+      "recommended_guardrails": [
+        {
+          "type": "distance_window",
+          "description": "Cap dependency path length to ≤4 edges for prepositional cues",
+          "examples": [
+            "path_length(nsubj, obl:to) ≤ 4"
+          ]
+        }
+      ],
+      "hybrid_mode_ready": false
     },
     "power": {
-      "synthetic": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 10
+      "family": "power",
+      "status": "blocked",
+      "metrics": {
+        "synthetic": {
+          "family": "power",
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 10,
+          "total_gold": 10,
+          "total_extracted": 0,
+          "support": 10,
+          "uncovered_phrases": [
+            "Napoleon ruled France.",
+            "Caesar commanded the Roman legions.",
+            "Elizabeth II governed the United Kingdom.",
+            "Alexander controlled the Greek empire.",
+            "Genghis Khan dominated Central Asia.",
+            "Augustus ruled Rome.",
+            "Victoria governed the British Empire.",
+            "Peter the Great controlled Russia.",
+            "Charlemagne commanded the Frankish Empire.",
+            "Akbar ruled the Mughal Empire."
+          ],
+          "top_fn": [
+            "Napoleon --[ruled]--> France",
+            "Caesar --[ruled]--> Roman legions",
+            "Elizabeth I --[ruled]--> United Kingdom",
+            "Alexander --[ruled]--> Greek",
+            "Genghis Khan --[ruled]--> Central Asia"
+          ],
+          "top_fp": []
+        }
       },
-      "canary": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 0
-      }
+      "error_analysis": {
+        "top_fn_with_reason": [
+          {
+            "example": "Napoleon --[ruled]--> France",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add power patterns for this case"
+          },
+          {
+            "example": "Caesar --[ruled]--> Roman legions",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add power patterns for this case"
+          },
+          {
+            "example": "Elizabeth I --[ruled]--> United Kingdom",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add power patterns for this case"
+          },
+          {
+            "example": "Alexander --[ruled]--> Greek",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add power patterns for this case"
+          },
+          {
+            "example": "Genghis Khan --[ruled]--> Central Asia",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add power patterns for this case"
+          }
+        ],
+        "top_fp_with_reason": []
+      },
+      "recommended_guardrails": [],
+      "hybrid_mode_ready": false
     },
     "comparison": {
-      "synthetic": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 5
+      "family": "comparison",
+      "status": "blocked",
+      "metrics": {
+        "synthetic": {
+          "family": "comparison",
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 5,
+          "total_gold": 5,
+          "total_extracted": 0,
+          "support": 5,
+          "uncovered_phrases": [
+            "The Pacific Ocean is larger than the Atlantic.",
+            "China has a greater population than India.",
+            "Jupiter is larger than Saturn.",
+            "The Nile is longer than the Amazon.",
+            "Antarctica is colder than the Arctic."
+          ],
+          "top_fn": [
+            "The Pacific Ocean --[greater_than]--> Atlantic",
+            "China --[greater_than]--> India",
+            "Jupiter --[greater_than]--> Saturn",
+            "The Nile --[greater_than]--> Amazon",
+            "Antarctica --[greater_than]--> Arctic"
+          ],
+          "top_fp": []
+        }
       },
-      "canary": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 0
-      }
+      "error_analysis": {
+        "top_fn_with_reason": [
+          {
+            "example": "The Pacific Ocean --[greater_than]--> Atlantic",
+            "reason": "Entity name split incorrectly (e.g., \"Leonardo\" instead of \"Leonardo da Vinci\")",
+            "pattern_hint": "Improve NER for multi-word entity names"
+          },
+          {
+            "example": "China --[greater_than]--> India",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add comparison patterns for this case"
+          },
+          {
+            "example": "Jupiter --[greater_than]--> Saturn",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add comparison patterns for this case"
+          },
+          {
+            "example": "The Nile --[greater_than]--> Amazon",
+            "reason": "Entity name split incorrectly (e.g., \"Leonardo\" instead of \"Leonardo da Vinci\")",
+            "pattern_hint": "Improve NER for multi-word entity names"
+          },
+          {
+            "example": "Antarctica --[greater_than]--> Arctic",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add comparison patterns for this case"
+          }
+        ],
+        "top_fp_with_reason": []
+      },
+      "recommended_guardrails": [],
+      "hybrid_mode_ready": false
     },
     "emotional": {
-      "synthetic": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 8
+      "family": "emotional",
+      "status": "blocked",
+      "metrics": {
+        "synthetic": {
+          "family": "emotional",
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 8,
+          "total_gold": 8,
+          "total_extracted": 0,
+          "support": 8,
+          "uncovered_phrases": [
+            "Romeo loved Juliet.",
+            "Brutus respected Caesar.",
+            "Othello envied Cassio.",
+            "Achilles admired Patroclus.",
+            "Iago hated Othello.",
+            "Elizabeth loved Darcy.",
+            "Jane Eyre admired Rochester.",
+            "Scarlett envied Melanie."
+          ],
+          "top_fn": [
+            "Romeo --[loved]--> Juliet",
+            "Brutus --[loved]--> Caesar",
+            "Othello --[loved]--> Cassio",
+            "Achilles --[loved]--> Patroclus",
+            "Iago --[loved]--> Othello"
+          ],
+          "top_fp": []
+        }
       },
-      "canary": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 0
-      }
+      "error_analysis": {
+        "top_fn_with_reason": [
+          {
+            "example": "Romeo --[loved]--> Juliet",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add emotional patterns for this case"
+          },
+          {
+            "example": "Brutus --[loved]--> Caesar",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add emotional patterns for this case"
+          },
+          {
+            "example": "Othello --[loved]--> Cassio",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add emotional patterns for this case"
+          },
+          {
+            "example": "Achilles --[loved]--> Patroclus",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add emotional patterns for this case"
+          },
+          {
+            "example": "Iago --[loved]--> Othello",
+            "reason": "Entity name split incorrectly (e.g., \"Leonardo\" instead of \"Leonardo da Vinci\")",
+            "pattern_hint": "Improve NER for multi-word entity names"
+          }
+        ],
+        "top_fp_with_reason": []
+      },
+      "recommended_guardrails": [],
+      "hybrid_mode_ready": false
     },
     "negation": {
-      "synthetic": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 0
+      "family": "negation",
+      "status": "blocked",
+      "metrics": {
+        "synthetic": {
+          "family": "negation",
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "total_gold": 0,
+          "total_extracted": 0,
+          "support": 0,
+          "uncovered_phrases": [],
+          "top_fn": [],
+          "top_fp": []
+        }
       },
-      "canary": {
-        "precision": 0,
-        "recall": 0,
-        "f1": 0,
-        "support": 0
-      }
+      "error_analysis": {
+        "top_fn_with_reason": [],
+        "top_fp_with_reason": []
+      },
+      "recommended_guardrails": [],
+      "hybrid_mode_ready": false
     }
   },
-  "counts": {
-    "generated": {
-      "kinship": 8,
-      "ownership": 5,
-      "employment": 8,
-      "creation": 7,
-      "location": 10,
-      "temporal": 7,
-      "causation": 0,
-      "part_whole": 2,
-      "identity": 8,
-      "event": 10,
-      "communication": 10,
-      "power": 10,
-      "comparison": 5,
-      "emotional": 8,
-      "negation": 0
-    },
-    "skipped_duplicates": {
-      "kinship": 0,
-      "ownership": 0,
-      "employment": 0,
-      "creation": 0,
-      "location": 0,
-      "temporal": 0,
-      "causation": 0,
-      "part_whole": 0,
-      "identity": 0,
-      "event": 0,
-      "communication": 0,
-      "power": 0,
-      "comparison": 0,
-      "emotional": 0,
-      "negation": 0
-    },
-    "evaluated": {
-      "kinship": 8,
-      "ownership": 5,
-      "employment": 8,
-      "creation": 7,
-      "location": 10,
-      "temporal": 7,
-      "causation": 0,
-      "part_whole": 2,
-      "identity": 8,
-      "event": 10,
-      "communication": 10,
-      "power": 10,
-      "comparison": 5,
-      "emotional": 8,
-      "negation": 0
-    }
-  },
-  "errors": {
-    "false_negatives": {
-      "kinship": [
-        {
-          "text": "Prince Edward --[related_to]--> Queen Elizabeth",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Sofia --[related_to]--> Marcus",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "King Arthur --[related_to]--> Uther Pendragon",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Isabella --[related_to]--> Ferdinand",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Catherine and --[related_to]--> William",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        }
-      ],
-      "ownership": [
-        {
-          "text": "Rockefeller --[owns]--> Standard Oil Company",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "The --[belongs_to]--> Duke of Westminster",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Tesla --[possesses]--> Solar",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "The --[property_of]--> Louvre Museum",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Musk --[owns]--> Tesla and Space",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        }
-      ],
-      "employment": [
-        {
-          "text": "Sarah --[works_for]--> Google",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Dr --[employed_by]--> Chen",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Marcus --[member_of]--> Board of Directors",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Elena --[affiliated_with]--> Chief Technology Officer",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Professor Smith --[affiliated_with]--> Harvard University",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        }
-      ],
-      "creation": [
-        {
-          "text": "Leonardo da Vinci --[painted]--> Mona Lisa",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Shakespeare --[authored]--> Hamlet",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Mozart --[composed]--> The Magic Flute",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Tolkien --[created]--> The Lord of the Rings",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Picasso --[painted]--> Guernica",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        }
-      ],
-      "location": [
-        {
-          "text": "Paris --[located_in]--> France",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "The Eiffel Tower --[located_in]--> Paris",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Silicon Valley --[located_in]--> California",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "The Pyramids --[located_in]--> Giza",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Harvard University --[located_in]--> Cambridge",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        }
-      ],
-      "temporal": [
-        {
-          "text": "The Renaissance --[after]--> Middle Ages",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "The French Revolution --[after]--> American Civil War",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "The Industrial Revolution --[after]--> Medieval",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Shakespeare --[after]--> Elizabethan",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Columbus --[after]--> America",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        }
-      ],
-      "causation": [],
-      "part_whole": [
-        {
-          "text": "California --[part_of]--> United States",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Manhattan --[part_of]--> New York City",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        }
-      ],
-      "identity": [
-        {
-          "text": "Mark Twain --[is]--> Samuel Clemens",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Beijing --[is]--> Peking",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "New York --[is]--> Big Apple",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "The U --[is]--> America",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Istanbul --[is]--> Constantinople",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        }
-      ],
-      "event": [
-        {
-          "text": "Churchill --[attended]--> Yalta Conference",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Mozart --[attended]--> Vienna Opera",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Armstrong --[attended]--> Apollo",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Einstein --[attended]--> Solvay Conference",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Shakespeare --[attended]--> Globe Theatre",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        }
-      ],
-      "communication": [
-        {
-          "text": "Lincoln --[wrote_to]--> Grant",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Einstein --[wrote_to]--> Bohr",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Churchill --[wrote_to]--> Roosevelt",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Jefferson --[wrote_to]--> Adams",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "King --[wrote_to]--> Congress",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        }
-      ],
-      "power": [
-        {
-          "text": "Napoleon --[ruled]--> France",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Caesar --[ruled]--> Roman legions",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Elizabeth I --[ruled]--> United Kingdom",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Alexander --[ruled]--> Greek",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Genghis Khan --[ruled]--> Central Asia",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        }
-      ],
-      "comparison": [
-        {
-          "text": "The Pacific Ocean --[greater_than]--> Atlantic",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "China --[greater_than]--> India",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Jupiter --[greater_than]--> Saturn",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "The Nile --[greater_than]--> Amazon",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Antarctica --[greater_than]--> Arctic",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        }
-      ],
-      "emotional": [
-        {
-          "text": "Romeo --[loved]--> Juliet",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Brutus --[loved]--> Caesar",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Othello --[loved]--> Cassio",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Achilles --[loved]--> Patroclus",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        },
-        {
-          "text": "Iago --[loved]--> Othello",
-          "pattern_id": "unknown",
-          "reason": "Missed by extraction"
-        }
-      ],
-      "negation": []
-    },
-    "false_positives": {
-      "kinship": [
-        {
-          "text": "Marcus --[married_to]--> Elena",
-          "pattern_id": "unknown",
-          "reason": "Incorrectly extracted"
-        },
-        {
-          "text": "Elena --[married_to]--> Marcus",
-          "pattern_id": "unknown",
-          "reason": "Incorrectly extracted"
-        },
-        {
-          "text": "Marcus --[married_to]--> Elena",
-          "pattern_id": "unknown",
-          "reason": "Incorrectly extracted"
-        },
-        {
-          "text": "Elena --[married_to]--> Marcus",
-          "pattern_id": "unknown",
-          "reason": "Incorrectly extracted"
-        }
-      ],
-      "ownership": [],
-      "employment": [
-        {
-          "text": "Sarah --[lives_in]--> Mountain View",
-          "pattern_id": "unknown",
-          "reason": "Incorrectly extracted"
-        },
-        {
-          "text": "Smith --[teaches_at]--> Harvard",
-          "pattern_id": "unknown",
-          "reason": "Incorrectly extracted"
-        }
-      ],
-      "creation": [],
-      "location": [],
-      "temporal": [],
-      "causation": [],
-      "part_whole": [],
-      "identity": [],
-      "event": [],
-      "communication": [],
-      "power": [],
-      "comparison": [],
-      "emotional": [],
-      "negation": []
-    }
-  },
-  "uncovered": {
-    "surface_ngrams": [
-      "Prince Edward, heir of Queen Elizabeth, attended the ceremony.",
-      "Sofia, offspring of Marcus, excelled in her studies.",
-      "King Arthur, descendant of Uther Pendragon, ruled the kingdom.",
-      "Isabella is the sister of Ferdinand.",
-      "Catherine and her brother William traveled together.",
-      "Rockefeller owns Standard Oil Company.",
-      "The estate belongs to the Duke of Westminster.",
-      "Tesla acquired SolarCity in 2016.",
-      "The painting is the property of the Louvre Museum.",
-      "Musk owns Tesla and SpaceX.",
-      "Sarah works for Google in Mountain View.",
-      "Dr. Chen is employed by Stanford Hospital.",
-      "Marcus is a member of the Board of Directors.",
-      "Elena serves as Chief Technology Officer.",
-      "Professor Smith teaches at Harvard University.",
-      "John manages the Sales Department.",
-      "Victoria is a partner at Goldman Sachs.",
-      "Thomas joined Microsoft in 2020.",
-      "Leonardo da Vinci painted the Mona Lisa.",
-      "Shakespeare wrote Hamlet."
-    ],
+  "uncovered_patterns": {
+    "surface_ngrams": [],
     "dep_motifs": []
   },
-  "change_log": [
-    "Evaluated synthetic corpus with 300 cases",
-    "Evaluated canary corpus with 25 cases",
-    "Applied precision guardrails"
-  ],
-  "recommendations": [
-    "Improve recall for kinship (current: 37.5%)",
-    "Improve precision for kinship (current: 42.9%)",
-    "Improve recall for ownership (current: 0.0%)"
-  ]
+  "recommendations": {
+    "families_for_hybrid": [],
+    "next_patterns_to_add": [
+      "Add kinship patterns for this case",
+      "Add kinship patterns for this case",
+      "Add ownership patterns for this case",
+      "Improve NER for multi-word entity names",
+      "Add employment patterns for this case",
+      "Improve NER for multi-word entity names",
+      "Add creation patterns for this case",
+      "Add creation patterns for this case",
+      "Add patterns for: \"is located in\", \"stands in\", \"situated in\"",
+      "Improve NER for multi-word entity names"
+    ],
+    "critical_fixes": [
+      "Improve NER for multi-word entity names"
+    ]
+  }
 }

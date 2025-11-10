@@ -61,7 +61,18 @@ export type Predicate =
   | 'summoned'  // Fiction: X summoned Y
   | 'located_at'  // Fiction: X located at Y
   | 'located_beneath'  // Fiction: X located beneath Y
-  | 'hidden_in';  // Fiction: X hidden in Y
+  | 'hidden_in'  // Fiction: X hidden in Y
+  | 'created_by'  // Creation: Y created_by X (author, painter, composer)
+  | 'located_in'  // Location: X located_in Y (city, country)
+  | 'wrote_to'  // Communication: X wrote_to Y
+  | 'hosted'  // Event: X hosted Y
+  | 'ruled_by'  // Power: Y ruled_by X
+  | 'loved'  // Emotional: X loved Y
+  | 'is'  // Identity: X is Y (alias, equivalence)
+  | 'greater_than'  // Comparison: X greater_than Y
+  | 'after'  // Temporal: X after Y
+  | 'before'  // Temporal: X before Y
+  | 'during';  // Temporal: X during Y
 
 // Evidence Source
 export interface Evidence {

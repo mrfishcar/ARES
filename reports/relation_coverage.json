@@ -126,10 +126,10 @@
     "recall": 0,
     "f1": 0,
     "tp": 0,
-    "fp": 0,
+    "fp": 2,
     "fn": 10,
     "total_gold": 10,
-    "total_extracted": 0,
+    "total_extracted": 2,
     "support": 10,
     "uncovered_phrases": [
       "Paris is located in France.",
@@ -150,7 +150,10 @@
       "The Pyramids --[located_in]--> Giza",
       "Harvard University --[located_in]--> Cambridge"
     ],
-    "top_fp": []
+    "top_fp": [
+      "Paris --[lives_in]--> Germany",
+      "Paris --[lives_in]--> France"
+    ]
   },
   "temporal": {
     "family": "temporal",
