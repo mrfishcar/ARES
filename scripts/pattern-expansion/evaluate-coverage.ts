@@ -2,11 +2,14 @@
  * Pattern Coverage Evaluation
  *
  * Evaluates relation extraction on synthetic corpus and computes metrics per family.
+ * Supports canary (real-text) evaluation, precision guardrails, and heartbeat emission.
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
 import { appendDoc, loadGraph, clearStorage } from '../../app/storage/storage';
+import { guard, type Relation as GuardRelation } from './lib/precision-guardrails';
+import { execSync } from 'child_process';
 
 interface TestCase {
   text: string;
@@ -29,9 +32,24 @@ interface FamilyMetrics {
   fn: number;  // False negatives
   total_gold: number;
   total_extracted: number;
+  support: number;  // Total gold relations (for heartbeat)
   uncovered_phrases: string[];
   top_fn: string[];  // Top false negatives
   top_fp: string[];  // Top false positives
+}
+
+interface CorpusMetrics {
+  precision: number;
+  recall: number;
+  f1: number;
+  support: number;
+}
+
+interface CLIOptions {
+  canary?: string;
+  precision_guardrails?: boolean;
+  emit_heartbeat?: string;
+  save?: string;
 }
 
 interface EvaluationResults {
@@ -136,7 +154,8 @@ function isRelationExtracted(
 async function evaluateTestCase(
   testCase: TestCase,
   testPath: string,
-  caseId: number
+  caseId: number,
+  applyGuardrails: boolean = false
 ): Promise<{
   tp: number;
   fp: number;
@@ -151,7 +170,33 @@ async function evaluateTestCase(
     await appendDoc(`test-${caseId}`, testCase.text, testPath);
     const graph = loadGraph(testPath);
 
-    const extractedRelations = graph?.relations || [];
+    // Build entity map for resolving relation subject/object
+    const entityById = new Map((graph?.entities || []).map(e => [e.id, e.canonical]));
+    const entityTypeById = new Map((graph?.entities || []).map(e => [e.id, e.type]));
+
+    // Convert relations to include resolved subject/object names
+    let extractedRelations = (graph?.relations || []).map(rel => ({
+      subject: entityById.get(rel.subj) || rel.subj || '',
+      predicate: rel.pred || rel.predicate || '',
+      object: entityById.get(rel.obj) || rel.obj || '',
+      subjectType: entityTypeById.get(rel.subj) || '',
+      objectType: entityTypeById.get(rel.obj) || '',
+      family: testCase.family
+    }));
+
+    // Apply precision guardrails if enabled
+    if (applyGuardrails) {
+      extractedRelations = extractedRelations.filter(rel => {
+        const guardRel: GuardRelation = {
+          family: rel.family || '',
+          subject: { type: rel.subjectType },
+          object: { type: rel.objectType },
+          surface: testCase.text
+        };
+        return guard(guardRel);
+      });
+    }
+
     const goldRelations = testCase.gold_relations;
 
     let tp = 0;
@@ -174,15 +219,14 @@ async function evaluateTestCase(
 
     // Count false positives (extracted but not in gold)
     for (const extRel of extractedRelations) {
-      const extRelData = {
-        subject: extRel.subject || 'UNKNOWN',
-        relation: extRel.predicate || extRel.pred || 'UNKNOWN',
-        object: extRel.object || 'UNKNOWN'
-      };
+      // Skip relations with empty subject or object (filtered out by orchestrator)
+      if (!extRel.subject || !extRel.object || !extRel.predicate) {
+        continue;
+      }
 
-      if (!isRelationExtracted(extRelData, goldRelations)) {
+      if (!isRelationExtracted(extRel, goldRelations)) {
         fp++;
-        fp_examples.push(`${extRelData.subject} --[${extRelData.relation}]--> ${extRelData.object}`);
+        fp_examples.push(`${extRel.subject} --[${extRel.predicate}]--> ${extRel.object}`);
       }
     }
 
@@ -196,8 +240,12 @@ async function evaluateTestCase(
 /**
  * Evaluate all test cases
  */
-export async function evaluateCorpus(corpusPath: string): Promise<EvaluationResults> {
-  console.log('\n=== Evaluating Pattern Coverage ===\n');
+export async function evaluateCorpus(
+  corpusPath: string,
+  applyGuardrails: boolean = false,
+  corpusLabel: string = 'synthetic'
+): Promise<EvaluationResults> {
+  console.log(`\n=== Evaluating Pattern Coverage (${corpusLabel}) ===\n`);
 
   // Load corpus
   const corpusData = fs.readFileSync(corpusPath, 'utf8');
@@ -242,7 +290,7 @@ export async function evaluateCorpus(corpusPath: string): Promise<EvaluationResu
       const tc = cases[i];
       familyGoldCount += tc.gold_relations.length;
 
-      const result = await evaluateTestCase(tc, testPath, i);
+      const result = await evaluateTestCase(tc, testPath, i, applyGuardrails);
 
       familyTP += result.tp;
       familyFP += result.fp;
@@ -266,6 +314,7 @@ export async function evaluateCorpus(corpusPath: string): Promise<EvaluationResu
       fn: familyFN,
       total_gold: familyGoldCount,
       total_extracted: familyTP + familyFP,
+      support: familyGoldCount,
       uncovered_phrases: uncovered.slice(0, 10),
       top_fn: fnExamples.slice(0, 5),
       top_fp: fpExamples.slice(0, 5)
@@ -357,12 +406,174 @@ export async function saveResults(results: EvaluationResults): Promise<void> {
   console.log(`\n✓ Saved reports to ${reportsDir}/`);
 }
 
+/**
+ * Generate heartbeat report
+ */
+function generateHeartbeat(
+  syntheticResults: EvaluationResults,
+  canaryResults: EvaluationResults | null,
+  changeLog: string[]
+): any {
+  const timestamp = new Date().toISOString();
+  const commit = execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim();
+
+  const families = Object.keys(syntheticResults.by_family);
+  const syntheticSize = syntheticResults.summary.total_cases;
+  const canarySize = canaryResults?.summary.total_cases || 0;
+
+  // Build metrics object
+  const metrics: Record<string, any> = {};
+  for (const family of families) {
+    const synMetrics = syntheticResults.by_family[family];
+    const canMetrics = canaryResults?.by_family[family];
+
+    metrics[family.toLowerCase().replace(/[^a-z_]/g, '_')] = {
+      synthetic: {
+        precision: synMetrics.precision,
+        recall: synMetrics.recall,
+        f1: synMetrics.f1,
+        support: synMetrics.support
+      },
+      canary: canMetrics ? {
+        precision: canMetrics.precision,
+        recall: canMetrics.recall,
+        f1: canMetrics.f1,
+        support: canMetrics.support
+      } : {
+        precision: 0,
+        recall: 0,
+        f1: 0,
+        support: 0
+      }
+    };
+  }
+
+  // Build error buckets (top 10 per family)
+  const fnBucket: Record<string, any[]> = {};
+  const fpBucket: Record<string, any[]> = {};
+
+  for (const family of families) {
+    const famKey = family.toLowerCase().replace(/[^a-z_]/g, '_');
+    const synMetrics = syntheticResults.by_family[family];
+
+    fnBucket[famKey] = synMetrics.top_fn.slice(0, 10).map(text => ({
+      text,
+      pattern_id: 'unknown',
+      reason: 'Missed by extraction'
+    }));
+
+    fpBucket[famKey] = synMetrics.top_fp.slice(0, 10).map(text => ({
+      text,
+      pattern_id: 'unknown',
+      reason: 'Incorrectly extracted'
+    }));
+  }
+
+  // Generate recommendations
+  const recommendations: string[] = [];
+  for (const family of families) {
+    const synMetrics = syntheticResults.by_family[family];
+    if (synMetrics.recall < 0.85) {
+      recommendations.push(`Improve recall for ${family} (current: ${(synMetrics.recall * 100).toFixed(1)}%)`);
+    }
+    if (synMetrics.precision < 0.85) {
+      recommendations.push(`Improve precision for ${family} (current: ${(synMetrics.precision * 100).toFixed(1)}%)`);
+    }
+  }
+
+  return {
+    meta: {
+      timestamp,
+      commit,
+      families,
+      synthetic_size: syntheticSize,
+      canary_size: canarySize
+    },
+    metrics,
+    counts: {
+      generated: Object.fromEntries(families.map(f => [f, syntheticResults.by_family[f]?.support || 0])),
+      skipped_duplicates: Object.fromEntries(families.map(f => [f, 0])),
+      evaluated: Object.fromEntries(families.map(f => [f, syntheticResults.by_family[f]?.support || 0]))
+    },
+    errors: {
+      false_negatives: fnBucket,
+      false_positives: fpBucket
+    },
+    uncovered: {
+      surface_ngrams: syntheticResults.uncovered_phrases.slice(0, 20),
+      dep_motifs: []
+    },
+    change_log: changeLog,
+    recommendations: recommendations.slice(0, 3)
+  };
+}
+
+/**
+ * Parse CLI arguments
+ */
+function parseCLIArgs(): CLIOptions {
+  const args = process.argv.slice(2);
+  const options: CLIOptions = {};
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg === '--canary' && i + 1 < args.length) {
+      options.canary = args[++i];
+    } else if (arg === '--precision_guardrails') {
+      options.precision_guardrails = true;
+    } else if (arg === '--emit_heartbeat' && i + 1 < args.length) {
+      options.emit_heartbeat = args[++i];
+    } else if (arg === '--save' && i + 1 < args.length) {
+      options.save = args[++i];
+    }
+  }
+
+  return options;
+}
+
 // Main execution
 if (require.main === module) {
+  const options = parseCLIArgs();
   const corpusPath = path.join(process.cwd(), 'corpora/synthetic_all_relations.jsonl');
 
-  evaluateCorpus(corpusPath)
-    .then(saveResults)
-    .then(() => console.log('\n✓ Evaluation complete!\n'))
-    .catch(console.error);
+  (async () => {
+    // Evaluate synthetic corpus
+    const syntheticResults = await evaluateCorpus(corpusPath, options.precision_guardrails, 'synthetic');
+
+    // Evaluate canary corpus if provided
+    let canaryResults: EvaluationResults | null = null;
+    if (options.canary) {
+      canaryResults = await evaluateCorpus(options.canary, options.precision_guardrails, 'canary');
+    }
+
+    // Save results
+    if (options.save) {
+      const reportsDir = path.dirname(options.save);
+      if (!fs.existsSync(reportsDir)) {
+        fs.mkdirSync(reportsDir, { recursive: true });
+      }
+      fs.writeFileSync(options.save, JSON.stringify(syntheticResults.by_family, null, 2));
+    } else {
+      await saveResults(syntheticResults);
+    }
+
+    // Emit heartbeat if requested
+    if (options.emit_heartbeat) {
+      const changeLog = [
+        'Evaluated synthetic corpus with ' + syntheticResults.summary.total_cases + ' cases',
+        canaryResults ? 'Evaluated canary corpus with ' + canaryResults.summary.total_cases + ' cases' : '',
+        options.precision_guardrails ? 'Applied precision guardrails' : ''
+      ].filter(Boolean);
+
+      const heartbeat = generateHeartbeat(syntheticResults, canaryResults, changeLog);
+      const heartbeatDir = path.dirname(options.emit_heartbeat);
+      if (!fs.existsSync(heartbeatDir)) {
+        fs.mkdirSync(heartbeatDir, { recursive: true });
+      }
+      fs.writeFileSync(options.emit_heartbeat, JSON.stringify(heartbeat, null, 2));
+      console.log(`\n✓ Heartbeat saved to ${options.emit_heartbeat}`);
+    }
+
+    console.log('\n✓ Evaluation complete!\n');
+  })().catch(console.error);
 }

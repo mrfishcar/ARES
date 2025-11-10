@@ -1,5 +1,4 @@
 [
-  "Thomas and James are siblings.",
   "Prince Edward, heir of Queen Elizabeth, attended the ceremony.",
   "Sofia, offspring of Marcus, excelled in her studies.",
   "King Arthur, descendant of Uther Pendragon, ruled the kingdom.",
@@ -16,13 +15,11 @@
   "Elena serves as Chief Technology Officer.",
   "Professor Smith teaches at Harvard University.",
   "John manages the Sales Department.",
-  "Robert leads the Engineering team.",
   "Victoria is a partner at Goldman Sachs.",
   "Thomas joined Microsoft in 2020.",
   "Leonardo da Vinci painted the Mona Lisa.",
   "Shakespeare wrote Hamlet.",
   "Mozart composed The Magic Flute.",
-  "Frank Lloyd Wright designed Fallingwater.",
   "Tolkien authored The Lord of the Rings.",
   "Picasso painted Guernica.",
   "Beethoven composed Symphony No. 9.",
@@ -37,7 +34,6 @@
   "The White House stands in Washington DC.",
   "Oxford is located near London.",
   "Venice is situated in Italy.",
-  "World War II occurred after World War I.",
   "The Renaissance followed the Middle Ages.",
   "The French Revolution began before the American Civil War.",
   "The Industrial Revolution happened after the Medieval period.",
@@ -48,5 +44,9 @@
   "California is part of the United States.",
   "Manhattan is part of New York City.",
   "Mark Twain is Samuel Clemens.",
-  "Beijing equals Peking."
+  "Beijing equals Peking.",
+  "New York is also known as the Big Apple.",
+  "The USA is America.",
+  "Istanbul was formerly Constantinople.",
+  "Myanmar is also known as Burma."
 ]

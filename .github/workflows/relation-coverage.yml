@@ -1,0 +1,36 @@
+name: Relation Coverage
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm ci || npm i
+      - name: Evaluate (synthetic + canary)
+        run: >
+          npx tsx scripts/pattern-expansion/evaluate-coverage.ts
+          --canary corpora/canary_realtext.jsonl
+          --precision_guardrails
+          --save reports/relation_coverage.json
+          --emit_heartbeat reports/heartbeat.json
+      - name: Fail on gates
+        run: >
+          node -e "
+          const hb=require('./reports/heartbeat.json');
+          const TH_SYN=0.85, TH_CAN=0.75;
+          for (const fam of Object.keys(hb.metrics)) {
+            const m=hb.metrics[fam];
+            if ((m.synthetic?.recall ?? 1) < TH_SYN) { console.error('Low synthetic recall', fam); process.exit(1); }
+            if ((m.canary?.recall ?? 1) < TH_CAN) { console.error('Low canary recall', fam); process.exit(1); }
+          }"
+      - name: Upload heartbeat
+        uses: actions/upload-artifact@v4
+        with:
+          name: heartbeat
+          path: reports/heartbeat.json

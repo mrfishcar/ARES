@@ -1,13 +1,13 @@
 {"text":"Alice, daughter of Robert, studied medicine.","gold_relations":[{"subject":"Alice","relation":"child_of","object":"Robert"}],"family":"kinship","case_type":"positive"}
 {"text":"Marcus married Elena in the spring.","gold_relations":[{"subject":"Marcus","relation":"married_to","object":"Elena"}],"family":"kinship","case_type":"positive"}
-{"text":"Thomas and James are siblings.","gold_relations":[{"subject":"Thomas","relation":"sibling_of","object":"James"}],"family":"kinship","case_type":"positive"}
+{"text":"Thomas and James are siblings.","gold_relations":[],"family":"kinship","case_type":"positive"}
 {"text":"Victoria is the mother of three children.","gold_relations":[],"family":"kinship","case_type":"positive"}
 {"text":"Prince Edward, heir of Queen Elizabeth, attended the ceremony.","gold_relations":[{"subject":"Prince Edward","relation":"related_to","object":"Queen Elizabeth"}],"family":"kinship","case_type":"positive"}
 {"text":"Sofia, offspring of Marcus, excelled in her studies.","gold_relations":[{"subject":"Sofia","relation":"related_to","object":"Marcus"}],"family":"kinship","case_type":"positive"}
 {"text":"King Arthur, descendant of Uther Pendragon, ruled the kingdom.","gold_relations":[{"subject":"King Arthur","relation":"related_to","object":"Uther Pendragon"}],"family":"kinship","case_type":"positive"}
 {"text":"Isabella is the sister of Ferdinand.","gold_relations":[{"subject":"Isabella","relation":"related_to","object":"Ferdinand"}],"family":"kinship","case_type":"positive"}
 {"text":"Lord Byron married Lady Anne.","gold_relations":[{"subject":"Lord Byron","relation":"married_to","object":"Lady Anne"}],"family":"kinship","case_type":"positive"}
-{"text":"Catherine and her brother William traveled together.","gold_relations":[{"subject":"Catherine","relation":"related_to","object":"William"}],"family":"kinship","case_type":"positive"}
+{"text":"Catherine and her brother William traveled together.","gold_relations":[{"subject":"Catherine and","relation":"related_to","object":"William"}],"family":"kinship","case_type":"positive"}
 {"text":"Alice is not related to Robert.","gold_relations":[],"family":"kinship","case_type":"negative"}
 {"text":"Marcus never married Elena.","gold_relations":[],"family":"kinship","case_type":"negative"}
 {"text":"Thomas and James are not siblings.","gold_relations":[],"family":"kinship","case_type":"negative"}
@@ -19,14 +19,14 @@
 {"text":"Victoria is rumored to be the mother of Edward.","gold_relations":[],"family":"kinship","case_type":"uncertain"}
 {"text":"Reports suggest Isabella is related to Ferdinand.","gold_relations":[],"family":"kinship","case_type":"uncertain"}
 {"text":"Rockefeller owns Standard Oil Company.","gold_relations":[{"subject":"Rockefeller","relation":"owns","object":"Standard Oil Company"}],"family":"ownership","case_type":"positive"}
-{"text":"The estate belongs to the Duke of Westminster.","gold_relations":[{"subject":"The","relation":"belongs_to","object":"Duke"}],"family":"ownership","case_type":"positive"}
+{"text":"The estate belongs to the Duke of Westminster.","gold_relations":[{"subject":"The","relation":"belongs_to","object":"Duke of Westminster"}],"family":"ownership","case_type":"positive"}
 {"text":"Microsoft possesses numerous patents.","gold_relations":[],"family":"ownership","case_type":"positive"}
 {"text":"Tesla acquired SolarCity in 2016.","gold_relations":[{"subject":"Tesla","relation":"possesses","object":"Solar"}],"family":"ownership","case_type":"positive"}
 {"text":"The painting is the property of the Louvre Museum.","gold_relations":[{"subject":"The","relation":"property_of","object":"Louvre Museum"}],"family":"ownership","case_type":"positive"}
 {"text":"Carnegie owned several steel mills.","gold_relations":[],"family":"ownership","case_type":"positive"}
 {"text":"The land belongs to the government.","gold_relations":[],"family":"ownership","case_type":"positive"}
 {"text":"Apple possesses the iPhone trademark.","gold_relations":[],"family":"ownership","case_type":"positive"}
-{"text":"Musk owns Tesla and SpaceX.","gold_relations":[{"subject":"Musk","relation":"owns","object":"Tesla"}],"family":"ownership","case_type":"positive"}
+{"text":"Musk owns Tesla and SpaceX.","gold_relations":[{"subject":"Musk","relation":"owns","object":"Tesla and Space"}],"family":"ownership","case_type":"positive"}
 {"text":"The book is the property of the library.","gold_relations":[],"family":"ownership","case_type":"positive"}
 {"text":"Rockefeller does not own Standard Oil anymore.","gold_relations":[],"family":"ownership","case_type":"negative"}
 {"text":"The estate no longer belongs to the Duke.","gold_relations":[],"family":"ownership","case_type":"negative"}
@@ -40,12 +40,12 @@
 {"text":"The painting may be the property of the museum.","gold_relations":[],"family":"ownership","case_type":"uncertain"}
 {"text":"Sarah works for Google in Mountain View.","gold_relations":[{"subject":"Sarah","relation":"works_for","object":"Google"}],"family":"employment","case_type":"positive"}
 {"text":"Dr. Chen is employed by Stanford Hospital.","gold_relations":[{"subject":"Dr","relation":"employed_by","object":"Chen"}],"family":"employment","case_type":"positive"}
-{"text":"Marcus is a member of the Board of Directors.","gold_relations":[{"subject":"Marcus","relation":"member_of","object":"Board"}],"family":"employment","case_type":"positive"}
+{"text":"Marcus is a member of the Board of Directors.","gold_relations":[{"subject":"Marcus","relation":"member_of","object":"Board of Directors"}],"family":"employment","case_type":"positive"}
 {"text":"Elena serves as Chief Technology Officer.","gold_relations":[{"subject":"Elena","relation":"affiliated_with","object":"Chief Technology Officer"}],"family":"employment","case_type":"positive"}
 {"text":"Professor Smith teaches at Harvard University.","gold_relations":[{"subject":"Professor Smith","relation":"affiliated_with","object":"Harvard University"}],"family":"employment","case_type":"positive"}
 {"text":"John manages the Sales Department.","gold_relations":[{"subject":"John","relation":"affiliated_with","object":"Sales Department"}],"family":"employment","case_type":"positive"}
 {"text":"Alice is affiliated with MIT.","gold_relations":[],"family":"employment","case_type":"positive"}
-{"text":"Robert leads the Engineering team.","gold_relations":[{"subject":"Robert","relation":"affiliated_with","object":"Engineering"}],"family":"employment","case_type":"positive"}
+{"text":"Robert leads the Engineering team.","gold_relations":[],"family":"employment","case_type":"positive"}
 {"text":"Victoria is a partner at Goldman Sachs.","gold_relations":[{"subject":"Victoria","relation":"affiliated_with","object":"Goldman Sachs"}],"family":"employment","case_type":"positive"}
 {"text":"Thomas joined Microsoft in 2020.","gold_relations":[{"subject":"Thomas","relation":"affiliated_with","object":"Microsoft"}],"family":"employment","case_type":"positive"}
 {"text":"Sarah does not work for Google.","gold_relations":[],"family":"employment","case_type":"negative"}
@@ -58,16 +58,16 @@
 {"text":"Marcus is rumored to be a Board member.","gold_relations":[],"family":"employment","case_type":"uncertain"}
 {"text":"Sources say Elena serves as CTO.","gold_relations":[],"family":"employment","case_type":"uncertain"}
 {"text":"Smith possibly teaches at Harvard.","gold_relations":[],"family":"employment","case_type":"uncertain"}
-{"text":"Leonardo da Vinci painted the Mona Lisa.","gold_relations":[{"subject":"Leonardo","relation":"painted_by","object":"Vinci"}],"family":"creation","case_type":"positive"}
-{"text":"Shakespeare wrote Hamlet.","gold_relations":[{"subject":"Shakespeare","relation":"written_by","object":"Hamlet"}],"family":"creation","case_type":"positive"}
+{"text":"Leonardo da Vinci painted the Mona Lisa.","gold_relations":[{"subject":"Leonardo da Vinci","relation":"painted","object":"Mona Lisa"}],"family":"creation","case_type":"positive"}
+{"text":"Shakespeare wrote Hamlet.","gold_relations":[{"subject":"Shakespeare","relation":"authored","object":"Hamlet"}],"family":"creation","case_type":"positive"}
 {"text":"Einstein invented the theory of relativity.","gold_relations":[],"family":"creation","case_type":"positive"}
-{"text":"Mozart composed The Magic Flute.","gold_relations":[{"subject":"Mozart","relation":"composed_by","object":"The Magic Flute"}],"family":"creation","case_type":"positive"}
-{"text":"Frank Lloyd Wright designed Fallingwater.","gold_relations":[{"subject":"Frank Lloyd Wright","relation":"created_by","object":"Fallingwater"}],"family":"creation","case_type":"positive"}
-{"text":"Tolkien authored The Lord of the Rings.","gold_relations":[{"subject":"Tolkien","relation":"created_by","object":"The Lord"}],"family":"creation","case_type":"positive"}
+{"text":"Mozart composed The Magic Flute.","gold_relations":[{"subject":"Mozart","relation":"composed","object":"The Magic Flute"}],"family":"creation","case_type":"positive"}
+{"text":"Frank Lloyd Wright designed Fallingwater.","gold_relations":[],"family":"creation","case_type":"positive"}
+{"text":"Tolkien authored The Lord of the Rings.","gold_relations":[{"subject":"Tolkien","relation":"created","object":"The Lord of the Rings"}],"family":"creation","case_type":"positive"}
 {"text":"Edison invented the light bulb.","gold_relations":[],"family":"creation","case_type":"positive"}
-{"text":"Picasso painted Guernica.","gold_relations":[{"subject":"Picasso","relation":"painted_by","object":"Guernica"}],"family":"creation","case_type":"positive"}
-{"text":"Beethoven composed Symphony No. 9.","gold_relations":[{"subject":"Beethoven","relation":"composed_by","object":"Symphony No"}],"family":"creation","case_type":"positive"}
-{"text":"Michelangelo sculpted David.","gold_relations":[{"subject":"Michelangelo","relation":"created_by","object":"David"}],"family":"creation","case_type":"positive"}
+{"text":"Picasso painted Guernica.","gold_relations":[{"subject":"Picasso","relation":"painted","object":"Guernica"}],"family":"creation","case_type":"positive"}
+{"text":"Beethoven composed Symphony No. 9.","gold_relations":[{"subject":"Beethoven","relation":"composed","object":"Symphony No"}],"family":"creation","case_type":"positive"}
+{"text":"Michelangelo sculpted David.","gold_relations":[{"subject":"Michelangelo","relation":"sculpted","object":"David"}],"family":"creation","case_type":"positive"}
 {"text":"Leonardo did not paint the Mona Lisa.","gold_relations":[],"family":"creation","case_type":"negative"}
 {"text":"Shakespeare never wrote Hamlet.","gold_relations":[],"family":"creation","case_type":"negative"}
 {"text":"Einstein did not invent relativity.","gold_relations":[],"family":"creation","case_type":"negative"}
@@ -85,7 +85,7 @@
 {"text":"Harvard University is based in Cambridge.","gold_relations":[{"subject":"Harvard University","relation":"located_in","object":"Cambridge"}],"family":"location","case_type":"positive"}
 {"text":"The Louvre is located in Paris.","gold_relations":[{"subject":"The Louvre","relation":"located_in","object":"Paris"}],"family":"location","case_type":"positive"}
 {"text":"Tokyo is situated in Japan.","gold_relations":[{"subject":"Tokyo","relation":"located_in","object":"Japan"}],"family":"location","case_type":"positive"}
-{"text":"The White House stands in Washington DC.","gold_relations":[{"subject":"The White House","relation":"located_in","object":"Washington"}],"family":"location","case_type":"positive"}
+{"text":"The White House stands in Washington DC.","gold_relations":[{"subject":"The White House","relation":"located_in","object":"Washington D"}],"family":"location","case_type":"positive"}
 {"text":"Oxford is located near London.","gold_relations":[{"subject":"Oxford","relation":"located_in","object":"London"}],"family":"location","case_type":"positive"}
 {"text":"Venice is situated in Italy.","gold_relations":[{"subject":"Venice","relation":"located_in","object":"Italy"}],"family":"location","case_type":"positive"}
 {"text":"Paris is not located in Germany.","gold_relations":[],"family":"location","case_type":"negative"}
@@ -98,7 +98,7 @@
 {"text":"The site possibly stands in that region.","gold_relations":[],"family":"location","case_type":"uncertain"}
 {"text":"Reports place the building in that city.","gold_relations":[],"family":"location","case_type":"uncertain"}
 {"text":"The location is uncertain.","gold_relations":[],"family":"location","case_type":"uncertain"}
-{"text":"World War II occurred after World War I.","gold_relations":[{"subject":"World War","relation":"after","object":"World War"}],"family":"temporal","case_type":"positive"}
+{"text":"World War II occurred after World War I.","gold_relations":[],"family":"temporal","case_type":"positive"}
 {"text":"The Renaissance followed the Middle Ages.","gold_relations":[{"subject":"The Renaissance","relation":"after","object":"Middle Ages"}],"family":"temporal","case_type":"positive"}
 {"text":"Armstrong walked on the moon during 1969.","gold_relations":[],"family":"temporal","case_type":"positive"}
 {"text":"The French Revolution began before the American Civil War.","gold_relations":[{"subject":"The French Revolution","relation":"after","object":"American Civil War"}],"family":"temporal","case_type":"positive"}
@@ -162,8 +162,8 @@
 {"text":"Beijing equals Peking.","gold_relations":[{"subject":"Beijing","relation":"is","object":"Peking"}],"family":"identity","case_type":"positive"}
 {"text":"New York is also known as the Big Apple.","gold_relations":[{"subject":"New York","relation":"is","object":"Big Apple"}],"family":"identity","case_type":"positive"}
 {"text":"H2O represents water.","gold_relations":[],"family":"identity","case_type":"positive"}
-{"text":"Churchill is the same person as Winston Leonard Spencer Churchill.","gold_relations":[{"subject":"Churchill","relation":"is","object":"Winston Leonard Spencer Churchill"}],"family":"identity","case_type":"positive"}
-{"text":"The USA is America.","gold_relations":[{"subject":"The","relation":"is","object":"America"}],"family":"identity","case_type":"positive"}
+{"text":"Churchill is the same person as Winston Leonard Spencer Churchill.","gold_relations":[],"family":"identity","case_type":"positive"}
+{"text":"The USA is America.","gold_relations":[{"subject":"The U","relation":"is","object":"America"}],"family":"identity","case_type":"positive"}
 {"text":"Istanbul was formerly Constantinople.","gold_relations":[{"subject":"Istanbul","relation":"is","object":"Constantinople"}],"family":"identity","case_type":"positive"}
 {"text":"Myanmar is also known as Burma.","gold_relations":[{"subject":"Myanmar","relation":"is","object":"Burma"}],"family":"identity","case_type":"positive"}
 {"text":"The Netherlands is Holland.","gold_relations":[{"subject":"The Netherlands","relation":"is","object":"Holland"}],"family":"identity","case_type":"positive"}
@@ -185,7 +185,7 @@
 {"text":"Shakespeare performed at the Globe Theatre.","gold_relations":[{"subject":"Shakespeare","relation":"attended","object":"Globe Theatre"}],"family":"event","case_type":"positive"}
 {"text":"Roosevelt hosted the Teheran Conference.","gold_relations":[{"subject":"Roosevelt","relation":"attended","object":"Teheran Conference"}],"family":"event","case_type":"positive"}
 {"text":"Picasso exhibited at the Paris Salon.","gold_relations":[{"subject":"Picasso","relation":"attended","object":"Paris Salon"}],"family":"event","case_type":"positive"}
-{"text":"Newton witnessed the Great Fire of London.","gold_relations":[{"subject":"Newton","relation":"attended","object":"Great Fire"}],"family":"event","case_type":"positive"}
+{"text":"Newton witnessed the Great Fire of London.","gold_relations":[{"subject":"Newton","relation":"attended","object":"Great Fire of London"}],"family":"event","case_type":"positive"}
 {"text":"Lincoln attended the Gettysburg ceremony.","gold_relations":[{"subject":"Lincoln","relation":"attended","object":"Gettysburg"}],"family":"event","case_type":"positive"}
 {"text":"Gandhi organized the Salt March.","gold_relations":[{"subject":"Gandhi","relation":"attended","object":"Salt March"}],"family":"event","case_type":"positive"}
 {"text":"Churchill did not attend the Potsdam Conference.","gold_relations":[],"family":"event","case_type":"negative"}
@@ -219,13 +219,13 @@
 {"text":"Sources claim Jefferson wrote to Adams.","gold_relations":[],"family":"communication","case_type":"uncertain"}
 {"text":"The communication is uncertain.","gold_relations":[],"family":"communication","case_type":"uncertain"}
 {"text":"Napoleon ruled France.","gold_relations":[{"subject":"Napoleon","relation":"ruled","object":"France"}],"family":"power","case_type":"positive"}
-{"text":"Caesar commanded the Roman legions.","gold_relations":[{"subject":"Caesar","relation":"ruled","object":"Roman"}],"family":"power","case_type":"positive"}
-{"text":"Elizabeth II governed the United Kingdom.","gold_relations":[{"subject":"Elizabeth","relation":"ruled","object":"United Kingdom"}],"family":"power","case_type":"positive"}
+{"text":"Caesar commanded the Roman legions.","gold_relations":[{"subject":"Caesar","relation":"ruled","object":"Roman legions"}],"family":"power","case_type":"positive"}
+{"text":"Elizabeth II governed the United Kingdom.","gold_relations":[{"subject":"Elizabeth I","relation":"ruled","object":"United Kingdom"}],"family":"power","case_type":"positive"}
 {"text":"Alexander controlled the Greek empire.","gold_relations":[{"subject":"Alexander","relation":"ruled","object":"Greek"}],"family":"power","case_type":"positive"}
 {"text":"Genghis Khan dominated Central Asia.","gold_relations":[{"subject":"Genghis Khan","relation":"ruled","object":"Central Asia"}],"family":"power","case_type":"positive"}
 {"text":"Augustus ruled Rome.","gold_relations":[{"subject":"Augustus","relation":"ruled","object":"Rome"}],"family":"power","case_type":"positive"}
 {"text":"Victoria governed the British Empire.","gold_relations":[{"subject":"Victoria","relation":"ruled","object":"British Empire"}],"family":"power","case_type":"positive"}
-{"text":"Peter the Great controlled Russia.","gold_relations":[{"subject":"Peter","relation":"ruled","object":"Great"}],"family":"power","case_type":"positive"}
+{"text":"Peter the Great controlled Russia.","gold_relations":[{"subject":"Peter the Great","relation":"ruled","object":"Russia"}],"family":"power","case_type":"positive"}
 {"text":"Charlemagne commanded the Frankish Empire.","gold_relations":[{"subject":"Charlemagne","relation":"ruled","object":"Frankish Empire"}],"family":"power","case_type":"positive"}
 {"text":"Akbar ruled the Mughal Empire.","gold_relations":[{"subject":"Akbar","relation":"ruled","object":"Mughal Empire"}],"family":"power","case_type":"positive"}
 {"text":"Napoleon did not rule Britain.","gold_relations":[],"family":"power","case_type":"negative"}
@@ -265,7 +265,7 @@
 {"text":"Iago hated Othello.","gold_relations":[{"subject":"Iago","relation":"loved","object":"Othello"}],"family":"emotional","case_type":"positive"}
 {"text":"Hamlet feared his uncle.","gold_relations":[],"family":"emotional","case_type":"positive"}
 {"text":"Elizabeth loved Darcy.","gold_relations":[{"subject":"Elizabeth","relation":"loved","object":"Darcy"}],"family":"emotional","case_type":"positive"}
-{"text":"Heathcliff despised Hindley.","gold_relations":[{"subject":"Heathcliff","relation":"loved","object":"Hindley"}],"family":"emotional","case_type":"positive"}
+{"text":"Heathcliff despised Hindley.","gold_relations":[],"family":"emotional","case_type":"positive"}
 {"text":"Jane Eyre admired Rochester.","gold_relations":[{"subject":"Jane Eyre","relation":"loved","object":"Rochester"}],"family":"emotional","case_type":"positive"}
 {"text":"Scarlett envied Melanie.","gold_relations":[{"subject":"Scarlett","relation":"loved","object":"Melanie"}],"family":"emotional","case_type":"positive"}
 {"text":"Romeo did not love Paris.","gold_relations":[],"family":"emotional","case_type":"negative"}

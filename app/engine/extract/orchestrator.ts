@@ -19,6 +19,12 @@ import { getLLMConfig, validateLLMConfig, DEFAULT_LLM_CONFIG, type LLMConfig } f
 import { applyPatterns, type Pattern } from '../bootstrap';
 import type { PatternLibrary } from '../pattern-library';
 import { isValidEntity, correctEntityType } from '../entity-filter';
+import { loadRelationPatterns, type PatternsMode } from './load-relations';
+
+// Select relation patterns mode from environment (baseline | expanded | hybrid)
+const PATTERNS_MODE: PatternsMode = (process.env.RELATION_PATTERNS_MODE as PatternsMode) || 'baseline';
+// Note: Pattern loading available via loadRelationPatterns(PATTERNS_MODE)
+// Currently using hardcoded extraction; patterns ready for future integration
 
 /**
  * Extract entities and relations from segments with context windows
@@ -603,10 +609,28 @@ export async function extractFromSegments(
   );
 
   // Filter relations to only include those where both subject and object entities exist
+  // AND have valid (non-empty, non-UNKNOWN) canonical names
   const filteredEntityIds = new Set(filteredEntities.map(e => e.id));
-  const filteredRelations = Array.from(uniqueRelations.values()).filter(rel =>
-    filteredEntityIds.has(rel.subj) && filteredEntityIds.has(rel.obj)
-  );
+  const entityIdToCanonical = new Map(filteredEntities.map(e => [e.id, e.canonical]));
+
+  const filteredRelations = Array.from(uniqueRelations.values()).filter(rel => {
+    // Check that both entities exist
+    if (!filteredEntityIds.has(rel.subj) || !filteredEntityIds.has(rel.obj)) {
+      return false;
+    }
+
+    // Check that both entities have valid canonical names (non-empty, not "UNKNOWN")
+    const subjCanonical = entityIdToCanonical.get(rel.subj);
+    const objCanonical = entityIdToCanonical.get(rel.obj);
+
+    if (!subjCanonical || !objCanonical ||
+        subjCanonical === 'UNKNOWN' || objCanonical === 'UNKNOWN' ||
+        subjCanonical.trim() === '' || objCanonical.trim() === '') {
+      return false;
+    }
+
+    return true;
+  });
 
   const fictionEntities = extractFictionEntities(fullText);
 
