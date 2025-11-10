@@ -124,6 +124,48 @@ make smoke     # Quick validation
 make clean     # Remove generated files
 ```
 
+## Testing Strategy
+
+**IMPORTANT**: ARES uses a **dual-ladder testing approach** for systematic quality improvement.
+
+See [UNIFIED_TESTING_STRATEGY.md](UNIFIED_TESTING_STRATEGY.md) for complete details.
+
+### Quick Overview
+
+**Two complementary test systems:**
+
+1. **Quality Levels (1-5)**: Progressive difficulty gates
+   - Level 1: Simple sentences (P≥90%, R≥85%) ✅ PASSED
+   - Level 2: Multi-sentence (P≥85%, R≥80%) ⚠️ 99% complete
+   - Level 3: Complex paragraphs (P≥80%, R≥75%)
+   - Level 4: Mega regression (~1000 words)
+   - Level 5: Production readiness (canary corpus)
+
+2. **Diagnostic Rungs (1-5)**: Component analysis when gates fail
+   - Rung 1: Pattern coverage audit (26% coverage identified)
+   - Rung 2: Synthetic baseline (F1=4.3%)
+   - Rung 3: Precision guardrails (+1.5pp improvement)
+   - Rung 4: Entity quality pass (no change → pattern bottleneck)
+   - Rung 5: Canary evaluation (deferred)
+
+### Testing Workflow
+
+```bash
+# Run level tests (progressive gates)
+npm test tests/ladder/level-1-simple.spec.ts
+npm test tests/ladder/level-2-multisentence.spec.ts
+npm test tests/ladder/level-3-complex.spec.ts
+
+# If a level fails, run diagnostics
+npx ts-node scripts/pattern-expansion/inventory-patterns.ts       # Pattern coverage
+npx tsx scripts/pattern-expansion/evaluate-coverage.ts            # Metrics baseline
+npx tsx scripts/pattern-expansion/evaluate-coverage.ts --precision_guardrails  # With guardrails
+```
+
+**Key Principle**: Use **Levels** as quality gates, **Rungs** as diagnostics to identify bottlenecks.
+
+**Current Status**: Level 1 passed, Level 2 at 99% (1 test blocked), Rungs 1-4 complete showing pattern coverage is the bottleneck.
+
 ## Next Steps
 
 See [NIGHT_WORK_PROGRESS.md](NIGHT_WORK_PROGRESS.md) for recent improvements and [STATUS.md](STATUS.md) for detailed metrics.
