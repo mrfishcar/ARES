@@ -1,221 +1,12 @@
 {
-  "timestamp": "2025-11-10T15:54:48.310Z",
+  "timestamp": "2025-11-10T16:43:40.421Z",
   "summary": {
     "total_generated": 476,
-    "total_integrated": 0,
-    "total_missing": 476,
-    "overall_coverage": 0
+    "total_integrated": 125,
+    "total_missing": 351,
+    "overall_coverage": 26
   },
   "by_family": [
-    {
-      "family": "creation",
-      "generated_count": 36,
-      "integrated_count": 0,
-      "missing_count": 36,
-      "coverage_percent": 0,
-      "missing_patterns": [
-        "created_by (new_surf_creation_000)",
-        "authored (new_surf_creation_001)",
-        "written_by (new_surf_creation_002)",
-        "invented_by (new_surf_creation_003)",
-        "painted_by (new_surf_creation_004)",
-        "built_by (new_surf_creation_005)",
-        "composed_by (new_surf_creation_006)",
-        "designed_by (new_surf_creation_007)",
-        "created_by (new_surf_creation_008)",
-        "written_by (new_surf_creation_010)"
-      ]
-    },
-    {
-      "family": "location",
-      "generated_count": 34,
-      "integrated_count": 0,
-      "missing_count": 34,
-      "coverage_percent": 0,
-      "missing_patterns": [
-        "located_in (new_surf_location_000)",
-        "located_at (new_surf_location_001)",
-        "near (new_surf_location_002)",
-        "within (new_surf_location_003)",
-        "across_from (new_surf_location_004)",
-        "adjacent_to (new_surf_location_005)",
-        "based_in (new_surf_location_006)",
-        "north_of (new_surf_location_007)",
-        "south_of (new_surf_location_008)",
-        "located_in (new_surf_location_009)"
-      ]
-    },
-    {
-      "family": "temporal",
-      "generated_count": 34,
-      "integrated_count": 0,
-      "missing_count": 34,
-      "coverage_percent": 0,
-      "missing_patterns": [
-        "before (new_surf_temporal_000)",
-        "after (new_surf_temporal_001)",
-        "during (new_surf_temporal_002)",
-        "since (new_surf_temporal_003)",
-        "until (new_surf_temporal_004)",
-        "on (new_surf_temporal_005)",
-        "between (new_surf_temporal_006)",
-        "before (new_surf_temporal_007)",
-        "after (new_surf_temporal_008)",
-        "during (new_surf_temporal_009)"
-      ]
-    },
-    {
-      "family": "communication",
-      "generated_count": 34,
-      "integrated_count": 0,
-      "missing_count": 34,
-      "coverage_percent": 0,
-      "missing_patterns": [
-        "told (new_surf_communication_000)",
-        "said_to (new_surf_communication_001)",
-        "wrote_to (new_surf_communication_002)",
-        "asked (new_surf_communication_003)",
-        "informed (new_surf_communication_004)",
-        "replied (new_surf_communication_005)",
-        "reported (new_surf_communication_006)",
-        "spoke_to (new_surf_communication_007)",
-        "told (new_surf_communication_008)",
-        "said_to (new_surf_communication_009)"
-      ]
-    },
-    {
-      "family": "comparison",
-      "generated_count": 32,
-      "integrated_count": 0,
-      "missing_count": 32,
-      "coverage_percent": 0,
-      "missing_patterns": [
-        "greater_than (new_surf_comparison_000)",
-        "less_than (new_surf_comparison_001)",
-        "equal_to (new_surf_comparison_002)",
-        "higher_than (new_surf_comparison_003)",
-        "similar_to (new_surf_comparison_004)",
-        "different_from (new_surf_comparison_005)",
-        "greater_than (new_surf_comparison_006)",
-        "less_than (new_surf_comparison_007)",
-        "equal_to (new_surf_comparison_008)",
-        "higher_than (new_surf_comparison_009)"
-      ]
-    },
-    {
-      "family": "emotional",
-      "generated_count": 32,
-      "integrated_count": 0,
-      "missing_count": 32,
-      "coverage_percent": 0,
-      "missing_patterns": [
-        "loved (new_surf_emotional_000)",
-        "hated (new_surf_emotional_001)",
-        "respected (new_surf_emotional_002)",
-        "disliked (new_surf_emotional_003)",
-        "admired (new_surf_emotional_004)",
-        "envied (new_surf_emotional_005)",
-        "feared (new_surf_emotional_006)",
-        "respected (new_surf_emotional_009)",
-        "disliked (new_surf_emotional_010)",
-        "admired (new_surf_emotional_011)"
-      ]
-    },
-    {
-      "family": "employment",
-      "generated_count": 31,
-      "integrated_count": 0,
-      "missing_count": 31,
-      "coverage_percent": 0,
-      "missing_patterns": [
-        "works_for (new_surf_employment_000)",
-        "employed_by (new_surf_employment_001)",
-        "member_of (new_surf_employment_002)",
-        "affiliated_with (new_surf_employment_003)",
-        "partner_at (new_surf_employment_004)",
-        "serves (new_surf_employment_005)",
-        "works_for (new_surf_employment_006)",
-        "employed_by (new_surf_employment_007)",
-        "member_of (new_surf_employment_008)",
-        "affiliated_with (new_surf_employment_009)"
-      ]
-    },
-    {
-      "family": "causation",
-      "generated_count": 31,
-      "integrated_count": 0,
-      "missing_count": 31,
-      "coverage_percent": 0,
-      "missing_patterns": [
-        "caused_by (new_surf_causation_000)",
-        "led_to (new_surf_causation_001)",
-        "influenced_by (new_surf_causation_002)",
-        "resulted_from (new_surf_causation_003)",
-        "due_to (new_surf_causation_004)",
-        "triggered_by (new_surf_causation_005)",
-        "led_to (new_surf_causation_007)",
-        "influenced_by (new_surf_causation_008)",
-        "resulted_from (new_surf_causation_009)",
-        "due_to (new_surf_causation_010)"
-      ]
-    },
-    {
-      "family": "part_whole",
-      "generated_count": 31,
-      "integrated_count": 0,
-      "missing_count": 31,
-      "coverage_percent": 0,
-      "missing_patterns": [
-        "part_of (new_surf_part_whole_000)",
-        "consists_of (new_surf_part_whole_001)",
-        "includes (new_surf_part_whole_002)",
-        "contains (new_surf_part_whole_003)",
-        "made_of (new_surf_part_whole_004)",
-        "comprises (new_surf_part_whole_005)",
-        "consists_of (new_surf_part_whole_007)",
-        "includes (new_surf_part_whole_008)",
-        "contains (new_surf_part_whole_009)",
-        "made_of (new_surf_part_whole_010)"
-      ]
-    },
-    {
-      "family": "identity",
-      "generated_count": 31,
-      "integrated_count": 0,
-      "missing_count": 31,
-      "coverage_percent": 0,
-      "missing_patterns": [
-        "is (new_surf_identity_000)",
-        "equals (new_surf_identity_001)",
-        "same_as (new_surf_identity_002)",
-        "alias_of (new_surf_identity_003)",
-        "also_known_as (new_surf_identity_004)",
-        "represents (new_surf_identity_005)",
-        "equals (new_surf_identity_007)",
-        "same_as (new_surf_identity_008)",
-        "alias_of (new_surf_identity_009)",
-        "also_known_as (new_surf_identity_010)"
-      ]
-    },
-    {
-      "family": "power",
-      "generated_count": 31,
-      "integrated_count": 0,
-      "missing_count": 31,
-      "coverage_percent": 0,
-      "missing_patterns": [
-        "controlled_by (new_surf_power_000)",
-        "ruled_by (new_surf_power_001)",
-        "commanded_by (new_surf_power_002)",
-        "managed_by (new_surf_power_003)",
-        "governed_by (new_surf_power_004)",
-        "led_by (new_surf_power_005)",
-        "ruled_by (new_surf_power_007)",
-        "commanded_by (new_surf_power_008)",
-        "managed_by (new_surf_power_009)",
-        "governed_by (new_surf_power_010)"
-      ]
-    },
     {
       "family": "negation",
       "generated_count": 31,
@@ -236,83 +27,11 @@
       ]
     },
     {
-      "family": "event",
-      "generated_count": 30,
-      "integrated_count": 0,
-      "missing_count": 30,
-      "coverage_percent": 0,
-      "missing_patterns": [
-        "participated_in (new_surf_event_001)",
-        "hosted (new_surf_event_002)",
-        "performed_at (new_surf_event_003)",
-        "witnessed (new_surf_event_004)",
-        "organized (new_surf_event_005)",
-        "participated_in (new_surf_event_007)",
-        "hosted (new_surf_event_008)",
-        "performed_at (new_surf_event_009)",
-        "witnessed (new_surf_event_010)",
-        "organized (new_surf_event_011)"
-      ]
-    },
-    {
-      "family": "kinship",
-      "generated_count": 29,
-      "integrated_count": 0,
-      "missing_count": 29,
-      "coverage_percent": 0,
-      "missing_patterns": [
-        "parent_of (new_surf_kinship_000)",
-        "child_of (new_surf_kinship_001)",
-        "sibling_of (new_surf_kinship_002)",
-        "married_to (new_surf_kinship_003)",
-        "cousin_of (new_surf_kinship_004)",
-        "ancestor_of (new_surf_kinship_005)",
-        "descendant_of (new_surf_kinship_006)",
-        "sibling_of (new_surf_kinship_009)",
-        "cousin_of (new_surf_kinship_011)",
-        "ancestor_of (new_surf_kinship_012)"
-      ]
-    },
-    {
-      "family": "ownership",
-      "generated_count": 29,
-      "integrated_count": 0,
-      "missing_count": 29,
-      "coverage_percent": 0,
-      "missing_patterns": [
-        "owns (new_surf_ownership_000)",
-        "owned_by (new_surf_ownership_001)",
-        "belongs_to (new_surf_ownership_002)",
-        "property_of (new_surf_ownership_003)",
-        "possessed_by (new_surf_ownership_004)",
-        "owns (new_surf_ownership_005)",
-        "belongs_to (new_surf_ownership_007)",
-        "property_of (new_surf_ownership_008)",
-        "possessed_by (new_surf_ownership_009)",
-        "possessed_by (new_surf_ownership_014)"
-      ]
-    }
-  ],
-  "biggest_missing": [
-    {
-      "family": "creation",
-      "missing_count": 36,
-      "missing_patterns": [
-        "created_by (new_surf_creation_000)",
-        "authored (new_surf_creation_001)",
-        "written_by (new_surf_creation_002)",
-        "invented_by (new_surf_creation_003)",
-        "painted_by (new_surf_creation_004)",
-        "built_by (new_surf_creation_005)",
-        "composed_by (new_surf_creation_006)",
-        "designed_by (new_surf_creation_007)",
-        "created_by (new_surf_creation_008)",
-        "written_by (new_surf_creation_010)"
-      ]
-    },
-    {
       "family": "location",
-      "missing_count": 34,
+      "generated_count": 34,
+      "integrated_count": 6,
+      "missing_count": 28,
+      "coverage_percent": 18,
       "missing_patterns": [
         "located_in (new_surf_location_000)",
         "located_at (new_surf_location_001)",
@@ -327,8 +46,68 @@
       ]
     },
     {
+      "family": "part_whole",
+      "generated_count": 31,
+      "integrated_count": 3,
+      "missing_count": 28,
+      "coverage_percent": 10,
+      "missing_patterns": [
+        "part_of (new_surf_part_whole_000)",
+        "consists_of (new_surf_part_whole_001)",
+        "includes (new_surf_part_whole_002)",
+        "contains (new_surf_part_whole_003)",
+        "made_of (new_surf_part_whole_004)",
+        "comprises (new_surf_part_whole_005)",
+        "consists_of (new_surf_part_whole_007)",
+        "includes (new_surf_part_whole_008)",
+        "contains (new_surf_part_whole_009)",
+        "made_of (new_surf_part_whole_010)"
+      ]
+    },
+    {
+      "family": "creation",
+      "generated_count": 36,
+      "integrated_count": 9,
+      "missing_count": 27,
+      "coverage_percent": 25,
+      "missing_patterns": [
+        "created_by (new_surf_creation_000)",
+        "authored (new_surf_creation_001)",
+        "written_by (new_surf_creation_002)",
+        "invented_by (new_surf_creation_003)",
+        "painted_by (new_surf_creation_004)",
+        "built_by (new_surf_creation_005)",
+        "composed_by (new_surf_creation_006)",
+        "designed_by (new_surf_creation_007)",
+        "created_by (new_surf_creation_008)",
+        "written_by (new_surf_creation_010)"
+      ]
+    },
+    {
+      "family": "employment",
+      "generated_count": 31,
+      "integrated_count": 5,
+      "missing_count": 26,
+      "coverage_percent": 16,
+      "missing_patterns": [
+        "works_for (new_surf_employment_000)",
+        "employed_by (new_surf_employment_001)",
+        "member_of (new_surf_employment_002)",
+        "affiliated_with (new_surf_employment_003)",
+        "partner_at (new_surf_employment_004)",
+        "serves (new_surf_employment_005)",
+        "works_for (new_surf_employment_006)",
+        "employed_by (new_surf_employment_007)",
+        "member_of (new_surf_employment_008)",
+        "affiliated_with (new_surf_employment_009)"
+      ]
+    },
+    {
       "family": "temporal",
-      "missing_count": 34,
+      "generated_count": 34,
+      "integrated_count": 11,
+      "missing_count": 23,
+      "coverage_percent": 32,
       "missing_patterns": [
         "before (new_surf_temporal_000)",
         "after (new_surf_temporal_001)",
@@ -344,7 +123,10 @@
     },
     {
       "family": "communication",
-      "missing_count": 34,
+      "generated_count": 34,
+      "integrated_count": 11,
+      "missing_count": 23,
+      "coverage_percent": 32,
       "missing_patterns": [
         "told (new_surf_communication_000)",
         "said_to (new_surf_communication_001)",
@@ -360,7 +142,10 @@
     },
     {
       "family": "comparison",
-      "missing_count": 32,
+      "generated_count": 32,
+      "integrated_count": 9,
+      "missing_count": 23,
+      "coverage_percent": 28,
       "missing_patterns": [
         "greater_than (new_surf_comparison_000)",
         "less_than (new_surf_comparison_001)",
@@ -372,6 +157,221 @@
         "less_than (new_surf_comparison_007)",
         "equal_to (new_surf_comparison_008)",
         "higher_than (new_surf_comparison_009)"
+      ]
+    },
+    {
+      "family": "ownership",
+      "generated_count": 29,
+      "integrated_count": 7,
+      "missing_count": 22,
+      "coverage_percent": 24,
+      "missing_patterns": [
+        "owns (new_surf_ownership_000)",
+        "owned_by (new_surf_ownership_001)",
+        "belongs_to (new_surf_ownership_002)",
+        "property_of (new_surf_ownership_003)",
+        "possessed_by (new_surf_ownership_004)",
+        "owns (new_surf_ownership_005)",
+        "belongs_to (new_surf_ownership_007)",
+        "property_of (new_surf_ownership_008)",
+        "possessed_by (new_surf_ownership_009)",
+        "possessed_by (new_surf_ownership_014)"
+      ]
+    },
+    {
+      "family": "causation",
+      "generated_count": 31,
+      "integrated_count": 9,
+      "missing_count": 22,
+      "coverage_percent": 29,
+      "missing_patterns": [
+        "caused_by (new_surf_causation_000)",
+        "led_to (new_surf_causation_001)",
+        "influenced_by (new_surf_causation_002)",
+        "resulted_from (new_surf_causation_003)",
+        "due_to (new_surf_causation_004)",
+        "triggered_by (new_surf_causation_005)",
+        "led_to (new_surf_causation_007)",
+        "influenced_by (new_surf_causation_008)",
+        "resulted_from (new_surf_causation_009)",
+        "due_to (new_surf_causation_010)"
+      ]
+    },
+    {
+      "family": "power",
+      "generated_count": 31,
+      "integrated_count": 9,
+      "missing_count": 22,
+      "coverage_percent": 29,
+      "missing_patterns": [
+        "controlled_by (new_surf_power_000)",
+        "ruled_by (new_surf_power_001)",
+        "commanded_by (new_surf_power_002)",
+        "managed_by (new_surf_power_003)",
+        "governed_by (new_surf_power_004)",
+        "led_by (new_surf_power_005)",
+        "ruled_by (new_surf_power_007)",
+        "commanded_by (new_surf_power_008)",
+        "managed_by (new_surf_power_009)",
+        "governed_by (new_surf_power_010)"
+      ]
+    },
+    {
+      "family": "emotional",
+      "generated_count": 32,
+      "integrated_count": 10,
+      "missing_count": 22,
+      "coverage_percent": 31,
+      "missing_patterns": [
+        "loved (new_surf_emotional_000)",
+        "hated (new_surf_emotional_001)",
+        "respected (new_surf_emotional_002)",
+        "disliked (new_surf_emotional_003)",
+        "admired (new_surf_emotional_004)",
+        "envied (new_surf_emotional_005)",
+        "feared (new_surf_emotional_006)",
+        "respected (new_surf_emotional_009)",
+        "disliked (new_surf_emotional_010)",
+        "admired (new_surf_emotional_011)"
+      ]
+    },
+    {
+      "family": "kinship",
+      "generated_count": 29,
+      "integrated_count": 10,
+      "missing_count": 19,
+      "coverage_percent": 34,
+      "missing_patterns": [
+        "parent_of (new_surf_kinship_000)",
+        "child_of (new_surf_kinship_001)",
+        "sibling_of (new_surf_kinship_002)",
+        "married_to (new_surf_kinship_003)",
+        "cousin_of (new_surf_kinship_004)",
+        "ancestor_of (new_surf_kinship_005)",
+        "descendant_of (new_surf_kinship_006)",
+        "sibling_of (new_surf_kinship_009)",
+        "cousin_of (new_surf_kinship_011)",
+        "ancestor_of (new_surf_kinship_012)"
+      ]
+    },
+    {
+      "family": "event",
+      "generated_count": 30,
+      "integrated_count": 12,
+      "missing_count": 18,
+      "coverage_percent": 40,
+      "missing_patterns": [
+        "participated_in (new_surf_event_001)",
+        "hosted (new_surf_event_002)",
+        "performed_at (new_surf_event_003)",
+        "witnessed (new_surf_event_004)",
+        "organized (new_surf_event_005)",
+        "participated_in (new_surf_event_007)",
+        "hosted (new_surf_event_008)",
+        "performed_at (new_surf_event_009)",
+        "witnessed (new_surf_event_010)",
+        "organized (new_surf_event_011)"
+      ]
+    },
+    {
+      "family": "identity",
+      "generated_count": 31,
+      "integrated_count": 14,
+      "missing_count": 17,
+      "coverage_percent": 45,
+      "missing_patterns": [
+        "is (new_surf_identity_000)",
+        "equals (new_surf_identity_001)",
+        "same_as (new_surf_identity_002)",
+        "alias_of (new_surf_identity_003)",
+        "also_known_as (new_surf_identity_004)",
+        "represents (new_surf_identity_005)",
+        "equals (new_surf_identity_007)",
+        "same_as (new_surf_identity_008)",
+        "alias_of (new_surf_identity_009)",
+        "also_known_as (new_surf_identity_010)"
+      ]
+    }
+  ],
+  "biggest_missing": [
+    {
+      "family": "negation",
+      "missing_count": 31,
+      "missing_patterns": [
+        "not_related_to (new_surf_negation_000)",
+        "alleged (new_surf_negation_001)",
+        "rumored (new_surf_negation_002)",
+        "denied (new_surf_negation_003)",
+        "disputed (new_surf_negation_004)",
+        "uncertain_link (new_surf_negation_005)",
+        "alleged (new_surf_negation_007)",
+        "rumored (new_surf_negation_008)",
+        "denied (new_surf_negation_009)",
+        "disputed (new_surf_negation_010)"
+      ]
+    },
+    {
+      "family": "location",
+      "missing_count": 28,
+      "missing_patterns": [
+        "located_in (new_surf_location_000)",
+        "located_at (new_surf_location_001)",
+        "near (new_surf_location_002)",
+        "within (new_surf_location_003)",
+        "across_from (new_surf_location_004)",
+        "adjacent_to (new_surf_location_005)",
+        "based_in (new_surf_location_006)",
+        "north_of (new_surf_location_007)",
+        "south_of (new_surf_location_008)",
+        "located_in (new_surf_location_009)"
+      ]
+    },
+    {
+      "family": "part_whole",
+      "missing_count": 28,
+      "missing_patterns": [
+        "part_of (new_surf_part_whole_000)",
+        "consists_of (new_surf_part_whole_001)",
+        "includes (new_surf_part_whole_002)",
+        "contains (new_surf_part_whole_003)",
+        "made_of (new_surf_part_whole_004)",
+        "comprises (new_surf_part_whole_005)",
+        "consists_of (new_surf_part_whole_007)",
+        "includes (new_surf_part_whole_008)",
+        "contains (new_surf_part_whole_009)",
+        "made_of (new_surf_part_whole_010)"
+      ]
+    },
+    {
+      "family": "creation",
+      "missing_count": 27,
+      "missing_patterns": [
+        "created_by (new_surf_creation_000)",
+        "authored (new_surf_creation_001)",
+        "written_by (new_surf_creation_002)",
+        "invented_by (new_surf_creation_003)",
+        "painted_by (new_surf_creation_004)",
+        "built_by (new_surf_creation_005)",
+        "composed_by (new_surf_creation_006)",
+        "designed_by (new_surf_creation_007)",
+        "created_by (new_surf_creation_008)",
+        "written_by (new_surf_creation_010)"
+      ]
+    },
+    {
+      "family": "employment",
+      "missing_count": 26,
+      "missing_patterns": [
+        "works_for (new_surf_employment_000)",
+        "employed_by (new_surf_employment_001)",
+        "member_of (new_surf_employment_002)",
+        "affiliated_with (new_surf_employment_003)",
+        "partner_at (new_surf_employment_004)",
+        "serves (new_surf_employment_005)",
+        "works_for (new_surf_employment_006)",
+        "employed_by (new_surf_employment_007)",
+        "member_of (new_surf_employment_008)",
+        "affiliated_with (new_surf_employment_009)"
       ]
     }
   ]

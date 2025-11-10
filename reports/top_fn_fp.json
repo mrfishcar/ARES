@@ -8,10 +8,11 @@
       "Catherine and --[related_to]--> William"
     ],
     "top_fp": [
-      "Marcus --[married_to]--> Elena",
-      "Elena --[married_to]--> Marcus",
-      "Marcus --[married_to]--> Elena",
-      "Elena --[married_to]--> Marcus"
+      "Alice --[child_of]--> Robert",
+      "Robert --[parent_of]--> Alice",
+      "Marcus --[parent_of]--> Elena",
+      "Elena --[child_of]--> Marcus",
+      "Marcus --[married_to]--> Elena"
     ]
   },
   "ownership": {
@@ -34,6 +35,7 @@
     ],
     "top_fp": [
       "Sarah --[lives_in]--> Mountain View",
+      "Professor Smith --[teaches_at]--> Harvard University",
       "Smith --[teaches_at]--> Harvard"
     ]
   },
@@ -55,10 +57,7 @@
       "The Pyramids --[located_in]--> Giza",
       "Harvard University --[located_in]--> Cambridge"
     ],
-    "top_fp": [
-      "Paris --[lives_in]--> Germany",
-      "Paris --[lives_in]--> France"
-    ]
+    "top_fp": []
   },
   "temporal": {
     "top_fn": [
@@ -119,7 +118,11 @@
       "Alexander --[ruled]--> Greek",
       "Genghis Khan --[ruled]--> Central Asia"
     ],
-    "top_fp": []
+    "top_fp": [
+      "Napoleon --[rules]--> France",
+      "Augustus --[rules]--> Rome",
+      "Akbar --[rules]--> Mughal Empire"
+    ]
   },
   "comparison": {
     "top_fn": [

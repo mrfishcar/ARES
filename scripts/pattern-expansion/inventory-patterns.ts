@@ -356,10 +356,7 @@ export async function saveInventory(inventory: InventoryResult): Promise<void> {
   }
 
   // Save signatures
-  const signaturesArray = Array.from(inventory.signatures.entries()).map(([hash, sig]) => ({
-    hash,
-    ...sig
-  }));
+  const signaturesArray = Array.from(inventory.signatures.values());
 
   fs.writeFileSync(
     path.join(outputDir, '_signatures_all_relations.json'),

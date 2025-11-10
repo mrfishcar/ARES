@@ -177,7 +177,7 @@ async function evaluateTestCase(
     // Convert relations to include resolved subject/object names
     let extractedRelations = (graph?.relations || []).map(rel => ({
       subject: entityById.get(rel.subj) || rel.subj || '',
-      predicate: rel.pred || rel.predicate || '',
+      predicate: rel.pred || '',
       object: entityById.get(rel.obj) || rel.obj || '',
       subjectType: entityTypeById.get(rel.subj) || '',
       objectType: entityTypeById.get(rel.obj) || '',
@@ -224,7 +224,12 @@ async function evaluateTestCase(
         continue;
       }
 
-      if (!isRelationExtracted(extRel, goldRelations)) {
+      const extRelAsGold = {
+        subject: extRel.subject,
+        relation: extRel.predicate,
+        object: extRel.object
+      };
+      if (!isRelationExtracted(extRelAsGold, goldRelations)) {
         fp++;
         fp_examples.push(`${extRel.subject} --[${extRel.predicate}]--> ${extRel.object}`);
       }

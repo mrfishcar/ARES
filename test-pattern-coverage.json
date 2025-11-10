@@ -1,82 +1,15 @@
 {
-  "entities": [
-    {
-      "id": "global_person_0",
-      "type": "PERSON",
-      "canonical": "Sam",
-      "aliases": [],
-      "created_at": "2025-11-10T16:05:42.071Z",
-      "centrality": 0
-    },
-    {
-      "id": "global_person_1",
-      "type": "PERSON",
-      "canonical": "Frodo",
-      "aliases": [],
-      "created_at": "2025-11-10T16:05:42.071Z",
-      "centrality": 0
-    }
-  ],
+  "entities": [],
   "relations": [],
   "conflicts": [],
-  "provenance": {
-    "test-0_entity_0": {
-      "global_id": "global_person_0",
-      "doc_id": "test-0",
-      "merged_at": "2025-11-10T16:05:42.071Z",
-      "local_canonical": "Sam"
-    },
-    "test-0_entity_1": {
-      "global_id": "global_person_1",
-      "doc_id": "test-0",
-      "merged_at": "2025-11-10T16:05:42.071Z",
-      "local_canonical": "Frodo"
-    }
-  },
-  "profiles": {
-    "3b7e9d8a-0b6b-4424-8310-0bfa2c4b9ca7": {
-      "entity_id": "3b7e9d8a-0b6b-4424-8310-0bfa2c4b9ca7",
-      "entity_type": "PERSON",
-      "canonical": "Sam",
-      "descriptors": [],
-      "titles": [
-        "Sam"
-      ],
-      "roles": [],
-      "attributes": {},
-      "contexts": [
-        "Sam served Frodo throughout the quest."
-      ],
-      "mention_count": 1,
-      "first_seen": "test-0",
-      "last_seen": "test-0",
-      "confidence_score": 0.55
-    },
-    "a607180f-448c-4a2e-adc6-38ae1b846168": {
-      "entity_id": "a607180f-448c-4a2e-adc6-38ae1b846168",
-      "entity_type": "PERSON",
-      "canonical": "Frodo",
-      "descriptors": [],
-      "titles": [
-        "Frodo"
-      ],
-      "roles": [],
-      "attributes": {},
-      "contexts": [
-        "Sam served Frodo throughout the quest."
-      ],
-      "mention_count": 1,
-      "first_seen": "test-0",
-      "last_seen": "test-0",
-      "confidence_score": 0.55
-    }
-  },
+  "provenance": {},
+  "profiles": {},
   "metadata": {
-    "created_at": "2025-11-10T16:05:42.067Z",
-    "updated_at": "2025-11-10T16:05:42.071Z",
+    "created_at": "2025-11-10T16:52:00.780Z",
+    "updated_at": "2025-11-10T16:52:00.780Z",
     "doc_count": 1,
     "doc_ids": [
-      "test-0"
+      "test-19"
     ]
   }
 }

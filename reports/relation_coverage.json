@@ -1,14 +1,14 @@
 {
   "kinship": {
     "family": "kinship",
-    "precision": 0.2727272727272727,
+    "precision": 0.10344827586206896,
     "recall": 0.375,
-    "f1": 0.3157894736842105,
+    "f1": 0.16216216216216217,
     "tp": 3,
-    "fp": 8,
+    "fp": 26,
     "fn": 5,
     "total_gold": 8,
-    "total_extracted": 11,
+    "total_extracted": 29,
     "support": 8,
     "uncovered_phrases": [
       "Prince Edward, heir of Queen Elizabeth, attended the ceremony.",
@@ -25,11 +25,11 @@
       "Catherine and --[related_to]--> William"
     ],
     "top_fp": [
+      "Alice --[child_of]--> Robert",
+      "Robert --[parent_of]--> Alice",
       "Marcus --[parent_of]--> Elena",
       "Elena --[child_of]--> Marcus",
-      "Marcus --[married_to]--> Elena",
-      "Elena --[married_to]--> Marcus",
-      "Marcus --[parent_of]--> Elena"
+      "Marcus --[married_to]--> Elena"
     ]
   },
   "ownership": {
@@ -65,10 +65,10 @@
     "recall": 0,
     "f1": 0,
     "tp": 0,
-    "fp": 2,
+    "fp": 3,
     "fn": 8,
     "total_gold": 8,
-    "total_extracted": 2,
+    "total_extracted": 3,
     "support": 8,
     "uncovered_phrases": [
       "Sarah works for Google in Mountain View.",
@@ -89,6 +89,7 @@
     ],
     "top_fp": [
       "Sarah --[lives_in]--> Mountain View",
+      "Professor Smith --[teaches_at]--> Harvard University",
       "Smith --[teaches_at]--> Harvard"
     ]
   },
@@ -318,10 +319,10 @@
     "recall": 0,
     "f1": 0,
     "tp": 0,
-    "fp": 0,
+    "fp": 3,
     "fn": 10,
     "total_gold": 10,
-    "total_extracted": 0,
+    "total_extracted": 3,
     "support": 10,
     "uncovered_phrases": [
       "Napoleon ruled France.",
@@ -342,7 +343,11 @@
       "Alexander --[ruled]--> Greek",
       "Genghis Khan --[ruled]--> Central Asia"
     ],
-    "top_fp": []
+    "top_fp": [
+      "Napoleon --[rules]--> France",
+      "Augustus --[rules]--> Rome",
+      "Akbar --[rules]--> Mughal Empire"
+    ]
   },
   "comparison": {
     "family": "comparison",
