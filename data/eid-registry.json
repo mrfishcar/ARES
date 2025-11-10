@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextEID": 11,
+  "nextEID": 208,
   "mappings": [
     {
       "eid": 1,
@@ -81,10 +81,1586 @@
       "created_at": "2025-11-10T04:49:20.271Z",
       "last_seen": "2025-11-10T04:49:20.271Z",
       "occurrence_count": 1
+    },
+    {
+      "eid": 11,
+      "canonical": "Alice",
+      "normalizedKey": "alice",
+      "created_at": "2025-11-10T05:24:17.123Z",
+      "last_seen": "2025-11-10T05:24:17.123Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 12,
+      "canonical": "Robert",
+      "normalizedKey": "robert",
+      "created_at": "2025-11-10T05:24:17.123Z",
+      "last_seen": "2025-11-10T05:24:17.123Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 13,
+      "canonical": "Thomas",
+      "normalizedKey": "thomas",
+      "created_at": "2025-11-10T05:24:17.151Z",
+      "last_seen": "2025-11-10T05:24:17.151Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 14,
+      "canonical": "James",
+      "normalizedKey": "james",
+      "created_at": "2025-11-10T05:24:17.151Z",
+      "last_seen": "2025-11-10T05:24:17.151Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 15,
+      "canonical": "Victoria",
+      "normalizedKey": "victoria",
+      "created_at": "2025-11-10T05:24:17.158Z",
+      "last_seen": "2025-11-10T05:24:17.158Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 16,
+      "canonical": "Prince Edward",
+      "normalizedKey": "prince edward",
+      "created_at": "2025-11-10T05:24:17.168Z",
+      "last_seen": "2025-11-10T05:24:17.168Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 17,
+      "canonical": "Queen Elizabeth",
+      "normalizedKey": "queen elizabeth",
+      "created_at": "2025-11-10T05:24:17.169Z",
+      "last_seen": "2025-11-10T05:24:17.169Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 18,
+      "canonical": "Sofia",
+      "normalizedKey": "sofia",
+      "created_at": "2025-11-10T05:24:17.179Z",
+      "last_seen": "2025-11-10T05:24:17.179Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 19,
+      "canonical": "King Arthur",
+      "normalizedKey": "king arthur",
+      "created_at": "2025-11-10T05:24:17.188Z",
+      "last_seen": "2025-11-10T05:24:17.188Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 20,
+      "canonical": "Uther Pendragon",
+      "normalizedKey": "uther pendragon",
+      "created_at": "2025-11-10T05:24:17.188Z",
+      "last_seen": "2025-11-10T05:24:17.188Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 21,
+      "canonical": "Isabella",
+      "normalizedKey": "isabella",
+      "created_at": "2025-11-10T05:24:17.195Z",
+      "last_seen": "2025-11-10T05:24:17.195Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 22,
+      "canonical": "Ferdinand",
+      "normalizedKey": "ferdinand",
+      "created_at": "2025-11-10T05:24:17.196Z",
+      "last_seen": "2025-11-10T05:24:17.196Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 23,
+      "canonical": "Lord Byron",
+      "normalizedKey": "lord byron",
+      "created_at": "2025-11-10T05:24:17.205Z",
+      "last_seen": "2025-11-10T05:24:17.205Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 24,
+      "canonical": "Lady Anne",
+      "normalizedKey": "lady anne",
+      "created_at": "2025-11-10T05:24:17.205Z",
+      "last_seen": "2025-11-10T05:24:17.205Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 25,
+      "canonical": "William",
+      "normalizedKey": "william",
+      "created_at": "2025-11-10T05:24:17.214Z",
+      "last_seen": "2025-11-10T05:24:17.214Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 26,
+      "canonical": "together",
+      "normalizedKey": "together",
+      "created_at": "2025-11-10T05:24:17.214Z",
+      "last_seen": "2025-11-10T05:24:17.214Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 27,
+      "canonical": "Catherine",
+      "normalizedKey": "catherine",
+      "created_at": "2025-11-10T05:24:17.214Z",
+      "last_seen": "2025-11-10T05:24:17.214Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 28,
+      "canonical": "Reports",
+      "normalizedKey": "reports",
+      "created_at": "2025-11-10T05:24:17.264Z",
+      "last_seen": "2025-11-10T05:24:17.264Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 29,
+      "canonical": "Rockefeller",
+      "normalizedKey": "rockefeller",
+      "created_at": "2025-11-10T05:24:17.270Z",
+      "last_seen": "2025-11-10T05:24:17.270Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 30,
+      "canonical": "Standard Oil Company",
+      "normalizedKey": "standard oil company",
+      "created_at": "2025-11-10T05:24:17.270Z",
+      "last_seen": "2025-11-10T05:24:17.270Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 31,
+      "canonical": "Duke of Westminster",
+      "normalizedKey": "duke of westminster",
+      "created_at": "2025-11-10T05:24:17.275Z",
+      "last_seen": "2025-11-10T05:24:17.275Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 32,
+      "canonical": "Microsoft",
+      "normalizedKey": "microsoft",
+      "created_at": "2025-11-10T05:24:17.279Z",
+      "last_seen": "2025-11-10T05:24:17.279Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 33,
+      "canonical": "Tesla",
+      "normalizedKey": "tesla",
+      "created_at": "2025-11-10T05:24:17.284Z",
+      "last_seen": "2025-11-10T05:24:17.284Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 34,
+      "canonical": "Louvre Museum",
+      "normalizedKey": "louvre museum",
+      "created_at": "2025-11-10T05:24:17.288Z",
+      "last_seen": "2025-11-10T05:24:17.288Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 35,
+      "canonical": "Carnegie",
+      "normalizedKey": "carnegie",
+      "created_at": "2025-11-10T05:24:17.292Z",
+      "last_seen": "2025-11-10T05:24:17.292Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 36,
+      "canonical": "Apple",
+      "normalizedKey": "apple",
+      "created_at": "2025-11-10T05:24:17.299Z",
+      "last_seen": "2025-11-10T05:24:17.299Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 37,
+      "canonical": "Musk",
+      "normalizedKey": "musk",
+      "created_at": "2025-11-10T05:24:17.304Z",
+      "last_seen": "2025-11-10T05:24:17.304Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 38,
+      "canonical": "Sources",
+      "normalizedKey": "sources",
+      "created_at": "2025-11-10T05:24:17.345Z",
+      "last_seen": "2025-11-10T05:24:17.345Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 39,
+      "canonical": "Sarah",
+      "normalizedKey": "sarah",
+      "created_at": "2025-11-10T05:24:17.355Z",
+      "last_seen": "2025-11-10T05:24:17.355Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 40,
+      "canonical": "Google",
+      "normalizedKey": "google",
+      "created_at": "2025-11-10T05:24:17.355Z",
+      "last_seen": "2025-11-10T05:24:17.355Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 41,
+      "canonical": "Mountain View",
+      "normalizedKey": "mountain view",
+      "created_at": "2025-11-10T05:24:17.356Z",
+      "last_seen": "2025-11-10T05:24:17.356Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 42,
+      "canonical": "Stanford Hospital",
+      "normalizedKey": "stanford hospital",
+      "created_at": "2025-11-10T05:24:17.361Z",
+      "last_seen": "2025-11-10T05:24:17.361Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 43,
+      "canonical": "Board of Directors",
+      "normalizedKey": "board of directors",
+      "created_at": "2025-11-10T05:24:17.367Z",
+      "last_seen": "2025-11-10T05:24:17.367Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 44,
+      "canonical": "Professor Smith",
+      "normalizedKey": "professor smith",
+      "created_at": "2025-11-10T05:24:17.376Z",
+      "last_seen": "2025-11-10T05:24:17.376Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 45,
+      "canonical": "Harvard University",
+      "normalizedKey": "harvard university",
+      "created_at": "2025-11-10T05:24:17.376Z",
+      "last_seen": "2025-11-10T05:24:17.376Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 46,
+      "canonical": "John",
+      "normalizedKey": "john",
+      "created_at": "2025-11-10T05:24:17.382Z",
+      "last_seen": "2025-11-10T05:24:17.382Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 47,
+      "canonical": "Sales Department",
+      "normalizedKey": "sales department",
+      "created_at": "2025-11-10T05:24:17.382Z",
+      "last_seen": "2025-11-10T05:24:17.382Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 48,
+      "canonical": "MIT",
+      "normalizedKey": "mit",
+      "created_at": "2025-11-10T05:24:17.387Z",
+      "last_seen": "2025-11-10T05:24:17.387Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 49,
+      "canonical": "Goldman Sachs",
+      "normalizedKey": "goldman sachs",
+      "created_at": "2025-11-10T05:24:17.395Z",
+      "last_seen": "2025-11-10T05:24:17.395Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 50,
+      "canonical": "no longer",
+      "normalizedKey": "no longer",
+      "created_at": "2025-11-10T05:24:17.424Z",
+      "last_seen": "2025-11-10T05:24:17.424Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 51,
+      "canonical": "Leonardo",
+      "normalizedKey": "leonardo",
+      "created_at": "2025-11-10T05:24:17.454Z",
+      "last_seen": "2025-11-10T05:24:17.454Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 52,
+      "canonical": "Vinci",
+      "normalizedKey": "vinci",
+      "created_at": "2025-11-10T05:24:17.455Z",
+      "last_seen": "2025-11-10T05:24:17.455Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 53,
+      "canonical": "Mona Lisa",
+      "normalizedKey": "mona lisa",
+      "created_at": "2025-11-10T05:24:17.455Z",
+      "last_seen": "2025-11-10T05:24:17.455Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 54,
+      "canonical": "Shakespeare",
+      "normalizedKey": "shakespeare",
+      "created_at": "2025-11-10T05:24:17.460Z",
+      "last_seen": "2025-11-10T05:24:17.460Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 55,
+      "canonical": "Hamlet",
+      "normalizedKey": "hamlet",
+      "created_at": "2025-11-10T05:24:17.460Z",
+      "last_seen": "2025-11-10T05:24:17.460Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 56,
+      "canonical": "Einstein",
+      "normalizedKey": "einstein",
+      "created_at": "2025-11-10T05:24:17.465Z",
+      "last_seen": "2025-11-10T05:24:17.465Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 57,
+      "canonical": "Mozart",
+      "normalizedKey": "mozart",
+      "created_at": "2025-11-10T05:24:17.469Z",
+      "last_seen": "2025-11-10T05:24:17.469Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 58,
+      "canonical": "Magic Flute",
+      "normalizedKey": "magic flute",
+      "created_at": "2025-11-10T05:24:17.470Z",
+      "last_seen": "2025-11-10T05:24:17.470Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 59,
+      "canonical": "Frank Lloyd Wright",
+      "normalizedKey": "frank lloyd wright",
+      "created_at": "2025-11-10T05:24:17.475Z",
+      "last_seen": "2025-11-10T05:24:17.475Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 60,
+      "canonical": "Fallingwater",
+      "normalizedKey": "fallingwater",
+      "created_at": "2025-11-10T05:24:17.475Z",
+      "last_seen": "2025-11-10T05:24:17.475Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 61,
+      "canonical": "Tolkien",
+      "normalizedKey": "tolkien",
+      "created_at": "2025-11-10T05:24:17.480Z",
+      "last_seen": "2025-11-10T05:24:17.480Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 62,
+      "canonical": "Rings",
+      "normalizedKey": "rings",
+      "created_at": "2025-11-10T05:24:17.480Z",
+      "last_seen": "2025-11-10T05:24:17.480Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 63,
+      "canonical": "Edison",
+      "normalizedKey": "edison",
+      "created_at": "2025-11-10T05:24:17.485Z",
+      "last_seen": "2025-11-10T05:24:17.485Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 64,
+      "canonical": "Picasso",
+      "normalizedKey": "picasso",
+      "created_at": "2025-11-10T05:24:17.490Z",
+      "last_seen": "2025-11-10T05:24:17.490Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 65,
+      "canonical": "Guernica",
+      "normalizedKey": "guernica",
+      "created_at": "2025-11-10T05:24:17.490Z",
+      "last_seen": "2025-11-10T05:24:17.490Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 66,
+      "canonical": "Beethoven",
+      "normalizedKey": "beethoven",
+      "created_at": "2025-11-10T05:24:17.495Z",
+      "last_seen": "2025-11-10T05:24:17.495Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 67,
+      "canonical": "Symphony No",
+      "normalizedKey": "symphony no",
+      "created_at": "2025-11-10T05:24:17.495Z",
+      "last_seen": "2025-11-10T05:24:17.495Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 68,
+      "canonical": "Michelangelo",
+      "normalizedKey": "michelangelo",
+      "created_at": "2025-11-10T05:24:17.500Z",
+      "last_seen": "2025-11-10T05:24:17.500Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 69,
+      "canonical": "David",
+      "normalizedKey": "david",
+      "created_at": "2025-11-10T05:24:17.500Z",
+      "last_seen": "2025-11-10T05:24:17.500Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 70,
+      "canonical": "Paris",
+      "normalizedKey": "paris",
+      "created_at": "2025-11-10T05:24:17.549Z",
+      "last_seen": "2025-11-10T05:24:17.549Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 71,
+      "canonical": "France",
+      "normalizedKey": "france",
+      "created_at": "2025-11-10T05:24:17.549Z",
+      "last_seen": "2025-11-10T05:24:17.549Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 72,
+      "canonical": "Eiffel Tower",
+      "normalizedKey": "eiffel tower",
+      "created_at": "2025-11-10T05:24:17.555Z",
+      "last_seen": "2025-11-10T05:24:17.555Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 73,
+      "canonical": "Silicon Valley",
+      "normalizedKey": "silicon valley",
+      "created_at": "2025-11-10T05:24:17.560Z",
+      "last_seen": "2025-11-10T05:24:17.560Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 74,
+      "canonical": "California",
+      "normalizedKey": "california",
+      "created_at": "2025-11-10T05:24:17.560Z",
+      "last_seen": "2025-11-10T05:24:17.560Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 75,
+      "canonical": "Pyramids",
+      "normalizedKey": "pyramids",
+      "created_at": "2025-11-10T05:24:17.565Z",
+      "last_seen": "2025-11-10T05:24:17.565Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 76,
+      "canonical": "Giza",
+      "normalizedKey": "giza",
+      "created_at": "2025-11-10T05:24:17.565Z",
+      "last_seen": "2025-11-10T05:24:17.565Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 77,
+      "canonical": "Cambridge",
+      "normalizedKey": "cambridge",
+      "created_at": "2025-11-10T05:24:17.570Z",
+      "last_seen": "2025-11-10T05:24:17.570Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 78,
+      "canonical": "Tokyo",
+      "normalizedKey": "tokyo",
+      "created_at": "2025-11-10T05:24:17.581Z",
+      "last_seen": "2025-11-10T05:24:17.581Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 79,
+      "canonical": "Japan",
+      "normalizedKey": "japan",
+      "created_at": "2025-11-10T05:24:17.581Z",
+      "last_seen": "2025-11-10T05:24:17.581Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 80,
+      "canonical": "White",
+      "normalizedKey": "white",
+      "created_at": "2025-11-10T05:24:17.587Z",
+      "last_seen": "2025-11-10T05:24:17.587Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 81,
+      "canonical": "Washington DC",
+      "normalizedKey": "washington dc",
+      "created_at": "2025-11-10T05:24:17.587Z",
+      "last_seen": "2025-11-10T05:24:17.587Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 82,
+      "canonical": "London",
+      "normalizedKey": "london",
+      "created_at": "2025-11-10T05:24:17.593Z",
+      "last_seen": "2025-11-10T05:24:17.593Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 83,
+      "canonical": "Oxford",
+      "normalizedKey": "oxford",
+      "created_at": "2025-11-10T05:24:17.593Z",
+      "last_seen": "2025-11-10T05:24:17.593Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 84,
+      "canonical": "Italy",
+      "normalizedKey": "italy",
+      "created_at": "2025-11-10T05:24:17.597Z",
+      "last_seen": "2025-11-10T05:24:17.597Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 85,
+      "canonical": "Venice",
+      "normalizedKey": "venice",
+      "created_at": "2025-11-10T05:24:17.598Z",
+      "last_seen": "2025-11-10T05:24:17.598Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 86,
+      "canonical": "Germany",
+      "normalizedKey": "germany",
+      "created_at": "2025-11-10T05:24:17.603Z",
+      "last_seen": "2025-11-10T05:24:17.603Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 87,
+      "canonical": "New York",
+      "normalizedKey": "new york",
+      "created_at": "2025-11-10T05:24:17.613Z",
+      "last_seen": "2025-11-10T05:24:17.613Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 88,
+      "canonical": "Cairo",
+      "normalizedKey": "cairo",
+      "created_at": "2025-11-10T05:24:17.618Z",
+      "last_seen": "2025-11-10T05:24:17.618Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 89,
+      "canonical": "Boston",
+      "normalizedKey": "boston",
+      "created_at": "2025-11-10T05:24:17.622Z",
+      "last_seen": "2025-11-10T05:24:17.622Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 90,
+      "canonical": "World War II",
+      "normalizedKey": "world war ii",
+      "created_at": "2025-11-10T05:24:17.648Z",
+      "last_seen": "2025-11-10T05:24:17.648Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 91,
+      "canonical": "Renaissance",
+      "normalizedKey": "renaissance",
+      "created_at": "2025-11-10T05:24:17.653Z",
+      "last_seen": "2025-11-10T05:24:17.653Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 92,
+      "canonical": "Middle Ages",
+      "normalizedKey": "middle ages",
+      "created_at": "2025-11-10T05:24:17.653Z",
+      "last_seen": "2025-11-10T05:24:17.653Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 93,
+      "canonical": "Armstrong",
+      "normalizedKey": "armstrong",
+      "created_at": "2025-11-10T05:24:17.658Z",
+      "last_seen": "2025-11-10T05:24:17.658Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 94,
+      "canonical": "French Revolution",
+      "normalizedKey": "french revolution",
+      "created_at": "2025-11-10T05:24:17.664Z",
+      "last_seen": "2025-11-10T05:24:17.664Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 95,
+      "canonical": "American Civil War",
+      "normalizedKey": "american civil war",
+      "created_at": "2025-11-10T05:24:17.664Z",
+      "last_seen": "2025-11-10T05:24:17.664Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 96,
+      "canonical": "Industrial Revolution",
+      "normalizedKey": "industrial revolution",
+      "created_at": "2025-11-10T05:24:17.668Z",
+      "last_seen": "2025-11-10T05:24:17.668Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 97,
+      "canonical": "Great Depression",
+      "normalizedKey": "great depression",
+      "created_at": "2025-11-10T05:24:17.678Z",
+      "last_seen": "2025-11-10T05:24:17.678Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 98,
+      "canonical": "Columbus",
+      "normalizedKey": "columbus",
+      "created_at": "2025-11-10T05:24:17.683Z",
+      "last_seen": "2025-11-10T05:24:17.683Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 99,
+      "canonical": "Pilgrims",
+      "normalizedKey": "pilgrims",
+      "created_at": "2025-11-10T05:24:17.683Z",
+      "last_seen": "2025-11-10T05:24:17.683Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 100,
+      "canonical": "Roman Empire",
+      "normalizedKey": "roman empire",
+      "created_at": "2025-11-10T05:24:17.688Z",
+      "last_seen": "2025-11-10T05:24:17.688Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 101,
+      "canonical": "Byzantine Empire",
+      "normalizedKey": "byzantine empire",
+      "created_at": "2025-11-10T05:24:17.688Z",
+      "last_seen": "2025-11-10T05:24:17.688Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 102,
+      "canonical": "Cold War",
+      "normalizedKey": "cold war",
+      "created_at": "2025-11-10T05:24:17.693Z",
+      "last_seen": "2025-11-10T05:24:17.693Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 103,
+      "canonical": "Vietnam War",
+      "normalizedKey": "vietnam war",
+      "created_at": "2025-11-10T05:24:17.693Z",
+      "last_seen": "2025-11-10T05:24:17.693Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 104,
+      "canonical": "Modern Age",
+      "normalizedKey": "modern age",
+      "created_at": "2025-11-10T05:24:17.703Z",
+      "last_seen": "2025-11-10T05:24:17.703Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 105,
+      "canonical": "Rome",
+      "normalizedKey": "rome",
+      "created_at": "2025-11-10T05:24:17.718Z",
+      "last_seen": "2025-11-10T05:24:17.718Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 106,
+      "canonical": "Historians",
+      "normalizedKey": "historians",
+      "created_at": "2025-11-10T05:24:17.729Z",
+      "last_seen": "2025-11-10T05:24:17.729Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 107,
+      "canonical": "Economic",
+      "normalizedKey": "economic",
+      "created_at": "2025-11-10T05:24:17.744Z",
+      "last_seen": "2025-11-10T05:24:17.745Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 108,
+      "canonical": "Smoking",
+      "normalizedKey": "smoking",
+      "created_at": "2025-11-10T05:24:17.749Z",
+      "last_seen": "2025-11-10T05:24:17.749Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 109,
+      "canonical": "Climate",
+      "normalizedKey": "climate",
+      "created_at": "2025-11-10T05:24:17.757Z",
+      "last_seen": "2025-11-10T05:24:17.757Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 110,
+      "canonical": "Poor",
+      "normalizedKey": "poor",
+      "created_at": "2025-11-10T05:24:17.766Z",
+      "last_seen": "2025-11-10T05:24:17.766Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 111,
+      "canonical": "Innovation",
+      "normalizedKey": "innovation",
+      "created_at": "2025-11-10T05:24:17.774Z",
+      "last_seen": "2025-11-10T05:24:17.774Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 112,
+      "canonical": "United States",
+      "normalizedKey": "united states",
+      "created_at": "2025-11-10T05:24:17.823Z",
+      "last_seen": "2025-11-10T05:24:17.823Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 113,
+      "canonical": "Manhattan",
+      "normalizedKey": "manhattan",
+      "created_at": "2025-11-10T05:24:17.832Z",
+      "last_seen": "2025-11-10T05:24:17.832Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 114,
+      "canonical": "Alaska",
+      "normalizedKey": "alaska",
+      "created_at": "2025-11-10T05:24:17.853Z",
+      "last_seen": "2025-11-10T05:24:17.853Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 115,
+      "canonical": "Mexico",
+      "normalizedKey": "mexico",
+      "created_at": "2025-11-10T05:24:17.866Z",
+      "last_seen": "2025-11-10T05:24:17.866Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 116,
+      "canonical": "Mark Twain",
+      "normalizedKey": "mark twain",
+      "created_at": "2025-11-10T05:24:17.912Z",
+      "last_seen": "2025-11-10T05:24:17.912Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 117,
+      "canonical": "Samuel Clemens",
+      "normalizedKey": "samuel clemens",
+      "created_at": "2025-11-10T05:24:17.912Z",
+      "last_seen": "2025-11-10T05:24:17.912Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 118,
+      "canonical": "Beijing",
+      "normalizedKey": "beijing",
+      "created_at": "2025-11-10T05:24:17.917Z",
+      "last_seen": "2025-11-10T05:24:17.917Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 119,
+      "canonical": "Peking",
+      "normalizedKey": "peking",
+      "created_at": "2025-11-10T05:24:17.917Z",
+      "last_seen": "2025-11-10T05:24:17.917Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 120,
+      "canonical": "H2O",
+      "normalizedKey": "h2o",
+      "created_at": "2025-11-10T05:24:17.929Z",
+      "last_seen": "2025-11-10T05:24:17.929Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 121,
+      "canonical": "Churchill",
+      "normalizedKey": "churchill",
+      "created_at": "2025-11-10T05:24:17.935Z",
+      "last_seen": "2025-11-10T05:24:17.935Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 122,
+      "canonical": "Winston Leonard Spencer",
+      "normalizedKey": "winston leonard spencer",
+      "created_at": "2025-11-10T05:24:17.936Z",
+      "last_seen": "2025-11-10T05:24:17.936Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 123,
+      "canonical": "USA",
+      "normalizedKey": "usa",
+      "created_at": "2025-11-10T05:24:17.942Z",
+      "last_seen": "2025-11-10T05:24:17.942Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 124,
+      "canonical": "Istanbul",
+      "normalizedKey": "istanbul",
+      "created_at": "2025-11-10T05:24:17.948Z",
+      "last_seen": "2025-11-10T05:24:17.948Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 125,
+      "canonical": "Constantinople",
+      "normalizedKey": "constantinople",
+      "created_at": "2025-11-10T05:24:17.948Z",
+      "last_seen": "2025-11-10T05:24:17.948Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 126,
+      "canonical": "Myanmar",
+      "normalizedKey": "myanmar",
+      "created_at": "2025-11-10T05:24:17.954Z",
+      "last_seen": "2025-11-10T05:24:17.954Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 127,
+      "canonical": "Burma",
+      "normalizedKey": "burma",
+      "created_at": "2025-11-10T05:24:17.954Z",
+      "last_seen": "2025-11-10T05:24:17.954Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 128,
+      "canonical": "Netherlands",
+      "normalizedKey": "netherlands",
+      "created_at": "2025-11-10T05:24:17.959Z",
+      "last_seen": "2025-11-10T05:24:17.959Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 129,
+      "canonical": "Holland",
+      "normalizedKey": "holland",
+      "created_at": "2025-11-10T05:24:17.959Z",
+      "last_seen": "2025-11-10T05:24:17.959Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 130,
+      "canonical": "Mumbai",
+      "normalizedKey": "mumbai",
+      "created_at": "2025-11-10T05:24:17.964Z",
+      "last_seen": "2025-11-10T05:24:17.964Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 131,
+      "canonical": "Bombay",
+      "normalizedKey": "bombay",
+      "created_at": "2025-11-10T05:24:17.964Z",
+      "last_seen": "2025-11-10T05:24:17.964Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 132,
+      "canonical": "Charles Dickens",
+      "normalizedKey": "charles dickens",
+      "created_at": "2025-11-10T05:24:17.970Z",
+      "last_seen": "2025-11-10T05:24:17.970Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 133,
+      "canonical": "Los Angeles",
+      "normalizedKey": "los angeles",
+      "created_at": "2025-11-10T05:24:17.980Z",
+      "last_seen": "2025-11-10T05:24:17.980Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 134,
+      "canonical": "Roosevelt",
+      "normalizedKey": "roosevelt",
+      "created_at": "2025-11-10T05:24:17.990Z",
+      "last_seen": "2025-11-10T05:24:17.990Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 135,
+      "canonical": "Yalta Conference",
+      "normalizedKey": "yalta conference",
+      "created_at": "2025-11-10T05:24:18.016Z",
+      "last_seen": "2025-11-10T05:24:18.016Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 136,
+      "canonical": "Vienna Opera",
+      "normalizedKey": "vienna opera",
+      "created_at": "2025-11-10T05:24:18.020Z",
+      "last_seen": "2025-11-10T05:24:18.021Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 137,
+      "canonical": "Solvay Conference",
+      "normalizedKey": "solvay conference",
+      "created_at": "2025-11-10T05:24:18.030Z",
+      "last_seen": "2025-11-10T05:24:18.030Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 138,
+      "canonical": "Globe Theatre",
+      "normalizedKey": "globe theatre",
+      "created_at": "2025-11-10T05:24:18.034Z",
+      "last_seen": "2025-11-10T05:24:18.034Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 139,
+      "canonical": "Teheran Conference",
+      "normalizedKey": "teheran conference",
+      "created_at": "2025-11-10T05:24:18.039Z",
+      "last_seen": "2025-11-10T05:24:18.039Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 140,
+      "canonical": "Newton",
+      "normalizedKey": "newton",
+      "created_at": "2025-11-10T05:24:18.050Z",
+      "last_seen": "2025-11-10T05:24:18.050Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 141,
+      "canonical": "Lincoln",
+      "normalizedKey": "lincoln",
+      "created_at": "2025-11-10T05:24:18.055Z",
+      "last_seen": "2025-11-10T05:24:18.055Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 142,
+      "canonical": "Gettysburg",
+      "normalizedKey": "gettysburg",
+      "created_at": "2025-11-10T05:24:18.055Z",
+      "last_seen": "2025-11-10T05:24:18.055Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 143,
+      "canonical": "Gandhi",
+      "normalizedKey": "gandhi",
+      "created_at": "2025-11-10T05:24:18.060Z",
+      "last_seen": "2025-11-10T05:24:18.060Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 144,
+      "canonical": "Salt March",
+      "normalizedKey": "salt march",
+      "created_at": "2025-11-10T05:24:18.060Z",
+      "last_seen": "2025-11-10T05:24:18.060Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 145,
+      "canonical": "Potsdam Conference",
+      "normalizedKey": "potsdam conference",
+      "created_at": "2025-11-10T05:24:18.064Z",
+      "last_seen": "2025-11-10T05:24:18.064Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 146,
+      "canonical": "Apollo",
+      "normalizedKey": "apollo",
+      "created_at": "2025-11-10T05:24:18.073Z",
+      "last_seen": "2025-11-10T05:24:18.073Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 147,
+      "canonical": "Grant",
+      "normalizedKey": "grant",
+      "created_at": "2025-11-10T05:24:18.105Z",
+      "last_seen": "2025-11-10T05:24:18.105Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 148,
+      "canonical": "Bohr",
+      "normalizedKey": "bohr",
+      "created_at": "2025-11-10T05:24:18.109Z",
+      "last_seen": "2025-11-10T05:24:18.109Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 149,
+      "canonical": "Jefferson",
+      "normalizedKey": "jefferson",
+      "created_at": "2025-11-10T05:24:18.119Z",
+      "last_seen": "2025-11-10T05:24:18.119Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 150,
+      "canonical": "Adams",
+      "normalizedKey": "adams",
+      "created_at": "2025-11-10T05:24:18.119Z",
+      "last_seen": "2025-11-10T05:24:18.119Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 151,
+      "canonical": "Congress",
+      "normalizedKey": "congress",
+      "created_at": "2025-11-10T05:24:18.123Z",
+      "last_seen": "2025-11-10T05:24:18.123Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 152,
+      "canonical": "Darwin",
+      "normalizedKey": "darwin",
+      "created_at": "2025-11-10T05:24:18.128Z",
+      "last_seen": "2025-11-10T05:24:18.128Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 153,
+      "canonical": "Wallace",
+      "normalizedKey": "wallace",
+      "created_at": "2025-11-10T05:24:18.128Z",
+      "last_seen": "2025-11-10T05:24:18.128Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 154,
+      "canonical": "Leibniz",
+      "normalizedKey": "leibniz",
+      "created_at": "2025-11-10T05:24:18.133Z",
+      "last_seen": "2025-11-10T05:24:18.133Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 155,
+      "canonical": "Franklin",
+      "normalizedKey": "franklin",
+      "created_at": "2025-11-10T05:24:18.137Z",
+      "last_seen": "2025-11-10T05:24:18.137Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 156,
+      "canonical": "Marx",
+      "normalizedKey": "marx",
+      "created_at": "2025-11-10T05:24:18.142Z",
+      "last_seen": "2025-11-10T05:24:18.142Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 157,
+      "canonical": "Engels",
+      "normalizedKey": "engels",
+      "created_at": "2025-11-10T05:24:18.142Z",
+      "last_seen": "2025-11-10T05:24:18.142Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 158,
+      "canonical": "Galileo",
+      "normalizedKey": "galileo",
+      "created_at": "2025-11-10T05:24:18.147Z",
+      "last_seen": "2025-11-10T05:24:18.147Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 159,
+      "canonical": "Napoleon",
+      "normalizedKey": "napoleon",
+      "created_at": "2025-11-10T05:24:18.192Z",
+      "last_seen": "2025-11-10T05:24:18.192Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 160,
+      "canonical": "Caesar",
+      "normalizedKey": "caesar",
+      "created_at": "2025-11-10T05:24:18.197Z",
+      "last_seen": "2025-11-10T05:24:18.197Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 161,
+      "canonical": "United Kingdom",
+      "normalizedKey": "united kingdom",
+      "created_at": "2025-11-10T05:24:18.203Z",
+      "last_seen": "2025-11-10T05:24:18.203Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 162,
+      "canonical": "Alexander",
+      "normalizedKey": "alexander",
+      "created_at": "2025-11-10T05:24:18.207Z",
+      "last_seen": "2025-11-10T05:24:18.207Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 163,
+      "canonical": "Greek",
+      "normalizedKey": "greek",
+      "created_at": "2025-11-10T05:24:18.208Z",
+      "last_seen": "2025-11-10T05:24:18.208Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 164,
+      "canonical": "Genghis Khan",
+      "normalizedKey": "genghis khan",
+      "created_at": "2025-11-10T05:24:18.212Z",
+      "last_seen": "2025-11-10T05:24:18.212Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 165,
+      "canonical": "Central Asia",
+      "normalizedKey": "central asia",
+      "created_at": "2025-11-10T05:24:18.212Z",
+      "last_seen": "2025-11-10T05:24:18.212Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 166,
+      "canonical": "Augustus",
+      "normalizedKey": "augustus",
+      "created_at": "2025-11-10T05:24:18.217Z",
+      "last_seen": "2025-11-10T05:24:18.217Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 167,
+      "canonical": "British Empire",
+      "normalizedKey": "british empire",
+      "created_at": "2025-11-10T05:24:18.222Z",
+      "last_seen": "2025-11-10T05:24:18.222Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 168,
+      "canonical": "Russia",
+      "normalizedKey": "russia",
+      "created_at": "2025-11-10T05:24:18.227Z",
+      "last_seen": "2025-11-10T05:24:18.227Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 169,
+      "canonical": "Peter the Great",
+      "normalizedKey": "peter the great",
+      "created_at": "2025-11-10T05:24:18.227Z",
+      "last_seen": "2025-11-10T05:24:18.227Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 170,
+      "canonical": "Charlemagne",
+      "normalizedKey": "charlemagne",
+      "created_at": "2025-11-10T05:24:18.231Z",
+      "last_seen": "2025-11-10T05:24:18.231Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 171,
+      "canonical": "Frankish Empire",
+      "normalizedKey": "frankish empire",
+      "created_at": "2025-11-10T05:24:18.232Z",
+      "last_seen": "2025-11-10T05:24:18.232Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 172,
+      "canonical": "Akbar",
+      "normalizedKey": "akbar",
+      "created_at": "2025-11-10T05:24:18.236Z",
+      "last_seen": "2025-11-10T05:24:18.236Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 173,
+      "canonical": "Mughal Empire",
+      "normalizedKey": "mughal empire",
+      "created_at": "2025-11-10T05:24:18.236Z",
+      "last_seen": "2025-11-10T05:24:18.236Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 174,
+      "canonical": "Britain",
+      "normalizedKey": "britain",
+      "created_at": "2025-11-10T05:24:18.242Z",
+      "last_seen": "2025-11-10T05:24:18.242Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 175,
+      "canonical": "Europe",
+      "normalizedKey": "europe",
+      "created_at": "2025-11-10T05:24:18.260Z",
+      "last_seen": "2025-11-10T05:24:18.260Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 176,
+      "canonical": "that territory",
+      "normalizedKey": "that territory",
+      "created_at": "2025-11-10T05:24:18.265Z",
+      "last_seen": "2025-11-10T05:24:18.265Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 177,
+      "canonical": "Mount Everest",
+      "normalizedKey": "mount everest",
+      "created_at": "2025-11-10T05:24:18.286Z",
+      "last_seen": "2025-11-10T05:24:18.286Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 178,
+      "canonical": "K2",
+      "normalizedKey": "k2",
+      "created_at": "2025-11-10T05:24:18.286Z",
+      "last_seen": "2025-11-10T05:24:18.286Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 179,
+      "canonical": "Pacific Ocean",
+      "normalizedKey": "pacific ocean",
+      "created_at": "2025-11-10T05:24:18.290Z",
+      "last_seen": "2025-11-10T05:24:18.290Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 180,
+      "canonical": "Light",
+      "normalizedKey": "light",
+      "created_at": "2025-11-10T05:24:18.298Z",
+      "last_seen": "2025-11-10T05:24:18.298Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 181,
+      "canonical": "China",
+      "normalizedKey": "china",
+      "created_at": "2025-11-10T05:24:18.303Z",
+      "last_seen": "2025-11-10T05:24:18.303Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 182,
+      "canonical": "India",
+      "normalizedKey": "india",
+      "created_at": "2025-11-10T05:24:18.303Z",
+      "last_seen": "2025-11-10T05:24:18.303Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 183,
+      "canonical": "Jupiter",
+      "normalizedKey": "jupiter",
+      "created_at": "2025-11-10T05:24:18.308Z",
+      "last_seen": "2025-11-10T05:24:18.308Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 184,
+      "canonical": "Saturn",
+      "normalizedKey": "saturn",
+      "created_at": "2025-11-10T05:24:18.308Z",
+      "last_seen": "2025-11-10T05:24:18.308Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 185,
+      "canonical": "Nile",
+      "normalizedKey": "nile",
+      "created_at": "2025-11-10T05:24:18.312Z",
+      "last_seen": "2025-11-10T05:24:18.312Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 186,
+      "canonical": "Diamond",
+      "normalizedKey": "diamond",
+      "created_at": "2025-11-10T05:24:18.316Z",
+      "last_seen": "2025-11-10T05:24:18.316Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 187,
+      "canonical": "Mercury",
+      "normalizedKey": "mercury",
+      "created_at": "2025-11-10T05:24:18.321Z",
+      "last_seen": "2025-11-10T05:24:18.321Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 188,
+      "canonical": "Antarctica",
+      "normalizedKey": "antarctica",
+      "created_at": "2025-11-10T05:24:18.325Z",
+      "last_seen": "2025-11-10T05:24:18.325Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 189,
+      "canonical": "Juliet",
+      "normalizedKey": "juliet",
+      "created_at": "2025-11-10T05:24:18.367Z",
+      "last_seen": "2025-11-10T05:24:18.367Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 190,
+      "canonical": "Brutus",
+      "normalizedKey": "brutus",
+      "created_at": "2025-11-10T05:24:18.371Z",
+      "last_seen": "2025-11-10T05:24:18.371Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 191,
+      "canonical": "Othello",
+      "normalizedKey": "othello",
+      "created_at": "2025-11-10T05:24:18.376Z",
+      "last_seen": "2025-11-10T05:24:18.376Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 192,
+      "canonical": "Cassio",
+      "normalizedKey": "cassio",
+      "created_at": "2025-11-10T05:24:18.376Z",
+      "last_seen": "2025-11-10T05:24:18.376Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 193,
+      "canonical": "Achilles",
+      "normalizedKey": "achilles",
+      "created_at": "2025-11-10T05:24:18.381Z",
+      "last_seen": "2025-11-10T05:24:18.381Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 194,
+      "canonical": "Patroclus",
+      "normalizedKey": "patroclus",
+      "created_at": "2025-11-10T05:24:18.381Z",
+      "last_seen": "2025-11-10T05:24:18.381Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 195,
+      "canonical": "Iago",
+      "normalizedKey": "iago",
+      "created_at": "2025-11-10T05:24:18.386Z",
+      "last_seen": "2025-11-10T05:24:18.386Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 196,
+      "canonical": "Darcy",
+      "normalizedKey": "darcy",
+      "created_at": "2025-11-10T05:24:18.395Z",
+      "last_seen": "2025-11-10T05:24:18.395Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 197,
+      "canonical": "Heathcliff",
+      "normalizedKey": "heathcliff",
+      "created_at": "2025-11-10T05:24:18.399Z",
+      "last_seen": "2025-11-10T05:24:18.399Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 198,
+      "canonical": "Hindley",
+      "normalizedKey": "hindley",
+      "created_at": "2025-11-10T05:24:18.399Z",
+      "last_seen": "2025-11-10T05:24:18.399Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 199,
+      "canonical": "Jane Eyre",
+      "normalizedKey": "jane eyre",
+      "created_at": "2025-11-10T05:24:18.404Z",
+      "last_seen": "2025-11-10T05:24:18.404Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 200,
+      "canonical": "Rochester",
+      "normalizedKey": "rochester",
+      "created_at": "2025-11-10T05:24:18.404Z",
+      "last_seen": "2025-11-10T05:24:18.404Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 201,
+      "canonical": "Scarlett",
+      "normalizedKey": "scarlett",
+      "created_at": "2025-11-10T05:24:18.409Z",
+      "last_seen": "2025-11-10T05:24:18.409Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 202,
+      "canonical": "Melanie",
+      "normalizedKey": "melanie",
+      "created_at": "2025-11-10T05:24:18.409Z",
+      "last_seen": "2025-11-10T05:24:18.409Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 203,
+      "canonical": "Anthony",
+      "normalizedKey": "anthony",
+      "created_at": "2025-11-10T05:24:18.420Z",
+      "last_seen": "2025-11-10T05:24:18.420Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 204,
+      "canonical": "Desdemona",
+      "normalizedKey": "desdemona",
+      "created_at": "2025-11-10T05:24:18.425Z",
+      "last_seen": "2025-11-10T05:24:18.425Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 205,
+      "canonical": "Hector",
+      "normalizedKey": "hector",
+      "created_at": "2025-11-10T05:24:18.430Z",
+      "last_seen": "2025-11-10T05:24:18.430Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 206,
+      "canonical": "Scientists",
+      "normalizedKey": "scientists",
+      "created_at": "2025-11-10T05:24:18.458Z",
+      "last_seen": "2025-11-10T05:24:18.458Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 207,
+      "canonical": "Experts",
+      "normalizedKey": "experts",
+      "created_at": "2025-11-10T05:24:18.470Z",
+      "last_seen": "2025-11-10T05:24:18.470Z",
+      "occurrence_count": 1
     }
   ],
   "metadata": {
-    "total_entities": 10,
-    "last_updated": "2025-11-10T04:49:50.218Z"
+    "total_entities": 207,
+    "last_updated": "2025-11-10T05:24:47.107Z"
   }
 }

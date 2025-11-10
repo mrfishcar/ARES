@@ -53,7 +53,8 @@ interface EvaluationResults {
 /**
  * Normalize relation predicate for comparison
  */
-function normalizeRelation(rel: string): string {
+function normalizeRelation(rel: string | undefined): string {
+  if (!rel) return '';
   const normalized = rel.toLowerCase().trim();
 
   // Map similar predicates
