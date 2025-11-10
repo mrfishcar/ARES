@@ -57,7 +57,13 @@
       "The Pyramids --[located_in]--> Giza",
       "Harvard University --[located_in]--> Cambridge"
     ],
-    "top_fp": []
+    "top_fp": [
+      "Paris --[lives_in]--> France",
+      "Louvre --[lives_in]--> Paris",
+      "Tokyo --[lives_in]--> Japan",
+      "White --[lives_in]--> Washington DC",
+      "Venice --[lives_in]--> Italy"
+    ]
   },
   "temporal": {
     "top_fn": [

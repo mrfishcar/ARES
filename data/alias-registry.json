@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextAID": 297,
+  "nextAID": 307,
   "mappings": [
     {
       "aid": 1,
@@ -2961,11 +2961,111 @@
       "last_seen": "2025-11-10T22:30:51.043Z",
       "occurrence_count": 1,
       "confidence": 1
+    },
+    {
+      "aid": 297,
+      "surfaceForm": "Harry",
+      "normalizedKey": "harry",
+      "eid": 268,
+      "created_at": "2025-11-10T23:09:30.423Z",
+      "last_seen": "2025-11-10T23:09:30.423Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 298,
+      "surfaceForm": "Hogwarts",
+      "normalizedKey": "hogwarts",
+      "eid": 269,
+      "created_at": "2025-11-10T23:09:30.423Z",
+      "last_seen": "2025-11-10T23:09:30.423Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 299,
+      "surfaceForm": "Hermione",
+      "normalizedKey": "hermione",
+      "eid": 270,
+      "created_at": "2025-11-10T23:09:30.438Z",
+      "last_seen": "2025-11-10T23:09:30.438Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 300,
+      "surfaceForm": "Ginny",
+      "normalizedKey": "ginny",
+      "eid": 271,
+      "created_at": "2025-11-10T23:09:30.461Z",
+      "last_seen": "2025-11-10T23:09:30.461Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 301,
+      "surfaceForm": "Ron",
+      "normalizedKey": "ron",
+      "eid": 272,
+      "created_at": "2025-11-10T23:09:30.476Z",
+      "last_seen": "2025-11-10T23:09:30.476Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 302,
+      "surfaceForm": "Gondor",
+      "normalizedKey": "gondor",
+      "eid": 273,
+      "created_at": "2025-11-10T23:09:30.491Z",
+      "last_seen": "2025-11-10T23:09:30.491Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 303,
+      "surfaceForm": "wisely",
+      "normalizedKey": "wisely",
+      "eid": 274,
+      "created_at": "2025-11-10T23:09:30.491Z",
+      "last_seen": "2025-11-10T23:09:30.491Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 304,
+      "surfaceForm": "Dumbledore",
+      "normalizedKey": "dumbledore",
+      "eid": 275,
+      "created_at": "2025-11-10T23:09:30.496Z",
+      "last_seen": "2025-11-10T23:09:30.496Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 305,
+      "surfaceForm": "Arathorn",
+      "normalizedKey": "arathorn",
+      "eid": 276,
+      "created_at": "2025-11-10T23:09:30.512Z",
+      "last_seen": "2025-11-10T23:09:30.512Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 306,
+      "surfaceForm": "Rohan",
+      "normalizedKey": "rohan",
+      "eid": 277,
+      "created_at": "2025-11-10T23:09:30.523Z",
+      "last_seen": "2025-11-10T23:09:30.523Z",
+      "occurrence_count": 1,
+      "confidence": 1
     }
   ],
   "metadata": {
-    "total_aliases": 296,
-    "total_entities": 267,
-    "last_updated": "2025-11-10T22:31:19.209Z"
+    "total_aliases": 306,
+    "total_entities": 277,
+    "last_updated": "2025-11-10T23:10:00.398Z"
   }
 }

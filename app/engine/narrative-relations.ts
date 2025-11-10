@@ -10,6 +10,7 @@
 import { v4 as uuid } from "uuid";
 import type { Relation, EntityType } from "./schema";
 import type { CorefLinks } from "./coref";
+import { getDynamicPatterns, type RelationPattern as DynamicRelationPattern } from "./dynamic-pattern-loader";
 
 /**
  * Relation pattern definition
@@ -434,7 +435,13 @@ export function extractNarrativeRelations(
 ): Relation[] {
   const relations: Relation[] = [];
 
-  for (const pattern of NARRATIVE_PATTERNS) {
+  // Combine static patterns with dynamic patterns
+  const dynamicPatterns = getDynamicPatterns();
+  const allPatterns = [...NARRATIVE_PATTERNS, ...dynamicPatterns];
+
+  console.log(`[NarrativeRelations] Using ${NARRATIVE_PATTERNS.length} static + ${dynamicPatterns.length} dynamic patterns = ${allPatterns.length} total`);
+
+  for (const pattern of allPatterns) {
     // Reset regex state
     pattern.regex.lastIndex = 0;
 
