@@ -23,3 +23,81 @@
 {"text":"The Palantir was used by Saruman to communicate with Sauron.","gold_relations":[{"subject":"Saruman","relation":"communicated_with","object":"Sauron"}],"family":"communication","case_type":"positive"}
 {"text":"Treebeard is the oldest of the Ents.","gold_relations":[{"subject":"Treebeard","relation":"member_of","object":"Ents"}],"family":"affiliation","case_type":"positive"}
 {"text":"Sam served Frodo throughout the quest.","gold_relations":[{"subject":"Sam","relation":"employed_by","object":"Frodo"}],"family":"employment","case_type":"positive"}
+{"text":"The engine is part of the car.","gold_relations":[{"subject":"engine","relation":"part_of","object":"car"}],"family":"part_whole","case_type":"positive"}
+{"text":"The keyboard consists of multiple keys.","gold_relations":[{"subject":"keyboard","relation":"consists_of","object":"keys"}],"family":"part_whole","case_type":"positive"}
+{"text":"The chapter is included in the book.","gold_relations":[{"subject":"chapter","relation":"part_of","object":"book"}],"family":"part_whole","case_type":"positive"}
+{"text":"The wheel is a component of the bicycle.","gold_relations":[{"subject":"wheel","relation":"part_of","object":"bicycle"}],"family":"part_whole","case_type":"positive"}
+{"text":"The roof covers the building.","gold_relations":[{"subject":"roof","relation":"part_of","object":"building"}],"family":"part_whole","case_type":"positive"}
+{"text":"The hand contains five fingers.","gold_relations":[{"subject":"hand","relation":"contains","object":"fingers"}],"family":"part_whole","case_type":"positive"}
+{"text":"The forest includes many trees.","gold_relations":[{"subject":"forest","relation":"consists_of","object":"trees"}],"family":"part_whole","case_type":"positive"}
+{"text":"Einstein is smarter than most people.","gold_relations":[{"subject":"Einstein","relation":"smarter_than","object":"people"}],"family":"comparison","case_type":"positive"}
+{"text":"The Nile is longer than the Thames.","gold_relations":[{"subject":"Nile","relation":"longer_than","object":"Thames"}],"family":"comparison","case_type":"positive"}
+{"text":"Gold is more valuable than copper.","gold_relations":[{"subject":"Gold","relation":"more_valuable_than","object":"copper"}],"family":"comparison","case_type":"positive"}
+{"text":"Sarah runs faster than Tom.","gold_relations":[{"subject":"Sarah","relation":"faster_than","object":"Tom"}],"family":"comparison","case_type":"positive"}
+{"text":"The elephant is larger than the mouse.","gold_relations":[{"subject":"elephant","relation":"larger_than","object":"mouse"}],"family":"comparison","case_type":"positive"}
+{"text":"Winter is colder than summer.","gold_relations":[{"subject":"Winter","relation":"colder_than","object":"summer"}],"family":"comparison","case_type":"positive"}
+{"text":"This solution is better than the previous one.","gold_relations":[{"subject":"solution","relation":"better_than","object":"previous one"}],"family":"comparison","case_type":"positive"}
+{"text":"The drought caused crop failure.","gold_relations":[{"subject":"drought","relation":"caused","object":"crop failure"}],"family":"causation","case_type":"positive"}
+{"text":"The explosion resulted in damage.","gold_relations":[{"subject":"explosion","relation":"resulted_in","object":"damage"}],"family":"causation","case_type":"positive"}
+{"text":"Smoking leads to health problems.","gold_relations":[{"subject":"Smoking","relation":"leads_to","object":"health problems"}],"family":"causation","case_type":"positive"}
+{"text":"The virus triggered an outbreak.","gold_relations":[{"subject":"virus","relation":"triggered","object":"outbreak"}],"family":"causation","case_type":"positive"}
+{"text":"Rain produces flooding in the valley.","gold_relations":[{"subject":"Rain","relation":"produces","object":"flooding"}],"family":"causation","case_type":"positive"}
+{"text":"The decision brought about change.","gold_relations":[{"subject":"decision","relation":"brought_about","object":"change"}],"family":"causation","case_type":"positive"}
+{"text":"Heat causes water to evaporate.","gold_relations":[{"subject":"Heat","relation":"causes","object":"evaporate"}],"family":"causation","case_type":"positive"}
+{"text":"The president governs the country.","gold_relations":[{"subject":"president","relation":"governs","object":"country"}],"family":"power","case_type":"positive"}
+{"text":"The CEO controls the company.","gold_relations":[{"subject":"CEO","relation":"controls","object":"company"}],"family":"power","case_type":"positive"}
+{"text":"The general commands the army.","gold_relations":[{"subject":"general","relation":"commands","object":"army"}],"family":"power","case_type":"positive"}
+{"text":"The judge rules over the court.","gold_relations":[{"subject":"judge","relation":"rules_over","object":"court"}],"family":"power","case_type":"positive"}
+{"text":"The king reigned over England.","gold_relations":[{"subject":"king","relation":"reigned_over","object":"England"}],"family":"power","case_type":"positive"}
+{"text":"The manager supervises the team.","gold_relations":[{"subject":"manager","relation":"supervises","object":"team"}],"family":"power","case_type":"positive"}
+{"text":"The dictator dominated the nation.","gold_relations":[{"subject":"dictator","relation":"dominated","object":"nation"}],"family":"power","case_type":"positive"}
+{"text":"Mary loves John deeply.","gold_relations":[{"subject":"Mary","relation":"loves","object":"John"}],"family":"emotional","case_type":"positive"}
+{"text":"The crowd feared the storm.","gold_relations":[{"subject":"crowd","relation":"feared","object":"storm"}],"family":"emotional","case_type":"positive"}
+{"text":"She hates dishonesty.","gold_relations":[{"subject":"She","relation":"hates","object":"dishonesty"}],"family":"emotional","case_type":"positive"}
+{"text":"The child admires the teacher.","gold_relations":[{"subject":"child","relation":"admires","object":"teacher"}],"family":"emotional","case_type":"positive"}
+{"text":"He trusts his friend.","gold_relations":[{"subject":"He","relation":"trusts","object":"friend"}],"family":"emotional","case_type":"positive"}
+{"text":"They respect their elders.","gold_relations":[{"subject":"They","relation":"respect","object":"elders"}],"family":"emotional","case_type":"positive"}
+{"text":"The dog adores its owner.","gold_relations":[{"subject":"dog","relation":"adores","object":"owner"}],"family":"emotional","case_type":"positive"}
+{"text":"The conference began on Monday.","gold_relations":[{"subject":"conference","relation":"began_on","object":"Monday"}],"family":"temporal","case_type":"positive"}
+{"text":"The war ended in 1945.","gold_relations":[{"subject":"war","relation":"ended_in","object":"1945"}],"family":"temporal","case_type":"positive"}
+{"text":"The meeting lasted three hours.","gold_relations":[{"subject":"meeting","relation":"lasted","object":"three hours"}],"family":"temporal","case_type":"positive"}
+{"text":"The project started in January.","gold_relations":[{"subject":"project","relation":"started_in","object":"January"}],"family":"temporal","case_type":"positive"}
+{"text":"The film was released in 2020.","gold_relations":[{"subject":"film","relation":"released_in","object":"2020"}],"family":"temporal","case_type":"positive"}
+{"text":"The event occurred during summer.","gold_relations":[{"subject":"event","relation":"occurred_during","object":"summer"}],"family":"temporal","case_type":"positive"}
+{"text":"Clark Kent is Superman.","gold_relations":[{"subject":"Clark Kent","relation":"is","object":"Superman"}],"family":"identity","case_type":"positive"}
+{"text":"Bruce Wayne is also known as Batman.","gold_relations":[{"subject":"Bruce Wayne","relation":"also_known_as","object":"Batman"}],"family":"identity","case_type":"positive"}
+{"text":"Mark Twain is the pen name of Samuel Clemens.","gold_relations":[{"subject":"Mark Twain","relation":"pen_name_of","object":"Samuel Clemens"}],"family":"identity","case_type":"positive"}
+{"text":"Muhammad Ali was formerly Cassius Clay.","gold_relations":[{"subject":"Muhammad Ali","relation":"formerly","object":"Cassius Clay"}],"family":"identity","case_type":"positive"}
+{"text":"Dr. Jekyll transforms into Mr. Hyde.","gold_relations":[{"subject":"Dr. Jekyll","relation":"transforms_into","object":"Mr. Hyde"}],"family":"identity","case_type":"positive"}
+{"text":"The artist goes by the name Banksy.","gold_relations":[{"subject":"artist","relation":"goes_by","object":"Banksy"}],"family":"identity","case_type":"positive"}
+{"text":"The company owns the building.","gold_relations":[{"subject":"company","relation":"owns","object":"building"}],"family":"ownership","case_type":"positive"}
+{"text":"Tesla possesses the patent.","gold_relations":[{"subject":"Tesla","relation":"possesses","object":"patent"}],"family":"ownership","case_type":"positive"}
+{"text":"The museum acquired the painting.","gold_relations":[{"subject":"museum","relation":"acquired","object":"painting"}],"family":"ownership","case_type":"positive"}
+{"text":"The bank holds the mortgage.","gold_relations":[{"subject":"bank","relation":"holds","object":"mortgage"}],"family":"ownership","case_type":"positive"}
+{"text":"She inherited the estate.","gold_relations":[{"subject":"She","relation":"inherited","object":"estate"}],"family":"ownership","case_type":"positive"}
+{"text":"The library contains rare books.","gold_relations":[{"subject":"library","relation":"contains","object":"rare books"}],"family":"ownership","case_type":"positive"}
+{"text":"Jane works for Microsoft.","gold_relations":[{"subject":"Jane","relation":"works_for","object":"Microsoft"}],"family":"employment","case_type":"positive"}
+{"text":"Dr. Smith serves at the hospital.","gold_relations":[{"subject":"Dr. Smith","relation":"serves_at","object":"hospital"}],"family":"employment","case_type":"positive"}
+{"text":"The professor teaches at Harvard.","gold_relations":[{"subject":"professor","relation":"teaches_at","object":"Harvard"}],"family":"employment","case_type":"positive"}
+{"text":"The engineer is employed by Boeing.","gold_relations":[{"subject":"engineer","relation":"employed_by","object":"Boeing"}],"family":"employment","case_type":"positive"}
+{"text":"The soldier is stationed at the base.","gold_relations":[{"subject":"soldier","relation":"stationed_at","object":"base"}],"family":"employment","case_type":"positive"}
+{"text":"The nurse works in the clinic.","gold_relations":[{"subject":"nurse","relation":"works_in","object":"clinic"}],"family":"employment","case_type":"positive"}
+{"text":"Leonardo da Vinci painted the Mona Lisa.","gold_relations":[{"subject":"Leonardo da Vinci","relation":"painted","object":"Mona Lisa"}],"family":"creation","case_type":"positive"}
+{"text":"Tolkien wrote The Hobbit.","gold_relations":[{"subject":"Tolkien","relation":"wrote","object":"The Hobbit"}],"family":"creation","case_type":"positive"}
+{"text":"Mozart composed The Magic Flute.","gold_relations":[{"subject":"Mozart","relation":"composed","object":"The Magic Flute"}],"family":"creation","case_type":"positive"}
+{"text":"Edison invented the light bulb.","gold_relations":[{"subject":"Edison","relation":"invented","object":"light bulb"}],"family":"creation","case_type":"positive"}
+{"text":"Spielberg directed Jurassic Park.","gold_relations":[{"subject":"Spielberg","relation":"directed","object":"Jurassic Park"}],"family":"creation","case_type":"positive"}
+{"text":"The reporter called the senator.","gold_relations":[{"subject":"reporter","relation":"called","object":"senator"}],"family":"communication","case_type":"positive"}
+{"text":"The teacher explained the concept to students.","gold_relations":[{"subject":"teacher","relation":"explained_to","object":"students"}],"family":"communication","case_type":"positive"}
+{"text":"The witness testified to the jury.","gold_relations":[{"subject":"witness","relation":"testified_to","object":"jury"}],"family":"communication","case_type":"positive"}
+{"text":"The CEO announced the merger to shareholders.","gold_relations":[{"subject":"CEO","relation":"announced_to","object":"shareholders"}],"family":"communication","case_type":"positive"}
+{"text":"Anna is the mother of Sophie.","gold_relations":[{"subject":"Anna","relation":"mother_of","object":"Sophie"}],"family":"kinship","case_type":"positive"}
+{"text":"David married Emily last year.","gold_relations":[{"subject":"David","relation":"married","object":"Emily"}],"family":"kinship","case_type":"positive"}
+{"text":"Robert is the uncle of Lisa.","gold_relations":[{"subject":"Robert","relation":"uncle_of","object":"Lisa"}],"family":"kinship","case_type":"positive"}
+{"text":"The Apollo 11 mission landed on the Moon.","gold_relations":[{"subject":"Apollo 11","relation":"landed_on","object":"Moon"}],"family":"event","case_type":"positive"}
+{"text":"World War II started in 1939.","gold_relations":[{"subject":"World War II","relation":"started_in","object":"1939"}],"family":"event","case_type":"positive"}
+{"text":"The earthquake struck Japan.","gold_relations":[{"subject":"earthquake","relation":"struck","object":"Japan"}],"family":"event","case_type":"positive"}
+{"text":"The revolution overthrew the monarchy.","gold_relations":[{"subject":"revolution","relation":"overthrew","object":"monarchy"}],"family":"event","case_type":"positive"}
+{"text":"The Olympics took place in Tokyo.","gold_relations":[{"subject":"Olympics","relation":"took_place_in","object":"Tokyo"}],"family":"event","case_type":"positive"}
+{"text":"The hurricane devastated the coast.","gold_relations":[{"subject":"hurricane","relation":"devastated","object":"coast"}],"family":"event","case_type":"positive"}
+{"text":"The protest occurred in the capital.","gold_relations":[{"subject":"protest","relation":"occurred_in","object":"capital"}],"family":"event","case_type":"positive"}
