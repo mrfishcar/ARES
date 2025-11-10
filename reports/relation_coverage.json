@@ -9,6 +9,7 @@
     "fn": 5,
     "total_gold": 8,
     "total_extracted": 7,
+    "support": 8,
     "uncovered_phrases": [
       "Prince Edward, heir of Queen Elizabeth, attended the ceremony.",
       "Sofia, offspring of Marcus, excelled in her studies.",
@@ -40,6 +41,7 @@
     "fn": 5,
     "total_gold": 5,
     "total_extracted": 0,
+    "support": 5,
     "uncovered_phrases": [
       "Rockefeller owns Standard Oil Company.",
       "The estate belongs to the Duke of Westminster.",
@@ -66,6 +68,7 @@
     "fn": 8,
     "total_gold": 8,
     "total_extracted": 2,
+    "support": 8,
     "uncovered_phrases": [
       "Sarah works for Google in Mountain View.",
       "Dr. Chen is employed by Stanford Hospital.",
@@ -98,6 +101,7 @@
     "fn": 7,
     "total_gold": 7,
     "total_extracted": 0,
+    "support": 7,
     "uncovered_phrases": [
       "Leonardo da Vinci painted the Mona Lisa.",
       "Shakespeare wrote Hamlet.",
@@ -122,10 +126,11 @@
     "recall": 0,
     "f1": 0,
     "tp": 0,
-    "fp": 2,
+    "fp": 0,
     "fn": 10,
     "total_gold": 10,
-    "total_extracted": 2,
+    "total_extracted": 0,
+    "support": 10,
     "uncovered_phrases": [
       "Paris is located in France.",
       "The Eiffel Tower stands in Paris.",
@@ -145,10 +150,7 @@
       "The Pyramids --[located_in]--> Giza",
       "Harvard University --[located_in]--> Cambridge"
     ],
-    "top_fp": [
-      "Paris --[lives_in]--> Germany",
-      "Paris --[lives_in]--> France"
-    ]
+    "top_fp": []
   },
   "temporal": {
     "family": "temporal",
@@ -160,6 +162,7 @@
     "fn": 7,
     "total_gold": 7,
     "total_extracted": 0,
+    "support": 7,
     "uncovered_phrases": [
       "The Renaissance followed the Middle Ages.",
       "The French Revolution began before the American Civil War.",
@@ -188,6 +191,7 @@
     "fn": 0,
     "total_gold": 0,
     "total_extracted": 0,
+    "support": 0,
     "uncovered_phrases": [],
     "top_fn": [],
     "top_fp": []
@@ -202,6 +206,7 @@
     "fn": 2,
     "total_gold": 2,
     "total_extracted": 0,
+    "support": 2,
     "uncovered_phrases": [
       "California is part of the United States.",
       "Manhattan is part of New York City."
@@ -222,6 +227,7 @@
     "fn": 8,
     "total_gold": 8,
     "total_extracted": 0,
+    "support": 8,
     "uncovered_phrases": [
       "Mark Twain is Samuel Clemens.",
       "Beijing equals Peking.",
@@ -251,6 +257,7 @@
     "fn": 10,
     "total_gold": 10,
     "total_extracted": 0,
+    "support": 10,
     "uncovered_phrases": [
       "Churchill attended the Yalta Conference.",
       "Mozart performed at the Vienna Opera.",
@@ -282,6 +289,7 @@
     "fn": 10,
     "total_gold": 10,
     "total_extracted": 0,
+    "support": 10,
     "uncovered_phrases": [
       "Lincoln wrote a letter to Grant.",
       "Einstein told Bohr about the theory.",
@@ -313,6 +321,7 @@
     "fn": 10,
     "total_gold": 10,
     "total_extracted": 0,
+    "support": 10,
     "uncovered_phrases": [
       "Napoleon ruled France.",
       "Caesar commanded the Roman legions.",
@@ -344,6 +353,7 @@
     "fn": 5,
     "total_gold": 5,
     "total_extracted": 0,
+    "support": 5,
     "uncovered_phrases": [
       "The Pacific Ocean is larger than the Atlantic.",
       "China has a greater population than India.",
@@ -370,6 +380,7 @@
     "fn": 8,
     "total_gold": 8,
     "total_extracted": 0,
+    "support": 8,
     "uncovered_phrases": [
       "Romeo loved Juliet.",
       "Brutus respected Caesar.",
@@ -399,6 +410,7 @@
     "fn": 0,
     "total_gold": 0,
     "total_extracted": 0,
+    "support": 0,
     "uncovered_phrases": [],
     "top_fn": [],
     "top_fp": []

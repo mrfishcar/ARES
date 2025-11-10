@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextEID": 208,
+  "nextEID": 245,
   "mappings": [
     {
       "eid": 1,
@@ -1657,10 +1657,306 @@
       "created_at": "2025-11-10T05:24:18.470Z",
       "last_seen": "2025-11-10T05:24:18.470Z",
       "occurrence_count": 1
+    },
+    {
+      "eid": 208,
+      "canonical": "Barty",
+      "normalizedKey": "barty",
+      "created_at": "2025-11-10T08:17:32.974Z",
+      "last_seen": "2025-11-10T08:17:32.974Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 209,
+      "canonical": "Mildred",
+      "normalizedKey": "mildred",
+      "created_at": "2025-11-10T08:17:32.975Z",
+      "last_seen": "2025-11-10T08:17:32.975Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 210,
+      "canonical": "Gandalf",
+      "normalizedKey": "gandalf",
+      "created_at": "2025-11-10T08:17:32.980Z",
+      "last_seen": "2025-11-10T08:17:32.980Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 211,
+      "canonical": "Frodo",
+      "normalizedKey": "frodo",
+      "created_at": "2025-11-10T08:17:32.980Z",
+      "last_seen": "2025-11-10T08:17:32.980Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 212,
+      "canonical": "Palantir",
+      "normalizedKey": "palantir",
+      "created_at": "2025-11-10T08:17:32.986Z",
+      "last_seen": "2025-11-10T08:17:32.986Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 213,
+      "canonical": "Saruman",
+      "normalizedKey": "saruman",
+      "created_at": "2025-11-10T08:17:32.987Z",
+      "last_seen": "2025-11-10T08:17:32.987Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 214,
+      "canonical": "Sauron",
+      "normalizedKey": "sauron",
+      "created_at": "2025-11-10T08:17:32.987Z",
+      "last_seen": "2025-11-10T08:17:32.987Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 215,
+      "canonical": "Shire",
+      "normalizedKey": "shire",
+      "created_at": "2025-11-10T08:17:32.996Z",
+      "last_seen": "2025-11-10T08:17:32.996Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 216,
+      "canonical": "Middle-earth",
+      "normalizedKey": "middle-earth",
+      "created_at": "2025-11-10T08:17:32.996Z",
+      "last_seen": "2025-11-10T08:17:32.996Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 217,
+      "canonical": "Isengard",
+      "normalizedKey": "isengard",
+      "created_at": "2025-11-10T08:17:33.002Z",
+      "last_seen": "2025-11-10T08:17:33.002Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 218,
+      "canonical": "Rivendell",
+      "normalizedKey": "rivendell",
+      "created_at": "2025-11-10T08:17:33.007Z",
+      "last_seen": "2025-11-10T08:17:33.007Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 219,
+      "canonical": "Elrond",
+      "normalizedKey": "elrond",
+      "created_at": "2025-11-10T08:17:33.008Z",
+      "last_seen": "2025-11-10T08:17:33.008Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 220,
+      "canonical": "Mordor",
+      "normalizedKey": "mordor",
+      "created_at": "2025-11-10T08:17:33.012Z",
+      "last_seen": "2025-11-10T08:17:33.012Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 221,
+      "canonical": "Shelob",
+      "normalizedKey": "shelob",
+      "created_at": "2025-11-10T08:17:33.012Z",
+      "last_seen": "2025-11-10T08:17:33.012Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 222,
+      "canonical": "Moria",
+      "normalizedKey": "moria",
+      "created_at": "2025-11-10T08:17:33.017Z",
+      "last_seen": "2025-11-10T08:17:33.017Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 223,
+      "canonical": "Drogo Baggins",
+      "normalizedKey": "drogo baggins",
+      "created_at": "2025-11-10T08:17:33.022Z",
+      "last_seen": "2025-11-10T08:17:33.022Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 224,
+      "canonical": "Merry",
+      "normalizedKey": "merry",
+      "created_at": "2025-11-10T08:17:33.026Z",
+      "last_seen": "2025-11-10T08:17:33.026Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 225,
+      "canonical": "Gimli",
+      "normalizedKey": "gimli",
+      "created_at": "2025-11-10T08:17:33.032Z",
+      "last_seen": "2025-11-10T08:17:33.032Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 226,
+      "canonical": "Legolas",
+      "normalizedKey": "legolas",
+      "created_at": "2025-11-10T08:17:33.032Z",
+      "last_seen": "2025-11-10T08:17:33.032Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 227,
+      "canonical": "Faramir",
+      "normalizedKey": "faramir",
+      "created_at": "2025-11-10T08:17:33.037Z",
+      "last_seen": "2025-11-10T08:17:33.037Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 228,
+      "canonical": "Boromir",
+      "normalizedKey": "boromir",
+      "created_at": "2025-11-10T08:17:33.037Z",
+      "last_seen": "2025-11-10T08:17:33.037Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 229,
+      "canonical": "Arwen",
+      "normalizedKey": "arwen",
+      "created_at": "2025-11-10T08:17:33.042Z",
+      "last_seen": "2025-11-10T08:17:33.042Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 230,
+      "canonical": "Bilbo",
+      "normalizedKey": "bilbo",
+      "created_at": "2025-11-10T08:17:33.047Z",
+      "last_seen": "2025-11-10T08:17:33.047Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 231,
+      "canonical": "Back Again",
+      "normalizedKey": "back again",
+      "created_at": "2025-11-10T08:17:33.047Z",
+      "last_seen": "2025-11-10T08:17:33.047Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 232,
+      "canonical": "Ring of Power",
+      "normalizedKey": "ring of power",
+      "created_at": "2025-11-10T08:17:33.052Z",
+      "last_seen": "2025-11-10T08:17:33.052Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 233,
+      "canonical": "Aragorn",
+      "normalizedKey": "aragorn",
+      "created_at": "2025-11-10T08:17:33.057Z",
+      "last_seen": "2025-11-10T08:17:33.057Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 234,
+      "canonical": "Isildur",
+      "normalizedKey": "isildur",
+      "created_at": "2025-11-10T08:17:33.057Z",
+      "last_seen": "2025-11-10T08:17:33.057Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 235,
+      "canonical": "Gollum",
+      "normalizedKey": "gollum",
+      "created_at": "2025-11-10T08:17:33.062Z",
+      "last_seen": "2025-11-10T08:17:33.062Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 236,
+      "canonical": "One Ring",
+      "normalizedKey": "one ring",
+      "created_at": "2025-11-10T08:17:33.062Z",
+      "last_seen": "2025-11-10T08:17:33.062Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 237,
+      "canonical": "Treebeard",
+      "normalizedKey": "treebeard",
+      "created_at": "2025-11-10T08:17:33.071Z",
+      "last_seen": "2025-11-10T08:17:33.071Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 238,
+      "canonical": "Ents",
+      "normalizedKey": "ents",
+      "created_at": "2025-11-10T08:17:33.071Z",
+      "last_seen": "2025-11-10T08:17:33.071Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 239,
+      "canonical": "Eowyn",
+      "normalizedKey": "eowyn",
+      "created_at": "2025-11-10T08:17:33.077Z",
+      "last_seen": "2025-11-10T08:17:33.077Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 240,
+      "canonical": "Theoden",
+      "normalizedKey": "theoden",
+      "created_at": "2025-11-10T08:17:33.077Z",
+      "last_seen": "2025-11-10T08:17:33.077Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 241,
+      "canonical": "dangerous lands",
+      "normalizedKey": "dangerous lands",
+      "created_at": "2025-11-10T08:17:33.082Z",
+      "last_seen": "2025-11-10T08:17:33.082Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 242,
+      "canonical": "Battle of Helm's Deep",
+      "normalizedKey": "battle of helm's deep",
+      "created_at": "2025-11-10T08:17:33.086Z",
+      "last_seen": "2025-11-10T08:17:33.086Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 243,
+      "canonical": "Tom Bombadil",
+      "normalizedKey": "tom bombadil",
+      "created_at": "2025-11-10T08:17:33.091Z",
+      "last_seen": "2025-11-10T08:17:33.091Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 244,
+      "canonical": "Sam",
+      "normalizedKey": "sam",
+      "created_at": "2025-11-10T08:17:33.095Z",
+      "last_seen": "2025-11-10T08:17:33.095Z",
+      "occurrence_count": 1
     }
   ],
   "metadata": {
-    "total_entities": 207,
-    "last_updated": "2025-11-10T05:24:47.107Z"
+    "total_entities": 244,
+    "last_updated": "2025-11-10T08:18:01.632Z"
   }
 }
