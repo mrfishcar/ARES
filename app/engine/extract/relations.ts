@@ -1201,8 +1201,8 @@ function extractDepRelations(
         }
       }
 
-      // Pattern 2: child_of via "son/daughter/child of"
-      if (lemma === 'son' || lemma === 'daughter' || lemma === 'child') {
+      // Pattern 2: child_of via "son/daughter/child/offspring/descendant/heir of"
+      if (lemma === 'son' || lemma === 'daughter' || lemma === 'child' || lemma === 'offspring' || lemma === 'descendant' || lemma === 'heir') {
         const ofPrep = tokens.find(t => t.dep === 'prep' && t.head === tok.i && t.text.toLowerCase() === 'of');
         if (ofPrep) {
           const parentTok = tokens.find(t => t.dep === 'pobj' && t.head === ofPrep.i);
@@ -2600,8 +2600,8 @@ function extractRegexRelations(
 ): Relation[] {
   const relations: Relation[] = [];
 
-  // Pattern 1: "X, son/daughter of Y"
-  const sonOfPattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})\s*,\s*(?:son|daughter)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})/g;
+  // Pattern 1: "X, son/daughter/child/offspring/descendant/heir of Y"
+  const sonOfPattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})\s*,\s*(?:son|daughter|child|offspring|descendant|heir)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})/g;
   let match: RegExpExecArray | null;
 
   while ((match = sonOfPattern.exec(text))) {
@@ -2777,9 +2777,25 @@ function extractRegexRelations(
     ));
   }
 
-  // Pattern 11: "X was the son of Y"
-  const sonPattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})\s+(?:was|is)\s+(?:the\s+)?(?:son|daughter)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})/g;
+  // Pattern 11: "X was the/a/an son/daughter/child/offspring/descendant/heir of Y"
+  const sonPattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})\s+(?:was|is)\s+(?:(?:the|an?)\s+)?(?:son|daughter|child|offspring|descendant|heir)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})/g;
   while ((match = sonPattern.exec(text))) {
+    const child = match[1];
+    const parent = match[2];
+    const childStart = match.index;
+    const childEnd = childStart + child.length;
+    const parentStart = match.index + match[0].lastIndexOf(parent);
+    const parentEnd = parentStart + parent.length;
+
+    relations.push(...tryCreateRelation(
+      text, entities, spans, 'child_of',
+      childStart, childEnd, parentStart, parentEnd, 'REGEX'
+    ));
+  }
+
+  // Pattern 11b: "X was born to Y" or "X born to Y"
+  const bornToPattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})\s+(?:was\s+)?born\s+to\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})/g;
+  while ((match = bornToPattern.exec(text))) {
     const child = match[1];
     const parent = match[2];
     const childStart = match.index;
