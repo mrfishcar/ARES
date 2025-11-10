@@ -21,6 +21,10 @@ import type { PatternLibrary } from '../pattern-library';
 import { isValidEntity, correctEntityType } from '../entity-filter';
 import { loadRelationPatterns, type PatternsMode } from './load-relations';
 
+// 🛡️ PRECISION DEFENSE SYSTEM - LAYER 1 & 3
+import { filterLowQualityEntities, isEntityFilterEnabled, getFilterConfig, getFilterStats } from '../entity-quality-filter';
+import { deduplicateRelations, isDeduplicationEnabled, getDeduplicationStats } from '../relation-deduplicator';
+
 // Select relation patterns mode from environment (baseline | expanded | hybrid)
 const PATTERNS_MODE: PatternsMode = (process.env.RELATION_PATTERNS_MODE as PatternsMode) || 'baseline';
 // Note: Pattern loading available via loadRelationPatterns(PATTERNS_MODE)
@@ -341,6 +345,48 @@ export async function extractFromSegments(
     console.log(`[ORCHESTRATOR] Pattern extraction added ${patternMatches.length} entity mentions`);
   }
 
+  // 🛡️ LAYER 1: Entity Quality Pre-Filter
+  // Filter low-quality entities BEFORE relation extraction
+  // Expected impact: +5-10% precision
+  const preFilterCount = allEntities.length;
+
+  if (isEntityFilterEnabled()) {
+    const config = getFilterConfig();
+    const filteredEntities = filterLowQualityEntities(allEntities, config);
+    const stats = getFilterStats(allEntities, filteredEntities, config);
+
+    console.log(`[PRECISION-DEFENSE] 🛡️ Layer 1: Entity Quality Filter`);
+    console.log(`  Original entities: ${stats.original}`);
+    console.log(`  Filtered entities: ${stats.filtered}`);
+    console.log(`  Removed: ${stats.removed} (${(stats.removalRate * 100).toFixed(1)}%)`);
+    console.log(`  Removal reasons:`);
+    console.log(`    - Low confidence: ${stats.removedByReason.lowConfidence}`);
+    console.log(`    - Too short: ${stats.removedByReason.tooShort}`);
+    console.log(`    - Blocked token: ${stats.removedByReason.blockedToken}`);
+    console.log(`    - No capitalization: ${stats.removedByReason.noCapitalization}`);
+    console.log(`    - Invalid characters: ${stats.removedByReason.invalidCharacters}`);
+    console.log(`    - Invalid date: ${stats.removedByReason.invalidDate}`);
+    console.log(`    - Too generic: ${stats.removedByReason.tooGeneric}`);
+    console.log(`    - Strict mode: ${stats.removedByReason.strictMode}`);
+
+    // Update allEntities array
+    allEntities.length = 0;
+    allEntities.push(...filteredEntities);
+
+    // Update entityMap to only include filtered entities
+    const filteredIds = new Set(filteredEntities.map(e => e.id));
+    for (const [key, entity] of Array.from(entityMap.entries())) {
+      if (!filteredIds.has(entity.id)) {
+        entityMap.delete(key);
+      }
+    }
+
+    // Update allSpans to only include spans for filtered entities
+    const validSpans = allSpans.filter(s => filteredIds.has(s.entity_id));
+    allSpans.length = 0;
+    allSpans.push(...validSpans);
+  }
+
   // 4. Build entity profiles (adaptive learning)
   // Accumulate knowledge about entities to improve future resolution
   const sentences = splitIntoSentences(fullText);
@@ -554,13 +600,33 @@ export async function extractFromSegments(
     }
   }
 
-  // 8. Deduplicate relations (same predicate + subject + object)
-  const uniqueRelations = new Map<string, Relation>();
-  for (const rel of appositiveFilteredRelations) {
-    const key = `${rel.subj}::${rel.pred}::${rel.obj}`;
-    if (!uniqueRelations.has(key)) {
-      uniqueRelations.set(key, rel);
+  // 🛡️ LAYER 3: Relation Deduplication
+  // Merge duplicate relations extracted by multiple patterns
+  // Expected impact: +10-15% precision
+  let uniqueRelations: Relation[];
+
+  if (isDeduplicationEnabled()) {
+    const preDedupeCount = appositiveFilteredRelations.length;
+    uniqueRelations = deduplicateRelations(appositiveFilteredRelations);
+    const stats = getDeduplicationStats(appositiveFilteredRelations, uniqueRelations);
+
+    console.log(`[PRECISION-DEFENSE] 🛡️ Layer 3: Relation Deduplication`);
+    console.log(`  Original relations: ${stats.original}`);
+    console.log(`  Deduplicated relations: ${stats.deduplicated}`);
+    console.log(`  Removed duplicates: ${stats.removed} (${(stats.removalRate * 100).toFixed(1)}%)`);
+    console.log(`  Duplicate groups: ${stats.duplicateGroups}`);
+    console.log(`  Avg group size: ${stats.avgGroupSize.toFixed(1)}`);
+    console.log(`  Max group size: ${stats.maxGroupSize}`);
+  } else {
+    // Fallback to simple deduplication
+    const uniqueMap = new Map<string, Relation>();
+    for (const rel of appositiveFilteredRelations) {
+      const key = `${rel.subj}::${rel.pred}::${rel.obj}`;
+      if (!uniqueMap.has(key)) {
+        uniqueMap.set(key, rel);
+      }
     }
+    uniqueRelations = Array.from(uniqueMap.values());
   }
 
   // 9. Optional: Filter entities to improve precision in dense narratives
@@ -568,7 +634,7 @@ export async function extractFromSegments(
   // But for simple sentences, we should keep all high-quality entities
   // Solution: Keep entities that are EITHER in relations OR have strong standalone evidence
   const entitiesInRelations = new Set<string>();
-  for (const rel of uniqueRelations.values()) {
+  for (const rel of uniqueRelations) {
     entitiesInRelations.add(rel.subj);
     entitiesInRelations.add(rel.obj);
   }
@@ -588,7 +654,7 @@ export async function extractFromSegments(
   // Example: mega-001 has 14 entities and 20 relations (ratio 1.4) - this should filter
   // Example: golden corpus has 8-10 entities and 5-10 relations - these should NOT filter
   // Threshold: >12 entities ensures only mega-scale narratives are filtered
-  const isDenseNarrative = allEntities.length > 12 && uniqueRelations.size >= allEntities.length;
+  const isDenseNarrative = allEntities.length > 12 && uniqueRelations.length >= allEntities.length;
 
   const filteredEntities = allEntities.filter(e => {
     const inRelation = entitiesInRelations.has(e.id);
@@ -613,7 +679,11 @@ export async function extractFromSegments(
   const filteredEntityIds = new Set(filteredEntities.map(e => e.id));
   const entityIdToCanonical = new Map(filteredEntities.map(e => [e.id, e.canonical]));
 
-  const filteredRelations = Array.from(uniqueRelations.values()).filter(rel => {
+  // Get confidence threshold from environment
+  const minConfidence = parseFloat(process.env.ARES_MIN_CONFIDENCE || '0.70');
+  const precisionMode = process.env.ARES_PRECISION_MODE === 'strict';
+
+  let filteredRelations = uniqueRelations.filter(rel => {
     // Check that both entities exist
     if (!filteredEntityIds.has(rel.subj) || !filteredEntityIds.has(rel.obj)) {
       return false;
@@ -631,6 +701,20 @@ export async function extractFromSegments(
 
     return true;
   });
+
+  // 🛡️ LAYER 3: Confidence Threshold Filtering
+  // Filter out low-confidence extractions
+  // Expected impact: +5-8% precision
+  if (precisionMode || process.env.ARES_MIN_CONFIDENCE) {
+    const preConfidenceCount = filteredRelations.length;
+    filteredRelations = filteredRelations.filter(rel => rel.confidence >= minConfidence);
+
+    console.log(`[PRECISION-DEFENSE] 🛡️ Layer 3: Confidence Threshold Filter`);
+    console.log(`  Threshold: ${minConfidence}`);
+    console.log(`  Before: ${preConfidenceCount} relations`);
+    console.log(`  After: ${filteredRelations.length} relations`);
+    console.log(`  Removed: ${preConfidenceCount - filteredRelations.length} (${((preConfidenceCount - filteredRelations.length) / preConfidenceCount * 100).toFixed(1)}%)`);
+  }
 
   const fictionEntities = extractFictionEntities(fullText);
 
