@@ -497,7 +497,11 @@ export async function extractFromSegments(
       // vs appositive (one name inside another, like "Aragorn, son of Arathorn")
       group.sort((a, b) => a.position - b.position);
 
-      console.log(`[APPOS-FILTER] Checking ${predObjKey} with ${group.length} subjects:`);
+      // Debug: show what the object entity is
+      const objEntity = allEntities.find(e => e.id === group[0].rel.obj);
+      const objCanonical = objEntity?.canonical || 'UNKNOWN';
+
+      console.log(`[APPOS-FILTER] Checking ${predObjKey} with ${group.length} subjects (obj="${objCanonical}"):`);
       for (const item of group) {
         console.log(`  - ${item.subjectCanonical} at position ${item.position}`);
       }
