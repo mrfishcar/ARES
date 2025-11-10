@@ -1,6 +1,12 @@
 {
-  "allow": ["location", "ownership", "communication"],
+  "allow": ["location", "ownership", "communication", "creation"],
   "min_synthetic_recall": 0.85,
   "min_canary_recall": 0.75,
-  "max_precision_drop": 0.05
+  "max_precision_drop": 0.05,
+  "notes": {
+    "creation": "Added 36 patterns for creation/authorship relations (painted, authored, composed, etc.)",
+    "location": "34 patterns for spatial relations (located_in, near, based_in, etc.)",
+    "ownership": "29 patterns for ownership/possession relations",
+    "communication": "34 patterns for communication relations (wrote_to, told, spoke_to, etc.)"
+  }
 }
