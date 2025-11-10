@@ -72,7 +72,87 @@ export type Predicate =
   | 'greater_than'  // Comparison: X greater_than Y
   | 'after'  // Temporal: X after Y
   | 'before'  // Temporal: X before Y
-  | 'during';  // Temporal: X during Y
+  | 'during'
+  | 'cousin_of'  // kinship
+  | 'ancestor_of'  // kinship
+  | 'descendant_of'  // kinship
+  | 'owned_by'  // ownership
+  | 'belongs_to'  // ownership
+  | 'property_of'  // ownership
+  | 'possessed_by'  // ownership
+  | 'works_for'  // employment
+  | 'employed_by'  // employment
+  | 'affiliated_with'  // employment
+  | 'partner_at'  // employment
+  | 'serves'  // employment
+  | 'invented_by'  // creation
+  | 'painted_by'  // creation
+  | 'built_by'  // creation
+  | 'composed_by'  // creation
+  | 'designed_by'  // creation
+  | 'written_by'  // creation
+  | 'near'  // location
+  | 'within'  // location
+  | 'across_from'  // location
+  | 'adjacent_to'  // location
+  | 'based_in'  // location
+  | 'north_of'  // location
+  | 'south_of'  // location
+  | 'since'  // temporal
+  | 'until'  // temporal
+  | 'on'  // temporal
+  | 'between'  // temporal
+  | 'caused_by'  // causation
+  | 'led_to'  // causation
+  | 'influenced_by'  // causation
+  | 'resulted_from'  // causation
+  | 'due_to'  // causation
+  | 'triggered_by'  // causation
+  | 'consists_of'  // part_whole
+  | 'includes'  // part_whole
+  | 'contains'  // part_whole
+  | 'made_of'  // part_whole
+  | 'comprises'  // part_whole
+  | 'equals'  // identity
+  | 'same_as'  // identity
+  | 'also_known_as'  // identity
+  | 'represents'  // identity
+  | 'participated_in'  // event
+  | 'performed_at'  // event
+  | 'witnessed'  // event
+  | 'organized'  // event
+  | 'told'  // communication
+  | 'said_to'  // communication
+  | 'asked'  // communication
+  | 'informed'  // communication
+  | 'replied'  // communication
+  | 'reported'  // communication
+  | 'controlled_by'  // power
+  | 'commanded_by'  // power
+  | 'managed_by'  // power
+  | 'governed_by'  // power
+  | 'led_by'  // power
+  | 'less_than'  // comparison
+  | 'equal_to'  // comparison
+  | 'higher_than'  // comparison
+  | 'similar_to'  // comparison
+  | 'different_from'  // comparison
+  | 'hated'  // emotional
+  | 'respected'  // emotional
+  | 'disliked'  // emotional
+  | 'admired'  // emotional
+  | 'envied'  // emotional
+  | 'feared'  // emotional
+  | 'not_related_to'  // negation
+  | 'alleged'  // negation
+  | 'rumored'  // negation
+  | 'denied'  // negation
+  | 'disputed'  // negation
+  | 'uncertain_link'  // negation
+  | 'painted'  // creation
+  | 'composed'  // creation
+  | 'designed'  // creation
+  | 'sculpted'  // creation;  // Temporal: X during Y
 
 // Evidence Source
 export interface Evidence {
@@ -179,7 +259,99 @@ export const GUARD: Record<Predicate, { subj: EntityType[]; obj: EntityType[] }>
   summoned: { subj: ['PERSON', 'ORG'], obj: ['PERSON'] },  // X summoned Y
   located_at: { subj: ['PERSON', 'ORG', 'ITEM', 'PLACE'], obj: ['PLACE'] },  // X located at Y
   located_beneath: { subj: ['PLACE', 'ITEM', 'ORG'], obj: ['PLACE'] },  // X beneath Y
-  hidden_in: { subj: ['ITEM', 'PERSON'], obj: ['PLACE'] }  // X hidden in Y
+  hidden_in: { subj: ['ITEM', 'PERSON'], obj: ['PLACE'] },  // X hidden in Y
+  created_by: { subj: ['WORK', 'ITEM', 'PLACE'], obj: ['PERSON', 'ORG'] },  // Y created_by X
+  located_in: { subj: ['PERSON', 'ORG', 'PLACE', 'ITEM'], obj: ['PLACE', 'ORG'] },  // X located_in Y
+  wrote_to: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG'] },  // X wrote_to Y
+  hosted: { subj: ['PERSON', 'ORG'], obj: ['EVENT', 'PERSON'] },  // X hosted Y
+  ruled_by: { subj: ['ORG', 'PLACE'], obj: ['PERSON', 'ORG'] },  // Y ruled_by X
+  loved: { subj: ['PERSON'], obj: ['PERSON'] },  // X loved Y
+  is: { subj: ['PERSON', 'ORG', 'PLACE', 'ITEM'], obj: ['PERSON', 'ORG', 'PLACE', 'ITEM'] },  // X is Y
+  greater_than: { subj: ['PERSON', 'ORG', 'PLACE', 'ITEM'], obj: ['PERSON', 'ORG', 'PLACE', 'ITEM'] },  // X > Y
+  after: { subj: ['PERSON', 'ORG', 'EVENT', 'WORK'], obj: ['PERSON', 'ORG', 'EVENT', 'WORK'] },  // X after Y
+  before: { subj: ['PERSON', 'ORG', 'EVENT', 'WORK'], obj: ['PERSON', 'ORG', 'EVENT', 'WORK'] },  // X before Y
+  during: { subj: ['PERSON', 'ORG', 'EVENT'], obj: ['EVENT', 'WORK'] },  // X during Y
+
+  cousin_of: { subj: ['PERSON'], obj: ['PERSON'] }, // kinship
+  ancestor_of: { subj: ['PERSON'], obj: ['PERSON'] }, // kinship
+  descendant_of: { subj: ['PERSON'], obj: ['PERSON'] }, // kinship
+  owned_by: { subj: ['PERSON','ORG'], obj: ['PERSON','ORG','PLACE','ITEM','WORK'] }, // ownership
+  belongs_to: { subj: ['PERSON','ORG'], obj: ['PERSON','ORG','PLACE','ITEM','WORK'] }, // ownership
+  property_of: { subj: ['PERSON','ORG'], obj: ['PERSON','ORG','PLACE','ITEM','WORK'] }, // ownership
+  possessed_by: { subj: ['PERSON','ORG'], obj: ['PERSON','ORG','PLACE','ITEM','WORK'] }, // ownership
+  works_for: { subj: ['PERSON'], obj: ['ORG','PLACE'] }, // employment
+  employed_by: { subj: ['PERSON'], obj: ['ORG','PLACE'] }, // employment
+  affiliated_with: { subj: ['PERSON'], obj: ['ORG','PLACE'] }, // employment
+  partner_at: { subj: ['PERSON'], obj: ['ORG','PLACE'] }, // employment
+  serves: { subj: ['PERSON'], obj: ['ORG','PLACE'] }, // employment
+  invented_by: { subj: ['PERSON','ORG'], obj: ['WORK','ITEM','PLACE'] }, // creation
+  painted_by: { subj: ['PERSON','ORG'], obj: ['WORK','ITEM','PLACE'] }, // creation
+  built_by: { subj: ['PERSON','ORG'], obj: ['WORK','ITEM','PLACE'] }, // creation
+  composed_by: { subj: ['PERSON','ORG'], obj: ['WORK','ITEM','PLACE'] }, // creation
+  designed_by: { subj: ['PERSON','ORG'], obj: ['WORK','ITEM','PLACE'] }, // creation
+  written_by: { subj: ['PERSON','ORG'], obj: ['WORK','ITEM','PLACE'] }, // creation
+  near: { subj: ['PERSON','ORG','PLACE','ITEM'], obj: ['PLACE','ORG'] }, // location
+  within: { subj: ['PERSON','ORG','PLACE','ITEM'], obj: ['PLACE','ORG'] }, // location
+  across_from: { subj: ['PERSON','ORG','PLACE','ITEM'], obj: ['PLACE','ORG'] }, // location
+  adjacent_to: { subj: ['PERSON','ORG','PLACE','ITEM'], obj: ['PLACE','ORG'] }, // location
+  based_in: { subj: ['PERSON','ORG','PLACE','ITEM'], obj: ['PLACE','ORG'] }, // location
+  north_of: { subj: ['PERSON','ORG','PLACE','ITEM'], obj: ['PLACE','ORG'] }, // location
+  south_of: { subj: ['PERSON','ORG','PLACE','ITEM'], obj: ['PLACE','ORG'] }, // location
+  since: { subj: ['PERSON','ORG','EVENT','WORK'], obj: ['PERSON','ORG','EVENT','WORK'] }, // temporal
+  until: { subj: ['PERSON','ORG','EVENT','WORK'], obj: ['PERSON','ORG','EVENT','WORK'] }, // temporal
+  on: { subj: ['PERSON','ORG','EVENT','WORK'], obj: ['PERSON','ORG','EVENT','WORK'] }, // temporal
+  between: { subj: ['PERSON','ORG','EVENT','WORK'], obj: ['PERSON','ORG','EVENT','WORK'] }, // temporal
+  caused_by: { subj: ['PERSON','ORG','EVENT'], obj: ['PERSON','ORG','EVENT','WORK'] }, // causation
+  led_to: { subj: ['PERSON','ORG','EVENT'], obj: ['PERSON','ORG','EVENT','WORK'] }, // causation
+  influenced_by: { subj: ['PERSON','ORG','EVENT'], obj: ['PERSON','ORG','EVENT','WORK'] }, // causation
+  resulted_from: { subj: ['PERSON','ORG','EVENT'], obj: ['PERSON','ORG','EVENT','WORK'] }, // causation
+  due_to: { subj: ['PERSON','ORG','EVENT'], obj: ['PERSON','ORG','EVENT','WORK'] }, // causation
+  triggered_by: { subj: ['PERSON','ORG','EVENT'], obj: ['PERSON','ORG','EVENT','WORK'] }, // causation
+  consists_of: { subj: ['PERSON','ORG','PLACE','ITEM'], obj: ['PERSON','ORG','PLACE','ITEM'] }, // part_whole
+  includes: { subj: ['PERSON','ORG','PLACE','ITEM'], obj: ['PERSON','ORG','PLACE','ITEM'] }, // part_whole
+  contains: { subj: ['PERSON','ORG','PLACE','ITEM'], obj: ['PERSON','ORG','PLACE','ITEM'] }, // part_whole
+  made_of: { subj: ['PERSON','ORG','PLACE','ITEM'], obj: ['PERSON','ORG','PLACE','ITEM'] }, // part_whole
+  comprises: { subj: ['PERSON','ORG','PLACE','ITEM'], obj: ['PERSON','ORG','PLACE','ITEM'] }, // part_whole
+  equals: { subj: ['PERSON','ORG','PLACE','ITEM'], obj: ['PERSON','ORG','PLACE','ITEM'] }, // identity
+  same_as: { subj: ['PERSON','ORG','PLACE','ITEM'], obj: ['PERSON','ORG','PLACE','ITEM'] }, // identity
+  also_known_as: { subj: ['PERSON','ORG','PLACE','ITEM'], obj: ['PERSON','ORG','PLACE','ITEM'] }, // identity
+  represents: { subj: ['PERSON','ORG','PLACE','ITEM'], obj: ['PERSON','ORG','PLACE','ITEM'] }, // identity
+  participated_in: { subj: ['PERSON','ORG'], obj: ['EVENT','PLACE'] }, // event
+  performed_at: { subj: ['PERSON','ORG'], obj: ['EVENT','PLACE'] }, // event
+  witnessed: { subj: ['PERSON','ORG'], obj: ['EVENT','PLACE'] }, // event
+  organized: { subj: ['PERSON','ORG'], obj: ['EVENT','PLACE'] }, // event
+  told: { subj: ['PERSON','ORG'], obj: ['PERSON','ORG'] }, // communication
+  said_to: { subj: ['PERSON','ORG'], obj: ['PERSON','ORG'] }, // communication
+  asked: { subj: ['PERSON','ORG'], obj: ['PERSON','ORG'] }, // communication
+  informed: { subj: ['PERSON','ORG'], obj: ['PERSON','ORG'] }, // communication
+  replied: { subj: ['PERSON','ORG'], obj: ['PERSON','ORG'] }, // communication
+  reported: { subj: ['PERSON','ORG'], obj: ['PERSON','ORG'] }, // communication
+  controlled_by: { subj: ['PERSON','ORG'], obj: ['ORG','PLACE','PERSON'] }, // power
+  commanded_by: { subj: ['PERSON','ORG'], obj: ['ORG','PLACE','PERSON'] }, // power
+  managed_by: { subj: ['PERSON','ORG'], obj: ['ORG','PLACE','PERSON'] }, // power
+  governed_by: { subj: ['PERSON','ORG'], obj: ['ORG','PLACE','PERSON'] }, // power
+  led_by: { subj: ['PERSON','ORG'], obj: ['ORG','PLACE','PERSON'] }, // power
+  less_than: { subj: ['PERSON','ORG','PLACE','ITEM'], obj: ['PERSON','ORG','PLACE','ITEM'] }, // comparison
+  equal_to: { subj: ['PERSON','ORG','PLACE','ITEM'], obj: ['PERSON','ORG','PLACE','ITEM'] }, // comparison
+  higher_than: { subj: ['PERSON','ORG','PLACE','ITEM'], obj: ['PERSON','ORG','PLACE','ITEM'] }, // comparison
+  similar_to: { subj: ['PERSON','ORG','PLACE','ITEM'], obj: ['PERSON','ORG','PLACE','ITEM'] }, // comparison
+  different_from: { subj: ['PERSON','ORG','PLACE','ITEM'], obj: ['PERSON','ORG','PLACE','ITEM'] }, // comparison
+  hated: { subj: ['PERSON'], obj: ['PERSON'] }, // emotional
+  respected: { subj: ['PERSON'], obj: ['PERSON'] }, // emotional
+  disliked: { subj: ['PERSON'], obj: ['PERSON'] }, // emotional
+  admired: { subj: ['PERSON'], obj: ['PERSON'] }, // emotional
+  envied: { subj: ['PERSON'], obj: ['PERSON'] }, // emotional
+  feared: { subj: ['PERSON'], obj: ['PERSON'] }, // emotional
+  not_related_to: { subj: ['PERSON','ORG'], obj: ['PERSON','ORG','WORK','EVENT'] }, // negation
+  alleged: { subj: ['PERSON','ORG'], obj: ['PERSON','ORG','WORK','EVENT'] }, // negation
+  rumored: { subj: ['PERSON','ORG'], obj: ['PERSON','ORG','WORK','EVENT'] }, // negation
+  denied: { subj: ['PERSON','ORG'], obj: ['PERSON','ORG','WORK','EVENT'] }, // negation
+  disputed: { subj: ['PERSON','ORG'], obj: ['PERSON','ORG','WORK','EVENT'] }, // negation
+  uncertain_link: { subj: ['PERSON','ORG'], obj: ['PERSON','ORG','WORK','EVENT'] }, // negation
+  painted: { subj: ['PERSON','ORG'], obj: ['WORK','ITEM','PLACE'] }, // creation
+  composed: { subj: ['PERSON','ORG'], obj: ['WORK','ITEM','PLACE'] }, // creation
+  designed: { subj: ['PERSON','ORG'], obj: ['WORK','ITEM','PLACE'] }, // creation
+  sculpted: { subj: ['PERSON','ORG'], obj: ['WORK','ITEM','PLACE'] }, // creation
 };
 
 // Inverse predicates
@@ -197,7 +369,20 @@ export const INVERSE: Partial<Record<Predicate, Predicate>> = {
   mentored: 'mentored_by',
   mentored_by: 'mentored',
   defeated: 'defeated',  // Asymmetric but can be symmetric in conflict
-  killed: 'killed'  // No inverse - death is one-way
+  killed: 'killed',  // No inverse - death is one-way
+
+  ancestor_of: 'descendant_of',
+  descendant_of: 'ancestor_of',
+  owned_by: 'owns' as Predicate,
+  owns: 'owned_by' as Predicate,
+  possessed_by: 'possesses' as Predicate,
+  possesses: 'possessed_by' as Predicate,
+  painted_by: 'painted' as Predicate,
+  painted: 'painted_by' as Predicate,
+  composed_by: 'composed' as Predicate,
+  composed: 'composed_by' as Predicate,
+  designed_by: 'designed' as Predicate,
+  designed: 'designed_by' as Predicate
 };
 
 // Single-valued predicates (for conflict detection)
