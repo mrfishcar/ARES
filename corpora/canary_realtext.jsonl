@@ -1,0 +1,25 @@
+{"text":"Barty wrote to Mildred after the hearing.","gold_relations":[{"subject":"Barty","relation":"wrote_to","object":"Mildred"}],"family":"communication","case_type":"positive"}
+{"text":"The café is in the station.","gold_relations":[{"subject":"café","relation":"located_in","object":"station"}],"family":"location","case_type":"positive"}
+{"text":"Frodo is the son of Drogo Baggins.","gold_relations":[{"subject":"Frodo","relation":"child_of","object":"Drogo Baggins"}],"family":"kinship","case_type":"positive"}
+{"text":"Gandalf told Frodo about the ring.","gold_relations":[{"subject":"Gandalf","relation":"told","object":"Frodo"}],"family":"communication","case_type":"positive"}
+{"text":"The Shire is located in Middle-earth.","gold_relations":[{"subject":"Shire","relation":"located_in","object":"Middle-earth"}],"family":"location","case_type":"positive"}
+{"text":"Bilbo wrote There and Back Again.","gold_relations":[{"subject":"Bilbo","relation":"authored","object":"There and Back Again"}],"family":"creation","case_type":"positive"}
+{"text":"Aragorn is the heir of Isildur.","gold_relations":[{"subject":"Aragorn","relation":"descended_from","object":"Isildur"}],"family":"lineage","case_type":"positive"}
+{"text":"Gollum owned the One Ring for centuries.","gold_relations":[{"subject":"Gollum","relation":"owned","object":"One Ring"}],"family":"ownership","case_type":"positive"}
+{"text":"Gimli is a member of the Fellowship.","gold_relations":[{"subject":"Gimli","relation":"member_of","object":"Fellowship"}],"family":"affiliation","case_type":"positive"}
+{"text":"Saruman was defeated at Isengard.","gold_relations":[{"subject":"Saruman","relation":"located_at","object":"Isengard"}],"family":"location","case_type":"positive"}
+{"text":"Merry and Pippin are cousins.","gold_relations":[{"subject":"Merry","relation":"cousin_of","object":"Pippin"}],"family":"kinship","case_type":"positive"}
+{"text":"Sauron created the Ring of Power.","gold_relations":[{"subject":"Sauron","relation":"created","object":"Ring of Power"}],"family":"creation","case_type":"positive"}
+{"text":"Eowyn slayed the Witch-king, saving Theoden.","gold_relations":[],"family":"negation","case_type":"negative"}
+{"text":"The Battle of Helm's Deep lasted all night.","gold_relations":[],"family":"temporal","case_type":"negative"}
+{"text":"Tom Bombadil is mysterious and ancient.","gold_relations":[],"family":"identity","case_type":"negative"}
+{"text":"Legolas and Gimli became friends despite their peoples' history.","gold_relations":[{"subject":"Legolas","relation":"friend_of","object":"Gimli"}],"family":"kinship","case_type":"positive"}
+{"text":"Elrond hosted the Council at Rivendell.","gold_relations":[{"subject":"Elrond","relation":"located_at","object":"Rivendell"}],"family":"location","case_type":"positive"}
+{"text":"Faramir is Boromir's brother.","gold_relations":[{"subject":"Faramir","relation":"sibling_of","object":"Boromir"}],"family":"kinship","case_type":"positive"}
+{"text":"The hobbits traveled through dangerous lands.","gold_relations":[],"family":"negation","case_type":"negative"}
+{"text":"Shelob guards the pass into Mordor.","gold_relations":[{"subject":"Shelob","relation":"located_at","object":"Mordor"}],"family":"location","case_type":"positive"}
+{"text":"Gandalf fought the Balrog in Moria.","gold_relations":[{"subject":"Gandalf","relation":"located_at","object":"Moria"}],"family":"location","case_type":"positive"}
+{"text":"Arwen is Elrond's daughter.","gold_relations":[{"subject":"Arwen","relation":"child_of","object":"Elrond"}],"family":"kinship","case_type":"positive"}
+{"text":"The Palantir was used by Saruman to communicate with Sauron.","gold_relations":[{"subject":"Saruman","relation":"communicated_with","object":"Sauron"}],"family":"communication","case_type":"positive"}
+{"text":"Treebeard is the oldest of the Ents.","gold_relations":[{"subject":"Treebeard","relation":"member_of","object":"Ents"}],"family":"affiliation","case_type":"positive"}
+{"text":"Sam served Frodo throughout the quest.","gold_relations":[{"subject":"Sam","relation":"employed_by","object":"Frodo"}],"family":"employment","case_type":"positive"}

@@ -1,0 +1,157 @@
+{
+  "kinship": {
+    "top_fn": [
+      "Thomas --[sibling_of]--> James",
+      "Prince Edward --[related_to]--> Queen Elizabeth",
+      "Sofia --[related_to]--> Marcus",
+      "King Arthur --[related_to]--> Uther Pendragon",
+      "Isabella --[related_to]--> Ferdinand"
+    ],
+    "top_fp": [
+      "UNKNOWN --[child_of]--> UNKNOWN",
+      "UNKNOWN --[parent_of]--> UNKNOWN",
+      "UNKNOWN --[married_to]--> UNKNOWN",
+      "UNKNOWN --[married_to]--> UNKNOWN",
+      "UNKNOWN --[child_of]--> UNKNOWN"
+    ]
+  },
+  "ownership": {
+    "top_fn": [
+      "Rockefeller --[owns]--> Standard Oil Company",
+      "The --[belongs_to]--> Duke",
+      "Tesla --[possesses]--> Solar",
+      "The --[property_of]--> Louvre Museum",
+      "Musk --[owns]--> Tesla"
+    ],
+    "top_fp": []
+  },
+  "employment": {
+    "top_fn": [
+      "Sarah --[works_for]--> Google",
+      "Dr --[employed_by]--> Chen",
+      "Marcus --[member_of]--> Board",
+      "Elena --[affiliated_with]--> Chief Technology Officer",
+      "Professor Smith --[affiliated_with]--> Harvard University"
+    ],
+    "top_fp": [
+      "UNKNOWN --[lives_in]--> UNKNOWN",
+      "UNKNOWN --[teaches_at]--> UNKNOWN",
+      "UNKNOWN --[teaches_at]--> UNKNOWN"
+    ]
+  },
+  "creation": {
+    "top_fn": [
+      "Leonardo --[painted_by]--> Vinci",
+      "Shakespeare --[written_by]--> Hamlet",
+      "Mozart --[composed_by]--> The Magic Flute",
+      "Frank Lloyd Wright --[created_by]--> Fallingwater",
+      "Tolkien --[created_by]--> The Lord"
+    ],
+    "top_fp": []
+  },
+  "location": {
+    "top_fn": [
+      "Paris --[located_in]--> France",
+      "The Eiffel Tower --[located_in]--> Paris",
+      "Silicon Valley --[located_in]--> California",
+      "The Pyramids --[located_in]--> Giza",
+      "Harvard University --[located_in]--> Cambridge"
+    ],
+    "top_fp": [
+      "UNKNOWN --[lives_in]--> UNKNOWN",
+      "UNKNOWN --[lives_in]--> UNKNOWN",
+      "UNKNOWN --[lives_in]--> UNKNOWN",
+      "UNKNOWN --[lives_in]--> UNKNOWN",
+      "UNKNOWN --[lives_in]--> UNKNOWN"
+    ]
+  },
+  "temporal": {
+    "top_fn": [
+      "World War --[after]--> World War",
+      "The Renaissance --[after]--> Middle Ages",
+      "The French Revolution --[after]--> American Civil War",
+      "The Industrial Revolution --[after]--> Medieval",
+      "Shakespeare --[after]--> Elizabethan"
+    ],
+    "top_fp": []
+  },
+  "causation": {
+    "top_fn": [],
+    "top_fp": []
+  },
+  "part_whole": {
+    "top_fn": [
+      "California --[part_of]--> United States",
+      "Manhattan --[part_of]--> New York City"
+    ],
+    "top_fp": []
+  },
+  "identity": {
+    "top_fn": [
+      "Mark Twain --[is]--> Samuel Clemens",
+      "Beijing --[is]--> Peking",
+      "New York --[is]--> Big Apple",
+      "Churchill --[is]--> Winston Leonard Spencer Churchill",
+      "The --[is]--> America"
+    ],
+    "top_fp": []
+  },
+  "event": {
+    "top_fn": [
+      "Churchill --[attended]--> Yalta Conference",
+      "Mozart --[attended]--> Vienna Opera",
+      "Armstrong --[attended]--> Apollo",
+      "Einstein --[attended]--> Solvay Conference",
+      "Shakespeare --[attended]--> Globe Theatre"
+    ],
+    "top_fp": []
+  },
+  "communication": {
+    "top_fn": [
+      "Lincoln --[wrote_to]--> Grant",
+      "Einstein --[wrote_to]--> Bohr",
+      "Churchill --[wrote_to]--> Roosevelt",
+      "Jefferson --[wrote_to]--> Adams",
+      "King --[wrote_to]--> Congress"
+    ],
+    "top_fp": []
+  },
+  "power": {
+    "top_fn": [
+      "Napoleon --[ruled]--> France",
+      "Caesar --[ruled]--> Roman",
+      "Elizabeth --[ruled]--> United Kingdom",
+      "Alexander --[ruled]--> Greek",
+      "Genghis Khan --[ruled]--> Central Asia"
+    ],
+    "top_fp": [
+      "UNKNOWN --[rules]--> UNKNOWN",
+      "UNKNOWN --[rules]--> UNKNOWN",
+      "UNKNOWN --[rules]--> UNKNOWN"
+    ]
+  },
+  "comparison": {
+    "top_fn": [
+      "The Pacific Ocean --[greater_than]--> Atlantic",
+      "China --[greater_than]--> India",
+      "Jupiter --[greater_than]--> Saturn",
+      "The Nile --[greater_than]--> Amazon",
+      "Antarctica --[greater_than]--> Arctic"
+    ],
+    "top_fp": []
+  },
+  "emotional": {
+    "top_fn": [
+      "Romeo --[loved]--> Juliet",
+      "Brutus --[loved]--> Caesar",
+      "Othello --[loved]--> Cassio",
+      "Achilles --[loved]--> Patroclus",
+      "Iago --[loved]--> Othello"
+    ],
+    "top_fp": []
+  },
+  "negation": {
+    "top_fn": [],
+    "top_fp": []
+  }
+}

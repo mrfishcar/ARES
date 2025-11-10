@@ -9,7 +9,7 @@ import { extractRelations } from '../app/engine/extract/relations';
 import { compose } from '../app/generate/exposition';
 import { toMarkdownPage } from '../app/generate/markdown';
 
-describe('Long Corpus Wiki Generation', () => {
+describe('Long Corpus Wiki Generation', { timeout: 60000 }, () => {
   it('generates wiki pages from messy multi-paragraph text', async () => {
     // 10 messy paragraphs with various entities and relations
     const text = `

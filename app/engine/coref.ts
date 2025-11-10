@@ -79,6 +79,11 @@ const PRONOUNS = new Map<string, { gender: Gender; number: Number }>([
 ]);
 
 /**
+ * Location pronouns that refer to places
+ */
+const LOCATION_PRONOUNS = new Set(['there', 'here']);
+
+/**
  * Title keywords that suggest roles
  */
 const TITLES = new Map<string, string[]>([
@@ -217,14 +222,14 @@ function extractMentions(sentences: Sentence[], text: string): Mention[] {
     const sentence = sentences[si];
     const sentText = sentence.text;
 
-    // Extract pronouns
+    // Extract pronouns (person and location)
     const words = sentText.split(/\b/);
     let offset = sentence.start;
 
     for (const word of words) {
       const lower = word.toLowerCase();
 
-      if (PRONOUNS.has(lower)) {
+      if (PRONOUNS.has(lower) || LOCATION_PRONOUNS.has(lower)) {
         const start = text.indexOf(word, offset);
         if (start >= sentence.start && start < sentence.end) {
           mentions.push({
@@ -298,7 +303,46 @@ function extractMentions(sentences: Sentence[], text: string): Mention[] {
 }
 
 /**
- * Resolve pronouns using stacks per paragraph
+ * Calculate entity salience based on mention frequency
+ */
+function calculateEntitySalience(
+  entitySpans: Array<{ entity_id: string; start: number; end: number }>,
+  windowStart: number,
+  windowEnd: number
+): Map<string, number> {
+  const salienceMap = new Map<string, number>();
+
+  // Count mentions within the window
+  for (const span of entitySpans) {
+    if (span.start >= windowStart && span.start < windowEnd) {
+      const count = salienceMap.get(span.entity_id) || 0;
+      salienceMap.set(span.entity_id, count + 1);
+    }
+  }
+
+  // Normalize to 0-1 scale
+  const maxCount = Math.max(...Array.from(salienceMap.values()), 1);
+  for (const [entityId, count] of salienceMap) {
+    salienceMap.set(entityId, count / maxCount);
+  }
+
+  return salienceMap;
+}
+
+/**
+ * Calculate recency score based on distance from pronoun
+ * Returns score in range [0.3, 1.0]
+ */
+function calculateRecencyScore(distance: number): number {
+  // Distance in characters from entity to pronoun
+  // Closer = higher score
+  // Use exponential decay: score = 0.3 + 0.7 * exp(-distance / 500)
+  const decay = Math.exp(-distance / 500);
+  return 0.3 + 0.7 * decay;
+}
+
+/**
+ * Resolve pronouns using stacks per paragraph with cross-sentence fallback
  */
 function resolvePronounStacks(
   mentions: Mention[],
@@ -314,13 +358,41 @@ function resolvePronounStacks(
     if (mention.type !== 'pronoun') continue;
 
     const pronoun = mention.text.toLowerCase();
+
+    // Check if it's a location pronoun
+    if (LOCATION_PRONOUNS.has(pronoun)) {
+      // Resolve to most recent PLACE or ORG entity
+      const candidateSpans = entitySpans.filter(span => {
+        const entity = entities.find(e => e.id === span.entity_id);
+        return entity && (entity.type === 'PLACE' || entity.type === 'ORG') && span.start < mention.start;
+      });
+
+      // Sort by position (most recent = last in text before pronoun)
+      candidateSpans.sort((a, b) => a.start - b.start);
+
+      if (candidateSpans.length > 0) {
+        const lastSpan = candidateSpans[candidateSpans.length - 1];
+        const entity = entities.find(e => e.id === lastSpan.entity_id);
+
+        if (entity) {
+          links.push({
+            mention,
+            entity_id: entity.id,
+            confidence: 0.75,
+            method: 'pronoun_stack',
+          });
+        }
+      }
+      continue;
+    }
+
     const pronounInfo = PRONOUNS.get(pronoun);
     if (!pronounInfo) continue;
 
     const parIndex = getParagraphIndex(sentences, mention.sentence_index, text);
 
-    // Build entity stack: all entities that appear BEFORE this pronoun in the same paragraph
-    const candidateSpans = entitySpans.filter(span => {
+    // STEP 1: Try within-paragraph resolution (high confidence)
+    const localCandidateSpans = entitySpans.filter(span => {
       const sentIndex = sentences.findIndex(s => span.start >= s.start && span.start < s.end);
       if (sentIndex === -1) return false;
 
@@ -329,11 +401,35 @@ function resolvePronounStacks(
     });
 
     // Sort by position (most recent = last in text before pronoun)
-    candidateSpans.sort((a, b) => a.start - b.start);
+    localCandidateSpans.sort((a, b) => a.start - b.start);
 
-    // Find last compatible entity (reverse order)
-    for (let i = candidateSpans.length - 1; i >= 0; i--) {
-      const span = candidateSpans[i];
+    // Find last compatible entity, preferring sentence subjects
+    // Heuristic: Entities near the start of their sentence (first 30% of sentence length)
+    // are more likely to be subjects, so prioritize them over entities in appositives
+    let foundLocal = false;
+
+    // Separate candidates into "likely subjects" and "others"
+    const subjectCandidates: typeof localCandidateSpans = [];
+    const otherCandidates: typeof localCandidateSpans = [];
+
+    for (const span of localCandidateSpans) {
+      const sentIndex = sentences.findIndex(s => span.start >= s.start && span.start < s.end);
+      if (sentIndex !== -1) {
+        const sent = sentences[sentIndex];
+        const relativePos = (span.start - sent.start) / (sent.end - sent.start);
+
+        // If entity appears in first 30% of sentence, likely a subject
+        if (relativePos < 0.3) {
+          subjectCandidates.push(span);
+        } else {
+          otherCandidates.push(span);
+        }
+      }
+    }
+
+    // Try subject candidates first (reverse order = most recent)
+    for (let i = subjectCandidates.length - 1; i >= 0; i--) {
+      const span = subjectCandidates[i];
       const entity = entities.find(e => e.id === span.entity_id);
 
       if (entity && matchesGenderNumber(entity, pronounInfo.gender, pronounInfo.number)) {
@@ -343,7 +439,81 @@ function resolvePronounStacks(
           confidence: 0.7,
           method: 'pronoun_stack',
         });
+        foundLocal = true;
         break;
+      }
+    }
+
+    // If no subject match, fall back to other candidates
+    if (!foundLocal) {
+      for (let i = otherCandidates.length - 1; i >= 0; i--) {
+        const span = otherCandidates[i];
+        const entity = entities.find(e => e.id === span.entity_id);
+
+        if (entity && matchesGenderNumber(entity, pronounInfo.gender, pronounInfo.number)) {
+          links.push({
+            mention,
+            entity_id: entity.id,
+            confidence: 0.65, // Slightly lower confidence for non-subject entities
+            method: 'pronoun_stack',
+          });
+          foundLocal = true;
+          break;
+        }
+      }
+    }
+
+    // STEP 2: If no local match, try cross-sentence/cross-paragraph resolution
+    if (!foundLocal) {
+      // Look back up to 2000 characters (about 2-3 paragraphs)
+      const searchStart = Math.max(0, mention.start - 2000);
+      const searchEnd = mention.start;
+
+      // Calculate entity salience in this window
+      const salienceMap = calculateEntitySalience(entitySpans, searchStart, searchEnd);
+
+      // Collect all compatible entities before the pronoun in the window
+      const crossSentenceCandidates = entitySpans.filter(span => {
+        return span.start >= searchStart && span.start < searchEnd;
+      });
+
+      // Score each candidate by recency + salience + gender/number match
+      const scoredCandidates: Array<{ span: typeof crossSentenceCandidates[0]; score: number; entity: Entity }> = [];
+
+      for (const span of crossSentenceCandidates) {
+        const entity = entities.find(e => e.id === span.entity_id);
+        if (!entity) continue;
+
+        // Must match gender/number
+        if (!matchesGenderNumber(entity, pronounInfo.gender, pronounInfo.number)) continue;
+
+        // Calculate composite score
+        const distance = mention.start - span.end;
+        const recencyScore = calculateRecencyScore(distance);
+        const salienceScore = salienceMap.get(entity.id) || 0.1;
+
+        // Combined score: 60% recency, 40% salience
+        const compositeScore = 0.6 * recencyScore + 0.4 * salienceScore;
+
+        scoredCandidates.push({ span, score: compositeScore, entity });
+      }
+
+      // Sort by score descending
+      scoredCandidates.sort((a, b) => b.score - a.score);
+
+      // Take the best candidate if score is reasonable (> 0.3)
+      if (scoredCandidates.length > 0 && scoredCandidates[0].score > 0.3) {
+        const best = scoredCandidates[0];
+
+        // Confidence is based on composite score but capped lower than local resolution
+        const confidence = Math.min(0.65, 0.3 + best.score * 0.5);
+
+        links.push({
+          mention,
+          entity_id: best.entity.id,
+          confidence,
+          method: 'pronoun_stack',
+        });
       }
     }
   }

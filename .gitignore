@@ -28,3 +28,7 @@ coverage/
 # Temp
 ops/LOCK
 *.tmp
+
+# Debug files
+debug-*.ts
+tmp/debug-*

@@ -1,0 +1,1754 @@
+[
+  {
+    "id": "new_surf_kinship_000",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) married ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "parent_of",
+    "family": "kinship",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) married ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_kinship_001",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) wed ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "child_of",
+    "family": "kinship",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) wed ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_kinship_002",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) begat ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "sibling_of",
+    "family": "kinship",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) begat ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_kinship_003",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+father of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "married_to",
+    "family": "kinship",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+father of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_kinship_004",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+mother of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "cousin_of",
+    "family": "kinship",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+mother of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_kinship_005",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+parent of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "ancestor_of",
+    "family": "kinship",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+parent of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_kinship_006",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) married of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "descendant_of",
+    "family": "kinship",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) married of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_kinship_009",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) wed to ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "sibling_of",
+    "family": "kinship",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) wed to ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_kinship_011",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) and ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) wed",
+    "predicate": "cousin_of",
+    "family": "kinship",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) and ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) wed",
+    "examples": []
+  },
+  {
+    "id": "new_surf_kinship_012",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:was|is) married(?:ed)? by ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "ancestor_of",
+    "family": "kinship",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:was|is) married(?:ed)? by ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_kinship_014",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) married ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "parent_of",
+    "family": "kinship",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) married ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_kinship_015",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) wed ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "child_of",
+    "family": "kinship",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) wed ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_kinship_016",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:allegedly|reportedly|possibly) married ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "sibling_of",
+    "family": "kinship",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:allegedly|reportedly|possibly) married ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_ownership_000",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) owns ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "owns",
+    "family": "ownership",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) owns ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_ownership_001",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) owned ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "owned_by",
+    "family": "ownership",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) owned ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_ownership_002",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) possesses ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "belongs_to",
+    "family": "ownership",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) possesses ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_ownership_003",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+owner of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "property_of",
+    "family": "ownership",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+owner of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_ownership_004",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+property of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "possessed_by",
+    "family": "ownership",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+property of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_ownership_005",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+possession of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "owns",
+    "family": "ownership",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+possession of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_ownership_007",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) owns by ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "belongs_to",
+    "family": "ownership",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) owns by ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_ownership_008",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) owned of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "property_of",
+    "family": "ownership",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) owned of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_ownership_009",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) owned by ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "possessed_by",
+    "family": "ownership",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) owned by ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_ownership_014",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) owns ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "possessed_by",
+    "family": "ownership",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) owns ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_ownership_015",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) owned ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "owns",
+    "family": "ownership",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) owned ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_ownership_016",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:allegedly|reportedly|possibly) owns ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "owned_by",
+    "family": "ownership",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:allegedly|reportedly|possibly) owns ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_employment_000",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) works ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "works_for",
+    "family": "employment",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) works ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_employment_001",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) employed ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "employed_by",
+    "family": "employment",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) employed ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_employment_002",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) serves ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "member_of",
+    "family": "employment",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) serves ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_employment_003",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+employee of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "affiliated_with",
+    "family": "employment",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+employee of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_employment_004",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+employer of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "partner_at",
+    "family": "employment",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+employer of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_employment_005",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+member of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "serves",
+    "family": "employment",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+member of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_employment_006",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) works for ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "works_for",
+    "family": "employment",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) works for ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_employment_007",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) works by ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "employed_by",
+    "family": "employment",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) works by ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_employment_008",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) employed for ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "member_of",
+    "family": "employment",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) employed for ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_employment_009",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) employed by ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "affiliated_with",
+    "family": "employment",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) employed by ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_employment_010",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) and ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) works",
+    "predicate": "partner_at",
+    "family": "employment",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) and ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) works",
+    "examples": []
+  },
+  {
+    "id": "new_surf_employment_011",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) and ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) employed",
+    "predicate": "serves",
+    "family": "employment",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) and ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) employed",
+    "examples": []
+  },
+  {
+    "id": "new_surf_employment_014",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) works ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "member_of",
+    "family": "employment",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) works ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_employment_015",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) employed ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "affiliated_with",
+    "family": "employment",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) employed ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_employment_016",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:allegedly|reportedly|possibly) works ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "partner_at",
+    "family": "employment",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:allegedly|reportedly|possibly) works ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_creation_000",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) created ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "created_by",
+    "family": "creation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) created ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_creation_001",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) authored ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "authored",
+    "family": "creation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) authored ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_creation_002",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) wrote ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "written_by",
+    "family": "creation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) wrote ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_creation_003",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+author of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "invented_by",
+    "family": "creation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+author of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_creation_004",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+creator of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "painted_by",
+    "family": "creation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+creator of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_creation_005",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+inventor of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "built_by",
+    "family": "creation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+inventor of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_creation_006",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) created by ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "composed_by",
+    "family": "creation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) created by ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_creation_007",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) created of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "designed_by",
+    "family": "creation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) created of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_creation_008",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) authored by ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "created_by",
+    "family": "creation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) authored by ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_creation_010",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) and ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) created",
+    "predicate": "written_by",
+    "family": "creation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) and ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) created",
+    "examples": []
+  },
+  {
+    "id": "new_surf_creation_012",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:was|is) created(?:ed)? by ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "painted_by",
+    "family": "creation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:was|is) created(?:ed)? by ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_creation_013",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:was|is) authored(?:ed)? by ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "built_by",
+    "family": "creation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:was|is) authored(?:ed)? by ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_creation_014",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) created ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "composed_by",
+    "family": "creation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) created ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_creation_015",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) authored ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "designed_by",
+    "family": "creation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) authored ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_creation_016",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:allegedly|reportedly|possibly) created ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "created_by",
+    "family": "creation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:allegedly|reportedly|possibly) created ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_location_000",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) located ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "located_in",
+    "family": "location",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) located ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_location_001",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) situated ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "located_at",
+    "family": "location",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) situated ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_location_002",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) positioned ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "near",
+    "family": "location",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) positioned ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_location_003",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+location of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "within",
+    "family": "location",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+location of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_location_004",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+place of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "across_from",
+    "family": "location",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+place of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_location_005",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+position of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "adjacent_to",
+    "family": "location",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+position of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_location_006",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) located in ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "based_in",
+    "family": "location",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) located in ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_location_007",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) located at ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "north_of",
+    "family": "location",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) located at ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_location_008",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) situated in ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "south_of",
+    "family": "location",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) situated in ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_location_009",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) situated at ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "located_in",
+    "family": "location",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) situated at ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_location_010",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) and ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) located",
+    "predicate": "located_at",
+    "family": "location",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) and ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) located",
+    "examples": []
+  },
+  {
+    "id": "new_surf_location_011",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) and ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) situated",
+    "predicate": "near",
+    "family": "location",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) and ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) situated",
+    "examples": []
+  },
+  {
+    "id": "new_surf_location_012",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:was|is) located(?:ed)? by ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "within",
+    "family": "location",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:was|is) located(?:ed)? by ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_location_013",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:was|is) situated(?:ed)? by ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "across_from",
+    "family": "location",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:was|is) situated(?:ed)? by ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_location_014",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) located ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "adjacent_to",
+    "family": "location",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) located ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_location_015",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) situated ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "based_in",
+    "family": "location",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) situated ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_location_016",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:allegedly|reportedly|possibly) located ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "north_of",
+    "family": "location",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:allegedly|reportedly|possibly) located ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_temporal_000",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) preceded ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "before",
+    "family": "temporal",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) preceded ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_temporal_001",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) followed ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "after",
+    "family": "temporal",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) followed ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_temporal_002",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) occurred ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "during",
+    "family": "temporal",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) occurred ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_temporal_003",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+time of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "since",
+    "family": "temporal",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+time of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_temporal_004",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+date of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "until",
+    "family": "temporal",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+date of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_temporal_005",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+period of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "on",
+    "family": "temporal",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+period of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_temporal_006",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) preceded before ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "between",
+    "family": "temporal",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) preceded before ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_temporal_007",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) preceded after ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "before",
+    "family": "temporal",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) preceded after ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_temporal_008",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) followed before ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "after",
+    "family": "temporal",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) followed before ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_temporal_009",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) followed after ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "during",
+    "family": "temporal",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) followed after ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_temporal_010",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) and ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) preceded",
+    "predicate": "since",
+    "family": "temporal",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) and ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) preceded",
+    "examples": []
+  },
+  {
+    "id": "new_surf_temporal_011",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) and ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) followed",
+    "predicate": "until",
+    "family": "temporal",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) and ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) followed",
+    "examples": []
+  },
+  {
+    "id": "new_surf_temporal_012",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:was|is) preceded(?:ed)? by ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "on",
+    "family": "temporal",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:was|is) preceded(?:ed)? by ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_temporal_013",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:was|is) followed(?:ed)? by ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "between",
+    "family": "temporal",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:was|is) followed(?:ed)? by ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_temporal_014",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) preceded ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "before",
+    "family": "temporal",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) preceded ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_temporal_015",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) followed ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "after",
+    "family": "temporal",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) followed ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_temporal_016",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:allegedly|reportedly|possibly) preceded ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "during",
+    "family": "temporal",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:allegedly|reportedly|possibly) preceded ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_causation_000",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) caused ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "caused_by",
+    "family": "causation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) caused ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_causation_001",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) led ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "led_to",
+    "family": "causation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) led ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_causation_002",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) influenced ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "influenced_by",
+    "family": "causation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) influenced ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_causation_003",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+cause of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "resulted_from",
+    "family": "causation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+cause of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_causation_004",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+result of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "due_to",
+    "family": "causation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+result of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_causation_005",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+consequence of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "triggered_by",
+    "family": "causation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+consequence of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_causation_007",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) caused to ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "led_to",
+    "family": "causation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) caused to ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_causation_008",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) led by ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "influenced_by",
+    "family": "causation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) led by ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_causation_009",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) led to ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "resulted_from",
+    "family": "causation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) led to ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_causation_010",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) and ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) caused",
+    "predicate": "due_to",
+    "family": "causation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) and ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) caused",
+    "examples": []
+  },
+  {
+    "id": "new_surf_causation_011",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) and ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) led",
+    "predicate": "triggered_by",
+    "family": "causation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) and ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) led",
+    "examples": []
+  },
+  {
+    "id": "new_surf_causation_014",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) caused ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "influenced_by",
+    "family": "causation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) caused ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_causation_015",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) led ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "resulted_from",
+    "family": "causation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) led ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_causation_016",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:allegedly|reportedly|possibly) caused ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "due_to",
+    "family": "causation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:allegedly|reportedly|possibly) caused ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_part_whole_000",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) comprises ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "part_of",
+    "family": "part_whole",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) comprises ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_part_whole_001",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) consists ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "consists_of",
+    "family": "part_whole",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) consists ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_part_whole_002",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) includes ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "includes",
+    "family": "part_whole",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) includes ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_part_whole_003",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+part of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "contains",
+    "family": "part_whole",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+part of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_part_whole_004",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+component of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "made_of",
+    "family": "part_whole",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+component of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_part_whole_005",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+piece of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "comprises",
+    "family": "part_whole",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+piece of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_part_whole_007",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) comprises in ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "consists_of",
+    "family": "part_whole",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) comprises in ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_part_whole_008",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) consists of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "includes",
+    "family": "part_whole",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) consists of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_part_whole_009",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) consists in ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "contains",
+    "family": "part_whole",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) consists in ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_part_whole_010",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) and ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) comprises",
+    "predicate": "made_of",
+    "family": "part_whole",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) and ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) comprises",
+    "examples": []
+  },
+  {
+    "id": "new_surf_part_whole_011",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) and ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) consists",
+    "predicate": "comprises",
+    "family": "part_whole",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) and ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) consists",
+    "examples": []
+  },
+  {
+    "id": "new_surf_part_whole_014",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) comprises ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "includes",
+    "family": "part_whole",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) comprises ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_part_whole_015",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) consists ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "contains",
+    "family": "part_whole",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) consists ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_part_whole_016",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:allegedly|reportedly|possibly) comprises ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "made_of",
+    "family": "part_whole",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:allegedly|reportedly|possibly) comprises ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_identity_000",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) is ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "is",
+    "family": "identity",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) is ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_identity_001",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) equals ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "equals",
+    "family": "identity",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) equals ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_identity_002",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) represents ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "same_as",
+    "family": "identity",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) represents ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_identity_003",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+alias of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "alias_of",
+    "family": "identity",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+alias of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_identity_004",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+name of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "also_known_as",
+    "family": "identity",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+name of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_identity_005",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+title of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "represents",
+    "family": "identity",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+title of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_identity_007",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) is to ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "equals",
+    "family": "identity",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) is to ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_identity_008",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) equals as ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "same_as",
+    "family": "identity",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) equals as ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_identity_009",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) equals to ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "alias_of",
+    "family": "identity",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) equals to ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_identity_010",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) and ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) is",
+    "predicate": "also_known_as",
+    "family": "identity",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) and ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) is",
+    "examples": []
+  },
+  {
+    "id": "new_surf_identity_011",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) and ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) equals",
+    "predicate": "represents",
+    "family": "identity",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) and ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) equals",
+    "examples": []
+  },
+  {
+    "id": "new_surf_identity_014",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) is ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "same_as",
+    "family": "identity",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) is ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_identity_015",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) equals ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "alias_of",
+    "family": "identity",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) equals ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_identity_016",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:allegedly|reportedly|possibly) is ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "also_known_as",
+    "family": "identity",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:allegedly|reportedly|possibly) is ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_event_001",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) participated ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "participated_in",
+    "family": "event",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) participated ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_event_002",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) hosted ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "hosted",
+    "family": "event",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) hosted ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_event_003",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+participant of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "performed_at",
+    "family": "event",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+participant of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_event_004",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+attendee of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "witnessed",
+    "family": "event",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+attendee of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_event_005",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+host of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "organized",
+    "family": "event",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+host of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_event_007",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) attended in ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "participated_in",
+    "family": "event",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) attended in ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_event_008",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) participated at ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "hosted",
+    "family": "event",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) participated at ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_event_009",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) participated in ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "performed_at",
+    "family": "event",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) participated in ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_event_010",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) and ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) attended",
+    "predicate": "witnessed",
+    "family": "event",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) and ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) attended",
+    "examples": []
+  },
+  {
+    "id": "new_surf_event_011",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) and ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) participated",
+    "predicate": "organized",
+    "family": "event",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) and ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) participated",
+    "examples": []
+  },
+  {
+    "id": "new_surf_event_014",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) attended ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "hosted",
+    "family": "event",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) attended ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_event_015",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) participated ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "performed_at",
+    "family": "event",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) participated ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_event_016",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:allegedly|reportedly|possibly) attended ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "witnessed",
+    "family": "event",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:allegedly|reportedly|possibly) attended ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_communication_000",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) told ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "told",
+    "family": "communication",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) told ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_communication_001",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) said ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "said_to",
+    "family": "communication",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) said ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_communication_002",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) wrote ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "wrote_to",
+    "family": "communication",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) wrote ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_communication_003",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+message of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "asked",
+    "family": "communication",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+message of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_communication_004",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+letter of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "informed",
+    "family": "communication",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+letter of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_communication_005",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+speech of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "replied",
+    "family": "communication",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+speech of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_communication_006",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) told to ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "reported",
+    "family": "communication",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) told to ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_communication_007",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) told with ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "spoke_to",
+    "family": "communication",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) told with ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_communication_008",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) said to ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "told",
+    "family": "communication",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) said to ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_communication_009",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) said with ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "said_to",
+    "family": "communication",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) said with ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_communication_010",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) and ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) told",
+    "predicate": "wrote_to",
+    "family": "communication",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) and ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) told",
+    "examples": []
+  },
+  {
+    "id": "new_surf_communication_011",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) and ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) said",
+    "predicate": "asked",
+    "family": "communication",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) and ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) said",
+    "examples": []
+  },
+  {
+    "id": "new_surf_communication_012",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:was|is) told(?:ed)? by ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "informed",
+    "family": "communication",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:was|is) told(?:ed)? by ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_communication_013",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:was|is) said(?:ed)? by ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "replied",
+    "family": "communication",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:was|is) said(?:ed)? by ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_communication_014",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) told ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "reported",
+    "family": "communication",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) told ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_communication_015",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) said ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "spoke_to",
+    "family": "communication",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) said ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_communication_016",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:allegedly|reportedly|possibly) told ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "told",
+    "family": "communication",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:allegedly|reportedly|possibly) told ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_power_000",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) controlled ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "controlled_by",
+    "family": "power",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) controlled ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_power_001",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) ruled ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "ruled_by",
+    "family": "power",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) ruled ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_power_002",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) commanded ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "commanded_by",
+    "family": "power",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) commanded ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_power_003",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+ruler of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "managed_by",
+    "family": "power",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+ruler of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_power_004",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+king of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "governed_by",
+    "family": "power",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+king of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_power_005",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+queen of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "led_by",
+    "family": "power",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+queen of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_power_007",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) controlled over ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "ruled_by",
+    "family": "power",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) controlled over ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_power_008",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) ruled by ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "commanded_by",
+    "family": "power",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) ruled by ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_power_009",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) ruled over ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "managed_by",
+    "family": "power",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) ruled over ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_power_010",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) and ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) controlled",
+    "predicate": "governed_by",
+    "family": "power",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) and ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) controlled",
+    "examples": []
+  },
+  {
+    "id": "new_surf_power_011",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) and ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) ruled",
+    "predicate": "led_by",
+    "family": "power",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) and ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) ruled",
+    "examples": []
+  },
+  {
+    "id": "new_surf_power_014",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) controlled ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "commanded_by",
+    "family": "power",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) controlled ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_power_015",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) ruled ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "managed_by",
+    "family": "power",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) ruled ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_power_016",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:allegedly|reportedly|possibly) controlled ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "governed_by",
+    "family": "power",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:allegedly|reportedly|possibly) controlled ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_comparison_000",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) exceeds ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "greater_than",
+    "family": "comparison",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) exceeds ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_comparison_001",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) surpasses ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "less_than",
+    "family": "comparison",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) surpasses ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_comparison_002",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) equals ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "equal_to",
+    "family": "comparison",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) equals ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_comparison_003",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+greater of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "higher_than",
+    "family": "comparison",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+greater of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_comparison_004",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+less of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "similar_to",
+    "family": "comparison",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+less of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_comparison_005",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+equal of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "different_from",
+    "family": "comparison",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+equal of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_comparison_006",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) exceeds than ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "greater_than",
+    "family": "comparison",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) exceeds than ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_comparison_007",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) exceeds to ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "less_than",
+    "family": "comparison",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) exceeds to ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_comparison_008",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) surpasses than ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "equal_to",
+    "family": "comparison",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) surpasses than ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_comparison_009",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) surpasses to ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "higher_than",
+    "family": "comparison",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) surpasses to ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_comparison_010",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) and ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) exceeds",
+    "predicate": "similar_to",
+    "family": "comparison",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) and ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) exceeds",
+    "examples": []
+  },
+  {
+    "id": "new_surf_comparison_011",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) and ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) surpasses",
+    "predicate": "different_from",
+    "family": "comparison",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) and ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) surpasses",
+    "examples": []
+  },
+  {
+    "id": "new_surf_comparison_014",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) exceeds ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "equal_to",
+    "family": "comparison",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) exceeds ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_comparison_015",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) surpasses ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "higher_than",
+    "family": "comparison",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) surpasses ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_comparison_016",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:allegedly|reportedly|possibly) exceeds ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "similar_to",
+    "family": "comparison",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:allegedly|reportedly|possibly) exceeds ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_emotional_000",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) loved ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "loved",
+    "family": "emotional",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) loved ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_emotional_001",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) hated ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "hated",
+    "family": "emotional",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) hated ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_emotional_002",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) respected ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "respected",
+    "family": "emotional",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) respected ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_emotional_003",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+lover of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "disliked",
+    "family": "emotional",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+lover of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_emotional_004",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+friend of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "admired",
+    "family": "emotional",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+friend of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_emotional_005",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+enemy of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "envied",
+    "family": "emotional",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+enemy of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_emotional_006",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) loved by ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "feared",
+    "family": "emotional",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) loved by ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_emotional_009",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) hated of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "respected",
+    "family": "emotional",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) hated of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_emotional_010",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) and ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) loved",
+    "predicate": "disliked",
+    "family": "emotional",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) and ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) loved",
+    "examples": []
+  },
+  {
+    "id": "new_surf_emotional_011",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) and ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) hated",
+    "predicate": "admired",
+    "family": "emotional",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) and ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) hated",
+    "examples": []
+  },
+  {
+    "id": "new_surf_emotional_012",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:was|is) loved(?:ed)? by ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "envied",
+    "family": "emotional",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:was|is) loved(?:ed)? by ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_emotional_013",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:was|is) hated(?:ed)? by ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "feared",
+    "family": "emotional",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:was|is) hated(?:ed)? by ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_emotional_014",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) loved ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "loved",
+    "family": "emotional",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) loved ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_emotional_015",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) hated ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "hated",
+    "family": "emotional",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) hated ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_emotional_016",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:allegedly|reportedly|possibly) loved ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "respected",
+    "family": "emotional",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:allegedly|reportedly|possibly) loved ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_negation_000",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) denied ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "not_related_to",
+    "family": "negation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) denied ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_negation_001",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) disputed ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "alleged",
+    "family": "negation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) disputed ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_negation_002",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) alleged ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "rumored",
+    "family": "negation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) alleged ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_negation_003",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+allegation of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "denied",
+    "family": "negation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+allegation of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_negation_004",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+rumor of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "disputed",
+    "family": "negation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+rumor of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_negation_005",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s*,?\\s+denial of ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "uncertain_link",
+    "family": "negation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s*,?\\s+denial of ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_negation_007",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) denied about ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "alleged",
+    "family": "negation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) denied about ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_negation_008",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) disputed to ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "rumored",
+    "family": "negation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) disputed to ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_negation_009",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) disputed about ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "denied",
+    "family": "negation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) disputed about ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_negation_010",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) and ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) denied",
+    "predicate": "disputed",
+    "family": "negation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) and ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) denied",
+    "examples": []
+  },
+  {
+    "id": "new_surf_negation_011",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) and ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) disputed",
+    "predicate": "uncertain_link",
+    "family": "negation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) and ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) disputed",
+    "examples": []
+  },
+  {
+    "id": "new_surf_negation_014",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) denied ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "rumored",
+    "family": "negation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) denied ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_negation_015",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:not|never) disputed ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "denied",
+    "family": "negation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:not|never) disputed ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_negation_016",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) (?:allegedly|reportedly|possibly) denied ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "disputed",
+    "family": "negation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:allegedly|reportedly|possibly) denied ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  }
+]

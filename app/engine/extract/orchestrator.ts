@@ -18,7 +18,7 @@ import { hybridExtraction } from '../llm-extractor';
 import { getLLMConfig, validateLLMConfig, DEFAULT_LLM_CONFIG, type LLMConfig } from '../llm-config';
 import { applyPatterns, type Pattern } from '../bootstrap';
 import type { PatternLibrary } from '../pattern-library';
-import { isValidEntity } from '../entity-filter';
+import { isValidEntity, correctEntityType } from '../entity-filter';
 
 /**
  * Extract entities and relations from segments with context windows
@@ -201,9 +201,13 @@ export async function extractFromSegments(
           continue;
         }
 
+        // Force-correct entity type based on lexical markers (e.g., "River" → PLACE)
+        const correctedType = correctEntityType(canonicalText, entity.type);
+
         // New entity - use canonical text from absolute position
         const correctedEntity: Entity = {
           ...entity,
+          type: correctedType,
           canonical: canonicalText
         };
         if (
@@ -347,6 +351,13 @@ export async function extractFromSegments(
   // Pass profiles to enable descriptor-based resolution ("the wizard" → Gandalf)
   const corefLinks = resolveCoref(sentences, allEntities, allSpans, fullText, profiles);
 
+  // DEBUG: Log coreference links
+  console.log(`[COREF] Found ${corefLinks.links.length} coreference links`);
+  for (const link of corefLinks.links) {
+    const entity = allEntities.find(e => e.id === link.entity_id);
+    console.log(`[COREF] "${link.mention.text}" [${link.mention.start},${link.mention.end}] -> ${entity?.canonical} (${link.method}, conf=${link.confidence.toFixed(2)})`);
+  }
+
   // 5. Create virtual entity spans for pronouns that were resolved
   // This allows relation extraction to "see" pronouns as entity mentions
   const virtualSpans: Array<{ entity_id: string; start: number; end: number }> = [];
@@ -413,6 +424,12 @@ export async function extractFromSegments(
   }
 
   // Combine original relations with coref-enhanced relations
+  console.log(`[COREF] Found ${corefRelations.length} coref-enhanced relations`);
+  for (const rel of corefRelations) {
+    const subj = allEntities.find(e => e.id === rel.subj);
+    const obj = allEntities.find(e => e.id === rel.obj);
+    console.log(`[COREF] ${subj?.canonical} --[${rel.pred}]--> ${obj?.canonical}`);
+  }
   const combinedRelations = [...allRelations, ...corefRelations];
 
   // 7. Extract narrative relations (pattern-based extraction)
@@ -449,9 +466,91 @@ export async function extractFromSegments(
   }
   const allRelationsWithInverses = [...allRelationSources, ...inversesToAdd];
 
+  // 7.8. Filter appositive false positives
+  // When multiple relations have same pred+obj but different subjects,
+  // check if they're coordinated (both should be kept) or appositives (keep first only)
+  const predObjToSubjects = new Map<string, Array<{ rel: Relation; position: number; subjectCanonical: string }>>();
+
+  for (const rel of allRelationsWithInverses) {
+    const predObjKey = `${rel.pred}::${rel.obj}`;
+
+    // Find the position of the subject entity in the text
+    const subjEntity = allEntities.find(e => e.id === rel.subj);
+    const subjSpan = allSpans.find(s => s.entity_id === rel.subj);
+    const position = subjSpan ? subjSpan.start : Infinity;
+    const subjectCanonical = subjEntity?.canonical.toLowerCase() || '';
+
+    if (!predObjToSubjects.has(predObjKey)) {
+      predObjToSubjects.set(predObjKey, []);
+    }
+    predObjToSubjects.get(predObjKey)!.push({ rel, position, subjectCanonical });
+  }
+
+  // For each pred+obj group, decide whether to keep all (coordination) or just first (appositive)
+  const appositiveFilteredRelations: Relation[] = [];
+  for (const [predObjKey, group] of predObjToSubjects.entries()) {
+    if (group.length === 1) {
+      // No conflict, keep the relation
+      appositiveFilteredRelations.push(group[0].rel);
+    } else {
+      // Check if subjects are likely coordinated (different entities close together)
+      // vs appositive (one name inside another, like "Aragorn, son of Arathorn")
+      group.sort((a, b) => a.position - b.position);
+
+      // Debug: show what the object entity is
+      const objEntity = allEntities.find(e => e.id === group[0].rel.obj);
+      const objCanonical = objEntity?.canonical || 'UNKNOWN';
+
+      console.log(`[APPOS-FILTER] Checking ${predObjKey} with ${group.length} subjects (obj="${objCanonical}"):`);
+      for (const item of group) {
+        console.log(`  - ${item.subjectCanonical} at position ${item.position}`);
+      }
+
+      // If subjects are simple names (no shared substring overlap beyond 50%),
+      // they're likely coordinated entities, so keep all
+      const isCoordination = group.every((item, idx) => {
+        if (idx === 0) return true; // First item is always kept
+        const prevCanonical = group[idx - 1].subjectCanonical;
+        const currCanonical = item.subjectCanonical;
+        const prevPosition = group[idx - 1].position;
+        const currPosition = item.position;
+
+        // Skip exact duplicates (same entity at same position - these will be deduped later)
+        if (prevCanonical === currCanonical && prevPosition === currPosition) {
+          console.log(`[APPOS-FILTER]   ${currCanonical} at ${currPosition} is duplicate - SKIP`);
+          return true; // Don't treat as appositive
+        }
+
+        // If one is a substring of the other AND at different positions, it's likely appositive
+        if (prevCanonical !== currCanonical && (prevCanonical.includes(currCanonical) || currCanonical.includes(prevCanonical))) {
+          console.log(`[APPOS-FILTER]   ${currCanonical} substring of ${prevCanonical} - APPOSITIVE`);
+          return false;
+        }
+        // If they're very close (within 50 chars), likely coordination
+        const distance = Math.abs(currPosition - prevPosition);
+        console.log(`[APPOS-FILTER]   Distance between ${prevCanonical} and ${currCanonical}: ${distance}`);
+        return distance < 50;
+      });
+
+      console.log(`[APPOS-FILTER]   isCoordination: ${isCoordination}`);
+
+      if (isCoordination) {
+        // Keep all coordinated subjects
+        console.log(`[APPOS-FILTER]   Keeping all ${group.length} subjects`);
+        for (const item of group) {
+          appositiveFilteredRelations.push(item.rel);
+        }
+      } else {
+        // Appositive case - keep only the first subject
+        console.log(`[APPOS-FILTER]   Appositive detected - keeping only first subject`);
+        appositiveFilteredRelations.push(group[0].rel);
+      }
+    }
+  }
+
   // 8. Deduplicate relations (same predicate + subject + object)
   const uniqueRelations = new Map<string, Relation>();
-  for (const rel of allRelationsWithInverses) {
+  for (const rel of appositiveFilteredRelations) {
     const key = `${rel.subj}::${rel.pred}::${rel.obj}`;
     if (!uniqueRelations.has(key)) {
       uniqueRelations.set(key, rel);

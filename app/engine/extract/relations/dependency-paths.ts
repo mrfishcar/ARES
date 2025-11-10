@@ -333,6 +333,9 @@ const PATH_PATTERNS: PathPattern[] = [
   // "X lives in Y"
   { signature: /^(\w+):↑nsubj:(live|reside):↓prep:in:↓pobj:(\w+)$/, predicate: 'lives_in', subjectFirst: true },
 
+  // "X fought in Y" (battles, wars)
+  { signature: /^(\w+):↑nsubj:(fight|fought):↓prep:in:↓pobj:(\w+)$/, predicate: 'fought_in', subjectFirst: true },
+
   // "X moved to Y"
   { signature: /^(\w+):↑nsubj:(move|relocate|migrate):↓prep:to:↓pobj:(\w+)$/, predicate: 'lives_in', subjectFirst: true },
 
@@ -446,6 +449,21 @@ const PATH_PATTERNS: PathPattern[] = [
   // "X studied at Y"
   { signature: /^(\w+):↑nsubj:study:↓prep:at:↓pobj:(\w+)$/, predicate: 'studies_at', subjectFirst: true },
 
+  // "X studied [object] at Y" - e.g., "studied magic at Hogwarts"
+  { signature: /^(\w+):↑nsubj:study:↓(dobj|obj):\w+:↓prep:(at|in):↓pobj:(\w+)$/, predicate: 'studies_at', subjectFirst: true },
+
+  // "X studied there/here" - location pronoun as direct modifier
+  { signature: /^(\w+):↑nsubj:study:↓(advmod|npadvmod):(there|here)$/, predicate: 'studies_at', subjectFirst: true },
+
+  // "X studied there/here" - when spaCy incorrectly parses "there" as dobj (handles both "study" and "studied" lemmas)
+  { signature: /^(\w+):↑nsubj:(study|studied):↓(dobj|obj):(there|here)$/, predicate: 'studies_at', subjectFirst: true },
+
+  // "X studied [object] there/here" - e.g., "studied magic there"
+  { signature: /^(\w+):↑nsubj:study:↓(dobj|obj):\w+:↓(advmod|npadvmod):(there|here)$/, predicate: 'studies_at', subjectFirst: true },
+
+  // "there/here" to study verb (reverse direction)
+  { signature: /^(there|here):↑(advmod|npadvmod):study:↑nsubj:(\w+)$/, predicate: 'studies_at', subjectFirst: false },
+
   // === EMPLOYMENT - PAST TENSE ===
 
   // "X worked at Y"
@@ -481,6 +499,172 @@ const PATH_PATTERNS: PathPattern[] = [
 
   // "X, who studied under Y" (relative clause)
   { signature: /^(\w+):↓relcl:study:↓prep:under:↓pobj:(\w+)$/, predicate: 'advised_by', subjectFirst: true },
+
+  // === FANTASY/NARRATIVE PATTERNS ===
+
+  // === FAMILY RELATIONSHIPS ===
+
+  // "X is the parent/mother/father of Y"
+  { signature: /^(\w+):↑nsubj:be:↓attr:(parent|mother|father|son|daughter):↓prep:of:↓pobj:(\w+)$/, predicate: 'parent_of', subjectFirst: true },
+
+  // "X, parent of Y" (appositive)
+  { signature: /^(\w+):↑appos:(parent|mother|father):↓prep:of:↓pobj:(\w+)$/, predicate: 'parent_of', subjectFirst: true },
+
+  // "X's son/daughter/child"
+  { signature: /^(son|daughter|child):↓poss:(\w+)$/, predicate: 'parent_of', subjectFirst: false },
+
+  // "X's mother/father/parent"
+  { signature: /^(mother|father|parent):↓poss:(\w+)$/, predicate: 'child_of', subjectFirst: false },
+
+  // "Y, son/daughter of X"
+  { signature: /^(\w+):↑appos:(son|daughter|child):↓prep:of:↓pobj:(\w+)$/, predicate: 'child_of', subjectFirst: true },
+
+  // "Y, child of X"
+  { signature: /^(\w+):↑appos:child:↓prep:of:↓pobj:(\w+)$/, predicate: 'child_of', subjectFirst: true },
+
+  // "X and Y are siblings"
+  { signature: /^(\w+):↑conj:(\w+):↑nsubj:be:↓attr:sibling$/, predicate: 'sibling_of', subjectFirst: true },
+
+  // "X's brother/sister"
+  { signature: /^(brother|sister|sibling):↓poss:(\w+)$/, predicate: 'sibling_of', subjectFirst: false },
+
+  // === MENTORSHIP / TRAINING (Narrative) ===
+
+  // "X mentored Y"
+  { signature: /^(\w+):↑nsubj:(mentor|train|teach):↓(dobj|obj):(\w+)$/, predicate: 'mentored', subjectFirst: true },
+
+  // "X, who mentored Y"
+  { signature: /^(\w+):↓relcl:(mentor|train|teach):↓(dobj|obj):(\w+)$/, predicate: 'mentored', subjectFirst: true },
+
+  // "Y trained under X"
+  { signature: /^(\w+):↑nsubj:(train|study):↓prep:under:↓pobj:(\w+)$/, predicate: 'mentored_by', subjectFirst: true },
+
+  // "X had mentored Y" (past perfect)
+  { signature: /^(\w+):↑nsubj:mentor:↓(dobj|obj):(\w+)$/, predicate: 'mentored', subjectFirst: true },
+
+  // === GOVERNANCE / LEADERSHIP (Kingdoms, Realms) ===
+
+  // "X ruled/governed Y"
+  { signature: /^(\w+):↑nsubj:(rule|govern|reign):↓(dobj|obj):(\w+)$/, predicate: 'rules', subjectFirst: true },
+
+  // "X ruled over Y"
+  { signature: /^(\w+):↑nsubj:(rule|reign):↓prep:over:↓pobj:(\w+)$/, predicate: 'rules', subjectFirst: true },
+
+  // "X, ruler of Y"
+  { signature: /^(\w+):↑appos:(ruler|king|queen|lord|emperor|monarch):↓prep:of:↓pobj:(\w+)$/, predicate: 'rules', subjectFirst: true },
+
+  // "King/Queen X of Y"
+  { signature: /^(king|queen|lord|emperor):↑compound:(\w+):↓prep:of:↓pobj:(\w+)$/, predicate: 'rules', subjectFirst: false },
+
+  // "X guards Y"
+  { signature: /^(\w+):↑nsubj:guard:↓(dobj|obj):(\w+)$/, predicate: 'guards', subjectFirst: true },
+
+  // === POSSESSION / SEEKING (Artifacts, Objects) ===
+
+  // "X seeks Y"
+  { signature: /^(\w+):↑nsubj:(seek|search|hunt):↓(dobj|obj):(\w+)$/, predicate: 'seeks', subjectFirst: true },
+
+  // "X seeks/searches for Y"
+  { signature: /^(\w+):↑nsubj:(seek|search|hunt):↓prep:for:↓pobj:(\w+)$/, predicate: 'seeks', subjectFirst: true },
+
+  // "X possesses/has/holds Y"
+  { signature: /^(\w+):↑nsubj:(possess|hold|wield|carry):↓(dobj|obj):(\w+)$/, predicate: 'possesses', subjectFirst: true },
+
+  // "X obtained/acquired Y" (for artifacts)
+  { signature: /^(\w+):↑nsubj:(obtain|acquire|take|seize|steal):↓(dobj|obj):(\w+)$/, predicate: 'possesses', subjectFirst: true },
+
+  // === ADVERSARIAL RELATIONSHIPS ===
+
+  // "X fought/battled Y"
+  { signature: /^(\w+):↑nsubj:(fight|battle|combat):↓(dobj|obj):(\w+)$/, predicate: 'enemy_of', subjectFirst: true },
+
+  // "X attacked Y"
+  { signature: /^(\w+):↑nsubj:(attack|assault|strike):↓(dobj|obj):(\w+)$/, predicate: 'enemy_of', subjectFirst: true },
+
+  // "X defeated/destroyed Y"
+  { signature: /^(\w+):↑nsubj:(defeat|destroy|vanquish|conquer):↓(dobj|obj):(\w+)$/, predicate: 'defeated', subjectFirst: true },
+
+  // "Y was defeated by X"
+  { signature: /^(\w+):↑nsubjpass:(defeat|destroy|vanquish):↓agent:by:↓pobj:(\w+)$/, predicate: 'defeated', subjectFirst: false },
+
+  // "X killed Y"
+  { signature: /^(\w+):↑nsubj:(kill|slay|murder|assassinate):↓(dobj|obj):(\w+)$/, predicate: 'killed', subjectFirst: true },
+
+  // "Y was killed by X"
+  { signature: /^(\w+):↑nsubjpass:(kill|slay|murder):↓agent:by:↓pobj:(\w+)$/, predicate: 'killed', subjectFirst: false },
+
+  // "X is the enemy of Y"
+  { signature: /^(\w+):↑nsubj:be:↓attr:enemy:↓prep:of:↓pobj:(\w+)$/, predicate: 'enemy_of', subjectFirst: true },
+
+  // "X, enemy of Y"
+  { signature: /^(\w+):↑appos:enemy:↓prep:of:↓pobj:(\w+)$/, predicate: 'enemy_of', subjectFirst: true },
+
+  // === ALLIANCE / FRIENDSHIP (Narrative) ===
+
+  // "X allied with Y"
+  { signature: /^(\w+):↑nsubj:ally:↓prep:with:↓pobj:(\w+)$/, predicate: 'ally_of', subjectFirst: true },
+
+  // "X is an ally of Y"
+  { signature: /^(\w+):↑nsubj:be:↓attr:ally:↓prep:of:↓pobj:(\w+)$/, predicate: 'ally_of', subjectFirst: true },
+
+  // "X accompanied Y"
+  { signature: /^(\w+):↑nsubj:(accompany|join|follow):↓(dobj|obj):(\w+)$/, predicate: 'ally_of', subjectFirst: true },
+
+  // === IMPRISONMENT / CONFINEMENT ===
+
+  // "X imprisoned/confined in Y"
+  { signature: /^(\w+):↑nsubjpass:(imprison|confine|trap|lock):↓prep:in:↓pobj:(\w+)$/, predicate: 'imprisoned_in', subjectFirst: true },
+
+  // "X broke free from Y"
+  { signature: /^(\w+):↑nsubj:break:↓acomp:free:↓prep:from:↓pobj:(\w+)$/, predicate: 'freed_from', subjectFirst: true },
+
+  // "X escaped from Y"
+  { signature: /^(\w+):↑nsubj:escape:↓prep:from:↓pobj:(\w+)$/, predicate: 'freed_from', subjectFirst: true },
+
+  // === COUNCIL / GROUP MEMBERSHIP ===
+
+  // "X joined/joined_the Y" (council, group)
+  { signature: /^(\w+):↑nsubj:join:↓(dobj|obj):(\w+)$/, predicate: 'member_of', subjectFirst: true },
+
+  // "X, member of Y"
+  { signature: /^(\w+):↑appos:member:↓prep:of:↓pobj:(\w+)$/, predicate: 'member_of', subjectFirst: true },
+
+  // "X sent for Y" / "Council sent for Y"
+  { signature: /^(\w+):↑nsubj:send:↓prep:for:↓pobj:(\w+)$/, predicate: 'summoned', subjectFirst: true },
+
+  // "X requires Y" / "Council requires Y"
+  { signature: /^(\w+):↑nsubj:require:↓(dobj|obj):(\w+)$/, predicate: 'summoned', subjectFirst: true },
+
+  // === LOCATION (Narrative Specific) ===
+
+  // "X located at/in Y"
+  { signature: /^(\w+):↓prep:(at|in|on):↓pobj:(\w+)$/, predicate: 'located_at', subjectFirst: true },
+
+  // "X stood on/at Y"
+  { signature: /^(\w+):↑nsubj:stand:↓prep:(on|at):↓pobj:(\w+)$/, predicate: 'located_at', subjectFirst: true },
+
+  // "Y beneath/under X" (Sanctuary beneath city)
+  { signature: /^(\w+):↓prep:(beneath|under|below):↓pobj:(\w+)$/, predicate: 'located_beneath', subjectFirst: true },
+
+  // "X hidden in Y"
+  { signature: /^(\w+):↑nsubjpass:hide:↓prep:in:↓pobj:(\w+)$/, predicate: 'hidden_in', subjectFirst: true },
+
+  // "X gathering in Y" (armies gathering)
+  { signature: /^(\w+):↑nsubj:gather:↓prep:in:↓pobj:(\w+)$/, predicate: 'located_at', subjectFirst: true },
+
+  // === LEADERSHIP (Military/Groups) ===
+
+  // "X led Y" (armies, forces)
+  { signature: /^(\w+):↑nsubj:lead:↓(dobj|obj):(\w+)$/, predicate: 'leads', subjectFirst: true },
+
+  // "X, leader of Y"
+  { signature: /^(\w+):↑appos:leader:↓prep:of:↓pobj:(\w+)$/, predicate: 'leads', subjectFirst: true },
+
+  // "Y's leader/general/commander"
+  { signature: /^(leader|general|commander|captain):↓poss:(\w+)$/, predicate: 'leads', subjectFirst: false },
+
+  // "Y led by X"
+  { signature: /^(\w+):↑nsubjpass:lead:↓agent:by:↓pobj:(\w+)$/, predicate: 'leads', subjectFirst: false },
 ];
 
 /**
@@ -495,12 +679,18 @@ function hasSemanticMarker(
   return markers.some(m => pathText.includes(m));
 }
 
+const DEBUG_PATTERNS = process.env.DEBUG_PATTERNS === '1';
+
 /**
  * Match a dependency path against known patterns
  */
 export function matchDependencyPath(
   path: DependencyPath
 ): { predicate: Predicate; confidence: number; subjectFirst: boolean } | null {
+
+  if (DEBUG_PATTERNS) {
+    console.log(`[PATTERN-MATCH] Testing path signature: ${path.signature}`);
+  }
 
   for (const pattern of PATH_PATTERNS) {
     let match: RegExpMatchArray | null = null;
@@ -514,12 +704,19 @@ export function matchDependencyPath(
     }
 
     if (match) {
+      if (DEBUG_PATTERNS) {
+        console.log(`[PATTERN-MATCH] ✓ MATCHED: ${pattern.predicate} (pattern: ${pattern.signature})`);
+      }
       return {
         predicate: pattern.predicate,
         confidence: 0.9, // High confidence for pattern match
         subjectFirst: pattern.subjectFirst
       };
     }
+  }
+
+  if (DEBUG_PATTERNS) {
+    console.log(`[PATTERN-MATCH] ✗ No pattern matched`);
   }
 
   // Semantic fallbacks: if path structure matches but needs context

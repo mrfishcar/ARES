@@ -1,0 +1,3579 @@
+[
+  {
+    "hash": "aeb9fd92fded0338",
+    "lemmas": [
+      "dobj",
+      "marry",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-married_to-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "c2129479c2eeaffe",
+    "lemmas": [
+      "agent",
+      "marry",
+      "nsubjpas",
+      "pobj"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-married_to-X",
+    "family": "kinship"
+  },
+  {
+    "hash": "539bbc491689c007",
+    "lemmas": [
+      "dobj",
+      "make",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-married_to-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "eec331d3edab9f40",
+    "lemmas": [
+      "attr",
+      "dobj",
+      "husband",
+      "make",
+      "nsubj",
+      "obj",
+      "wife"
+    ],
+    "roles": [
+      "attr",
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-married_to-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "f006dc7174a7f415",
+    "lemmas": [
+      "attr",
+      "become",
+      "husband",
+      "nsubj",
+      "pos",
+      "wife"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-married_to-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "eabeaf0498f41519",
+    "lemmas": [
+      "dobj",
+      "husband",
+      "nsubj",
+      "obj",
+      "pobj",
+      "prep",
+      "take",
+      "wife"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-married_to-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "d71a227b50fd0bfd",
+    "lemmas": [
+      "build",
+      "create",
+      "dobj",
+      "establish",
+      "form",
+      "found",
+      "launch",
+      "nsubj",
+      "obj",
+      "start"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-leads-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "eb8a2fab663bb4f6",
+    "lemmas": [
+      "agent",
+      "create",
+      "establish",
+      "found",
+      "launch",
+      "nsubjpas",
+      "pobj",
+      "start"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-leads-X",
+    "family": "employment"
+  },
+  {
+    "hash": "24e063fb74992011",
+    "lemmas": [
+      "agent",
+      "create",
+      "establish",
+      "found",
+      "launch",
+      "pobj",
+      "relcl",
+      "start"
+    ],
+    "roles": [
+      "agent",
+      "pobj",
+      "relcl"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-leads-X",
+    "family": "employment"
+  },
+  {
+    "hash": "78e1e691182de663",
+    "lemmas": [
+      "agent",
+      "compound",
+      "create",
+      "establish",
+      "found",
+      "launch",
+      "pobj",
+      "relcl",
+      "start"
+    ],
+    "roles": [
+      "agent",
+      "compound",
+      "pobj",
+      "relcl"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-leads-X",
+    "family": "employment"
+  },
+  {
+    "hash": "2ef48264b06ef9bc",
+    "lemmas": [
+      "brainchild",
+      "nsubj",
+      "pos"
+    ],
+    "roles": [
+      "nsubj",
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-leads-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "79a64f9992f78b2a",
+    "lemmas": [
+      "appo",
+      "founder",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-leads-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "23a3e265ffeaa8de",
+    "lemmas": [
+      "acquire",
+      "buy",
+      "dobj",
+      "nsubj",
+      "obj",
+      "purchase"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-acquired-Y",
+    "family": "ownership"
+  },
+  {
+    "hash": "8550e82accd0206a",
+    "lemmas": [
+      "acquire",
+      "agent",
+      "buy",
+      "nsubjpas",
+      "pobj",
+      "purchase"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-acquired-X",
+    "family": "ownership"
+  },
+  {
+    "hash": "fb0b828ff0030a3f",
+    "lemmas": [
+      "acquisition",
+      "agent",
+      "pobj",
+      "purchase"
+    ],
+    "roles": [
+      "agent",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-acquired-X",
+    "family": "ownership"
+  },
+  {
+    "hash": "61db1c54a9795429",
+    "lemmas": [
+      "invest",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X-invested_in-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "45271a08cf80eb7b",
+    "lemmas": [
+      "dobj",
+      "fund",
+      "investment",
+      "lead",
+      "nsubj",
+      "obj",
+      "pos",
+      "round"
+    ],
+    "roles": [
+      "nsubj",
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X(poss)-invested_in-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "326a9fe680f0feb2",
+    "lemmas": [
+      "nsubj",
+      "participate",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X-invested_in-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "26ddd163654ca23a",
+    "lemmas": [
+      "from",
+      "investment",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "from",
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X-invested_in-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "95bbf1be58631ca2",
+    "lemmas": [
+      "champion",
+      "deal",
+      "dobj",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-invested_in-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "9789ffe47e075d49",
+    "lemmas": [
+      "agent",
+      "dep",
+      "fund",
+      "investment",
+      "lead",
+      "nsubjpas",
+      "pobj",
+      "round"
+    ],
+    "roles": [
+      "by",
+      "lead"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-invested_in-X",
+    "family": "employment"
+  },
+  {
+    "hash": "4761b6317af2d2a1",
+    "lemmas": [
+      "advise",
+      "counsel",
+      "dobj",
+      "guide",
+      "mentor",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-advised_by-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "4878fca51d1bb490",
+    "lemmas": [
+      "advise",
+      "counsel",
+      "dobj",
+      "guide",
+      "like",
+      "mentor",
+      "nsubj",
+      "obj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-advised_by-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "ab487eb71737e5a0",
+    "lemmas": [
+      "adviser",
+      "advisor",
+      "appo",
+      "counselor",
+      "mentor",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-advised_by-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "62b53d3815c17859",
+    "lemmas": [
+      "adviser",
+      "advisor",
+      "mentor",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-advised_by-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "5bf3d7623578da66",
+    "lemmas": [
+      "guidance",
+      "pobj",
+      "prep",
+      "supervision",
+      "under"
+    ],
+    "roles": [
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-advised_by-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "85e1a807e7465a36",
+    "lemmas": [
+      "complete",
+      "finish",
+      "nsubj",
+      "pobj",
+      "prep",
+      "under"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-advised_by-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "b436fc3fc56f12c6",
+    "lemmas": [
+      "complete",
+      "finish",
+      "nsubj",
+      "pobj",
+      "prep",
+      "under"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X-advised_by-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "2d034bbda817bd67",
+    "lemmas": [
+      "attr",
+      "mentor",
+      "nsubj",
+      "pos"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-advised_by-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "4d8ec698c76009cc",
+    "lemmas": [
+      "advisor",
+      "nsubj",
+      "pobj",
+      "prep",
+      "serve"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-advised_by-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "45da4bc0d93703db",
+    "lemmas": [
+      "employ",
+      "for",
+      "join",
+      "nsubj",
+      "pobj",
+      "prep",
+      "work"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at",
+      "for"
+    ],
+    "voice": "neutral",
+    "structure": "X-member_of-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "5a8d6b18a0b11a5e",
+    "lemmas": [
+      "agent",
+      "employ",
+      "hire",
+      "nsubjpas",
+      "pobj",
+      "recruit"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-member_of-X",
+    "family": "employment"
+  },
+  {
+    "hash": "7bc9dc81947056f0",
+    "lemmas": [
+      "dobj",
+      "hire",
+      "nsubj",
+      "obj",
+      "recruit"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-member_of-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "65acca901a925676",
+    "lemmas": [
+      "control",
+      "dobj",
+      "nsubj",
+      "obj",
+      "own",
+      "posses"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-owns-Y",
+    "family": "ownership"
+  },
+  {
+    "hash": "8ed55648944d2c38",
+    "lemmas": [
+      "agent",
+      "control",
+      "nsubjpas",
+      "own",
+      "pobj"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-owns-X",
+    "family": "ownership"
+  },
+  {
+    "hash": "7c68b7c94e27371c",
+    "lemmas": [
+      "agent",
+      "control",
+      "own",
+      "pobj",
+      "relcl"
+    ],
+    "roles": [
+      "agent",
+      "pobj",
+      "relcl"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-owns-X",
+    "family": "ownership"
+  },
+  {
+    "hash": "63523ac5ac722252",
+    "lemmas": [
+      "busines",
+      "company",
+      "compound",
+      "firm",
+      "organization",
+      "pos",
+      "startup"
+    ],
+    "roles": [
+      "compound",
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-owns-Y",
+    "family": "ownership"
+  },
+  {
+    "hash": "b7c2fc97d85dea6d",
+    "lemmas": [
+      "attr",
+      "become",
+      "friend",
+      "nsubj",
+      "pobj",
+      "prep",
+      "with"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "with"
+    ],
+    "voice": "neutral",
+    "structure": "X-friends_with-Y",
+    "family": "social"
+  },
+  {
+    "hash": "b0b8dfd99354118f",
+    "lemmas": [
+      "attr",
+      "become",
+      "conj",
+      "friend",
+      "nsubj"
+    ],
+    "roles": [
+      "attr",
+      "conj",
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-friends_with-Y",
+    "family": "social"
+  },
+  {
+    "hash": "54dae9f3162dd070",
+    "lemmas": [
+      "befriend",
+      "dobj",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-friends_with-Y",
+    "family": "social"
+  },
+  {
+    "hash": "05692ad5e9407658",
+    "lemmas": [
+      "attr",
+      "friend",
+      "nsubj",
+      "pobj",
+      "prep",
+      "with"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "with"
+    ],
+    "voice": "neutral",
+    "structure": "X-friends_with-Y",
+    "family": "social"
+  },
+  {
+    "hash": "de5344b3fbf94ea9",
+    "lemmas": [
+      "attr",
+      "conj",
+      "friend",
+      "nsubj"
+    ],
+    "roles": [
+      "attr",
+      "conj",
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-friends_with-Y",
+    "family": "social"
+  },
+  {
+    "hash": "ede29aebd07ea99b",
+    "lemmas": [
+      "dobj",
+      "nsubj",
+      "obj",
+      "rival"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-enemy_of-Y",
+    "family": "social"
+  },
+  {
+    "hash": "51101f3f00448e1f",
+    "lemmas": [
+      "attr",
+      "become",
+      "nsubj",
+      "pobj",
+      "prep",
+      "rival"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X-enemy_of-Y",
+    "family": "social"
+  },
+  {
+    "hash": "657e27c9356339fb",
+    "lemmas": [
+      "appo",
+      "pobj",
+      "prep",
+      "rival"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of",
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-enemy_of-Y",
+    "family": "social"
+  },
+  {
+    "hash": "6f59fedb75805c2e",
+    "lemmas": [
+      "dobj",
+      "lead",
+      "manage",
+      "nsubj",
+      "obj",
+      "oversee",
+      "supervise"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-leads-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "1100380158172a0d",
+    "lemmas": [
+      "agent",
+      "manage",
+      "nsubjpas",
+      "oversee",
+      "pobj",
+      "supervise"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-leads-X",
+    "family": "employment"
+  },
+  {
+    "hash": "3b6dd693cd0d382a",
+    "lemmas": [
+      "appo",
+      "director",
+      "manager",
+      "pobj",
+      "prep",
+      "supervisor"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-leads-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "f63a61701266488b",
+    "lemmas": [
+      "bos",
+      "director",
+      "manager",
+      "pos",
+      "supervisor"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-leads-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "5e95f09f5802bd37",
+    "lemmas": [
+      "nsubj",
+      "pobj",
+      "prep",
+      "report"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X-member_of-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "cc22596ac3cb6797",
+    "lemmas": [
+      "nsubj",
+      "pobj",
+      "prep",
+      "with",
+      "work"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "with"
+    ],
+    "voice": "neutral",
+    "structure": "X-ally_of-Y",
+    "family": "social"
+  },
+  {
+    "hash": "7c60072b19fac40a",
+    "lemmas": [
+      "collaborate",
+      "nsubj",
+      "partner",
+      "pobj",
+      "prep",
+      "with"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "with"
+    ],
+    "voice": "neutral",
+    "structure": "X-ally_of-Y",
+    "family": "social"
+  },
+  {
+    "hash": "b3749aba7dc6dee6",
+    "lemmas": [
+      "collaborate",
+      "conj",
+      "nsubj",
+      "partner",
+      "work"
+    ],
+    "roles": [
+      "conj",
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-ally_of-Y",
+    "family": "social"
+  },
+  {
+    "hash": "dc5baf7766e59910",
+    "lemmas": [
+      "from",
+      "graduate",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "from"
+    ],
+    "voice": "neutral",
+    "structure": "X-attended-Y",
+    "family": "event"
+  },
+  {
+    "hash": "26f7bdca1e668c93",
+    "lemmas": [
+      "degree",
+      "diploma",
+      "dobj",
+      "from",
+      "master",
+      "mba",
+      "nsubj",
+      "obj",
+      "phd",
+      "pobj",
+      "prep",
+      "receive"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "from"
+    ],
+    "voice": "active",
+    "structure": "X-attended-Y",
+    "family": "event"
+  },
+  {
+    "hash": "5273b63dce78b62a",
+    "lemmas": [
+      "nsubj",
+      "pobj",
+      "prep",
+      "research"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X-member_of-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "61203ebe171947db",
+    "lemmas": [
+      "live",
+      "nsubj",
+      "pobj",
+      "prep",
+      "reside"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X-lives_in-Y",
+    "family": "location"
+  },
+  {
+    "hash": "fd8e75b7e6a801a5",
+    "lemmas": [
+      "fight",
+      "fought",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X-fought_in-Y",
+    "family": "event"
+  },
+  {
+    "hash": "c5ee61b08ca34d9c",
+    "lemmas": [
+      "migrate",
+      "move",
+      "nsubj",
+      "pobj",
+      "prep",
+      "relocate"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X-lives_in-Y",
+    "family": "location"
+  },
+  {
+    "hash": "bedac69c2c9ecec9",
+    "lemmas": [
+      "bear",
+      "nsubjpas",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "nsubjpass",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "passive",
+    "structure": "Y-born_in-X",
+    "family": "location"
+  },
+  {
+    "hash": "fcc7d280eafeef99",
+    "lemmas": [
+      "bear",
+      "pobj",
+      "prep",
+      "relcl"
+    ],
+    "roles": [
+      "pobj",
+      "prep",
+      "relcl"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X-born_in-Y",
+    "family": "location"
+  },
+  {
+    "hash": "c579e83de37921e2",
+    "lemmas": [
+      "journey",
+      "nsubj",
+      "pobj",
+      "prep",
+      "travel"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X-traveled_to-Y",
+    "family": "event"
+  },
+  {
+    "hash": "3b7db5f3001368cb",
+    "lemmas": [
+      "dobj",
+      "nsubj",
+      "obj",
+      "visit"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-traveled_to-Y",
+    "family": "event"
+  },
+  {
+    "hash": "146d5a40316ad768",
+    "lemmas": [
+      "base",
+      "pobj",
+      "prep",
+      "relcl"
+    ],
+    "roles": [
+      "pobj",
+      "prep",
+      "relcl"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X-lives_in-Y",
+    "family": "location"
+  },
+  {
+    "hash": "e29cd6af65838a0c",
+    "lemmas": [
+      "from",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "from"
+    ],
+    "voice": "neutral",
+    "structure": "X-born_in-Y",
+    "family": "location"
+  },
+  {
+    "hash": "a8fc08580046d44a",
+    "lemmas": [
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X-lives_in-Y",
+    "family": "location"
+  },
+  {
+    "hash": "e6c7dd71fb66212e",
+    "lemmas": [
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X-lives_in-Y",
+    "family": "location"
+  },
+  {
+    "hash": "c7a0b0563c46e0ee",
+    "lemmas": [
+      "appo",
+      "ceo",
+      "cfo",
+      "chairman",
+      "chief",
+      "cto",
+      "director",
+      "pobj",
+      "prep",
+      "president"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-leads-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "0fb08559e94b3d90",
+    "lemmas": [
+      "appo",
+      "cofounder",
+      "founder",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-leads-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "bcd06cc7d9b669a6",
+    "lemmas": [
+      "appo",
+      "instructor",
+      "lecturer",
+      "pobj",
+      "prep",
+      "professor",
+      "with"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at",
+      "with"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-teaches_at-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "6731aa263be35fd3",
+    "lemmas": [
+      "analyst",
+      "appo",
+      "developer",
+      "employee",
+      "engineer",
+      "pobj",
+      "prep",
+      "scientist",
+      "with"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at",
+      "of",
+      "with"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-member_of-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "bc65f309f8f11466",
+    "lemmas": [
+      "appo",
+      "pobj",
+      "prep",
+      "researcher"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-member_of-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "01754db0a45f25ef",
+    "lemmas": [
+      "appo",
+      "fellow",
+      "pobj",
+      "prep",
+      "scholar",
+      "student"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-studies_at-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "faba60897dae8a8c",
+    "lemmas": [
+      "alumni",
+      "alumnu",
+      "appo",
+      "graduate",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-attended-Y",
+    "family": "event"
+  },
+  {
+    "hash": "67dc0992af88247b",
+    "lemmas": [
+      "appo",
+      "partner",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-member_of-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "d0cfab347119b56b",
+    "lemmas": [
+      "analyst",
+      "architect",
+      "attr",
+      "consultant",
+      "designer",
+      "developer",
+      "engineer",
+      "manager",
+      "nsubj",
+      "pobj",
+      "prep",
+      "programmer",
+      "scientist"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X-member_of-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "c840d72bdc145da1",
+    "lemmas": [
+      "attr",
+      "instructor",
+      "lecturer",
+      "nsubj",
+      "pobj",
+      "prep",
+      "professor",
+      "teacher"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X-teaches_at-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "ff452b9bc0a83d53",
+    "lemmas": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep",
+      "student"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X-studies_at-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "4d8b7bda7fae21c4",
+    "lemmas": [
+      "nsubj",
+      "pobj",
+      "prep",
+      "work"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X-member_of-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "fcd758b2228dbfed",
+    "lemmas": [
+      "dobj",
+      "leave",
+      "nsubj",
+      "obj",
+      "pobj",
+      "position",
+      "prep",
+      "quit",
+      "resign"
+    ],
+    "roles": [
+      "at",
+      "nsubj",
+      "position"
+    ],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "active",
+    "structure": "X-member_of-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "3a51008002ae9428",
+    "lemmas": [
+      "graduate",
+      "like",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-attended-Y",
+    "family": "event"
+  },
+  {
+    "hash": "d0e4b7822a7e2167",
+    "lemmas": [
+      "cofounder",
+      "founder",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-leads-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "2728a9971bde0625",
+    "lemmas": [
+      "analyst",
+      "director",
+      "employee",
+      "engineer",
+      "manager",
+      "pobj",
+      "prep",
+      "with"
+    ],
+    "roles": [
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at",
+      "with"
+    ],
+    "voice": "neutral",
+    "structure": "X-member_of-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "4aa48343a929f644",
+    "lemmas": [
+      "instructor",
+      "lecturer",
+      "pobj",
+      "prep",
+      "professor"
+    ],
+    "roles": [
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X-teaches_at-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "772c615c0bea1a03",
+    "lemmas": [
+      "pobj",
+      "prep",
+      "student"
+    ],
+    "roles": [
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X-studies_at-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "43488c037577b2a6",
+    "lemmas": [
+      "from",
+      "graduate",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "from",
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-attended-Y",
+    "family": "event"
+  },
+  {
+    "hash": "bc988779c33f2303",
+    "lemmas": [
+      "from",
+      "graduate",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "from",
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-attended-Y",
+    "family": "event"
+  },
+  {
+    "hash": "116334d456fd7499",
+    "lemmas": [
+      "from",
+      "graduate",
+      "pobj",
+      "prep",
+      "relcl"
+    ],
+    "roles": [
+      "pobj",
+      "prep",
+      "relcl"
+    ],
+    "prepositions": [
+      "from",
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-attended-Y",
+    "family": "event"
+  },
+  {
+    "hash": "b5f08e9330fa6ba4",
+    "lemmas": [
+      "nsubj",
+      "pobj",
+      "prep",
+      "study"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X-studies_at-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "2b9cf55eb2876acd",
+    "lemmas": [
+      "dobj",
+      "nsubj",
+      "obj",
+      "pobj",
+      "prep",
+      "study"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at",
+      "in"
+    ],
+    "voice": "active",
+    "structure": "X-studies_at-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "da79721d00f864e5",
+    "lemmas": [
+      "advmod",
+      "here",
+      "npadvmod",
+      "nsubj",
+      "study",
+      "there"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-studies_at-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "c56216e6f81c157c",
+    "lemmas": [
+      "dobj",
+      "here",
+      "nsubj",
+      "obj",
+      "study",
+      "there"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-studies_at-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "24b75373dd9d5225",
+    "lemmas": [
+      "advmod",
+      "dobj",
+      "here",
+      "npadvmod",
+      "nsubj",
+      "obj",
+      "study",
+      "there"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-studies_at-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "68f3f7cf7966bd37",
+    "lemmas": [
+      "advmod",
+      "here",
+      "npadvmod",
+      "nsubj",
+      "study",
+      "there"
+    ],
+    "roles": [
+      "study"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-studies_at-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "f3b970559a557486",
+    "lemmas": [
+      "for",
+      "nsubj",
+      "pobj",
+      "prep",
+      "work"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at",
+      "for"
+    ],
+    "voice": "neutral",
+    "structure": "X-member_of-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "c56245bf8d69b694",
+    "lemmas": [
+      "for",
+      "pobj",
+      "prep",
+      "relcl",
+      "work"
+    ],
+    "roles": [
+      "pobj",
+      "prep",
+      "relcl"
+    ],
+    "prepositions": [
+      "at",
+      "for"
+    ],
+    "voice": "neutral",
+    "structure": "X-member_of-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "f2b1ad722708b9d5",
+    "lemmas": [
+      "appo",
+      "for",
+      "pobj",
+      "prep",
+      "relcl",
+      "work"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep",
+      "relcl"
+    ],
+    "prepositions": [
+      "at",
+      "for"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-member_of-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "6397f771d727fa30",
+    "lemmas": [
+      "from",
+      "leave",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at",
+      "from"
+    ],
+    "voice": "neutral",
+    "structure": "X-member_of-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "ae4cc927baee1764",
+    "lemmas": [
+      "dobj",
+      "join",
+      "nsubj"
+    ],
+    "roles": [
+      "dobj",
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-member_of-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "3089ddab41981bd5",
+    "lemmas": [
+      "acquire",
+      "dobj",
+      "nsubj"
+    ],
+    "roles": [
+      "dobj",
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-acquired-Y",
+    "family": "ownership"
+  },
+  {
+    "hash": "3c424f2c8a9a2a2f",
+    "lemmas": [
+      "dobj",
+      "establish",
+      "found",
+      "nsubj",
+      "start"
+    ],
+    "roles": [
+      "dobj",
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-leads-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "6bca3441d628d601",
+    "lemmas": [
+      "dobj",
+      "establish",
+      "found",
+      "relcl",
+      "start"
+    ],
+    "roles": [
+      "dobj",
+      "relcl"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-leads-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "d35f78c6ce8485c4",
+    "lemmas": [
+      "nsubj",
+      "pobj",
+      "prep",
+      "study",
+      "under"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-advised_by-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "4b9ec5edd095bfe3",
+    "lemmas": [
+      "pobj",
+      "prep",
+      "relcl",
+      "study",
+      "under"
+    ],
+    "roles": [
+      "pobj",
+      "prep",
+      "relcl"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-advised_by-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "9df92585ada66b00",
+    "lemmas": [
+      "attr",
+      "daughter",
+      "father",
+      "mother",
+      "nsubj",
+      "parent",
+      "pobj",
+      "prep",
+      "son"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-parent_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "f5244431814aa6f9",
+    "lemmas": [
+      "appo",
+      "father",
+      "mother",
+      "parent",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-parent_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "db3a69af12292b7f",
+    "lemmas": [
+      "child",
+      "daughter",
+      "pos",
+      "son"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-parent_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "8cb312309612172f",
+    "lemmas": [
+      "father",
+      "mother",
+      "parent",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-child_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "db13dea2e9c2707f",
+    "lemmas": [
+      "appo",
+      "child",
+      "daughter",
+      "pobj",
+      "prep",
+      "son"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-child_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "6b4b62cdac859c46",
+    "lemmas": [
+      "appo",
+      "child",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-child_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "a6dc55a5d069f86f",
+    "lemmas": [
+      "attr",
+      "conj",
+      "nsubj",
+      "sibl"
+    ],
+    "roles": [
+      "attr",
+      "conj",
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-sibling_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "89e4b81d59d432d2",
+    "lemmas": [
+      "brother",
+      "pos",
+      "sibl",
+      "sister"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-sibling_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "e2d8621526f85b86",
+    "lemmas": [
+      "dobj",
+      "mentor",
+      "nsubj",
+      "obj",
+      "teach",
+      "train"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-mentored-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "45b8b6149180296a",
+    "lemmas": [
+      "dobj",
+      "mentor",
+      "obj",
+      "relcl",
+      "teach",
+      "train"
+    ],
+    "roles": [
+      "relcl"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-mentored-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "2e4336be749ded19",
+    "lemmas": [
+      "nsubj",
+      "pobj",
+      "prep",
+      "study",
+      "train",
+      "under"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-mentored_by-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "f17412d356b0809e",
+    "lemmas": [
+      "dobj",
+      "mentor",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-mentored-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "871e750b8aec7882",
+    "lemmas": [
+      "dobj",
+      "govern",
+      "nsubj",
+      "obj",
+      "reign",
+      "rule"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-rules-Y",
+    "family": "power"
+  },
+  {
+    "hash": "59353ae9c8cec15e",
+    "lemmas": [
+      "nsubj",
+      "over",
+      "pobj",
+      "prep",
+      "reign",
+      "rule"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-rules-Y",
+    "family": "power"
+  },
+  {
+    "hash": "20bcb5e458374c00",
+    "lemmas": [
+      "appo",
+      "emperor",
+      "k",
+      "lord",
+      "monarch",
+      "pobj",
+      "prep",
+      "queen",
+      "ruler"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-rules-Y",
+    "family": "power"
+  },
+  {
+    "hash": "047d484497f0a673",
+    "lemmas": [
+      "compound",
+      "emperor",
+      "k",
+      "lord",
+      "pobj",
+      "prep",
+      "queen"
+    ],
+    "roles": [
+      "compound",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-rules-Y",
+    "family": "power"
+  },
+  {
+    "hash": "a2741a50474e7b0d",
+    "lemmas": [
+      "dobj",
+      "guard",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-guards-Y",
+    "family": "power"
+  },
+  {
+    "hash": "5c4d188cc2ef65e2",
+    "lemmas": [
+      "dobj",
+      "hunt",
+      "nsubj",
+      "obj",
+      "search",
+      "seek"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-seeks-Y",
+    "family": "event"
+  },
+  {
+    "hash": "02ff7ea04138e92c",
+    "lemmas": [
+      "for",
+      "hunt",
+      "nsubj",
+      "pobj",
+      "prep",
+      "search",
+      "seek"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "for"
+    ],
+    "voice": "neutral",
+    "structure": "X-seeks-Y",
+    "family": "event"
+  },
+  {
+    "hash": "5a9a46b8e7d1f059",
+    "lemmas": [
+      "carry",
+      "dobj",
+      "hold",
+      "nsubj",
+      "obj",
+      "posses",
+      "wield"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-possesses-Y",
+    "family": "ownership"
+  },
+  {
+    "hash": "a385ea19d3aa1a90",
+    "lemmas": [
+      "acquire",
+      "dobj",
+      "nsubj",
+      "obj",
+      "obtain",
+      "seize",
+      "steal",
+      "take"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-possesses-Y",
+    "family": "ownership"
+  },
+  {
+    "hash": "32981756224f4288",
+    "lemmas": [
+      "battle",
+      "combat",
+      "dobj",
+      "fight",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-enemy_of-Y",
+    "family": "social"
+  },
+  {
+    "hash": "e00c71f516962347",
+    "lemmas": [
+      "assault",
+      "attack",
+      "dobj",
+      "nsubj",
+      "obj",
+      "strike"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-enemy_of-Y",
+    "family": "social"
+  },
+  {
+    "hash": "de90de1bc79fe254",
+    "lemmas": [
+      "conquer",
+      "defeat",
+      "destroy",
+      "dobj",
+      "nsubj",
+      "obj",
+      "vanquish"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-defeated-Y",
+    "family": "power"
+  },
+  {
+    "hash": "662200ff291bd2d5",
+    "lemmas": [
+      "agent",
+      "defeat",
+      "destroy",
+      "nsubjpas",
+      "pobj",
+      "vanquish"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-defeated-X",
+    "family": "power"
+  },
+  {
+    "hash": "9a8d7e1ceca20f03",
+    "lemmas": [
+      "assassinate",
+      "dobj",
+      "kill",
+      "murder",
+      "nsubj",
+      "obj",
+      "slay"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-killed-Y",
+    "family": "power"
+  },
+  {
+    "hash": "7d1c0112ea901d21",
+    "lemmas": [
+      "agent",
+      "kill",
+      "murder",
+      "nsubjpas",
+      "pobj",
+      "slay"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-killed-X",
+    "family": "power"
+  },
+  {
+    "hash": "b9a42a19e4e6b2c8",
+    "lemmas": [
+      "attr",
+      "enemy",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-enemy_of-Y",
+    "family": "social"
+  },
+  {
+    "hash": "4cecf70ee0f1c19c",
+    "lemmas": [
+      "appo",
+      "enemy",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-enemy_of-Y",
+    "family": "social"
+  },
+  {
+    "hash": "d5993c8a55542b63",
+    "lemmas": [
+      "ally",
+      "nsubj",
+      "pobj",
+      "prep",
+      "with"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "with"
+    ],
+    "voice": "neutral",
+    "structure": "X-ally_of-Y",
+    "family": "social"
+  },
+  {
+    "hash": "19dd873286db1b27",
+    "lemmas": [
+      "ally",
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-ally_of-Y",
+    "family": "social"
+  },
+  {
+    "hash": "571062cdcdf2774f",
+    "lemmas": [
+      "accompany",
+      "dobj",
+      "follow",
+      "join",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-ally_of-Y",
+    "family": "social"
+  },
+  {
+    "hash": "ef0cbf958d5a4d8c",
+    "lemmas": [
+      "confine",
+      "imprison",
+      "lock",
+      "nsubjpas",
+      "pobj",
+      "prep",
+      "trap"
+    ],
+    "roles": [
+      "nsubjpass",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "passive",
+    "structure": "Y-imprisoned_in-X",
+    "family": "power"
+  },
+  {
+    "hash": "596b30ed791994b4",
+    "lemmas": [
+      "acomp",
+      "break",
+      "free",
+      "from",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "acomp",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "from"
+    ],
+    "voice": "neutral",
+    "structure": "X-freed_from-Y",
+    "family": "power"
+  },
+  {
+    "hash": "3e1ee444c7d4ae1d",
+    "lemmas": [
+      "escape",
+      "from",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "from"
+    ],
+    "voice": "neutral",
+    "structure": "X-freed_from-Y",
+    "family": "power"
+  },
+  {
+    "hash": "f76888cd35c2b4e5",
+    "lemmas": [
+      "dobj",
+      "join",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-member_of-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "1af6c68fd774586b",
+    "lemmas": [
+      "appo",
+      "member",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-member_of-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "6efc3e9b22dee077",
+    "lemmas": [
+      "for",
+      "nsubj",
+      "pobj",
+      "prep",
+      "send"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "for"
+    ],
+    "voice": "neutral",
+    "structure": "X-summoned-Y",
+    "family": "power"
+  },
+  {
+    "hash": "0a3ea2ed43931668",
+    "lemmas": [
+      "dobj",
+      "nsubj",
+      "obj",
+      "require"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-summoned-Y",
+    "family": "power"
+  },
+  {
+    "hash": "c427c261e3991623",
+    "lemmas": [
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at",
+      "in",
+      "on"
+    ],
+    "voice": "neutral",
+    "structure": "X-located_at-Y",
+    "family": "location"
+  },
+  {
+    "hash": "2c193bdc1ea3ddc7",
+    "lemmas": [
+      "nsubj",
+      "pobj",
+      "prep",
+      "stand"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at",
+      "on"
+    ],
+    "voice": "neutral",
+    "structure": "X-located_at-Y",
+    "family": "location"
+  },
+  {
+    "hash": "19e395cd622fd591",
+    "lemmas": [
+      "below",
+      "beneath",
+      "pobj",
+      "prep",
+      "under"
+    ],
+    "roles": [
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-located_beneath-Y",
+    "family": "location"
+  },
+  {
+    "hash": "d341cd7eeea19703",
+    "lemmas": [
+      "hide",
+      "nsubjpas",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "nsubjpass",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "passive",
+    "structure": "Y-hidden_in-X",
+    "family": "location"
+  },
+  {
+    "hash": "7a4dac9e42d1ab9c",
+    "lemmas": [
+      "gather",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X-located_at-Y",
+    "family": "location"
+  },
+  {
+    "hash": "c1341fad3ecc4be9",
+    "lemmas": [
+      "dobj",
+      "lead",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-leads-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "2c344e0977a8e99e",
+    "lemmas": [
+      "appo",
+      "leader",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-leads-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "310d92106ed4e0df",
+    "lemmas": [
+      "captain",
+      "commander",
+      "general",
+      "leader",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-leads-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "7f7ef5aae189b7aa",
+    "lemmas": [
+      "agent",
+      "lead",
+      "nsubjpas",
+      "pobj"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-leads-X",
+    "family": "employment"
+  },
+  {
+    "hash": "0e0e45224a63dc6a",
+    "lemmas": [
+      "dwell",
+      "dwelt",
+      "live",
+      "resid",
+      "reside"
+    ],
+    "roles": [],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X-lives_in-Y",
+    "family": "location"
+  },
+  {
+    "hash": "d875de196bf6a656",
+    "lemmas": [
+      "adversarie",
+      "adversary",
+      "another",
+      "became",
+      "both",
+      "each",
+      "enemie",
+      "enemy",
+      "guardian",
+      "leader",
+      "man",
+      "men",
+      "one",
+      "opponent",
+      "other",
+      "remain",
+      "rival",
+      "strategist",
+      "woman",
+      "women"
+    ],
+    "roles": [],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-enemy_of-Y",
+    "family": "social"
+  },
+  {
+    "hash": "793bc21ad585bdbe",
+    "lemmas": [
+      "marry"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-married_to-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "e344c1f9a61651ca",
+    "lemmas": [
+      "couple",
+      "marry"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-married_to-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "b51fa04d74bac57d",
+    "lemmas": [
+      "also",
+      "became",
+      "best",
+      "friend",
+      "friendship",
+      "remain",
+      "stay",
+      "struck",
+      "with"
+    ],
+    "roles": [],
+    "prepositions": [
+      "with"
+    ],
+    "voice": "neutral",
+    "structure": "X-friends_with-Y",
+    "family": "social"
+  },
+  {
+    "hash": "e2359f67e48b5543",
+    "lemmas": [
+      "became",
+      "best",
+      "friend",
+      "remain",
+      "stay"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-friends_with-Y",
+    "family": "social"
+  },
+  {
+    "hash": "c71c85029ecf02af",
+    "lemmas": [
+      "became",
+      "enemie",
+      "enemy",
+      "remain",
+      "rival"
+    ],
+    "roles": [],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-enemy_of-Y",
+    "family": "social"
+  },
+  {
+    "hash": "1939c33cc48e8f2f",
+    "lemmas": [
+      "became",
+      "enemie",
+      "remain",
+      "rival"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-enemy_of-Y",
+    "family": "social"
+  },
+  {
+    "hash": "ea5db55e623eacc7",
+    "lemmas": [
+      "between",
+      "bthe",
+      "rivalry"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-enemy_of-Y",
+    "family": "social"
+  },
+  {
+    "hash": "cf0a50ca4ddca089",
+    "lemmas": [
+      "child",
+      "daughter",
+      "son"
+    ],
+    "roles": [],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-parent_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "a54e01bbfef91e7b",
+    "lemmas": [
+      "child",
+      "children",
+      "couple",
+      "daughter",
+      "son",
+      "their"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-parent_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "60ac211a199ac99f",
+    "lemmas": [
+      "attend",
+      "continu",
+      "enroll",
+      "kept",
+      "still",
+      "studie",
+      "study"
+    ],
+    "roles": [],
+    "prepositions": [
+      "at",
+      "in",
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X-studies_at-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "2df77e01b2f8e362",
+    "lemmas": [
+      "continu",
+      "kept",
+      "lectur",
+      "lecture",
+      "still",
+      "teach",
+      "teache"
+    ],
+    "roles": [],
+    "prepositions": [
+      "at",
+      "in",
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X-teaches_at-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "a199c5a881bc8463",
+    "lemmas": [
+      "boverlook",
+      "dwell",
+      "dwelt",
+      "live",
+      "resid"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-lives_in-Y",
+    "family": "location"
+  },
+  {
+    "hash": "a3b90d1b0fd08851",
+    "lemmas": [
+      "journey",
+      "travel",
+      "travell",
+      "went"
+    ],
+    "roles": [],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X-traveled_to-Y",
+    "family": "event"
+  },
+  {
+    "hash": "d3ad3b3174dc2c08",
+    "lemmas": [
+      "fought"
+    ],
+    "roles": [],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X-fought_in-Y",
+    "family": "event"
+  },
+  {
+    "hash": "33150fc1a7e6adb0",
+    "lemmas": [
+      "govern",
+      "over",
+      "reign",
+      "rule"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-rules-Y",
+    "family": "power"
+  },
+  {
+    "hash": "c2ec3707c7ce1139",
+    "lemmas": [
+      "became",
+      "k",
+      "leader",
+      "queen",
+      "ruler"
+    ],
+    "roles": [],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-rules-Y",
+    "family": "power"
+  },
+  {
+    "hash": "1dc265249426aef8",
+    "lemmas": [
+      "child",
+      "daughter",
+      "descendant",
+      "heir",
+      "offspr",
+      "son"
+    ],
+    "roles": [],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-child_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "a1ed815b8dbd0f27",
+    "lemmas": [
+      "begat"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-parent_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "7ffa089922d5747b",
+    "lemmas": [
+      "marry"
+    ],
+    "roles": [],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X-married_to-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "92996462ada4a2f8",
+    "lemmas": [
+      "came",
+      "flew",
+      "journey",
+      "rode",
+      "sail",
+      "travel",
+      "went"
+    ],
+    "roles": [],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X-traveled_to-Y",
+    "family": "event"
+  },
+  {
+    "hash": "abfba461a0554e07",
+    "lemmas": [
+      "studie",
+      "study"
+    ],
+    "roles": [],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X-studies_at-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "cc84da8651d71b7f",
+    "lemmas": [
+      "attend"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-attended-Y",
+    "family": "event"
+  },
+  {
+    "hash": "72ce147f09ac006c",
+    "lemmas": [
+      "teach",
+      "teache"
+    ],
+    "roles": [],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X-teaches_at-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "24746c382b3bf5cc",
+    "lemmas": [
+      "dwelt",
+      "live",
+      "resid",
+      "reside"
+    ],
+    "roles": [],
+    "prepositions": [
+      "at",
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X-lives_in-Y",
+    "family": "location"
+  },
+  {
+    "hash": "22a9ea815f83a9bd",
+    "lemmas": [
+      "became",
+      "k",
+      "queen",
+      "ruler"
+    ],
+    "roles": [],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-rules-Y",
+    "family": "power"
+  },
+  {
+    "hash": "908ae94008255158",
+    "lemmas": [
+      "over",
+      "reign",
+      "rule"
+    ],
+    "roles": [],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X-rules-Y",
+    "family": "power"
+  },
+  {
+    "hash": "0d1ffdb06e7158c8",
+    "lemmas": [
+      "conquer"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-rules-Y",
+    "family": "power"
+  },
+  {
+    "hash": "e4dd42d0c316f360",
+    "lemmas": [
+      "bear"
+    ],
+    "roles": [],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X-child_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "49dc68c0e080d027",
+    "lemmas": [
+      "friend",
+      "with"
+    ],
+    "roles": [],
+    "prepositions": [
+      "with"
+    ],
+    "voice": "neutral",
+    "structure": "X-friends_with-Y",
+    "family": "social"
+  },
+  {
+    "hash": "9ce321fec9daa8f0",
+    "lemmas": [
+      "against",
+      "defeat",
+      "fought",
+      "kill"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-unknown-Y",
+    "family": "other"
+  }
+]

@@ -3,694 +3,186 @@
     {
       "id": "global_person_0",
       "type": "PERSON",
-      "canonical": "Harry Potter",
-      "aliases": [
-        "Harry"
-      ],
-      "created_at": "2025-10-31T11:25:15.530Z",
-      "centrality": 1
+      "canonical": "Marcus",
+      "aliases": [],
+      "created_at": "2025-11-10T04:48:01.841Z",
+      "centrality": 0
     },
     {
       "id": "global_person_1",
       "type": "PERSON",
-      "canonical": "James",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.530Z",
-      "centrality": 1
+      "canonical": "Lyra",
+      "aliases": [
+        "Kael's"
+      ],
+      "created_at": "2025-11-10T04:48:01.841Z",
+      "centrality": 0
     },
     {
       "id": "global_person_2",
       "type": "PERSON",
-      "canonical": "Lily Potter",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.530Z",
-      "centrality": 1
-    },
-    {
-      "id": "global_person_3",
-      "type": "PERSON",
-      "canonical": "Dursleys",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.530Z",
-      "centrality": 1
-    },
-    {
-      "id": "global_person_4",
-      "type": "PERSON",
-      "canonical": "Ron Weasley",
+      "canonical": "Queen Isolde",
       "aliases": [
-        "Ron"
+        "Prince"
       ],
-      "created_at": "2025-10-31T11:25:15.530Z",
-      "centrality": 1
-    },
-    {
-      "id": "global_person_5",
-      "type": "PERSON",
-      "canonical": "Arthur",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.530Z",
-      "centrality": 1
-    },
-    {
-      "id": "global_person_6",
-      "type": "PERSON",
-      "canonical": "Free Peoples",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.530Z",
-      "centrality": 1
-    },
-    {
-      "id": "global_person_7",
-      "type": "PERSON",
-      "canonical": "Key Members Gandalf",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.530Z",
-      "centrality": 1
-    },
-    {
-      "id": "global_person_8",
-      "type": "PERSON",
-      "canonical": "One",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.530Z",
-      "centrality": 1
-    },
-    {
-      "id": "global_person_9",
-      "type": "PERSON",
-      "canonical": "Gamgee Merry",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.530Z",
-      "centrality": 1
-    },
-    {
-      "id": "global_person_10",
-      "type": "PERSON",
-      "canonical": "Pippin",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.530Z",
-      "centrality": 1
-    },
-    {
-      "id": "global_person_11",
-      "type": "PERSON",
-      "canonical": "Frodo Baggins",
-      "aliases": [
-        "Frodo"
-      ],
-      "created_at": "2025-10-31T11:25:15.530Z",
-      "centrality": 1
-    },
-    {
-      "id": "global_person_12",
-      "type": "PERSON",
-      "canonical": "Baggins Samwise",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.530Z",
-      "centrality": 1
-    },
-    {
-      "id": "global_person_13",
-      "type": "PERSON",
-      "canonical": "Shire",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.530Z",
-      "centrality": 1
-    },
-    {
-      "id": "global_person_14",
-      "type": "PERSON",
-      "canonical": "Balrog",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.530Z",
-      "centrality": 1
-    },
-    {
-      "id": "global_person_15",
-      "type": "PERSON",
-      "canonical": "Anduin",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.530Z",
-      "centrality": 1
-    },
-    {
-      "id": "global_person_16",
-      "type": "PERSON",
-      "canonical": "Amon",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.530Z",
-      "centrality": 1
-    },
-    {
-      "id": "global_person_17",
-      "type": "PERSON",
-      "canonical": "Sam",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.530Z",
-      "centrality": 1
-    },
-    {
-      "id": "global_person_18",
-      "type": "PERSON",
-      "canonical": "The",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.530Z",
-      "centrality": 1
-    },
-    {
-      "id": "global_place_19",
-      "type": "PLACE",
-      "canonical": "Privet Drive",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.530Z",
-      "centrality": 1
-    },
-    {
-      "id": "global_place_20",
-      "type": "PLACE",
-      "canonical": "Rivendell",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.530Z",
-      "centrality": 1
-    },
-    {
-      "id": "global_place_21",
-      "type": "PLACE",
-      "canonical": "Rohan",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.530Z",
-      "centrality": 1
-    },
-    {
-      "id": "global_place_22",
-      "type": "PLACE",
-      "canonical": "Gondor",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.530Z",
-      "centrality": 1
-    },
-    {
-      "id": "global_place_23",
-      "type": "PLACE",
-      "canonical": "Shire",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.530Z",
+      "created_at": "2025-11-10T04:48:01.841Z",
       "centrality": 0
-    },
-    {
-      "id": "global_org_24",
-      "type": "ORG",
-      "canonical": "Ministry of Magic",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.531Z",
-      "centrality": 1
-    },
-    {
-      "id": "global_org_25",
-      "type": "ORG",
-      "canonical": "Journey The Fellowship",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.531Z",
-      "centrality": 1
-    },
-    {
-      "id": "global_org_26",
-      "type": "ORG",
-      "canonical": "Council of Elrond",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.531Z",
-      "centrality": 1
-    },
-    {
-      "id": "global_org_27",
-      "type": "ORG",
-      "canonical": "King",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.531Z",
-      "centrality": 1
-    },
-    {
-      "id": "global_org_28",
-      "type": "ORG",
-      "canonical": "Mines",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.531Z",
-      "centrality": 1
-    },
-    {
-      "id": "global_event_29",
-      "type": "EVENT",
-      "canonical": "Major Events",
-      "aliases": [],
-      "created_at": "2025-10-31T11:25:15.531Z",
-      "centrality": 1
     }
   ],
-  "relations": [
-    {
-      "id": "659eba5f-a097-43f6-af55-bf32083c6ff4",
-      "subj": "global_person_0",
-      "pred": "child_of",
-      "obj": "global_person_1",
-      "evidence": [
-        {
-          "doc_id": "default",
-          "span": {
-            "start": 0,
-            "end": 33,
-            "text": "Harry Potter was the son of James and Lily Potter. He lived with the Durs"
-          },
-          "sentence_index": 0,
-          "source": "RULE"
-        }
-      ],
-      "confidence": 0.6659302447841843,
-      "extractor": "dep",
-      "qualifiers": [
-        {
-          "type": "place",
-          "value": "Privet Drive",
-          "entity_id": "0cf74fe9-8371-43d9-b248-a2bca619b1b9",
-          "span": [
-            81,
-            93
-          ]
-        }
-      ]
-    },
-    {
-      "id": "24ae2d59-c349-404f-aa0a-7da49ec840bd",
-      "subj": "global_person_1",
-      "pred": "parent_of",
-      "obj": "global_person_0",
-      "evidence": [
-        {
-          "doc_id": "default",
-          "span": {
-            "start": 0,
-            "end": 33,
-            "text": "Harry Potter was the son of James and Lily Potter. He lived with the Durs"
-          },
-          "sentence_index": 0,
-          "source": "RULE"
-        }
-      ],
-      "confidence": 0.6659302447841843,
-      "extractor": "dep",
-      "qualifiers": [
-        {
-          "type": "place",
-          "value": "Privet Drive",
-          "entity_id": "0cf74fe9-8371-43d9-b248-a2bca619b1b9",
-          "span": [
-            81,
-            93
-          ]
-        }
-      ]
-    },
-    {
-      "id": "3845bf57-201f-4a05-80d3-eafbd55842d4",
-      "subj": "global_person_17",
-      "pred": "enemy_of",
-      "obj": "global_person_13",
-      "evidence": [
-        {
-          "doc_id": "default",
-          "span": {
-            "start": 166,
-            "end": 187,
-            "text": "lands. They passed through Moria, where they faced the Balrog in the MinesAfter crossing through Loth"
-          },
-          "sentence_index": 0,
-          "source": "RULE"
-        }
-      ],
-      "confidence": 0.7834325166804784,
-      "extractor": "dep",
-      "qualifiers": [
-        {
-          "type": "place",
-          "value": "eparted from",
-          "entity_id": "368b0e90-a76d-40c6-a8b4-897a179d3445",
-          "span": [
-            133,
-            137
-          ]
-        },
-        {
-          "type": "place",
-          "value": "assed",
-          "entity_id": "7454b125-5540-4d56-86d4-d77f86f51ff6",
-          "span": [
-            139,
-            144
-          ]
-        }
-      ]
-    },
-    {
-      "id": "f6f3c1c4-91ed-48cc-b403-98beff474d78",
-      "subj": "global_person_13",
-      "pred": "enemy_of",
-      "obj": "global_person_17",
-      "evidence": [
-        {
-          "doc_id": "default",
-          "span": {
-            "start": 166,
-            "end": 187,
-            "text": "lands. They passed through Moria, where they faced the Balrog in the MinesAfter crossing through Loth"
-          },
-          "sentence_index": 0,
-          "source": "RULE"
-        }
-      ],
-      "confidence": 0.7834325166804784,
-      "extractor": "dep",
-      "qualifiers": [
-        {
-          "type": "place",
-          "value": "eparted from",
-          "entity_id": "368b0e90-a76d-40c6-a8b4-897a179d3445",
-          "span": [
-            133,
-            137
-          ]
-        },
-        {
-          "type": "place",
-          "value": "assed",
-          "entity_id": "7454b125-5540-4d56-86d4-d77f86f51ff6",
-          "span": [
-            139,
-            144
-          ]
-        }
-      ]
-    },
-    {
-      "id": "301ad050-9113-44c7-a5dc-af789907e3ac",
-      "subj": "global_person_11",
-      "pred": "lives_in",
-      "obj": "global_place_23",
-      "evidence": [
-        {
-          "doc_id": "default",
-          "span": {
-            "start": 0,
-            "end": 32,
-            "text": "Frodo Baggins lived in the Shire."
-          },
-          "sentence_index": 0,
-          "source": "RULE"
-        }
-      ],
-      "confidence": 0.7088790555985779,
-      "extractor": "dep"
-    }
-  ],
-  "conflicts": [
-    {
-      "type": "cycle",
-      "severity": 3,
-      "description": "Cycle detected in parent_of/child_of: global_person_0 → global_person_1 → global_person_0",
-      "relations": [
-        {
-          "id": "659eba5f-a097-43f6-af55-bf32083c6ff4",
-          "subj": "global_person_0",
-          "pred": "child_of",
-          "obj": "global_person_1",
-          "evidence": [
-            {
-              "doc_id": "default",
-              "span": {
-                "start": 0,
-                "end": 33,
-                "text": "Harry Potter was the son of James and Lily Potter. He lived with the Durs"
-              },
-              "sentence_index": 0,
-              "source": "RULE"
-            }
-          ],
-          "confidence": 0.6659302447841843,
-          "extractor": "dep",
-          "qualifiers": [
-            {
-              "type": "place",
-              "value": "Privet Drive",
-              "entity_id": "0cf74fe9-8371-43d9-b248-a2bca619b1b9",
-              "span": [
-                81,
-                93
-              ]
-            }
-          ]
-        },
-        {
-          "id": "24ae2d59-c349-404f-aa0a-7da49ec840bd",
-          "subj": "global_person_1",
-          "pred": "parent_of",
-          "obj": "global_person_0",
-          "evidence": [
-            {
-              "doc_id": "default",
-              "span": {
-                "start": 0,
-                "end": 33,
-                "text": "Harry Potter was the son of James and Lily Potter. He lived with the Durs"
-              },
-              "sentence_index": 0,
-              "source": "RULE"
-            }
-          ],
-          "confidence": 0.6659302447841843,
-          "extractor": "dep",
-          "qualifiers": [
-            {
-              "type": "place",
-              "value": "Privet Drive",
-              "entity_id": "0cf74fe9-8371-43d9-b248-a2bca619b1b9",
-              "span": [
-                81,
-                93
-              ]
-            }
-          ]
-        }
-      ]
-    }
-  ],
+  "relations": [],
+  "conflicts": [],
   "provenance": {
-    "case-debug_entity_0": {
+    "/home/user/ARES/test-expanded-patterns.json_entity_0": {
       "global_id": "global_person_0",
-      "doc_id": "case-debug",
-      "merged_at": "2025-10-13T19:28:02.745Z",
-      "local_canonical": "Harry Potter"
+      "doc_id": "/home/user/ARES/test-expanded-patterns.json",
+      "merged_at": "2025-11-10T04:48:01.841Z",
+      "local_canonical": "Marcus"
     },
-    "case-debug_entity_1": {
+    "/home/user/ARES/test-expanded-patterns.json_entity_1": {
       "global_id": "global_person_1",
-      "doc_id": "case-debug",
-      "merged_at": "2025-10-13T19:28:02.745Z",
-      "local_canonical": "James"
+      "doc_id": "/home/user/ARES/test-expanded-patterns.json",
+      "merged_at": "2025-11-10T04:48:01.841Z",
+      "local_canonical": "Kael's"
     },
-    "case-debug_entity_2": {
+    "/home/user/ARES/test-expanded-patterns.json_entity_5": {
       "global_id": "global_person_2",
-      "doc_id": "case-debug",
-      "merged_at": "2025-10-13T19:28:02.745Z",
-      "local_canonical": "Lily Potter"
+      "doc_id": "/home/user/ARES/test-expanded-patterns.json",
+      "merged_at": "2025-11-10T04:48:01.841Z",
+      "local_canonical": "Prince"
+    }
+  },
+  "profiles": {
+    "1e2a574b-8d98-4413-9551-cdeb28c2438a": {
+      "entity_id": "1e2a574b-8d98-4413-9551-cdeb28c2438a",
+      "entity_type": "PERSON",
+      "canonical": "Marcus",
+      "descriptors": [],
+      "titles": [
+        "Marcus"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Marcus, offspring of Helena, married Elena."
+      ],
+      "mention_count": 1,
+      "first_seen": "/home/user/ARES/test-expanded-patterns.json",
+      "last_seen": "/home/user/ARES/test-expanded-patterns.json",
+      "confidence_score": 0.55
     },
-    "case-debug_entity_3": {
-      "global_id": "global_place_19",
-      "doc_id": "case-debug",
-      "merged_at": "2025-10-13T19:28:02.745Z",
-      "local_canonical": "Privet Drive"
+    "253e2ca3-83bf-458b-8a5d-11e77229731c": {
+      "entity_id": "253e2ca3-83bf-458b-8a5d-11e77229731c",
+      "entity_type": "PERSON",
+      "canonical": "Kael's",
+      "descriptors": [],
+      "titles": [
+        "Kael's",
+        "Lyra"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Kael's daughter Lyra, descendant of Helena, became a scholar."
+      ],
+      "mention_count": 1,
+      "first_seen": "/home/user/ARES/test-expanded-patterns.json",
+      "last_seen": "/home/user/ARES/test-expanded-patterns.json",
+      "confidence_score": 0.55
     },
-    "case-debug_entity_4": {
-      "global_id": "global_person_3",
-      "doc_id": "case-debug",
-      "merged_at": "2025-10-13T19:28:02.745Z",
-      "local_canonical": "Dursleys"
+    "a077b8e1-5e1e-4dcf-a3db-eecaeeef3082": {
+      "entity_id": "a077b8e1-5e1e-4dcf-a3db-eecaeeef3082",
+      "entity_type": "PERSON",
+      "canonical": "e a scholar",
+      "descriptors": [],
+      "titles": [
+        "e a scholar",
+        "Aldric"
+      ],
+      "roles": [
+        "scholar"
+      ],
+      "attributes": {},
+      "contexts": [
+        "Kael's daughter Lyra, descendant of Helena, became a scholar."
+      ],
+      "mention_count": 1,
+      "first_seen": "/home/user/ARES/test-expanded-patterns.json",
+      "last_seen": "/home/user/ARES/test-expanded-patterns.json",
+      "confidence_score": 0.55
     },
-    "case-debug_entity_5": {
-      "global_id": "global_person_0",
-      "doc_id": "case-debug",
-      "merged_at": "2025-10-13T19:28:02.745Z",
-      "local_canonical": "Harry"
+    "d0523440-5a68-49db-bd11-53e3aad7e65f": {
+      "entity_id": "d0523440-5a68-49db-bd11-53e3aad7e65f",
+      "entity_type": "PERSON",
+      "canonical": "ing of",
+      "descriptors": [],
+      "titles": [
+        "ing of",
+        "Helena"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Marcus, offspring of Helena, married Elena."
+      ],
+      "mention_count": 1,
+      "first_seen": "/home/user/ARES/test-expanded-patterns.json",
+      "last_seen": "/home/user/ARES/test-expanded-patterns.json",
+      "confidence_score": 0.55
     },
-    "case-debug_entity_6": {
-      "global_id": "global_person_4",
-      "doc_id": "case-debug",
-      "merged_at": "2025-10-13T19:28:02.745Z",
-      "local_canonical": "Ron Weasley"
+    "571dc720-9977-4df7-85ae-2685256c3348": {
+      "entity_id": "571dc720-9977-4df7-85ae-2685256c3348",
+      "entity_type": "PERSON",
+      "canonical": "became a scholar",
+      "descriptors": [],
+      "titles": [
+        "became a scholar",
+        "Prince Aldric"
+      ],
+      "roles": [
+        "scholar"
+      ],
+      "attributes": {},
+      "contexts": [
+        "Kael's daughter Lyra, descendant of Helena, became a scholar."
+      ],
+      "mention_count": 1,
+      "first_seen": "/home/user/ARES/test-expanded-patterns.json",
+      "last_seen": "/home/user/ARES/test-expanded-patterns.json",
+      "confidence_score": 0.55
     },
-    "case-debug_entity_7": {
-      "global_id": "global_person_4",
-      "doc_id": "case-debug",
-      "merged_at": "2025-10-13T19:28:02.745Z",
-      "local_canonical": "Ron"
-    },
-    "case-debug_entity_8": {
-      "global_id": "global_person_5",
-      "doc_id": "case-debug",
-      "merged_at": "2025-10-13T19:28:02.745Z",
-      "local_canonical": "Arthur"
-    },
-    "case-debug_entity_9": {
-      "global_id": "global_org_24",
-      "doc_id": "case-debug",
-      "merged_at": "2025-10-13T19:28:02.745Z",
-      "local_canonical": "Ministry of Magic"
-    },
-    "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63_entity_0": {
-      "global_id": "global_place_20",
-      "doc_id": "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63",
-      "merged_at": "2025-10-31T11:25:06.859Z",
-      "local_canonical": "Rivendell"
-    },
-    "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63_entity_1": {
-      "global_id": "global_org_25",
-      "doc_id": "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63",
-      "merged_at": "2025-10-31T11:25:06.859Z",
-      "local_canonical": "Journey The Fellowship"
-    },
-    "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63_entity_2": {
-      "global_id": "global_org_26",
-      "doc_id": "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63",
-      "merged_at": "2025-10-31T11:25:06.859Z",
-      "local_canonical": "Council of Elrond"
-    },
-    "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63_entity_3": {
-      "global_id": "global_person_6",
-      "doc_id": "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63",
-      "merged_at": "2025-10-31T11:25:06.859Z",
-      "local_canonical": "Free Peoples"
-    },
-    "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63_entity_4": {
-      "global_id": "global_person_7",
-      "doc_id": "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63",
-      "merged_at": "2025-10-31T11:25:06.859Z",
-      "local_canonical": "Key Members Gandalf"
-    },
-    "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63_entity_5": {
-      "global_id": "global_person_8",
-      "doc_id": "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63",
-      "merged_at": "2025-10-31T11:25:06.859Z",
-      "local_canonical": "One"
-    },
-    "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63_entity_9": {
-      "global_id": "global_org_27",
-      "doc_id": "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63",
-      "merged_at": "2025-10-31T11:25:06.859Z",
-      "local_canonical": "King"
-    },
-    "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63_entity_10": {
-      "global_id": "global_person_9",
-      "doc_id": "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63",
-      "merged_at": "2025-10-31T11:25:06.859Z",
-      "local_canonical": "Gamgee Merry"
-    },
-    "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63_entity_11": {
-      "global_id": "global_person_10",
-      "doc_id": "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63",
-      "merged_at": "2025-10-31T11:25:06.859Z",
-      "local_canonical": "Pippin"
-    },
-    "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63_entity_12": {
-      "global_id": "global_person_11",
-      "doc_id": "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63",
-      "merged_at": "2025-10-31T11:25:06.859Z",
-      "local_canonical": "Frodo"
-    },
-    "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63_entity_13": {
-      "global_id": "global_person_12",
-      "doc_id": "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63",
-      "merged_at": "2025-10-31T11:25:06.859Z",
-      "local_canonical": "Baggins Samwise"
-    },
-    "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63_entity_16": {
-      "global_id": "global_person_13",
-      "doc_id": "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63",
-      "merged_at": "2025-10-31T11:25:06.859Z",
-      "local_canonical": "Shire"
-    },
-    "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63_entity_18": {
-      "global_id": "global_person_14",
-      "doc_id": "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63",
-      "merged_at": "2025-10-31T11:25:06.859Z",
-      "local_canonical": "Balrog"
-    },
-    "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63_entity_20": {
-      "global_id": "global_person_15",
-      "doc_id": "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63",
-      "merged_at": "2025-10-31T11:25:06.859Z",
-      "local_canonical": "Anduin"
-    },
-    "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63_entity_21": {
-      "global_id": "global_org_28",
-      "doc_id": "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63",
-      "merged_at": "2025-10-31T11:25:06.859Z",
-      "local_canonical": "Mines"
-    },
-    "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63_entity_24": {
-      "global_id": "global_person_16",
-      "doc_id": "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63",
-      "merged_at": "2025-10-31T11:25:06.859Z",
-      "local_canonical": "Amon"
-    },
-    "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63_entity_27": {
-      "global_id": "global_person_17",
-      "doc_id": "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63",
-      "merged_at": "2025-10-31T11:25:06.859Z",
-      "local_canonical": "Sam"
-    },
-    "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63_entity_29": {
-      "global_id": "global_event_29",
-      "doc_id": "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63",
-      "merged_at": "2025-10-31T11:25:06.859Z",
-      "local_canonical": "Major Events"
-    },
-    "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63_entity_30": {
-      "global_id": "global_place_21",
-      "doc_id": "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63",
-      "merged_at": "2025-10-31T11:25:06.859Z",
-      "local_canonical": "Rohan"
-    },
-    "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63_entity_31": {
-      "global_id": "global_place_22",
-      "doc_id": "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63",
-      "merged_at": "2025-10-31T11:25:06.859Z",
-      "local_canonical": "Gondor"
-    },
-    "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63_entity_33": {
-      "global_id": "global_person_18",
-      "doc_id": "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63",
-      "merged_at": "2025-10-31T11:25:06.859Z",
-      "local_canonical": "The"
-    },
-    "test-123_entity_0": {
-      "global_id": "global_person_11",
-      "doc_id": "test-123",
-      "merged_at": "2025-10-31T11:25:15.531Z",
-      "local_canonical": "Frodo Baggins"
-    },
-    "test-123_entity_1": {
-      "global_id": "global_place_23",
-      "doc_id": "test-123",
-      "merged_at": "2025-10-31T11:25:15.531Z",
-      "local_canonical": "Shire"
+    "65532654-341a-4835-a658-060a1eded1d1": {
+      "entity_id": "65532654-341a-4835-a658-060a1eded1d1",
+      "entity_type": "PERSON",
+      "canonical": "Prince",
+      "descriptors": [],
+      "titles": [
+        "Prince",
+        "Queen Isolde"
+      ],
+      "roles": [
+        "queen",
+        "prince"
+      ],
+      "attributes": {
+        "age": [
+          "old"
+        ]
+      },
+      "contexts": [
+        "Prince Aldric, heir of Queen Isolde, studied with Lyra."
+      ],
+      "mention_count": 1,
+      "first_seen": "/home/user/ARES/test-expanded-patterns.json",
+      "last_seen": "/home/user/ARES/test-expanded-patterns.json",
+      "confidence_score": 0.55
     }
   },
   "metadata": {
-    "created_at": "2025-10-13T19:28:02.446Z",
-    "updated_at": "2025-10-31T11:25:15.531Z",
-    "doc_count": 4,
+    "created_at": "2025-11-10T04:48:01.832Z",
+    "updated_at": "2025-11-10T04:48:01.841Z",
+    "doc_count": 1,
     "doc_ids": [
-      "case-debug",
-      "note-69855d34-7087-4f88-a478-2b3c40dcd11f",
-      "note-ad239b6c-1fa6-4791-ac24-1da4acd90a63",
-      "test-123"
+      "/home/user/ARES/test-expanded-patterns.json"
     ]
   }
 }

@@ -1,0 +1,409 @@
+{
+  "results": [
+    {
+      "id": "2.1",
+      "text": "Harry went to Hogwarts. He studied magic there.",
+      "entityP": "100.0",
+      "entityR": "100.0",
+      "relationP": "100.0",
+      "relationR": "50.0",
+      "missing": [
+        "harry::studies_at::hogwarts"
+      ],
+      "extra": [],
+      "goldRelations": [
+        "harry::traveled_to::hogwarts",
+        "harry::studies_at::hogwarts"
+      ],
+      "extractedRelations": [
+        "harry::traveled_to::hogwarts"
+      ]
+    },
+    {
+      "id": "2.2",
+      "text": "Hermione lives in London. She studies at Hogwarts.",
+      "entityP": "100.0",
+      "entityR": "100.0",
+      "relationP": "100.0",
+      "relationR": "100.0",
+      "missing": [],
+      "extra": [],
+      "goldRelations": [
+        "hermione::lives_in::london",
+        "hermione::studies_at::hogwarts"
+      ],
+      "extractedRelations": [
+        "hermione::lives_in::london",
+        "hermione::studies_at::hogwarts"
+      ]
+    },
+    {
+      "id": "2.3",
+      "text": "Frodo lived in the Shire. He traveled to Mordor.",
+      "entityP": "66.7",
+      "entityR": "66.7",
+      "relationP": "0.0",
+      "relationR": "0.0",
+      "missing": [
+        "frodo::lives_in::shire",
+        "frodo::traveled_to::mordor"
+      ],
+      "extra": [
+        "shire::traveled_to::mordor"
+      ],
+      "goldRelations": [
+        "frodo::lives_in::shire",
+        "frodo::traveled_to::mordor"
+      ],
+      "extractedRelations": [
+        "shire::traveled_to::mordor"
+      ]
+    },
+    {
+      "id": "2.4",
+      "text": "Aragorn married Arwen. He loved her deeply.",
+      "entityP": "100.0",
+      "entityR": "100.0",
+      "relationP": "100.0",
+      "relationR": "100.0",
+      "missing": [],
+      "extra": [],
+      "goldRelations": [
+        "aragorn::married_to::arwen",
+        "arwen::married_to::aragorn"
+      ],
+      "extractedRelations": [
+        "aragorn::married_to::arwen",
+        "arwen::married_to::aragorn"
+      ]
+    },
+    {
+      "id": "2.5",
+      "text": "Ginny studied at Hogwarts. She married Harry.",
+      "entityP": "100.0",
+      "entityR": "100.0",
+      "relationP": "100.0",
+      "relationR": "100.0",
+      "missing": [],
+      "extra": [],
+      "goldRelations": [
+        "ginny::studies_at::hogwarts",
+        "ginny::married_to::harry",
+        "harry::married_to::ginny"
+      ],
+      "extractedRelations": [
+        "ginny::studies_at::hogwarts",
+        "ginny::married_to::harry",
+        "harry::married_to::ginny"
+      ]
+    },
+    {
+      "id": "2.6",
+      "text": "Gandalf traveled to Rivendell. Elrond lived there. He welcomed Gandalf.",
+      "entityP": "100.0",
+      "entityR": "100.0",
+      "relationP": "100.0",
+      "relationR": "50.0",
+      "missing": [
+        "elrond::lives_in::rivendell"
+      ],
+      "extra": [],
+      "goldRelations": [
+        "gandalf::traveled_to::rivendell",
+        "elrond::lives_in::rivendell"
+      ],
+      "extractedRelations": [
+        "gandalf::traveled_to::rivendell"
+      ]
+    },
+    {
+      "id": "2.7",
+      "text": "Harry and Ron studied at Hogwarts.",
+      "entityP": "100.0",
+      "entityR": "100.0",
+      "relationP": "100.0",
+      "relationR": "100.0",
+      "missing": [],
+      "extra": [],
+      "goldRelations": [
+        "harry::studies_at::hogwarts",
+        "ron::studies_at::hogwarts"
+      ],
+      "extractedRelations": [
+        "harry::studies_at::hogwarts",
+        "ron::studies_at::hogwarts"
+      ]
+    },
+    {
+      "id": "2.8",
+      "text": "Frodo and Sam traveled to Mordor.",
+      "entityP": "100.0",
+      "entityR": "100.0",
+      "relationP": "100.0",
+      "relationR": "100.0",
+      "missing": [],
+      "extra": [],
+      "goldRelations": [
+        "frodo::traveled_to::mordor",
+        "sam::traveled_to::mordor"
+      ],
+      "extractedRelations": [
+        "frodo::traveled_to::mordor",
+        "sam::traveled_to::mordor"
+      ]
+    },
+    {
+      "id": "2.9",
+      "text": "Aragorn became king of Gondor. The king ruled wisely.",
+      "entityP": "50.0",
+      "entityR": "50.0",
+      "relationP": "0.0",
+      "relationR": "0.0",
+      "missing": [
+        "aragorn::rules::gondor"
+      ],
+      "extra": [],
+      "goldRelations": [
+        "aragorn::rules::gondor"
+      ],
+      "extractedRelations": []
+    },
+    {
+      "id": "2.10",
+      "text": "Dumbledore is a wizard. The wizard teaches at Hogwarts.",
+      "entityP": "100.0",
+      "entityR": "100.0",
+      "relationP": "100.0",
+      "relationR": "100.0",
+      "missing": [],
+      "extra": [],
+      "goldRelations": [
+        "dumbledore::teaches_at::hogwarts"
+      ],
+      "extractedRelations": [
+        "dumbledore::teaches_at::hogwarts"
+      ]
+    },
+    {
+      "id": "2.11",
+      "text": "Boromir is the son of Denethor. He was a brave warrior.",
+      "entityP": "100.0",
+      "entityR": "100.0",
+      "relationP": "100.0",
+      "relationR": "100.0",
+      "missing": [],
+      "extra": [],
+      "goldRelations": [
+        "boromir::child_of::denethor",
+        "denethor::parent_of::boromir"
+      ],
+      "extractedRelations": [
+        "boromir::child_of::denethor",
+        "denethor::parent_of::boromir"
+      ]
+    },
+    {
+      "id": "2.12",
+      "text": "Aragorn, son of Arathorn, traveled to Gondor. He became king there.",
+      "entityP": "100.0",
+      "entityR": "100.0",
+      "relationP": "100.0",
+      "relationR": "75.0",
+      "missing": [
+        "aragorn::rules::gondor"
+      ],
+      "extra": [],
+      "goldRelations": [
+        "aragorn::child_of::arathorn",
+        "arathorn::parent_of::aragorn",
+        "aragorn::traveled_to::gondor",
+        "aragorn::rules::gondor"
+      ],
+      "extractedRelations": [
+        "aragorn::traveled_to::gondor",
+        "aragorn::child_of::arathorn",
+        "arathorn::parent_of::aragorn"
+      ]
+    },
+    {
+      "id": "2.13",
+      "text": "Legolas was an elf. He was friends with Gimli. They traveled together.",
+      "entityP": "100.0",
+      "entityR": "100.0",
+      "relationP": "100.0",
+      "relationR": "100.0",
+      "missing": [],
+      "extra": [],
+      "goldRelations": [
+        "legolas::friends_with::gimli",
+        "gimli::friends_with::legolas"
+      ],
+      "extractedRelations": [
+        "legolas::friends_with::gimli",
+        "gimli::friends_with::legolas"
+      ]
+    },
+    {
+      "id": "2.14",
+      "text": "Theoden ruled Rohan. Eowyn was his niece. She lived in Rohan.",
+      "entityP": "66.7",
+      "entityR": "66.7",
+      "relationP": "0.0",
+      "relationR": "0.0",
+      "missing": [
+        "theoden::rules::rohan",
+        "eowyn::lives_in::rohan"
+      ],
+      "extra": [],
+      "goldRelations": [
+        "theoden::rules::rohan",
+        "eowyn::lives_in::rohan"
+      ],
+      "extractedRelations": []
+    },
+    {
+      "id": "2.15",
+      "text": "Elrond dwelt in Rivendell. The elf lord welcomed travelers. He was wise and ancient.",
+      "entityP": "100.0",
+      "entityR": "100.0",
+      "relationP": "100.0",
+      "relationR": "100.0",
+      "missing": [],
+      "extra": [],
+      "goldRelations": [
+        "elrond::lives_in::rivendell"
+      ],
+      "extractedRelations": [
+        "elrond::lives_in::rivendell"
+      ]
+    }
+  ],
+  "failures": [
+    {
+      "id": "2.1",
+      "text": "Harry went to Hogwarts. He studied magic there.",
+      "entityP": "100.0",
+      "entityR": "100.0",
+      "relationP": "100.0",
+      "relationR": "50.0",
+      "missing": [
+        "harry::studies_at::hogwarts"
+      ],
+      "extra": [],
+      "goldRelations": [
+        "harry::traveled_to::hogwarts",
+        "harry::studies_at::hogwarts"
+      ],
+      "extractedRelations": [
+        "harry::traveled_to::hogwarts"
+      ]
+    },
+    {
+      "id": "2.3",
+      "text": "Frodo lived in the Shire. He traveled to Mordor.",
+      "entityP": "66.7",
+      "entityR": "66.7",
+      "relationP": "0.0",
+      "relationR": "0.0",
+      "missing": [
+        "frodo::lives_in::shire",
+        "frodo::traveled_to::mordor"
+      ],
+      "extra": [
+        "shire::traveled_to::mordor"
+      ],
+      "goldRelations": [
+        "frodo::lives_in::shire",
+        "frodo::traveled_to::mordor"
+      ],
+      "extractedRelations": [
+        "shire::traveled_to::mordor"
+      ]
+    },
+    {
+      "id": "2.6",
+      "text": "Gandalf traveled to Rivendell. Elrond lived there. He welcomed Gandalf.",
+      "entityP": "100.0",
+      "entityR": "100.0",
+      "relationP": "100.0",
+      "relationR": "50.0",
+      "missing": [
+        "elrond::lives_in::rivendell"
+      ],
+      "extra": [],
+      "goldRelations": [
+        "gandalf::traveled_to::rivendell",
+        "elrond::lives_in::rivendell"
+      ],
+      "extractedRelations": [
+        "gandalf::traveled_to::rivendell"
+      ]
+    },
+    {
+      "id": "2.9",
+      "text": "Aragorn became king of Gondor. The king ruled wisely.",
+      "entityP": "50.0",
+      "entityR": "50.0",
+      "relationP": "0.0",
+      "relationR": "0.0",
+      "missing": [
+        "aragorn::rules::gondor"
+      ],
+      "extra": [],
+      "goldRelations": [
+        "aragorn::rules::gondor"
+      ],
+      "extractedRelations": []
+    },
+    {
+      "id": "2.12",
+      "text": "Aragorn, son of Arathorn, traveled to Gondor. He became king there.",
+      "entityP": "100.0",
+      "entityR": "100.0",
+      "relationP": "100.0",
+      "relationR": "75.0",
+      "missing": [
+        "aragorn::rules::gondor"
+      ],
+      "extra": [],
+      "goldRelations": [
+        "aragorn::child_of::arathorn",
+        "arathorn::parent_of::aragorn",
+        "aragorn::traveled_to::gondor",
+        "aragorn::rules::gondor"
+      ],
+      "extractedRelations": [
+        "aragorn::traveled_to::gondor",
+        "aragorn::child_of::arathorn",
+        "arathorn::parent_of::aragorn"
+      ]
+    },
+    {
+      "id": "2.14",
+      "text": "Theoden ruled Rohan. Eowyn was his niece. She lived in Rohan.",
+      "entityP": "66.7",
+      "entityR": "66.7",
+      "relationP": "0.0",
+      "relationR": "0.0",
+      "missing": [
+        "theoden::rules::rohan",
+        "eowyn::lives_in::rohan"
+      ],
+      "extra": [],
+      "goldRelations": [
+        "theoden::rules::rohan",
+        "eowyn::lives_in::rohan"
+      ],
+      "extractedRelations": []
+    }
+  ],
+  "missingPatterns": {
+    "studies_at": 1,
+    "lives_in": 3,
+    "traveled_to": 1,
+    "rules": 3
+  },
+  "extraPatterns": {
+    "traveled_to": 1
+  }
+}

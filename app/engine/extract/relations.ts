@@ -1201,8 +1201,8 @@ function extractDepRelations(
         }
       }
 
-      // Pattern 2: child_of via "son/daughter of"
-      if (lemma === 'son' || lemma === 'daughter') {
+      // Pattern 2: child_of via "son/daughter/child/offspring/descendant/heir of"
+      if (lemma === 'son' || lemma === 'daughter' || lemma === 'child' || lemma === 'offspring' || lemma === 'descendant' || lemma === 'heir') {
         const ofPrep = tokens.find(t => t.dep === 'prep' && t.head === tok.i && t.text.toLowerCase() === 'of');
         if (ofPrep) {
           const parentTok = tokens.find(t => t.dep === 'pobj' && t.head === ofPrep.i);
@@ -1260,6 +1260,7 @@ function extractDepRelations(
             }
             updateLastNamedSubject(childToken);
             const childSpan = expandNP(childToken, tokens);
+
 
             for (const parentCandidate of parentCandidates) {
               const parentSpan = expandNP(parentCandidate, tokens);
@@ -2599,8 +2600,8 @@ function extractRegexRelations(
 ): Relation[] {
   const relations: Relation[] = [];
 
-  // Pattern 1: "X, son/daughter of Y"
-  const sonOfPattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})\s*,\s*(?:son|daughter)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})/g;
+  // Pattern 1: "X, son/daughter/child/offspring/descendant/heir of Y"
+  const sonOfPattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})\s*,\s*(?:son|daughter|child|offspring|descendant|heir)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})/g;
   let match: RegExpExecArray | null;
 
   while ((match = sonOfPattern.exec(text))) {
@@ -2712,8 +2713,8 @@ function extractRegexRelations(
     ));
   }
 
-  // Pattern 7: "X dwelt/lived in Y"
-  const dweltPattern = /\b([A-Z][A-Za-z'’]+(?:\s+[A-Z][A-Za-z'’]+){0,2})\s+(?:dwelt|lived|resides|resided)\s+(?:in|at)\s+([A-Z][A-Za-z'’]+(?:\s+[A-Z][A-Za-z'’]+){0,2})/g;
+  // Pattern 7: "X dwelt/lived/lives in Y"
+  const dweltPattern = /\b([A-Z][A-Za-z'']+(?:\s+[A-Z][A-Za-z'']+){0,2})\s+(?:dwelt|live|lives|lived|resides|resided|residing)\s+(?:in|at)\s+([A-Z][A-Za-z'']+(?:\s+[A-Z][A-Za-z'']+){0,2})/g;
   while ((match = dweltPattern.exec(text))) {
     const person = match[1];
     const place = match[2];
@@ -2776,9 +2777,25 @@ function extractRegexRelations(
     ));
   }
 
-  // Pattern 11: "X was the son of Y"
-  const sonPattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})\s+(?:was|is)\s+(?:the\s+)?(?:son|daughter)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})/g;
+  // Pattern 11: "X was the/a/an son/daughter/child/offspring/descendant/heir of Y"
+  const sonPattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})\s+(?:was|is)\s+(?:(?:the|an?)\s+)?(?:son|daughter|child|offspring|descendant|heir)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})/g;
   while ((match = sonPattern.exec(text))) {
+    const child = match[1];
+    const parent = match[2];
+    const childStart = match.index;
+    const childEnd = childStart + child.length;
+    const parentStart = match.index + match[0].lastIndexOf(parent);
+    const parentEnd = parentStart + parent.length;
+
+    relations.push(...tryCreateRelation(
+      text, entities, spans, 'child_of',
+      childStart, childEnd, parentStart, parentEnd, 'REGEX'
+    ));
+  }
+
+  // Pattern 11b: "X was born to Y" or "X born to Y"
+  const bornToPattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})\s+(?:was\s+)?born\s+to\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})/g;
+  while ((match = bornToPattern.exec(text))) {
     const child = match[1];
     const parent = match[2];
     const childStart = match.index;

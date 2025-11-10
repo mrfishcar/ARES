@@ -59,6 +59,30 @@ const TITLE_INDICATORS = new Set(['Fellowship', 'Council', 'Ring', ...]);
 // Lowercase (Latin + Cyrillic): [a-zà-öø-ÿа-яё]
 const WORD = '(?:[A-ZÀ-ÖØ-ÞА-ЯЁ][a-zà-öø-ÿа-яё]*(?:\'[a-zà-öø-ÿа-яё]+)?)';
 
+// CASE-INSENSITIVE version for detecting lowercase entity names
+// Matches words that start with either uppercase OR lowercase
+const WORD_CI = '(?:[A-ZÀ-ÖØ-ÞА-ЯЁa-zà-öø-ÿа-яё][a-zà-öø-ÿа-яё]*(?:\'[a-zà-öø-ÿа-яё]+)?)';
+
+/**
+ * Capitalize entity name to proper case (Title Case)
+ * Handles multi-word names and preserves particles like "of", "the", "de", etc.
+ */
+function capitalizeEntityName(name: string): string {
+  // Particles that should stay lowercase in the middle of names
+  const particles = new Set(['of', 'the', 'de', 'da', 'di', 'du', 'del', 'van', 'von', 'der', 'den', 'la', 'le', 'lo']);
+
+  const words = name.trim().split(/\s+/);
+  return words.map((word, index) => {
+    const lower = word.toLowerCase();
+    // Keep particles lowercase (except at the start)
+    if (index > 0 && particles.has(lower)) {
+      return lower;
+    }
+    // Capitalize first letter, keep rest lowercase
+    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+  }).join(' ');
+}
+
 /**
  * Pronouns to exclude from entity detection
  */
@@ -554,6 +578,103 @@ function detectNaturalEntities(text: string, minConfidence: number): EntitySpan[
           seenSpans.add(key);
         }
       }
+    }
+  }
+
+  // CASE-INSENSITIVE FALLBACK PASS
+  // Detect lowercase entity names and auto-capitalize them
+  // This helps when users type "harry potter" instead of "Harry Potter"
+  const lowercasePatterns = [
+    // Two-word names before dialogue verbs: "harry potter said"
+    {
+      pattern: new RegExp(`\\b(${WORD_CI}\\s+${WORD_CI})\\s+(?:said|asked|replied|answered|whispered|shouted|thought|felt)`, 'gi'),
+      type: 'PERSON' as EntityType,
+      confidence: 0.85,
+    },
+    // Two-word names with common verbs: "harry potter went", "ron weasley was"
+    {
+      pattern: new RegExp(`\\b(${WORD_CI}\\s+${WORD_CI})\\s+(?:went|was|were|had|has|did|could|would|walked|ran|stood)`, 'gi'),
+      type: 'PERSON' as EntityType,
+      confidence: 0.75,
+    },
+    // Three-word names: "hermione jane granger"
+    {
+      pattern: new RegExp(`\\b(${WORD_CI}\\s+${WORD_CI}\\s+${WORD_CI})\\s+(?:said|asked|went|was|were)`, 'gi'),
+      type: 'PERSON' as EntityType,
+      confidence: 0.80,
+    },
+  ];
+
+  for (const { pattern, type, confidence } of lowercasePatterns) {
+    const regex = new RegExp(pattern.source, 'gi');
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+      const captured = match[1];
+      if (!captured) continue;
+
+      const start = match.index;
+      const end = start + captured.length;
+      const key = `${start}-${end}`;
+
+      // Skip if already detected
+      if (seenSpans.has(key)) continue;
+
+      // Check if this is actually lowercase (not already capitalized)
+      const isLowercase = captured.charAt(0) === captured.charAt(0).toLowerCase();
+      if (!isLowercase) continue; // Skip if already properly capitalized
+
+      // Clean and capitalize
+      let cleanedCapture = captured.trim().replace(/\s+/g, ' ');
+      let adjustedStart = start;
+      let adjustedEnd = end;
+
+      // Remove leading conjunctions/context words and adjust positions
+      const leadingWords = ['and', 'but', 'or', 'so', 'yet', 'the', 'a', 'an'];
+      let words = cleanedCapture.split(/\s+/);
+      let removedLength = 0;
+
+      while (words.length > 0 && leadingWords.includes(words[0].toLowerCase())) {
+        removedLength += words[0].length + 1; // +1 for space
+        words = words.slice(1);
+      }
+
+      if (removedLength > 0) {
+        cleanedCapture = words.join(' ');
+        adjustedStart = start + removedLength;
+        adjustedEnd = adjustedStart + cleanedCapture.length;
+      }
+
+      if (!cleanedCapture) continue; // Nothing left after cleaning
+
+      const lowerCaptured = cleanedCapture.toLowerCase();
+
+      // Filter out pronouns
+      if (PRONOUNS.has(lowerCaptured)) continue;
+
+      // Filter out time words
+      if (TIME_WORDS.has(lowerCaptured)) continue;
+
+      // Filter out common words that aren't names
+      if (words.some(w => PRONOUNS.has(w.toLowerCase()))) continue;
+
+      // Capitalize to proper case
+      const capitalizedName = capitalizeEntityName(cleanedCapture);
+
+      // Update key with adjusted positions
+      const adjustedKey = `${adjustedStart}-${adjustedEnd}`;
+      if (seenSpans.has(adjustedKey)) continue;
+
+      // Add to spans
+      spans.push({
+        start: adjustedStart,
+        end: adjustedEnd,
+        text: capitalizedName, // Use capitalized version for display
+        type,
+        confidence,
+        source: 'natural',
+      });
+      seenSpans.add(adjustedKey);
     }
   }
 

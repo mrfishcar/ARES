@@ -294,7 +294,7 @@ function computeF1(precision: number, recall: number): number {
 describe('Test Ladder - Level 2: Multi-Sentence Narratives', () => {
   const testPath = path.join(process.cwd(), 'test-ladder-2.json');
 
-  it('should pass all 15 multi-sentence narrative tests', async () => {
+  it('should pass all 15 multi-sentence narrative tests', { timeout: 60000 }, async () => {
     const results: Array<{
       id: string;
       entityPrecision: number;

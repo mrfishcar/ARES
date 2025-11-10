@@ -213,6 +213,125 @@ export const TEMPLATES: Record<Predicate, TemplateFunction> = {
     const h = ctx.confidence < 0.7 ? 'is reportedly ' : 'is ';
     return `${ctx.subjectName} ${h}part of ${ctx.objectName}.`;
   },
+
+  // Academic/Professional (missing ones)
+  attended: (ctx) => {
+    const h = ctx.confidence < 0.7 ? 'reportedly ' : '';
+    const time = formatTime(ctx.qualifiers);
+    return `${ctx.subjectName} ${h}attended ${ctx.objectName}${time}.`;
+  },
+
+  advised_by: (ctx) => {
+    const h = ctx.confidence < 0.7 ? 'was reportedly ' : 'was ';
+    return `${ctx.subjectName} ${h}advised by ${ctx.objectName}.`;
+  },
+
+  invested_in: (ctx) => {
+    const h = ctx.confidence < 0.7 ? 'reportedly ' : '';
+    return `${ctx.subjectName} ${h}invested in ${ctx.objectName}.`;
+  },
+
+  acquired: (ctx) => {
+    const h = ctx.confidence < 0.7 ? 'reportedly ' : '';
+    const time = formatTime(ctx.qualifiers);
+    return `${ctx.subjectName} ${h}acquired ${ctx.objectName}${time}.`;
+  },
+
+  // Fiction: Communication and encounters
+  spoke_to: (ctx) => {
+    const h = ctx.confidence < 0.7 ? 'reportedly ' : '';
+    const time = formatTime(ctx.qualifiers);
+    return `${ctx.subjectName} ${h}spoke to ${ctx.objectName}${time}.`;
+  },
+
+  met: (ctx) => {
+    const h = ctx.confidence < 0.7 ? 'reportedly ' : '';
+    const time = formatTime(ctx.qualifiers);
+    return `${ctx.subjectName} ${h}met ${ctx.objectName}${time}.`;
+  },
+
+  // Fiction: Mentorship and training
+  mentored: (ctx) => {
+    const h = ctx.confidence < 0.7 ? 'reportedly ' : '';
+    const time = formatTime(ctx.qualifiers);
+    return `${ctx.subjectName} ${h}mentored ${ctx.objectName}${time}.`;
+  },
+
+  mentored_by: (ctx) => {
+    const h = ctx.confidence < 0.7 ? 'was reportedly ' : 'was ';
+    const time = formatTime(ctx.qualifiers);
+    return `${ctx.subjectName} ${h}mentored by ${ctx.objectName}${time}.`;
+  },
+
+  // Fiction: Governance and protection
+  guards: (ctx) => {
+    const h = ctx.confidence < 0.7 ? 'reportedly ' : '';
+    const time = formatTime(ctx.qualifiers);
+    return `${ctx.subjectName} ${h}guards ${ctx.objectName}${time}.`;
+  },
+
+  // Fiction: Possession and seeking
+  seeks: (ctx) => {
+    const h = ctx.confidence < 0.7 ? 'reportedly ' : '';
+    const time = formatTime(ctx.qualifiers);
+    return `${ctx.subjectName} ${h}seeks ${ctx.objectName}${time}.`;
+  },
+
+  possesses: (ctx) => {
+    const h = ctx.confidence < 0.7 ? 'reportedly ' : '';
+    const time = formatTime(ctx.qualifiers);
+    return `${ctx.subjectName} ${h}possesses ${ctx.objectName}${time}.`;
+  },
+
+  // Fiction: Combat and conflict
+  defeated: (ctx) => {
+    const h = ctx.confidence < 0.7 ? 'reportedly ' : '';
+    const time = formatTime(ctx.qualifiers);
+    return `${ctx.subjectName} ${h}defeated ${ctx.objectName}${time}.`;
+  },
+
+  killed: (ctx) => {
+    const h = ctx.confidence < 0.7 ? 'reportedly ' : '';
+    const time = formatTime(ctx.qualifiers);
+    return `${ctx.subjectName} ${h}killed ${ctx.objectName}${time}.`;
+  },
+
+  // Fiction: Imprisonment and freedom
+  imprisoned_in: (ctx) => {
+    const h = ctx.confidence < 0.7 ? 'was reportedly ' : 'was ';
+    const time = formatTime(ctx.qualifiers);
+    return `${ctx.subjectName} ${h}imprisoned in ${ctx.objectName}${time}.`;
+  },
+
+  freed_from: (ctx) => {
+    const h = ctx.confidence < 0.7 ? 'was reportedly ' : 'was ';
+    const time = formatTime(ctx.qualifiers);
+    return `${ctx.subjectName} ${h}freed from ${ctx.objectName}${time}.`;
+  },
+
+  // Fiction: Summoning and location
+  summoned: (ctx) => {
+    const h = ctx.confidence < 0.7 ? 'reportedly ' : '';
+    const time = formatTime(ctx.qualifiers);
+    return `${ctx.subjectName} ${h}summoned ${ctx.objectName}${time}.`;
+  },
+
+  located_at: (ctx) => {
+    const h = ctx.confidence < 0.7 ? 'is reportedly ' : 'is ';
+    const time = formatTime(ctx.qualifiers);
+    return `${ctx.subjectName} ${h}located at ${ctx.objectName}${time}.`;
+  },
+
+  located_beneath: (ctx) => {
+    const h = ctx.confidence < 0.7 ? 'is reportedly ' : 'is ';
+    return `${ctx.subjectName} ${h}located beneath ${ctx.objectName}.`;
+  },
+
+  hidden_in: (ctx) => {
+    const h = ctx.confidence < 0.7 ? 'is reportedly ' : 'is ';
+    const time = formatTime(ctx.qualifiers);
+    return `${ctx.subjectName} ${h}hidden in ${ctx.objectName}${time}.`;
+  },
 };
 
 /**

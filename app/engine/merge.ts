@@ -6,6 +6,33 @@
 import type { Entity, Relation, EntityType } from './schema';
 
 /**
+ * Merge decision with confidence and provenance
+ */
+export interface MergeDecision {
+  local_entity_id: string;
+  global_entity_id: string;
+  confidence: number;
+  method: 'substring_match' | 'jaro_winkler_strong' | 'jaro_winkler_weak';
+  similarity_score: number;
+  matched_names: { local: string; cluster: string };
+}
+
+/**
+ * Merge result with confidence tracking
+ */
+export interface MergeResult {
+  globals: Entity[];
+  idMap: Map<string, string>;  // local_id -> global_id
+  decisions: MergeDecision[];  // Detailed merge provenance
+  stats: {
+    total_entities: number;
+    merged_clusters: number;
+    avg_confidence: number;
+    low_confidence_count: number;  // confidence < 0.7
+  };
+}
+
+/**
  * Jaro-Winkler similarity (inline, dependency-free)
  */
 export function jaroWinkler(s1: string, s2: string): number {
@@ -87,14 +114,30 @@ function isSubstringMatch(name1: string, name2: string): boolean {
 }
 
 /**
+ * Calculate confidence score for a merge decision
+ */
+function calculateMergeConfidence(
+  score: number,
+  method: 'substring_match' | 'jaro_winkler_strong' | 'jaro_winkler_weak'
+): number {
+  if (method === 'substring_match') {
+    return 0.95;  // High confidence for exact substring matches
+  } else if (method === 'jaro_winkler_strong') {
+    // Map 0.92-1.0 to 0.85-0.95
+    return 0.85 + (score - 0.92) * 1.25;
+  } else {
+    // jaro_winkler_weak (0.75-0.92 range)
+    // Map 0.75-0.92 to 0.55-0.85
+    return 0.55 + (score - 0.75) * 1.76;
+  }
+}
+
+/**
  * Merge entities across documents using Jaro-Winkler clustering
  */
 export function mergeEntitiesAcrossDocs(
   entities: Entity[]
-): {
-  globals: Entity[];
-  idMap: Map<string, string>;  // local_id -> global_id
-} {
+): MergeResult {
   const STRONG_THRESHOLD = 0.92;  // Increased from 0.85 to prevent false merges (e.g., Aragorn/Arathorn)
   const WEAK_THRESHOLD = 0.75;
 
@@ -109,6 +152,14 @@ export function mergeEntitiesAcrossDocs(
 
   const globals: Entity[] = [];
   const idMap = new Map<string, string>();
+  const decisions: MergeDecision[] = [];
+
+  // Track merge metadata for each entity
+  const entityMergeInfo = new Map<string, {
+    score: number;
+    method: 'substring_match' | 'jaro_winkler_strong' | 'jaro_winkler_weak';
+    matchedNames: { local: string; cluster: string };
+  }>();
 
   // Process each type group
   for (const [type, group] of byType.entries()) {
@@ -119,6 +170,7 @@ export function mergeEntitiesAcrossDocs(
       let bestClusterIdx = -1;
       let bestScore = 0;
       let hasSubstringMatch = false;
+      let bestMatchedNames = { local: entity.canonical, cluster: '' };
 
       // Find best matching cluster
       for (let i = 0; i < clusters.length; i++) {
@@ -136,6 +188,7 @@ export function mergeEntitiesAcrossDocs(
                 hasSubstringMatch = true;
                 bestScore = 1.0;  // Force merge for substring matches
                 bestClusterIdx = i;
+                bestMatchedNames = { local: eName, cluster: mName };
                 break;
               }
 
@@ -147,6 +200,7 @@ export function mergeEntitiesAcrossDocs(
               if (score > bestScore) {
                 bestScore = score;
                 bestClusterIdx = i;
+                bestMatchedNames = { local: eName, cluster: mName };
               }
             }
             if (hasSubstringMatch) break;
@@ -159,8 +213,24 @@ export function mergeEntitiesAcrossDocs(
       // Add to cluster if strong match or substring match, or create new cluster
       if ((bestScore >= STRONG_THRESHOLD || hasSubstringMatch) && bestClusterIdx >= 0) {
         clusters[bestClusterIdx].push(entity);
+
+        // Store merge metadata
+        const method = hasSubstringMatch ? 'substring_match' :
+                      (bestScore >= STRONG_THRESHOLD ? 'jaro_winkler_strong' : 'jaro_winkler_weak');
+
+        entityMergeInfo.set(entity.id, {
+          score: bestScore,
+          method,
+          matchedNames: bestMatchedNames
+        });
       } else {
         clusters.push([entity]);
+        // Singleton cluster - perfect confidence
+        entityMergeInfo.set(entity.id, {
+          score: 1.0,
+          method: 'substring_match',  // Using as default for singletons
+          matchedNames: { local: entity.canonical, cluster: entity.canonical }
+        });
       }
     }
 
@@ -226,14 +296,45 @@ export function mergeEntitiesAcrossDocs(
 
       globals.push(globalEntity);
 
-      // Map all local IDs to this global ID
+      // Map all local IDs to this global ID and record decisions
       for (const localEntity of cluster) {
         idMap.set(localEntity.id, globalId);
+
+        // Create merge decision with confidence
+        const mergeInfo = entityMergeInfo.get(localEntity.id)!;
+        const confidence = calculateMergeConfidence(mergeInfo.score, mergeInfo.method);
+
+        decisions.push({
+          local_entity_id: localEntity.id,
+          global_entity_id: globalId,
+          confidence,
+          method: mergeInfo.method,
+          similarity_score: mergeInfo.score,
+          matched_names: mergeInfo.matchedNames
+        });
       }
     }
   }
 
-  return { globals, idMap };
+  // Calculate statistics
+  const totalEntities = entities.length;
+  const mergedClusters = globals.length;
+  const avgConfidence = decisions.length > 0
+    ? decisions.reduce((sum, d) => sum + d.confidence, 0) / decisions.length
+    : 1.0;
+  const lowConfidenceCount = decisions.filter(d => d.confidence < 0.7).length;
+
+  return {
+    globals,
+    idMap,
+    decisions,
+    stats: {
+      total_entities: totalEntities,
+      merged_clusters: mergedClusters,
+      avg_confidence: avgConfidence,
+      low_confidence_count: lowConfidenceCount
+    }
+  };
 }
 
 /**

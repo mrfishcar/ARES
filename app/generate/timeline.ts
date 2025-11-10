@@ -40,7 +40,26 @@ const TIMELINE_WEIGHT: Record<Predicate, number> = {
   uses: 0.15,
   mentions: 0.1,
   alias_of: 0.05,
-  part_of: 0.05
+  part_of: 0.05,
+  attended: 0.3,
+  advised_by: 0.35,
+  invested_in: 0.4,
+  acquired: 0.6,
+  spoke_to: 0.2,
+  met: 0.25,
+  mentored: 0.7,
+  mentored_by: 0.7,
+  guards: 0.65,
+  seeks: 0.75,
+  possesses: 0.55,
+  defeated: 0.9,
+  killed: 0.95,
+  imprisoned_in: 0.8,
+  freed_from: 0.85,
+  summoned: 0.5,
+  located_at: 0.4,
+  located_beneath: 0.3,
+  hidden_in: 0.6
 };
 
 /**

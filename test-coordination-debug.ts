@@ -1,53 +1,55 @@
-/**
- * Debug coordination: "X and Y founded Z"
- */
+import { appendDoc, loadGraph, clearStorage } from './app/storage/storage';
 
-import { parseWithService } from './app/engine/extract/entities';
-import { findShortestPath, describePath } from './app/engine/extract/relations/dependency-paths';
-import type { Token } from './app/engine/extract/relations/types';
+const testPath = '/tmp/coord-debug.json';
 
-async function debugCoordination() {
-  const tests = [
-    'Robert and Sarah founded Zenith Computing',
-    'Gabriel, Michael, and David worked together',
-    'Eric Nelson and Maria Garcia led the project'
-  ];
+async function testCoordination() {
+  clearStorage(testPath);
 
-  for (const text of tests) {
-    console.log('='.repeat(80));
-    console.log(`Text: "${text}"`);
-    console.log('-'.repeat(80));
+  console.log('\n=== Testing Coordination: "Harry and Ron studied at Hogwarts" ===\n');
 
-    const parsed = await parseWithService(text);
-    const sent = parsed.sentences[0];
+  await appendDoc('coord-test', 'Harry and Ron studied at Hogwarts.', testPath);
+  const graph = loadGraph(testPath);
 
-    console.log('\nDependency Structure:');
-    console.log('i  | Token      | POS  | Dep      | Head | Head_Text');
-    console.log('-'.repeat(80));
-    for (const tok of sent.tokens) {
-      const headText = tok.head !== tok.i ? sent.tokens[tok.head]?.text : 'ROOT';
-      console.log(`${tok.i.toString().padEnd(3)}| ${tok.text.padEnd(11)}| ${tok.pos.padEnd(5)}| ${tok.dep.padEnd(9)}| ${tok.head.toString().padEnd(5)}| ${headText}`);
-    }
-
-    // Find coordination relationships
-    const coordinations = sent.tokens.filter((t: Token) => t.dep === 'conj');
-    if (coordinations.length > 0) {
-      console.log(`\nCoordinations found: ${coordinations.length}`);
-      for (const coord of coordinations) {
-        const head = sent.tokens[coord.head];
-        console.log(`  ${coord.text} (${coord.i}) conj→ ${head.text} (${head.i})`);
-      }
-    }
-    console.log('');
+  console.log('\n📋 ENTITIES:');
+  for (const entity of graph!.entities) {
+    console.log(`  - ${entity.canonical} (${entity.type})`);
   }
+
+  console.log('\n📊 RELATIONS:');
+  for (const rel of graph!.relations) {
+    const subj = graph!.entities.find(e => e.id === rel.subj);
+    const obj = graph!.entities.find(e => e.id === rel.obj);
+    console.log(`  - ${subj?.canonical} --[${rel.pred}]--> ${obj?.canonical}`);
+  }
+
+  // Check expected results
+  const hasHarryStudies = graph!.relations.some(r => {
+    const subj = graph!.entities.find(e => e.id === r.subj);
+    const obj = graph!.entities.find(e => e.id === r.obj);
+    return subj?.canonical.toLowerCase() === 'harry' &&
+           r.pred === 'studies_at' &&
+           obj?.canonical.toLowerCase() === 'hogwarts';
+  });
+
+  const hasRonStudies = graph!.relations.some(r => {
+    const subj = graph!.entities.find(e => e.id === r.subj);
+    const obj = graph!.entities.find(e => e.id === r.obj);
+    return subj?.canonical.toLowerCase() === 'ron' &&
+           r.pred === 'studies_at' &&
+           obj?.canonical.toLowerCase() === 'hogwarts';
+  });
+
+  console.log('\n✅ RESULTS:');
+  console.log(`  Harry studies_at Hogwarts: ${hasHarryStudies ? '✓' : '✗'}`);
+  console.log(`  Ron studies_at Hogwarts: ${hasRonStudies ? '✓' : '✗'}`);
+
+  if (hasHarryStudies && hasRonStudies) {
+    console.log('\n🎉 Coordination working correctly!\n');
+  } else {
+    console.log('\n❌ Coordination NOT working - only one entity extracted\n');
+  }
+
+  clearStorage(testPath);
 }
 
-debugCoordination()
-  .then(() => {
-    console.log('Debug complete!');
-    process.exit(0);
-  })
-  .catch(err => {
-    console.error('Fatal error:', err);
-    process.exit(1);
-  });
+testCoordination().catch(console.error);

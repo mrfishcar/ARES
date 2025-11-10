@@ -1,0 +1,421 @@
+{
+  "kinship": {
+    "family": "kinship",
+    "precision": 0.14285714285714285,
+    "recall": 0.3333333333333333,
+    "f1": 0.2,
+    "tp": 3,
+    "fp": 18,
+    "fn": 6,
+    "total_gold": 9,
+    "total_extracted": 21,
+    "uncovered_phrases": [
+      "Thomas and James are siblings.",
+      "Prince Edward, heir of Queen Elizabeth, attended the ceremony.",
+      "Sofia, offspring of Marcus, excelled in her studies.",
+      "King Arthur, descendant of Uther Pendragon, ruled the kingdom.",
+      "Isabella is the sister of Ferdinand.",
+      "Catherine and her brother William traveled together."
+    ],
+    "top_fn": [
+      "Thomas --[sibling_of]--> James",
+      "Prince Edward --[related_to]--> Queen Elizabeth",
+      "Sofia --[related_to]--> Marcus",
+      "King Arthur --[related_to]--> Uther Pendragon",
+      "Isabella --[related_to]--> Ferdinand"
+    ],
+    "top_fp": [
+      "UNKNOWN --[child_of]--> UNKNOWN",
+      "UNKNOWN --[parent_of]--> UNKNOWN",
+      "UNKNOWN --[married_to]--> UNKNOWN",
+      "UNKNOWN --[married_to]--> UNKNOWN",
+      "UNKNOWN --[child_of]--> UNKNOWN"
+    ]
+  },
+  "ownership": {
+    "family": "ownership",
+    "precision": 0,
+    "recall": 0,
+    "f1": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 5,
+    "total_gold": 5,
+    "total_extracted": 0,
+    "uncovered_phrases": [
+      "Rockefeller owns Standard Oil Company.",
+      "The estate belongs to the Duke of Westminster.",
+      "Tesla acquired SolarCity in 2016.",
+      "The painting is the property of the Louvre Museum.",
+      "Musk owns Tesla and SpaceX."
+    ],
+    "top_fn": [
+      "Rockefeller --[owns]--> Standard Oil Company",
+      "The --[belongs_to]--> Duke",
+      "Tesla --[possesses]--> Solar",
+      "The --[property_of]--> Louvre Museum",
+      "Musk --[owns]--> Tesla"
+    ],
+    "top_fp": []
+  },
+  "employment": {
+    "family": "employment",
+    "precision": 0,
+    "recall": 0,
+    "f1": 0,
+    "tp": 0,
+    "fp": 3,
+    "fn": 9,
+    "total_gold": 9,
+    "total_extracted": 3,
+    "uncovered_phrases": [
+      "Sarah works for Google in Mountain View.",
+      "Dr. Chen is employed by Stanford Hospital.",
+      "Marcus is a member of the Board of Directors.",
+      "Elena serves as Chief Technology Officer.",
+      "Professor Smith teaches at Harvard University.",
+      "John manages the Sales Department.",
+      "Robert leads the Engineering team.",
+      "Victoria is a partner at Goldman Sachs.",
+      "Thomas joined Microsoft in 2020."
+    ],
+    "top_fn": [
+      "Sarah --[works_for]--> Google",
+      "Dr --[employed_by]--> Chen",
+      "Marcus --[member_of]--> Board",
+      "Elena --[affiliated_with]--> Chief Technology Officer",
+      "Professor Smith --[affiliated_with]--> Harvard University"
+    ],
+    "top_fp": [
+      "UNKNOWN --[lives_in]--> UNKNOWN",
+      "UNKNOWN --[teaches_at]--> UNKNOWN",
+      "UNKNOWN --[teaches_at]--> UNKNOWN"
+    ]
+  },
+  "creation": {
+    "family": "creation",
+    "precision": 0,
+    "recall": 0,
+    "f1": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 8,
+    "total_gold": 8,
+    "total_extracted": 0,
+    "uncovered_phrases": [
+      "Leonardo da Vinci painted the Mona Lisa.",
+      "Shakespeare wrote Hamlet.",
+      "Mozart composed The Magic Flute.",
+      "Frank Lloyd Wright designed Fallingwater.",
+      "Tolkien authored The Lord of the Rings.",
+      "Picasso painted Guernica.",
+      "Beethoven composed Symphony No. 9.",
+      "Michelangelo sculpted David."
+    ],
+    "top_fn": [
+      "Leonardo --[painted_by]--> Vinci",
+      "Shakespeare --[written_by]--> Hamlet",
+      "Mozart --[composed_by]--> The Magic Flute",
+      "Frank Lloyd Wright --[created_by]--> Fallingwater",
+      "Tolkien --[created_by]--> The Lord"
+    ],
+    "top_fp": []
+  },
+  "location": {
+    "family": "location",
+    "precision": 0,
+    "recall": 0,
+    "f1": 0,
+    "tp": 0,
+    "fp": 7,
+    "fn": 10,
+    "total_gold": 10,
+    "total_extracted": 7,
+    "uncovered_phrases": [
+      "Paris is located in France.",
+      "The Eiffel Tower stands in Paris.",
+      "Silicon Valley is situated in California.",
+      "The Pyramids are located at Giza.",
+      "Harvard University is based in Cambridge.",
+      "The Louvre is located in Paris.",
+      "Tokyo is situated in Japan.",
+      "The White House stands in Washington DC.",
+      "Oxford is located near London.",
+      "Venice is situated in Italy."
+    ],
+    "top_fn": [
+      "Paris --[located_in]--> France",
+      "The Eiffel Tower --[located_in]--> Paris",
+      "Silicon Valley --[located_in]--> California",
+      "The Pyramids --[located_in]--> Giza",
+      "Harvard University --[located_in]--> Cambridge"
+    ],
+    "top_fp": [
+      "UNKNOWN --[lives_in]--> UNKNOWN",
+      "UNKNOWN --[lives_in]--> UNKNOWN",
+      "UNKNOWN --[lives_in]--> UNKNOWN",
+      "UNKNOWN --[lives_in]--> UNKNOWN",
+      "UNKNOWN --[lives_in]--> UNKNOWN"
+    ]
+  },
+  "temporal": {
+    "family": "temporal",
+    "precision": 0,
+    "recall": 0,
+    "f1": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 8,
+    "total_gold": 8,
+    "total_extracted": 0,
+    "uncovered_phrases": [
+      "World War II occurred after World War I.",
+      "The Renaissance followed the Middle Ages.",
+      "The French Revolution began before the American Civil War.",
+      "The Industrial Revolution happened after the Medieval period.",
+      "Shakespeare lived during the Elizabethan era.",
+      "Columbus arrived in America before the Pilgrims.",
+      "The Roman Empire existed before the Byzantine Empire.",
+      "The Cold War ended after the Vietnam War."
+    ],
+    "top_fn": [
+      "World War --[after]--> World War",
+      "The Renaissance --[after]--> Middle Ages",
+      "The French Revolution --[after]--> American Civil War",
+      "The Industrial Revolution --[after]--> Medieval",
+      "Shakespeare --[after]--> Elizabethan"
+    ],
+    "top_fp": []
+  },
+  "causation": {
+    "family": "causation",
+    "precision": 0,
+    "recall": 0,
+    "f1": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "total_gold": 0,
+    "total_extracted": 0,
+    "uncovered_phrases": [],
+    "top_fn": [],
+    "top_fp": []
+  },
+  "part_whole": {
+    "family": "part_whole",
+    "precision": 0,
+    "recall": 0,
+    "f1": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 2,
+    "total_gold": 2,
+    "total_extracted": 0,
+    "uncovered_phrases": [
+      "California is part of the United States.",
+      "Manhattan is part of New York City."
+    ],
+    "top_fn": [
+      "California --[part_of]--> United States",
+      "Manhattan --[part_of]--> New York City"
+    ],
+    "top_fp": []
+  },
+  "identity": {
+    "family": "identity",
+    "precision": 0,
+    "recall": 0,
+    "f1": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 9,
+    "total_gold": 9,
+    "total_extracted": 0,
+    "uncovered_phrases": [
+      "Mark Twain is Samuel Clemens.",
+      "Beijing equals Peking.",
+      "New York is also known as the Big Apple.",
+      "Churchill is the same person as Winston Leonard Spencer Churchill.",
+      "The USA is America.",
+      "Istanbul was formerly Constantinople.",
+      "Myanmar is also known as Burma.",
+      "The Netherlands is Holland.",
+      "Mumbai was previously Bombay."
+    ],
+    "top_fn": [
+      "Mark Twain --[is]--> Samuel Clemens",
+      "Beijing --[is]--> Peking",
+      "New York --[is]--> Big Apple",
+      "Churchill --[is]--> Winston Leonard Spencer Churchill",
+      "The --[is]--> America"
+    ],
+    "top_fp": []
+  },
+  "event": {
+    "family": "event",
+    "precision": 0,
+    "recall": 0,
+    "f1": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 10,
+    "total_gold": 10,
+    "total_extracted": 0,
+    "uncovered_phrases": [
+      "Churchill attended the Yalta Conference.",
+      "Mozart performed at the Vienna Opera.",
+      "Armstrong participated in the Apollo 11 mission.",
+      "Einstein attended the Solvay Conference.",
+      "Shakespeare performed at the Globe Theatre.",
+      "Roosevelt hosted the Teheran Conference.",
+      "Picasso exhibited at the Paris Salon.",
+      "Newton witnessed the Great Fire of London.",
+      "Lincoln attended the Gettysburg ceremony.",
+      "Gandhi organized the Salt March."
+    ],
+    "top_fn": [
+      "Churchill --[attended]--> Yalta Conference",
+      "Mozart --[attended]--> Vienna Opera",
+      "Armstrong --[attended]--> Apollo",
+      "Einstein --[attended]--> Solvay Conference",
+      "Shakespeare --[attended]--> Globe Theatre"
+    ],
+    "top_fp": []
+  },
+  "communication": {
+    "family": "communication",
+    "precision": 0,
+    "recall": 0,
+    "f1": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 10,
+    "total_gold": 10,
+    "total_extracted": 0,
+    "uncovered_phrases": [
+      "Lincoln wrote a letter to Grant.",
+      "Einstein told Bohr about the theory.",
+      "Churchill spoke to Roosevelt about strategy.",
+      "Jefferson wrote to Adams regarding politics.",
+      "King asked Congress for civil rights legislation.",
+      "Darwin wrote to Wallace about evolution.",
+      "Newton replied to Leibniz about calculus.",
+      "Franklin informed Washington about developments.",
+      "Marx wrote to Engels about economics.",
+      "Galileo reported his findings to the Church."
+    ],
+    "top_fn": [
+      "Lincoln --[wrote_to]--> Grant",
+      "Einstein --[wrote_to]--> Bohr",
+      "Churchill --[wrote_to]--> Roosevelt",
+      "Jefferson --[wrote_to]--> Adams",
+      "King --[wrote_to]--> Congress"
+    ],
+    "top_fp": []
+  },
+  "power": {
+    "family": "power",
+    "precision": 0,
+    "recall": 0,
+    "f1": 0,
+    "tp": 0,
+    "fp": 3,
+    "fn": 10,
+    "total_gold": 10,
+    "total_extracted": 3,
+    "uncovered_phrases": [
+      "Napoleon ruled France.",
+      "Caesar commanded the Roman legions.",
+      "Elizabeth II governed the United Kingdom.",
+      "Alexander controlled the Greek empire.",
+      "Genghis Khan dominated Central Asia.",
+      "Augustus ruled Rome.",
+      "Victoria governed the British Empire.",
+      "Peter the Great controlled Russia.",
+      "Charlemagne commanded the Frankish Empire.",
+      "Akbar ruled the Mughal Empire."
+    ],
+    "top_fn": [
+      "Napoleon --[ruled]--> France",
+      "Caesar --[ruled]--> Roman",
+      "Elizabeth --[ruled]--> United Kingdom",
+      "Alexander --[ruled]--> Greek",
+      "Genghis Khan --[ruled]--> Central Asia"
+    ],
+    "top_fp": [
+      "UNKNOWN --[rules]--> UNKNOWN",
+      "UNKNOWN --[rules]--> UNKNOWN",
+      "UNKNOWN --[rules]--> UNKNOWN"
+    ]
+  },
+  "comparison": {
+    "family": "comparison",
+    "precision": 0,
+    "recall": 0,
+    "f1": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 5,
+    "total_gold": 5,
+    "total_extracted": 0,
+    "uncovered_phrases": [
+      "The Pacific Ocean is larger than the Atlantic.",
+      "China has a greater population than India.",
+      "Jupiter is larger than Saturn.",
+      "The Nile is longer than the Amazon.",
+      "Antarctica is colder than the Arctic."
+    ],
+    "top_fn": [
+      "The Pacific Ocean --[greater_than]--> Atlantic",
+      "China --[greater_than]--> India",
+      "Jupiter --[greater_than]--> Saturn",
+      "The Nile --[greater_than]--> Amazon",
+      "Antarctica --[greater_than]--> Arctic"
+    ],
+    "top_fp": []
+  },
+  "emotional": {
+    "family": "emotional",
+    "precision": 0,
+    "recall": 0,
+    "f1": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 9,
+    "total_gold": 9,
+    "total_extracted": 0,
+    "uncovered_phrases": [
+      "Romeo loved Juliet.",
+      "Brutus respected Caesar.",
+      "Othello envied Cassio.",
+      "Achilles admired Patroclus.",
+      "Iago hated Othello.",
+      "Elizabeth loved Darcy.",
+      "Heathcliff despised Hindley.",
+      "Jane Eyre admired Rochester.",
+      "Scarlett envied Melanie."
+    ],
+    "top_fn": [
+      "Romeo --[loved]--> Juliet",
+      "Brutus --[loved]--> Caesar",
+      "Othello --[loved]--> Cassio",
+      "Achilles --[loved]--> Patroclus",
+      "Iago --[loved]--> Othello"
+    ],
+    "top_fp": []
+  },
+  "negation": {
+    "family": "negation",
+    "precision": 0,
+    "recall": 0,
+    "f1": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "total_gold": 0,
+    "total_extracted": 0,
+    "uncovered_phrases": [],
+    "top_fn": [],
+    "top_fp": []
+  }
+}
