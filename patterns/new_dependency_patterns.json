@@ -2275,5 +2275,41 @@
     "dep_roles": [],
     "lemmas": [],
     "examples": []
+  },
+  {
+    "id": "new_dep_creation_painted",
+    "signature_regex": "(\\\\w+):↑nsubj:painted:↓(?:dobj|obj):(\\\\w+)",
+    "predicate": "painted",
+    "family": "creation",
+    "dep_roles": [],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "new_dep_creation_composed",
+    "signature_regex": "(\\\\w+):↑nsubj:composed:↓(?:dobj|obj):(\\\\w+)",
+    "predicate": "composed",
+    "family": "creation",
+    "dep_roles": [],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "new_dep_creation_designed",
+    "signature_regex": "(\\\\w+):↑nsubj:designed:↓(?:dobj|obj):(\\\\w+)",
+    "predicate": "designed",
+    "family": "creation",
+    "dep_roles": [],
+    "lemmas": [],
+    "examples": []
+  },
+  {
+    "id": "new_dep_creation_sculpted",
+    "signature_regex": "(\\\\w+):↑nsubj:sculpted:↓(?:dobj|obj):(\\\\w+)",
+    "predicate": "sculpted",
+    "family": "creation",
+    "dep_roles": [],
+    "lemmas": [],
+    "examples": []
   }
 ]

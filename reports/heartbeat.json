@@ -1,13 +1,13 @@
 {
-  "timestamp": "2025-11-10T05:47:03.094Z",
+  "timestamp": "2025-11-10T06:03:51.202Z",
   "ladder_rung": "R1 - Synthetic Coverage Baseline",
   "overall_synthetic": {
     "precision": 0.2727272727272727,
-    "recall": 0.028846153846153848,
-    "f1": 0.05217391304347826,
+    "recall": 0.030612244897959183,
+    "f1": 0.05504587155963303,
     "total_tp": 3,
     "total_fp": 8,
-    "total_fn": 101
+    "total_fn": 95
   },
   "families": {
     "kinship": {
@@ -17,15 +17,14 @@
         "synthetic": {
           "family": "kinship",
           "precision": 0.42857142857142855,
-          "recall": 0.3333333333333333,
-          "f1": 0.375,
+          "recall": 0.375,
+          "f1": 0.39999999999999997,
           "tp": 3,
           "fp": 4,
-          "fn": 6,
-          "total_gold": 9,
+          "fn": 5,
+          "total_gold": 8,
           "total_extracted": 7,
           "uncovered_phrases": [
-            "Thomas and James are siblings.",
             "Prince Edward, heir of Queen Elizabeth, attended the ceremony.",
             "Sofia, offspring of Marcus, excelled in her studies.",
             "King Arthur, descendant of Uther Pendragon, ruled the kingdom.",
@@ -33,11 +32,11 @@
             "Catherine and her brother William traveled together."
           ],
           "top_fn": [
-            "Thomas --[sibling_of]--> James",
             "Prince Edward --[related_to]--> Queen Elizabeth",
             "Sofia --[related_to]--> Marcus",
             "King Arthur --[related_to]--> Uther Pendragon",
-            "Isabella --[related_to]--> Ferdinand"
+            "Isabella --[related_to]--> Ferdinand",
+            "Catherine and --[related_to]--> William"
           ],
           "top_fp": [
             "Marcus --[married_to]--> Elena",
@@ -49,11 +48,6 @@
       },
       "error_analysis": {
         "top_fn_with_reason": [
-          {
-            "example": "Thomas --[sibling_of]--> James",
-            "reason": "Pattern not in signature library",
-            "pattern_hint": "Add kinship patterns for this case"
-          },
           {
             "example": "Prince Edward --[related_to]--> Queen Elizabeth",
             "reason": "Pattern not in signature library",
@@ -71,6 +65,11 @@
           },
           {
             "example": "Isabella --[related_to]--> Ferdinand",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add kinship patterns for this case"
+          },
+          {
+            "example": "Catherine and --[related_to]--> William",
             "reason": "Pattern not in signature library",
             "pattern_hint": "Add kinship patterns for this case"
           }
@@ -124,10 +123,10 @@
           ],
           "top_fn": [
             "Rockefeller --[owns]--> Standard Oil Company",
-            "The --[belongs_to]--> Duke",
+            "The --[belongs_to]--> Duke of Westminster",
             "Tesla --[possesses]--> Solar",
             "The --[property_of]--> Louvre Museum",
-            "Musk --[owns]--> Tesla"
+            "Musk --[owns]--> Tesla and Space"
           ],
           "top_fp": []
         }
@@ -140,7 +139,7 @@
             "pattern_hint": "Add ownership patterns for this case"
           },
           {
-            "example": "The --[belongs_to]--> Duke",
+            "example": "The --[belongs_to]--> Duke of Westminster",
             "reason": "Entity name split incorrectly (e.g., \"Leonardo\" instead of \"Leonardo da Vinci\")",
             "pattern_hint": "Improve NER for multi-word entity names"
           },
@@ -155,7 +154,7 @@
             "pattern_hint": "Improve NER for multi-word entity names"
           },
           {
-            "example": "Musk --[owns]--> Tesla",
+            "example": "Musk --[owns]--> Tesla and Space",
             "reason": "Entity name split incorrectly (e.g., \"Leonardo\" instead of \"Leonardo da Vinci\")",
             "pattern_hint": "Improve NER for multi-word entity names"
           }
@@ -185,8 +184,8 @@
           "f1": 0,
           "tp": 0,
           "fp": 2,
-          "fn": 9,
-          "total_gold": 9,
+          "fn": 8,
+          "total_gold": 8,
           "total_extracted": 2,
           "uncovered_phrases": [
             "Sarah works for Google in Mountain View.",
@@ -195,14 +194,13 @@
             "Elena serves as Chief Technology Officer.",
             "Professor Smith teaches at Harvard University.",
             "John manages the Sales Department.",
-            "Robert leads the Engineering team.",
             "Victoria is a partner at Goldman Sachs.",
             "Thomas joined Microsoft in 2020."
           ],
           "top_fn": [
             "Sarah --[works_for]--> Google",
             "Dr --[employed_by]--> Chen",
-            "Marcus --[member_of]--> Board",
+            "Marcus --[member_of]--> Board of Directors",
             "Elena --[affiliated_with]--> Chief Technology Officer",
             "Professor Smith --[affiliated_with]--> Harvard University"
           ],
@@ -225,7 +223,7 @@
             "pattern_hint": "Improve NER for multi-word entity names"
           },
           {
-            "example": "Marcus --[member_of]--> Board",
+            "example": "Marcus --[member_of]--> Board of Directors",
             "reason": "Pattern not in signature library",
             "pattern_hint": "Add employment patterns for this case"
           },
@@ -267,25 +265,24 @@
           "f1": 0,
           "tp": 0,
           "fp": 0,
-          "fn": 8,
-          "total_gold": 8,
+          "fn": 7,
+          "total_gold": 7,
           "total_extracted": 0,
           "uncovered_phrases": [
             "Leonardo da Vinci painted the Mona Lisa.",
             "Shakespeare wrote Hamlet.",
             "Mozart composed The Magic Flute.",
-            "Frank Lloyd Wright designed Fallingwater.",
             "Tolkien authored The Lord of the Rings.",
             "Picasso painted Guernica.",
             "Beethoven composed Symphony No. 9.",
             "Michelangelo sculpted David."
           ],
           "top_fn": [
-            "Leonardo --[painted_by]--> Vinci",
-            "Shakespeare --[written_by]--> Hamlet",
-            "Mozart --[composed_by]--> The Magic Flute",
-            "Frank Lloyd Wright --[created_by]--> Fallingwater",
-            "Tolkien --[created_by]--> The Lord"
+            "Leonardo da Vinci --[painted]--> Mona Lisa",
+            "Shakespeare --[authored]--> Hamlet",
+            "Mozart --[composed]--> The Magic Flute",
+            "Tolkien --[created]--> The Lord of the Rings",
+            "Picasso --[painted]--> Guernica"
           ],
           "top_fp": []
         }
@@ -293,29 +290,29 @@
       "error_analysis": {
         "top_fn_with_reason": [
           {
-            "example": "Leonardo --[painted_by]--> Vinci",
-            "reason": "Passive voice predicate used instead of active",
-            "pattern_hint": "Add active voice patterns: \"X painted Y\", \"X wrote Y\", \"X created Y\""
-          },
-          {
-            "example": "Shakespeare --[written_by]--> Hamlet",
-            "reason": "Passive voice predicate used instead of active",
-            "pattern_hint": "Add active voice patterns: \"X painted Y\", \"X wrote Y\", \"X created Y\""
-          },
-          {
-            "example": "Mozart --[composed_by]--> The Magic Flute",
+            "example": "Leonardo da Vinci --[painted]--> Mona Lisa",
             "reason": "Pattern not in signature library",
             "pattern_hint": "Add creation patterns for this case"
           },
           {
-            "example": "Frank Lloyd Wright --[created_by]--> Fallingwater",
-            "reason": "Passive voice predicate used instead of active",
-            "pattern_hint": "Add active voice patterns: \"X painted Y\", \"X wrote Y\", \"X created Y\""
+            "example": "Shakespeare --[authored]--> Hamlet",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add creation patterns for this case"
           },
           {
-            "example": "Tolkien --[created_by]--> The Lord",
-            "reason": "Passive voice predicate used instead of active",
-            "pattern_hint": "Add active voice patterns: \"X painted Y\", \"X wrote Y\", \"X created Y\""
+            "example": "Mozart --[composed]--> The Magic Flute",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add creation patterns for this case"
+          },
+          {
+            "example": "Tolkien --[created]--> The Lord of the Rings",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add creation patterns for this case"
+          },
+          {
+            "example": "Picasso --[painted]--> Guernica",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add creation patterns for this case"
           }
         ],
         "top_fp_with_reason": []
@@ -432,11 +429,10 @@
           "f1": 0,
           "tp": 0,
           "fp": 0,
-          "fn": 8,
-          "total_gold": 8,
+          "fn": 7,
+          "total_gold": 7,
           "total_extracted": 0,
           "uncovered_phrases": [
-            "World War II occurred after World War I.",
             "The Renaissance followed the Middle Ages.",
             "The French Revolution began before the American Civil War.",
             "The Industrial Revolution happened after the Medieval period.",
@@ -446,22 +442,17 @@
             "The Cold War ended after the Vietnam War."
           ],
           "top_fn": [
-            "World War --[after]--> World War",
             "The Renaissance --[after]--> Middle Ages",
             "The French Revolution --[after]--> American Civil War",
             "The Industrial Revolution --[after]--> Medieval",
-            "Shakespeare --[after]--> Elizabethan"
+            "Shakespeare --[after]--> Elizabethan",
+            "Columbus --[after]--> America"
           ],
           "top_fp": []
         }
       },
       "error_analysis": {
         "top_fn_with_reason": [
-          {
-            "example": "World War --[after]--> World War",
-            "reason": "Pattern not in signature library",
-            "pattern_hint": "Add temporal patterns for this case"
-          },
           {
             "example": "The Renaissance --[after]--> Middle Ages",
             "reason": "Entity name split incorrectly (e.g., \"Leonardo\" instead of \"Leonardo da Vinci\")",
@@ -479,6 +470,11 @@
           },
           {
             "example": "Shakespeare --[after]--> Elizabethan",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add temporal patterns for this case"
+          },
+          {
+            "example": "Columbus --[after]--> America",
             "reason": "Pattern not in signature library",
             "pattern_hint": "Add temporal patterns for this case"
           }
@@ -578,14 +574,13 @@
           "f1": 0,
           "tp": 0,
           "fp": 0,
-          "fn": 9,
-          "total_gold": 9,
+          "fn": 8,
+          "total_gold": 8,
           "total_extracted": 0,
           "uncovered_phrases": [
             "Mark Twain is Samuel Clemens.",
             "Beijing equals Peking.",
             "New York is also known as the Big Apple.",
-            "Churchill is the same person as Winston Leonard Spencer Churchill.",
             "The USA is America.",
             "Istanbul was formerly Constantinople.",
             "Myanmar is also known as Burma.",
@@ -596,8 +591,8 @@
             "Mark Twain --[is]--> Samuel Clemens",
             "Beijing --[is]--> Peking",
             "New York --[is]--> Big Apple",
-            "Churchill --[is]--> Winston Leonard Spencer Churchill",
-            "The --[is]--> America"
+            "The U --[is]--> America",
+            "Istanbul --[is]--> Constantinople"
           ],
           "top_fp": []
         }
@@ -620,14 +615,14 @@
             "pattern_hint": "Improve NER for multi-word entity names"
           },
           {
-            "example": "Churchill --[is]--> Winston Leonard Spencer Churchill",
-            "reason": "Pattern not in signature library",
-            "pattern_hint": "Add identity patterns for this case"
-          },
-          {
-            "example": "The --[is]--> America",
+            "example": "The U --[is]--> America",
             "reason": "Entity name split incorrectly (e.g., \"Leonardo\" instead of \"Leonardo da Vinci\")",
             "pattern_hint": "Improve NER for multi-word entity names"
+          },
+          {
+            "example": "Istanbul --[is]--> Constantinople",
+            "reason": "Pattern not in signature library",
+            "pattern_hint": "Add identity patterns for this case"
           }
         ],
         "top_fp_with_reason": []
@@ -818,8 +813,8 @@
           ],
           "top_fn": [
             "Napoleon --[ruled]--> France",
-            "Caesar --[ruled]--> Roman",
-            "Elizabeth --[ruled]--> United Kingdom",
+            "Caesar --[ruled]--> Roman legions",
+            "Elizabeth I --[ruled]--> United Kingdom",
             "Alexander --[ruled]--> Greek",
             "Genghis Khan --[ruled]--> Central Asia"
           ],
@@ -834,12 +829,12 @@
             "pattern_hint": "Add power patterns for this case"
           },
           {
-            "example": "Caesar --[ruled]--> Roman",
+            "example": "Caesar --[ruled]--> Roman legions",
             "reason": "Pattern not in signature library",
             "pattern_hint": "Add power patterns for this case"
           },
           {
-            "example": "Elizabeth --[ruled]--> United Kingdom",
+            "example": "Elizabeth I --[ruled]--> United Kingdom",
             "reason": "Pattern not in signature library",
             "pattern_hint": "Add power patterns for this case"
           },
@@ -934,8 +929,8 @@
           "f1": 0,
           "tp": 0,
           "fp": 0,
-          "fn": 9,
-          "total_gold": 9,
+          "fn": 8,
+          "total_gold": 8,
           "total_extracted": 0,
           "uncovered_phrases": [
             "Romeo loved Juliet.",
@@ -944,7 +939,6 @@
             "Achilles admired Patroclus.",
             "Iago hated Othello.",
             "Elizabeth loved Darcy.",
-            "Heathcliff despised Hindley.",
             "Jane Eyre admired Rochester.",
             "Scarlett envied Melanie."
           ],
@@ -1031,13 +1025,12 @@
       "Improve NER for multi-word entity names",
       "Add employment patterns for this case",
       "Improve NER for multi-word entity names",
-      "Add active voice patterns: \"X painted Y\", \"X wrote Y\", \"X created Y\"",
-      "Add active voice patterns: \"X painted Y\", \"X wrote Y\", \"X created Y\"",
+      "Add creation patterns for this case",
+      "Add creation patterns for this case",
       "Add patterns for: \"is located in\", \"stands in\", \"situated in\"",
       "Improve NER for multi-word entity names"
     ],
     "critical_fixes": [
-      "Add active voice patterns for: creation",
       "Improve NER for multi-word entity names"
     ]
   }

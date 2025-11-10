@@ -1,11 +1,11 @@
 {
   "kinship": {
     "top_fn": [
-      "Thomas --[sibling_of]--> James",
       "Prince Edward --[related_to]--> Queen Elizabeth",
       "Sofia --[related_to]--> Marcus",
       "King Arthur --[related_to]--> Uther Pendragon",
-      "Isabella --[related_to]--> Ferdinand"
+      "Isabella --[related_to]--> Ferdinand",
+      "Catherine and --[related_to]--> William"
     ],
     "top_fp": [
       "Marcus --[married_to]--> Elena",
@@ -17,10 +17,10 @@
   "ownership": {
     "top_fn": [
       "Rockefeller --[owns]--> Standard Oil Company",
-      "The --[belongs_to]--> Duke",
+      "The --[belongs_to]--> Duke of Westminster",
       "Tesla --[possesses]--> Solar",
       "The --[property_of]--> Louvre Museum",
-      "Musk --[owns]--> Tesla"
+      "Musk --[owns]--> Tesla and Space"
     ],
     "top_fp": []
   },
@@ -28,7 +28,7 @@
     "top_fn": [
       "Sarah --[works_for]--> Google",
       "Dr --[employed_by]--> Chen",
-      "Marcus --[member_of]--> Board",
+      "Marcus --[member_of]--> Board of Directors",
       "Elena --[affiliated_with]--> Chief Technology Officer",
       "Professor Smith --[affiliated_with]--> Harvard University"
     ],
@@ -39,11 +39,11 @@
   },
   "creation": {
     "top_fn": [
-      "Leonardo --[painted_by]--> Vinci",
-      "Shakespeare --[written_by]--> Hamlet",
-      "Mozart --[composed_by]--> The Magic Flute",
-      "Frank Lloyd Wright --[created_by]--> Fallingwater",
-      "Tolkien --[created_by]--> The Lord"
+      "Leonardo da Vinci --[painted]--> Mona Lisa",
+      "Shakespeare --[authored]--> Hamlet",
+      "Mozart --[composed]--> The Magic Flute",
+      "Tolkien --[created]--> The Lord of the Rings",
+      "Picasso --[painted]--> Guernica"
     ],
     "top_fp": []
   },
@@ -62,11 +62,11 @@
   },
   "temporal": {
     "top_fn": [
-      "World War --[after]--> World War",
       "The Renaissance --[after]--> Middle Ages",
       "The French Revolution --[after]--> American Civil War",
       "The Industrial Revolution --[after]--> Medieval",
-      "Shakespeare --[after]--> Elizabethan"
+      "Shakespeare --[after]--> Elizabethan",
+      "Columbus --[after]--> America"
     ],
     "top_fp": []
   },
@@ -86,8 +86,8 @@
       "Mark Twain --[is]--> Samuel Clemens",
       "Beijing --[is]--> Peking",
       "New York --[is]--> Big Apple",
-      "Churchill --[is]--> Winston Leonard Spencer Churchill",
-      "The --[is]--> America"
+      "The U --[is]--> America",
+      "Istanbul --[is]--> Constantinople"
     ],
     "top_fp": []
   },
@@ -114,8 +114,8 @@
   "power": {
     "top_fn": [
       "Napoleon --[ruled]--> France",
-      "Caesar --[ruled]--> Roman",
-      "Elizabeth --[ruled]--> United Kingdom",
+      "Caesar --[ruled]--> Roman legions",
+      "Elizabeth I --[ruled]--> United Kingdom",
       "Alexander --[ruled]--> Greek",
       "Genghis Khan --[ruled]--> Central Asia"
     ],

@@ -570,6 +570,9 @@ function nerSpans(sent: ParsedSentence): Array<{ text: string; type: EntityType;
   const spans: { text: string; type: EntityType; start: number; end: number }[] = [];
   let i = 0;
 
+  // Common name particles that connect multi-word names
+  const NAME_PARTICLES = new Set(['da', 'de', 'del', 'della', 'di', 'von', 'van', 'van der', 'van den', 'le', 'la', 'el', 'al', 'bin', 'ibn', 'abu']);
+
   while (i < sent.tokens.length) {
     const t = sent.tokens[i];
     const mapped = mapEnt(t.ent);
@@ -582,6 +585,38 @@ function nerSpans(sent: ParsedSentence): Array<{ text: string; type: EntityType;
     let j = i + 1;
     while (j < sent.tokens.length && sent.tokens[j].ent === t.ent) {
       j++;
+    }
+
+    // For PERSON entities, extend span to include name particles and following name parts
+    // E.g., "Leonardo da Vinci" where "da" might not be tagged as PERSON
+    if (mapped === 'PERSON') {
+      while (j < sent.tokens.length - 1) {
+        const currentToken = sent.tokens[j];
+        const nextToken = sent.tokens[j + 1];
+
+        // Check if current token is a name particle
+        const isNameParticle = NAME_PARTICLES.has(currentToken.text.toLowerCase());
+
+        // Check if next token is tagged as PERSON or is a capitalized PROPN
+        const nextIsPerson = nextToken && (
+          mapEnt(nextToken.ent) === 'PERSON' ||
+          (nextToken.pos === 'PROPN' && /^[A-Z]/.test(nextToken.text))
+        );
+
+        if (isNameParticle && nextIsPerson) {
+          // Include the particle and scan forward to include the rest of the name
+          j++; // Include the particle
+          // Continue including tokens that are part of the person name
+          while (j < sent.tokens.length && (
+            sent.tokens[j].ent === t.ent ||
+            (sent.tokens[j].pos === 'PROPN' && /^[A-Z]/.test(sent.tokens[j].text))
+          )) {
+            j++;
+          }
+        } else {
+          break;
+        }
+      }
     }
 
     // Expand span backwards to include title words for PERSON entities
@@ -787,22 +822,26 @@ function depBasedEntities(sent: ParsedSentence): Array<{ text: string; type: Ent
       continue;
     }
 
-    // Gather entity tokens (including compounds)
+    // Gather entity tokens (including compounds and flat name parts)
     let startIdx = i;
     let endIdx = i;
 
-    // Look backward for compounds
+    // Look backward for compounds and flat name parts
     for (let j = i - 1; j >= 0; j--) {
-      if (tokens[j].dep === 'compound' && tokens[j].head === tok.i) {
+      const dep = tokens[j].dep;
+      // Include compound, flat (for multi-word names), and flat:name dependencies
+      if ((dep === 'compound' || dep === 'flat' || dep === 'flat:name') && tokens[j].head === tok.i) {
         startIdx = j;
       } else {
         break;
       }
     }
 
-    // Look forward for compounds
+    // Look forward for compounds and flat name parts
     for (let j = i + 1; j < tokens.length; j++) {
-      if (tokens[j].dep === 'compound' && tokens[j].head === tok.i) {
+      const dep = tokens[j].dep;
+      // Include compound, flat (for multi-word names), and flat:name dependencies
+      if ((dep === 'compound' || dep === 'flat' || dep === 'flat:name') && tokens[j].head === tok.i) {
         endIdx = j;
       } else {
         break;

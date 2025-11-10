@@ -537,8 +537,23 @@ function extractGoldRelations(text: string, family: string, caseType: string): G
 
   const relations: GoldRelation[] = [];
 
-  // Extract proper nouns as potential entities
-  const entities = text.match(/\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*/g) || [];
+  // Extract proper nouns as potential entities (including multi-word names with particles)
+  // Matches: "Leonardo da Vinci", "Frank Lloyd Wright", "Standard Oil Company", etc.
+  const entityPattern = /\b[A-Z][a-z]+(?:\s+(?:da|de|del|della|di|von|van|le|la|el|al|bin|ibn|abu|van der|van den|of|the|and|&|[A-Z])[a-z]*)*(?:\s+[A-Z][a-z]+)*/g;
+  const rawEntities = text.match(entityPattern) || [];
+
+  // Clean and deduplicate entities
+  const entities: string[] = [];
+  const seen = new Set<string>();
+
+  for (const entity of rawEntities) {
+    const cleaned = entity.trim();
+    // Skip if we've seen this or a substring
+    if (!seen.has(cleaned) && !Array.from(seen).some(e => e.includes(cleaned) || cleaned.includes(e))) {
+      entities.push(cleaned);
+      seen.add(cleaned);
+    }
+  }
 
   if (entities.length >= 2 && caseType === 'positive') {
     // Create a relation between first two entities
@@ -570,10 +585,12 @@ function inferRelation(text: string, family: string): string {
                 text.includes('employed') ? 'employed_by' :
                 text.includes('member') ? 'member_of' : 'affiliated_with',
 
-    creation: text.includes('painted') ? 'painted_by' :
-              text.includes('wrote') ? 'written_by' :
-              text.includes('invented') ? 'invented_by' :
-              text.includes('composed') ? 'composed_by' : 'created_by',
+    creation: text.includes('painted') ? 'painted' :
+              text.includes('wrote') ? 'authored' :
+              text.includes('invented') ? 'invented' :
+              text.includes('composed') ? 'composed' :
+              text.includes('designed') ? 'designed' :
+              text.includes('sculpted') ? 'sculpted' : 'created',
 
     location: 'located_in',
     temporal: 'after',
