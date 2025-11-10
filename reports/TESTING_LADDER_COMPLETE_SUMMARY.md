@@ -1,8 +1,13 @@
 # ARES Testing Ladder: Complete Summary & Recommendations
 
+**⚠️ DEPRECATION NOTICE**: This file has been superseded by `UNIFIED_TESTING_STRATEGY.md`
+
+**Please refer to**: `/home/user/ARES/UNIFIED_TESTING_STRATEGY.md` for the current testing strategy that consolidates both Progressive Levels and Diagnostic Rungs into a single workflow.
+
 **Date:** 2025-11-10
 **Commit:** c8569d1 → b27b280
 **Branch:** `claude/test-entity-highlighting-011CUqUiydbXkB8vKzGsJrf3`
+**Status:** Historical record of Rungs 1-4 completion
 
 ## Executive Summary
 
