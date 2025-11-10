@@ -126,45 +126,61 @@ make clean     # Remove generated files
 
 ## Testing Strategy
 
-**IMPORTANT**: ARES uses a **dual-ladder testing approach** for systematic quality improvement.
+**IMPORTANT**: ARES uses a **5-stage integrated testing ladder** that combines component health checks with extraction quality gates.
 
-See [UNIFIED_TESTING_STRATEGY.md](UNIFIED_TESTING_STRATEGY.md) for complete details.
+See [INTEGRATED_TESTING_STRATEGY.md](INTEGRATED_TESTING_STRATEGY.md) for complete details.
 
 ### Quick Overview
 
-**Two complementary test systems:**
+**Single progressive ladder** where each stage validates both component health AND extraction quality:
 
-1. **Quality Levels (1-5)**: Progressive difficulty gates
-   - Level 1: Simple sentences (P≥90%, R≥85%) ✅ PASSED
-   - Level 2: Multi-sentence (P≥85%, R≥80%) ⚠️ 99% complete
-   - Level 3: Complex paragraphs (P≥80%, R≥75%)
-   - Level 4: Mega regression (~1000 words)
-   - Level 5: Production readiness (canary corpus)
+```
+Stage 1: Foundation [✅ PASSED]
+├─ 1.1 Pattern Coverage Audit (≥30%)
+├─ 1.2 Entity Quality Check
+└─ 1.3 Simple Sentence Extraction (P≥90%, R≥85%)
 
-2. **Diagnostic Rungs (1-5)**: Component analysis when gates fail
-   - Rung 1: Pattern coverage audit (26% coverage identified)
-   - Rung 2: Synthetic baseline (F1=4.3%)
-   - Rung 3: Precision guardrails (+1.5pp improvement)
-   - Rung 4: Entity quality pass (no change → pattern bottleneck)
-   - Rung 5: Canary evaluation (deferred)
+Stage 2: Component Validation [⚠️ 99%]
+├─ 2.1 Synthetic Baseline (F1≥10%)
+├─ 2.2 Precision Guardrails Test
+└─ 2.3 Multi-Sentence Extraction (P≥85%, R≥80%)
+
+Stage 3: Complex Extraction [⏸️ Not Started]
+├─ 3.1 Cross-Sentence Coreference
+├─ 3.2 Pattern Family Coverage (≥50%)
+└─ 3.3 Complex Paragraph Extraction (P≥80%, R≥75%)
+
+Stage 4: Scale Testing [⏸️ Future]
+├─ 4.1 Performance Benchmarks
+├─ 4.2 Memory Profile
+└─ 4.3 Mega Regression Test (P≥75%, R≥70%)
+
+Stage 5: Production Readiness [⏸️ Future]
+├─ 5.1 Canary Corpus (P≥75%, R≥65%)
+├─ 5.2 Real-World Validation
+└─ 5.3 Edge Case Coverage
+```
 
 ### Testing Workflow
 
 ```bash
-# Run level tests (progressive gates)
-npm test tests/ladder/level-1-simple.spec.ts
-npm test tests/ladder/level-2-multisentence.spec.ts
-npm test tests/ladder/level-3-complex.spec.ts
+# Run Stage 1 (Foundation)
+npx ts-node scripts/pattern-expansion/inventory-patterns.ts  # 1.1 Pattern coverage
+npm test tests/ladder/level-1-simple.spec.ts                 # 1.3 Simple extraction
 
-# If a level fails, run diagnostics
-npx ts-node scripts/pattern-expansion/inventory-patterns.ts       # Pattern coverage
-npx tsx scripts/pattern-expansion/evaluate-coverage.ts            # Metrics baseline
-npx tsx scripts/pattern-expansion/evaluate-coverage.ts --precision_guardrails  # With guardrails
+# Run Stage 2 (Component Validation)
+npx tsx scripts/pattern-expansion/evaluate-coverage.ts --precision_guardrails  # 2.1, 2.2
+npm test tests/ladder/level-2-multisentence.spec.ts         # 2.3 Multi-sentence
+
+# Run Stage 3 (Complex Extraction) - when Stage 2 passes
+npm test tests/ladder/level-3-complex.spec.ts               # 3.3 Complex paragraphs
 ```
 
-**Key Principle**: Use **Levels** as quality gates, **Rungs** as diagnostics to identify bottlenecks.
+**Key Principle**: Check component health FIRST, then test extraction quality. Don't waste time testing extraction when components are broken.
 
-**Current Status**: Level 1 passed, Level 2 at 99% (1 test blocked), Rungs 1-4 complete showing pattern coverage is the bottleneck.
+**Current Status**: Stage 1 passed ✅, Stage 2 at 99% (blocked on test 2.12 appositive parsing), Stages 3-5 not yet started.
+
+**Current Blocker**: Pattern coverage at 26% (need ≥30% for optimal Stage 3+ performance).
 
 ## Next Steps
 
