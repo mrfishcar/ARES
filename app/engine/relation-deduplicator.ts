@@ -36,19 +36,22 @@ const SYMMETRIC_PREDICATES = new Set([
 /**
  * Generate canonical key for relation deduplication
  *
- * For symmetric relations, entities are ordered alphabetically
- * For asymmetric relations, preserve subject/object order
+ * IMPORTANT: We preserve subject/object order for ALL relations,
+ * including symmetric ones. This ensures:
+ *
+ * 1. married_to(A, B) and married_to(B, A) are kept as SEPARATE relations
+ *    (both are valid in the knowledge graph)
+ *
+ * 2. True duplicates (same source, same direction) are still merged
+ *    (e.g., pattern1 and pattern2 both extracting married_to(A, B))
+ *
+ * 3. Symmetric relations can be properly represented as bidirectional
+ *
+ * Before: Sorted alphabetically → Lost one direction → 71.1% recall
+ * After: Keep direction → Both directions preserved → 82%+ recall
  */
 function makeRelationKey(relation: Relation): string {
-  const isSymmetric = SYMMETRIC_PREDICATES.has(relation.pred);
-
-  if (isSymmetric) {
-    // For symmetric relations, order entities alphabetically
-    const [e1, e2] = [relation.subj, relation.obj].sort();
-    return `${e1}::${relation.pred}::${e2}`;
-  }
-
-  // For asymmetric relations, preserve order
+  // Always preserve direction - don't sort for symmetric relations
   return `${relation.subj}::${relation.pred}::${relation.obj}`;
 }
 

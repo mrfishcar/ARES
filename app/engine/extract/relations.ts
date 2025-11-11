@@ -1098,7 +1098,8 @@ function extractDepRelations(
                   coordToken.i
                 );
                 for (const rel of coordProduced) {
-                  rel.confidence = pathResult.confidence * 0.95; // Slightly lower confidence for coordinated
+                  // Keep same confidence as primary relation - coordinated entities deserve full confidence
+                  rel.confidence = pathResult.confidence;
                 }
                 if (coordProduced.length > 0) {
                   if (DEBUG_DEP) {
@@ -1139,7 +1140,8 @@ function extractDepRelations(
                   coordToken.i
                 );
                 for (const rel of coordProduced) {
-                  rel.confidence = pathResult.confidence * 0.95; // Slightly lower confidence for coordinated
+                  // Keep same confidence as primary relation - coordinated entities deserve full confidence
+                  rel.confidence = pathResult.confidence;
                 }
                 if (coordProduced.length > 0) {
                   if (DEBUG_DEP) {
