@@ -5,7 +5,7 @@
 
 import { useState, useCallback } from 'react';
 import { mutate } from '../lib/api';
-import type { EntityType } from '../../../../editor/entityHighlighter';
+import type { EntityType } from '../types/entities';
 
 export interface EntityMention {
   id: string;
