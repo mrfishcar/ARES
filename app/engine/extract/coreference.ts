@@ -78,13 +78,33 @@ function inferEntityGender(entityName: string): Gender {
 
 /**
  * Check if entity gender matches pronoun gender
+ * FIXED: Added entity type filtering to prevent "he/she" from resolving to PLACE
  */
-function matchesGender(entity: CanonicalEntity, pronoun Gender): boolean {
+function matchesGender(entity: CanonicalEntity, pronounGender: Gender): boolean {
+  // CRITICAL FIX: Personal pronouns (he/she) can ONLY refer to PERSON or ORG entities
+  // This prevents "He" from resolving to "Shire" (PLACE)
+  if (['male', 'female'].includes(pronounGender)) {
+    if (!['PERSON', 'ORG'].includes(entity.type)) {
+      return false;  // "He/She" cannot refer to PLACE, DATE, etc.
+    }
+  }
+
   const entityGender = inferEntityGender(entity.canonical_name);
 
-  // Neutral matches anything
-  if (entityGender === 'neutral' || pronounGender === 'neutral') {
+  // TIGHTENED: Only allow neutral matching for 'it' pronouns
+  if (entityGender === 'neutral' && pronounGender === 'neutral') {
+    return true;  // 'it' can refer to anything neutral
+  }
+
+  // Allow neutral pronoun to match anything (for 'it')
+  if (pronounGender === 'neutral') {
     return true;
+  }
+
+  // For non-neutral pronouns, require strict gender matching
+  // But if entity gender is neutral (unknown), allow it (benefit of doubt)
+  if (entityGender === 'neutral') {
+    return true;  // Unknown gender entities can match any pronoun
   }
 
   return entityGender === pronounGender;
