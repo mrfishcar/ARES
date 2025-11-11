@@ -866,6 +866,29 @@ type HighlightStats {
   pending: Int!
 }
 
+"""Entity span detected in text"""
+type EntitySpan {
+  start: Int!
+  end: Int!
+  text: String!
+  displayText: String
+  canonicalName: String
+  type: String!
+  confidence: Float!
+  source: String!
+}
+
+"""Configuration for entity highlighting"""
+input HighlightConfigInput {
+  maxHighlights: Int
+  minConfidence: Float
+  enableNaturalDetection: Boolean
+  project: String
+  enableAliasPass: Boolean
+  enableLLM: Boolean
+  llmMode: String
+}
+
 extend type Query {
   """Get highlights for a specific note"""
   highlights(noteId: ID!): [Highlight!]!
@@ -875,6 +898,9 @@ extend type Query {
 
   """Get highlight statistics for a project"""
   getHighlightStats(project: String!): HighlightStats!
+
+  """Real-time entity detection for arbitrary text"""
+  detectEntities(text: String!, config: HighlightConfigInput): [EntitySpan!]!
 }
 
 extend type Mutation {

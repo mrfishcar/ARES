@@ -38,6 +38,33 @@ See [Troubleshooting](#white-screen-on-vercel-deployment) section for detailed d
 └─────────────────┘         └──────────────────────────────┘
 ```
 
+### CRITICAL: Backend-First Architecture
+
+**Entity Detection Engine Location: Backend Only**
+
+All sophisticated entity detection logic lives in `app/editor/entityHighlighter.ts` on the backend. This is the **single source of truth** for:
+- Pattern-based NLP detection
+- Dialogue patterns, honorifics, multi-word names
+- Alias packs, appositives, event seeds
+- LLM-based detection (spaCy NER)
+- Confidence scoring and overlap removal
+
+**Frontend Role: API Consumer**
+
+The frontend (`app/ui/console/src/types/entities.ts`) should ONLY:
+- Call the GraphQL `detectEntities` query
+- Display results with highlighting UI
+- Provide fallback tag-only detection if API fails
+
+**DO NOT duplicate pattern logic in the frontend!** This creates:
+- Maintenance burden (duplicate code to maintain)
+- Inconsistent results between frontend/backend
+- Loss of backend improvements (aliases, LLM, etc.)
+
+**Extraction Lab Purpose:**
+
+The Extraction Lab (`/lab` route) is specifically designed to test and validate the backend entity detection engine. Changes to pattern matching, safeguards, and detection logic should be tested here to verify they work across all of ARES.
+
 ## Option 1: Railway (Recommended - Easiest)
 
 ### Step 1: Install Railway CLI
