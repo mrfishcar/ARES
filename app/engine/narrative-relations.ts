@@ -258,6 +258,18 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
   },
 
   // === PART_WHOLE PATTERNS ===
+
+  // LIST EXTRACTION: "The castle had four houses: Gryffindor, Slytherin, Hufflepuff, and Ravenclaw"
+  // This pattern triggers special list parsing logic
+  // Matches "The [noun] had/has [number] items:" or "[Name] had/has [number] items:"
+  {
+    regex: /\b(?:The\s+([a-z]+)|([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*))\s+(?:had|has|have)\s+(?:\w+\s+)?(?:houses?|members?|parts?|divisions?|sections?|components?|elements?):\s*/g,
+    predicate: 'part_of',
+    typeGuard: {},
+    listExtraction: true,
+    reversed: true  // List items are part_of the container (not container has items)
+  },
+
   // "X is part of Y", "X is a part of Y"
   {
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is\s+)?(?:a\s+)?part\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
@@ -640,6 +652,95 @@ export function extractNarrativeRelations(
           }
         }
         continue; // Skip normal processing for coordination patterns
+      }
+
+      // Handle list extraction patterns (e.g., "The castle had four houses: Gryffindor, Slytherin, ...")
+      if ((pattern as any).listExtraction) {
+        // Container could be in match[1] (for "The noun") or match[2] (for "Name")
+        const container = match[1] || match[2];
+
+        if (!container) {
+          console.log(`[LIST-EXTRACT] Pattern matched but no container captured`);
+          continue;
+        }
+
+        // Try direct entity match first
+        let containerEntity = matchEntity(container, entities);
+
+        // If no direct match, try coreference resolution
+        if (!containerEntity && corefLinks) {
+          const containerPosition = match.index;
+          const containerLinks = corefLinks.links.filter(link =>
+            link.mention.start <= containerPosition &&
+            containerPosition < link.mention.end &&
+            link.mention.text.toLowerCase().includes(container.toLowerCase())
+          );
+
+          if (containerLinks.length > 0) {
+            const bestLink = containerLinks.sort((a, b) => b.confidence - a.confidence)[0];
+            containerEntity = entities.find(e => e.id === bestLink.entity_id) || null;
+            console.log(`[LIST-EXTRACT] Resolved "${container}" via coref → entity ${containerEntity?.canonical}`);
+          }
+        }
+
+        console.log(`[LIST-EXTRACT] Pattern matched: container="${container}" → entity=${containerEntity?.canonical || 'NONE'}`);
+
+        if (containerEntity) {
+          const matchEnd = match.index + match[0].length;
+          const remainingText = text.slice(matchEnd);
+
+          // Extract comma-separated list until sentence boundary (. ! ? or end of text)
+          const sentenceBoundary = remainingText.search(/[.!?]/);
+          const listText = sentenceBoundary >= 0
+            ? remainingText.slice(0, sentenceBoundary)
+            : remainingText;
+
+          console.log(`[LIST-EXTRACT] List text: "${listText}"`);
+
+          // Parse capitalized names from the list
+          // Match pattern: "Name", "Name Name", allowing for commas and "and"
+          const namePattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g;
+          let nameMatch: RegExpExecArray | null;
+          const listItems: string[] = [];
+
+          while ((nameMatch = namePattern.exec(listText)) !== null) {
+            listItems.push(nameMatch[1]);
+          }
+
+          console.log(`[LIST-EXTRACT] Extracted ${listItems.length} items: ${listItems.join(', ')}`);
+
+          // Create part_of relations for each list item
+          for (const itemName of listItems) {
+            const itemEntity = matchEntity(itemName, entities);
+
+            if (itemEntity) {
+              console.log(`[LIST-EXTRACT]   ✓ Matched "${itemName}" → entity ${itemEntity.id}`);
+              const evidenceStart = match.index;
+              const evidenceEnd = matchEnd + listText.length;
+              const evidenceText = text.slice(evidenceStart, evidenceEnd);
+
+              relations.push({
+                id: uuid(),
+                subj: itemEntity.id,
+                pred: pattern.predicate as any,
+                obj: containerEntity.id,
+                evidence: [{
+                  doc_id: docId,
+                  span: { start: evidenceStart, end: evidenceEnd, text: evidenceText },
+                  sentence_index: 0,
+                  source: 'RULE'
+                }],
+                confidence: 0.80,  // Slightly lower confidence for inferred relations
+                extractor: 'regex'
+              });
+            } else {
+              console.log(`[LIST-EXTRACT]   ✗ No entity match for "${itemName}"`);
+            }
+          }
+        } else {
+          console.log(`[LIST-EXTRACT] No entity match for container "${container}"`);
+        }
+        continue; // Skip normal processing for list patterns
       }
 
       const subjGroup = pattern.extractSubj ?? 1;
