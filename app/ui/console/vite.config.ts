@@ -17,16 +17,17 @@ export default defineConfig({
       '/metrics': 'http://localhost:4100'
     }
   },
+  resolve: {
+    alias: {
+      // Provide empty polyfills for Node.js built-ins that shouldn't be in browser
+      crypto: 'crypto-browserify',
+      stream: 'stream-browserify',
+      buffer: 'buffer',
+    }
+  },
   build: {
     rollupOptions: {
-      external: [
-        // Exclude Node.js modules that shouldn't be in browser bundle
-        'crypto',
-        'http',
-        'https',
-        'fs',
-        'path'
-      ]
+      // Don't mark as external - use polyfills instead
     }
   }
 });
