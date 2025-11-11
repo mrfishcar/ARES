@@ -586,8 +586,18 @@ export async function extractFromSegments(
   // Use processedText (with deictic resolutions) instead of fullText for narrative extraction
   const narrativeRelations = extractAllNarrativeRelations(processedText, entityLookup, docId, corefLinks);
 
+  // Also filter narrative relations for parent_of/child_of when married_to exists
+  const filteredNarrativeRelations = narrativeRelations.filter(rel => {
+    if ((rel.pred === 'parent_of' || rel.pred === 'child_of') &&
+        marriedToRelations.has(`${rel.subj}:${rel.obj}`)) {
+      console.log(`[NARRATIVE-FILTER] Suppressing ${rel.pred} (married_to exists)`);
+      return false;
+    }
+    return true;
+  });
+
   // Combine all relation sources
-  const allRelationSources = [...combinedRelations, ...narrativeRelations];
+  const allRelationSources = [...combinedRelations, ...filteredNarrativeRelations];
 
   // 7.5 Auto-create inverse relations for bidirectional predicates
   // E.g., if we have parent_of(A, B), create child_of(B, A)
