@@ -401,6 +401,78 @@ function buildOrgSpan(token: Token, tokens: Token[]): { start: number; end: numb
   return expandNP(token, tokens);
 }
 
+/**
+ * Normalize a subject token by climbing out of appositive spans to the governing head
+ *
+ * Example: "Aragorn, son of Arathorn, traveled"
+ * - If tok = "son" (dep='appos'), climb to head "Aragorn"
+ *
+ * @param tok - Token to normalize
+ * @param tokens - All tokens in sentence
+ * @param isInAppos - O(1) checker for appositive spans
+ * @returns Normalized token (governing head if in appositive, otherwise original)
+ */
+function normalizeSubjectToken(
+  tok: Token,
+  tokens: Token[],
+  isInAppos: (t: Token) => boolean
+): Token {
+  // If not in appositive span and not an appos dep, return as-is
+  if (!isInAppos(tok) && tok.dep !== 'appos') {
+    return tok;
+  }
+
+  const MAX_HOPS = 3;
+  let current = tok;
+  let hops = 0;
+
+  // Climb through appos/conj heads to find governing entity
+  while (hops < MAX_HOPS && (isInAppos(current) || current.dep === 'appos' || current.dep === 'conj')) {
+    const head = tokens.find(t => t.i === current.head);
+    if (!head || head.i === current.i) break; // Reached root or self-loop
+
+    current = head;
+    hops++;
+
+    // If we found a PROPN/NOUN that's not in appositive span, use it
+    if (!isInAppos(current) && (current.pos === 'PROPN' || current.pos === 'NOUN')) {
+      return current;
+    }
+  }
+
+  // Fallback: search for nearest left PROPN before a comma in same NP
+  // This handles cases like "Aragorn, son" where we want Aragorn
+  const tokIdx = tokens.indexOf(tok);
+  if (tokIdx > 0) {
+    // Look left for PROPN before comma
+    for (let i = tokIdx - 1; i >= 0; i--) {
+      const candidate = tokens[i];
+
+      // Stop at sentence boundaries
+      if (candidate.text === '.' || candidate.text === '!' || candidate.text === '?') break;
+
+      // Found comma - check if there's a PROPN just before it
+      if (candidate.text === ',') {
+        if (i > 0) {
+          const beforeComma = tokens[i - 1];
+          if ((beforeComma.pos === 'PROPN' || beforeComma.pos === 'NOUN') && !isInAppos(beforeComma)) {
+            return beforeComma;
+          }
+        }
+        break;
+      }
+
+      // Direct PROPN/NOUN found
+      if ((candidate.pos === 'PROPN' || candidate.pos === 'NOUN') && !isInAppos(candidate)) {
+        return candidate;
+      }
+    }
+  }
+
+  // If all else fails, return the result of head-climbing
+  return current;
+}
+
 function resolveSubjectToken(
   verb: Token,
   tokens: Token[],
@@ -421,8 +493,14 @@ function resolveSubjectToken(
   if (direct) {
     const semantic = chooseSemanticHeadForSubject(direct, tokens, isInAppos);
 
+    // Normalize the semantic head - climb out of appositive spans to governing entity
+    const normalized = normalizeSubjectToken(semantic, tokens, isInAppos);
+
     if (DEBUG_SUBJ) {
       let log = `[SUBJ]   Semantic head: "${semantic.text}" (i=${semantic.i}, pos=${semantic.pos}, isInAppos=${isInAppos(semantic)})\n`;
+      if (normalized !== semantic) {
+        log += `[SUBJ]   Normalized to: "${normalized.text}" (i=${normalized.i}, pos=${normalized.pos}, isInAppos=${isInAppos(normalized)})\n`;
+      }
       fs.appendFileSync(logFile, log);
     }
 
@@ -437,54 +515,20 @@ function resolveSubjectToken(
 
     if (siblings.length) {
       const first = siblings[0];
-      if (first.start < semantic.start) {
+      if (first.start < normalized.start) {
         if (DEBUG_SUBJ) {
-          let log = `[SUBJ]   → Returning first sibling "${first.text}" (appears before semantic head)\n`;
+          let log = `[SUBJ]   → Returning first sibling "${first.text}" (appears before normalized head)\n`;
           fs.appendFileSync(logFile, log);
         }
         return first;
       }
     }
 
-    // Skip semantic head if it's in an appositive span
-    // This prevents wrong subject attribution (e.g., "Aragorn, son of Arathorn, traveled"
-    // should use Aragorn, not Arathorn)
-    if (isInAppos(semantic)) {
-      if (DEBUG_SUBJ) {
-        let log = `[SUBJ]   WARNING: Semantic head "${semantic.text}" is in appositive span\n`;
-        fs.appendFileSync(logFile, log);
-      }
-
-      // If semantic head is in appositive, fall back to looking for siblings
-      const fallbackSiblings = tokens
-        .filter(t => t.head === verb.i && isNameToken(t) && !isInAppos(t))
-        .sort((a, b) => a.start - b.start);
-
-      if (DEBUG_SUBJ) {
-        let log = `[SUBJ]   Fallback siblings: ${fallbackSiblings.length > 0 ? fallbackSiblings.map(s => `"${s.text}"`).join(', ') : 'NONE'}\n`;
-        fs.appendFileSync(logFile, log);
-      }
-
-      if (fallbackSiblings.length > 0) {
-        if (DEBUG_SUBJ) {
-          let log = `[SUBJ]   → Returning fallback sibling "${fallbackSiblings[0].text}"\n`;
-          fs.appendFileSync(logFile, log);
-        }
-        return fallbackSiblings[0];
-      }
-
-      if (DEBUG_SUBJ) {
-        let log = `[SUBJ]   → Returning undefined (no valid subject found)\n`;
-        fs.appendFileSync(logFile, log);
-      }
-      return undefined; // No valid subject found
-    }
-
     if (DEBUG_SUBJ) {
-      let log = `[SUBJ]   → Returning semantic head "${semantic.text}"\n`;
+      let log = `[SUBJ]   → Returning normalized head "${normalized.text}"\n`;
       fs.appendFileSync(logFile, log);
     }
-    return semantic;
+    return normalized;
   }
 
   if (DEBUG_SUBJ) {
@@ -1170,12 +1214,16 @@ function extractDepRelations(
         const objectEntity = pathResult.subjectFirst ? entity2 : entity1;
         const subjectToken = pathResult.subjectFirst ? token1 : token2;
 
-        // Skip relations where subject is in appositive span (except kinship)
-        // Only apply this filter if sentence has appositives
+        // Normalize subject token - climb out of appositive spans to governing head
+        // This ensures "Aragorn, son of Arathorn, traveled" uses Aragorn not son/Arathorn
+        const normalizedSubject = normalizeSubjectToken(subjectToken, tokens, isInAppositiveSpan);
+
+        // Skip relations where NORMALIZED subject is STILL in appositive span (except kinship)
+        // This catches cases where there's no valid governing entity
         const kinshipPredicates = ['child_of', 'parent_of', 'sibling_of', 'spouse_of', 'married_to'];
-        if (hasAppos && !kinshipPredicates.includes(pathResult.predicate) && isInAppositiveSpan(subjectToken)) {
+        if (hasAppos && !kinshipPredicates.includes(pathResult.predicate) && isInAppositiveSpan(normalizedSubject)) {
           if (DEBUG_DEP) {
-            console.log(`[DEP]   SKIP: Subject "${subjectEntity.canonical}" is in appositive span`);
+            console.log(`[DEP]   SKIP: Normalized subject "${normalizedSubject.text}" still in appositive span`);
           }
           continue;
         }
