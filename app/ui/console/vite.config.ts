@@ -16,5 +16,17 @@ export default defineConfig({
       '/download': 'http://localhost:4000',
       '/metrics': 'http://localhost:4100'
     }
+  },
+  build: {
+    rollupOptions: {
+      external: [
+        // Exclude Node.js modules that shouldn't be in browser bundle
+        'crypto',
+        'http',
+        'https',
+        'fs',
+        'path'
+      ]
+    }
   }
 });
