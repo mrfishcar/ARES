@@ -570,14 +570,32 @@ export async function extractFromSegments(
     }
   }
 
-  // Step 2: Filter main allRelations when married_to is confidently extracted
-  // This handles cases where both parent_of/child_of AND married_to come from dependency parsing
-  // Only suppress parent_of/child_of if married_to exists AND has high confidence (>0.75)
+  // Helper: Check if married_to exists within proximity window (±2 sentences)
+  const hasMarriedToInProximity = (rel: Relation, proximityWindow: number = 2): boolean => {
+    const key = `${rel.subj}:${rel.obj}`;
+    if (!marriedToRelations.has(key)) return false;
+
+    const relationSentences = new Set(rel.evidence.map(e => e.sentence_index));
+    const marriedSentences = marriedToSentences.get(key);
+    if (!marriedSentences) return false;
+
+    for (const sentIdx of relationSentences) {
+      for (let offset = -proximityWindow; offset <= proximityWindow; offset++) {
+        if (marriedSentences.has(sentIdx + offset)) {
+          return true; // Conflict within proximity
+        }
+      }
+    }
+    return false; // No nearby conflict
+  };
+
+  // Step 2: Filter main allRelations with PROXIMITY-BASED + confidence check
+  // Only suppress if married_to is BOTH high confidence AND in proximity
   const filteredAllRelations = allRelations.filter(rel => {
     if ((rel.pred === 'parent_of' || rel.pred === 'child_of') &&
-        marriedToRelations.has(`${rel.subj}:${rel.obj}`)) {
+        hasMarriedToInProximity(rel, 2)) {
 
-      // Check if married_to for this pair has high confidence
+      // Also check confidence for extra safety
       const marriedToForPair = allRelations.find(r =>
         r.pred === 'married_to' &&
         ((r.subj === rel.subj && r.obj === rel.obj) ||
@@ -587,26 +605,22 @@ export async function extractFromSegments(
       if (marriedToForPair && marriedToForPair.confidence > 0.75) {
         const subj = allEntities.find(e => e.id === rel.subj);
         const obj = allEntities.find(e => e.id === rel.obj);
-        console.log(`[MAIN-FILTER] Suppressing ${rel.pred}: ${subj?.canonical} -> ${obj?.canonical} (married_to confidence ${marriedToForPair.confidence.toFixed(2)})`);
+        console.log(`[MAIN-FILTER] Suppressing ${rel.pred}: ${subj?.canonical} -> ${obj?.canonical} (married_to in proximity, conf ${marriedToForPair.confidence.toFixed(2)})`);
         return false;
       }
     }
     return true;
   });
 
-  // Step 3: Filter coref-enhanced relations with document-level matching
-  // Suppress parent_of/child_of if married_to exists for the same pair (anywhere in document)
-  // This prevents pronoun-based misinterpretation of romantic relationships as family relationships
+  // Step 3: Filter coref-enhanced relations with PROXIMITY-BASED matching
+  // Only suppress parent_of/child_of if married_to within ±2 sentences
   const filteredCorefRelations = corefRelations.filter(rel => {
     if ((rel.pred === 'parent_of' || rel.pred === 'child_of') &&
-        marriedToRelations.has(`${rel.subj}:${rel.obj}`)) {
+        hasMarriedToInProximity(rel, 2)) {
 
-      // Document-level filtering: if married_to exists for this pair, suppress parent_of/child_of
-      // This is necessary because pronouns ("He loved her") can be misinterpreted as parent_of
-      // by the dependency parser, even if married_to is stated in a different sentence
       const subj = allEntities.find(e => e.id === rel.subj);
       const obj = allEntities.find(e => e.id === rel.obj);
-      console.log(`[COREF-FILTER] Suppressing ${rel.pred}: ${subj?.canonical} -> ${obj?.canonical} (married_to exists for this pair)`);
+      console.log(`[COREF-FILTER] Suppressing ${rel.pred}: ${subj?.canonical} -> ${obj?.canonical} (married_to in proximity)`);
       return false;
     }
     return true;
@@ -634,15 +648,14 @@ export async function extractFromSegments(
   // Use processedText (with deictic resolutions) instead of fullText for narrative extraction
   const narrativeRelations = extractAllNarrativeRelations(processedText, entityLookup, docId, corefLinks);
 
-  // Also filter narrative relations with document-level matching
+  // Also filter narrative relations with PROXIMITY-BASED matching
   const filteredNarrativeRelations = narrativeRelations.filter(rel => {
     if ((rel.pred === 'parent_of' || rel.pred === 'child_of') &&
-        marriedToRelations.has(`${rel.subj}:${rel.obj}`)) {
+        hasMarriedToInProximity(rel, 2)) {
 
-      // Document-level filtering: suppress if married_to exists for this pair anywhere in document
       const subj = allEntities.find(e => e.id === rel.subj);
       const obj = allEntities.find(e => e.id === rel.obj);
-      console.log(`[NARRATIVE-FILTER] Suppressing ${rel.pred}: ${subj?.canonical} -> ${obj?.canonical} (married_to exists)`);
+      console.log(`[NARRATIVE-FILTER] Suppressing ${rel.pred}: ${subj?.canonical} -> ${obj?.canonical} (married_to in proximity)`);
       return false;
     }
     return true;
