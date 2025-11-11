@@ -1,17 +1,35 @@
 # ARES Project Progress Summary
-**Date**: 2025-11-11  
-**Branch**: main (commit 2d1d98a)  
-**Session**: Architectural Review & Planning
+**Date**: 2025-11-11
+**Branch**: main (commit b3318f9)
+**Session**: Merged Level 2/3 Test Fixes + Architectural Review
+**Latest Update**: Integrated pronoun coreference fixes and entity filtering improvements
 
 ---
 
 ## 🎯 Executive Summary
 
-**Achievement**: ✅ **Phase 2 Precision Target EXCEEDED** (86.7% vs 85% target)  
-**Challenge**: ❌ **Recall Below Target** (71.1% vs 80% target)  
+**Achievement**: ✅ **Phase 2 Precision Target EXCEEDED** (86.7% vs 85% target)
+**Challenge**: ❌ **Recall Below Target** (71.1% vs 80% target)
 **Status**: ⚠️ **Precision/Recall Tradeoff** - Need to balance both metrics
 
-### Key Metrics
+### Latest Update (Commit b3318f9)
+
+**Merged**: fix/level-2-test-failures branch → main
+
+**New Fixes Integrated:**
+1. ✅ **Pronoun Coreference Fix** - Prevents "he/she" from resolving to PLACE entities (app/engine/extract/coreference.ts:84-91)
+2. ✅ **Entity Filter Enhancements** - Added fantasy/magical term blocklist (app/engine/entity-filter.ts:100-103)
+3. ✅ **Deictic Resolution Module** - New module for "there/here" resolution (app/engine/extract/deictic-resolution.ts)
+4. 📄 **Documentation** - SESSION_FINDINGS.md and LEVEL2_FIXES_SUMMARY.md
+
+**Impact on Test Ladder:**
+- Level 2: ✅ PASSING (all tests)
+- Level 3 Entities: ✅ PASSING (P: 92.5%, R: 86.4%, F1: 89.3%)
+- Level 3 Relations: ❌ FAILING (P: 56.7%, R: 33.6%, F1: 42.2%)
+
+**Root Cause Identified**: Relation deduplication too aggressive (77.8% removal rate)
+
+### Key Metrics (Stage 2 - Different from Level 2)
 
 | Metric | Current | Target | Status | Gap |
 |--------|---------|--------|--------|-----|
@@ -19,6 +37,8 @@
 | **Stage 2 Recall** | 71.1% | 80% | ❌ BELOW | -8.9% |
 | **Stage 2 F1** | ~78% | 82% | ❌ BELOW | -4% |
 | **Stage 3 Entity P** | 74.4% | 80% | ❌ BELOW | -5.6% |
+
+**Note:** "Stage 2" (narrative relation extraction) is different from "Level 2" (test ladder). Both need attention.
 
 ---
 
@@ -168,36 +188,55 @@ function hasMarriedToInProximity(rel, marriedToSentences, window = 2) {
 - Precision defense system implemented
 - Document-level filtering working
 - Test infrastructure complete
+- **Pronoun coreference entity type filtering** (commit b3318f9)
+- **Entity quality filter enhancements** (fantasy term blocklist)
+- **Level 2 test ladder** - ALL TESTS PASSING
+- **Level 3 entity extraction** - PASSING (92.5% P, 86.4% R, 89.3% F1)
 
 ### In Progress 🔄
-- Balancing precision/recall
+- Balancing precision/recall (Stage 2 recall: 71.1% → 80% target)
 - Pattern coverage expansion (26% → 40%)
-- Entity type classification improvements
+- **Level 3 relation extraction fixes** (current: 56.7% P, 33.6% R - CRITICAL)
 
 ### Upcoming 📋
-- Proximity-window filtering
+- Proximity-window filtering (Stage 2 recall improvement)
 - Pattern confidence scoring
-- Stage 3 entity precision fixes
-- Full ladder passing (Stages 1-3)
+- **Fix relation deduplication** (currently removing 77.8% of relations)
+- Full test ladder passing (Levels 1-5)
 
 ---
 
 ## 🎯 Next Steps
 
-### Immediate (This Week)
-1. **Implement proximity-window filtering** to restore recall
-2. **Test on Stage 2 ladder** to verify both metrics pass
-3. **Commit and merge** once validated
+### Immediate (Priority 1 - Level 3 Relations)
+1. **Fix relation deduplication logic** - Currently removing 77.8% of relations (too aggressive)
+   - File: `app/engine/relation-deduplicator.ts`
+   - Target: Keep valid unique relations, only remove true duplicates
+   - Expected improvement: Recall 33.6% → 60%+
+
+2. **Improve relation extraction patterns** for complex narratives
+   - Add/improve patterns for "part_of" (house membership)
+   - Review coordination patterns from recent merge
+   - Test on Level 3 narratives
+
+3. **Test Level 3 until passing** (Target: P≥80%, R≥75%, F1≥77%)
+
+### Priority 2 (Stage 2 Recall)
+4. **Implement proximity-window filtering** to restore Stage 2 recall
+   - Replace document-level filtering with ±2 sentence window
+   - Expected: Recall 71.1% → 78-79%
+
+5. **Test on Stage 2 ladder** to verify both precision AND recall pass
 
 ### Short-Term (Next 2 Weeks)
-4. **Add pattern confidence scoring** for better quality
-5. **Integrate 25-30 patterns** to improve coverage
-6. **Fix entity type classification** for Stage 3
+6. **Add pattern confidence scoring** for better quality
+7. **Integrate 25-30 high-quality patterns** to improve coverage (target: 40%)
+8. **Push to GitHub** (commit b3318f9 currently local only)
 
 ### Long-Term (Month 1)
-7. **Complete testing ladder** (all 5 stages)
-8. **Production readiness** checks
-9. **Performance optimization** (if needed)
+9. **Complete testing ladder** (all 5 levels)
+10. **Production readiness** checks
+11. **Performance optimization** (if needed)
 
 ---
 
