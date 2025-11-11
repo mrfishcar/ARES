@@ -656,15 +656,18 @@ export async function extractFromSegments(
     }
   }
 
+  // No context-aware filtering for now - work with relations as-is
+  const contextFilteredRelations = appositiveFilteredRelations;
+
   // 🛡️ LAYER 3: Relation Deduplication
   // Merge duplicate relations extracted by multiple patterns
   // Expected impact: +10-15% precision
   let uniqueRelations: Relation[];
 
   if (isDeduplicationEnabled()) {
-    const preDedupeCount = appositiveFilteredRelations.length;
-    uniqueRelations = deduplicateRelations(appositiveFilteredRelations);
-    const stats = getDeduplicationStats(appositiveFilteredRelations, uniqueRelations);
+    const preDedupeCount = contextFilteredRelations.length;
+    uniqueRelations = deduplicateRelations(contextFilteredRelations);
+    const stats = getDeduplicationStats(contextFilteredRelations, uniqueRelations);
 
     console.log(`[PRECISION-DEFENSE] 🛡️ Layer 3: Relation Deduplication`);
     console.log(`  Original relations: ${stats.original}`);
@@ -676,7 +679,7 @@ export async function extractFromSegments(
   } else {
     // Fallback to simple deduplication
     const uniqueMap = new Map<string, Relation>();
-    for (const rel of appositiveFilteredRelations) {
+    for (const rel of contextFilteredRelations) {
       const key = `${rel.subj}::${rel.pred}::${rel.obj}`;
       if (!uniqueMap.has(key)) {
         uniqueMap.set(key, rel);
