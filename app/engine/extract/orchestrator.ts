@@ -11,6 +11,7 @@ import { extractEntities, parseWithService, normalizeName } from './entities';
 import { extractRelations } from './relations';
 import { splitIntoSentences } from '../segment';
 import { resolveCoref } from '../coref';
+import { resolveDeictics } from './deictic-resolution';
 import { extractAllNarrativeRelations } from '../narrative-relations';
 import { extractFictionEntities, type FictionEntity } from '../fiction-extraction';
 import { buildProfiles, type EntityProfile } from '../entity-profiler';
@@ -410,6 +411,61 @@ export async function extractFromSegments(
     console.log(`[COREF] "${link.mention.text}" [${link.mention.start},${link.mention.end}] -> ${entity?.canonical} (${link.method}, conf=${link.confidence.toFixed(2)})`);
   }
 
+  // 5.5 NEW: Resolve deictic references ("there", "here")
+  // This must happen AFTER coreference but BEFORE relation extraction
+  let processedText = fullText;
+  const deicticSpans: Array<{ start: number; end: number; replacement: string }> = [];
+
+  // Find all location-like entities (PLACE, ORG, HOUSE, etc.) with their positions in text
+  // These can be referents for deictic "there"
+  const locationTypes = new Set(['PLACE', 'ORG', 'HOUSE']);
+  const placePositions: Array<{ position: number; name: string }> = [];
+
+  for (const span of allSpans) {
+    const entity = allEntities.find(e => e.id === span.entity_id);
+    if (entity && locationTypes.has(entity.type)) {
+      placePositions.push({ position: span.start, name: entity.canonical });
+    }
+  }
+
+  // Sort by position so we can find the "most recent" location
+  placePositions.sort((a, b) => a.position - b.position);
+
+  // Find all "there" occurrences and replace with most recent location
+  const thereRegex = /\bthere\b/gi;
+  let thereMatch;
+  const thereMatches: Array<{ index: number; text: string }> = [];
+
+  while ((thereMatch = thereRegex.exec(fullText)) !== null) {
+    thereMatches.push({ index: thereMatch.index, text: thereMatch[0] });
+  }
+
+  // For each "there", find the most recent location-like entity before it
+  for (const match of thereMatches) {
+    const previousPlace = placePositions.filter(p => p.position < match.index).pop();
+
+    if (previousPlace) {
+      console.log(`[DEICTIC] Resolved "there" at position ${match.index} to "${previousPlace.name}"`);
+      // Replace "there" with "in LocationName" to match extraction patterns
+      // This works for both "lived in Rivendell" and "studied in Hogwarts"
+      deicticSpans.push({
+        start: match.index,
+        end: match.index + match.text.length,
+        replacement: `in ${previousPlace.name}`
+      });
+    }
+  }
+
+  // Apply replacements in reverse order to maintain positions
+  for (let i = deicticSpans.length - 1; i >= 0; i--) {
+    const span = deicticSpans[i];
+    processedText = processedText.substring(0, span.start) + span.replacement + processedText.substring(span.end);
+  }
+
+  if (deicticSpans.length > 0) {
+    console.log(`[DEICTIC] Resolved ${deicticSpans.length} deictic references`);
+  }
+
   // 5. Create virtual entity spans for pronouns that were resolved
   // This allows relation extraction to "see" pronouns as entity mentions
   const virtualSpans: Array<{ entity_id: string; start: number; end: number }> = [];
@@ -494,7 +550,8 @@ export async function extractFromSegments(
   }));
 
   // Pass coref links to enable resolution of "the couple", "their", etc.
-  const narrativeRelations = extractAllNarrativeRelations(fullText, entityLookup, docId, corefLinks);
+  // Use processedText (with deictic resolutions) instead of fullText for narrative extraction
+  const narrativeRelations = extractAllNarrativeRelations(processedText, entityLookup, docId, corefLinks);
 
   // Combine all relation sources
   const allRelationSources = [...combinedRelations, ...narrativeRelations];
