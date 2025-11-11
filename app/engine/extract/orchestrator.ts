@@ -570,9 +570,29 @@ export async function extractFromSegments(
     }
   }
 
-  // Step 2: Don't filter main allRelations - they come from dependency patterns that are generally reliable
-  // Filtering main relations causes over-removal of valid family relations in other contexts
-  const filteredAllRelations = allRelations;
+  // Step 2: Filter main allRelations when married_to is confidently extracted
+  // This handles cases where both parent_of/child_of AND married_to come from dependency parsing
+  // Only suppress parent_of/child_of if married_to exists AND has high confidence (>0.75)
+  const filteredAllRelations = allRelations.filter(rel => {
+    if ((rel.pred === 'parent_of' || rel.pred === 'child_of') &&
+        marriedToRelations.has(`${rel.subj}:${rel.obj}`)) {
+
+      // Check if married_to for this pair has high confidence
+      const marriedToForPair = allRelations.find(r =>
+        r.pred === 'married_to' &&
+        ((r.subj === rel.subj && r.obj === rel.obj) ||
+         (r.subj === rel.obj && r.obj === rel.subj))
+      );
+
+      if (marriedToForPair && marriedToForPair.confidence > 0.75) {
+        const subj = allEntities.find(e => e.id === rel.subj);
+        const obj = allEntities.find(e => e.id === rel.obj);
+        console.log(`[MAIN-FILTER] Suppressing ${rel.pred}: ${subj?.canonical} -> ${obj?.canonical} (married_to confidence ${marriedToForPair.confidence.toFixed(2)})`);
+        return false;
+      }
+    }
+    return true;
+  });
 
   // Step 3: Filter coref-enhanced relations with document-level matching
   // Suppress parent_of/child_of if married_to exists for the same pair (anywhere in document)
