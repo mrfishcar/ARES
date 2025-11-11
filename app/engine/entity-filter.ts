@@ -96,7 +96,11 @@ const TYPE_SPECIFIC_BLOCKLIST: Partial<Record<EntityType, Set<string>>> = {
     'resolution', 'fragility', 'end', 'emergency', 'visit',
     'stable', 'seizure', 'surgery', 'holidays', 'teaching',
     'department', 'associate professor', 'neurologist', 'divorced',
-    'academia', 'times', 'fine arts', 'medicine'
+    'academia', 'times', 'fine arts', 'medicine',
+    // Fantasy/magical false positives (common nouns, not people)
+    'magic', 'potions', 'slytherin', 'ravenclaw', 'hufflepuff', 'gryffindor',
+    'platform', 'quidditch', 'wand', 'spell', 'charm', 'transfiguration',
+    'divination', 'herbology', 'astronomy', 'defense'
   ]),
   PLACE: new Set([
     'nothing', 'everything', 'back', 'part'
