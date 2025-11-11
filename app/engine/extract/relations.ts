@@ -1051,9 +1051,19 @@ function extractDepRelations(
 
           // Find coordinated entities for the subject
           const coordSubjects: Token[] = [];
+          if (DEBUG_DEP) {
+            console.log(`[DEP-COORD-SEARCH] Looking for conj tokens with head=${subjectToken.i} (${subjectToken.text})`);
+            console.log(`[DEP-COORD-SEARCH] All tokens in sentence:`, tokens.map(t => `"${t.text}"(i=${t.i},dep=${t.dep},head=${t.head})`).join(' | '));
+          }
           for (const tok of tokens) {
+            if (DEBUG_DEP && tok.dep === 'conj') {
+              console.log(`[DEP-COORD-SEARCH]   Found conj token: "${tok.text}" (i=${tok.i}, head=${tok.head})`);
+            }
             if (tok.dep === 'conj' && tok.head === subjectToken.i) {
               coordSubjects.push(tok);
+              if (DEBUG_DEP) {
+                console.log(`[DEP-COORD-SEARCH]   ✓ MATCH! Added to coordSubjects`);
+              }
             }
           }
 
@@ -1077,6 +1087,15 @@ function extractDepRelations(
               if (entTokens.some(t => t.i === coordToken.i)) {
                 coordEntityId = entityId;
                 break;
+              }
+            }
+
+            if (DEBUG_DEP) {
+              console.log(`[DEP-COORD] Coordinated subject token: "${coordToken.text}" (i=${coordToken.i})`);
+              console.log(`[DEP-COORD] Found coordEntityId: ${coordEntityId}`);
+              if (coordEntityId) {
+                const coordEntity = getEntityById(coordEntityId);
+                console.log(`[DEP-COORD] Coord entity: ${coordEntity?.canonical}`);
               }
             }
 

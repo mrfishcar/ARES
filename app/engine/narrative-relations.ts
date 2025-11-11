@@ -157,7 +157,16 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
   },
 
   // === EDUCATION PATTERNS ===
-  // "Aria studied at Meridian Academy", "Mira studying at..."
+  // COORDINATION: "Harry and Ron studied at Hogwarts"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+and\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:(?:continued\s+(?:to\s+)?)|still\s+|kept\s+)?(?:studied|studying|studies|study|enrolled|attended|attends|attend)\s+(?:at|in)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'studies_at',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG', 'PLACE'] },
+    extractSubj: null,  // Special handling - will extract both subjects
+    extractObj: 3,
+    coordination: true  // Mark this as a coordination pattern
+  },
+  // SINGLE SUBJECT: "Aria studied at Meridian Academy"
   {
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:(?:continued\s+(?:to\s+)?)|still\s+|kept\s+)?(?:studied|studying|studies|enrolled|attended|attends)\s+(?:at|in)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
     predicate: 'studies_at',
@@ -184,7 +193,16 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
   },
 
   // === TRAVEL PATTERNS ===
-  // "Aria traveled to Meridian Ridge"
+  // COORDINATION: "Frodo and Sam traveled to Mordor"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+and\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:traveled|travelled|journeyed|went)\s+to\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'traveled_to',
+    typeGuard: { subj: ['PERSON'], obj: ['PLACE'] },
+    extractSubj: null,  // Special handling - will extract both subjects
+    extractObj: 3,
+    coordination: true
+  },
+  // SINGLE SUBJECT: "Aria traveled to Meridian Ridge"
   {
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:traveled|travelled|journeyed|went)\s+to\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
     predicate: 'traveled_to',
@@ -571,6 +589,59 @@ export function extractNarrativeRelations(
 
     let match: RegExpExecArray | null;
     while ((match = pattern.regex.exec(text)) !== null) {
+      // Handle coordination patterns specially (e.g., "Harry and Ron studied at Hogwarts")
+      if ((pattern as any).coordination && match[1] && match[2] && match[3]) {
+        // For coordination: match[1]=first subject, match[2]=second subject, match[3]=object
+        const firstSubj = match[1];
+        const secondSubj = match[2];
+        const obj = match[3];
+
+        // Create relations for BOTH subjects
+        for (const subjSurface of [firstSubj, secondSubj]) {
+          const subjEntity = matchEntity(subjSurface, entities);
+          const objEntity = matchEntity(obj, entities);
+
+          if (subjEntity && objEntity && passesTypeGuard(pattern, subjEntity, objEntity)) {
+            const matchStart = match.index;
+            const matchEnd = matchStart + match[0].length;
+
+            relations.push({
+              id: uuid(),
+              subj: subjEntity.id,
+              pred: pattern.predicate as any,
+              obj: objEntity.id,
+              evidence: [{
+                doc_id: docId,
+                span: { start: matchStart, end: matchEnd, text: match[0] },
+                sentence_index: 0,
+                source: 'RULE'
+              }],
+              confidence: 0.85,
+              extractor: 'regex'
+            });
+
+            // For symmetric relations, create inverse
+            if (pattern.symmetric) {
+              relations.push({
+                id: uuid(),
+                subj: objEntity.id,
+                pred: pattern.predicate as any,
+                obj: subjEntity.id,
+                evidence: [{
+                  doc_id: docId,
+                  span: { start: matchStart, end: matchEnd, text: match[0] },
+                  sentence_index: 0,
+                  source: 'RULE'
+                }],
+                confidence: 0.85,
+                extractor: 'regex'
+              });
+            }
+          }
+        }
+        continue; // Skip normal processing for coordination patterns
+      }
+
       const subjGroup = pattern.extractSubj ?? 1;
       const objGroup = pattern.extractObj ?? 2;
 
