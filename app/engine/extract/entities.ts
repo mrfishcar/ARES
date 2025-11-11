@@ -168,7 +168,7 @@ const PLACE_GAZETTEER = new Set([
   'buenos aires', 'rio de janeiro', 'sao paulo', 'mexico city',
 
   // Countries
-  'england', 'france', 'germany', 'spain', 'italy', 'russia', 'china', 'japan', 'india',
+  'england', 'scotland', 'wales', 'ireland', 'france', 'germany', 'spain', 'italy', 'russia', 'china', 'japan', 'india',
   'australia', 'canada', 'usa', 'america', 'united states', 'brazil', 'argentina',
 
   // Fictional places (common in test data)
@@ -1158,6 +1158,14 @@ function fallbackNames(text: string): Array<{ text: string; type: EntityType; st
     }
 
     value = value.replace(/\s+/g, ' ').trim();
+
+    // Strip trailing punctuation and sentence fragments
+    // This handles cases like "Ravenclaw. Each" being matched as 2 words
+    // Remove: period/comma/etc followed by space and another capitalized word
+    value = value.replace(/[.,;:!?]\s+[A-Z].*$/, '');
+    // Also strip any remaining trailing punctuation
+    value = value.replace(/[.,;:!?]+$/, '').trim();
+
     const rawEnd = endIndex;
 
     const tokens = value.split(/\s+/).filter(Boolean);
@@ -1177,10 +1185,14 @@ function fallbackNames(text: string): Array<{ text: string; type: EntityType; st
 
     // Skip single-word matches that follow articles (e.g., "the Grey")
     // BUT: Keep names after "of" (e.g., "son of Jesse", "House of Stark")
+    // AND: Keep names in lists (e.g., "X, Y, and Z")
     if (tokens.length === 1) {
-      const preceding = text.slice(Math.max(0, m.index - 10), m.index).toLowerCase();
-      // Only filter after "the" or "and", NOT after "of" (which often precedes valid names)
-      if (/\b(the|and)\s+$/.test(preceding) && !/^[A-Z][a-z]+s$/.test(value)) {
+      const preceding = text.slice(Math.max(0, m.index - 20), m.index).toLowerCase();
+      // Only filter after "the" or "and", NOT after "of" or list commas
+      // Check for comma before "and" to detect list items
+      if (/\b(the|and)\s+$/.test(preceding) &&
+          !/^[A-Z][a-z]+s$/.test(value) &&
+          !/,\s*(?:and|or)\s+$/.test(preceding)) {
         continue;
       }
     }
