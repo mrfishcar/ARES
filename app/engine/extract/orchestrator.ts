@@ -571,29 +571,23 @@ export async function extractFromSegments(
   }
 
   // Step 2: Don't filter main allRelations - they come from dependency patterns that are generally reliable
-  // The false positives seem to come from coref and narrative patterns, not main extraction
+  // Filtering main relations causes over-removal of valid family relations in other contexts
   const filteredAllRelations = allRelations;
 
-  // Step 3: Filter coref-enhanced relations with sentence-level matching
-  // Only suppress parent_of/child_of if married_to appears in the SAME SENTENCE
+  // Step 3: Filter coref-enhanced relations with document-level matching
+  // Suppress parent_of/child_of if married_to exists for the same pair (anywhere in document)
+  // This prevents pronoun-based misinterpretation of romantic relationships as family relationships
   const filteredCorefRelations = corefRelations.filter(rel => {
     if ((rel.pred === 'parent_of' || rel.pred === 'child_of') &&
         marriedToRelations.has(`${rel.subj}:${rel.obj}`)) {
 
-      // Check if any evidence from this relation is in a sentence with married_to
-      const key = `${rel.subj}:${rel.obj}`;
-      const marriedSentences = marriedToSentences.get(key);
-
-      const relationSentences = new Set(rel.evidence.map(e => e.sentence_index));
-      const hasConflictInSameSentence = marriedSentences &&
-        Array.from(relationSentences).some(s => marriedSentences.has(s));
-
-      if (hasConflictInSameSentence) {
-        const subj = allEntities.find(e => e.id === rel.subj);
-        const obj = allEntities.find(e => e.id === rel.obj);
-        console.log(`[COREF-FILTER] Suppressing ${rel.pred}: ${subj?.canonical} -> ${obj?.canonical} (married_to in same sentence)`);
-        return false;
-      }
+      // Document-level filtering: if married_to exists for this pair, suppress parent_of/child_of
+      // This is necessary because pronouns ("He loved her") can be misinterpreted as parent_of
+      // by the dependency parser, even if married_to is stated in a different sentence
+      const subj = allEntities.find(e => e.id === rel.subj);
+      const obj = allEntities.find(e => e.id === rel.obj);
+      console.log(`[COREF-FILTER] Suppressing ${rel.pred}: ${subj?.canonical} -> ${obj?.canonical} (married_to exists for this pair)`);
+      return false;
     }
     return true;
   });
@@ -620,23 +614,16 @@ export async function extractFromSegments(
   // Use processedText (with deictic resolutions) instead of fullText for narrative extraction
   const narrativeRelations = extractAllNarrativeRelations(processedText, entityLookup, docId, corefLinks);
 
-  // Also filter narrative relations with sentence-level matching
+  // Also filter narrative relations with document-level matching
   const filteredNarrativeRelations = narrativeRelations.filter(rel => {
     if ((rel.pred === 'parent_of' || rel.pred === 'child_of') &&
         marriedToRelations.has(`${rel.subj}:${rel.obj}`)) {
 
-      // Check if any evidence from this relation is in a sentence with married_to
-      const key = `${rel.subj}:${rel.obj}`;
-      const marriedSentences = marriedToSentences.get(key);
-
-      const relationSentences = new Set(rel.evidence.map(e => e.sentence_index));
-      const hasConflictInSameSentence = marriedSentences &&
-        Array.from(relationSentences).some(s => marriedSentences.has(s));
-
-      if (hasConflictInSameSentence) {
-        console.log(`[NARRATIVE-FILTER] Suppressing ${rel.pred} (married_to in same sentence)`);
-        return false;
-      }
+      // Document-level filtering: suppress if married_to exists for this pair anywhere in document
+      const subj = allEntities.find(e => e.id === rel.subj);
+      const obj = allEntities.find(e => e.id === rel.obj);
+      console.log(`[NARRATIVE-FILTER] Suppressing ${rel.pred}: ${subj?.canonical} -> ${obj?.canonical} (married_to exists)`);
+      return false;
     }
     return true;
   });
