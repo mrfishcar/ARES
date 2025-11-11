@@ -1,7 +1,7 @@
 {
-  "total": 525,
+  "total": 526,
   "by_family": {
-    "kinship": 37,
+    "kinship": 38,
     "employment": 88,
     "ownership": 27,
     "social": 25,
@@ -36,7 +36,7 @@
     "traveled_to": 4,
     "teaches_at": 5,
     "studies_at": 11,
-    "parent_of": 11,
+    "parent_of": 12,
     "child_of": 9,
     "sibling_of": 5,
     "mentored": 3,
