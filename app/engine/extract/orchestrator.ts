@@ -530,11 +530,11 @@ export async function extractFromSegments(
     }
   }
 
-  // Filter coref-enhanced relations to suppress parent_of/child_of when married_to is present
-  // These are likely false positives from coref-resolved pronouns
+  // Filter relations to suppress parent_of/child_of when married_to is present
+  // Step 1: Collect all married_to relations
   const marriedToRelations = new Set<string>();
 
-  // Check both original and coref relations for married_to
+  // Check all relations for married_to (will check allRelations, corefRelations, and eventually narrativeRelations)
   for (const rel of allRelations) {
     if (rel.pred === 'married_to') {
       const key1 = `${rel.subj}:${rel.obj}`;
@@ -552,6 +552,11 @@ export async function extractFromSegments(
     }
   }
 
+  // Step 2: Don't filter main allRelations - they come from dependency patterns that are generally reliable
+  // The false positives seem to come from coref and narrative patterns, not main extraction
+  const filteredAllRelations = allRelations;
+
+  // Step 3: Filter coref-enhanced relations to suppress parent_of/child_of when married_to is present
   const filteredCorefRelations = corefRelations.filter(rel => {
     // Suppress parent_of/child_of from coref if married_to exists for the same pair
     if ((rel.pred === 'parent_of' || rel.pred === 'child_of') &&
@@ -564,14 +569,14 @@ export async function extractFromSegments(
     return true;
   });
 
-  // Combine original relations with filtered coref relations
+  // Combine filtered main relations with filtered coref relations
   console.log(`[COREF] Found ${corefRelations.length} coref-enhanced relations (filtered to ${filteredCorefRelations.length})`);
   for (const rel of filteredCorefRelations) {
     const subj = allEntities.find(e => e.id === rel.subj);
     const obj = allEntities.find(e => e.id === rel.obj);
     console.log(`[COREF] ${subj?.canonical} --[${rel.pred}]--> ${obj?.canonical}`);
   }
-  const combinedRelations = [...allRelations, ...filteredCorefRelations];
+  const combinedRelations = [...filteredAllRelations, ...filteredCorefRelations];
 
   // 7. Extract narrative relations (pattern-based extraction)
   // Convert Entity[] to EntityLookup[] format for narrative extraction
