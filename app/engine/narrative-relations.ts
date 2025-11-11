@@ -130,6 +130,14 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     extractObj: 1,   // Child
     typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
   },
+  // Pattern: "X is the son/daughter of Y" or "Mira, daughter of Aria" or "Cael, son of Elias"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+is\s+(?:the\s+)?(?:son|daughter|child)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'parent_of',
+    extractSubj: 2,  // Parent is object of "of"
+    extractObj: 1,   // Child is subject (the person after "is")
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
   // Pattern: "Mira, daughter of Aria" or "Cael, son of Elias"
   {
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*,?\s+(?:the\s+)?(?:daughter|son|child)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
