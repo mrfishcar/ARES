@@ -17,6 +17,7 @@ import { INVERSE, passesGuard } from "../schema";
 import { parseWithService, normalizeName as normalizeEntityName } from "./entities";
 import type { Token, ParsedSentence } from "./parse-types";
 import { findShortestPath, matchDependencyPath, extractRelationFromPath } from "./relations/dependency-paths";
+import { buildApposCache, createNoOpChecker, createFastChecker } from "./apposCache";
 
 type Span = { entity_id: string; start: number; end: number };
 const TRACE_REL = process.env.L3_REL_TRACE === "1";
@@ -273,41 +274,25 @@ function chooseSemanticHead(tok: Token, tokens: Token[]): Token {
 }
 
 /**
- * Helper: Check if a token is inside an appositive span
- * Appositives are parenthetical information that should be skipped for subject resolution
- * Checks up to 2 levels to catch "Name, desc of X" patterns
- */
-function isInAppositiveSpan(tok: Token, tokens: Token[]): boolean {
-  // Check if token is directly marked as appositive
-  if (tok.dep === 'appos') return true;
-
-  // Check parent (level 1)
-  if (tok.head !== tok.i) {
-    const parent = tokens[tok.head];
-    if (parent && parent.dep === 'appos') return true;
-
-    // Check grandparent (level 2) for "son of Arathorn" patterns
-    if (parent && parent.head !== parent.i) {
-      const grandparent = tokens[parent.head];
-      if (grandparent && grandparent.dep === 'appos') return true;
-    }
-  }
-
-  return false;
-}
-
-/**
  * Choose semantic head for subject resolution, skipping appositive phrases
  * Unlike chooseSemanticHead, this excludes 'appos' to avoid jumping into
  * parenthetical information (e.g., "Aragorn, son of Arathorn" → stay with "Aragorn")
+ *
+ * @param tok - The token to resolve
+ * @param tokens - All tokens in the sentence
+ * @param isInAppos - Fast O(1) checker for appositive spans
  */
-function chooseSemanticHeadForSubject(tok: Token, tokens: Token[]): Token {
+function chooseSemanticHeadForSubject(
+  tok: Token,
+  tokens: Token[],
+  isInAppos: (t: Token) => boolean
+): Token {
   // Look for capitalized children with relevant dependencies (NO appos)
   const properNounChild = tokens.find(t =>
     t.head === tok.i &&
     ['nmod', 'compound', 'flat', 'amod'].includes(t.dep) && // appos excluded
     (t.pos === 'PROPN' || /^[A-Z]/.test(t.text)) &&
-    !isInAppositiveSpan(t, tokens) // skip tokens inside appositive spans
+    !isInAppos(t) // skip tokens inside appositive spans
   );
 
   if (properNounChild) return properNounChild;
@@ -415,12 +400,16 @@ function buildOrgSpan(token: Token, tokens: Token[]): { start: number; end: numb
   return expandNP(token, tokens);
 }
 
-function resolveSubjectToken(verb: Token, tokens: Token[]): Token | undefined {
+function resolveSubjectToken(
+  verb: Token,
+  tokens: Token[],
+  isInAppos: (t: Token) => boolean
+): Token | undefined {
   const direct = tokens.find(t => t.dep === 'nsubj' && t.head === verb.i);
   if (direct) {
-    const semantic = chooseSemanticHeadForSubject(direct, tokens);
+    const semantic = chooseSemanticHeadForSubject(direct, tokens, isInAppos);
     const siblings = tokens
-      .filter(t => t.head === verb.i && isNameToken(t) && !isInAppositiveSpan(t, tokens))
+      .filter(t => t.head === verb.i && isNameToken(t) && !isInAppos(t))
       .sort((a, b) => a.start - b.start);
 
     if (siblings.length) {
@@ -434,7 +423,7 @@ function resolveSubjectToken(verb: Token, tokens: Token[]): Token | undefined {
 }
 
   const siblings = tokens
-    .filter(t => t.head === verb.i && isNameToken(t) && !isInAppositiveSpan(t, tokens))
+    .filter(t => t.head === verb.i && isNameToken(t) && !isInAppos(t))
     .sort((a, b) => a.start - b.start);
 
   if (siblings.length) {
@@ -973,6 +962,13 @@ function extractDepRelations(
     const sentenceText = text.slice(sent.start, sent.end);
     const sentenceLower = sentenceText.toLowerCase();
 
+    // Build appositive cache for O(1) lookup performance
+    // Only build if sentence contains appositive dependencies
+    const hasAppos = tokens.some(t => t.dep === 'appos');
+    const isInAppositiveSpan = hasAppos
+      ? createFastChecker(buildApposCache(tokens))
+      : createNoOpChecker();
+
     // === DEPENDENCY PATH EXTRACTION (NEW) ===
     // Try to extract relations using dependency paths between entity pairs
     // This handles complex grammatical constructions better than simple patterns
@@ -1050,8 +1046,9 @@ function extractDepRelations(
         const subjectToken = pathResult.subjectFirst ? token1 : token2;
 
         // Skip relations where subject is in appositive span (except kinship)
+        // Only apply this filter if sentence has appositives
         const kinshipPredicates = ['child_of', 'parent_of', 'sibling_of', 'spouse_of', 'married_to'];
-        if (!kinshipPredicates.includes(pathResult.predicate) && isInAppositiveSpan(subjectToken, tokens)) {
+        if (hasAppos && !kinshipPredicates.includes(pathResult.predicate) && isInAppositiveSpan(subjectToken)) {
           if (DEBUG_DEP) {
             console.log(`[DEP]   SKIP: Subject "${subjectEntity.canonical}" is in appositive span`);
           }
@@ -1462,14 +1459,14 @@ function extractDepRelations(
       // Pattern 4: Employment relations (works at, employed by, joined)
       const workVerbs = ['work', 'works', 'worked', 'working', 'employ', 'employed', 'join', 'joined', 'joins', 'joining', 'hire', 'hired', 'recruit', 'recruited'];
       if (workVerbs.includes(lemma) || workVerbs.includes(textLower)) {
-        let subjTok = resolveSubjectToken(tok, tokens);
+        let subjTok = resolveSubjectToken(tok, tokens, isInAppositiveSpan);
 
         // Fallback: If work is xcomp (clausal complement), get subject from parent verb
         // E.g., "She moved to SF to work at Google" - "She" is subject of "moved", not "work"
         if (!subjTok && tok.dep === 'xcomp') {
           const parentVerb = tokens.find(t => t.i === tok.head);
           if (parentVerb) {
-            subjTok = resolveSubjectToken(parentVerb, tokens);
+            subjTok = resolveSubjectToken(parentVerb, tokens, isInAppositiveSpan);
           }
         }
 
@@ -1522,7 +1519,7 @@ function extractDepRelations(
       ];
       if (foundVerbs.includes(lemma) || foundVerbs.includes(textLower) || textLower === 'co-founder') {
         // Active voice: "X founded Y"
-        const subjTok = resolveSubjectToken(tok, tokens);
+        const subjTok = resolveSubjectToken(tok, tokens, isInAppositiveSpan);
         let objTok = tokens.find(t => (t.dep === 'dobj' || t.dep === 'obj') && t.head === tok.i);
 
         // Handle "co-founder of X" pattern
@@ -1557,7 +1554,7 @@ function extractDepRelations(
           const founderTok = tokens.find(t => t.dep === 'pobj' && t.head === byPrep.i);
           if (founderTok) {
             // In passive voice, the subject is the organization
-            const orgTok = resolveSubjectToken(tok, tokens);
+            const orgTok = resolveSubjectToken(tok, tokens, isInAppositiveSpan);
             if (orgTok) {
               const founderSpan = expandNP(founderTok, tokens);
               const orgSpan = expandNP(orgTok, tokens);
@@ -1578,7 +1575,7 @@ function extractDepRelations(
       const motionPastTense = ['went', 'traveled', 'journeyed', 'came', 'rode', 'sailed', 'flew', 'walked'];
 
       if (motionVerbs.includes(lemma) || motionPastTense.includes(textLower)) {
-        const subjTok = resolveSubjectToken(tok, tokens);
+        const subjTok = resolveSubjectToken(tok, tokens, isInAppositiveSpan);
         const toPrep = tokens.find(t => t.dep === 'prep' && t.head === tok.i && t.text.toLowerCase() === 'to');
 
         if (subjTok && toPrep) {
@@ -1603,7 +1600,7 @@ function extractDepRelations(
       // Pattern 5: studies_at
       const studyVerbs = ['study', 'studies', 'studied', 'studying'];
       if (studyVerbs.includes(lemma) || studyVerbs.includes(textLower)) {
-        const subjTok = resolveSubjectToken(tok, tokens);
+        const subjTok = resolveSubjectToken(tok, tokens, isInAppositiveSpan);
         const atPrep = tokens.find(t => t.dep === 'prep' && t.head === tok.i && t.text.toLowerCase() === 'at');
 
         if (subjTok && atPrep) {
@@ -1624,7 +1621,7 @@ function extractDepRelations(
 
       const attendVerbs = ['attend', 'attended', 'attends', 'attending'];
       if (attendVerbs.includes(lemma) || attendVerbs.includes(textLower)) {
-        const subjTok = resolveSubjectToken(tok, tokens);
+        const subjTok = resolveSubjectToken(tok, tokens, isInAppositiveSpan);
         const atPrep = tokens.find(t =>
           t.dep === 'prep' &&
           t.head === tok.i &&
@@ -1650,7 +1647,7 @@ function extractDepRelations(
       // Pattern: graduated_from (education completion)
       const graduateVerbs = ['graduate', 'graduated', 'graduates', 'graduating'];
       if (graduateVerbs.includes(lemma) || graduateVerbs.includes(textLower)) {
-        const subjTok = resolveSubjectToken(tok, tokens);
+        const subjTok = resolveSubjectToken(tok, tokens, isInAppositiveSpan);
         const fromPrep = tokens.find(t =>
           t.dep === 'prep' &&
           t.head === tok.i &&
@@ -1676,7 +1673,7 @@ function extractDepRelations(
       // Pattern 6: teaches_at
       const teachVerbs = ['teach', 'teaches', 'taught', 'teaching'];
       if (teachVerbs.includes(lemma) || teachVerbs.includes(textLower)) {
-        const subjTok = resolveSubjectToken(tok, tokens);
+        const subjTok = resolveSubjectToken(tok, tokens, isInAppositiveSpan);
         const atPrep = tokens.find(t => t.dep === 'prep' && t.head === tok.i && t.text.toLowerCase() === 'at');
 
         if (subjTok && atPrep) {
@@ -1701,7 +1698,7 @@ function extractDepRelations(
 
       if (advisorVerbs.includes(lemma) || advisorVerbs.includes(textLower)) {
         // "X advised Y" -> Y advised_by X
-        const subjTok = resolveSubjectToken(tok, tokens);
+        const subjTok = resolveSubjectToken(tok, tokens, isInAppositiveSpan);
         const objTok = tokens.find(t => (t.dep === 'dobj' || t.dep === 'obj') && t.head === tok.i);
 
         if (subjTok && objTok) {
@@ -1725,7 +1722,7 @@ function extractDepRelations(
           const adviseeTok = tokens.find(t => t.dep === 'pobj' && t.head === toPrep.i);
           if (adviseeTok) {
             // Find the advisor (subject or modifier of "advisor")
-            let advisorTok = resolveSubjectToken(tok, tokens);
+            let advisorTok = resolveSubjectToken(tok, tokens, isInAppositiveSpan);
             if (!advisorTok) {
               // Try finding possessive: "X's advisor"
               advisorTok = tokens.find(t => t.dep === 'poss' && t.head === tok.i);
@@ -1749,7 +1746,7 @@ function extractDepRelations(
       // Pattern 8: invested_in relations
       const investVerbs = ['invest', 'invested', 'investing'];
       if (investVerbs.includes(lemma) || investVerbs.includes(textLower)) {
-        const subjTok = resolveSubjectToken(tok, tokens);
+        const subjTok = resolveSubjectToken(tok, tokens, isInAppositiveSpan);
 
         // "X invested in Y"
         const inPrep = tokens.find(t => t.dep === 'prep' && t.head === tok.i && t.text.toLowerCase() === 'in');
@@ -1778,7 +1775,7 @@ function extractDepRelations(
         );
 
         if (roundObj) {
-          const subjTok = resolveSubjectToken(tok, tokens);
+          const subjTok = resolveSubjectToken(tok, tokens, isInAppositiveSpan);
           // Look for the company being invested in - often in context
           // This is a complex pattern, may need more work
           if (subjTok) {
@@ -2053,7 +2050,7 @@ function extractDepRelations(
 
       const livingVerbs = new Set(['live', 'lived', 'reside', 'resided', 'dwell', 'dwelt']);
       if (livingVerbs.has(lemma) || livingVerbs.has(textLower)) {
-        let subjTok = resolveSubjectToken(tok, tokens);
+        let subjTok = resolveSubjectToken(tok, tokens, isInAppositiveSpan);
         if (subjTok && subjTok.pos === 'PRON') {
           if (lastNamedSubject) {
             subjTok = lastNamedSubject;
