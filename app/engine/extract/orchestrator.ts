@@ -11,7 +11,6 @@ import { extractEntities, parseWithService, normalizeName } from './entities';
 import { extractRelations } from './relations';
 import { splitIntoSentences } from '../segment';
 import { resolveCoref } from '../coref';
-import { resolveDeictics } from './deictic-resolution';
 import { extractAllNarrativeRelations } from '../narrative-relations';
 import { extractFictionEntities, type FictionEntity } from '../fiction-extraction';
 import { buildProfiles, type EntityProfile } from '../entity-profiler';
