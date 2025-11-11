@@ -5,7 +5,7 @@
       "type": "PERSON",
       "canonical": "Marcus",
       "aliases": [],
-      "created_at": "2025-11-10T17:37:41.622Z",
+      "created_at": "2025-11-11T04:16:07.589Z",
       "centrality": 0
     },
     {
@@ -15,7 +15,7 @@
       "aliases": [
         "Aldric"
       ],
-      "created_at": "2025-11-10T17:37:41.622Z",
+      "created_at": "2025-11-11T04:16:07.589Z",
       "centrality": 0
     },
     {
@@ -23,13 +23,13 @@
       "type": "PERSON",
       "canonical": "Victoria",
       "aliases": [],
-      "created_at": "2025-11-10T17:37:41.622Z",
+      "created_at": "2025-11-11T04:16:07.589Z",
       "centrality": 0
     }
   ],
   "relations": [
     {
-      "id": "a72f8489-a155-4756-a8c7-a4b70fe07ab9",
+      "id": "8c44e00a-c4eb-48a6-80e0-a3ecca6434a6",
       "subj": "global_person_0",
       "pred": "child_of",
       "obj": "global_person_2",
@@ -49,7 +49,7 @@
       "extractor": "regex"
     },
     {
-      "id": "f9ccdfd8-f4f6-4d9b-81bc-a18371338b38",
+      "id": "4bae3ca1-98ef-4d3a-af0a-c7fddc7bb792",
       "subj": "global_person_2",
       "pred": "parent_of",
       "obj": "global_person_0",
@@ -76,7 +76,7 @@
       "description": "Cycle detected in parent_of/child_of: global_person_0 → global_person_2 → global_person_0",
       "relations": [
         {
-          "id": "a72f8489-a155-4756-a8c7-a4b70fe07ab9",
+          "id": "8c44e00a-c4eb-48a6-80e0-a3ecca6434a6",
           "subj": "global_person_0",
           "pred": "child_of",
           "obj": "global_person_2",
@@ -96,7 +96,7 @@
           "extractor": "regex"
         },
         {
-          "id": "f9ccdfd8-f4f6-4d9b-81bc-a18371338b38",
+          "id": "4bae3ca1-98ef-4d3a-af0a-c7fddc7bb792",
           "subj": "global_person_2",
           "pred": "parent_of",
           "obj": "global_person_0",
@@ -122,25 +122,25 @@
     "test-combined_entity_0": {
       "global_id": "global_person_0",
       "doc_id": "test-combined",
-      "merged_at": "2025-11-10T17:37:41.622Z",
+      "merged_at": "2025-11-11T04:16:07.589Z",
       "local_canonical": "Marcus"
     },
     "test-combined_entity_1": {
       "global_id": "global_person_1",
       "doc_id": "test-combined",
-      "merged_at": "2025-11-10T17:37:41.622Z",
+      "merged_at": "2025-11-11T04:16:07.589Z",
       "local_canonical": "Prince"
     },
     "test-combined_entity_2": {
       "global_id": "global_person_2",
       "doc_id": "test-combined",
-      "merged_at": "2025-11-10T17:37:41.622Z",
+      "merged_at": "2025-11-11T04:16:07.589Z",
       "local_canonical": "Victoria"
     }
   },
   "profiles": {
-    "98ebfe0d-118f-4642-8541-bcb34e25c93f": {
-      "entity_id": "98ebfe0d-118f-4642-8541-bcb34e25c93f",
+    "aeecd1a0-8258-4505-a070-209b824cfb35": {
+      "entity_id": "aeecd1a0-8258-4505-a070-209b824cfb35",
       "entity_type": "PERSON",
       "canonical": "Marcus",
       "descriptors": [],
@@ -157,8 +157,8 @@
       "last_seen": "test-combined",
       "confidence_score": 0.55
     },
-    "94d42a2b-0462-4bea-bff8-0d30cd061e05": {
-      "entity_id": "94d42a2b-0462-4bea-bff8-0d30cd061e05",
+    "e5f19525-7558-440a-8663-8c32d4325fd3": {
+      "entity_id": "e5f19525-7558-440a-8663-8c32d4325fd3",
       "entity_type": "PERSON",
       "canonical": "Prince",
       "descriptors": [],
@@ -183,8 +183,8 @@
       "last_seen": "test-combined",
       "confidence_score": 0.55
     },
-    "705485c2-a06f-4f11-a805-42d6c74934b5": {
-      "entity_id": "705485c2-a06f-4f11-a805-42d6c74934b5",
+    "fa51d968-2304-43fe-872b-0996ee9f29d7": {
+      "entity_id": "fa51d968-2304-43fe-872b-0996ee9f29d7",
       "entity_type": "PERSON",
       "canonical": "Victoria",
       "descriptors": [],
@@ -200,53 +200,11 @@
       "first_seen": "test-combined",
       "last_seen": "test-combined",
       "confidence_score": 0.55
-    },
-    "5203f329-9cc1-4e3d-9706-ceb661a36b80": {
-      "entity_id": "5203f329-9cc1-4e3d-9706-ceb661a36b80",
-      "entity_type": "PERSON",
-      "canonical": "dely",
-      "descriptors": [],
-      "titles": [
-        "dely",
-        "Prince Aldric"
-      ],
-      "roles": [],
-      "attributes": {},
-      "contexts": [
-        "Marcus, offspring of Victoria, traveled widely."
-      ],
-      "mention_count": 1,
-      "first_seen": "test-combined",
-      "last_seen": "test-combined",
-      "confidence_score": 0.55
-    },
-    "db4b34c8-ca21-4a06-a84c-122a2ecb9938": {
-      "entity_id": "db4b34c8-ca21-4a06-a84c-122a2ecb9938",
-      "entity_type": "PERSON",
-      "canonical": "dric heir of",
-      "descriptors": [],
-      "titles": [
-        "dric heir of",
-        "Queen Isolde"
-      ],
-      "roles": [],
-      "attributes": {
-        "age": [
-          "old"
-        ]
-      },
-      "contexts": [
-        "Prince Aldric, heir of Queen Isolde, studied diplomacy."
-      ],
-      "mention_count": 1,
-      "first_seen": "test-combined",
-      "last_seen": "test-combined",
-      "confidence_score": 0.55
     }
   },
   "metadata": {
-    "created_at": "2025-11-10T17:37:41.562Z",
-    "updated_at": "2025-11-10T17:37:41.622Z",
+    "created_at": "2025-11-11T04:16:07.535Z",
+    "updated_at": "2025-11-11T04:16:07.589Z",
     "doc_count": 1,
     "doc_ids": [
       "test-combined"
