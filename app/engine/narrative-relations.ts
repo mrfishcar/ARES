@@ -60,7 +60,10 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+and\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:married|wed)\b/g,
     predicate: 'married_to',
     symmetric: true,
-    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] },
+    extractSubj: null,
+    extractObj: null,  // Both are subjects
+    coordination: true
   },
   // "The couple married eight years earlier" - requires coreference for "couple"
   // Note: Use negative lookbehind to exclude possessive "couple's"
@@ -75,6 +78,16 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
   },
 
   // === FRIENDSHIP PATTERNS ===
+  // COORDINATION: "Harry and Ron were friends"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+and\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:were|are|became|remained)\s+(?:best\s+)?friends?\b/g,
+    predicate: 'friends_with',
+    symmetric: true,
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] },
+    extractSubj: null,
+    extractObj: null,  // Both are subjects - special handling needed
+    coordination: true
+  },
   // "Aria remained friends with Elias", "Jun also struck a friendship with Elias"
   {
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:also\s+)?(?:remained|stayed|became|was|were|struck)\s+(?:a\s+)?(?:best\s+)?(?:friendship|friends?)\s+with\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
@@ -180,6 +193,15 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
   },
 
   // === LOCATION PATTERNS ===
+  // COORDINATION: "Harry and Dudley lived in Privet Drive"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+and\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:lived|dwelt|dwelled|resided|reside|live)\s+(?:in|at)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'lives_in',
+    typeGuard: { subj: ['PERSON'], obj: ['PLACE'] },
+    extractSubj: null,
+    extractObj: 3,
+    coordination: true
+  },
   // "Aria lived in Meridian Ridge", "The family dwelt in ..."
   {
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:lived|dwelt|dwelled|resides|resided)\s+in\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
@@ -284,6 +306,15 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
   },
 
   // === EMPLOYMENT PATTERNS ===
+  // COORDINATION: "Alice and Bob worked at NASA"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+and\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:worked|works|work)\s+(?:at|for)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'works_for',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG'] },
+    extractSubj: null,
+    extractObj: 3,
+    coordination: true
+  },
   // "X works for Y", "X work for Y"
   {
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:works?|worked)\s+(?:as\s+)?(?:for|with|at)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
@@ -295,6 +326,15 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:was\s+)?employed\s+by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
     predicate: 'employed_by',
     typeGuard: { subj: ['PERSON'], obj: ['ORG'] }
+  },
+  // COORDINATION: "Harry and Ron were members of Gryffindor"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+and\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:were|are|was)\s+(?:members?|part)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'member_of',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG', 'HOUSE'] },
+    extractSubj: null,
+    extractObj: 3,
+    coordination: true
   },
   // "X is a member of Y", "X member of Y"
   {
@@ -590,26 +630,71 @@ export function extractNarrativeRelations(
     let match: RegExpExecArray | null;
     while ((match = pattern.regex.exec(text)) !== null) {
       // Handle coordination patterns specially (e.g., "Harry and Ron studied at Hogwarts")
-      if ((pattern as any).coordination && match[1] && match[2] && match[3]) {
-        // For coordination: match[1]=first subject, match[2]=second subject, match[3]=object
+      if ((pattern as any).coordination && match[1] && match[2]) {
         const firstSubj = match[1];
         const secondSubj = match[2];
-        const obj = match[3];
+        const obj = match[3];  // May be undefined for symmetric relations
 
-        // Create relations for BOTH subjects
-        for (const subjSurface of [firstSubj, secondSubj]) {
-          const subjEntity = matchEntity(subjSurface, entities);
-          const objEntity = matchEntity(obj, entities);
+        // Case 1: Subject-Object coordination (e.g., "Harry and Ron studied at Hogwarts")
+        if (obj) {
+          for (const subjSurface of [firstSubj, secondSubj]) {
+            const subjEntity = matchEntity(subjSurface, entities);
+            const objEntity = matchEntity(obj, entities);
 
-          if (subjEntity && objEntity && passesTypeGuard(pattern, subjEntity, objEntity)) {
+            if (subjEntity && objEntity && passesTypeGuard(pattern, subjEntity, objEntity)) {
+              const matchStart = match.index;
+              const matchEnd = matchStart + match[0].length;
+
+              relations.push({
+                id: uuid(),
+                subj: subjEntity.id,
+                pred: pattern.predicate as any,
+                obj: objEntity.id,
+                evidence: [{
+                  doc_id: docId,
+                  span: { start: matchStart, end: matchEnd, text: match[0] },
+                  sentence_index: 0,
+                  source: 'RULE'
+                }],
+                confidence: 0.85,
+                extractor: 'regex'
+              });
+
+              // For symmetric relations, create inverse
+              if (pattern.symmetric) {
+                relations.push({
+                  id: uuid(),
+                  subj: objEntity.id,
+                  pred: pattern.predicate as any,
+                  obj: subjEntity.id,
+                  evidence: [{
+                    doc_id: docId,
+                    span: { start: matchStart, end: matchEnd, text: match[0] },
+                    sentence_index: 0,
+                    source: 'RULE'
+                  }],
+                  confidence: 0.85,
+                  extractor: 'regex'
+                });
+              }
+            }
+          }
+        }
+        // Case 2: Symmetric coordination (e.g., "Harry and Ron were friends")
+        else if (pattern.symmetric) {
+          const entity1 = matchEntity(firstSubj, entities);
+          const entity2 = matchEntity(secondSubj, entities);
+
+          if (entity1 && entity2 && passesTypeGuard(pattern, entity1, entity2)) {
             const matchStart = match.index;
             const matchEnd = matchStart + match[0].length;
 
+            // Create forward relation
             relations.push({
               id: uuid(),
-              subj: subjEntity.id,
+              subj: entity1.id,
               pred: pattern.predicate as any,
-              obj: objEntity.id,
+              obj: entity2.id,
               evidence: [{
                 doc_id: docId,
                 span: { start: matchStart, end: matchEnd, text: match[0] },
@@ -620,23 +705,21 @@ export function extractNarrativeRelations(
               extractor: 'regex'
             });
 
-            // For symmetric relations, create inverse
-            if (pattern.symmetric) {
-              relations.push({
-                id: uuid(),
-                subj: objEntity.id,
-                pred: pattern.predicate as any,
-                obj: subjEntity.id,
-                evidence: [{
-                  doc_id: docId,
-                  span: { start: matchStart, end: matchEnd, text: match[0] },
-                  sentence_index: 0,
-                  source: 'RULE'
-                }],
-                confidence: 0.85,
-                extractor: 'regex'
-              });
-            }
+            // Create reverse relation (symmetric)
+            relations.push({
+              id: uuid(),
+              subj: entity2.id,
+              pred: pattern.predicate as any,
+              obj: entity1.id,
+              evidence: [{
+                doc_id: docId,
+                span: { start: matchStart, end: matchEnd, text: match[0] },
+                sentence_index: 0,
+                source: 'RULE'
+              }],
+              confidence: 0.85,
+              extractor: 'regex'
+            });
           }
         }
         continue; // Skip normal processing for coordination patterns
