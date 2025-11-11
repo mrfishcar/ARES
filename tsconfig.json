@@ -13,13 +13,12 @@
     "moduleResolution": "node",
     "types": ["node", "vitest/globals"]
   },
-  "include": ["app/**/*", "tests/**/*"],
+  "include": ["app/**/*"],
   "exclude": [
     "node_modules",
     "dist",
     ".venv",
     "app/ui/**",
-    "app/desktop-tester/**",
-    "tests/demo-phase5-ui.tsx"
+    "app/desktop-tester/**"
   ]
 }
