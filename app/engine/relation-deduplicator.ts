@@ -85,11 +85,11 @@ function chooseBestConfidence(relations: Relation[]): number {
 /**
  * Choose best extractor designation
  */
-function chooseBestExtractor(relations: Relation[]): string {
-  // Priority: dependency > regex > other
+function chooseBestExtractor(relations: Relation[]): 'dep' | 'regex' | 'fiction-dialogue' | 'fiction-action' | 'fiction-family' | undefined {
+  // Priority: dep > regex > other
   const extractors = relations.map(r => r.extractor);
 
-  if (extractors.includes('dependency')) return 'dependency';
+  if (extractors.includes('dep')) return 'dep';
   if (extractors.includes('regex')) return 'regex';
   return extractors[0];
 }
