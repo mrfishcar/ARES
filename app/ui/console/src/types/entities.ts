@@ -16,6 +16,16 @@ export interface EntitySpan {
   source: 'tag' | 'natural';
 }
 
+export interface HighlightConfig {
+  maxHighlights?: number;
+  minConfidence?: number;
+  enableNaturalDetection?: boolean;
+  project?: string;
+  enableAliasPass?: boolean;
+  enableLLM?: boolean;
+  llmMode?: 'hybrid' | 'llm-only' | 'algorithm-only';
+}
+
 /**
  * Get color for entity type (for highlighting)
  */
@@ -34,8 +44,14 @@ export function getEntityTypeColor(type: EntityType): string {
 /**
  * Simple tag-based entity extraction for frontend
  * Format: [[EntityType: Name]]
+ * Note: This is a simplified frontend-only version. For full NLP detection, use the backend parser.
  */
-export function highlightEntities(text: string): EntitySpan[] {
+export async function highlightEntities(
+  text: string,
+  _config: HighlightConfig = {}
+): Promise<EntitySpan[]> {
+  // Frontend-only implementation: only detect tagged entities
+  // Full NLP detection happens on backend
   const spans: EntitySpan[] = [];
   const tagRegex = /\[\[(\w+):\s*([^\]]+)\]\]/g;
 
@@ -61,4 +77,11 @@ export function highlightEntities(text: string): EntitySpan[] {
   }
 
   return spans;
+}
+
+/**
+ * Clear highlight cache (no-op in frontend-only version)
+ */
+export function clearHighlightCache(): void {
+  // No cache in frontend-only version
 }
