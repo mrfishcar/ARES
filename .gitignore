@@ -24,6 +24,7 @@ data/graph/*
 # Testing
 coverage/
 .vitest-cache/
+test-ladder-*.json
 
 # Temp
 ops/LOCK

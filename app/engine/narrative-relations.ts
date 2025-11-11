@@ -60,7 +60,10 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+and\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:married|wed)\b/g,
     predicate: 'married_to',
     symmetric: true,
-    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] },
+    extractSubj: null,
+    extractObj: null,  // Both are subjects
+    coordination: true
   },
   // "The couple married eight years earlier" - requires coreference for "couple"
   // Note: Use negative lookbehind to exclude possessive "couple's"
@@ -75,6 +78,16 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
   },
 
   // === FRIENDSHIP PATTERNS ===
+  // COORDINATION: "Harry and Ron were friends"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+and\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:were|are|became|remained)\s+(?:best\s+)?friends?\b/g,
+    predicate: 'friends_with',
+    symmetric: true,
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] },
+    extractSubj: null,
+    extractObj: null,  // Both are subjects - special handling needed
+    coordination: true
+  },
   // "Aria remained friends with Elias", "Jun also struck a friendship with Elias"
   {
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:also\s+)?(?:remained|stayed|became|was|were|struck)\s+(?:a\s+)?(?:best\s+)?(?:friendship|friends?)\s+with\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
@@ -130,6 +143,14 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     extractObj: 1,   // Child
     typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
   },
+  // Pattern: "X is the son/daughter of Y" or "Mira, daughter of Aria" or "Cael, son of Elias"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+is\s+(?:the\s+)?(?:son|daughter|child)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'parent_of',
+    extractSubj: 2,  // Parent is object of "of"
+    extractObj: 1,   // Child is subject (the person after "is")
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
   // Pattern: "Mira, daughter of Aria" or "Cael, son of Elias"
   {
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*,?\s+(?:the\s+)?(?:daughter|son|child)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
@@ -149,7 +170,16 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
   },
 
   // === EDUCATION PATTERNS ===
-  // "Aria studied at Meridian Academy", "Mira studying at..."
+  // COORDINATION: "Harry and Ron studied at Hogwarts"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+and\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:(?:continued\s+(?:to\s+)?)|still\s+|kept\s+)?(?:studied|studying|studies|study|enrolled|attended|attends|attend)\s+(?:at|in)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'studies_at',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG', 'PLACE'] },
+    extractSubj: null,  // Special handling - will extract both subjects
+    extractObj: 3,
+    coordination: true  // Mark this as a coordination pattern
+  },
+  // SINGLE SUBJECT: "Aria studied at Meridian Academy"
   {
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:(?:continued\s+(?:to\s+)?)|still\s+|kept\s+)?(?:studied|studying|studies|enrolled|attended|attends)\s+(?:at|in)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
     predicate: 'studies_at',
@@ -163,6 +193,15 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
   },
 
   // === LOCATION PATTERNS ===
+  // COORDINATION: "Harry and Dudley lived in Privet Drive"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+and\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:lived|dwelt|dwelled|resided|reside|live)\s+(?:in|at)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'lives_in',
+    typeGuard: { subj: ['PERSON'], obj: ['PLACE'] },
+    extractSubj: null,
+    extractObj: 3,
+    coordination: true
+  },
   // "Aria lived in Meridian Ridge", "The family dwelt in ..."
   {
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:lived|dwelt|dwelled|resides|resided)\s+in\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
@@ -176,7 +215,16 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
   },
 
   // === TRAVEL PATTERNS ===
-  // "Aria traveled to Meridian Ridge"
+  // COORDINATION: "Frodo and Sam traveled to Mordor"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+and\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:traveled|travelled|journeyed|went)\s+to\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'traveled_to',
+    typeGuard: { subj: ['PERSON'], obj: ['PLACE'] },
+    extractSubj: null,  // Special handling - will extract both subjects
+    extractObj: 3,
+    coordination: true
+  },
+  // SINGLE SUBJECT: "Aria traveled to Meridian Ridge"
   {
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:traveled|travelled|journeyed|went)\s+to\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
     predicate: 'traveled_to',
@@ -203,6 +251,140 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+became\s+(?:king|queen|ruler|leader)\s+(?:of\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
     predicate: 'rules',
     typeGuard: { subj: ['PERSON'], obj: ['PLACE', 'ORG'] }
+  },
+
+  // === LOCATION PATTERNS - EXPANDED ===
+  // "X is located in Y", "X is based in Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is\s+)?(?:located|situated|based|founded|established)\s+in\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'located_in',
+    typeGuard: { subj: ['PLACE', 'ORG'], obj: ['PLACE'] }
+  },
+  // "X near Y", "X is near Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is\s+)?near\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'near',
+    typeGuard: { subj: ['PLACE', 'PERSON'], obj: ['PLACE'] }
+  },
+  // "X borders Y", "X borders on Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+borders?\s+(?:on\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'borders',
+    typeGuard: { subj: ['PLACE'], obj: ['PLACE'] }
+  },
+  // "X within Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+within\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'within',
+    typeGuard: { subj: ['PLACE'], obj: ['PLACE'] }
+  },
+
+  // === PART_WHOLE PATTERNS ===
+  // "X is part of Y", "X is a part of Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is\s+)?(?:a\s+)?part\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'part_of',
+    typeGuard: {}
+  },
+  // "X consists of Y", "X consist of Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+consists?\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'consists_of',
+    typeGuard: {}
+  },
+  // "X includes Y", "X include Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:includes?|contain|contains)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'includes',
+    typeGuard: {}
+  },
+  // "X is made of Y", "X is composed of Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is\s+)?(?:made|composed)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'made_of',
+    typeGuard: {}
+  },
+
+  // === EMPLOYMENT PATTERNS ===
+  // COORDINATION: "Alice and Bob worked at NASA"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+and\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:worked|works|work)\s+(?:at|for)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'works_for',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG'] },
+    extractSubj: null,
+    extractObj: 3,
+    coordination: true
+  },
+  // "X works for Y", "X work for Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:works?|worked)\s+(?:as\s+)?(?:for|with|at)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'works_for',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG', 'PERSON'] }
+  },
+  // "X employed by Y", "X was employed by Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:was\s+)?employed\s+by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'employed_by',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG'] }
+  },
+  // COORDINATION: "Harry and Ron were members of Gryffindor"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+and\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:were|are|was)\s+(?:members?|part)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'member_of',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG', 'HOUSE'] },
+    extractSubj: null,
+    extractObj: 3,
+    coordination: true
+  },
+  // "X is a member of Y", "X member of Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is\s+)?(?:a\s+)?member\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'member_of',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG'] }
+  },
+  // "X is CEO/president/director of Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is|was)\s+(?:the\s+)?(?:CEO|president|director|founder|manager|leader)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'leads',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG'] }
+  },
+  // "X founded Y", "X founded the Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+founded\s+(?:the\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'founded',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG'] }
+  },
+
+  // === CREATION PATTERNS ===
+  // "X wrote Y", "X wrote the Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:wrote|authored|written|penned)\s+(?:the\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'wrote',
+    typeGuard: { subj: ['PERSON'], obj: ['WORK', 'ORG'] }
+  },
+  // "X created Y", "X created the Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:created|made|produced|composed|designed|invented)\s+(?:the\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'created',
+    typeGuard: { subj: ['PERSON'], obj: ['WORK', 'ITEM'] }
+  },
+  // "X directed Y", "X directed the Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:directed|filmed|shot)\s+(?:the\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'directed',
+    typeGuard: { subj: ['PERSON'], obj: ['WORK', 'EVENT'] }
+  },
+  // "X is the author of Y", "X author of Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is\s+)?(?:the\s+)?author\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'authored',
+    typeGuard: { subj: ['PERSON'], obj: ['WORK'] }
+  },
+  // "X painted Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+painted\s+(?:the\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'painted',
+    typeGuard: { subj: ['PERSON'], obj: ['WORK', 'ITEM'] }
   }
 ];
 
@@ -447,6 +629,102 @@ export function extractNarrativeRelations(
 
     let match: RegExpExecArray | null;
     while ((match = pattern.regex.exec(text)) !== null) {
+      // Handle coordination patterns specially (e.g., "Harry and Ron studied at Hogwarts")
+      if ((pattern as any).coordination && match[1] && match[2]) {
+        const firstSubj = match[1];
+        const secondSubj = match[2];
+        const obj = match[3];  // May be undefined for symmetric relations
+
+        // Case 1: Subject-Object coordination (e.g., "Harry and Ron studied at Hogwarts")
+        if (obj) {
+          for (const subjSurface of [firstSubj, secondSubj]) {
+            const subjEntity = matchEntity(subjSurface, entities);
+            const objEntity = matchEntity(obj, entities);
+
+            if (subjEntity && objEntity && passesTypeGuard(pattern, subjEntity, objEntity)) {
+              const matchStart = match.index;
+              const matchEnd = matchStart + match[0].length;
+
+              relations.push({
+                id: uuid(),
+                subj: subjEntity.id,
+                pred: pattern.predicate as any,
+                obj: objEntity.id,
+                evidence: [{
+                  doc_id: docId,
+                  span: { start: matchStart, end: matchEnd, text: match[0] },
+                  sentence_index: 0,
+                  source: 'RULE'
+                }],
+                confidence: 0.85,
+                extractor: 'regex'
+              });
+
+              // For symmetric relations, create inverse
+              if (pattern.symmetric) {
+                relations.push({
+                  id: uuid(),
+                  subj: objEntity.id,
+                  pred: pattern.predicate as any,
+                  obj: subjEntity.id,
+                  evidence: [{
+                    doc_id: docId,
+                    span: { start: matchStart, end: matchEnd, text: match[0] },
+                    sentence_index: 0,
+                    source: 'RULE'
+                  }],
+                  confidence: 0.85,
+                  extractor: 'regex'
+                });
+              }
+            }
+          }
+        }
+        // Case 2: Symmetric coordination (e.g., "Harry and Ron were friends")
+        else if (pattern.symmetric) {
+          const entity1 = matchEntity(firstSubj, entities);
+          const entity2 = matchEntity(secondSubj, entities);
+
+          if (entity1 && entity2 && passesTypeGuard(pattern, entity1, entity2)) {
+            const matchStart = match.index;
+            const matchEnd = matchStart + match[0].length;
+
+            // Create forward relation
+            relations.push({
+              id: uuid(),
+              subj: entity1.id,
+              pred: pattern.predicate as any,
+              obj: entity2.id,
+              evidence: [{
+                doc_id: docId,
+                span: { start: matchStart, end: matchEnd, text: match[0] },
+                sentence_index: 0,
+                source: 'RULE'
+              }],
+              confidence: 0.85,
+              extractor: 'regex'
+            });
+
+            // Create reverse relation (symmetric)
+            relations.push({
+              id: uuid(),
+              subj: entity2.id,
+              pred: pattern.predicate as any,
+              obj: entity1.id,
+              evidence: [{
+                doc_id: docId,
+                span: { start: matchStart, end: matchEnd, text: match[0] },
+                sentence_index: 0,
+                source: 'RULE'
+              }],
+              confidence: 0.85,
+              extractor: 'regex'
+            });
+          }
+        }
+        continue; // Skip normal processing for coordination patterns
+      }
+
       const subjGroup = pattern.extractSubj ?? 1;
       const objGroup = pattern.extractObj ?? 2;
 
@@ -638,7 +916,36 @@ export function extractNarrativeRelations(
     }
   }
 
-  return relations;
+  // ============================================================
+  // OPTION C: IMPROVE PATTERN SPECIFICITY WITH CONTEXT AWARENESS
+  // ============================================================
+  // When married_to(A, B) exists, remove conflicting parent_of/child_of
+  // relations because married_to has higher confidence in romantic contexts
+  const marriedPairs = new Set<string>();
+  for (const rel of relations) {
+    if (rel.pred === 'married_to') {
+      // Create normalized pair key (order-independent since married_to is symmetric)
+      const key1 = `${rel.subj}:${rel.obj}`;
+      const key2 = `${rel.obj}:${rel.subj}`;
+      marriedPairs.add(key1);
+      marriedPairs.add(key2);
+    }
+  }
+
+  // Filter out parent_of/child_of relations that conflict with married_to
+  const filteredRelations = relations.filter(rel => {
+    if (rel.pred === 'parent_of' || rel.pred === 'child_of') {
+      const pairKey = `${rel.subj}:${rel.obj}`;
+      if (marriedPairs.has(pairKey)) {
+        // This person pair is married - don't emit parent_of/child_of
+        console.log(`[CONTEXT-FILTER] Removing ${rel.pred}(${rel.subj}, ${rel.obj}) because married_to exists for this pair`);
+        return false;
+      }
+    }
+    return true;
+  });
+
+  return filteredRelations;
 }
 
 /**
@@ -811,11 +1118,32 @@ export function extractPossessiveFamilyRelations(
 
   // Pattern 2: "their daughter/son" or "his wife" → resolve pronoun, then create family relations
   // Allow optional adjectives like "late", "younger", "older", etc.
+  // NOTE: This pattern is conservative to avoid false positives (e.g., "He loved her" → parent_of)
   const theirPattern = /\b(their|his|her)\s+(?:[a-z]+\s+)*(daughter|son|child|parent|father|mother|wife|husband|spouse|brother|sister)\b/gi;
 
   while ((match = theirPattern.exec(text)) !== null) {
     const pronoun = match[1].toLowerCase();
     const roleWord = match[2].toLowerCase();
+
+    // CONTEXT AWARENESS: Skip this pattern if it's in a clearly romantic context
+    // Check the surrounding context for marriage/love verbs that would indicate
+    // the pronouns refer to spouses, not children
+    const contextBefore = text.substring(Math.max(0, match.index - 200), match.index);
+    const contextAfter = text.substring(match.index + match[0].length, Math.min(text.length, match.index + match[0].length + 100));
+    const surroundingContext = contextBefore + match[0] + contextAfter;
+
+    // If we see marriage/love language AND we're trying to extract parent_of/child_of from pronouns,
+    // be much more conservative (skip it)
+    if (['daughter', 'son', 'child'].includes(roleWord) &&
+        pronoun === 'her' || pronoun === 'his') {
+      const hasRomanticContext = /\b(married|spouse|wife|husband|beloved|loved|lover|romance|romantic|passion)\b/i.test(surroundingContext);
+      const hasPronounPair = pronoun === 'her' && /\b(he|him|his)\b/i.test(contextBefore);
+
+      if (hasRomanticContext || hasPronounPair) {
+        // Skip this match - likely a romantic relationship, not parent-child
+        continue;
+      }
+    }
 
     // Resolve pronoun using coreference links
     let possessorEntities = resolvePossessivePronoun(pronoun, match.index, corefLinks, entities) ?? [];
@@ -883,6 +1211,23 @@ export function extractPossessiveFamilyRelations(
 
     for (const possessorEntity of possessorEntities) {
       if (targetEntity.id === possessorEntity.id) continue;
+
+      // CONTEXT CHECK: For parent_of/child_of, check if surrounding text suggests a marriage
+      // This prevents false positives from "He loved her" being interpreted as parent_of
+      if ((predicate === 'parent_of' || predicate === 'child_of') && (roleWord === 'daughter' || roleWord === 'son' || roleWord === 'child')) {
+        const contextStart = Math.max(0, match.index - 300);
+        const contextEnd = Math.min(text.length, match.index + match[0].length + 200);
+        const fullContext = text.substring(contextStart, contextEnd);
+
+        // Check for marriage indicators
+        const hasMarriageContext = /\b(married|marri|spouse|wife|husband|lover|beloved|romantic|romance|wedding)\b/i.test(fullContext);
+
+        // If marriage context exists and both entities are mentioned in it, skip parent_of/child_of
+        if (hasMarriageContext) {
+          console.log(`[NARRATIVE] Skipping ${predicate}(${possessorEntity.id}, ${targetEntity.id}) - marriage context detected`);
+          continue;
+        }
+      }
 
       const evidenceSpan = {
         start: match.index,

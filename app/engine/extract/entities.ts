@@ -1244,6 +1244,40 @@ function extractFamilySpans(text: string): Array<{ text: string; type: EntityTyp
 }
 
 /**
+ * Extract whitelisted entity names from text
+ * Ensures that known entities (e.g., "Denethor", "Gimli") are always extracted,
+ * even if spaCy NER doesn't recognize them
+ */
+function extractWhitelistedNames(text: string): Array<{ text: string; type: EntityType; start: number; end: number }> {
+  const spans: { text: string; type: EntityType; start: number; end: number }[] = [];
+  const found = new Set<string>(); // Track by (start, end) to avoid duplicates
+
+  // For each whitelisted entity, find all occurrences in the text
+  for (const [whitelistName, entityType] of FANTASY_WHITELIST.entries()) {
+    // Create a regex that matches word boundaries around the whitelisted name
+    // Case-insensitive match but keep original casing from text
+    const escapedName = whitelistName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`\\b${escapedName}\\b`, 'gi');
+    let match: RegExpExecArray | null;
+
+    while ((match = regex.exec(text))) {
+      const key = `${match.index}:${match.index + match[0].length}`;
+      if (!found.has(key)) {
+        found.add(key);
+        spans.push({
+          text: match[0],  // Keep original casing from text
+          type: entityType,
+          start: match.index,
+          end: match.index + match[0].length
+        });
+      }
+    }
+  }
+
+  return spans;
+}
+
+/**
  * Deduplicate entity spans
  * Priority: Keep the first occurrence per canonical form (dep > ner > fb)
  * Also removes spans that are subsumed by longer spans (e.g., "Battle" inside "Battle of Pelennor Fields")
@@ -1301,10 +1335,11 @@ export async function extractEntities(text: string): Promise<{
   const fb = fallbackNames(text);
 
   // 6) Merge all sources, deduplicate
-  // Priority: dependency-based > NER > fallback
-  // Dependency patterns are most reliable, then spaCy NER, then regex fallback
+  // Priority: dependency-based > NER > fallback > whitelist
+  // Dependency patterns are most reliable, then spaCy NER, then regex fallback, then whitelisted names
   const years = extractYearSpans(text);
   const families = extractFamilySpans(text);
+  const whitelisted = extractWhitelistedNames(text);
 
   // Tag spans with extraction source
   type TaggedSpan = { text: string; type: EntityType; start: number; end: number; source: ExtractorSource };
@@ -1329,7 +1364,8 @@ export async function extractEntities(text: string): Promise<{
       return { ...s, source: (isWhitelisted ? 'WHITELIST' : 'FALLBACK') as ExtractorSource };
     }),
     ...years.map(s => ({ ...s, source: 'NER' as ExtractorSource })),  // Treat dates as NER-quality
-    ...families.map(s => ({ ...s, source: 'DEP' as ExtractorSource })) // Treat family patterns as DEP-quality
+    ...families.map(s => ({ ...s, source: 'DEP' as ExtractorSource })), // Treat family patterns as DEP-quality
+    ...whitelisted.map(s => ({ ...s, source: 'WHITELIST' as ExtractorSource })) // Whitelisted names
   ];
   const rawSpans = taggedSpans;
 

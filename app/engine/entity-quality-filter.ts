@@ -140,7 +140,8 @@ export function filterLowQualityEntities(
     const lowerName = name.toLowerCase();
 
     // 1. Confidence check
-    if (entity.confidence && entity.confidence < config.minConfidence) {
+    const confidence = (entity.attrs?.confidence as number) || 1.0;
+    if (confidence < config.minConfidence) {
       return false;
     }
 
@@ -258,7 +259,8 @@ export function getFilterStats(
     const name = entity.canonical;
     const lowerName = name.toLowerCase();
 
-    if (entity.confidence && entity.confidence < config.minConfidence) {
+    const confidence = (entity.attrs?.confidence as number) || 1.0;
+    if (confidence < config.minConfidence) {
       stats.removedByReason.lowConfidence++;
     } else if (name.length < config.minNameLength) {
       stats.removedByReason.tooShort++;
