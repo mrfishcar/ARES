@@ -5,46 +5,85 @@
       "type": "ORG",
       "canonical": "Hogwarts School",
       "aliases": [],
-      "created_at": "2025-11-10T04:34:42.684Z",
+      "created_at": "2025-11-11T00:09:01.495Z",
       "centrality": 0
     },
     {
       "id": "global_org_1",
       "type": "ORG",
-      "canonical": "Gryffindor",
+      "canonical": "Slytherin",
       "aliases": [],
-      "created_at": "2025-11-10T04:34:42.684Z",
+      "created_at": "2025-11-11T00:09:01.495Z",
       "centrality": 0
     },
     {
       "id": "global_org_2",
       "type": "ORG",
-      "canonical": "Slytherin",
+      "canonical": "Hufflepuff",
       "aliases": [],
-      "created_at": "2025-11-10T04:34:42.684Z",
+      "created_at": "2025-11-11T00:09:01.495Z",
       "centrality": 0
     },
     {
       "id": "global_org_3",
       "type": "ORG",
-      "canonical": "Hufflepuff",
+      "canonical": "Gryffindor",
       "aliases": [],
-      "created_at": "2025-11-10T04:34:42.684Z",
+      "created_at": "2025-11-11T00:09:01.495Z",
       "centrality": 0
     },
     {
-      "id": "global_item_4",
+      "id": "global_place_4",
+      "type": "PLACE",
+      "canonical": "Scotland",
+      "aliases": [],
+      "created_at": "2025-11-11T00:09:01.495Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_item_5",
       "type": "ITEM",
       "canonical": "Hogwarts Express",
       "aliases": [],
-      "created_at": "2025-11-10T04:34:42.684Z",
+      "created_at": "2025-11-11T00:09:01.495Z",
       "centrality": 0
     }
   ],
   "relations": [
     {
-      "id": "9efd23ad-1fa3-411f-af1d-408011ec587a",
-      "subj": "global_org_1",
+      "id": "3c7ffc9f-4a00-42f6-8f31-b9715c483437",
+      "subj": "global_org_0",
+      "pred": "located_in",
+      "obj": "global_place_4",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 0,
+            "end": 39,
+            "text": "Hogwarts School was located in Scotland. Students traveled there via the Hogwar"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.9,
+      "extractor": "dep",
+      "qualifiers": [
+        {
+          "type": "place",
+          "value": "Scotland",
+          "entity_id": "a91ba6ff-e0f8-426a-a307-1f9b9515c7e9",
+          "span": [
+            31,
+            39
+          ]
+        }
+      ]
+    },
+    {
+      "id": "04258580-7031-4ddf-9a0f-ac551e8fa92f",
+      "subj": "global_org_3",
       "pred": "part_of",
       "obj": "global_org_0",
       "evidence": [
@@ -68,37 +107,43 @@
     "3.10_entity_0": {
       "global_id": "global_org_0",
       "doc_id": "3.10",
-      "merged_at": "2025-11-10T04:34:42.684Z",
+      "merged_at": "2025-11-11T00:09:01.495Z",
       "local_canonical": "Hogwarts School"
     },
-    "3.10_entity_2": {
-      "global_id": "global_item_4",
+    "3.10_entity_1": {
+      "global_id": "global_place_4",
       "doc_id": "3.10",
-      "merged_at": "2025-11-10T04:34:42.684Z",
+      "merged_at": "2025-11-11T00:09:01.495Z",
+      "local_canonical": "Scotland"
+    },
+    "3.10_entity_2": {
+      "global_id": "global_item_5",
+      "doc_id": "3.10",
+      "merged_at": "2025-11-11T00:09:01.495Z",
       "local_canonical": "Hogwarts Express"
     },
     "3.10_entity_3": {
       "global_id": "global_org_1",
       "doc_id": "3.10",
-      "merged_at": "2025-11-10T04:34:42.684Z",
-      "local_canonical": "Gryffindor"
+      "merged_at": "2025-11-11T00:09:01.495Z",
+      "local_canonical": "Slytherin"
     },
     "3.10_entity_4": {
       "global_id": "global_org_2",
       "doc_id": "3.10",
-      "merged_at": "2025-11-10T04:34:42.684Z",
-      "local_canonical": "Slytherin"
+      "merged_at": "2025-11-11T00:09:01.495Z",
+      "local_canonical": "Hufflepuff"
     },
     "3.10_entity_5": {
       "global_id": "global_org_3",
       "doc_id": "3.10",
-      "merged_at": "2025-11-10T04:34:42.684Z",
-      "local_canonical": "Hufflepuff"
+      "merged_at": "2025-11-11T00:09:01.495Z",
+      "local_canonical": "Gryffindor"
     }
   },
   "profiles": {
-    "c6f1ef70-158e-4784-8ae2-85b90060e207": {
-      "entity_id": "c6f1ef70-158e-4784-8ae2-85b90060e207",
+    "de7f441a-09f6-4620-b709-03e706ba6053": {
+      "entity_id": "de7f441a-09f6-4620-b709-03e706ba6053",
       "entity_type": "ORG",
       "canonical": "Hogwarts School",
       "descriptors": [],
@@ -115,30 +160,26 @@
       "last_seen": "3.10",
       "confidence_score": 0.55
     },
-    "9171b99e-4f44-4333-8bef-6afd04880a83": {
-      "entity_id": "9171b99e-4f44-4333-8bef-6afd04880a83",
-      "entity_type": "PERSON",
-      "canonical": "there via",
+    "a91ba6ff-e0f8-426a-a307-1f9b9515c7e9": {
+      "entity_id": "a91ba6ff-e0f8-426a-a307-1f9b9515c7e9",
+      "entity_type": "PLACE",
+      "canonical": "Scotland",
       "descriptors": [],
       "titles": [
-        "there via",
-        "there via the Hogwarts",
-        "There Via"
+        "Scotland"
       ],
-      "roles": [
-        "student"
-      ],
+      "roles": [],
       "attributes": {},
       "contexts": [
-        "Students traveled there via the Hogwarts Express from Platform 9¾."
+        "Hogwarts School was located in Scotland."
       ],
       "mention_count": 1,
       "first_seen": "3.10",
       "last_seen": "3.10",
       "confidence_score": 0.55
     },
-    "c406bac3-aced-4a25-ad0b-77403bcc06df": {
-      "entity_id": "c406bac3-aced-4a25-ad0b-77403bcc06df",
+    "a10b6005-5f32-408d-a127-61914ae88a29": {
+      "entity_id": "a10b6005-5f32-408d-a127-61914ae88a29",
       "entity_type": "ITEM",
       "canonical": "Hogwarts Express",
       "descriptors": [],
@@ -157,26 +198,8 @@
       "last_seen": "3.10",
       "confidence_score": 0.55
     },
-    "e9fc029e-2071-4cb6-b718-b9e934a1a0da": {
-      "entity_id": "e9fc029e-2071-4cb6-b718-b9e934a1a0da",
-      "entity_type": "ORG",
-      "canonical": "Gryffindor",
-      "descriptors": [],
-      "titles": [
-        "Gryffindor"
-      ],
-      "roles": [],
-      "attributes": {},
-      "contexts": [
-        "The castle had four houses: Gryffindor, Slytherin, Hufflepuff, and Ravenclaw."
-      ],
-      "mention_count": 1,
-      "first_seen": "3.10",
-      "last_seen": "3.10",
-      "confidence_score": 0.55
-    },
-    "c91b27f5-68b9-4329-b04b-58addd2c09e3": {
-      "entity_id": "c91b27f5-68b9-4329-b04b-58addd2c09e3",
+    "a8074cf0-a8f6-4671-b8ed-95ebd36126ae": {
+      "entity_id": "a8074cf0-a8f6-4671-b8ed-95ebd36126ae",
       "entity_type": "ORG",
       "canonical": "Slytherin",
       "descriptors": [],
@@ -193,8 +216,8 @@
       "last_seen": "3.10",
       "confidence_score": 0.55
     },
-    "ae89d4ab-45dc-4421-8011-817799de401f": {
-      "entity_id": "ae89d4ab-45dc-4421-8011-817799de401f",
+    "7e2e83cc-677e-420d-b6f7-4abc86751c7c": {
+      "entity_id": "7e2e83cc-677e-420d-b6f7-4abc86751c7c",
       "entity_type": "ORG",
       "canonical": "Hufflepuff",
       "descriptors": [],
@@ -210,11 +233,29 @@
       "first_seen": "3.10",
       "last_seen": "3.10",
       "confidence_score": 0.55
+    },
+    "3c23d685-c52d-4779-afb0-e8290fbf7256": {
+      "entity_id": "3c23d685-c52d-4779-afb0-e8290fbf7256",
+      "entity_type": "ORG",
+      "canonical": "Gryffindor",
+      "descriptors": [],
+      "titles": [
+        "Gryffindor"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "The castle had four houses: Gryffindor, Slytherin, Hufflepuff, and Ravenclaw."
+      ],
+      "mention_count": 1,
+      "first_seen": "3.10",
+      "last_seen": "3.10",
+      "confidence_score": 0.55
     }
   },
   "metadata": {
-    "created_at": "2025-11-10T04:34:42.665Z",
-    "updated_at": "2025-11-10T04:34:42.684Z",
+    "created_at": "2025-11-11T00:09:01.418Z",
+    "updated_at": "2025-11-11T00:09:01.495Z",
     "doc_count": 1,
     "doc_ids": [
       "3.10"

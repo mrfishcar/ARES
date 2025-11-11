@@ -251,6 +251,32 @@ const PATH_PATTERNS: PathPattern[] = [
   // "Y hired X"
   { signature: /^(\w+):↑(dobj|obj):(hire|recruit):↑nsubj:(\w+)$/, predicate: 'member_of', subjectFirst: false },
 
+  // === NEW EMPLOYMENT PATTERNS (Phase 1 Integration) ===
+
+  // "X serves Y" - service relation
+  { signature: /^(\w+):↑nsubj:serve:↓(dobj|obj):(\w+)$/, predicate: 'member_of', subjectFirst: true },
+
+  // "X, employee at Y" - appositive construction
+  { signature: /^(\w+):↑appos:employee:↓prep:(at|for|of):↓pobj:(\w+)$/, predicate: 'member_of', subjectFirst: true },
+
+  // "X, member of Y" - appositive member construction
+  { signature: /^(\w+):↑appos:member:↓prep:(of|at):↓pobj:(\w+)$/, predicate: 'member_of', subjectFirst: true },
+
+  // "X is employee of Y" - copula construction
+  { signature: /^(\w+):↑nsubj:be:↓attr:employee:↓prep:(of|at|for):↓pobj:(\w+)$/, predicate: 'member_of', subjectFirst: true },
+
+  // "employee of X" - nominal phrase
+  { signature: /^employee:↓prep:(of|at|for):↓pobj:(\w+)$/, predicate: 'member_of', subjectFirst: false },
+
+  // "X was employed by Y" - passive voice
+  { signature: /^(\w+):↑nsubjpass:employ:↓agent:by:↓pobj:(\w+)$/, predicate: 'member_of', subjectFirst: true },
+
+  // "staff member at X" - staff construction
+  { signature: /^(staff|member):↓prep:at:↓pobj:(\w+)$/, predicate: 'member_of', subjectFirst: false },
+
+  // "X, staff at Y" - appositive with staff
+  { signature: /^(\w+):↑appos:staff:↓prep:at:↓pobj:(\w+)$/, predicate: 'member_of', subjectFirst: true },
+
   // === OWNERSHIP ===
 
   // "X owns Y"
@@ -264,6 +290,38 @@ const PATH_PATTERNS: PathPattern[] = [
 
   // "X's company/organization Y"
   { signature: /^(\w+):↓poss:(company|organization|firm|business|startup):↑compound:(\w+)$/, predicate: 'owns', subjectFirst: true },
+
+  // === NEW OWNERSHIP PATTERNS (Phase 2 Integration) ===
+
+  // "X, owner of Y" - appositive construction
+  { signature: /^(\w+):↑appos:owner:↓prep:of:↓pobj:(\w+)$/, predicate: 'owns', subjectFirst: true },
+
+  // "X's property Y" - possessive construction
+  { signature: /^(\w+):↓poss:property:↑compound:(\w+)$/, predicate: 'owns', subjectFirst: true },
+
+  // "property of X" - nominal phrase
+  { signature: /^property:↓prep:of:↓pobj:(\w+)$/, predicate: 'owns', subjectFirst: false },
+
+  // "X is owner of Y" - copula construction
+  { signature: /^(\w+):↑nsubj:be:↓attr:owner:↓prep:of:↓pobj:(\w+)$/, predicate: 'owns', subjectFirst: true },
+
+  // "Y is property of X" - copula with property
+  { signature: /^(\w+):↑nsubj:be:↓attr:property:↓prep:of:↓pobj:(\w+)$/, predicate: 'owns', subjectFirst: false },
+
+  // "X possesses Y" - explicit possession verb
+  { signature: /^(\w+):↑nsubj:possess:↓(dobj|obj):(\w+)$/, predicate: 'owns', subjectFirst: true },
+
+  // "Y belongs to X" - belongs_to relation
+  { signature: /^(\w+):↑nsubj:belong:↓prep:to:↓pobj:(\w+)$/, predicate: 'owns', subjectFirst: false },
+
+  // "X, possessor of Y" - appositive with possessor
+  { signature: /^(\w+):↑appos:possessor:↓prep:of:↓pobj:(\w+)$/, predicate: 'owns', subjectFirst: true },
+
+  // "possession of X" - nominal phrase
+  { signature: /^possession:↓prep:of:↓pobj:(\w+)$/, predicate: 'owns', subjectFirst: false },
+
+  // "Y was acquired by X" - passive acquisition
+  { signature: /^(\w+):↑nsubjpass:acquire:↓agent:by:↓pobj:(\w+)$/, predicate: 'owns', subjectFirst: false },
 
   // === SOCIAL RELATIONSHIPS ===
 
@@ -362,6 +420,38 @@ const PATH_PATTERNS: PathPattern[] = [
 
   // "X in Y" (location)
   { signature: /^(\w+):↓prep:in:↓pobj:(\w+)$/, predicate: 'lives_in', subjectFirst: true }, // General location
+
+  // === NEW LOCATION PATTERNS (Phase 1 Integration) ===
+
+  // "X is located in Y" - explicit location verb
+  { signature: /^(\w+):↑nsubj:locate:↓prep:in:↓pobj:(\w+)$/, predicate: 'lives_in', subjectFirst: true },
+
+  // "X is situated in Y" - alternative location verb
+  { signature: /^(\w+):↑nsubj:situate:↓prep:in:↓pobj:(\w+)$/, predicate: 'lives_in', subjectFirst: true },
+
+  // "X, located in Y" - participial phrase
+  { signature: /^(\w+):↓relcl:locate:↓prep:in:↓pobj:(\w+)$/, predicate: 'lives_in', subjectFirst: true },
+
+  // "X, situated in Y" - participial phrase alternative
+  { signature: /^(\w+):↓relcl:situate:↓prep:in:↓pobj:(\w+)$/, predicate: 'lives_in', subjectFirst: true },
+
+  // "X is based in Y" - base location
+  { signature: /^(\w+):↑nsubj:base:↓prep:in:↓pobj:(\w+)$/, predicate: 'lives_in', subjectFirst: true },
+
+  // "X resides in Y" - residence verb
+  { signature: /^(\w+):↑nsubj:reside:↓prep:in:↓pobj:(\w+)$/, predicate: 'lives_in', subjectFirst: true },
+
+  // "location in X" - nominal phrase
+  { signature: /^location:↓prep:in:↓pobj:(\w+)$/, predicate: 'lives_in', subjectFirst: false },
+
+  // "X, location in Y" - appositive construction
+  { signature: /^(\w+):↑appos:location:↓prep:in:↓pobj:(\w+)$/, predicate: 'lives_in', subjectFirst: true },
+
+  // "place in X" - nominal phrase with place
+  { signature: /^place:↓prep:in:↓pobj:(\w+)$/, predicate: 'lives_in', subjectFirst: false },
+
+  // "X is place in Y" - copula construction
+  { signature: /^(\w+):↑nsubj:be:↓attr:place:↓prep:in:↓pobj:(\w+)$/, predicate: 'lives_in', subjectFirst: true },
 
   // === APPOSITIVE CONSTRUCTIONS ===
   // "X, CEO/founder/director of Y" - appositive phrases indicating leadership
@@ -699,6 +789,29 @@ const PATH_PATTERNS: PathPattern[] = [
   // "X reported Y to Z"
   { signature: /^(\w+):↑nsubj:(report|convey):↓(dobj|obj):(\w+):↓prep:to:↓pobj:(\w+)$/, predicate: 'wrote_to', subjectFirst: true },
 
+  // === NEW COMMUNICATION PATTERNS (Phase 2 Integration) ===
+
+  // "X contacted Y" - direct communication
+  { signature: /^(\w+):↑nsubj:contact:↓(dobj|obj):(\w+)$/, predicate: 'wrote_to', subjectFirst: true },
+
+  // "X addressed Y" - formal communication
+  { signature: /^(\w+):↑nsubj:address:↓(dobj|obj):(\w+)$/, predicate: 'wrote_to', subjectFirst: true },
+
+  // "X messaged Y" - messaging verb
+  { signature: /^(\w+):↑nsubj:message:↓(dobj|obj):(\w+)$/, predicate: 'wrote_to', subjectFirst: true },
+
+  // "X called Y" - phone/verbal communication
+  { signature: /^(\w+):↑nsubj:call:↓(dobj|obj):(\w+)$/, predicate: 'wrote_to', subjectFirst: true },
+
+  // "X discussed with Y" - discussion relation
+  { signature: /^(\w+):↑nsubj:discuss:↓prep:with:↓pobj:(\w+)$/, predicate: 'wrote_to', subjectFirst: true },
+
+  // "X conversed with Y" - conversation verb
+  { signature: /^(\w+):↑nsubj:converse:↓prep:with:↓pobj:(\w+)$/, predicate: 'wrote_to', subjectFirst: true },
+
+  // "X communicated with Y" - general communication
+  { signature: /^(\w+):↑nsubj:communicate:↓prep:with:↓pobj:(\w+)$/, predicate: 'wrote_to', subjectFirst: true },
+
   // === EVENT PARTICIPATION ===
 
   // "X attended/participated in Y"
@@ -784,6 +897,38 @@ const PATH_PATTERNS: PathPattern[] = [
 
   // "Y includes X"
   { signature: /^(\w+):↑nsubj:include:↓(dobj|obj):(\w+)$/, predicate: 'part_of', subjectFirst: false },
+
+  // === NEW PART-WHOLE PATTERNS (Phase 1 Integration) ===
+
+  // "Y comprises X" - whole comprises part
+  { signature: /^(\w+):↑nsubj:comprise:↓(dobj|obj):(\w+)$/, predicate: 'part_of', subjectFirst: false },
+
+  // "Y contains X" - whole contains part
+  { signature: /^(\w+):↑nsubj:contain:↓(dobj|obj):(\w+)$/, predicate: 'part_of', subjectFirst: false },
+
+  // "X, part of Y" - appositive construction
+  { signature: /^(\w+):↑appos:part:↓prep:of:↓pobj:(\w+)$/, predicate: 'part_of', subjectFirst: true },
+
+  // "X, component of Y" - appositive with component
+  { signature: /^(\w+):↑appos:component:↓prep:of:↓pobj:(\w+)$/, predicate: 'part_of', subjectFirst: true },
+
+  // "X is component of Y" - copula construction
+  { signature: /^(\w+):↑nsubj:be:↓attr:component:↓prep:of:↓pobj:(\w+)$/, predicate: 'part_of', subjectFirst: true },
+
+  // "part of X" - nominal phrase
+  { signature: /^part:↓prep:of:↓pobj:(\w+)$/, predicate: 'part_of', subjectFirst: false },
+
+  // "component of X" - nominal phrase with component
+  { signature: /^component:↓prep:of:↓pobj:(\w+)$/, predicate: 'part_of', subjectFirst: false },
+
+  // "Y is made of X" - composition relation
+  { signature: /^(\w+):↑nsubj:be:↓prep:made:↓prep:of:↓pobj:(\w+)$/, predicate: 'part_of', subjectFirst: false },
+
+  // "X, element of Y" - appositive with element
+  { signature: /^(\w+):↑appos:element:↓prep:of:↓pobj:(\w+)$/, predicate: 'part_of', subjectFirst: true },
+
+  // "X forms part of Y" - forms relation
+  { signature: /^(\w+):↑nsubj:form:↓(dobj|obj):part:↓prep:of:↓pobj:(\w+)$/, predicate: 'part_of', subjectFirst: true },
 
   // === GENERATED PATTERNS ===
   // Auto-generated from scripts/integrate-patterns.ts

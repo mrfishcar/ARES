@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextAID": 271,
+  "nextAID": 307,
   "mappings": [
     {
       "aid": 1,
@@ -2701,11 +2701,371 @@
       "last_seen": "2025-11-10T08:17:33.095Z",
       "occurrence_count": 1,
       "confidence": 1
+    },
+    {
+      "aid": 271,
+      "surfaceForm": "Anna",
+      "normalizedKey": "anna",
+      "eid": 245,
+      "created_at": "2025-11-10T22:30:50.695Z",
+      "last_seen": "2025-11-10T22:30:50.695Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 272,
+      "surfaceForm": "Sophie",
+      "normalizedKey": "sophie",
+      "eid": 246,
+      "created_at": "2025-11-10T22:30:50.696Z",
+      "last_seen": "2025-11-10T22:30:50.696Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 273,
+      "surfaceForm": "last year",
+      "normalizedKey": "last year",
+      "eid": 247,
+      "created_at": "2025-11-10T22:30:50.703Z",
+      "last_seen": "2025-11-10T22:30:50.703Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 274,
+      "surfaceForm": "Emily",
+      "normalizedKey": "emily",
+      "eid": 248,
+      "created_at": "2025-11-10T22:30:50.703Z",
+      "last_seen": "2025-11-10T22:30:50.703Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 275,
+      "surfaceForm": "Lisa",
+      "normalizedKey": "lisa",
+      "eid": 53,
+      "created_at": "2025-11-10T22:30:50.708Z",
+      "last_seen": "2025-11-10T22:30:50.708Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 276,
+      "surfaceForm": "Hobbit",
+      "normalizedKey": "hobbit",
+      "eid": 249,
+      "created_at": "2025-11-10T22:30:50.730Z",
+      "last_seen": "2025-11-10T22:30:50.730Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 277,
+      "surfaceForm": "Spielberg",
+      "normalizedKey": "spielberg",
+      "eid": 250,
+      "created_at": "2025-11-10T22:30:50.743Z",
+      "last_seen": "2025-11-10T22:30:50.743Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 278,
+      "surfaceForm": "Jurassic Park",
+      "normalizedKey": "jurassic park",
+      "eid": 251,
+      "created_at": "2025-11-10T22:30:50.744Z",
+      "last_seen": "2025-11-10T22:30:50.744Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 279,
+      "surfaceForm": "Monday",
+      "normalizedKey": "monday",
+      "eid": 252,
+      "created_at": "2025-11-10T22:30:50.802Z",
+      "last_seen": "2025-11-10T22:30:50.802Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 280,
+      "surfaceForm": "Clark Kent",
+      "normalizedKey": "clark kent",
+      "eid": 253,
+      "created_at": "2025-11-10T22:30:50.829Z",
+      "last_seen": "2025-11-10T22:30:50.829Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 281,
+      "surfaceForm": "Superman",
+      "normalizedKey": "superman",
+      "eid": 254,
+      "created_at": "2025-11-10T22:30:50.829Z",
+      "last_seen": "2025-11-10T22:30:50.829Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 282,
+      "surfaceForm": "Bruce Wayne",
+      "normalizedKey": "bruce wayne",
+      "eid": 255,
+      "created_at": "2025-11-10T22:30:50.835Z",
+      "last_seen": "2025-11-10T22:30:50.835Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 283,
+      "surfaceForm": "Batman",
+      "normalizedKey": "batman",
+      "eid": 256,
+      "created_at": "2025-11-10T22:30:50.836Z",
+      "last_seen": "2025-11-10T22:30:50.836Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 284,
+      "surfaceForm": "Muhammad Ali",
+      "normalizedKey": "muhammad ali",
+      "eid": 257,
+      "created_at": "2025-11-10T22:30:50.849Z",
+      "last_seen": "2025-11-10T22:30:50.849Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 285,
+      "surfaceForm": "Cassius Clay",
+      "normalizedKey": "cassius clay",
+      "eid": 258,
+      "created_at": "2025-11-10T22:30:50.849Z",
+      "last_seen": "2025-11-10T22:30:50.849Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 286,
+      "surfaceForm": "Banksy",
+      "normalizedKey": "banksy",
+      "eid": 259,
+      "created_at": "2025-11-10T22:30:50.862Z",
+      "last_seen": "2025-11-10T22:30:50.862Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 287,
+      "surfaceForm": "Jane",
+      "normalizedKey": "jane",
+      "eid": 199,
+      "created_at": "2025-11-10T22:30:50.871Z",
+      "last_seen": "2025-11-10T22:30:50.871Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 288,
+      "surfaceForm": "Boeing",
+      "normalizedKey": "boeing",
+      "eid": 260,
+      "created_at": "2025-11-10T22:30:50.883Z",
+      "last_seen": "2025-11-10T22:30:50.883Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 289,
+      "surfaceForm": "Thames",
+      "normalizedKey": "thames",
+      "eid": 261,
+      "created_at": "2025-11-10T22:30:50.926Z",
+      "last_seen": "2025-11-10T22:30:50.926Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 290,
+      "surfaceForm": "Tom",
+      "normalizedKey": "tom",
+      "eid": 262,
+      "created_at": "2025-11-10T22:30:50.934Z",
+      "last_seen": "2025-11-10T22:30:50.934Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 291,
+      "surfaceForm": "Winter",
+      "normalizedKey": "winter",
+      "eid": 263,
+      "created_at": "2025-11-10T22:30:50.941Z",
+      "last_seen": "2025-11-10T22:30:50.941Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 292,
+      "surfaceForm": "Rain",
+      "normalizedKey": "rain",
+      "eid": 264,
+      "created_at": "2025-11-10T22:30:50.963Z",
+      "last_seen": "2025-11-10T22:30:50.963Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 293,
+      "surfaceForm": "Heat",
+      "normalizedKey": "heat",
+      "eid": 138,
+      "created_at": "2025-11-10T22:30:50.970Z",
+      "last_seen": "2025-11-10T22:30:50.970Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 294,
+      "surfaceForm": "England",
+      "normalizedKey": "england",
+      "eid": 265,
+      "created_at": "2025-11-10T22:30:50.989Z",
+      "last_seen": "2025-11-10T22:30:50.989Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 295,
+      "surfaceForm": "Mary",
+      "normalizedKey": "mary",
+      "eid": 266,
+      "created_at": "2025-11-10T22:30:51.002Z",
+      "last_seen": "2025-11-10T22:30:51.002Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 296,
+      "surfaceForm": "Olympics",
+      "normalizedKey": "olympics",
+      "eid": 267,
+      "created_at": "2025-11-10T22:30:51.043Z",
+      "last_seen": "2025-11-10T22:30:51.043Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 297,
+      "surfaceForm": "Harry",
+      "normalizedKey": "harry",
+      "eid": 268,
+      "created_at": "2025-11-10T23:09:30.423Z",
+      "last_seen": "2025-11-10T23:09:30.423Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 298,
+      "surfaceForm": "Hogwarts",
+      "normalizedKey": "hogwarts",
+      "eid": 269,
+      "created_at": "2025-11-10T23:09:30.423Z",
+      "last_seen": "2025-11-10T23:09:30.423Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 299,
+      "surfaceForm": "Hermione",
+      "normalizedKey": "hermione",
+      "eid": 270,
+      "created_at": "2025-11-10T23:09:30.438Z",
+      "last_seen": "2025-11-10T23:09:30.438Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 300,
+      "surfaceForm": "Ginny",
+      "normalizedKey": "ginny",
+      "eid": 271,
+      "created_at": "2025-11-10T23:09:30.461Z",
+      "last_seen": "2025-11-10T23:09:30.461Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 301,
+      "surfaceForm": "Ron",
+      "normalizedKey": "ron",
+      "eid": 272,
+      "created_at": "2025-11-10T23:09:30.476Z",
+      "last_seen": "2025-11-10T23:09:30.476Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 302,
+      "surfaceForm": "Gondor",
+      "normalizedKey": "gondor",
+      "eid": 273,
+      "created_at": "2025-11-10T23:09:30.491Z",
+      "last_seen": "2025-11-10T23:09:30.491Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 303,
+      "surfaceForm": "wisely",
+      "normalizedKey": "wisely",
+      "eid": 274,
+      "created_at": "2025-11-10T23:09:30.491Z",
+      "last_seen": "2025-11-10T23:09:30.491Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 304,
+      "surfaceForm": "Dumbledore",
+      "normalizedKey": "dumbledore",
+      "eid": 275,
+      "created_at": "2025-11-10T23:09:30.496Z",
+      "last_seen": "2025-11-10T23:09:30.496Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 305,
+      "surfaceForm": "Arathorn",
+      "normalizedKey": "arathorn",
+      "eid": 276,
+      "created_at": "2025-11-10T23:09:30.512Z",
+      "last_seen": "2025-11-10T23:09:30.512Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 306,
+      "surfaceForm": "Rohan",
+      "normalizedKey": "rohan",
+      "eid": 277,
+      "created_at": "2025-11-10T23:09:30.523Z",
+      "last_seen": "2025-11-10T23:09:30.523Z",
+      "occurrence_count": 1,
+      "confidence": 1
     }
   ],
   "metadata": {
-    "total_aliases": 270,
-    "total_entities": 244,
-    "last_updated": "2025-11-10T08:18:01.644Z"
+    "total_aliases": 306,
+    "total_entities": 277,
+    "last_updated": "2025-11-10T23:10:00.398Z"
   }
 }

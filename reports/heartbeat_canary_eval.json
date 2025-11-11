@@ -1,0 +1,742 @@
+{
+  "meta": {
+    "timestamp": "2025-11-10T22:30:51.052Z",
+    "commit": "c0e0bd7",
+    "families": [
+      "kinship",
+      "ownership",
+      "employment",
+      "creation",
+      "location",
+      "temporal",
+      "causation",
+      "part_whole",
+      "identity",
+      "event",
+      "communication",
+      "power",
+      "comparison",
+      "emotional",
+      "negation"
+    ],
+    "synthetic_size": 300,
+    "canary_size": 103
+  },
+  "metrics": {
+    "kinship": {
+      "synthetic": {
+        "precision": 0.10344827586206896,
+        "recall": 0.375,
+        "f1": 0.16216216216216217,
+        "support": 8
+      },
+      "canary": {
+        "precision": 0.25,
+        "recall": 0.25,
+        "f1": 0.25,
+        "support": 8
+      }
+    },
+    "ownership": {
+      "synthetic": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 5
+      },
+      "canary": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 7
+      }
+    },
+    "employment": {
+      "synthetic": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 8
+      },
+      "canary": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 7
+      }
+    },
+    "creation": {
+      "synthetic": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 7
+      },
+      "canary": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 7
+      }
+    },
+    "location": {
+      "synthetic": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 10
+      },
+      "canary": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 6
+      }
+    },
+    "temporal": {
+      "synthetic": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 7
+      },
+      "canary": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 6
+      }
+    },
+    "causation": {
+      "synthetic": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 0
+      },
+      "canary": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 7
+      }
+    },
+    "part_whole": {
+      "synthetic": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 2
+      },
+      "canary": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 7
+      }
+    },
+    "identity": {
+      "synthetic": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 8
+      },
+      "canary": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 6
+      }
+    },
+    "event": {
+      "synthetic": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 10
+      },
+      "canary": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 7
+      }
+    },
+    "communication": {
+      "synthetic": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 10
+      },
+      "canary": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 7
+      }
+    },
+    "power": {
+      "synthetic": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 10
+      },
+      "canary": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 7
+      }
+    },
+    "comparison": {
+      "synthetic": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 5
+      },
+      "canary": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 7
+      }
+    },
+    "emotional": {
+      "synthetic": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 8
+      },
+      "canary": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 7
+      }
+    },
+    "negation": {
+      "synthetic": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 0
+      },
+      "canary": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "support": 0
+      }
+    }
+  },
+  "counts": {
+    "generated": {
+      "kinship": 8,
+      "ownership": 5,
+      "employment": 8,
+      "creation": 7,
+      "location": 10,
+      "temporal": 7,
+      "causation": 0,
+      "part_whole": 2,
+      "identity": 8,
+      "event": 10,
+      "communication": 10,
+      "power": 10,
+      "comparison": 5,
+      "emotional": 8,
+      "negation": 0
+    },
+    "skipped_duplicates": {
+      "kinship": 0,
+      "ownership": 0,
+      "employment": 0,
+      "creation": 0,
+      "location": 0,
+      "temporal": 0,
+      "causation": 0,
+      "part_whole": 0,
+      "identity": 0,
+      "event": 0,
+      "communication": 0,
+      "power": 0,
+      "comparison": 0,
+      "emotional": 0,
+      "negation": 0
+    },
+    "evaluated": {
+      "kinship": 8,
+      "ownership": 5,
+      "employment": 8,
+      "creation": 7,
+      "location": 10,
+      "temporal": 7,
+      "causation": 0,
+      "part_whole": 2,
+      "identity": 8,
+      "event": 10,
+      "communication": 10,
+      "power": 10,
+      "comparison": 5,
+      "emotional": 8,
+      "negation": 0
+    }
+  },
+  "errors": {
+    "false_negatives": {
+      "kinship": [
+        {
+          "text": "Prince Edward --[related_to]--> Queen Elizabeth",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Sofia --[related_to]--> Marcus",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "King Arthur --[related_to]--> Uther Pendragon",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Isabella --[related_to]--> Ferdinand",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Catherine and --[related_to]--> William",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        }
+      ],
+      "ownership": [
+        {
+          "text": "Rockefeller --[owns]--> Standard Oil Company",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "The --[belongs_to]--> Duke of Westminster",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Tesla --[possesses]--> Solar",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "The --[property_of]--> Louvre Museum",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Musk --[owns]--> Tesla and Space",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        }
+      ],
+      "employment": [
+        {
+          "text": "Sarah --[works_for]--> Google",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Dr --[employed_by]--> Chen",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Marcus --[member_of]--> Board of Directors",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Elena --[affiliated_with]--> Chief Technology Officer",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Professor Smith --[affiliated_with]--> Harvard University",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        }
+      ],
+      "creation": [
+        {
+          "text": "Leonardo da Vinci --[painted]--> Mona Lisa",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Shakespeare --[authored]--> Hamlet",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Mozart --[composed]--> The Magic Flute",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Tolkien --[created]--> The Lord of the Rings",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Picasso --[painted]--> Guernica",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        }
+      ],
+      "location": [
+        {
+          "text": "Paris --[located_in]--> France",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "The Eiffel Tower --[located_in]--> Paris",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Silicon Valley --[located_in]--> California",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "The Pyramids --[located_in]--> Giza",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Harvard University --[located_in]--> Cambridge",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        }
+      ],
+      "temporal": [
+        {
+          "text": "The Renaissance --[after]--> Middle Ages",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "The French Revolution --[after]--> American Civil War",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "The Industrial Revolution --[after]--> Medieval",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Shakespeare --[after]--> Elizabethan",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Columbus --[after]--> America",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        }
+      ],
+      "causation": [],
+      "part_whole": [
+        {
+          "text": "California --[part_of]--> United States",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Manhattan --[part_of]--> New York City",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        }
+      ],
+      "identity": [
+        {
+          "text": "Mark Twain --[is]--> Samuel Clemens",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Beijing --[is]--> Peking",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "New York --[is]--> Big Apple",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "The U --[is]--> America",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Istanbul --[is]--> Constantinople",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        }
+      ],
+      "event": [
+        {
+          "text": "Churchill --[attended]--> Yalta Conference",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Mozart --[attended]--> Vienna Opera",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Armstrong --[attended]--> Apollo",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Einstein --[attended]--> Solvay Conference",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Shakespeare --[attended]--> Globe Theatre",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        }
+      ],
+      "communication": [
+        {
+          "text": "Lincoln --[wrote_to]--> Grant",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Einstein --[wrote_to]--> Bohr",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Churchill --[wrote_to]--> Roosevelt",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Jefferson --[wrote_to]--> Adams",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "King --[wrote_to]--> Congress",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        }
+      ],
+      "power": [
+        {
+          "text": "Napoleon --[ruled]--> France",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Caesar --[ruled]--> Roman legions",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Elizabeth I --[ruled]--> United Kingdom",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Alexander --[ruled]--> Greek",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Genghis Khan --[ruled]--> Central Asia",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        }
+      ],
+      "comparison": [
+        {
+          "text": "The Pacific Ocean --[greater_than]--> Atlantic",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "China --[greater_than]--> India",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Jupiter --[greater_than]--> Saturn",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "The Nile --[greater_than]--> Amazon",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Antarctica --[greater_than]--> Arctic",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        }
+      ],
+      "emotional": [
+        {
+          "text": "Romeo --[loved]--> Juliet",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Brutus --[loved]--> Caesar",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Othello --[loved]--> Cassio",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Achilles --[loved]--> Patroclus",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        },
+        {
+          "text": "Iago --[loved]--> Othello",
+          "pattern_id": "unknown",
+          "reason": "Missed by extraction"
+        }
+      ],
+      "negation": []
+    },
+    "false_positives": {
+      "kinship": [
+        {
+          "text": "Alice --[child_of]--> Robert",
+          "pattern_id": "unknown",
+          "reason": "Incorrectly extracted"
+        },
+        {
+          "text": "Robert --[parent_of]--> Alice",
+          "pattern_id": "unknown",
+          "reason": "Incorrectly extracted"
+        },
+        {
+          "text": "Marcus --[parent_of]--> Elena",
+          "pattern_id": "unknown",
+          "reason": "Incorrectly extracted"
+        },
+        {
+          "text": "Elena --[child_of]--> Marcus",
+          "pattern_id": "unknown",
+          "reason": "Incorrectly extracted"
+        },
+        {
+          "text": "Marcus --[married_to]--> Elena",
+          "pattern_id": "unknown",
+          "reason": "Incorrectly extracted"
+        }
+      ],
+      "ownership": [],
+      "employment": [
+        {
+          "text": "Sarah --[lives_in]--> Mountain View",
+          "pattern_id": "unknown",
+          "reason": "Incorrectly extracted"
+        },
+        {
+          "text": "Professor Smith --[teaches_at]--> Harvard University",
+          "pattern_id": "unknown",
+          "reason": "Incorrectly extracted"
+        },
+        {
+          "text": "Smith --[teaches_at]--> Harvard",
+          "pattern_id": "unknown",
+          "reason": "Incorrectly extracted"
+        }
+      ],
+      "creation": [],
+      "location": [],
+      "temporal": [],
+      "causation": [],
+      "part_whole": [],
+      "identity": [],
+      "event": [],
+      "communication": [],
+      "power": [
+        {
+          "text": "Napoleon --[rules]--> France",
+          "pattern_id": "unknown",
+          "reason": "Incorrectly extracted"
+        },
+        {
+          "text": "Augustus --[rules]--> Rome",
+          "pattern_id": "unknown",
+          "reason": "Incorrectly extracted"
+        },
+        {
+          "text": "Akbar --[rules]--> Mughal Empire",
+          "pattern_id": "unknown",
+          "reason": "Incorrectly extracted"
+        }
+      ],
+      "comparison": [],
+      "emotional": [],
+      "negation": []
+    }
+  },
+  "uncovered": {
+    "surface_ngrams": [
+      "Prince Edward, heir of Queen Elizabeth, attended the ceremony.",
+      "Sofia, offspring of Marcus, excelled in her studies.",
+      "King Arthur, descendant of Uther Pendragon, ruled the kingdom.",
+      "Isabella is the sister of Ferdinand.",
+      "Catherine and her brother William traveled together.",
+      "Rockefeller owns Standard Oil Company.",
+      "The estate belongs to the Duke of Westminster.",
+      "Tesla acquired SolarCity in 2016.",
+      "The painting is the property of the Louvre Museum.",
+      "Musk owns Tesla and SpaceX.",
+      "Sarah works for Google in Mountain View.",
+      "Dr. Chen is employed by Stanford Hospital.",
+      "Marcus is a member of the Board of Directors.",
+      "Elena serves as Chief Technology Officer.",
+      "Professor Smith teaches at Harvard University.",
+      "John manages the Sales Department.",
+      "Victoria is a partner at Goldman Sachs.",
+      "Thomas joined Microsoft in 2020.",
+      "Leonardo da Vinci painted the Mona Lisa.",
+      "Shakespeare wrote Hamlet."
+    ],
+    "dep_motifs": []
+  },
+  "change_log": [
+    "Evaluated synthetic corpus with 300 cases",
+    "Evaluated canary corpus with 103 cases",
+    "Applied precision guardrails"
+  ],
+  "recommendations": [
+    "Improve recall for kinship (current: 37.5%)",
+    "Improve precision for kinship (current: 10.3%)",
+    "Improve recall for ownership (current: 0.0%)"
+  ]
+}

@@ -1,6 +1,10 @@
 # Test Ladder Strategy - Quick Reference
 
-**Last Updated**: 2025-11-09
+**⚠️ DEPRECATION NOTICE**: This file has been superseded by `UNIFIED_TESTING_STRATEGY.md`
+
+**Please refer to**: `/home/user/ARES/UNIFIED_TESTING_STRATEGY.md` for the current testing strategy that consolidates both Progressive Levels and Diagnostic Rungs into a single workflow.
+
+**Last Updated**: 2025-11-09 (Deprecated 2025-11-10)
 
 ## What is the Test Ladder?
 

@@ -3077,6 +3077,5535 @@
     "family": "employment"
   },
   {
+    "hash": "fc34829aec9e31ba",
+    "lemmas": [
+      "author",
+      "build",
+      "compose",
+      "craft",
+      "create",
+      "design",
+      "dobj",
+      "invent",
+      "nsubj",
+      "obj",
+      "paint",
+      "sculpt",
+      "write"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-created_by-Y",
+    "family": "creation"
+  },
+  {
+    "hash": "e8aa3d166b428f1d",
+    "lemmas": [
+      "agent",
+      "author",
+      "build",
+      "compose",
+      "craft",
+      "create",
+      "design",
+      "invent",
+      "nsubjpas",
+      "paint",
+      "pobj",
+      "sculpt",
+      "write"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-created_by-X",
+    "family": "creation"
+  },
+  {
+    "hash": "5911b52641a05593",
+    "lemmas": [
+      "locate",
+      "nsubjpas",
+      "pobj",
+      "prep",
+      "situate"
+    ],
+    "roles": [
+      "nsubjpass",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "passive",
+    "structure": "Y-located_in-X",
+    "family": "other"
+  },
+  {
+    "hash": "b8e466ee43d161c7",
+    "lemmas": [
+      "nsubj",
+      "pobj",
+      "prep",
+      "stand"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X-located_in-Y",
+    "family": "other"
+  },
+  {
+    "hash": "7fcdb46cc9eafb63",
+    "lemmas": [
+      "base",
+      "nsubjpas",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "nsubjpass",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "passive",
+    "structure": "Y-located_in-X",
+    "family": "other"
+  },
+  {
+    "hash": "5aefff76e55c129c",
+    "lemmas": [
+      "communicate",
+      "nsubj",
+      "pobj",
+      "prep",
+      "say",
+      "speak",
+      "tell",
+      "write"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X-wrote_to-Y",
+    "family": "communication"
+  },
+  {
+    "hash": "ccca9fb51cc46069",
+    "lemmas": [
+      "dobj",
+      "inform",
+      "notify",
+      "nsubj",
+      "obj",
+      "tell"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-wrote_to-Y",
+    "family": "communication"
+  },
+  {
+    "hash": "68032badfce13b89",
+    "lemmas": [
+      "ask",
+      "nsubj",
+      "pobj",
+      "prep",
+      "reply",
+      "respond"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X-wrote_to-Y",
+    "family": "communication"
+  },
+  {
+    "hash": "4f6c7ae4af7c39ad",
+    "lemmas": [
+      "convey",
+      "dobj",
+      "nsubj",
+      "obj",
+      "pobj",
+      "prep",
+      "report"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "active",
+    "structure": "X-wrote_to-Y",
+    "family": "communication"
+  },
+  {
+    "hash": "9eee2e7520b07491",
+    "lemmas": [
+      "attend",
+      "nsubj",
+      "participate",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X-attended-Y",
+    "family": "event"
+  },
+  {
+    "hash": "b031e50eff317ab2",
+    "lemmas": [
+      "attend",
+      "nsubj",
+      "perform",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X-attended-Y",
+    "family": "event"
+  },
+  {
+    "hash": "9c90bd19e283cf7c",
+    "lemmas": [
+      "arrange",
+      "convene",
+      "dobj",
+      "host",
+      "nsubj",
+      "obj",
+      "organize"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-hosted-Y",
+    "family": "event"
+  },
+  {
+    "hash": "cf182051e20de16a",
+    "lemmas": [
+      "dobj",
+      "nsubj",
+      "obj",
+      "witnes"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-attended-Y",
+    "family": "event"
+  },
+  {
+    "hash": "86226c3c7952180a",
+    "lemmas": [
+      "command",
+      "control",
+      "dobj",
+      "dominate",
+      "govern",
+      "nsubj",
+      "obj",
+      "reign",
+      "rule"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-ruled_by-Y",
+    "family": "other"
+  },
+  {
+    "hash": "739757958cf55752",
+    "lemmas": [
+      "agent",
+      "command",
+      "control",
+      "govern",
+      "nsubjpas",
+      "pobj",
+      "rule"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-ruled_by-X",
+    "family": "other"
+  },
+  {
+    "hash": "4ba355cac30b0581",
+    "lemmas": [
+      "admire",
+      "dobj",
+      "envy",
+      "fear",
+      "hate",
+      "love",
+      "nsubj",
+      "obj",
+      "respect"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-loved-Y",
+    "family": "emotional"
+  },
+  {
+    "hash": "eac4496d20d03f76",
+    "lemmas": [
+      "attr",
+      "nsubj"
+    ],
+    "roles": [
+      "attr",
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-is-Y",
+    "family": "identity"
+  },
+  {
+    "hash": "ea050e4b1a7defab",
+    "lemmas": [
+      "dobj",
+      "equal",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-is-Y",
+    "family": "identity"
+  },
+  {
+    "hash": "0ecebec22d361619",
+    "lemmas": [
+      "know",
+      "nsubjpas",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "nsubjpass",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "passive",
+    "structure": "Y-is-X",
+    "family": "identity"
+  },
+  {
+    "hash": "31edda174f12caa3",
+    "lemmas": [
+      "advmod",
+      "attr",
+      "formerly",
+      "nsubj"
+    ],
+    "roles": [
+      "advmod",
+      "attr",
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-is-Y",
+    "family": "identity"
+  },
+  {
+    "hash": "8a18d927662f8aa7",
+    "lemmas": [
+      "advmod",
+      "attr",
+      "nsubj",
+      "previously"
+    ],
+    "roles": [
+      "advmod",
+      "attr",
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-is-Y",
+    "family": "identity"
+  },
+  {
+    "hash": "14e1fb336423253d",
+    "lemmas": [
+      "acomp",
+      "big",
+      "cold",
+      "great",
+      "high",
+      "hot",
+      "large",
+      "long",
+      "nsubj",
+      "pobj",
+      "prep",
+      "than"
+    ],
+    "roles": [
+      "acomp",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-greater_than-Y",
+    "family": "comparison"
+  },
+  {
+    "hash": "266e1468b88a4242",
+    "lemmas": [
+      "amod",
+      "area",
+      "dobj",
+      "great",
+      "have",
+      "nsubj",
+      "obj",
+      "pobj",
+      "population",
+      "prep",
+      "size",
+      "than"
+    ],
+    "roles": [
+      "amod",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-greater_than-Y",
+    "family": "comparison"
+  },
+  {
+    "hash": "67343ca9ca308662",
+    "lemmas": [
+      "dobj",
+      "follow",
+      "nsubj",
+      "obj",
+      "precede"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-after-Y",
+    "family": "temporal"
+  },
+  {
+    "hash": "f102a0b87baa6444",
+    "lemmas": [
+      "before",
+      "begin",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-before-Y",
+    "family": "temporal"
+  },
+  {
+    "hash": "8f7c1f3e096a5c23",
+    "lemmas": [
+      "after",
+      "happen",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-after-Y",
+    "family": "temporal"
+  },
+  {
+    "hash": "13177f1c17bf854e",
+    "lemmas": [
+      "dur",
+      "live",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-during-Y",
+    "family": "temporal"
+  },
+  {
+    "hash": "da244bc0034d660c",
+    "lemmas": [
+      "arrive",
+      "before",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-before-Y",
+    "family": "temporal"
+  },
+  {
+    "hash": "e028d0b2fa17ab11",
+    "lemmas": [
+      "before",
+      "exist",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-before-Y",
+    "family": "temporal"
+  },
+  {
+    "hash": "67f77cde31aa964e",
+    "lemmas": [
+      "after",
+      "end",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-after-Y",
+    "family": "temporal"
+  },
+  {
+    "hash": "994175dcc84bec57",
+    "lemmas": [
+      "attr",
+      "nsubj",
+      "part",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-part_of-Y",
+    "family": "part_whole"
+  },
+  {
+    "hash": "b5141a00d82da045",
+    "lemmas": [
+      "consist",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-part_of-Y",
+    "family": "part_whole"
+  },
+  {
+    "hash": "6b4e86994f2ffc71",
+    "lemmas": [
+      "dobj",
+      "include",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-part_of-Y",
+    "family": "part_whole"
+  },
+  {
+    "hash": "1367b4026ee2a10b",
+    "lemmas": [
+      "dobj",
+      "marry",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-parent_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "8bb45e45c78de828",
+    "lemmas": [
+      "dobj",
+      "marry",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-child_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "8bfefdb19ff07f5e",
+    "lemmas": [
+      "begat",
+      "dobj",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-sibling_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "cc7f089c868400fd",
+    "lemmas": [
+      "appo",
+      "father",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-married_to-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "27e428ef8837ee78",
+    "lemmas": [
+      "appo",
+      "father",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-cousin_of-Y",
+    "family": "other"
+  },
+  {
+    "hash": "0d9cb716ed6a0d93",
+    "lemmas": [
+      "appo",
+      "mother",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-ancestor_of-Y",
+    "family": "other"
+  },
+  {
+    "hash": "3348d1ef9629f249",
+    "lemmas": [
+      "appo",
+      "mother",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-descendant_of-Y",
+    "family": "other"
+  },
+  {
+    "hash": "e5554f494ac87e24",
+    "lemmas": [
+      "appo",
+      "parent",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-parent_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "6900215351e6ebd8",
+    "lemmas": [
+      "appo",
+      "parent",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-child_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "b079c0fdd7e72940",
+    "lemmas": [
+      "agent",
+      "marry",
+      "nsubjpas",
+      "pobj"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-sibling_of-X",
+    "family": "kinship"
+  },
+  {
+    "hash": "b096975d12e5c52d",
+    "lemmas": [
+      "father",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-cousin_of-Y",
+    "family": "other"
+  },
+  {
+    "hash": "d9f79a3410b87eb0",
+    "lemmas": [
+      "mother",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-ancestor_of-Y",
+    "family": "other"
+  },
+  {
+    "hash": "e99df890949dc836",
+    "lemmas": [
+      "attr",
+      "father",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-descendant_of-Y",
+    "family": "other"
+  },
+  {
+    "hash": "dfe2469b67c87f2e",
+    "lemmas": [
+      "attr",
+      "father",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X-parent_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "6147eee8d89dcaab",
+    "lemmas": [
+      "attr",
+      "mother",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-child_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "60a88db77ccec9f4",
+    "lemmas": [
+      "attr",
+      "mother",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X-sibling_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "bf2e05714b8867d4",
+    "lemmas": [
+      "dobj",
+      "nsubj",
+      "obj",
+      "own"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-owns-Y",
+    "family": "ownership"
+  },
+  {
+    "hash": "17844e4455628be4",
+    "lemmas": [
+      "dobj",
+      "nsubj",
+      "obj",
+      "own"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-owned_by-Y",
+    "family": "other"
+  },
+  {
+    "hash": "ebfbe4aa3cd74336",
+    "lemmas": [
+      "dobj",
+      "nsubj",
+      "obj",
+      "possesse"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-belongs_to-Y",
+    "family": "other"
+  },
+  {
+    "hash": "867af6c46d04809c",
+    "lemmas": [
+      "appo",
+      "owner",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-property_of-Y",
+    "family": "other"
+  },
+  {
+    "hash": "3eaf897bf9457abb",
+    "lemmas": [
+      "appo",
+      "owner",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-possessed_by-Y",
+    "family": "ownership"
+  },
+  {
+    "hash": "92fe77d506944b12",
+    "lemmas": [
+      "appo",
+      "pobj",
+      "prep",
+      "property"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-owns-Y",
+    "family": "ownership"
+  },
+  {
+    "hash": "0b2c7c522944168b",
+    "lemmas": [
+      "appo",
+      "pobj",
+      "prep",
+      "property"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-owned_by-Y",
+    "family": "other"
+  },
+  {
+    "hash": "4cd4f19f8cc0ac3d",
+    "lemmas": [
+      "appo",
+      "pobj",
+      "possession",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-belongs_to-Y",
+    "family": "other"
+  },
+  {
+    "hash": "218275fe87f2fa91",
+    "lemmas": [
+      "appo",
+      "pobj",
+      "possession",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-property_of-Y",
+    "family": "other"
+  },
+  {
+    "hash": "3562cd4e9b2dc134",
+    "lemmas": [
+      "agent",
+      "nsubjpas",
+      "own",
+      "pobj"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-possessed_by-X",
+    "family": "ownership"
+  },
+  {
+    "hash": "14eb4228ed9e6350",
+    "lemmas": [
+      "agent",
+      "nsubjpas",
+      "own",
+      "pobj"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-owns-X",
+    "family": "ownership"
+  },
+  {
+    "hash": "0ab89235f465f7a1",
+    "lemmas": [
+      "owner",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-owned_by-Y",
+    "family": "other"
+  },
+  {
+    "hash": "9c777ad345c45d0e",
+    "lemmas": [
+      "pos",
+      "property"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-belongs_to-Y",
+    "family": "other"
+  },
+  {
+    "hash": "5ecbe880180dbccb",
+    "lemmas": [
+      "attr",
+      "nsubj",
+      "owner",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-property_of-Y",
+    "family": "other"
+  },
+  {
+    "hash": "787592cf8a53c36c",
+    "lemmas": [
+      "attr",
+      "nsubj",
+      "owner",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X-possessed_by-Y",
+    "family": "ownership"
+  },
+  {
+    "hash": "bbcd5ceeeaa3930e",
+    "lemmas": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep",
+      "property"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-owns-Y",
+    "family": "ownership"
+  },
+  {
+    "hash": "009d53e699e3fa97",
+    "lemmas": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep",
+      "property"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X-owned_by-Y",
+    "family": "other"
+  },
+  {
+    "hash": "54dd28dbf289fa39",
+    "lemmas": [
+      "dobj",
+      "nsubj",
+      "obj",
+      "work"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-works_for-Y",
+    "family": "other"
+  },
+  {
+    "hash": "1a47167022c13e08",
+    "lemmas": [
+      "dobj",
+      "employ",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-employed_by-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "540b314777e8a1c3",
+    "lemmas": [
+      "dobj",
+      "nsubj",
+      "obj",
+      "serve"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-member_of-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "ea09efd300b2f405",
+    "lemmas": [
+      "appo",
+      "employee",
+      "for",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "for"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-affiliated_with-Y",
+    "family": "other"
+  },
+  {
+    "hash": "87759bfaccb7b216",
+    "lemmas": [
+      "appo",
+      "employee",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-partner_at-Y",
+    "family": "other"
+  },
+  {
+    "hash": "424af9fcea50f4e7",
+    "lemmas": [
+      "appo",
+      "employer",
+      "for",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "for"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-serves-Y",
+    "family": "other"
+  },
+  {
+    "hash": "eb5eeb634289d82a",
+    "lemmas": [
+      "appo",
+      "employer",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-works_for-Y",
+    "family": "other"
+  },
+  {
+    "hash": "382785bd3e945ede",
+    "lemmas": [
+      "appo",
+      "for",
+      "member",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "for"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-employed_by-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "2f3f0abc8eb0065c",
+    "lemmas": [
+      "agent",
+      "nsubjpas",
+      "pobj",
+      "work"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-affiliated_with-X",
+    "family": "other"
+  },
+  {
+    "hash": "09e935d24c9dbb53",
+    "lemmas": [
+      "agent",
+      "employ",
+      "nsubjpas",
+      "pobj"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-partner_at-X",
+    "family": "other"
+  },
+  {
+    "hash": "923e4abfb648df5f",
+    "lemmas": [
+      "employee",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-serves-Y",
+    "family": "other"
+  },
+  {
+    "hash": "0fccd8834c3a8df7",
+    "lemmas": [
+      "employer",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-works_for-Y",
+    "family": "other"
+  },
+  {
+    "hash": "6d24d7103fc1d9b8",
+    "lemmas": [
+      "attr",
+      "employee",
+      "for",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "for"
+    ],
+    "voice": "neutral",
+    "structure": "X-employed_by-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "c827299b9401d75a",
+    "lemmas": [
+      "attr",
+      "employee",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X-member_of-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "021e4cf0e59789f9",
+    "lemmas": [
+      "attr",
+      "employer",
+      "for",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "for"
+    ],
+    "voice": "neutral",
+    "structure": "X-affiliated_with-Y",
+    "family": "other"
+  },
+  {
+    "hash": "8419ff5f9748f74f",
+    "lemmas": [
+      "attr",
+      "employer",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X-partner_at-Y",
+    "family": "other"
+  },
+  {
+    "hash": "abe358ebc9a1d076",
+    "lemmas": [
+      "create",
+      "dobj",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-created_by-Y",
+    "family": "creation"
+  },
+  {
+    "hash": "3560320c64be9a9e",
+    "lemmas": [
+      "author",
+      "dobj",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-authored-Y",
+    "family": "creation"
+  },
+  {
+    "hash": "1627b66f0f8a76e9",
+    "lemmas": [
+      "dobj",
+      "nsubj",
+      "obj",
+      "write"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-authored-Y",
+    "family": "creation"
+  },
+  {
+    "hash": "b55b5017a3e3e976",
+    "lemmas": [
+      "appo",
+      "author",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-invented_by-Y",
+    "family": "creation"
+  },
+  {
+    "hash": "4a78e282686d0422",
+    "lemmas": [
+      "appo",
+      "author",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-painted_by-Y",
+    "family": "other"
+  },
+  {
+    "hash": "18b15a6776e5ccb1",
+    "lemmas": [
+      "appo",
+      "creator",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-built_by-Y",
+    "family": "other"
+  },
+  {
+    "hash": "807578eb6589165e",
+    "lemmas": [
+      "appo",
+      "creator",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-composed_by-Y",
+    "family": "other"
+  },
+  {
+    "hash": "b07196a2bb567b6c",
+    "lemmas": [
+      "appo",
+      "inventor",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-designed_by-Y",
+    "family": "other"
+  },
+  {
+    "hash": "acde2ab3694077b3",
+    "lemmas": [
+      "appo",
+      "inventor",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-created_by-Y",
+    "family": "creation"
+  },
+  {
+    "hash": "80b2279ae2ffa769",
+    "lemmas": [
+      "agent",
+      "create",
+      "nsubjpas",
+      "pobj"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-authored-X",
+    "family": "creation"
+  },
+  {
+    "hash": "5098c9d53d9fae75",
+    "lemmas": [
+      "agent",
+      "author",
+      "nsubjpas",
+      "pobj"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-written_by-X",
+    "family": "creation"
+  },
+  {
+    "hash": "9082c5992032e644",
+    "lemmas": [
+      "author",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-invented_by-Y",
+    "family": "creation"
+  },
+  {
+    "hash": "003748b4126c0b22",
+    "lemmas": [
+      "creator",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-painted_by-Y",
+    "family": "other"
+  },
+  {
+    "hash": "fa5d1e197379ae36",
+    "lemmas": [
+      "attr",
+      "author",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X-built_by-Y",
+    "family": "other"
+  },
+  {
+    "hash": "bc56b2baabce1db7",
+    "lemmas": [
+      "attr",
+      "author",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-composed_by-Y",
+    "family": "other"
+  },
+  {
+    "hash": "679deaa4bcba030d",
+    "lemmas": [
+      "attr",
+      "creator",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X-designed_by-Y",
+    "family": "other"
+  },
+  {
+    "hash": "feb94a5d51d787e0",
+    "lemmas": [
+      "attr",
+      "creator",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-created_by-Y",
+    "family": "creation"
+  },
+  {
+    "hash": "4947132cffb10387",
+    "lemmas": [
+      "dobj",
+      "locat",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-located_in-Y",
+    "family": "other"
+  },
+  {
+    "hash": "bef8388cb944e72b",
+    "lemmas": [
+      "dobj",
+      "nsubj",
+      "obj",
+      "situat"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-located_at-Y",
+    "family": "location"
+  },
+  {
+    "hash": "b65badc592c5692d",
+    "lemmas": [
+      "dobj",
+      "nsubj",
+      "obj",
+      "position"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-near-Y",
+    "family": "location"
+  },
+  {
+    "hash": "163e603dd0bb3bd5",
+    "lemmas": [
+      "appo",
+      "location",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-within-Y",
+    "family": "location"
+  },
+  {
+    "hash": "a0d2006fd9114061",
+    "lemmas": [
+      "appo",
+      "location",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-across_from-Y",
+    "family": "other"
+  },
+  {
+    "hash": "eb60aa8b56b2c969",
+    "lemmas": [
+      "appo",
+      "place",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-adjacent_to-Y",
+    "family": "other"
+  },
+  {
+    "hash": "5e550d155d8b24cd",
+    "lemmas": [
+      "appo",
+      "place",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-based_in-Y",
+    "family": "other"
+  },
+  {
+    "hash": "de3f4c0d343d92cf",
+    "lemmas": [
+      "appo",
+      "pobj",
+      "position",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-north_of-Y",
+    "family": "other"
+  },
+  {
+    "hash": "a81028feac92afa2",
+    "lemmas": [
+      "appo",
+      "pobj",
+      "position",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-south_of-Y",
+    "family": "other"
+  },
+  {
+    "hash": "36225de51929172e",
+    "lemmas": [
+      "agent",
+      "locat",
+      "nsubjpas",
+      "pobj"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-located_in-X",
+    "family": "other"
+  },
+  {
+    "hash": "10b0e0e7ab1a996a",
+    "lemmas": [
+      "agent",
+      "nsubjpas",
+      "pobj",
+      "situat"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-located_at-X",
+    "family": "location"
+  },
+  {
+    "hash": "ae9fc181829f194e",
+    "lemmas": [
+      "location",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-near-Y",
+    "family": "location"
+  },
+  {
+    "hash": "1eb494d310bdd66c",
+    "lemmas": [
+      "place",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-within-Y",
+    "family": "location"
+  },
+  {
+    "hash": "e269a438a6ef70e4",
+    "lemmas": [
+      "attr",
+      "location",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X-across_from-Y",
+    "family": "other"
+  },
+  {
+    "hash": "c05ace252fc4a265",
+    "lemmas": [
+      "attr",
+      "location",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X-adjacent_to-Y",
+    "family": "other"
+  },
+  {
+    "hash": "5bae4e34243af40b",
+    "lemmas": [
+      "attr",
+      "nsubj",
+      "place",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X-based_in-Y",
+    "family": "other"
+  },
+  {
+    "hash": "9d750447f07e6b95",
+    "lemmas": [
+      "attr",
+      "nsubj",
+      "place",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X-north_of-Y",
+    "family": "other"
+  },
+  {
+    "hash": "19b66ba9625ece4e",
+    "lemmas": [
+      "dobj",
+      "nsubj",
+      "obj",
+      "preced"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-before-Y",
+    "family": "temporal"
+  },
+  {
+    "hash": "50782a810becf0f7",
+    "lemmas": [
+      "dobj",
+      "follow",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-after-Y",
+    "family": "temporal"
+  },
+  {
+    "hash": "a0981303ec8bc516",
+    "lemmas": [
+      "dobj",
+      "nsubj",
+      "obj",
+      "occurr"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-during-Y",
+    "family": "temporal"
+  },
+  {
+    "hash": "7940ca4af84e776e",
+    "lemmas": [
+      "appo",
+      "before",
+      "pobj",
+      "prep",
+      "time"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(appos)-since-Y",
+    "family": "temporal"
+  },
+  {
+    "hash": "d9488cabc7ae833b",
+    "lemmas": [
+      "after",
+      "appo",
+      "pobj",
+      "prep",
+      "time"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(appos)-until-Y",
+    "family": "other"
+  },
+  {
+    "hash": "f4fdec2c6bf3ccbc",
+    "lemmas": [
+      "appo",
+      "before",
+      "date",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(appos)-on-Y",
+    "family": "other"
+  },
+  {
+    "hash": "6e82bc97f7714c1f",
+    "lemmas": [
+      "after",
+      "appo",
+      "date",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(appos)-between-Y",
+    "family": "other"
+  },
+  {
+    "hash": "af633f7b6dcd0a9c",
+    "lemmas": [
+      "appo",
+      "before",
+      "period",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(appos)-before-Y",
+    "family": "temporal"
+  },
+  {
+    "hash": "379eb83e4b745509",
+    "lemmas": [
+      "after",
+      "appo",
+      "period",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(appos)-after-Y",
+    "family": "temporal"
+  },
+  {
+    "hash": "1eabc3f15d8abc4d",
+    "lemmas": [
+      "agent",
+      "nsubjpas",
+      "pobj",
+      "preced"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-during-X",
+    "family": "temporal"
+  },
+  {
+    "hash": "f436ab2764d90015",
+    "lemmas": [
+      "agent",
+      "follow",
+      "nsubjpas",
+      "pobj"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-since-X",
+    "family": "temporal"
+  },
+  {
+    "hash": "b6e46683d96af449",
+    "lemmas": [
+      "pos",
+      "time"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-until-Y",
+    "family": "other"
+  },
+  {
+    "hash": "6acc23ec2e887a42",
+    "lemmas": [
+      "date",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-on-Y",
+    "family": "other"
+  },
+  {
+    "hash": "291569f4775fddb5",
+    "lemmas": [
+      "attr",
+      "before",
+      "nsubj",
+      "pobj",
+      "prep",
+      "time"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-between-Y",
+    "family": "other"
+  },
+  {
+    "hash": "8d9a1acab4d3f8e0",
+    "lemmas": [
+      "after",
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep",
+      "time"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-before-Y",
+    "family": "temporal"
+  },
+  {
+    "hash": "52fe25efbc02ef09",
+    "lemmas": [
+      "attr",
+      "before",
+      "date",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-after-Y",
+    "family": "temporal"
+  },
+  {
+    "hash": "c82a8ea88c58f158",
+    "lemmas": [
+      "after",
+      "attr",
+      "date",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-during-Y",
+    "family": "temporal"
+  },
+  {
+    "hash": "b5fbc8ac42246c57",
+    "lemmas": [
+      "caus",
+      "dobj",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-caused_by-Y",
+    "family": "causation"
+  },
+  {
+    "hash": "cd7c856b1c60af8f",
+    "lemmas": [
+      "dobj",
+      "lead",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-led_to-Y",
+    "family": "causation"
+  },
+  {
+    "hash": "227338a7b23aa0a0",
+    "lemmas": [
+      "dobj",
+      "influenc",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-influenced_by-Y",
+    "family": "other"
+  },
+  {
+    "hash": "0b76a0acb14d9a53",
+    "lemmas": [
+      "appo",
+      "cause",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-resulted_from-Y",
+    "family": "causation"
+  },
+  {
+    "hash": "c802e6703127c36b",
+    "lemmas": [
+      "appo",
+      "cause",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-due_to-Y",
+    "family": "other"
+  },
+  {
+    "hash": "ea87beb5c167249f",
+    "lemmas": [
+      "appo",
+      "pobj",
+      "prep",
+      "result"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-triggered_by-Y",
+    "family": "other"
+  },
+  {
+    "hash": "bd69fc6f25d0175f",
+    "lemmas": [
+      "appo",
+      "pobj",
+      "prep",
+      "result"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-caused_by-Y",
+    "family": "causation"
+  },
+  {
+    "hash": "7fdeef74d37dcb68",
+    "lemmas": [
+      "appo",
+      "consequence",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-led_to-Y",
+    "family": "causation"
+  },
+  {
+    "hash": "719c3957054911c3",
+    "lemmas": [
+      "appo",
+      "consequence",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-influenced_by-Y",
+    "family": "other"
+  },
+  {
+    "hash": "cfff2e1452f0d715",
+    "lemmas": [
+      "agent",
+      "caus",
+      "nsubjpas",
+      "pobj"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-resulted_from-X",
+    "family": "causation"
+  },
+  {
+    "hash": "7bc1188df8918dbe",
+    "lemmas": [
+      "agent",
+      "lead",
+      "nsubjpas",
+      "pobj"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-due_to-X",
+    "family": "other"
+  },
+  {
+    "hash": "6c6868e452526eba",
+    "lemmas": [
+      "cause",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-triggered_by-Y",
+    "family": "other"
+  },
+  {
+    "hash": "195b84c82947f797",
+    "lemmas": [
+      "pos",
+      "result"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-caused_by-Y",
+    "family": "causation"
+  },
+  {
+    "hash": "7a69647c0d5ad161",
+    "lemmas": [
+      "attr",
+      "cause",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X-led_to-Y",
+    "family": "causation"
+  },
+  {
+    "hash": "1c7e765c32dd66e6",
+    "lemmas": [
+      "attr",
+      "cause",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X-influenced_by-Y",
+    "family": "other"
+  },
+  {
+    "hash": "508d3c27a2a4e1dc",
+    "lemmas": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep",
+      "result"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X-resulted_from-Y",
+    "family": "causation"
+  },
+  {
+    "hash": "779fc6c4c048bfb1",
+    "lemmas": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep",
+      "result"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X-due_to-Y",
+    "family": "other"
+  },
+  {
+    "hash": "70d57fc611f78493",
+    "lemmas": [
+      "comprise",
+      "dobj",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-part_of-Y",
+    "family": "part_whole"
+  },
+  {
+    "hash": "91e215868bdf771c",
+    "lemmas": [
+      "consist",
+      "dobj",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-consists_of-Y",
+    "family": "other"
+  },
+  {
+    "hash": "d8cdc9fb9decd615",
+    "lemmas": [
+      "dobj",
+      "include",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-includes-Y",
+    "family": "other"
+  },
+  {
+    "hash": "e3951442fc9d5a7f",
+    "lemmas": [
+      "appo",
+      "part",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-contains-Y",
+    "family": "other"
+  },
+  {
+    "hash": "d030ac00d6bb53a8",
+    "lemmas": [
+      "appo",
+      "part",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-made_of-Y",
+    "family": "other"
+  },
+  {
+    "hash": "7e57f28e435f2e42",
+    "lemmas": [
+      "appo",
+      "component",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-comprises-Y",
+    "family": "other"
+  },
+  {
+    "hash": "d8018dd6e73d5b40",
+    "lemmas": [
+      "appo",
+      "component",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-part_of-Y",
+    "family": "part_whole"
+  },
+  {
+    "hash": "2fcc5e265f4003e3",
+    "lemmas": [
+      "appo",
+      "piece",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-consists_of-Y",
+    "family": "other"
+  },
+  {
+    "hash": "30510578bfc5fb97",
+    "lemmas": [
+      "appo",
+      "piece",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-includes-Y",
+    "family": "other"
+  },
+  {
+    "hash": "1b0e04cc2eb2fe51",
+    "lemmas": [
+      "agent",
+      "comprise",
+      "nsubjpas",
+      "pobj"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-contains-X",
+    "family": "other"
+  },
+  {
+    "hash": "e8705a5a1c8617e8",
+    "lemmas": [
+      "agent",
+      "consist",
+      "nsubjpas",
+      "pobj"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-made_of-X",
+    "family": "other"
+  },
+  {
+    "hash": "ca6f7794b6434132",
+    "lemmas": [
+      "part",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-comprises-Y",
+    "family": "other"
+  },
+  {
+    "hash": "f2db34813e58995d",
+    "lemmas": [
+      "component",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-part_of-Y",
+    "family": "part_whole"
+  },
+  {
+    "hash": "8df6553130b4a0cf",
+    "lemmas": [
+      "attr",
+      "nsubj",
+      "part",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-consists_of-Y",
+    "family": "other"
+  },
+  {
+    "hash": "88cd581f609cfd85",
+    "lemmas": [
+      "attr",
+      "nsubj",
+      "part",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X-includes-Y",
+    "family": "other"
+  },
+  {
+    "hash": "1573191d79393540",
+    "lemmas": [
+      "attr",
+      "component",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-contains-Y",
+    "family": "other"
+  },
+  {
+    "hash": "fbe790a86f1a09af",
+    "lemmas": [
+      "attr",
+      "component",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X-made_of-Y",
+    "family": "other"
+  },
+  {
+    "hash": "40feff90f27efe74",
+    "lemmas": [
+      "dobj",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-is-Y",
+    "family": "identity"
+  },
+  {
+    "hash": "16fc64418272790c",
+    "lemmas": [
+      "dobj",
+      "equal",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-equals-Y",
+    "family": "identity"
+  },
+  {
+    "hash": "365481128acf03c8",
+    "lemmas": [
+      "dobj",
+      "nsubj",
+      "obj",
+      "represent"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-same_as-Y",
+    "family": "identity"
+  },
+  {
+    "hash": "c8de1f703a696dc7",
+    "lemmas": [
+      "alia",
+      "appo",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(appos)-alias_of-Y",
+    "family": "identity"
+  },
+  {
+    "hash": "d83d181ad64a945d",
+    "lemmas": [
+      "alia",
+      "appo",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-also_known_as-Y",
+    "family": "other"
+  },
+  {
+    "hash": "610fd3da78c8d6d5",
+    "lemmas": [
+      "appo",
+      "name",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(appos)-represents-Y",
+    "family": "identity"
+  },
+  {
+    "hash": "e5cb16fc24d21371",
+    "lemmas": [
+      "appo",
+      "name",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-is-Y",
+    "family": "identity"
+  },
+  {
+    "hash": "ae3602459f2bdf5d",
+    "lemmas": [
+      "appo",
+      "pobj",
+      "prep",
+      "title"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(appos)-equals-Y",
+    "family": "identity"
+  },
+  {
+    "hash": "4925da07f181ab7a",
+    "lemmas": [
+      "appo",
+      "pobj",
+      "prep",
+      "title"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-same_as-Y",
+    "family": "identity"
+  },
+  {
+    "hash": "b98607d99280dfb2",
+    "lemmas": [
+      "agent",
+      "nsubjpas",
+      "pobj"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-alias_of-X",
+    "family": "identity"
+  },
+  {
+    "hash": "0c2579f9650de696",
+    "lemmas": [
+      "agent",
+      "equal",
+      "nsubjpas",
+      "pobj"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-also_known_as-X",
+    "family": "other"
+  },
+  {
+    "hash": "27f9b9ade4e7b503",
+    "lemmas": [
+      "alia",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-represents-Y",
+    "family": "identity"
+  },
+  {
+    "hash": "6da23e65d5c9cc5e",
+    "lemmas": [
+      "name",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-is-Y",
+    "family": "identity"
+  },
+  {
+    "hash": "87ea5f7e9aea74e9",
+    "lemmas": [
+      "alia",
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-equals-Y",
+    "family": "identity"
+  },
+  {
+    "hash": "11a6e9d13b3a074d",
+    "lemmas": [
+      "alia",
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X-same_as-Y",
+    "family": "identity"
+  },
+  {
+    "hash": "4ac1a62b546a17d3",
+    "lemmas": [
+      "attr",
+      "name",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-alias_of-Y",
+    "family": "identity"
+  },
+  {
+    "hash": "9338c1c3c43d51ce",
+    "lemmas": [
+      "attr",
+      "name",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X-also_known_as-Y",
+    "family": "other"
+  },
+  {
+    "hash": "2ec230f049bbbdfe",
+    "lemmas": [
+      "attend",
+      "dobj",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-attended-Y",
+    "family": "event"
+  },
+  {
+    "hash": "f27de69c593e88ba",
+    "lemmas": [
+      "dobj",
+      "nsubj",
+      "obj",
+      "participat"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-participated_in-Y",
+    "family": "event"
+  },
+  {
+    "hash": "6e74e8b6e80971b2",
+    "lemmas": [
+      "dobj",
+      "host",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-hosted-Y",
+    "family": "event"
+  },
+  {
+    "hash": "0ffc12c54a436099",
+    "lemmas": [
+      "appo",
+      "participant",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-performed_at-Y",
+    "family": "event"
+  },
+  {
+    "hash": "f1dbfb7fe18bd8bc",
+    "lemmas": [
+      "appo",
+      "participant",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-witnessed-Y",
+    "family": "other"
+  },
+  {
+    "hash": "7ba9d957c95897fd",
+    "lemmas": [
+      "appo",
+      "attendee",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-organized-Y",
+    "family": "other"
+  },
+  {
+    "hash": "6dc51ca34f12deeb",
+    "lemmas": [
+      "appo",
+      "attendee",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-attended-Y",
+    "family": "event"
+  },
+  {
+    "hash": "ba3ab338b04e604a",
+    "lemmas": [
+      "appo",
+      "host",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-participated_in-Y",
+    "family": "event"
+  },
+  {
+    "hash": "cfcc7166227763bf",
+    "lemmas": [
+      "appo",
+      "host",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-hosted-Y",
+    "family": "event"
+  },
+  {
+    "hash": "711d802083c4c1d7",
+    "lemmas": [
+      "agent",
+      "attend",
+      "nsubjpas",
+      "pobj"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-performed_at-X",
+    "family": "event"
+  },
+  {
+    "hash": "56180c376164fc01",
+    "lemmas": [
+      "agent",
+      "nsubjpas",
+      "participat",
+      "pobj"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-witnessed-X",
+    "family": "other"
+  },
+  {
+    "hash": "d6192e10fd952e5c",
+    "lemmas": [
+      "participant",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-organized-Y",
+    "family": "other"
+  },
+  {
+    "hash": "d9f10d416db630bd",
+    "lemmas": [
+      "attendee",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-attended-Y",
+    "family": "event"
+  },
+  {
+    "hash": "7608fe537a89d233",
+    "lemmas": [
+      "attr",
+      "nsubj",
+      "participant",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X-participated_in-Y",
+    "family": "event"
+  },
+  {
+    "hash": "bc5691318ae8b0db",
+    "lemmas": [
+      "attr",
+      "nsubj",
+      "participant",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X-hosted-Y",
+    "family": "event"
+  },
+  {
+    "hash": "26e3a769c038e3c4",
+    "lemmas": [
+      "attendee",
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X-performed_at-Y",
+    "family": "event"
+  },
+  {
+    "hash": "66f0ec375f70b711",
+    "lemmas": [
+      "attendee",
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X-witnessed-Y",
+    "family": "other"
+  },
+  {
+    "hash": "3a04dd8f6986f722",
+    "lemmas": [
+      "dobj",
+      "nsubj",
+      "obj",
+      "told"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-told-Y",
+    "family": "communication"
+  },
+  {
+    "hash": "5a7314abefc739a8",
+    "lemmas": [
+      "dobj",
+      "nsubj",
+      "obj",
+      "said"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-said_to-Y",
+    "family": "communication"
+  },
+  {
+    "hash": "6f9a9f3ab90378b5",
+    "lemmas": [
+      "dobj",
+      "nsubj",
+      "obj",
+      "write"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-wrote_to-Y",
+    "family": "communication"
+  },
+  {
+    "hash": "e92e36111b3ba399",
+    "lemmas": [
+      "appo",
+      "message",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-asked-Y",
+    "family": "communication"
+  },
+  {
+    "hash": "6bc61c4fa3485389",
+    "lemmas": [
+      "appo",
+      "message",
+      "pobj",
+      "prep",
+      "with"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "with"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-informed-Y",
+    "family": "other"
+  },
+  {
+    "hash": "ccfed6dc410d4150",
+    "lemmas": [
+      "appo",
+      "letter",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-replied-Y",
+    "family": "other"
+  },
+  {
+    "hash": "877eaa3d05868b0b",
+    "lemmas": [
+      "appo",
+      "letter",
+      "pobj",
+      "prep",
+      "with"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "with"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-reported-Y",
+    "family": "other"
+  },
+  {
+    "hash": "23a36252586ab05c",
+    "lemmas": [
+      "appo",
+      "pobj",
+      "prep",
+      "speech"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-spoke_to-Y",
+    "family": "communication"
+  },
+  {
+    "hash": "f33cb74e6c8f1a4c",
+    "lemmas": [
+      "appo",
+      "pobj",
+      "prep",
+      "speech",
+      "with"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "with"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-told-Y",
+    "family": "communication"
+  },
+  {
+    "hash": "380aef28da077942",
+    "lemmas": [
+      "agent",
+      "nsubjpas",
+      "pobj",
+      "told"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-said_to-X",
+    "family": "communication"
+  },
+  {
+    "hash": "8ff78e8e7fc2c180",
+    "lemmas": [
+      "agent",
+      "nsubjpas",
+      "pobj",
+      "said"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-wrote_to-X",
+    "family": "communication"
+  },
+  {
+    "hash": "c34c3b91f0979959",
+    "lemmas": [
+      "message",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-asked-Y",
+    "family": "communication"
+  },
+  {
+    "hash": "80e942f6332aaf03",
+    "lemmas": [
+      "letter",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-informed-Y",
+    "family": "other"
+  },
+  {
+    "hash": "f11d59a61d379823",
+    "lemmas": [
+      "attr",
+      "message",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X-replied-Y",
+    "family": "other"
+  },
+  {
+    "hash": "1a90ceb3f4dc0c31",
+    "lemmas": [
+      "attr",
+      "message",
+      "nsubj",
+      "pobj",
+      "prep",
+      "with"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "with"
+    ],
+    "voice": "neutral",
+    "structure": "X-reported-Y",
+    "family": "other"
+  },
+  {
+    "hash": "c09bec01ea0a9504",
+    "lemmas": [
+      "attr",
+      "letter",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X-spoke_to-Y",
+    "family": "communication"
+  },
+  {
+    "hash": "a8efa223bdea8e1d",
+    "lemmas": [
+      "attr",
+      "letter",
+      "nsubj",
+      "pobj",
+      "prep",
+      "with"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "with"
+    ],
+    "voice": "neutral",
+    "structure": "X-told-Y",
+    "family": "communication"
+  },
+  {
+    "hash": "224db931902856e9",
+    "lemmas": [
+      "controll",
+      "dobj",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-controlled_by-Y",
+    "family": "power"
+  },
+  {
+    "hash": "b9057686b8fd8bb2",
+    "lemmas": [
+      "dobj",
+      "nsubj",
+      "obj",
+      "rule"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-ruled_by-Y",
+    "family": "other"
+  },
+  {
+    "hash": "4861621b5985cbe9",
+    "lemmas": [
+      "command",
+      "dobj",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-commanded_by-Y",
+    "family": "power"
+  },
+  {
+    "hash": "69d03b188aada5fd",
+    "lemmas": [
+      "appo",
+      "pobj",
+      "prep",
+      "ruler"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-managed_by-Y",
+    "family": "other"
+  },
+  {
+    "hash": "a59de4e5feba2f3a",
+    "lemmas": [
+      "appo",
+      "over",
+      "pobj",
+      "prep",
+      "ruler"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(appos)-governed_by-Y",
+    "family": "power"
+  },
+  {
+    "hash": "9879be1a7272c7e6",
+    "lemmas": [
+      "appo",
+      "k",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-led_by-Y",
+    "family": "other"
+  },
+  {
+    "hash": "22134ca79d6fbd38",
+    "lemmas": [
+      "appo",
+      "k",
+      "over",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(appos)-controlled_by-Y",
+    "family": "power"
+  },
+  {
+    "hash": "11aa9d12bd8dcbaa",
+    "lemmas": [
+      "appo",
+      "pobj",
+      "prep",
+      "queen"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-ruled_by-Y",
+    "family": "other"
+  },
+  {
+    "hash": "d7fa0d206f021220",
+    "lemmas": [
+      "appo",
+      "over",
+      "pobj",
+      "prep",
+      "queen"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(appos)-commanded_by-Y",
+    "family": "power"
+  },
+  {
+    "hash": "868cc8261dc376ee",
+    "lemmas": [
+      "agent",
+      "controll",
+      "nsubjpas",
+      "pobj"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-managed_by-X",
+    "family": "other"
+  },
+  {
+    "hash": "d3f6450a53041682",
+    "lemmas": [
+      "agent",
+      "nsubjpas",
+      "pobj",
+      "rule"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-governed_by-X",
+    "family": "power"
+  },
+  {
+    "hash": "c440c2312ce3fd5c",
+    "lemmas": [
+      "pos",
+      "ruler"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-led_by-Y",
+    "family": "other"
+  },
+  {
+    "hash": "d338e8aecd0d305b",
+    "lemmas": [
+      "k",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-controlled_by-Y",
+    "family": "power"
+  },
+  {
+    "hash": "7b9ee9122f203161",
+    "lemmas": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep",
+      "ruler"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X-ruled_by-Y",
+    "family": "other"
+  },
+  {
+    "hash": "9afbabf5ed2a4c27",
+    "lemmas": [
+      "attr",
+      "nsubj",
+      "over",
+      "pobj",
+      "prep",
+      "ruler"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-commanded_by-Y",
+    "family": "power"
+  },
+  {
+    "hash": "d96b32f9139e8057",
+    "lemmas": [
+      "attr",
+      "k",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X-managed_by-Y",
+    "family": "other"
+  },
+  {
+    "hash": "45016db305bc3c40",
+    "lemmas": [
+      "attr",
+      "k",
+      "nsubj",
+      "over",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-governed_by-Y",
+    "family": "power"
+  },
+  {
+    "hash": "6c38e7de6939c71e",
+    "lemmas": [
+      "dobj",
+      "exceed",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-greater_than-Y",
+    "family": "comparison"
+  },
+  {
+    "hash": "fd7c86796f3d4e90",
+    "lemmas": [
+      "dobj",
+      "nsubj",
+      "obj",
+      "surpasse"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-less_than-Y",
+    "family": "comparison"
+  },
+  {
+    "hash": "b701b36d37643c2b",
+    "lemmas": [
+      "dobj",
+      "equal",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-equal_to-Y",
+    "family": "other"
+  },
+  {
+    "hash": "ea9e3d2be44e59a7",
+    "lemmas": [
+      "appo",
+      "greater",
+      "pobj",
+      "prep",
+      "than"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(appos)-higher_than-Y",
+    "family": "other"
+  },
+  {
+    "hash": "2242db2348e0d061",
+    "lemmas": [
+      "appo",
+      "greater",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-similar_to-Y",
+    "family": "comparison"
+  },
+  {
+    "hash": "ff1146bbe7495238",
+    "lemmas": [
+      "appo",
+      "les",
+      "pobj",
+      "prep",
+      "than"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(appos)-different_from-Y",
+    "family": "other"
+  },
+  {
+    "hash": "197783a8fbff5a08",
+    "lemmas": [
+      "appo",
+      "les",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-greater_than-Y",
+    "family": "comparison"
+  },
+  {
+    "hash": "07d955e737f0ba11",
+    "lemmas": [
+      "appo",
+      "equal",
+      "pobj",
+      "prep",
+      "than"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(appos)-less_than-Y",
+    "family": "comparison"
+  },
+  {
+    "hash": "c56204a4ff51691c",
+    "lemmas": [
+      "appo",
+      "equal",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-equal_to-Y",
+    "family": "other"
+  },
+  {
+    "hash": "df5b585d6f46342c",
+    "lemmas": [
+      "agent",
+      "exceed",
+      "nsubjpas",
+      "pobj"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-higher_than-X",
+    "family": "other"
+  },
+  {
+    "hash": "8da6f5d325f6397e",
+    "lemmas": [
+      "agent",
+      "nsubjpas",
+      "pobj",
+      "surpasse"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-similar_to-X",
+    "family": "comparison"
+  },
+  {
+    "hash": "1483136cbd6d84ce",
+    "lemmas": [
+      "greater",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-different_from-Y",
+    "family": "other"
+  },
+  {
+    "hash": "a931d7665f590d30",
+    "lemmas": [
+      "les",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-greater_than-Y",
+    "family": "comparison"
+  },
+  {
+    "hash": "c57d0edc90f2ab96",
+    "lemmas": [
+      "attr",
+      "greater",
+      "nsubj",
+      "pobj",
+      "prep",
+      "than"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-less_than-Y",
+    "family": "comparison"
+  },
+  {
+    "hash": "bdf72da077ed0f82",
+    "lemmas": [
+      "attr",
+      "greater",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X-equal_to-Y",
+    "family": "other"
+  },
+  {
+    "hash": "4519467a4a740e72",
+    "lemmas": [
+      "attr",
+      "les",
+      "nsubj",
+      "pobj",
+      "prep",
+      "than"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-higher_than-Y",
+    "family": "other"
+  },
+  {
+    "hash": "2a4fe39658e51d51",
+    "lemmas": [
+      "attr",
+      "les",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X-similar_to-Y",
+    "family": "comparison"
+  },
+  {
+    "hash": "2213f6151ea0c19b",
+    "lemmas": [
+      "dobj",
+      "love",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-loved-Y",
+    "family": "emotional"
+  },
+  {
+    "hash": "7ccd8a59230a1d78",
+    "lemmas": [
+      "dobj",
+      "hate",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-hated-Y",
+    "family": "emotional"
+  },
+  {
+    "hash": "7ad0be53b943c9dd",
+    "lemmas": [
+      "dobj",
+      "nsubj",
+      "obj",
+      "respect"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-respected-Y",
+    "family": "other"
+  },
+  {
+    "hash": "1502fbbf35cebce3",
+    "lemmas": [
+      "appo",
+      "lover",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-disliked-Y",
+    "family": "other"
+  },
+  {
+    "hash": "737ad7fbf8dd2110",
+    "lemmas": [
+      "appo",
+      "lover",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-admired-Y",
+    "family": "emotional"
+  },
+  {
+    "hash": "01bdc4b8382210e5",
+    "lemmas": [
+      "appo",
+      "friend",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-envied-Y",
+    "family": "other"
+  },
+  {
+    "hash": "89d876c91692b009",
+    "lemmas": [
+      "appo",
+      "friend",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-feared-Y",
+    "family": "emotional"
+  },
+  {
+    "hash": "72f9bdc43a8233b4",
+    "lemmas": [
+      "appo",
+      "enemy",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-loved-Y",
+    "family": "emotional"
+  },
+  {
+    "hash": "51a6b1a0576281ea",
+    "lemmas": [
+      "appo",
+      "enemy",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-hated-Y",
+    "family": "emotional"
+  },
+  {
+    "hash": "aaa8c6a6ca65c8ff",
+    "lemmas": [
+      "agent",
+      "love",
+      "nsubjpas",
+      "pobj"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-respected-X",
+    "family": "other"
+  },
+  {
+    "hash": "7b965b31a3eeb7b8",
+    "lemmas": [
+      "agent",
+      "hate",
+      "nsubjpas",
+      "pobj"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-disliked-X",
+    "family": "other"
+  },
+  {
+    "hash": "a7fa9204b96142f2",
+    "lemmas": [
+      "lover",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-admired-Y",
+    "family": "emotional"
+  },
+  {
+    "hash": "4cde77769d5e1274",
+    "lemmas": [
+      "friend",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-envied-Y",
+    "family": "other"
+  },
+  {
+    "hash": "30a98671db765143",
+    "lemmas": [
+      "attr",
+      "lover",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X-feared-Y",
+    "family": "emotional"
+  },
+  {
+    "hash": "451a399c7ee81fc1",
+    "lemmas": [
+      "attr",
+      "lover",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-loved-Y",
+    "family": "emotional"
+  },
+  {
+    "hash": "18a3dcb185245d36",
+    "lemmas": [
+      "attr",
+      "friend",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X-hated-Y",
+    "family": "emotional"
+  },
+  {
+    "hash": "a675a2c468661b52",
+    "lemmas": [
+      "attr",
+      "friend",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-respected-Y",
+    "family": "other"
+  },
+  {
+    "hash": "4e807b7836abf2d3",
+    "lemmas": [
+      "deni",
+      "dobj",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-not_related_to-Y",
+    "family": "other"
+  },
+  {
+    "hash": "3a75e39e2222f7a4",
+    "lemmas": [
+      "disput",
+      "dobj",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-alleged-Y",
+    "family": "other"
+  },
+  {
+    "hash": "0c610e335ea59041",
+    "lemmas": [
+      "alleg",
+      "dobj",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-rumored-Y",
+    "family": "other"
+  },
+  {
+    "hash": "b388e0e0cf41f1d7",
+    "lemmas": [
+      "allegation",
+      "appo",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-denied-Y",
+    "family": "other"
+  },
+  {
+    "hash": "019f694ea34bc5b4",
+    "lemmas": [
+      "about",
+      "allegation",
+      "appo",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(appos)-disputed-Y",
+    "family": "other"
+  },
+  {
+    "hash": "a4453ac4cea27c29",
+    "lemmas": [
+      "appo",
+      "pobj",
+      "prep",
+      "rumor"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-uncertain_link-Y",
+    "family": "other"
+  },
+  {
+    "hash": "b07d93285674b563",
+    "lemmas": [
+      "about",
+      "appo",
+      "pobj",
+      "prep",
+      "rumor"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(appos)-not_related_to-Y",
+    "family": "other"
+  },
+  {
+    "hash": "fe3c2809cc49975a",
+    "lemmas": [
+      "appo",
+      "denial",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X(appos)-alleged-Y",
+    "family": "other"
+  },
+  {
+    "hash": "0f22d7bf808d7761",
+    "lemmas": [
+      "about",
+      "appo",
+      "denial",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "appos",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(appos)-rumored-Y",
+    "family": "other"
+  },
+  {
+    "hash": "c6317883a8759d3b",
+    "lemmas": [
+      "agent",
+      "deni",
+      "nsubjpas",
+      "pobj"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-denied-X",
+    "family": "other"
+  },
+  {
+    "hash": "6cedb95339ba639b",
+    "lemmas": [
+      "agent",
+      "disput",
+      "nsubjpas",
+      "pobj"
+    ],
+    "roles": [
+      "agent",
+      "nsubjpass",
+      "pobj"
+    ],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "passive",
+    "structure": "Y-disputed-X",
+    "family": "other"
+  },
+  {
+    "hash": "db33037744ccef21",
+    "lemmas": [
+      "allegation",
+      "pos"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-uncertain_link-Y",
+    "family": "other"
+  },
+  {
+    "hash": "eb8e99c78fd7a253",
+    "lemmas": [
+      "pos",
+      "rumor"
+    ],
+    "roles": [
+      "poss"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X(poss)-not_related_to-Y",
+    "family": "other"
+  },
+  {
+    "hash": "e1422b2d182fd68a",
+    "lemmas": [
+      "allegation",
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X-alleged-Y",
+    "family": "other"
+  },
+  {
+    "hash": "5985fb1348f13bfc",
+    "lemmas": [
+      "about",
+      "allegation",
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-rumored-Y",
+    "family": "other"
+  },
+  {
+    "hash": "7c4c98d748f5f192",
+    "lemmas": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep",
+      "rumor"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X-denied-Y",
+    "family": "other"
+  },
+  {
+    "hash": "89313edde2f8d6d8",
+    "lemmas": [
+      "about",
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep",
+      "rumor"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-disputed-Y",
+    "family": "other"
+  },
+  {
+    "hash": "c0b7d98f4b440498",
+    "lemmas": [
+      "dobj",
+      "nsubj",
+      "obj",
+      "paint"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-painted-Y",
+    "family": "other"
+  },
+  {
+    "hash": "ff04a6a195e61313",
+    "lemmas": [
+      "compos",
+      "dobj",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-composed-Y",
+    "family": "other"
+  },
+  {
+    "hash": "cad06c97d49cc912",
+    "lemmas": [
+      "design",
+      "dobj",
+      "nsubj",
+      "obj"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-designed-Y",
+    "family": "other"
+  },
+  {
+    "hash": "3b942c23e8a16a15",
+    "lemmas": [
+      "dobj",
+      "nsubj",
+      "obj",
+      "sculpt"
+    ],
+    "roles": [
+      "nsubj"
+    ],
+    "prepositions": [],
+    "voice": "active",
+    "structure": "X-sculpted-Y",
+    "family": "other"
+  },
+  {
     "hash": "0e0e45224a63dc6a",
     "lemmas": [
       "dwell",

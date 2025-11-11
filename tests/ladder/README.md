@@ -1,6 +1,10 @@
 # Test Ladder - Progressive Quality Gates
 
-Each level tests increasingly complex extraction scenarios. You must pass Level N before moving to Level N+1.
+**📖 For complete testing strategy**: See `/home/user/ARES/UNIFIED_TESTING_STRATEGY.md`
+
+This directory contains Progressive Level tests. Each level tests increasingly complex extraction scenarios. You must pass Level N before moving to Level N+1.
+
+**Note**: These Level tests work together with Diagnostic Rungs (see unified strategy) to provide a complete testing workflow.
 
 ## Philosophy
 

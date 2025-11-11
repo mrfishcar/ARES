@@ -184,6 +184,64 @@ make smoke       # Quick validation
 make clean       # Remove generated files
 ```
 
+## Testing Strategy
+
+**IMPORTANT**: ARES uses a **5-stage integrated testing ladder** that combines component health checks with extraction quality gates.
+
+See [INTEGRATED_TESTING_STRATEGY.md](INTEGRATED_TESTING_STRATEGY.md) for complete details.
+
+### Quick Overview
+
+**Single progressive ladder** where each stage validates both component health AND extraction quality:
+
+```
+Stage 1: Foundation [✅ PASSED]
+├─ 1.1 Pattern Coverage Audit (≥30%)
+├─ 1.2 Entity Quality Check
+└─ 1.3 Simple Sentence Extraction (P≥90%, R≥85%)
+
+Stage 2: Component Validation [⚠️ 99%]
+├─ 2.1 Synthetic Baseline (F1≥10%)
+├─ 2.2 Precision Guardrails Test
+└─ 2.3 Multi-Sentence Extraction (P≥85%, R≥80%)
+
+Stage 3: Complex Extraction [⏸️ Not Started]
+├─ 3.1 Cross-Sentence Coreference
+├─ 3.2 Pattern Family Coverage (≥50%)
+└─ 3.3 Complex Paragraph Extraction (P≥80%, R≥75%)
+
+Stage 4: Scale Testing [⏸️ Future]
+├─ 4.1 Performance Benchmarks
+├─ 4.2 Memory Profile
+└─ 4.3 Mega Regression Test (P≥75%, R≥70%)
+
+Stage 5: Production Readiness [⏸️ Future]
+├─ 5.1 Canary Corpus (P≥75%, R≥65%)
+├─ 5.2 Real-World Validation
+└─ 5.3 Edge Case Coverage
+```
+
+### Testing Workflow
+
+```bash
+# Run Stage 1 (Foundation)
+npx ts-node scripts/pattern-expansion/inventory-patterns.ts  # 1.1 Pattern coverage
+npm test tests/ladder/level-1-simple.spec.ts                 # 1.3 Simple extraction
+
+# Run Stage 2 (Component Validation)
+npx tsx scripts/pattern-expansion/evaluate-coverage.ts --precision_guardrails  # 2.1, 2.2
+npm test tests/ladder/level-2-multisentence.spec.ts         # 2.3 Multi-sentence
+
+# Run Stage 3 (Complex Extraction) - when Stage 2 passes
+npm test tests/ladder/level-3-complex.spec.ts               # 3.3 Complex paragraphs
+```
+
+**Key Principle**: Check component health FIRST, then test extraction quality. Don't waste time testing extraction when components are broken.
+
+**Current Status**: Stage 1 passed ✅, Stage 2 at 99% (blocked on test 2.12 appositive parsing), Stages 3-5 not yet started.
+
+**Current Blocker**: Pattern coverage at 26% (need ≥30% for optimal Stage 3+ performance).
+
 ## Project Structure
 
 ```
