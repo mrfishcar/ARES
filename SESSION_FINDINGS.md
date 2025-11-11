@@ -1,10 +1,15 @@
 # ARES Test Ladder - Session Findings
 **Date:** 2025-11-11
 **Session Type:** Continued from previous session
+**Last Updated:** After merge from origin/main (commit e75df1e)
 
 ## Executive Summary
 
-After resuming the previous session's work, I discovered that **Level 2 tests are now PASSING**, contrary to the previous session's summary. The actual bottleneck is **Level 3**, which has low relation precision (56.4% vs. target of 80%).
+After resuming the previous session's work and merging latest changes from origin/main, the status is:
+- **Level 2 tests: PASSING** ✅
+- **Level 3 tests: FAILING** ❌
+- **Primary Issue:** Relation precision (56.7%) and recall (33.6%) both below targets
+- **Entity Metrics:** Actually GOOD now (Precision: 92.5%, Recall: 86.4%) ✅
 
 ## Test Status
 
@@ -17,9 +22,11 @@ After resuming the previous session's work, I discovered that **Level 2 tests ar
 - **Key Finding:** The previous session's summary indicated 6 failures, but current state shows all passing
 
 ### ❌ Level 3: Complex Multi-Paragraph (FAILING)
-- **Test Result:** Relation Precision = 56.4% (target: 80%)
-- Entity Precision: Generally good (77-100% per test)
-- **Root Cause:** False positive entity extractions leading to cascade of false relations
+- **Test Result:** Relation Precision = 56.7% (target: 80%), Relation Recall = 33.6% (target: 75%)
+- **Entity Metrics:** PASSING ✅ (Precision: 92.5%, Recall: 86.4%, F1: 89.3%)
+- **Relation Metrics:** FAILING ❌ (Precision: 56.7%, Recall: 33.6%, F1: 42.2%)
+- **Root Cause:** Poor relation extraction - missing relations and false positives
+- **Key Issue:** Relation deduplication removing too many valid relations (77.8% removed)
 
 ## Critical Discovery: Previous Session's Fixes May Be Unnecessary
 
@@ -127,18 +134,75 @@ Added to `TYPE_SPECIFIC_BLOCKLIST.PERSON`:
 
 3. **Filter consolidation:** Consider merging entity-filter.ts and entity-quality-filter.ts into single coherent system
 
-## Key Metrics Summary
+## Key Metrics Summary (After Merge from origin/main)
 
-| Level | Status | Entity P/R | Relation P/R | Target |
-|-------|--------|-----------|--------------|--------|
+| Level | Status | Entity P/R/F1 | Relation P/R/F1 | Target |
+|-------|--------|---------------|-----------------|--------|
 | 1 | ✅ PASS | - | - | - |
 | 2 | ✅ PASS | ≥85% / ≥80% | ≥85% / ≥80% | PASS |
-| 3 | ❌ FAIL | 88% / 95% | **56%** / 71% | P≥80%, R≥75% |
+| 3 | ❌ FAIL | **92.5%** / **86.4%** / **89.3%** ✅ | **56.7%** / **33.6%** / **42.2%** ❌ | P≥80%, R≥75%, F1≥77% |
 
-**Bottleneck:** Level 3 relation precision @ 56.4% (need 80%)
-**Root Cause:** False positive entity extractions → cascade to false relations
-**Fix Needed:** Strengthen entity quality filtering for fantasy/common nouns
+**Bottleneck:** Level 3 relation metrics failing on ALL measures
+- Relation Precision: 56.7% (need 80%)
+- Relation Recall: 33.6% (need 75%)
+- Relation F1: 42.2% (need 77%)
+
+**Success:** Entity extraction is now PASSING after merge improvements ✅
+
+**Root Cause:** Relation deduplication is too aggressive (77.8% of relations removed)
+**Secondary Issue:** Missing relation patterns (e.g., "part_of" for house membership)
+
+**Fix Needed:**
+1. Adjust relation deduplication logic to be less aggressive
+2. Add/improve relation extraction patterns for complex narratives
+
+---
+
+## Merge from origin/main (Commit e75df1e)
+
+### What Was Merged
+Successfully merged 37 commits from origin/main into fix/level-2-test-failures branch:
+
+**New Documentation:**
+- START_HERE.md - Instructions for coding agents
+- CODING_AGENT_INSTRUCTIONS.md - Detailed task guide for Stage 2 recall fixes
+- ARES_PROGRESS_SUMMARY.md - Executive summary of main branch work
+- STAGE_3_ARCHITECTURAL_ANALYSIS.md - Architecture analysis
+
+**Engine Improvements:**
+- Entity quality filter enhancements
+- Relation extraction pattern improvements
+- Relation deduplication system
+- New test data (test-ladder-2.json)
+
+**Merge Conflict Resolved:**
+- app/engine/extract/coreference.ts - Kept our entity type filtering for pronouns
+
+### Impact of Merge
+**Positive:**
+- ✅ Entity extraction metrics now PASSING (P: 92.5%, R: 86.4%, F1: 89.3%)
+- ✅ Level 2 tests still passing
+- ✅ Entity quality filtering is working well
+
+**Negative:**
+- ❌ Relation extraction heavily impacted by aggressive deduplication
+- ❌ 77.8% of relations being removed as duplicates
+- ❌ Relation recall dropped significantly (33.6%)
+
+### Main Branch Context
+The main branch has been working on **Stage 2** (different from Level 2) with focus on:
+- Precision/recall tradeoff management
+- Document-level vs proximity-window filtering
+- Goal: Restore recall (71.1% → 80%) while maintaining precision (86.7%)
+
+**Our Branch (fix/level-2-test-failures) Focus:**
+- Level 2/Level 3 test ladder improvements
+- Entity quality filtering
+- Coreference resolution fixes
+
+**These are separate efforts working on different aspects of the system.**
 
 ---
 
 Generated: 2025-11-11
+Last Updated: After merge from origin/main (commit e75df1e)
