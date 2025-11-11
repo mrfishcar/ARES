@@ -11,7 +11,6 @@ import { extractEntities, parseWithService, normalizeName } from './entities';
 import { extractRelations } from './relations';
 import { splitIntoSentences } from '../segment';
 import { resolveCoref } from '../coref';
-import { resolveDeictics } from './deictic-resolution';
 import { extractAllNarrativeRelations } from '../narrative-relations';
 import { extractFictionEntities, type FictionEntity } from '../fiction-extraction';
 import { buildProfiles, type EntityProfile } from '../entity-profiler';
@@ -531,14 +530,110 @@ export async function extractFromSegments(
     }
   }
 
-  // Combine original relations with coref-enhanced relations
-  console.log(`[COREF] Found ${corefRelations.length} coref-enhanced relations`);
+  // Filter relations to suppress parent_of/child_of when married_to is present
+  // Step 1: Collect all married_to relations WITH their sentence indices
+  const marriedToRelations = new Set<string>();
+  const marriedToSentences = new Map<string, Set<number>>(); // pair -> set of sentence indices
+
+  // Check all relations for married_to
+  for (const rel of allRelations) {
+    if (rel.pred === 'married_to') {
+      const key1 = `${rel.subj}:${rel.obj}`;
+      const key2 = `${rel.obj}:${rel.subj}`;
+      marriedToRelations.add(key1);
+      marriedToRelations.add(key2);
+
+      // Track which sentences have married_to for this pair
+      if (!marriedToSentences.has(key1)) marriedToSentences.set(key1, new Set());
+      if (!marriedToSentences.has(key2)) marriedToSentences.set(key2, new Set());
+
+      rel.evidence.forEach(e => {
+        marriedToSentences.get(key1)!.add(e.sentence_index);
+        marriedToSentences.get(key2)!.add(e.sentence_index);
+      });
+    }
+  }
   for (const rel of corefRelations) {
+    if (rel.pred === 'married_to') {
+      const key1 = `${rel.subj}:${rel.obj}`;
+      const key2 = `${rel.obj}:${rel.subj}`;
+      marriedToRelations.add(key1);
+      marriedToRelations.add(key2);
+
+      if (!marriedToSentences.has(key1)) marriedToSentences.set(key1, new Set());
+      if (!marriedToSentences.has(key2)) marriedToSentences.set(key2, new Set());
+
+      rel.evidence.forEach(e => {
+        marriedToSentences.get(key1)!.add(e.sentence_index);
+        marriedToSentences.get(key2)!.add(e.sentence_index);
+      });
+    }
+  }
+
+  // Helper: Check if married_to exists within proximity window (±2 sentences)
+  const hasMarriedToInProximity = (rel: Relation, proximityWindow: number = 2): boolean => {
+    const key = `${rel.subj}:${rel.obj}`;
+    if (!marriedToRelations.has(key)) return false;
+
+    const relationSentences = new Set(rel.evidence.map(e => e.sentence_index));
+    const marriedSentences = marriedToSentences.get(key);
+    if (!marriedSentences) return false;
+
+    for (const sentIdx of relationSentences) {
+      for (let offset = -proximityWindow; offset <= proximityWindow; offset++) {
+        if (marriedSentences.has(sentIdx + offset)) {
+          return true; // Conflict within proximity
+        }
+      }
+    }
+    return false; // No nearby conflict
+  };
+
+  // Step 2: Filter main allRelations with PROXIMITY-BASED + confidence check
+  // Only suppress if married_to is BOTH high confidence AND in proximity
+  const filteredAllRelations = allRelations.filter(rel => {
+    if ((rel.pred === 'parent_of' || rel.pred === 'child_of') &&
+        hasMarriedToInProximity(rel, 2)) {
+
+      // Also check confidence for extra safety
+      const marriedToForPair = allRelations.find(r =>
+        r.pred === 'married_to' &&
+        ((r.subj === rel.subj && r.obj === rel.obj) ||
+         (r.subj === rel.obj && r.obj === rel.subj))
+      );
+
+      if (marriedToForPair && marriedToForPair.confidence > 0.75) {
+        const subj = allEntities.find(e => e.id === rel.subj);
+        const obj = allEntities.find(e => e.id === rel.obj);
+        console.log(`[MAIN-FILTER] Suppressing ${rel.pred}: ${subj?.canonical} -> ${obj?.canonical} (married_to in proximity, conf ${marriedToForPair.confidence.toFixed(2)})`);
+        return false;
+      }
+    }
+    return true;
+  });
+
+  // Step 3: Filter coref-enhanced relations with PROXIMITY-BASED matching
+  // Only suppress parent_of/child_of if married_to within ±2 sentences
+  const filteredCorefRelations = corefRelations.filter(rel => {
+    if ((rel.pred === 'parent_of' || rel.pred === 'child_of') &&
+        hasMarriedToInProximity(rel, 2)) {
+
+      const subj = allEntities.find(e => e.id === rel.subj);
+      const obj = allEntities.find(e => e.id === rel.obj);
+      console.log(`[COREF-FILTER] Suppressing ${rel.pred}: ${subj?.canonical} -> ${obj?.canonical} (married_to in proximity)`);
+      return false;
+    }
+    return true;
+  });
+
+  // Combine filtered main relations with filtered coref relations
+  console.log(`[COREF] Found ${corefRelations.length} coref-enhanced relations (filtered to ${filteredCorefRelations.length})`);
+  for (const rel of filteredCorefRelations) {
     const subj = allEntities.find(e => e.id === rel.subj);
     const obj = allEntities.find(e => e.id === rel.obj);
     console.log(`[COREF] ${subj?.canonical} --[${rel.pred}]--> ${obj?.canonical}`);
   }
-  const combinedRelations = [...allRelations, ...corefRelations];
+  const combinedRelations = [...filteredAllRelations, ...filteredCorefRelations];
 
   // 7. Extract narrative relations (pattern-based extraction)
   // Convert Entity[] to EntityLookup[] format for narrative extraction
@@ -553,8 +648,21 @@ export async function extractFromSegments(
   // Use processedText (with deictic resolutions) instead of fullText for narrative extraction
   const narrativeRelations = extractAllNarrativeRelations(processedText, entityLookup, docId, corefLinks);
 
+  // Also filter narrative relations with PROXIMITY-BASED matching
+  const filteredNarrativeRelations = narrativeRelations.filter(rel => {
+    if ((rel.pred === 'parent_of' || rel.pred === 'child_of') &&
+        hasMarriedToInProximity(rel, 2)) {
+
+      const subj = allEntities.find(e => e.id === rel.subj);
+      const obj = allEntities.find(e => e.id === rel.obj);
+      console.log(`[NARRATIVE-FILTER] Suppressing ${rel.pred}: ${subj?.canonical} -> ${obj?.canonical} (married_to in proximity)`);
+      return false;
+    }
+    return true;
+  });
+
   // Combine all relation sources
-  const allRelationSources = [...combinedRelations, ...narrativeRelations];
+  const allRelationSources = [...combinedRelations, ...filteredNarrativeRelations];
 
   // 7.5 Auto-create inverse relations for bidirectional predicates
   // E.g., if we have parent_of(A, B), create child_of(B, A)
@@ -657,15 +765,18 @@ export async function extractFromSegments(
     }
   }
 
+  // No context-aware filtering for now - work with relations as-is
+  const contextFilteredRelations = appositiveFilteredRelations;
+
   // 🛡️ LAYER 3: Relation Deduplication
   // Merge duplicate relations extracted by multiple patterns
   // Expected impact: +10-15% precision
   let uniqueRelations: Relation[];
 
   if (isDeduplicationEnabled()) {
-    const preDedupeCount = appositiveFilteredRelations.length;
-    uniqueRelations = deduplicateRelations(appositiveFilteredRelations);
-    const stats = getDeduplicationStats(appositiveFilteredRelations, uniqueRelations);
+    const preDedupeCount = contextFilteredRelations.length;
+    uniqueRelations = deduplicateRelations(contextFilteredRelations);
+    const stats = getDeduplicationStats(contextFilteredRelations, uniqueRelations);
 
     console.log(`[PRECISION-DEFENSE] 🛡️ Layer 3: Relation Deduplication`);
     console.log(`  Original relations: ${stats.original}`);
@@ -677,7 +788,7 @@ export async function extractFromSegments(
   } else {
     // Fallback to simple deduplication
     const uniqueMap = new Map<string, Relation>();
-    for (const rel of appositiveFilteredRelations) {
+    for (const rel of contextFilteredRelations) {
       const key = `${rel.subj}::${rel.pred}::${rel.obj}`;
       if (!uniqueMap.has(key)) {
         uniqueMap.set(key, rel);
