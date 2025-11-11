@@ -55,8 +55,11 @@ export function useEntities({ project }: { project: string }) {
         }
       } catch (err) {
         if (mounted) {
-          setError(err instanceof Error ? err.message : 'Failed to load entities');
-          console.error('Failed to load entities:', err);
+          const message = err instanceof Error ? err.message : 'Failed to load entities';
+          setError(message);
+          console.warn('Entities API unavailable:', message);
+          // Set empty state so UI can still render
+          setEntities([]);
         }
       } finally {
         if (mounted) {
