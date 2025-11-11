@@ -679,9 +679,11 @@ export async function extractFromSegments(
   const filteredEntityIds = new Set(filteredEntities.map(e => e.id));
   const entityIdToCanonical = new Map(filteredEntities.map(e => [e.id, e.canonical]));
 
-  // Get confidence threshold from environment
+  // Get confidence threshold from environment (default: 0.70, proven effective in Phase 1)
+  // To disable: ARES_MIN_CONFIDENCE=0
   const minConfidence = parseFloat(process.env.ARES_MIN_CONFIDENCE || '0.70');
   const precisionMode = process.env.ARES_PRECISION_MODE === 'strict';
+  const confidenceFilterEnabled = minConfidence > 0;
 
   let filteredRelations = uniqueRelations.filter(rel => {
     // Check that both entities exist
@@ -704,8 +706,9 @@ export async function extractFromSegments(
 
   // 🛡️ LAYER 3: Confidence Threshold Filtering
   // Filter out low-confidence extractions
+  // DEFAULT: ENABLED at 0.70 threshold (proven effective in Phase 1)
   // Expected impact: +5-8% precision
-  if (precisionMode || process.env.ARES_MIN_CONFIDENCE) {
+  if (confidenceFilterEnabled) {
     const preConfidenceCount = filteredRelations.length;
     filteredRelations = filteredRelations.filter(rel => rel.confidence >= minConfidence);
 

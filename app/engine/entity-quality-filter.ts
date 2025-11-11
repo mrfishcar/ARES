@@ -282,11 +282,18 @@ export function getFilterStats(
 
 /**
  * Check if entity quality filtering is enabled
+ *
+ * DEFAULT: ENABLED (proven effective in Phase 1)
+ * To disable: ARES_ENTITY_FILTER=off
  */
 export function isEntityFilterEnabled(): boolean {
-  return process.env.ARES_ENTITY_FILTER === 'on' ||
-         process.env.ARES_ENTITY_FILTER === '1' ||
-         process.env.ARES_PRECISION_MODE === 'strict';
+  // Explicitly disabled
+  if (process.env.ARES_ENTITY_FILTER === 'off' || process.env.ARES_ENTITY_FILTER === '0') {
+    return false;
+  }
+
+  // Enabled by default (or explicitly enabled)
+  return true;
 }
 
 /**

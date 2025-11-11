@@ -180,9 +180,16 @@ export function getDeduplicationStats(
 
 /**
  * Check if relation deduplication is enabled
+ *
+ * DEFAULT: ENABLED (proven effective in Phase 1)
+ * To disable: ARES_DEDUPLICATE=off
  */
 export function isDeduplicationEnabled(): boolean {
-  return process.env.ARES_DEDUPLICATE === 'on' ||
-         process.env.ARES_DEDUPLICATE === '1' ||
-         process.env.ARES_PRECISION_MODE === 'strict';
+  // Explicitly disabled
+  if (process.env.ARES_DEDUPLICATE === 'off' || process.env.ARES_DEDUPLICATE === '0') {
+    return false;
+  }
+
+  // Enabled by default (or explicitly enabled)
+  return true;
 }
