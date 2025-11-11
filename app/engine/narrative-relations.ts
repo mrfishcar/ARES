@@ -934,6 +934,23 @@ export function extractPossessiveFamilyRelations(
     for (const possessorEntity of possessorEntities) {
       if (targetEntity.id === possessorEntity.id) continue;
 
+      // CONTEXT CHECK: For parent_of/child_of, check if surrounding text suggests a marriage
+      // This prevents false positives from "He loved her" being interpreted as parent_of
+      if ((predicate === 'parent_of' || predicate === 'child_of') && (roleWord === 'daughter' || roleWord === 'son' || roleWord === 'child')) {
+        const contextStart = Math.max(0, match.index - 300);
+        const contextEnd = Math.min(text.length, match.index + match[0].length + 200);
+        const fullContext = text.substring(contextStart, contextEnd);
+
+        // Check for marriage indicators
+        const hasMarriageContext = /\b(married|marri|spouse|wife|husband|lover|beloved|romantic|romance|wedding)\b/i.test(fullContext);
+
+        // If marriage context exists and both entities are mentioned in it, skip parent_of/child_of
+        if (hasMarriageContext) {
+          console.log(`[NARRATIVE] Skipping ${predicate}(${possessorEntity.id}, ${targetEntity.id}) - marriage context detected`);
+          continue;
+        }
+      }
+
       const evidenceSpan = {
         start: match.index,
         end: match.index + match[0].length + entityMatch[0].length,
