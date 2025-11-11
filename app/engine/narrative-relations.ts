@@ -211,6 +211,122 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+became\s+(?:king|queen|ruler|leader)\s+(?:of\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
     predicate: 'rules',
     typeGuard: { subj: ['PERSON'], obj: ['PLACE', 'ORG'] }
+  },
+
+  // === LOCATION PATTERNS - EXPANDED ===
+  // "X is located in Y", "X is based in Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is\s+)?(?:located|situated|based|founded|established)\s+in\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'located_in',
+    typeGuard: { subj: ['PLACE', 'ORG'], obj: ['PLACE'] }
+  },
+  // "X near Y", "X is near Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is\s+)?near\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'near',
+    typeGuard: { subj: ['PLACE', 'PERSON'], obj: ['PLACE'] }
+  },
+  // "X borders Y", "X borders on Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+borders?\s+(?:on\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'borders',
+    typeGuard: { subj: ['PLACE'], obj: ['PLACE'] }
+  },
+  // "X within Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+within\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'within',
+    typeGuard: { subj: ['PLACE'], obj: ['PLACE'] }
+  },
+
+  // === PART_WHOLE PATTERNS ===
+  // "X is part of Y", "X is a part of Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is\s+)?(?:a\s+)?part\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'part_of',
+    typeGuard: {}
+  },
+  // "X consists of Y", "X consist of Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+consists?\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'consists_of',
+    typeGuard: {}
+  },
+  // "X includes Y", "X include Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:includes?|contain|contains)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'includes',
+    typeGuard: {}
+  },
+  // "X is made of Y", "X is composed of Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is\s+)?(?:made|composed)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'made_of',
+    typeGuard: {}
+  },
+
+  // === EMPLOYMENT PATTERNS ===
+  // "X works for Y", "X work for Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:works?|worked)\s+(?:as\s+)?(?:for|with|at)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'works_for',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG', 'PERSON'] }
+  },
+  // "X employed by Y", "X was employed by Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:was\s+)?employed\s+by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'employed_by',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG'] }
+  },
+  // "X is a member of Y", "X member of Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is\s+)?(?:a\s+)?member\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'member_of',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG'] }
+  },
+  // "X is CEO/president/director of Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is|was)\s+(?:the\s+)?(?:CEO|president|director|founder|manager|leader)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'leads',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG'] }
+  },
+  // "X founded Y", "X founded the Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+founded\s+(?:the\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'founded',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG'] }
+  },
+
+  // === CREATION PATTERNS ===
+  // "X wrote Y", "X wrote the Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:wrote|authored|written|penned)\s+(?:the\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'wrote',
+    typeGuard: { subj: ['PERSON'], obj: ['WORK', 'ORG'] }
+  },
+  // "X created Y", "X created the Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:created|made|produced|composed|designed|invented)\s+(?:the\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'created',
+    typeGuard: { subj: ['PERSON'], obj: ['WORK', 'ITEM'] }
+  },
+  // "X directed Y", "X directed the Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:directed|filmed|shot)\s+(?:the\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'directed',
+    typeGuard: { subj: ['PERSON'], obj: ['WORK', 'EVENT'] }
+  },
+  // "X is the author of Y", "X author of Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is\s+)?(?:the\s+)?author\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'authored',
+    typeGuard: { subj: ['PERSON'], obj: ['WORK'] }
+  },
+  // "X painted Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+painted\s+(?:the\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'painted',
+    typeGuard: { subj: ['PERSON'], obj: ['WORK', 'ITEM'] }
   }
 ];
 
