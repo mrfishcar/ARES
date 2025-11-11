@@ -273,6 +273,48 @@ function chooseSemanticHead(tok: Token, tokens: Token[]): Token {
 }
 
 /**
+ * Helper: Check if a token is inside an appositive span
+ * Appositives are parenthetical information that should be skipped for subject resolution
+ * Checks up to 2 levels to catch "Name, desc of X" patterns
+ */
+function isInAppositiveSpan(tok: Token, tokens: Token[]): boolean {
+  // Check if token is directly marked as appositive
+  if (tok.dep === 'appos') return true;
+
+  // Check parent (level 1)
+  if (tok.head !== tok.i) {
+    const parent = tokens[tok.head];
+    if (parent && parent.dep === 'appos') return true;
+
+    // Check grandparent (level 2) for "son of Arathorn" patterns
+    if (parent && parent.head !== parent.i) {
+      const grandparent = tokens[parent.head];
+      if (grandparent && grandparent.dep === 'appos') return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Choose semantic head for subject resolution, skipping appositive phrases
+ * Unlike chooseSemanticHead, this excludes 'appos' to avoid jumping into
+ * parenthetical information (e.g., "Aragorn, son of Arathorn" → stay with "Aragorn")
+ */
+function chooseSemanticHeadForSubject(tok: Token, tokens: Token[]): Token {
+  // Look for capitalized children with relevant dependencies (NO appos)
+  const properNounChild = tokens.find(t =>
+    t.head === tok.i &&
+    ['nmod', 'compound', 'flat', 'amod'].includes(t.dep) && // appos excluded
+    (t.pos === 'PROPN' || /^[A-Z]/.test(t.text)) &&
+    !isInAppositiveSpan(t, tokens) // skip tokens inside appositive spans
+  );
+
+  if (properNounChild) return properNounChild;
+  return tok;
+}
+
+/**
  * Expand token to full NP span including all modifiers
  * Handles cases like "Gandalf the Grey", "Professor McGonagall", "Minas Tirith"
  */
@@ -376,9 +418,9 @@ function buildOrgSpan(token: Token, tokens: Token[]): { start: number; end: numb
 function resolveSubjectToken(verb: Token, tokens: Token[]): Token | undefined {
   const direct = tokens.find(t => t.dep === 'nsubj' && t.head === verb.i);
   if (direct) {
-    const semantic = chooseSemanticHead(direct, tokens);
+    const semantic = chooseSemanticHeadForSubject(direct, tokens);
     const siblings = tokens
-      .filter(t => t.head === verb.i && isNameToken(t))
+      .filter(t => t.head === verb.i && isNameToken(t) && !isInAppositiveSpan(t, tokens))
       .sort((a, b) => a.start - b.start);
 
     if (siblings.length) {
@@ -392,7 +434,7 @@ function resolveSubjectToken(verb: Token, tokens: Token[]): Token | undefined {
 }
 
   const siblings = tokens
-    .filter(t => t.head === verb.i && isNameToken(t))
+    .filter(t => t.head === verb.i && isNameToken(t) && !isInAppositiveSpan(t, tokens))
     .sort((a, b) => a.start - b.start);
 
   if (siblings.length) {
@@ -1005,6 +1047,17 @@ function extractDepRelations(
         // Determine subject and object based on subjectFirst
         const subjectEntity = pathResult.subjectFirst ? entity1 : entity2;
         const objectEntity = pathResult.subjectFirst ? entity2 : entity1;
+        const subjectToken = pathResult.subjectFirst ? token1 : token2;
+
+        // Skip relations where subject is in appositive span (except kinship)
+        const kinshipPredicates = ['child_of', 'parent_of', 'sibling_of', 'spouse_of', 'married_to'];
+        if (!kinshipPredicates.includes(pathResult.predicate) && isInAppositiveSpan(subjectToken, tokens)) {
+          if (DEBUG_DEP) {
+            console.log(`[DEP]   SKIP: Subject "${subjectEntity.canonical}" is in appositive span`);
+          }
+          continue;
+        }
+
         if (!passesGuard(pathResult.predicate, subjectEntity, objectEntity)) {
           if (DEBUG_DEP) {
             console.log(`[DEP]   Type guard FAILED: ${subjectEntity.type} ${pathResult.predicate} ${objectEntity.type}`);

@@ -271,6 +271,53 @@ const testCases: TestCase[] = [
       ]
     }
   },
+
+  // Appositive tests - subject resolution should skip appositives
+  {
+    id: '2.16',
+    text: 'Faramir, son of Denethor, defended Osgiliath.',
+    gold: {
+      entities: [
+        { text: 'Faramir', type: 'PERSON' },
+        { text: 'Denethor', type: 'PERSON' },
+        { text: 'Osgiliath', type: 'PLACE' }
+      ],
+      relations: [
+        { subj: 'Faramir', pred: 'child_of', obj: 'Denethor' },
+        { subj: 'Denethor', pred: 'parent_of', obj: 'Faramir' },
+        { subj: 'Faramir', pred: 'defended', obj: 'Osgiliath' }
+      ]
+    }
+  },
+  {
+    id: '2.17',
+    text: 'Galadriel, Lady of Lorien, ruled the golden wood.',
+    gold: {
+      entities: [
+        { text: 'Galadriel', type: 'PERSON' },
+        { text: 'Lorien', type: 'PLACE' }
+      ],
+      relations: [
+        { subj: 'Galadriel', pred: 'rules', obj: 'Lorien' }
+      ]
+    }
+  },
+  {
+    id: '2.18',
+    text: 'Bilbo, a hobbit and friend of Gandalf, traveled to Rivendell.',
+    gold: {
+      entities: [
+        { text: 'Bilbo', type: 'PERSON' },
+        { text: 'Gandalf', type: 'PERSON' },
+        { text: 'Rivendell', type: 'PLACE' }
+      ],
+      relations: [
+        { subj: 'Bilbo', pred: 'friends_with', obj: 'Gandalf' },
+        { subj: 'Gandalf', pred: 'friends_with', obj: 'Bilbo' },
+        { subj: 'Bilbo', pred: 'traveled_to', obj: 'Rivendell' }
+      ]
+    }
+  },
 ];
 
 // Scoring functions
@@ -294,7 +341,7 @@ function computeF1(precision: number, recall: number): number {
 describe('Test Ladder - Level 2: Multi-Sentence Narratives', () => {
   const testPath = path.join(process.cwd(), 'test-ladder-2.json');
 
-  it('should pass all 15 multi-sentence narrative tests', { timeout: 60000 }, async () => {
+  it('should pass all 18 multi-sentence narrative tests (incl. appositive cases)', { timeout: 60000 }, async () => {
     const results: Array<{
       id: string;
       entityPrecision: number;
