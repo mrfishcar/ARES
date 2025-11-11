@@ -247,18 +247,25 @@ curl https://your-backend-url.up.railway.app/graphql \
 - Add your Vercel URL to CORS whitelist in backend CORS configuration
 - Check Railway/Render logs for CORS-related errors
 
-### "TypeScript compilation errors: Cannot use JSX"
+### "TypeScript compilation errors: Cannot use JSX" or other type errors
 
-**Symptom**: Railway/Render build fails with errors like "Cannot use JSX unless the '--jsx' flag is provided" or "Cannot find name 'document'".
+**Symptom**: Railway/Render build fails with TypeScript errors (JSX errors, missing properties, type mismatches).
 
-**Cause**: The backend `tsconfig.json` was trying to compile frontend React apps which require JSX support and DOM types.
+**Cause**: The backend TypeScript compiler was trying to compile frontend React apps, tests, and had strict type checking enabled.
 
-**Solution**: The `tsconfig.json` now excludes frontend UI directories:
-```json
-"exclude": ["node_modules", "dist", ".venv", "app/ui/console", "app/ui/review-dashboard", "app/desktop-tester"]
-```
+**Solution**:
+1. The `tsconfig.json` now excludes frontend UI directories and tests:
+   ```json
+   "include": ["app/**/*"],
+   "exclude": ["node_modules", "dist", ".venv", "app/ui/**", "app/desktop-tester/**"]
+   ```
 
-Frontend apps are built separately in their respective build steps in the Dockerfile and Vercel.
+2. The Dockerfile uses `tsc --noEmitOnError false` to transpile code even if there are type errors:
+   ```dockerfile
+   RUN npx tsc --noEmitOnError false
+   ```
+
+Frontend apps are built separately by Vite/Vercel. Tests validate type correctness locally via `npm test`.
 
 ## iPad-Friendly Workflow
 
