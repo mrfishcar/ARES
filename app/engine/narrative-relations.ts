@@ -130,6 +130,14 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     extractObj: 1,   // Child
     typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
   },
+  // Pattern: "X is the son/daughter of Y" or "Mira, daughter of Aria" or "Cael, son of Elias"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+is\s+(?:the\s+)?(?:son|daughter|child)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'parent_of',
+    extractSubj: 2,  // Parent is object of "of"
+    extractObj: 1,   // Child is subject (the person after "is")
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
   // Pattern: "Mira, daughter of Aria" or "Cael, son of Elias"
   {
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*,?\s+(?:the\s+)?(?:daughter|son|child)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
@@ -638,7 +646,36 @@ export function extractNarrativeRelations(
     }
   }
 
-  return relations;
+  // ============================================================
+  // OPTION C: IMPROVE PATTERN SPECIFICITY WITH CONTEXT AWARENESS
+  // ============================================================
+  // When married_to(A, B) exists, remove conflicting parent_of/child_of
+  // relations because married_to has higher confidence in romantic contexts
+  const marriedPairs = new Set<string>();
+  for (const rel of relations) {
+    if (rel.pred === 'married_to') {
+      // Create normalized pair key (order-independent since married_to is symmetric)
+      const key1 = `${rel.subj}:${rel.obj}`;
+      const key2 = `${rel.obj}:${rel.subj}`;
+      marriedPairs.add(key1);
+      marriedPairs.add(key2);
+    }
+  }
+
+  // Filter out parent_of/child_of relations that conflict with married_to
+  const filteredRelations = relations.filter(rel => {
+    if (rel.pred === 'parent_of' || rel.pred === 'child_of') {
+      const pairKey = `${rel.subj}:${rel.obj}`;
+      if (marriedPairs.has(pairKey)) {
+        // This person pair is married - don't emit parent_of/child_of
+        console.log(`[CONTEXT-FILTER] Removing ${rel.pred}(${rel.subj}, ${rel.obj}) because married_to exists for this pair`);
+        return false;
+      }
+    }
+    return true;
+  });
+
+  return filteredRelations;
 }
 
 /**
@@ -811,11 +848,32 @@ export function extractPossessiveFamilyRelations(
 
   // Pattern 2: "their daughter/son" or "his wife" → resolve pronoun, then create family relations
   // Allow optional adjectives like "late", "younger", "older", etc.
+  // NOTE: This pattern is conservative to avoid false positives (e.g., "He loved her" → parent_of)
   const theirPattern = /\b(their|his|her)\s+(?:[a-z]+\s+)*(daughter|son|child|parent|father|mother|wife|husband|spouse|brother|sister)\b/gi;
 
   while ((match = theirPattern.exec(text)) !== null) {
     const pronoun = match[1].toLowerCase();
     const roleWord = match[2].toLowerCase();
+
+    // CONTEXT AWARENESS: Skip this pattern if it's in a clearly romantic context
+    // Check the surrounding context for marriage/love verbs that would indicate
+    // the pronouns refer to spouses, not children
+    const contextBefore = text.substring(Math.max(0, match.index - 200), match.index);
+    const contextAfter = text.substring(match.index + match[0].length, Math.min(text.length, match.index + match[0].length + 100));
+    const surroundingContext = contextBefore + match[0] + contextAfter;
+
+    // If we see marriage/love language AND we're trying to extract parent_of/child_of from pronouns,
+    // be much more conservative (skip it)
+    if (['daughter', 'son', 'child'].includes(roleWord) &&
+        pronoun === 'her' || pronoun === 'his') {
+      const hasRomanticContext = /\b(married|spouse|wife|husband|beloved|loved|lover|romance|romantic|passion)\b/i.test(surroundingContext);
+      const hasPronounPair = pronoun === 'her' && /\b(he|him|his)\b/i.test(contextBefore);
+
+      if (hasRomanticContext || hasPronounPair) {
+        // Skip this match - likely a romantic relationship, not parent-child
+        continue;
+      }
+    }
 
     // Resolve pronoun using coreference links
     let possessorEntities = resolvePossessivePronoun(pronoun, match.index, corefLinks, entities) ?? [];
@@ -883,6 +941,23 @@ export function extractPossessiveFamilyRelations(
 
     for (const possessorEntity of possessorEntities) {
       if (targetEntity.id === possessorEntity.id) continue;
+
+      // CONTEXT CHECK: For parent_of/child_of, check if surrounding text suggests a marriage
+      // This prevents false positives from "He loved her" being interpreted as parent_of
+      if ((predicate === 'parent_of' || predicate === 'child_of') && (roleWord === 'daughter' || roleWord === 'son' || roleWord === 'child')) {
+        const contextStart = Math.max(0, match.index - 300);
+        const contextEnd = Math.min(text.length, match.index + match[0].length + 200);
+        const fullContext = text.substring(contextStart, contextEnd);
+
+        // Check for marriage indicators
+        const hasMarriageContext = /\b(married|marri|spouse|wife|husband|lover|beloved|romantic|romance|wedding)\b/i.test(fullContext);
+
+        // If marriage context exists and both entities are mentioned in it, skip parent_of/child_of
+        if (hasMarriageContext) {
+          console.log(`[NARRATIVE] Skipping ${predicate}(${possessorEntity.id}, ${targetEntity.id}) - marriage context detected`);
+          continue;
+        }
+      }
 
       const evidenceSpan = {
         start: match.index,
