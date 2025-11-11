@@ -14,5 +14,12 @@
     "types": ["node", "vitest/globals"]
   },
   "include": ["app/**/*", "tests/**/*"],
-  "exclude": ["node_modules", "dist", ".venv", "app/ui/console", "app/ui/review-dashboard", "app/desktop-tester"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".venv",
+    "app/ui/**",
+    "app/desktop-tester/**",
+    "tests/demo-phase5-ui.tsx"
+  ]
 }
