@@ -32,3 +32,9 @@ ops/LOCK
 # Debug files
 debug-*.ts
 tmp/debug-*
+
+# Test artifacts
+test-*.json
+test-*.ts
+!tests/**/*.ts
+tmp/*.json
