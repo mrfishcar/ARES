@@ -247,6 +247,19 @@ curl https://your-backend-url.up.railway.app/graphql \
 - Add your Vercel URL to CORS whitelist in backend CORS configuration
 - Check Railway/Render logs for CORS-related errors
 
+### "TypeScript compilation errors: Cannot use JSX"
+
+**Symptom**: Railway/Render build fails with errors like "Cannot use JSX unless the '--jsx' flag is provided" or "Cannot find name 'document'".
+
+**Cause**: The backend `tsconfig.json` was trying to compile frontend React apps which require JSX support and DOM types.
+
+**Solution**: The `tsconfig.json` now excludes frontend UI directories:
+```json
+"exclude": ["node_modules", "dist", ".venv", "app/ui/console", "app/ui/review-dashboard", "app/desktop-tester"]
+```
+
+Frontend apps are built separately in their respective build steps in the Dockerfile and Vercel.
+
 ## iPad-Friendly Workflow
 
 You can deploy from iPad using:
