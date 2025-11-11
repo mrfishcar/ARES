@@ -302,9 +302,10 @@ function chooseSemanticHeadForSubject(
 /**
  * Expand token to full NP span including all modifiers
  * Handles cases like "Gandalf the Grey", "Professor McGonagall", "Minas Tirith"
+ * Note: Excludes 'appos' to prevent expansion into appositive phrases
  */
 function expandNP(tok: Token, tokens: Token[]): { start: number; end: number } {
-  const include = new Set(['compound', 'appos', 'flat', 'det', 'amod', 'nmod', 'nummod']);
+  const include = new Set(['compound', 'flat', 'det', 'amod', 'nmod', 'nummod']);
   const stack = [tok];
   const members: Token[] = [tok];
   const seen = new Set([tok.i]);
@@ -405,29 +406,112 @@ function resolveSubjectToken(
   tokens: Token[],
   isInAppos: (t: Token) => boolean
 ): Token | undefined {
+  const DEBUG_SUBJ = process.env.DEBUG_SUBJ === '1';
+  const fs = DEBUG_SUBJ ? require('fs') : null;
+  const logFile = '/tmp/ares-debug-subj.log';
+
   const direct = tokens.find(t => t.dep === 'nsubj' && t.head === verb.i);
+
+  if (DEBUG_SUBJ) {
+    let log = `\n[SUBJ] Resolving subject for verb: "${verb.text}" (pos=${verb.pos}, i=${verb.i})\n`;
+    log += `[SUBJ]   Direct nsubj found: ${direct ? `"${direct.text}" (i=${direct.i}, pos=${direct.pos}, isInAppos=${isInAppos(direct)})` : 'NONE'}\n`;
+    fs.appendFileSync(logFile, log);
+  }
+
   if (direct) {
     const semantic = chooseSemanticHeadForSubject(direct, tokens, isInAppos);
+
+    if (DEBUG_SUBJ) {
+      let log = `[SUBJ]   Semantic head: "${semantic.text}" (i=${semantic.i}, pos=${semantic.pos}, isInAppos=${isInAppos(semantic)})\n`;
+      fs.appendFileSync(logFile, log);
+    }
+
     const siblings = tokens
       .filter(t => t.head === verb.i && isNameToken(t) && !isInAppos(t))
       .sort((a, b) => a.start - b.start);
 
+    if (DEBUG_SUBJ) {
+      let log = `[SUBJ]   Siblings (name tokens attached to verb, not in appos): ${siblings.length > 0 ? siblings.map(s => `"${s.text}"`).join(', ') : 'NONE'}\n`;
+      fs.appendFileSync(logFile, log);
+    }
+
     if (siblings.length) {
       const first = siblings[0];
       if (first.start < semantic.start) {
+        if (DEBUG_SUBJ) {
+          let log = `[SUBJ]   → Returning first sibling "${first.text}" (appears before semantic head)\n`;
+          fs.appendFileSync(logFile, log);
+        }
         return first;
       }
     }
 
+    // Skip semantic head if it's in an appositive span
+    // This prevents wrong subject attribution (e.g., "Aragorn, son of Arathorn, traveled"
+    // should use Aragorn, not Arathorn)
+    if (isInAppos(semantic)) {
+      if (DEBUG_SUBJ) {
+        let log = `[SUBJ]   WARNING: Semantic head "${semantic.text}" is in appositive span\n`;
+        fs.appendFileSync(logFile, log);
+      }
+
+      // If semantic head is in appositive, fall back to looking for siblings
+      const fallbackSiblings = tokens
+        .filter(t => t.head === verb.i && isNameToken(t) && !isInAppos(t))
+        .sort((a, b) => a.start - b.start);
+
+      if (DEBUG_SUBJ) {
+        let log = `[SUBJ]   Fallback siblings: ${fallbackSiblings.length > 0 ? fallbackSiblings.map(s => `"${s.text}"`).join(', ') : 'NONE'}\n`;
+        fs.appendFileSync(logFile, log);
+      }
+
+      if (fallbackSiblings.length > 0) {
+        if (DEBUG_SUBJ) {
+          let log = `[SUBJ]   → Returning fallback sibling "${fallbackSiblings[0].text}"\n`;
+          fs.appendFileSync(logFile, log);
+        }
+        return fallbackSiblings[0];
+      }
+
+      if (DEBUG_SUBJ) {
+        let log = `[SUBJ]   → Returning undefined (no valid subject found)\n`;
+        fs.appendFileSync(logFile, log);
+      }
+      return undefined; // No valid subject found
+    }
+
+    if (DEBUG_SUBJ) {
+      let log = `[SUBJ]   → Returning semantic head "${semantic.text}"\n`;
+      fs.appendFileSync(logFile, log);
+    }
     return semantic;
-}
+  }
+
+  if (DEBUG_SUBJ) {
+    let log = `[SUBJ]   No direct nsubj found, trying fallback siblings\n`;
+    fs.appendFileSync(logFile, log);
+  }
 
   const siblings = tokens
     .filter(t => t.head === verb.i && isNameToken(t) && !isInAppos(t))
     .sort((a, b) => a.start - b.start);
 
+  if (DEBUG_SUBJ) {
+    let log = `[SUBJ]   Fallback siblings: ${siblings.length > 0 ? siblings.map(s => `"${s.text}"`).join(', ') : 'NONE'}\n`;
+    fs.appendFileSync(logFile, log);
+  }
+
   if (siblings.length) {
+    if (DEBUG_SUBJ) {
+      let log = `[SUBJ]   → Returning fallback sibling "${siblings[0].text}"\n`;
+      fs.appendFileSync(logFile, log);
+    }
     return siblings[0];
+  }
+
+  if (DEBUG_SUBJ) {
+    let log = `[SUBJ]   → Returning undefined (no subject found at all)\n`;
+    fs.appendFileSync(logFile, log);
   }
   return undefined;
 }
@@ -538,11 +622,34 @@ function tryCreateRelation(
   tokens?: Token[],
   triggerIdx?: number
 ): Relation[] {
+  const DEBUG_SUBJ = process.env.DEBUG_SUBJ === '1';
   const subjSurface = text.slice(subjStart, subjEnd);
   const objSurface = text.slice(objStart, objEnd);
 
   const subjRef = mapSurfaceToEntity(subjSurface, entities, spans, { start: subjStart, end: subjEnd });
   const objRef = mapSurfaceToEntity(objSurface, entities, spans, { start: objStart, end: objEnd });
+
+  if (DEBUG_SUBJ && pred === 'traveled_to') {
+    const fs = require('fs');
+    const logFile = '/tmp/ares-debug-subj.log';
+    let log = `[TRY_CREATE] Predicate: ${pred}\n`;
+    log += `[TRY_CREATE]   subjSurface: "${subjSurface}" [${subjStart}, ${subjEnd}]\n`;
+    log += `[TRY_CREATE]   subjRef: ${subjRef ? `entity_id=${subjRef.entity.id}, canonical="${subjRef.entity.canonical}"` : 'NULL'}\n`;
+    log += `[TRY_CREATE]   objSurface: "${objSurface}" [${objStart}, ${objEnd}]\n`;
+    log += `[TRY_CREATE]   objRef: ${objRef ? `entity_id=${objRef.entity.id}, canonical="${objRef.entity.canonical}"` : 'NULL'}\n`;
+    if (!subjRef || !objRef) {
+      log += `[TRY_CREATE]   → FAILED: Entity matching failed\n`;
+      log += `[TRY_CREATE]   Available entities:\n`;
+      for (const ent of entities) {
+        log += `[TRY_CREATE]     - ${ent.canonical} (id=${ent.id}, type=${ent.type})\n`;
+      }
+      log += `[TRY_CREATE]   Available spans:\n`;
+      for (const span of spans) {
+        log += `[TRY_CREATE]     - [${span.start}, ${span.end}] -> ${span.entity_id}\n`;
+      }
+    }
+    fs.appendFileSync(logFile, log);
+  }
 
   if (!subjRef || !objRef) return [];
 
@@ -968,6 +1075,24 @@ function extractDepRelations(
     const isInAppositiveSpan = hasAppos
       ? createFastChecker(buildApposCache(tokens))
       : createNoOpChecker();
+
+    const DEBUG_SUBJ = process.env.DEBUG_SUBJ === '1';
+    if (DEBUG_SUBJ && hasAppos) {
+      const fs = require('fs');
+      const logFile = '/tmp/ares-debug-subj.log';
+      let log = `\n[APPOS] Sentence: "${sentenceText}"\n`;
+      log += `[APPOS] Tokens in appositive spans:\n`;
+      for (const tok of tokens) {
+        if (isInAppositiveSpan(tok)) {
+          log += `[APPOS]   "${tok.text}" (i=${tok.i}, dep=${tok.dep}, head=${tok.head})\n`;
+        }
+      }
+      log += `[APPOS] All tokens in sentence:\n`;
+      for (const tok of tokens) {
+        log += `[APPOS]   [${tok.i}] "${tok.text}" dep=${tok.dep} head=${tok.head} pos=${tok.pos} inAppos=${isInAppositiveSpan(tok)}\n`;
+      }
+      fs.appendFileSync(logFile, log);
+    }
 
     // === DEPENDENCY PATH EXTRACTION (NEW) ===
     // Try to extract relations using dependency paths between entity pairs
@@ -1579,19 +1704,39 @@ function extractDepRelations(
         const toPrep = tokens.find(t => t.dep === 'prep' && t.head === tok.i && t.text.toLowerCase() === 'to');
 
         if (subjTok && toPrep) {
-          // DEBUG
-          // console.log('travel pattern', subjTok.text, lemma, '->', tokens.find(t => t.dep === 'pobj' && t.head === toPrep.i)?.text);
           const destTok = tokens.find(t => t.dep === 'pobj' && t.head === toPrep.i);
           if (destTok) {
             // Expand to full NP spans
             const subjSpan = expandNP(subjTok, tokens);
             const destSpan = expandNP(destTok, tokens);
 
+            if (DEBUG_SUBJ) {
+              const fs = require('fs');
+              const logFile = '/tmp/ares-debug-subj.log';
+              let log = `[TRAVEL] Motion verb "${tok.text}" (lemma=${lemma})\n`;
+              log += `[TRAVEL]   subjTok: "${subjTok.text}" (i=${subjTok.i})\n`;
+              log += `[TRAVEL]   subjSpan: "${text.slice(subjSpan.start, subjSpan.end)}" [${subjSpan.start}, ${subjSpan.end}]\n`;
+              log += `[TRAVEL]   destTok: "${destTok.text}" (i=${destTok.i})\n`;
+              log += `[TRAVEL]   destSpan: "${text.slice(destSpan.start, destSpan.end)}" [${destSpan.start, destSpan.end}]\n`;
+              fs.appendFileSync(logFile, log);
+            }
+
             const produced = tryCreateRelation(
               text, entities, spans, 'traveled_to',
               subjSpan.start, subjSpan.end, destSpan.start, destSpan.end, 'DEP',
               tokens, tok.i
             );
+
+            if (DEBUG_SUBJ) {
+              const fs = require('fs');
+              const logFile = '/tmp/ares-debug-subj.log';
+              let log = `[TRAVEL]   Produced relations: ${produced.length}\n`;
+              for (const rel of produced) {
+                log += `[TRAVEL]     ${rel.pred}: ${rel.subj} -> ${rel.obj}\n`;
+              }
+              fs.appendFileSync(logFile, log);
+            }
+
             addProducedRelations(produced, tok);
           }
         }
