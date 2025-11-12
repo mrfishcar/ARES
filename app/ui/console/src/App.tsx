@@ -126,8 +126,8 @@ function AppShell() {
     <>
       <main style={{ minHeight: '100vh', background: '#ffffff' }}>
         <Routes>
-          <Route path="/" element={<UnifiedHomePage project={project} toast={toast} />} />
-          <Route path="/lab" element={<ExtractionLab project={project} toast={toast} />} />
+          <Route path="/" element={<ExtractionLab project={project} toast={toast} />} />
+          <Route path="/lab" element={<UnifiedHomePage project={project} toast={toast} />} />
           <Route path="/notes" element={<NotesPage project={project} toast={toast} />} />
           <Route path="/entities" element={<EntitiesPage project={project} toast={toast} />} />
           <Route path="/relations" element={<RelationsPage project={project} toast={toast} />} />
