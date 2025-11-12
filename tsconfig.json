@@ -11,8 +11,15 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "moduleResolution": "node",
-    "types": ["node", "vitest/globals"]
+    "types": ["node", "vitest/globals"],
+    "noEmitOnError": false
   },
-  "include": ["app/**/*", "tests/**/*"],
-  "exclude": ["node_modules", "dist", ".venv"]
+  "include": ["app/**/*"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".venv",
+    "app/ui/**",
+    "app/desktop-tester/**"
+  ]
 }

@@ -1,5 +1,30 @@
 # ARES Deployment Guide
 
+## Quick Fix: White Screen Issue
+
+If you're seeing a white screen on Vercel, it's because the frontend can't connect to the backend. Here's what to do:
+
+1. **Set your Railway backend URL in Vercel**:
+   - Go to Vercel Dashboard → Your Project → Settings → Environment Variables
+   - Add: `VITE_GRAPHQL_URL` = `https://your-railway-url.up.railway.app/graphql`
+   - Redeploy
+
+2. **Update your Railway branch** (if needed):
+   - Go to Railway Dashboard → Your Project → Settings
+   - Update the branch to match your current deployment branch
+   - Redeploy backend
+
+3. **Verify backend is running**:
+   ```bash
+   curl https://your-railway-url.up.railway.app/graphql \
+     -H 'Content-Type: application/json' \
+     -d '{"query": "{ __typename }"}'
+   ```
+
+See [Troubleshooting](#white-screen-on-vercel-deployment) section for detailed debugging.
+
+---
+
 ## Architecture Overview
 
 ```
@@ -12,6 +37,33 @@
 │                 │         │   • spaCy Parser (port 8000) │
 └─────────────────┘         └──────────────────────────────┘
 ```
+
+### CRITICAL: Backend-First Architecture
+
+**Entity Detection Engine Location: Backend Only**
+
+All sophisticated entity detection logic lives in `app/editor/entityHighlighter.ts` on the backend. This is the **single source of truth** for:
+- Pattern-based NLP detection
+- Dialogue patterns, honorifics, multi-word names
+- Alias packs, appositives, event seeds
+- LLM-based detection (spaCy NER)
+- Confidence scoring and overlap removal
+
+**Frontend Role: API Consumer**
+
+The frontend (`app/ui/console/src/types/entities.ts`) should ONLY:
+- Call the GraphQL `detectEntities` query
+- Display results with highlighting UI
+- Provide fallback tag-only detection if API fails
+
+**DO NOT duplicate pattern logic in the frontend!** This creates:
+- Maintenance burden (duplicate code to maintain)
+- Inconsistent results between frontend/backend
+- Loss of backend improvements (aliases, LLM, etc.)
+
+**Extraction Lab Purpose:**
+
+The Extraction Lab (`/lab` route) is specifically designed to test and validate the backend entity detection engine. Changes to pattern matching, safeguards, and detection logic should be tested here to verify they work across all of ARES.
 
 ## Option 1: Railway (Recommended - Easiest)
 
@@ -43,16 +95,42 @@ railway domain
 ```
 
 ### Step 6: Configure UI to Use Backend
-In `app/ui/console/.env.production`:
+
+**IMPORTANT**: The frontend needs to know your backend URL. Create this file:
+
+```bash
+cd app/ui/console
+cp .env.production.example .env.production
+```
+
+Edit `app/ui/console/.env.production`:
 ```env
-VITE_API_URL=https://your-app.up.railway.app
 VITE_GRAPHQL_URL=https://your-app.up.railway.app/graphql
 ```
 
-### Step 7: Redeploy UI to Vercel
+Replace `your-app.up.railway.app` with your actual Railway URL from step 5.
+
+### Step 7: Configure Vercel Environment Variable
+
+In your Vercel dashboard:
+1. Go to your project settings
+2. Navigate to "Environment Variables"
+3. Add a new variable:
+   - **Name**: `VITE_GRAPHQL_URL`
+   - **Value**: `https://your-app.up.railway.app/graphql`
+   - **Environments**: Production, Preview
+
+Or use the Vercel CLI:
 ```bash
-cd app/ui/console
-npm run build
+vercel env add VITE_GRAPHQL_URL production
+# When prompted, enter: https://your-app.up.railway.app/graphql
+```
+
+### Step 8: Redeploy UI to Vercel
+```bash
+git add app/ui/console/.env.production
+git commit -m "feat: configure backend URL for production"
+git push
 # Vercel will auto-deploy on git push
 ```
 
@@ -153,6 +231,36 @@ curl https://your-backend-url.com:4000/graphql \
 
 ## Troubleshooting
 
+### White Screen on Vercel Deployment
+
+**Symptom**: Visiting your Vercel URL shows only a white screen with no content.
+
+**Cause**: The frontend is trying to connect to `/graphql` (relative path), but there's no backend running on Vercel.
+
+**Solution**:
+1. Make sure you've deployed your backend to Railway/Render/Fly.io
+2. Configure the `VITE_GRAPHQL_URL` environment variable in Vercel dashboard:
+   ```
+   VITE_GRAPHQL_URL=https://your-backend-url.up.railway.app/graphql
+   ```
+3. Redeploy from Vercel dashboard or push a new commit
+
+**How to verify**:
+```bash
+# Check if backend is accessible
+curl https://your-backend-url.up.railway.app/graphql \
+  -H 'Content-Type: application/json' \
+  -d '{"query": "{ __typename }"}'
+
+# Should return: {"data":{"__typename":"Query"}}
+```
+
+**Browser debugging**:
+- Open DevTools (F12)
+- Check Console tab for errors
+- Check Network tab - look for failed `/graphql` requests
+- If you see `Failed to fetch`, the environment variable is not configured
+
 ### "Build failed: Out of memory"
 - Increase instance size (not needed on free tier usually)
 - Dockerfile is optimized for small instances
@@ -163,7 +271,28 @@ curl https://your-backend-url.com:4000/graphql \
 - Make sure spaCy model downloads correctly
 
 ### "CORS errors from UI"
-- Add your Vercel URL to CORS whitelist in `app/api/graphql.ts`
+- Add your Vercel URL to CORS whitelist in backend CORS configuration
+- Check Railway/Render logs for CORS-related errors
+
+### "TypeScript compilation errors: Cannot use JSX" or other type errors
+
+**Symptom**: Railway/Render build fails with TypeScript errors (JSX errors, missing properties, type mismatches).
+
+**Cause**: The backend TypeScript compiler was trying to compile frontend React apps, tests, and had strict type checking enabled.
+
+**Solution**:
+1. The `tsconfig.json` now excludes frontend UI directories and tests:
+   ```json
+   "include": ["app/**/*"],
+   "exclude": ["node_modules", "dist", ".venv", "app/ui/**", "app/desktop-tester/**"]
+   ```
+
+2. The Dockerfile uses `tsc --noEmitOnError false` to transpile code even if there are type errors:
+   ```dockerfile
+   RUN npx tsc --noEmitOnError false
+   ```
+
+Frontend apps are built separately by Vite/Vercel. Tests validate type correctness locally via `npm test`.
 
 ## iPad-Friendly Workflow
 

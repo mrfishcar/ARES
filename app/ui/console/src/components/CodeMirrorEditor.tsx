@@ -3,8 +3,8 @@ import { EditorState, StateEffect, StateField, RangeSetBuilder } from '@codemirr
 import { EditorView, keymap, ViewPlugin, ViewUpdate, Decoration, DecorationSet } from '@codemirror/view';
 import { defaultKeymap } from '@codemirror/commands';
 import { markdown } from '@codemirror/lang-markdown';
-import type { EntitySpan, EntityType } from '../../../../editor/entityHighlighter';
-import { highlightEntities, getEntityTypeColor } from '../../../../editor/entityHighlighter';
+import type { EntitySpan, EntityType } from '../types/entities';
+import { highlightEntities, getEntityTypeColor } from '../types/entities';
 import { EntityContextMenu } from './EntityContextMenu';
 
 import type { CodeMirrorEditorProps } from './CodeMirrorEditorProps';

@@ -7,7 +7,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { CodeMirrorEditor } from '../components/CodeMirrorEditor';
 import { EntityResultsPanel } from '../components/EntityResultsPanel';
 import { WikiModal } from '../components/WikiModal';
-import { highlightEntities, type EntitySpan } from '../../../../editor/entityHighlighter';
+import { highlightEntities, type EntitySpan } from '../types/entities';
 
 interface ExtractionLabProps {
   project: string;

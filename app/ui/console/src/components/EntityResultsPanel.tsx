@@ -3,7 +3,7 @@
  * Shows extracted entities grouped by type with neon planet universe icon
  */
 
-import { type EntitySpan } from '../../../../editor/entityHighlighter';
+import { type EntitySpan } from '../types/entities';
 import { NeonPlanet } from './NeonPlanet';
 
 interface EntityResultsPanelProps {

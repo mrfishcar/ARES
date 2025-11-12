@@ -38,7 +38,7 @@ export function UnifiedHomePage({ project, toast }: UnifiedHomePageProps) {
   const [showNotesVault, setShowNotesVault] = useState(false); // Notes organizer sidebar
 
   // Refs
-  const saveTimeoutRef = useRef<number>();
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const previousEntityCountRef = useRef(entities.length);
 
   // Word count
