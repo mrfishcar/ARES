@@ -19,6 +19,9 @@ COPY . .
 # We ignore the exit code to allow build to continue
 RUN npx tsc || true
 
+# Copy GraphQL schema to dist (tsc doesn't copy non-TS files)
+RUN cp app/api/schema.graphql dist/app/api/schema.graphql
+
 # Build Review Dashboard UI
 RUN cd app/ui/review-dashboard && npm run build
 
