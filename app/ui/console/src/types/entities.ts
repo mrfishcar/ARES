@@ -51,6 +51,11 @@ export async function highlightEntities(
 ): Promise<EntitySpan[]> {
   console.log('[EntityHighlighter] Analyzing text:', text);
 
+  // Don't call API for empty text
+  if (!text || text.trim().length === 0) {
+    return [];
+  }
+
   try {
     // Call /extract-entities endpoint (same as Extraction Lab)
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';
