@@ -140,6 +140,7 @@ export function CodeMirrorEditor({
   value,
   onChange,
   minHeight = '400px',
+  disableHighlighting = false,
 }: CodeMirrorEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
@@ -163,7 +164,7 @@ export function CodeMirrorEditor({
         extensions: [
           keymap.of(defaultKeymap),
           markdown(),
-          ...entityHighlighterExtension(setContextMenu),
+          ...(disableHighlighting ? [] : entityHighlighterExtension(setContextMenu)),
           entityHighlightTheme,
           EditorView.lineWrapping,
           EditorView.updateListener.of((update: ViewUpdate) => {

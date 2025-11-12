@@ -4,4 +4,5 @@ export interface CodeMirrorEditorProps {
   minHeight?: string;
   project?: string;
   noteId?: string;
+  disableHighlighting?: boolean;
 }
