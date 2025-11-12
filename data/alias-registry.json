@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextAID": 308,
+  "nextAID": 312,
   "mappings": [
     {
       "aid": 1,
@@ -3071,11 +3071,51 @@
       "last_seen": "2025-11-11T04:07:34.105Z",
       "occurrence_count": 1,
       "confidence": 1
+    },
+    {
+      "aid": 308,
+      "surfaceForm": "Harry Potter",
+      "normalizedKey": "harry potter",
+      "eid": 268,
+      "created_at": "2025-11-12T23:48:53.511Z",
+      "last_seen": "2025-11-12T23:48:53.511Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 309,
+      "surfaceForm": "Cory Gilford",
+      "normalizedKey": "cory gilford",
+      "eid": 279,
+      "created_at": "2025-11-12T23:49:04.338Z",
+      "last_seen": "2025-11-12T23:49:04.338Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 310,
+      "surfaceForm": "Friends Forever",
+      "normalizedKey": "friends forever",
+      "eid": 280,
+      "created_at": "2025-11-12T23:49:34.642Z",
+      "last_seen": "2025-11-12T23:49:34.642Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 311,
+      "surfaceForm": "Elliott Gilford",
+      "normalizedKey": "elliott gilford",
+      "eid": 281,
+      "created_at": "2025-11-12T23:49:52.683Z",
+      "last_seen": "2025-11-12T23:49:52.683Z",
+      "occurrence_count": 1,
+      "confidence": 1
     }
   ],
   "metadata": {
-    "total_aliases": 307,
-    "total_entities": 278,
-    "last_updated": "2025-11-11T04:08:03.895Z"
+    "total_aliases": 311,
+    "total_entities": 281,
+    "last_updated": "2025-11-12T23:50:11.911Z"
   }
 }

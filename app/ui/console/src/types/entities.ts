@@ -52,44 +52,43 @@ export async function highlightEntities(
   console.log('[EntityHighlighter] Analyzing text:', text);
 
   try {
-    // Call backend API for entity detection
-    const { query } = await import('../lib/api');
-
-    const GRAPHQL_DETECT_ENTITIES = `
-      query DetectEntities($text: String!, $config: HighlightConfigInput) {
-        detectEntities(text: $text, config: $config) {
-          start
-          end
-          text
-          displayText
-          canonicalName
-          type
-          confidence
-          source
-        }
-      }
-    `;
-
-    interface DetectEntitiesResponse {
-      detectEntities: EntitySpan[];
-    }
-
-    const result = await query<DetectEntitiesResponse>(GRAPHQL_DETECT_ENTITIES, {
-      text,
-      config: {
-        maxHighlights: config.maxHighlights,
-        minConfidence: config.minConfidence,
-        enableNaturalDetection: config.enableNaturalDetection,
-        project: config.project,
-        enableAliasPass: config.enableAliasPass,
-        enableLLM: config.enableLLM,
-        llmMode: config.llmMode,
+    // Call /extract-entities endpoint (same as Extraction Lab)
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+    const response = await fetch(`${apiUrl}/extract-entities`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
+      body: JSON.stringify({ text }),
     });
 
-    console.log('[EntityHighlighter] Detection complete. Found', result.detectEntities.length, 'entities:', result.detectEntities);
+    if (!response.ok) {
+      throw new Error(`API error: ${response.statusText}`);
+    }
 
-    return result.detectEntities;
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.error || 'Extraction failed');
+    }
+
+    // Transform ARES engine output to EntitySpan format
+    const spans: EntitySpan[] = data.entities.flatMap((entity: any) => {
+      return entity.spans.map((span: any) => ({
+        start: span.start,
+        end: span.end,
+        text: entity.text,
+        displayText: entity.text,
+        canonicalName: entity.canonical || entity.text,
+        type: entity.type as EntityType,
+        confidence: entity.confidence || 1,
+        source: 'natural' as const,
+      }));
+    });
+
+    console.log('[EntityHighlighter] Detection complete. Found', spans.length, 'entities:', spans);
+
+    return spans;
   } catch (error) {
     console.error('[EntityHighlighter] API call failed:', error);
 

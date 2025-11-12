@@ -296,7 +296,6 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
             value={text}
             onChange={(newText) => setText(newText)}
             minHeight="calc(100vh - 280px)"
-            disableHighlighting={true}
           />
         </div>
 
