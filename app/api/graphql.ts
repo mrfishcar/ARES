@@ -884,7 +884,9 @@ export function createGraphQLServer(storagePath?: string) {
 
 // Start server if this file is run directly
 if (require.main === module) {
-  startGraphQLServer().catch((error) => {
+  // Use Railway's PORT environment variable, fallback to 4000 for local dev
+  const port = parseInt(process.env.PORT || '4000', 10);
+  startGraphQLServer(port).catch((error) => {
     console.error('Failed to start GraphQL server:', error);
     process.exit(1);
   });
