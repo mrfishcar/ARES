@@ -702,6 +702,136 @@ export async function startGraphQLServer(port: number = 4000, storagePath?: stri
       return;
     }
 
+    // Extract entities endpoint (for Extraction Lab)
+    if (req.url === '/extract-entities' && req.method === 'POST') {
+      // Handle CORS preflight
+      if (req.method === 'OPTIONS') {
+        res.writeHead(200, {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        });
+        res.end();
+        return;
+      }
+
+      // Set CORS headers
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+      let body = '';
+      req.on('data', (chunk) => {
+        body += chunk.toString();
+      });
+
+      req.on('end', async () => {
+        try {
+          const { text } = JSON.parse(body);
+
+          if (!text || typeof text !== 'string') {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Text is required' }));
+            return;
+          }
+
+          logger.info({ msg: 'extract_entities_request', length: text.length });
+
+          // Use temp storage for processing
+          const timestamp = Date.now();
+          const tempPath = path.join(process.cwd(), `temp-extract-${timestamp}.json`);
+
+          // Clear any existing temp storage
+          const { clearStorage } = await import('../storage/storage');
+          clearStorage(tempPath);
+
+          // Extract entities and relations using the FULL ARES engine
+          const startTime = Date.now();
+          const appendResult = await appendDoc(`extract-${timestamp}`, text, tempPath);
+          const extractTime = Date.now() - startTime;
+
+          // Load the graph to get the full results
+          const graph = loadGraph(tempPath);
+          if (!graph) {
+            clearStorage(tempPath);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Failed to load extraction results' }));
+            return;
+          }
+
+          logger.info({
+            msg: 'extract_entities_complete',
+            entities: graph.entities.length,
+            relations: graph.relations.length,
+            time: extractTime
+          });
+
+          // Cleanup temp storage
+          clearStorage(tempPath);
+
+          // Transform entities to frontend format with spans
+          const entitySpans = graph.entities.map(entity => {
+            // Find all occurrences of this entity in the text
+            const escapedCanonical = entity.canonical.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(`\\b${escapedCanonical}\\b`, 'gi');
+            const matches = [];
+            let match;
+            while ((match = regex.exec(text)) !== null) {
+              matches.push({
+                start: match.index,
+                end: match.index + match[0].length,
+              });
+            }
+
+            return {
+              id: entity.id,
+              text: entity.canonical,
+              type: entity.type,
+              confidence: entity.centrality || 1.0,
+              spans: matches,
+              aliases: entity.aliases || [],
+            };
+          });
+
+          // Transform relations to frontend format
+          const relations = graph.relations.map(rel => ({
+            id: rel.id,
+            subj: rel.subj,
+            obj: rel.obj,
+            pred: rel.pred,
+            confidence: rel.confidence,
+            subjCanonical: graph.entities.find(e => e.id === rel.subj)?.canonical || 'UNKNOWN',
+            objCanonical: graph.entities.find(e => e.id === rel.obj)?.canonical || 'UNKNOWN',
+          }));
+
+          // Send response
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            success: true,
+            entities: entitySpans,
+            relations,
+            stats: {
+              extractionTime: extractTime,
+              entityCount: graph.entities.length,
+              relationCount: graph.relations.length,
+              conflictCount: graph.conflicts.length,
+            },
+            fictionEntities: appendResult.fictionEntities.slice(0, 15),
+          }));
+
+        } catch (error) {
+          logger.error({ msg: 'extract_entities_error', err: String(error) });
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            error: 'Failed to extract entities',
+            details: error instanceof Error ? error.message : String(error)
+          }));
+        }
+      });
+
+      return;
+    }
+
     // For GraphQL requests, return 404 - Apollo will handle them
     res.writeHead(404);
     res.end('Not Found');

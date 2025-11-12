@@ -164,6 +164,103 @@ function generateEntityTypeBreakdown(entities: any[]): string {
   return sorted.map(([type, count]) => `- **${type}:** ${count}`).join('\n');
 }
 
+// Extract entities and relations endpoint (for Extraction Lab)
+app.post('/extract-entities', async (req, res) => {
+  try {
+    const { text } = req.body;
+
+    if (!text || typeof text !== 'string') {
+      return res.status(400).json({ error: 'Text is required' });
+    }
+
+    console.log(`\n🔬 Extraction Lab request (${text.length} chars)`);
+
+    // Use temp storage for processing
+    const timestamp = Date.now();
+    const tempPath = path.join(process.cwd(), `temp-extract-${timestamp}.json`);
+
+    // Clear any existing temp storage
+    clearStorage(tempPath);
+
+    // Extract entities and relations using the FULL ARES engine
+    console.log('🔄 Running ARES extraction engine...');
+    const startTime = Date.now();
+    const appendResult = await appendDoc(`extract-${timestamp}`, text, tempPath);
+    const extractTime = Date.now() - startTime;
+    console.log(`✓ Extraction complete in ${extractTime}ms`);
+
+    // Load the graph to get the full results
+    const graph = loadGraph(tempPath);
+    if (!graph) {
+      clearStorage(tempPath);
+      return res.status(500).json({ error: 'Failed to load extraction results' });
+    }
+
+    console.log(`📊 Extracted: ${graph.entities.length} entities, ${graph.relations.length} relations`);
+
+    // Cleanup temp storage
+    clearStorage(tempPath);
+
+    // Transform entities to frontend format with spans
+    // Note: We need to find entity spans in the original text
+    const entitySpans = graph.entities.map(entity => {
+      // Find all occurrences of this entity in the text
+      const escapedCanonical = entity.canonical.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`\\b${escapedCanonical}\\b`, 'gi');
+      const matches = [];
+      let match;
+      while ((match = regex.exec(text)) !== null) {
+        matches.push({
+          start: match.index,
+          end: match.index + match[0].length,
+        });
+      }
+
+      return {
+        id: entity.id,
+        text: entity.canonical,
+        type: entity.type,
+        confidence: entity.centrality || 1.0,
+        spans: matches,
+        aliases: entity.aliases || [],
+      };
+    });
+
+    // Transform relations to frontend format
+    const relations = graph.relations.map(rel => ({
+      id: rel.id,
+      subj: rel.subj,
+      obj: rel.obj,
+      pred: rel.pred,
+      confidence: rel.confidence,
+      // Include entity canonical names for display
+      subjCanonical: graph.entities.find(e => e.id === rel.subj)?.canonical || 'UNKNOWN',
+      objCanonical: graph.entities.find(e => e.id === rel.obj)?.canonical || 'UNKNOWN',
+    }));
+
+    // Send response
+    res.json({
+      success: true,
+      entities: entitySpans,
+      relations,
+      stats: {
+        extractionTime: extractTime,
+        entityCount: graph.entities.length,
+        relationCount: graph.relations.length,
+        conflictCount: graph.conflicts.length,
+      },
+      fictionEntities: appendResult.fictionEntities.slice(0, 15),
+    });
+
+  } catch (error) {
+    console.error('Error extracting entities:', error);
+    res.status(500).json({
+      error: 'Failed to extract entities',
+      details: error instanceof Error ? error.message : String(error)
+    });
+  }
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', wikisPath: wikisOutputPath });

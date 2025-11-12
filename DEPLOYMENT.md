@@ -191,3 +191,15 @@ You can deploy from iPad using:
 4. Total time: 10 minutes
 
 The spaCy parser runs great on Railway/Render/Fly.io - these platforms are designed for Docker containers with Python/ML dependencies.
+
+## Extraction Lab Deployment
+
+For detailed instructions on deploying the Extraction Lab feature (real-time entity extraction UI), see:
+
+**[DEPLOYMENT_EXTRACTION_LAB.md](./DEPLOYMENT_EXTRACTION_LAB.md)**
+
+This guide covers:
+- Frontend-backend communication setup
+- Environment variable configuration for Vercel and Railway
+- CORS configuration for distributed deployment
+- Troubleshooting extraction endpoint issues

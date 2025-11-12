@@ -1,17 +1,39 @@
 /**
  * Extraction Lab - Phase 0
  * Real-time entity extraction testing UI with wiki generation
+ * NOW POWERED BY THE FULL ARES ENGINE
  */
 
 import { useState, useEffect, useCallback } from 'react';
 import { CodeMirrorEditor } from '../components/CodeMirrorEditor';
 import { EntityResultsPanel } from '../components/EntityResultsPanel';
 import { WikiModal } from '../components/WikiModal';
-import { highlightEntities, type EntitySpan } from '../../../../editor/entityHighlighter';
 
 interface ExtractionLabProps {
   project: string;
   toast: any;
+}
+
+// Entity format expected by the frontend
+interface EntitySpan {
+  start: number;
+  end: number;
+  text: string;
+  displayText?: string;
+  type: string;
+  confidence: number;
+  source: 'tag' | 'natural';
+}
+
+// Relation format from ARES engine
+interface Relation {
+  id: string;
+  subj: string;
+  obj: string;
+  pred: string;
+  confidence: number;
+  subjCanonical: string;
+  objCanonical: string;
 }
 
 // Debounce helper
@@ -95,16 +117,18 @@ function deduplicateEntities(entities: EntitySpan[]): EntitySpan[] {
 export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [text, setText] = useState('');
   const [entities, setEntities] = useState<EntitySpan[]>([]);
+  const [relations, setRelations] = useState<Relation[]>([]);
   const [processing, setProcessing] = useState(false);
-  const [stats, setStats] = useState({ time: 0, confidence: 0, count: 0 });
+  const [stats, setStats] = useState({ time: 0, confidence: 0, count: 0, relationCount: 0 });
   const [selectedEntity, setSelectedEntity] = useState<string | null>(null);
 
-  // Real-time extraction (debounced 500ms)
+  // Real-time extraction using FULL ARES ENGINE (debounced 1000ms for heavier processing)
   const extractEntities = useCallback(
     debounce(async (text: string) => {
       if (!text.trim()) {
         setEntities([]);
-        setStats({ time: 0, confidence: 0, count: 0 });
+        setRelations([]);
+        setStats({ time: 0, confidence: 0, count: 0, relationCount: 0 });
         return;
       }
 
@@ -112,14 +136,41 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       const start = performance.now();
 
       try {
-        // Call entity highlighter
-        const extractedEntities = await highlightEntities(text, {
-          maxHighlights: 100,
-          minConfidence: 0.6,
-          enableNaturalDetection: true,
+        // Call ARES engine API (use environment variable for production)
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+        const response = await fetch(`${apiUrl}/extract-entities`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ text }),
         });
 
-        // Deduplicate: merge "David" into "King David", etc.
+        if (!response.ok) {
+          throw new Error(`API error: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        if (!data.success) {
+          throw new Error(data.error || 'Extraction failed');
+        }
+
+        // Transform ARES engine output to EntitySpan format
+        const extractedEntities: EntitySpan[] = data.entities.flatMap((entity: any) => {
+          // Create a span for each occurrence of the entity
+          return entity.spans.map((span: any) => ({
+            start: span.start,
+            end: span.end,
+            text: entity.text,
+            displayText: entity.text,
+            type: entity.type,
+            confidence: entity.confidence,
+            source: 'natural' as const,
+          }));
+        });
+
+        // Deduplicate: merge overlapping spans
         const deduplicated = deduplicateEntities(extractedEntities);
 
         const time = performance.now() - start;
@@ -129,19 +180,24 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
             : 0;
 
         setEntities(deduplicated);
+        setRelations(data.relations || []);
         setStats({
           time: Math.round(time),
           confidence: Math.round(avgConfidence * 100),
           count: deduplicated.length,
+          relationCount: data.relations?.length || 0,
         });
+
+        console.log(`[ARES ENGINE] Extracted ${deduplicated.length} entities, ${data.relations?.length || 0} relations`);
       } catch (error) {
         console.error('Extraction failed:', error);
         toast.error(`Extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
         setEntities([]);
+        setRelations([]);
       } finally {
         setProcessing(false);
       }
-    }, 500),
+    }, 1000), // Increased debounce for heavier ARES processing
     [toast]
   );
 
@@ -153,12 +209,14 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const copyReport = () => {
     const report = {
       timestamp: new Date().toISOString(),
+      engineVersion: 'ARES Full Engine (orchestrator.ts)',
       text: text,
       textLength: text.length,
       stats: {
         processingTime: stats.time,
         averageConfidence: stats.confidence,
         entityCount: stats.count,
+        relationCount: stats.relationCount,
       },
       entities: entities.map((e) => ({
         text: e.text,
@@ -168,20 +226,31 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         end: e.end,
         source: e.source,
         displayText: e.displayText,
-        canonicalName: (e as any).canonicalName,
         // Include surrounding context (50 chars before/after)
         context: text.substring(Math.max(0, e.start - 50), Math.min(text.length, e.end + 50)),
       })),
-      // Group by type for easy analysis
-      byType: entities.reduce((acc, e) => {
+      relations: relations.map((r) => ({
+        subject: r.subjCanonical,
+        predicate: r.pred,
+        object: r.objCanonical,
+        confidence: r.confidence,
+      })),
+      // Group entities by type for easy analysis
+      entitiesByType: entities.reduce((acc, e) => {
         if (!acc[e.type]) acc[e.type] = [];
         acc[e.type].push(e.text);
+        return acc;
+      }, {} as Record<string, string[]>),
+      // Group relations by predicate
+      relationsByPredicate: relations.reduce((acc, r) => {
+        if (!acc[r.pred]) acc[r.pred] = [];
+        acc[r.pred].push(`${r.subjCanonical} → ${r.objCanonical}`);
         return acc;
       }, {} as Record<string, string[]>),
     };
 
     navigator.clipboard.writeText(JSON.stringify(report, null, 2));
-    toast.success('Report copied to clipboard! Paste it for analysis.');
+    toast.success('Full ARES report copied! Includes entities AND relations.');
   };
 
   return (
@@ -191,6 +260,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         <div className="lab-title">
           <span className="lab-icon">🧪</span>
           <h1>ARES Extraction Lab</h1>
+          <span className="powered-badge">Powered by Full ARES Engine</span>
         </div>
         <div className="lab-stats">
           {processing ? (
@@ -200,6 +270,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
               <span className="stat-badge">⏱️ {stats.time}ms</span>
               <span className="stat-badge">🎯 {stats.confidence}% confidence</span>
               <span className="stat-badge">📊 {stats.count} entities</span>
+              <span className="stat-badge">🔗 {stats.relationCount} relations</span>
               <button
                 onClick={copyReport}
                 className="report-button"
@@ -219,7 +290,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         <div className="editor-panel">
           <div className="panel-header">
             <h2>Write or paste text...</h2>
-            <p className="panel-subtitle">Entities will be highlighted as you type (updates every 1s)</p>
+            <p className="panel-subtitle">Full ARES engine extracts entities AND relations (updates after typing)</p>
           </div>
           <CodeMirrorEditor
             value={text}
@@ -231,6 +302,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         {/* Right: Results */}
         <EntityResultsPanel
           entities={entities}
+          relations={relations}
           onViewWiki={(entityName) => setSelectedEntity(entityName)}
         />
       </div>
