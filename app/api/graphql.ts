@@ -717,7 +717,7 @@ export async function startGraphQLServer(port: number = 4000, storagePath?: stri
         return;
       }
 
-      // Only allow POST for actual requests
+      // Only allow POST for actual extraction
       if (req.method !== 'POST') {
         res.writeHead(405, { 'Content-Type': 'text/plain' });
         res.end('Method Not Allowed');
