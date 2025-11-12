@@ -12,7 +12,7 @@ import {
   getEntityTypeColor,
   type EntitySpan,
   type EntityType,
-} from '../../../../editor/entityHighlighter';
+} from '../types/entities';
 import { useEntityMentions } from '../hooks/useEntityMentions';
 
 interface MarkdownEditorWithHighlightingProps {

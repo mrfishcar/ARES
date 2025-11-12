@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import type { EntityType } from '../../../../editor/entityHighlighter';
+import type { EntityType } from '../types/entities';
 
 export interface EntityContextMenuProps {
   position: { x: number; y: number };

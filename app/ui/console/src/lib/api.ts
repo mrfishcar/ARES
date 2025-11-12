@@ -1,4 +1,5 @@
-const GRAPHQL_URL = '/graphql';
+// Use environment variable for production, fallback to relative path for dev
+const GRAPHQL_URL = import.meta.env.VITE_GRAPHQL_URL || '/graphql';
 
 interface GraphQLResponse<T> {
   data?: T;

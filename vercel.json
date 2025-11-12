@@ -1,9 +1,6 @@
 {
-  "version": 2,
-  "name": "ares-console",
-  "buildCommand": "cd app/ui/console && npm install && npm run build",
-  "devCommand": "cd app/ui/console && npm run dev",
-  "installCommand": "cd app/ui/console && npm install",
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "cd app/ui/console && npm ci && npm run build",
   "outputDirectory": "app/ui/console/dist",
   "framework": null,
   "rewrites": [

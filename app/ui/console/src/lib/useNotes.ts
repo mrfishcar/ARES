@@ -233,7 +233,12 @@ export function useNotes(options: UseNotesOptions): UseNotesResult {
         setError(null);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to fetch notes';
+        console.warn('Notes API unavailable:', message);
         setError(message);
+        // Set empty state so UI can still render
+        setNotes([]);
+        setHasNextPage(false);
+        setTotalApprox(0);
       } finally {
         setLoading(false);
       }

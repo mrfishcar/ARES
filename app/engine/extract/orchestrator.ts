@@ -481,10 +481,12 @@ export async function extractFromSegments(
 
   // 6. Re-extract relations with coref-enhanced entity spans
   // This allows "He studied" to find "He" as an entity mention
+  // Use larger context window (±1000 chars) for multi-paragraph narratives
+  const contextWindowSize = 1000;  // Increased from 200 to handle Stage 3 multi-paragraph tests
   const corefRelations: Relation[] = [];
   for (const seg of segs) {
-    const contextBefore = fullText.slice(Math.max(0, seg.start - 200), seg.start);
-    const contextAfter = fullText.slice(seg.end, Math.min(fullText.length, seg.end + 200));
+    const contextBefore = fullText.slice(Math.max(0, seg.start - contextWindowSize), seg.start);
+    const contextAfter = fullText.slice(seg.end, Math.min(fullText.length, seg.end + contextWindowSize));
     const window = contextBefore + seg.text + contextAfter;
     const segOffsetInWindow = contextBefore.length;
 
@@ -696,6 +698,12 @@ export async function extractFromSegments(
     const subjSpan = allSpans.find(s => s.entity_id === rel.subj);
     const position = subjSpan ? subjSpan.start : Infinity;
     const subjectCanonical = subjEntity?.canonical.toLowerCase() || '';
+
+    // Skip relations with invalid/empty subjects (they break appositive detection)
+    if (!subjectCanonical || !subjEntity) {
+      console.log(`[APPOS-FILTER] Skipping relation with empty subject (pred=${rel.pred}, obj=${rel.obj})`);
+      continue;
+    }
 
     if (!predObjToSubjects.has(predObjKey)) {
       predObjToSubjects.set(predObjKey, []);
