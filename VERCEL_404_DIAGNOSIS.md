@@ -2,9 +2,13 @@
 
 ## Summary
 
-The 404 errors on the Vercel deployment are caused by the frontend trying to call backend API endpoints (`/graphql`, `/wiki-file`, `/metrics`) that don't exist on Vercel. Vercel only hosts the static frontend - the backend needs to be deployed separately on Railway.
+The 404 errors on the Vercel deployment were caused by **two issues**:
+1. **Vercel rewrite rule** catching API routes and returning HTML instead of allowing them through
+2. **Backend CORS preflight bug** preventing OPTIONS requests to `/extract-entities` endpoint
 
-## Root Cause
+Both issues have been fixed in this commit.
+
+## Root Causes
 
 ### Architecture
 - **Frontend**: Deployed on Vercel (static React app)
@@ -24,9 +28,64 @@ The 404 errors on the Vercel deployment are caused by the frontend trying to cal
 
 4. This caused API calls to return HTML (index.html) instead of JSON, leading to errors
 
+## Issues Found
+
+### Issue 1: Broken CORS Preflight Handling (Backend Bug)
+
+**Location**: app/api/graphql.ts:708
+
+**The Bug**:
+```javascript
+// BEFORE (BROKEN):
+if (req.url === '/extract-entities' && req.method === 'POST') {
+  if (req.method === 'OPTIONS') {
+    // This code NEVER runs because outer condition requires POST!
+  }
+}
+```
+
+**Why This Breaks**:
+1. When you type in Extraction Lab, browser sends OPTIONS preflight request first (CORS requirement)
+2. The outer condition checks `req.method === 'POST'`
+3. OPTIONS request fails this check and falls through to 404
+4. Browser blocks the actual POST request due to failed preflight
+
+**The Fix**:
+```javascript
+// AFTER (FIXED):
+if (req.url === '/extract-entities') {
+  if (req.method === 'OPTIONS') {
+    // Handle CORS preflight
+    res.writeHead(200, { 'Access-Control-Allow-Origin': '*', ... });
+    return;
+  }
+  if (req.method !== 'POST') {
+    res.writeHead(405);
+    return;
+  }
+  // ... handle POST request
+}
+```
+
+Now OPTIONS requests are properly handled before checking for POST.
+
+### Issue 2: Vercel Rewrite Rule Catching API Routes
+
 ## Fixes Applied
 
-### 1. Updated vercel.json Rewrite Rule
+### 1. Fixed CORS Preflight Handling (Backend)
+
+**File**: app/api/graphql.ts:708-725
+
+Changed the `/extract-entities` endpoint to:
+1. Check for the URL first (without method restriction)
+2. Handle OPTIONS (preflight) separately and return immediately
+3. Then check if method is POST for actual requests
+4. Return 405 for unsupported methods
+
+This allows browsers to complete the CORS preflight handshake successfully.
+
+### 2. Updated vercel.json Rewrite Rule
 
 **Before:**
 ```json
