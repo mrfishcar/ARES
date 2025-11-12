@@ -76,6 +76,9 @@ function entityHighlighterExtension(setContextMenu?: (ctx: any) => void) {
         const entities = await highlightEntities(text, { maxHighlights: 1000, minConfidence: 0.6, enableNaturalDetection: true });
         console.log(`[EntityHighlighter] Detection complete. Found ${entities.length} entities:`, entities);
 
+        // Sort entities by start position (required by CodeMirror RangeSetBuilder)
+        entities.sort((a, b) => a.start - b.start);
+
         // Debug: log detected entities
         if (entities.length > 0) {
           console.log(`[EntityHighlighter] Detected ${entities.length} entities:`, entities);
