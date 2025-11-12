@@ -3,17 +3,17 @@
     {
       "id": "global_person_0",
       "type": "PERSON",
-      "canonical": "Elias",
+      "canonical": "Aria",
       "aliases": [],
-      "created_at": "2025-11-11T04:21:35.652Z",
+      "created_at": "2025-11-12T00:30:32.148Z",
       "centrality": 0
     },
     {
       "id": "global_person_1",
       "type": "PERSON",
-      "canonical": "Aria",
+      "canonical": "Elias",
       "aliases": [],
-      "created_at": "2025-11-11T04:21:35.652Z",
+      "created_at": "2025-11-12T00:30:32.148Z",
       "centrality": 0
     },
     {
@@ -21,13 +21,13 @@
       "type": "PLACE",
       "canonical": "Mistward River",
       "aliases": [],
-      "created_at": "2025-11-11T04:21:35.652Z",
+      "created_at": "2025-11-12T00:30:32.148Z",
       "centrality": 0
     }
   ],
   "relations": [
     {
-      "id": "f70e3e80-273f-4f1a-833b-e25126518aae",
+      "id": "8a98b2c4-2732-43b0-a2da-b91f24a78832",
       "subj": "global_person_0",
       "pred": "lives_in",
       "obj": "global_place_2",
@@ -52,25 +52,43 @@
     "test-mega-context_entity_0": {
       "global_id": "global_person_0",
       "doc_id": "test-mega-context",
-      "merged_at": "2025-11-11T04:21:35.652Z",
-      "local_canonical": "Elias"
+      "merged_at": "2025-11-12T00:30:32.148Z",
+      "local_canonical": "Aria"
     },
     "test-mega-context_entity_1": {
-      "global_id": "global_place_2",
-      "doc_id": "test-mega-context",
-      "merged_at": "2025-11-11T04:21:35.652Z",
-      "local_canonical": "Mistward River"
-    },
-    "test-mega-context_entity_2": {
       "global_id": "global_person_1",
       "doc_id": "test-mega-context",
-      "merged_at": "2025-11-11T04:21:35.652Z",
-      "local_canonical": "Aria"
+      "merged_at": "2025-11-12T00:30:32.148Z",
+      "local_canonical": "Elias"
+    },
+    "test-mega-context_entity_2": {
+      "global_id": "global_place_2",
+      "doc_id": "test-mega-context",
+      "merged_at": "2025-11-12T00:30:32.148Z",
+      "local_canonical": "Mistward River"
     }
   },
   "profiles": {
-    "1bdb86c1-0f1a-4b7f-b5d7-9061bcd6cc47": {
-      "entity_id": "1bdb86c1-0f1a-4b7f-b5d7-9061bcd6cc47",
+    "cb784c49-31ab-48cb-821a-085179aebdf0": {
+      "entity_id": "cb784c49-31ab-48cb-821a-085179aebdf0",
+      "entity_type": "PERSON",
+      "canonical": "Aria",
+      "descriptors": [],
+      "titles": [
+        "Aria"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Aria and Elias lived in a copper-roofed house overlooking the Mistward River."
+      ],
+      "mention_count": 1,
+      "first_seen": "test-mega-context",
+      "last_seen": "test-mega-context",
+      "confidence_score": 0.55
+    },
+    "9311c273-6a8c-46fc-8b4d-3d974b58d286": {
+      "entity_id": "9311c273-6a8c-46fc-8b4d-3d974b58d286",
       "entity_type": "PERSON",
       "canonical": "Elias",
       "descriptors": [],
@@ -89,8 +107,8 @@
       "last_seen": "test-mega-context",
       "confidence_score": 0.55
     },
-    "5a8f5715-5c43-4786-a669-2524f19a5c6c": {
-      "entity_id": "5a8f5715-5c43-4786-a669-2524f19a5c6c",
+    "9df894d1-1fc1-4fe3-be53-37d873109e32": {
+      "entity_id": "9df894d1-1fc1-4fe3-be53-37d873109e32",
       "entity_type": "PLACE",
       "canonical": "Mistward River",
       "descriptors": [],
@@ -108,29 +126,11 @@
       "first_seen": "test-mega-context",
       "last_seen": "test-mega-context",
       "confidence_score": 0.55
-    },
-    "441f2300-45bc-494f-a7c4-a740962e3d01": {
-      "entity_id": "441f2300-45bc-494f-a7c4-a740962e3d01",
-      "entity_type": "PERSON",
-      "canonical": "Aria",
-      "descriptors": [],
-      "titles": [
-        "Aria"
-      ],
-      "roles": [],
-      "attributes": {},
-      "contexts": [
-        "Aria and Elias lived in a copper-roofed house overlooking the Mistward River."
-      ],
-      "mention_count": 1,
-      "first_seen": "test-mega-context",
-      "last_seen": "test-mega-context",
-      "confidence_score": 0.55
     }
   },
   "metadata": {
-    "created_at": "2025-11-11T04:21:35.634Z",
-    "updated_at": "2025-11-11T04:21:35.652Z",
+    "created_at": "2025-11-12T00:30:32.059Z",
+    "updated_at": "2025-11-12T00:30:32.148Z",
     "doc_count": 1,
     "doc_ids": [
       "test-mega-context"

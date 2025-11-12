@@ -834,41 +834,82 @@ export async function startGraphQLServer(port: number = 4000, storagePath?: stri
       return;
     }
 
-    // For GraphQL requests, return 404 - Apollo will handle them
+    // Handle GraphQL requests
+    if (req.url === '/graphql' && req.method === 'POST') {
+      let body = '';
+      req.on('data', (chunk) => {
+        body += chunk.toString();
+      });
+
+      req.on('end', async () => {
+        try {
+          const { query, variables, operationName } = JSON.parse(body);
+
+          // Rate limiting check
+          const clientId = extractClientId(req.headers as Record<string, string | string[] | undefined>);
+          const rateLimitResult = globalRateLimiter.checkLimit(clientId);
+
+          if (!rateLimitResult.allowed) {
+            res.writeHead(429, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+              errors: [{ message: `Rate limit exceeded. Retry after ${rateLimitResult.retryAfter} seconds.` }]
+            }));
+            return;
+          }
+
+          // Generate request_id
+          const request_id = (req.headers['x-request-id'] as string) || crypto.randomUUID();
+          const log = withRequest(logger, request_id);
+
+          // Log request
+          log.info({ msg: 'graphql_request', request_id, operationName });
+
+          // Load graph for context
+          const graph = loadGraph(storagePath);
+
+          // Execute GraphQL operation
+          const result = await server.executeOperation(
+            { query, variables, operationName },
+            { contextValue: { graph, log, request_id } }
+          );
+
+          // Send response
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(result));
+
+        } catch (error) {
+          logger.error({ msg: 'graphql_parse_error', err: String(error) });
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            errors: [{ message: 'Invalid GraphQL request' }]
+          }));
+        }
+      });
+
+      return;
+    }
+
+    // For other requests, return 404
     res.writeHead(404);
     res.end('Not Found');
   });
 
-  // Start custom server
+  // Start Apollo Server
+  await server.start();
+
+  // Start unified HTTP server on one port
   await new Promise<void>((resolve) => {
-    httpServer.listen(port + 100, () => resolve());
+    httpServer.listen(port, () => {
+      logger.info({
+        msg: 'server_ready',
+        port,
+        graphqlUrl: `http://localhost:${port}/graphql`,
+        extractUrl: `http://localhost:${port}/extract-entities`
+      });
+      resolve();
+    });
   });
 
-  const { url } = await startStandaloneServer(server, {
-    listen: { port },
-    context: async ({ req }) => {
-      // Rate limiting check
-      const clientId = extractClientId(req.headers as Record<string, string | string[] | undefined>);
-      const rateLimitResult = globalRateLimiter.checkLimit(clientId);
-
-      if (!rateLimitResult.allowed) {
-        throw new Error(`Rate limit exceeded. Retry after ${rateLimitResult.retryAfter} seconds.`);
-      }
-
-      // Generate request_id
-      const request_id = (req.headers['x-request-id'] as string) || crypto.randomUUID();
-      const log = withRequest(logger, request_id);
-
-      // Log request (operation name not available at this stage)
-      log.info({ msg: 'graphql_request', request_id });
-
-      // Load graph for each request
-      const graph = loadGraph(storagePath);
-      return { graph, log, request_id };
-    }
-  });
-
-  logger.info({ msg: 'graphql_server_ready', url });
   return server;
 }
 

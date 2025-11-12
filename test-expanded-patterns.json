@@ -3,188 +3,25 @@
     {
       "id": "global_person_0",
       "type": "PERSON",
-      "canonical": "Marcus",
-      "aliases": [],
-      "created_at": "2025-11-11T04:21:29.221Z",
-      "centrality": 0
-    },
-    {
-      "id": "global_person_1",
-      "type": "PERSON",
-      "canonical": "Prince",
-      "aliases": [
-        "Aldric"
-      ],
-      "created_at": "2025-11-11T04:21:29.221Z",
-      "centrality": 0
-    },
-    {
-      "id": "global_person_2",
-      "type": "PERSON",
       "canonical": "Victoria",
       "aliases": [],
-      "created_at": "2025-11-11T04:21:29.221Z",
+      "created_at": "2025-11-12T00:30:29.297Z",
       "centrality": 0
     }
   ],
-  "relations": [
-    {
-      "id": "ff03380d-44bb-4915-b143-0d7fd372ee46",
-      "subj": "global_person_0",
-      "pred": "child_of",
-      "obj": "global_person_2",
-      "evidence": [
-        {
-          "doc_id": "default",
-          "span": {
-            "start": 2,
-            "end": 31,
-            "text": "\n Marcus, offspring of Victoria, traveled widely.\n Prince Aldric, heir "
-          },
-          "sentence_index": 0,
-          "source": "RAW"
-        }
-      ],
-      "confidence": 0.7,
-      "extractor": "regex"
-    },
-    {
-      "id": "439bf21d-84d0-491e-96ce-ea7dd15eb5ac",
-      "subj": "global_person_2",
-      "pred": "parent_of",
-      "obj": "global_person_0",
-      "evidence": [
-        {
-          "doc_id": "default",
-          "span": {
-            "start": 2,
-            "end": 31,
-            "text": "\n Marcus, offspring of Victoria, traveled widely.\n Prince Aldric, heir "
-          },
-          "sentence_index": 0,
-          "source": "RAW"
-        }
-      ],
-      "confidence": 0.7,
-      "extractor": "regex"
-    }
-  ],
-  "conflicts": [
-    {
-      "type": "cycle",
-      "severity": 3,
-      "description": "Cycle detected in parent_of/child_of: global_person_0 → global_person_2 → global_person_0",
-      "relations": [
-        {
-          "id": "ff03380d-44bb-4915-b143-0d7fd372ee46",
-          "subj": "global_person_0",
-          "pred": "child_of",
-          "obj": "global_person_2",
-          "evidence": [
-            {
-              "doc_id": "default",
-              "span": {
-                "start": 2,
-                "end": 31,
-                "text": "\n Marcus, offspring of Victoria, traveled widely.\n Prince Aldric, heir "
-              },
-              "sentence_index": 0,
-              "source": "RAW"
-            }
-          ],
-          "confidence": 0.7,
-          "extractor": "regex"
-        },
-        {
-          "id": "439bf21d-84d0-491e-96ce-ea7dd15eb5ac",
-          "subj": "global_person_2",
-          "pred": "parent_of",
-          "obj": "global_person_0",
-          "evidence": [
-            {
-              "doc_id": "default",
-              "span": {
-                "start": 2,
-                "end": 31,
-                "text": "\n Marcus, offspring of Victoria, traveled widely.\n Prince Aldric, heir "
-              },
-              "sentence_index": 0,
-              "source": "RAW"
-            }
-          ],
-          "confidence": 0.7,
-          "extractor": "regex"
-        }
-      ]
-    }
-  ],
+  "relations": [],
+  "conflicts": [],
   "provenance": {
     "test-combined_entity_0": {
       "global_id": "global_person_0",
       "doc_id": "test-combined",
-      "merged_at": "2025-11-11T04:21:29.221Z",
-      "local_canonical": "Marcus"
-    },
-    "test-combined_entity_1": {
-      "global_id": "global_person_1",
-      "doc_id": "test-combined",
-      "merged_at": "2025-11-11T04:21:29.221Z",
-      "local_canonical": "Prince"
-    },
-    "test-combined_entity_2": {
-      "global_id": "global_person_2",
-      "doc_id": "test-combined",
-      "merged_at": "2025-11-11T04:21:29.221Z",
+      "merged_at": "2025-11-12T00:30:29.297Z",
       "local_canonical": "Victoria"
     }
   },
   "profiles": {
-    "c5d93254-4687-4792-8a78-c6b97cab0e09": {
-      "entity_id": "c5d93254-4687-4792-8a78-c6b97cab0e09",
-      "entity_type": "PERSON",
-      "canonical": "Marcus",
-      "descriptors": [],
-      "titles": [
-        "Marcus"
-      ],
-      "roles": [],
-      "attributes": {},
-      "contexts": [
-        "Marcus, offspring of Victoria, traveled widely."
-      ],
-      "mention_count": 1,
-      "first_seen": "test-combined",
-      "last_seen": "test-combined",
-      "confidence_score": 0.55
-    },
-    "2533114f-873c-4f59-9686-d25486eea078": {
-      "entity_id": "2533114f-873c-4f59-9686-d25486eea078",
-      "entity_type": "PERSON",
-      "canonical": "Prince",
-      "descriptors": [],
-      "titles": [
-        "Prince",
-        "Aldric"
-      ],
-      "roles": [
-        "queen",
-        "prince"
-      ],
-      "attributes": {
-        "age": [
-          "old"
-        ]
-      },
-      "contexts": [
-        "Prince Aldric, heir of Queen Isolde, studied diplomacy."
-      ],
-      "mention_count": 1,
-      "first_seen": "test-combined",
-      "last_seen": "test-combined",
-      "confidence_score": 0.55
-    },
-    "4db3ae3f-d563-4c6d-bfdf-4f911e71e0cf": {
-      "entity_id": "4db3ae3f-d563-4c6d-bfdf-4f911e71e0cf",
+    "5551cd86-9871-413a-bf99-ed9ddf29852a": {
+      "entity_id": "5551cd86-9871-413a-bf99-ed9ddf29852a",
       "entity_type": "PERSON",
       "canonical": "Victoria",
       "descriptors": [],
@@ -203,8 +40,8 @@
     }
   },
   "metadata": {
-    "created_at": "2025-11-11T04:21:29.211Z",
-    "updated_at": "2025-11-11T04:21:29.221Z",
+    "created_at": "2025-11-12T00:30:29.277Z",
+    "updated_at": "2025-11-12T00:30:29.297Z",
     "doc_count": 1,
     "doc_ids": [
       "test-combined"
