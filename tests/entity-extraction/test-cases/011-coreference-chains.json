@@ -1,0 +1,115 @@
+[
+  {
+    "id": "coref-001",
+    "description": "Long coreference chain across multiple sentences",
+    "text": "Dr. Elizabeth Warren is a professor at Harvard Law School. She has written several books on bankruptcy law. The senator from Massachusetts was previously a law professor. Warren announced her candidacy in 2019. The candidate focused on economic policy. She eventually ended her campaign.",
+    "expectedEntities": [
+      {
+        "type": "PERSON",
+        "text": "Elizabeth Warren",
+        "aliases": ["Dr. Elizabeth Warren", "She", "The senator", "Warren", "The candidate"],
+        "context": "senator and professor",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Harvard Law School",
+        "context": "academic institution",
+        "confidence": 0.98
+      },
+      {
+        "type": "LOCATION",
+        "text": "Massachusetts",
+        "context": "US state",
+        "confidence": 0.98
+      },
+      {
+        "type": "DATE",
+        "text": "2019",
+        "context": "candidacy announcement year",
+        "confidence": 0.98
+      }
+    ]
+  },
+  {
+    "id": "coref-002",
+    "description": "Multiple entities with overlapping pronouns",
+    "text": "John and Mary founded the company together. He handled engineering while she managed sales. They grew it from a garage startup to a billion-dollar enterprise. His technical expertise and her business acumen were the perfect combination.",
+    "expectedEntities": [
+      {
+        "type": "PERSON",
+        "text": "John",
+        "aliases": ["He", "His"],
+        "context": "engineering founder",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "Mary",
+        "aliases": ["she", "her"],
+        "context": "sales manager founder",
+        "confidence": 0.95
+      }
+    ]
+  },
+  {
+    "id": "coref-003",
+    "description": "Corporate entity with multiple reference forms",
+    "text": "International Business Machines Corporation, commonly known as IBM, is a major tech company. The Armonk-based firm employs hundreds of thousands globally. Big Blue, as it's nicknamed, has been a leader in enterprise computing. The company recently announced new quantum computing breakthroughs. This multinational corporation continues to innovate.",
+    "expectedEntities": [
+      {
+        "type": "ORGANIZATION",
+        "text": "IBM",
+        "aliases": ["International Business Machines Corporation", "The Armonk-based firm", "Big Blue", "it", "The company", "This multinational corporation"],
+        "context": "technology company",
+        "confidence": 0.98
+      },
+      {
+        "type": "LOCATION",
+        "text": "Armonk",
+        "context": "IBM headquarters location",
+        "confidence": 0.90
+      }
+    ]
+  },
+  {
+    "id": "coref-004",
+    "description": "Title-based references resolving to person",
+    "text": "President Biden spoke at the summit. The president emphasized climate action. The former senator from Delaware has been in politics for decades. The current administration's policies reflect his priorities.",
+    "expectedEntities": [
+      {
+        "type": "PERSON",
+        "text": "Biden",
+        "aliases": ["President Biden", "The president", "The former senator", "his"],
+        "context": "US President",
+        "confidence": 0.98
+      },
+      {
+        "type": "LOCATION",
+        "text": "Delaware",
+        "context": "US state",
+        "confidence": 0.98
+      }
+    ]
+  },
+  {
+    "id": "coref-005",
+    "description": "Geographic location with various descriptive references",
+    "text": "New York City is the largest city in the United States. The Big Apple attracts millions of tourists annually. This metropolis never sleeps. The five-borough city is known for its cultural diversity. NYC, as locals call it, remains a global financial center.",
+    "expectedEntities": [
+      {
+        "type": "LOCATION",
+        "text": "New York City",
+        "aliases": ["The Big Apple", "This metropolis", "The five-borough city", "NYC", "it"],
+        "context": "largest US city",
+        "confidence": 0.98
+      },
+      {
+        "type": "LOCATION",
+        "text": "United States",
+        "context": "country",
+        "confidence": 0.98
+      }
+    ]
+  }
+]
