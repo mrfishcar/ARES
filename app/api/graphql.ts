@@ -705,7 +705,7 @@ export async function startGraphQLServer(port: number = 4000, storagePath?: stri
     }
 
     // Extract entities endpoint (for Extraction Lab)
-    if (req.url === '/extract-entities' && req.method === 'POST') {
+    if (req.url === '/extract-entities') {
       // Handle CORS preflight
       if (req.method === 'OPTIONS') {
         res.writeHead(200, {
@@ -714,6 +714,13 @@ export async function startGraphQLServer(port: number = 4000, storagePath?: stri
           'Access-Control-Allow-Headers': 'Content-Type',
         });
         res.end();
+        return;
+      }
+
+      // Only allow POST for actual requests
+      if (req.method !== 'POST') {
+        res.writeHead(405, { 'Content-Type': 'text/plain' });
+        res.end('Method Not Allowed');
         return;
       }
 
