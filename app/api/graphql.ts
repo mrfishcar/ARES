@@ -835,57 +835,80 @@ export async function startGraphQLServer(port: number = 4000, storagePath?: stri
     }
 
     // Handle GraphQL requests
-    if (req.url === '/graphql' && req.method === 'POST') {
-      let body = '';
-      req.on('data', (chunk) => {
-        body += chunk.toString();
-      });
+    if (req.url === '/graphql') {
+      // Handle CORS preflight
+      if (req.method === 'OPTIONS') {
+        res.writeHead(200, {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, x-request-id',
+        });
+        res.end();
+        return;
+      }
 
-      req.on('end', async () => {
-        try {
-          const { query, variables, operationName } = JSON.parse(body);
+      if (req.method === 'POST') {
+        // Set CORS headers for actual request
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-request-id');
 
-          // Rate limiting check
-          const clientId = extractClientId(req.headers as Record<string, string | string[] | undefined>);
-          const rateLimitResult = globalRateLimiter.checkLimit(clientId);
+        let body = '';
+        req.on('data', (chunk) => {
+          body += chunk.toString();
+        });
 
-          if (!rateLimitResult.allowed) {
-            res.writeHead(429, { 'Content-Type': 'application/json' });
+        req.on('end', async () => {
+          try {
+            const { query, variables, operationName } = JSON.parse(body);
+
+            // Rate limiting check
+            const clientId = extractClientId(req.headers as Record<string, string | string[] | undefined>);
+            const rateLimitResult = globalRateLimiter.checkLimit(clientId);
+
+            if (!rateLimitResult.allowed) {
+              res.writeHead(429, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({
+                errors: [{ message: `Rate limit exceeded. Retry after ${rateLimitResult.retryAfter} seconds.` }]
+              }));
+              return;
+            }
+
+            // Generate request_id
+            const request_id = (req.headers['x-request-id'] as string) || crypto.randomUUID();
+            const log = withRequest(logger, request_id);
+
+            // Log request
+            log.info({ msg: 'graphql_request', request_id, operationName });
+
+            // Load graph for context
+            const graph = loadGraph(storagePath);
+
+            // Execute GraphQL operation
+            const result = await server.executeOperation(
+              { query, variables, operationName },
+              { contextValue: { graph, log, request_id } }
+            );
+
+            // Send response
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(result));
+
+          } catch (error) {
+            logger.error({ msg: 'graphql_parse_error', err: String(error) });
+            res.writeHead(400, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({
-              errors: [{ message: `Rate limit exceeded. Retry after ${rateLimitResult.retryAfter} seconds.` }]
+              errors: [{ message: 'Invalid GraphQL request' }]
             }));
-            return;
           }
+        });
 
-          // Generate request_id
-          const request_id = (req.headers['x-request-id'] as string) || crypto.randomUUID();
-          const log = withRequest(logger, request_id);
+        return;
+      }
 
-          // Log request
-          log.info({ msg: 'graphql_request', request_id, operationName });
-
-          // Load graph for context
-          const graph = loadGraph(storagePath);
-
-          // Execute GraphQL operation
-          const result = await server.executeOperation(
-            { query, variables, operationName },
-            { contextValue: { graph, log, request_id } }
-          );
-
-          // Send response
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify(result));
-
-        } catch (error) {
-          logger.error({ msg: 'graphql_parse_error', err: String(error) });
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({
-            errors: [{ message: 'Invalid GraphQL request' }]
-          }));
-        }
-      });
-
+      // Method not allowed for GraphQL
+      res.writeHead(405, { 'Content-Type': 'text/plain' });
+      res.end('Method Not Allowed');
       return;
     }
 
