@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { extractEntities } from '../../app/engine/extract/entities';
-import type { Entity, EntityType } from '../../app/engine/schema';
+import { extractEntities, Entity, EntityType } from '../../app/engine/extract/entities';
 import fs from 'fs';
 import path from 'path';
 

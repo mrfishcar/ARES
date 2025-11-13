@@ -6,7 +6,7 @@
  * and entity type validation.
  */
 
-import type { Entity, EntityType } from '../../app/engine/schema';
+import type { Entity, EntityType } from '../../app/engine/extract/entities';
 
 export interface TestEntity {
   type: EntityType;

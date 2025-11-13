@@ -6,7 +6,7 @@
  * and canonical name selection.
  */
 
-import type { Entity } from '../../app/engine/schema';
+import type { Entity } from '../../app/engine/extract/entities';
 import type { TestEntity } from './test-utils';
 import { normalizeEntityText } from './test-utils';
 

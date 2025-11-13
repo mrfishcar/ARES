@@ -6,7 +6,7 @@
  * and type disambiguation logic.
  */
 
-import type { Entity, EntityType } from '../../app/engine/schema';
+import type { Entity, EntityType } from '../../app/engine/extract/entities';
 
 export interface TypeValidationRule {
   name: string;

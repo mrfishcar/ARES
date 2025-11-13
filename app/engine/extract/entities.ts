@@ -21,6 +21,9 @@ import type { Token, ParsedSentence, ParseResponse } from "./parse-types";
 import { getParserClient } from "../../parser";
 import { analyzeEntityContext, classifyWithContext, shouldExtractByContext } from "./context-classifier";
 
+// Re-export types for test compatibility
+export type { Entity, EntityType } from "../schema";
+
 const TRACE_SPANS = process.env.L3_TRACE === "1";
 
 const traceSpan = (stage: string, source: string, start: number, end: number, value: string) => {
