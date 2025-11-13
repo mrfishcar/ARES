@@ -116,9 +116,34 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     symmetric: true,
     typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
   },
-  // "X became friends with Y" (handles "became friends with Ron and Hermione")
+  // "X became friends with Y and Z" - extracts FIRST friend
+  {
+    regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:became|quickly became)\s+friends?\s+with\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+and\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
+    predicate: 'friends_with',
+    extractSubj: 1,
+    extractObj: 2,  // First friend
+    symmetric: true,
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X became friends with Y and Z" - extracts SECOND friend (same regex, different extraction)
+  {
+    regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:became|quickly became)\s+friends?\s+with\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+and\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
+    predicate: 'friends_with',
+    extractSubj: 1,
+    extractObj: 3,  // Second friend (after "and")
+    symmetric: true,
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X became friends with Y" (single friend, no coordination)
   {
     regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:became|quickly became)\s+friends?\s+with\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
+    predicate: 'friends_with',
+    symmetric: true,
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X became close/good friends with Y"
+  {
+    regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+became\s+(?:close|good|best)\s+friends?\s+with\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
     predicate: 'friends_with',
     symmetric: true,
     typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
@@ -131,8 +156,9 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     predicate: 'studies_at',
     typeGuard: { subj: ['PERSON'], obj: ['ORG'] }
   },
+  // "X was a [adjective] student at Y" (handles "unique student", "brilliant student")
   {
-    regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:was|is)\s+a\s+(?:student|pupil)\s+at\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
+    regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:was|is)\s+a\s+(?:\w+\s+)?(?:student|pupil)\s+at\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
     predicate: 'studies_at',
     typeGuard: { subj: ['PERSON'], obj: ['ORG'] }
   },
@@ -178,31 +204,38 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
   },
 
   // === EMPLOYMENT PATTERNS ===
-  // "X worked at/in Y"
+  // "X worked at/in/for Y"
   {
-    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:worked|works|labored|labors|served|serves|employed)\s+(?:at|in|for)\s+(?:the\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:worked|works|labored|labors|served|serves|employed)\s+(?:at|in|for)\s+(?:the\s+)?([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
     predicate: 'works_at',
     typeGuard: { subj: ['PERSON'], obj: ['ORG', 'PLACE'] }
   },
 
   // === ENEMY PATTERNS ===
-  // "Aria became an enemy of Kara"
+  // "X became a rival TO Y" (handles both "of" and "to")
   {
-    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:became|remained|was|were)\s+(?:an\s+)?(?:enemy|enemies|rival|rivals)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:became|remained|was|were)\s+(?:an?\s+)?(?:enemy|enemies|rival|rivals)\s+(?:of|to)\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
+    predicate: 'enemy_of',
+    symmetric: true,
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X faced/fought/battled Y" → enemy_of
+  {
+    regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:faced|fought|battled|confronted|challenged)\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
     predicate: 'enemy_of',
     symmetric: true,
     typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
   },
   // "Aria and Kara became enemies"
   {
-    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+and\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:became|remained|were)\s+(?:enemies|rivals)\b/g,
+    regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+and\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:became|remained|were)\s+(?:enemies|rivals)\b/g,
     predicate: 'enemy_of',
     symmetric: true,
     typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
   },
   // "the rivalry between Aria and Kara"
   {
-    regex: /\bthe\s+rivalry\s+between\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+and\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    regex: /\bthe\s+rivalry\s+between\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+and\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
     predicate: 'enemy_of',
     symmetric: true,
     typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
@@ -257,6 +290,14 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     extractSubj: 3,  // Parent name
     extractObj: 1,   // Pronoun - needs coreference resolution
     typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // LIST: "Their children included X, Y, Z" → child_of for each
+  {
+    regex: /\b(Their|His|Her|his|her|their)\s+children\s+included\s*/gi,
+    predicate: 'child_of',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] },
+    listExtraction: true,
+    reversed: true  // Children are child_of the parents (not parents have children)
   },
 
   // === EDUCATION PATTERNS ===
