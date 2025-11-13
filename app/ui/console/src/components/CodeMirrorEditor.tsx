@@ -6,6 +6,8 @@ import { markdown } from '@codemirror/lang-markdown';
 import type { EntitySpan, EntityType } from '../types/entities';
 import { highlightEntities, getEntityTypeColor } from '../types/entities';
 import { EntityContextMenu } from './EntityContextMenu';
+import { entityAutoReplaceExtension } from './entityAutoReplace';
+import { wysiwygMarkdownExtension } from './wysiwygMarkdown';
 
 import type { CodeMirrorEditorProps } from './CodeMirrorEditorProps';
 
@@ -73,8 +75,37 @@ function entityHighlighterExtension(setContextMenu?: (ctx: any) => void) {
       const builder = new RangeSetBuilder<Decoration>();
 
       try {
-        const entities = await highlightEntities(text, { maxHighlights: 1000, minConfidence: 0.6, enableNaturalDetection: true });
-        console.log(`[EntityHighlighter] Detection complete. Found ${entities.length} entities:`, entities);
+        // First, parse manual tags from the text
+        const manualTags: EntitySpan[] = [];
+        const tagRegex = /#\[([^\]]+)\]:(\w+)|#(\w+):(\w+)/g;
+        let match;
+
+        while ((match = tagRegex.exec(text)) !== null) {
+          const isMultiWord = match[1] !== undefined;
+          const name = isMultiWord ? match[1] : match[3];
+          const type = isMultiWord ? match[2] : match[4];
+
+          // Validate type is a valid EntityType
+          if (['PERSON', 'PLACE', 'ORG', 'EVENT', 'CONCEPT', 'OBJECT'].includes(type.toUpperCase())) {
+            manualTags.push({
+              start: match.index,
+              end: match.index + match[0].length,
+              text: match[0], // Keep the full tag as text
+              displayText: name,
+              canonicalName: name,
+              type: type.toUpperCase() as EntityType,
+              confidence: 1.0,
+              source: 'tag'
+            });
+          }
+        }
+
+        // Get API-detected entities
+        const apiEntities = await highlightEntities(text, { maxHighlights: 1000, minConfidence: 0.6, enableNaturalDetection: true });
+
+        // Combine manual tags with API entities
+        const entities = [...manualTags, ...apiEntities];
+        console.log(`[EntityHighlighter] Detection complete. Found ${apiEntities.length} API entities + ${manualTags.length} manual tags:`, entities);
 
         // Sort entities by start position (required by CodeMirror RangeSetBuilder)
         entities.sort((a, b) => a.start - b.start);
@@ -144,6 +175,7 @@ export function CodeMirrorEditor({
   onChange,
   minHeight = '400px',
   disableHighlighting = false,
+  enableWYSIWYG = false,
 }: CodeMirrorEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
@@ -167,7 +199,9 @@ export function CodeMirrorEditor({
         extensions: [
           keymap.of(defaultKeymap),
           markdown(),
+          ...(enableWYSIWYG ? [wysiwygMarkdownExtension()] : []), // WYSIWYG markdown rendering
           ...(disableHighlighting ? [] : entityHighlighterExtension(setContextMenu)),
+          entityAutoReplaceExtension(), // Auto-convert tags to plain text
           entityHighlightTheme,
           EditorView.lineWrapping,
           EditorView.updateListener.of((update: ViewUpdate) => {
@@ -208,6 +242,32 @@ export function CodeMirrorEditor({
       });
     }
   }, [value]);
+
+  // Update editor configuration when disableHighlighting or enableWYSIWYG changes
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view) return;
+
+    // Reconfigure the editor with the new settings
+    const newExtensions = [
+      keymap.of(defaultKeymap),
+      markdown(),
+      ...(enableWYSIWYG ? [wysiwygMarkdownExtension()] : []), // WYSIWYG markdown rendering
+      ...(disableHighlighting ? [] : entityHighlighterExtension(setContextMenu)),
+      entityAutoReplaceExtension(), // Auto-convert tags to plain text
+      entityHighlightTheme,
+      EditorView.lineWrapping,
+      EditorView.updateListener.of((update: ViewUpdate) => {
+        if (update.docChanged) {
+          onChange(update.state.doc.toString());
+        }
+      })
+    ];
+
+    view.dispatch({
+      effects: StateEffect.reconfigure.of(newExtensions)
+    });
+  }, [disableHighlighting, enableWYSIWYG, onChange]);
 
   const handleConfirm = async (type: EntityType) => {
     if (!contextMenu || !viewRef.current) return;

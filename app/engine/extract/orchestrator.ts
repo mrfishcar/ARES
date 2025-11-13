@@ -1155,3 +1155,31 @@ function mapCustomTypeToAresType(customType: string): import('../schema').Entity
 function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
+
+/**
+ * Register alias from drag-and-drop UI
+ * Maps an alias name to a canonical entity
+ */
+export async function registerAlias(
+  alias: string,
+  canonical: string,
+  type: string
+): Promise<{ eid: number; aid: number }> {
+  const { getEIDRegistry } = await import('../eid-registry.js');
+  const { getAliasRegistry } = await import('../alias-registry.js');
+
+  const entityRegistry = getEIDRegistry();
+  const aliasRegistry = getAliasRegistry();
+
+  // Get or create EID for canonical entity
+  const canonicalEID = entityRegistry.getOrCreate(canonical);
+
+  // Register the alias
+  const aid = aliasRegistry.register(alias, canonicalEID, 1.0);
+
+  // Save registries
+  entityRegistry.save();
+  aliasRegistry.save();
+
+  return { eid: canonicalEID, aid };
+}

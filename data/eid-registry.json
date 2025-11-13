@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextEID": 282,
+  "nextEID": 322,
   "mappings": [
     {
       "eid": 1,
@@ -2249,10 +2249,330 @@
       "created_at": "2025-11-12T23:49:52.682Z",
       "last_seen": "2025-11-12T23:49:52.682Z",
       "occurrence_count": 1
+    },
+    {
+      "eid": 282,
+      "canonical": "Ron Weasley",
+      "normalizedKey": "ron weasley",
+      "created_at": "2025-11-12T23:52:53.385Z",
+      "last_seen": "2025-11-12T23:52:53.385Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 283,
+      "canonical": "Bad Boyz",
+      "normalizedKey": "bad boyz",
+      "created_at": "2025-11-12T23:53:16.255Z",
+      "last_seen": "2025-11-12T23:53:16.255Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 284,
+      "canonical": "HEY",
+      "normalizedKey": "hey",
+      "created_at": "2025-11-13T00:07:48.141Z",
+      "last_seen": "2025-11-13T00:07:48.141Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 285,
+      "canonical": "Co",
+      "normalizedKey": "co",
+      "created_at": "2025-11-13T00:11:08.339Z",
+      "last_seen": "2025-11-13T00:11:08.339Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 286,
+      "canonical": "Cor",
+      "normalizedKey": "cor",
+      "created_at": "2025-11-13T00:11:08.470Z",
+      "last_seen": "2025-11-13T00:11:08.470Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 287,
+      "canonical": "Dou",
+      "normalizedKey": "dou",
+      "created_at": "2025-11-13T00:11:18.627Z",
+      "last_seen": "2025-11-13T00:11:18.627Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 288,
+      "canonical": "Doug",
+      "normalizedKey": "doug",
+      "created_at": "2025-11-13T00:11:18.778Z",
+      "last_seen": "2025-11-13T00:11:18.778Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 289,
+      "canonical": "El",
+      "normalizedKey": "el",
+      "created_at": "2025-11-13T00:11:22.953Z",
+      "last_seen": "2025-11-13T00:11:22.953Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 290,
+      "canonical": "Ell",
+      "normalizedKey": "ell",
+      "created_at": "2025-11-13T00:11:23.088Z",
+      "last_seen": "2025-11-13T00:11:23.088Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 291,
+      "canonical": "Cool",
+      "normalizedKey": "cool",
+      "created_at": "2025-11-13T00:14:51.386Z",
+      "last_seen": "2025-11-13T00:14:51.386Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 292,
+      "canonical": "ARES Full Engine",
+      "normalizedKey": "ares full engine",
+      "created_at": "2025-11-13T00:22:48.579Z",
+      "last_seen": "2025-11-13T00:22:48.579Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 293,
+      "canonical": "PER",
+      "normalizedKey": "per",
+      "created_at": "2025-11-13T00:22:48.580Z",
+      "last_seen": "2025-11-13T00:22:48.580Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 294,
+      "canonical": "Dursley",
+      "normalizedKey": "dursley",
+      "created_at": "2025-11-13T00:57:40.973Z",
+      "last_seen": "2025-11-13T00:57:40.973Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 295,
+      "canonical": "Privet Drive",
+      "normalizedKey": "privet drive",
+      "created_at": "2025-11-13T00:57:40.973Z",
+      "last_seen": "2025-11-13T00:57:40.973Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 296,
+      "canonical": "Grunnings",
+      "normalizedKey": "grunnings",
+      "created_at": "2025-11-13T00:57:40.973Z",
+      "last_seen": "2025-11-13T00:57:40.973Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 297,
+      "canonical": "Dudley",
+      "normalizedKey": "dudley",
+      "created_at": "2025-11-13T00:57:40.974Z",
+      "last_seen": "2025-11-13T00:57:40.974Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 298,
+      "canonical": "Tuesday",
+      "normalizedKey": "tuesday",
+      "created_at": "2025-11-13T00:57:40.974Z",
+      "last_seen": "2025-11-13T00:57:40.974Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 299,
+      "canonical": "Little",
+      "normalizedKey": "little",
+      "created_at": "2025-11-13T00:57:40.975Z",
+      "last_seen": "2025-11-13T00:57:40.975Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 300,
+      "canonical": "Ghos They",
+      "normalizedKey": "ghos they",
+      "created_at": "2025-11-13T01:00:24.294Z",
+      "last_seen": "2025-11-13T01:00:24.294Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 301,
+      "canonical": "Gh They",
+      "normalizedKey": "gh they",
+      "created_at": "2025-11-13T01:00:24.409Z",
+      "last_seen": "2025-11-13T01:00:24.409Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 302,
+      "canonical": "Gho They",
+      "normalizedKey": "gho they",
+      "created_at": "2025-11-13T01:00:24.536Z",
+      "last_seen": "2025-11-13T01:00:24.536Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 303,
+      "canonical": "Ghost They",
+      "normalizedKey": "ghost they",
+      "created_at": "2025-11-13T01:00:30.533Z",
+      "last_seen": "2025-11-13T01:00:30.533Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 304,
+      "canonical": "WH",
+      "normalizedKey": "wh",
+      "created_at": "2025-11-13T01:00:37.345Z",
+      "last_seen": "2025-11-13T01:00:37.345Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 305,
+      "canonical": "As Mr",
+      "normalizedKey": "as mr",
+      "created_at": "2025-11-13T01:00:37.346Z",
+      "last_seen": "2025-11-13T01:00:37.346Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 306,
+      "canonical": "CHAPTER ONE CThey",
+      "normalizedKey": "chapter one cthey",
+      "created_at": "2025-11-13T01:00:40.572Z",
+      "last_seen": "2025-11-13T01:00:40.572Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 307,
+      "canonical": "GThey",
+      "normalizedKey": "gthey",
+      "created_at": "2025-11-13T01:00:44.384Z",
+      "last_seen": "2025-11-13T01:00:44.384Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 308,
+      "canonical": "Gilford They",
+      "normalizedKey": "gilford they",
+      "created_at": "2025-11-13T01:00:53.917Z",
+      "last_seen": "2025-11-13T01:00:53.917Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 309,
+      "canonical": "Lou",
+      "normalizedKey": "lou",
+      "created_at": "2025-11-13T01:01:16.441Z",
+      "last_seen": "2025-11-13T01:01:16.441Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 310,
+      "canonical": "Loui",
+      "normalizedKey": "loui",
+      "created_at": "2025-11-13T01:01:16.537Z",
+      "last_seen": "2025-11-13T01:01:16.537Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 311,
+      "canonical": "Dom",
+      "normalizedKey": "dom",
+      "created_at": "2025-11-13T01:01:29.767Z",
+      "last_seen": "2025-11-13T01:01:29.767Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 312,
+      "canonical": "Domi",
+      "normalizedKey": "domi",
+      "created_at": "2025-11-13T01:01:29.929Z",
+      "last_seen": "2025-11-13T01:01:29.929Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 313,
+      "canonical": "Gi",
+      "normalizedKey": "gi",
+      "created_at": "2025-11-13T01:01:35.665Z",
+      "last_seen": "2025-11-13T01:01:35.665Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 314,
+      "canonical": "Gil",
+      "normalizedKey": "gil",
+      "created_at": "2025-11-13T01:01:35.769Z",
+      "last_seen": "2025-11-13T01:01:35.769Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 315,
+      "canonical": "Ni",
+      "normalizedKey": "ni",
+      "created_at": "2025-11-13T01:01:51.682Z",
+      "last_seen": "2025-11-13T01:01:51.682Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 316,
+      "canonical": "Nik",
+      "normalizedKey": "nik",
+      "created_at": "2025-11-13T01:01:51.879Z",
+      "last_seen": "2025-11-13T01:01:51.879Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 317,
+      "canonical": "Nikk",
+      "normalizedKey": "nikk",
+      "created_at": "2025-11-13T01:01:52.024Z",
+      "last_seen": "2025-11-13T01:01:52.024Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 318,
+      "canonical": "NE",
+      "normalizedKey": "ne",
+      "created_at": "2025-11-13T01:03:52.380Z",
+      "last_seen": "2025-11-13T01:03:52.380Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 319,
+      "canonical": "NEW",
+      "normalizedKey": "new",
+      "created_at": "2025-11-13T01:03:52.566Z",
+      "last_seen": "2025-11-13T01:03:52.566Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 320,
+      "canonical": "PL",
+      "normalizedKey": "pl",
+      "created_at": "2025-11-13T01:03:58.843Z",
+      "last_seen": "2025-11-13T01:03:58.843Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 321,
+      "canonical": "PLA",
+      "normalizedKey": "pla",
+      "created_at": "2025-11-13T01:03:59.019Z",
+      "last_seen": "2025-11-13T01:03:59.019Z",
+      "occurrence_count": 1
     }
   ],
   "metadata": {
-    "total_entities": 281,
-    "last_updated": "2025-11-12T23:50:11.907Z"
+    "total_entities": 321,
+    "last_updated": "2025-11-13T01:04:12.162Z"
   }
 }

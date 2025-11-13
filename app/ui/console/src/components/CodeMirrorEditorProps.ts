@@ -5,4 +5,5 @@ export interface CodeMirrorEditorProps {
   project?: string;
   noteId?: string;
   disableHighlighting?: boolean;
+  enableWYSIWYG?: boolean;
 }

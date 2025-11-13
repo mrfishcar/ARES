@@ -2,8 +2,10 @@
  * Entity Results Panel
  * Shows extracted entities grouped by type with neon planet universe icon
  * NOW DISPLAYS RELATIONS FROM FULL ARES ENGINE
+ * SUPPORTS DRAG-AND-DROP ALIAS MERGING
  */
 
+import { useState } from 'react';
 import { NeonPlanet } from './NeonPlanet';
 
 interface EntitySpan {
@@ -50,6 +52,9 @@ const ENTITY_TYPE_CONFIG = {
 };
 
 export function EntityResultsPanel({ entities, relations = [], onViewWiki }: EntityResultsPanelProps) {
+  const [draggedEntity, setDraggedEntity] = useState<EntitySpan | null>(null);
+  const [dropTarget, setDropTarget] = useState<string | null>(null);
+
   // Group entities by type
   const groups: EntityGroup[] = Object.entries(
     entities.reduce((acc, entity) => {
@@ -65,6 +70,65 @@ export function EntityResultsPanel({ entities, relations = [], onViewWiki }: Ent
     color: ENTITY_TYPE_CONFIG[type as keyof typeof ENTITY_TYPE_CONFIG]?.color || '#888',
     entities: ents,
   }));
+
+  // Handle drag start
+  const handleDragStart = (e: React.DragEvent, entity: EntitySpan) => {
+    setDraggedEntity(entity);
+    e.dataTransfer.effectAllowed = 'link';
+    e.dataTransfer.setData('text/plain', entity.text);
+  };
+
+  // Handle drag over
+  const handleDragOver = (e: React.DragEvent, targetEntity: EntitySpan) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'link';
+    setDropTarget(targetEntity.text);
+  };
+
+  // Handle drag leave
+  const handleDragLeave = () => {
+    setDropTarget(null);
+  };
+
+  // Handle drop - merge entities as aliases
+  const handleDrop = async (e: React.DragEvent, targetEntity: EntitySpan) => {
+    e.preventDefault();
+    setDropTarget(null);
+
+    if (!draggedEntity || draggedEntity.text === targetEntity.text) {
+      setDraggedEntity(null);
+      return;
+    }
+
+    console.log(`Merging "${draggedEntity.text}" → "${targetEntity.text}"`);
+
+    try {
+      // Call API to register alias
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+      const response = await fetch(`${apiUrl}/register-alias`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          alias: draggedEntity.text,
+          canonical: targetEntity.text,
+          type: targetEntity.type,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Alias registered:', result);
+        alert(`✓ Merged "${draggedEntity.text}" into "${targetEntity.text}"`);
+      } else {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error('Failed to register alias:', error);
+      alert(`Failed to merge entities: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+
+    setDraggedEntity(null);
+  };
 
   // Group relations by predicate
   const relationGroups = relations.reduce((acc, rel) => {
@@ -106,10 +170,16 @@ export function EntityResultsPanel({ entities, relations = [], onViewWiki }: Ent
                   {group.entities.map((entity, idx) => (
                     <div
                       key={idx}
-                      className={`entity-card entity-${group.type}`}
+                      className={`entity-card entity-${group.type} ${dropTarget === entity.text ? 'drop-target' : ''} ${draggedEntity?.text === entity.text ? 'dragging' : ''}`}
                       style={{ borderLeftColor: group.color }}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, entity)}
+                      onDragOver={(e) => handleDragOver(e, entity)}
+                      onDragLeave={handleDragLeave}
+                      onDrop={(e) => handleDrop(e, entity)}
                       onClick={() => onViewWiki(entity.text)}
                     >
+                      <div className="drag-handle" title="Drag to merge with another entity">⋮⋮</div>
                       <div className="entity-name">{entity.text}</div>
                       <div className="entity-meta">
                         <span className="entity-type">{entity.type}</span>

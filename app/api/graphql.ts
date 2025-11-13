@@ -704,6 +704,70 @@ export async function startGraphQLServer(port: number = 4000, storagePath?: stri
       return;
     }
 
+    // Register alias endpoint (for drag-and-drop alias merging)
+    if (req.url === '/register-alias') {
+      // Handle CORS preflight
+      if (req.method === 'OPTIONS') {
+        res.writeHead(200, {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        });
+        res.end();
+        return;
+      }
+
+      if (req.method === 'POST') {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+        let body = '';
+        req.on('data', (chunk) => {
+          body += chunk.toString();
+        });
+
+        req.on('end', async () => {
+          try {
+            const { alias, canonical, type } = JSON.parse(body);
+
+            if (!alias || !canonical) {
+              res.writeHead(400, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: 'Missing alias or canonical name' }));
+              return;
+            }
+
+            logger.info({ msg: 'register_alias', alias, canonical, type });
+
+            // Register the alias in the alias registry
+            const { registerAlias } = await import('../engine/extract/orchestrator.js');
+            const result = await registerAlias(alias, canonical, type || 'PERSON');
+
+            logger.info({ msg: 'alias_registered', alias, canonical, eid: result.eid, aid: result.aid });
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+              success: true,
+              alias,
+              canonical,
+              eid: result.eid,
+              aid: result.aid,
+            }));
+
+          } catch (error) {
+            logger.error({ msg: 'register_alias_error', err: String(error) });
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+              error: 'Failed to register alias',
+              details: error instanceof Error ? error.message : String(error)
+            }));
+          }
+        });
+      }
+
+      return;
+    }
+
     // Extract entities endpoint (for Extraction Lab)
     if (req.url === '/extract-entities') {
       // Handle CORS preflight

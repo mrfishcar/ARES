@@ -121,6 +121,8 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [processing, setProcessing] = useState(false);
   const [stats, setStats] = useState({ time: 0, confidence: 0, count: 0, relationCount: 0 });
   const [selectedEntity, setSelectedEntity] = useState<string | null>(null);
+  const [showHighlighting, setShowHighlighting] = useState(true);
+  const [renderMarkdown, setRenderMarkdown] = useState(false);
 
   // Real-time extraction using FULL ARES ENGINE (debounced 1000ms for heavier processing)
   const extractEntities = useCallback(
@@ -289,13 +291,39 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         {/* Left: Editor */}
         <div className="editor-panel">
           <div className="panel-header">
-            <h2>Write or paste text...</h2>
-            <p className="panel-subtitle">Full ARES engine extracts entities AND relations (updates after typing)</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+              <div>
+                <h2>Write or paste text...</h2>
+                <p className="panel-subtitle">Full ARES engine extracts entities AND relations (updates after typing)</p>
+              </div>
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px' }}>
+                  <input
+                    type="checkbox"
+                    checked={showHighlighting}
+                    onChange={(e) => setShowHighlighting(e.target.checked)}
+                    style={{ cursor: 'pointer' }}
+                  />
+                  <span>✨ Entity Highlighting</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px' }}>
+                  <input
+                    type="checkbox"
+                    checked={renderMarkdown}
+                    onChange={(e) => setRenderMarkdown(e.target.checked)}
+                    style={{ cursor: 'pointer' }}
+                  />
+                  <span>📝 Render Markdown</span>
+                </label>
+              </div>
+            </div>
           </div>
           <CodeMirrorEditor
             value={text}
             onChange={(newText) => setText(newText)}
             minHeight="calc(100vh - 280px)"
+            disableHighlighting={!showHighlighting}
+            enableWYSIWYG={renderMarkdown}
           />
         </div>
 

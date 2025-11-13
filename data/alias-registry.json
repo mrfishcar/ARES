@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextAID": 312,
+  "nextAID": 408,
   "mappings": [
     {
       "aid": 1,
@@ -3111,11 +3111,971 @@
       "last_seen": "2025-11-12T23:49:52.683Z",
       "occurrence_count": 1,
       "confidence": 1
+    },
+    {
+      "aid": 312,
+      "surfaceForm": "Hermione Granger",
+      "normalizedKey": "hermione granger",
+      "eid": 270,
+      "created_at": "2025-11-12T23:52:53.384Z",
+      "last_seen": "2025-11-12T23:52:53.384Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 313,
+      "surfaceForm": "Ron Weasley",
+      "normalizedKey": "ron weasley",
+      "eid": 282,
+      "created_at": "2025-11-12T23:52:53.385Z",
+      "last_seen": "2025-11-12T23:52:53.385Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 314,
+      "surfaceForm": "Bad Boyz",
+      "normalizedKey": "bad boyz",
+      "eid": 283,
+      "created_at": "2025-11-12T23:53:16.255Z",
+      "last_seen": "2025-11-12T23:53:16.255Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 315,
+      "surfaceForm": "Granger",
+      "normalizedKey": "granger",
+      "eid": 270,
+      "created_at": "2025-11-12T23:57:06.409Z",
+      "last_seen": "2025-11-12T23:57:06.409Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 316,
+      "surfaceForm": "HEY",
+      "normalizedKey": "hey",
+      "eid": 284,
+      "created_at": "2025-11-13T00:07:48.141Z",
+      "last_seen": "2025-11-13T00:07:48.141Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 317,
+      "surfaceForm": "Cory",
+      "normalizedKey": "cory",
+      "eid": 279,
+      "created_at": "2025-11-13T00:08:01.314Z",
+      "last_seen": "2025-11-13T00:08:01.314Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 318,
+      "surfaceForm": "Co",
+      "normalizedKey": "co",
+      "eid": 285,
+      "created_at": "2025-11-13T00:11:08.339Z",
+      "last_seen": "2025-11-13T00:11:08.339Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 319,
+      "surfaceForm": "Cor",
+      "normalizedKey": "cor",
+      "eid": 286,
+      "created_at": "2025-11-13T00:11:08.470Z",
+      "last_seen": "2025-11-13T00:11:08.470Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 320,
+      "surfaceForm": "Cory G",
+      "normalizedKey": "cory g",
+      "eid": 279,
+      "created_at": "2025-11-13T00:11:08.943Z",
+      "last_seen": "2025-11-13T00:11:08.943Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 321,
+      "surfaceForm": "Cory GI",
+      "normalizedKey": "cory gi",
+      "eid": 279,
+      "created_at": "2025-11-13T00:11:09.031Z",
+      "last_seen": "2025-11-13T00:11:09.031Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 322,
+      "surfaceForm": "Cory GIl",
+      "normalizedKey": "cory gil",
+      "eid": 279,
+      "created_at": "2025-11-13T00:11:09.154Z",
+      "last_seen": "2025-11-13T00:11:09.154Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 323,
+      "surfaceForm": "Cory GIlf",
+      "normalizedKey": "cory gilf",
+      "eid": 279,
+      "created_at": "2025-11-13T00:11:09.278Z",
+      "last_seen": "2025-11-13T00:11:09.279Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 324,
+      "surfaceForm": "Cory GIlfo",
+      "normalizedKey": "cory gilfo",
+      "eid": 279,
+      "created_at": "2025-11-13T00:11:09.368Z",
+      "last_seen": "2025-11-13T00:11:09.368Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 325,
+      "surfaceForm": "Cory GIlfor",
+      "normalizedKey": "cory gilfor",
+      "eid": 279,
+      "created_at": "2025-11-13T00:11:09.509Z",
+      "last_seen": "2025-11-13T00:11:09.509Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 326,
+      "surfaceForm": "Dou",
+      "normalizedKey": "dou",
+      "eid": 287,
+      "created_at": "2025-11-13T00:11:18.627Z",
+      "last_seen": "2025-11-13T00:11:18.627Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 327,
+      "surfaceForm": "Doug",
+      "normalizedKey": "doug",
+      "eid": 288,
+      "created_at": "2025-11-13T00:11:18.778Z",
+      "last_seen": "2025-11-13T00:11:18.778Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 328,
+      "surfaceForm": "Doug G",
+      "normalizedKey": "doug g",
+      "eid": 288,
+      "created_at": "2025-11-13T00:11:19.395Z",
+      "last_seen": "2025-11-13T00:11:19.395Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 329,
+      "surfaceForm": "Doug Gi",
+      "normalizedKey": "doug gi",
+      "eid": 288,
+      "created_at": "2025-11-13T00:11:19.521Z",
+      "last_seen": "2025-11-13T00:11:19.521Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 330,
+      "surfaceForm": "Doug Gil",
+      "normalizedKey": "doug gil",
+      "eid": 288,
+      "created_at": "2025-11-13T00:11:19.621Z",
+      "last_seen": "2025-11-13T00:11:19.621Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 331,
+      "surfaceForm": "Doug Gilf",
+      "normalizedKey": "doug gilf",
+      "eid": 288,
+      "created_at": "2025-11-13T00:11:19.708Z",
+      "last_seen": "2025-11-13T00:11:19.708Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 332,
+      "surfaceForm": "Doug Gilfo",
+      "normalizedKey": "doug gilfo",
+      "eid": 288,
+      "created_at": "2025-11-13T00:11:19.787Z",
+      "last_seen": "2025-11-13T00:11:19.787Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 333,
+      "surfaceForm": "Doug Gilfor",
+      "normalizedKey": "doug gilfor",
+      "eid": 288,
+      "created_at": "2025-11-13T00:11:19.869Z",
+      "last_seen": "2025-11-13T00:11:19.869Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 334,
+      "surfaceForm": "Doug Gilford",
+      "normalizedKey": "doug gilford",
+      "eid": 288,
+      "created_at": "2025-11-13T00:11:20.084Z",
+      "last_seen": "2025-11-13T00:11:20.084Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 335,
+      "surfaceForm": "El",
+      "normalizedKey": "el",
+      "eid": 289,
+      "created_at": "2025-11-13T00:11:22.953Z",
+      "last_seen": "2025-11-13T00:11:22.953Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 336,
+      "surfaceForm": "Ell",
+      "normalizedKey": "ell",
+      "eid": 290,
+      "created_at": "2025-11-13T00:11:23.088Z",
+      "last_seen": "2025-11-13T00:11:23.088Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 337,
+      "surfaceForm": "Elli",
+      "normalizedKey": "elli",
+      "eid": 281,
+      "created_at": "2025-11-13T00:11:23.221Z",
+      "last_seen": "2025-11-13T00:11:23.221Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 338,
+      "surfaceForm": "Ellio",
+      "normalizedKey": "ellio",
+      "eid": 281,
+      "created_at": "2025-11-13T00:11:23.339Z",
+      "last_seen": "2025-11-13T00:11:23.339Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 339,
+      "surfaceForm": "Elliot",
+      "normalizedKey": "elliot",
+      "eid": 281,
+      "created_at": "2025-11-13T00:11:23.478Z",
+      "last_seen": "2025-11-13T00:11:23.478Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 340,
+      "surfaceForm": "Elliott",
+      "normalizedKey": "elliott",
+      "eid": 281,
+      "created_at": "2025-11-13T00:11:23.674Z",
+      "last_seen": "2025-11-13T00:11:23.674Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 341,
+      "surfaceForm": "Elliott G",
+      "normalizedKey": "elliott g",
+      "eid": 281,
+      "created_at": "2025-11-13T00:11:24.033Z",
+      "last_seen": "2025-11-13T00:11:24.033Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 342,
+      "surfaceForm": "Elliott Gi",
+      "normalizedKey": "elliott gi",
+      "eid": 281,
+      "created_at": "2025-11-13T00:11:24.175Z",
+      "last_seen": "2025-11-13T00:11:24.175Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 343,
+      "surfaceForm": "Elliott Gil",
+      "normalizedKey": "elliott gil",
+      "eid": 281,
+      "created_at": "2025-11-13T00:11:24.272Z",
+      "last_seen": "2025-11-13T00:11:24.272Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 344,
+      "surfaceForm": "Elliott Gilf",
+      "normalizedKey": "elliott gilf",
+      "eid": 281,
+      "created_at": "2025-11-13T00:11:24.369Z",
+      "last_seen": "2025-11-13T00:11:24.369Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 345,
+      "surfaceForm": "Elliott Gilfo",
+      "normalizedKey": "elliott gilfo",
+      "eid": 281,
+      "created_at": "2025-11-13T00:11:24.484Z",
+      "last_seen": "2025-11-13T00:11:24.484Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 346,
+      "surfaceForm": "Elliott Gilfor",
+      "normalizedKey": "elliott gilfor",
+      "eid": 281,
+      "created_at": "2025-11-13T00:11:24.587Z",
+      "last_seen": "2025-11-13T00:11:24.587Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 347,
+      "surfaceForm": "Cool",
+      "normalizedKey": "cool",
+      "eid": 291,
+      "created_at": "2025-11-13T00:14:51.386Z",
+      "last_seen": "2025-11-13T00:14:51.386Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 348,
+      "surfaceForm": "Cool Gu",
+      "normalizedKey": "cool gu",
+      "eid": 291,
+      "created_at": "2025-11-13T00:14:52.713Z",
+      "last_seen": "2025-11-13T00:14:52.713Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 349,
+      "surfaceForm": "Cool Guy",
+      "normalizedKey": "cool guy",
+      "eid": 291,
+      "created_at": "2025-11-13T00:14:53.222Z",
+      "last_seen": "2025-11-13T00:14:53.222Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 350,
+      "surfaceForm": "ARES Full Engine",
+      "normalizedKey": "ares full engine",
+      "eid": 292,
+      "created_at": "2025-11-13T00:22:48.579Z",
+      "last_seen": "2025-11-13T00:22:48.579Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 351,
+      "surfaceForm": "Forev",
+      "normalizedKey": "forev",
+      "eid": 280,
+      "created_at": "2025-11-13T00:22:48.579Z",
+      "last_seen": "2025-11-13T00:22:48.579Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 352,
+      "surfaceForm": "PER",
+      "normalizedKey": "per",
+      "eid": 293,
+      "created_at": "2025-11-13T00:22:48.580Z",
+      "last_seen": "2025-11-13T00:22:48.580Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 353,
+      "surfaceForm": "Dursley",
+      "normalizedKey": "dursley",
+      "eid": 294,
+      "created_at": "2025-11-13T00:57:40.973Z",
+      "last_seen": "2025-11-13T00:57:40.973Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 354,
+      "surfaceForm": "Privet Drive",
+      "normalizedKey": "privet drive",
+      "eid": 295,
+      "created_at": "2025-11-13T00:57:40.973Z",
+      "last_seen": "2025-11-13T00:57:40.973Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 355,
+      "surfaceForm": "Grunnings",
+      "normalizedKey": "grunnings",
+      "eid": 296,
+      "created_at": "2025-11-13T00:57:40.973Z",
+      "last_seen": "2025-11-13T00:57:40.973Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 356,
+      "surfaceForm": "Dursleys",
+      "normalizedKey": "dursleys",
+      "eid": 294,
+      "created_at": "2025-11-13T00:57:40.973Z",
+      "last_seen": "2025-11-13T00:57:40.973Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 357,
+      "surfaceForm": "Dudley",
+      "normalizedKey": "dudley",
+      "eid": 297,
+      "created_at": "2025-11-13T00:57:40.974Z",
+      "last_seen": "2025-11-13T00:57:40.974Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 358,
+      "surfaceForm": "Potter",
+      "normalizedKey": "potter",
+      "eid": 268,
+      "created_at": "2025-11-13T00:57:40.974Z",
+      "last_seen": "2025-11-13T00:57:40.974Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 359,
+      "surfaceForm": "Potters",
+      "normalizedKey": "potters",
+      "eid": 268,
+      "created_at": "2025-11-13T00:57:40.974Z",
+      "last_seen": "2025-11-13T00:57:40.974Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 360,
+      "surfaceForm": "Tuesday",
+      "normalizedKey": "tuesday",
+      "eid": 298,
+      "created_at": "2025-11-13T00:57:40.974Z",
+      "last_seen": "2025-11-13T00:57:40.974Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 361,
+      "surfaceForm": "Little",
+      "normalizedKey": "little",
+      "eid": 299,
+      "created_at": "2025-11-13T00:57:40.975Z",
+      "last_seen": "2025-11-13T00:57:40.975Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 362,
+      "surfaceForm": "LIVED of Privet Drive",
+      "normalizedKey": "lived of privet drive",
+      "eid": 295,
+      "created_at": "2025-11-13T00:57:40.975Z",
+      "last_seen": "2025-11-13T00:57:40.975Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 363,
+      "surfaceForm": "Ghos They",
+      "normalizedKey": "ghos they",
+      "eid": 300,
+      "created_at": "2025-11-13T01:00:24.296Z",
+      "last_seen": "2025-11-13T01:00:24.296Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 364,
+      "surfaceForm": "Gh They",
+      "normalizedKey": "gh they",
+      "eid": 301,
+      "created_at": "2025-11-13T01:00:24.409Z",
+      "last_seen": "2025-11-13T01:00:24.409Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 365,
+      "surfaceForm": "Gho They",
+      "normalizedKey": "gho they",
+      "eid": 302,
+      "created_at": "2025-11-13T01:00:24.536Z",
+      "last_seen": "2025-11-13T01:00:24.536Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 366,
+      "surfaceForm": "Ghost They",
+      "normalizedKey": "ghost they",
+      "eid": 303,
+      "created_at": "2025-11-13T01:00:30.533Z",
+      "last_seen": "2025-11-13T01:00:30.533Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 367,
+      "surfaceForm": "WH",
+      "normalizedKey": "wh",
+      "eid": 304,
+      "created_at": "2025-11-13T01:00:37.345Z",
+      "last_seen": "2025-11-13T01:00:37.345Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 368,
+      "surfaceForm": "As Mr",
+      "normalizedKey": "as mr",
+      "eid": 305,
+      "created_at": "2025-11-13T01:00:37.346Z",
+      "last_seen": "2025-11-13T01:00:37.346Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 369,
+      "surfaceForm": "CHAPTER ONE CThey",
+      "normalizedKey": "chapter one cthey",
+      "eid": 306,
+      "created_at": "2025-11-13T01:00:40.572Z",
+      "last_seen": "2025-11-13T01:00:40.572Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 370,
+      "surfaceForm": "CHAPTER ONE Cory",
+      "normalizedKey": "chapter one cory",
+      "eid": 279,
+      "created_at": "2025-11-13T01:00:44.384Z",
+      "last_seen": "2025-11-13T01:00:44.384Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 371,
+      "surfaceForm": "GThey",
+      "normalizedKey": "gthey",
+      "eid": 307,
+      "created_at": "2025-11-13T01:00:44.384Z",
+      "last_seen": "2025-11-13T01:00:44.384Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 372,
+      "surfaceForm": "Gilford They",
+      "normalizedKey": "gilford they",
+      "eid": 308,
+      "created_at": "2025-11-13T01:00:53.917Z",
+      "last_seen": "2025-11-13T01:00:53.917Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 373,
+      "surfaceForm": "Gilford",
+      "normalizedKey": "gilford",
+      "eid": 279,
+      "created_at": "2025-11-13T01:01:07.462Z",
+      "last_seen": "2025-11-13T01:01:07.462Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 374,
+      "surfaceForm": "Lou",
+      "normalizedKey": "lou",
+      "eid": 309,
+      "created_at": "2025-11-13T01:01:16.441Z",
+      "last_seen": "2025-11-13T01:01:16.441Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 375,
+      "surfaceForm": "Loui",
+      "normalizedKey": "loui",
+      "eid": 310,
+      "created_at": "2025-11-13T01:01:16.537Z",
+      "last_seen": "2025-11-13T01:01:16.537Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 376,
+      "surfaceForm": "Louis",
+      "normalizedKey": "louis",
+      "eid": 310,
+      "created_at": "2025-11-13T01:01:16.699Z",
+      "last_seen": "2025-11-13T01:01:16.699Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 377,
+      "surfaceForm": "Louisi",
+      "normalizedKey": "louisi",
+      "eid": 310,
+      "created_at": "2025-11-13T01:01:16.821Z",
+      "last_seen": "2025-11-13T01:01:16.821Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 378,
+      "surfaceForm": "Louisia",
+      "normalizedKey": "louisia",
+      "eid": 310,
+      "created_at": "2025-11-13T01:01:16.948Z",
+      "last_seen": "2025-11-13T01:01:16.948Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 379,
+      "surfaceForm": "Louisian",
+      "normalizedKey": "louisian",
+      "eid": 310,
+      "created_at": "2025-11-13T01:01:17.080Z",
+      "last_seen": "2025-11-13T01:01:17.080Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 380,
+      "surfaceForm": "Louisiana",
+      "normalizedKey": "louisiana",
+      "eid": 310,
+      "created_at": "2025-11-13T01:01:17.245Z",
+      "last_seen": "2025-11-13T01:01:17.245Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 381,
+      "surfaceForm": "Dom",
+      "normalizedKey": "dom",
+      "eid": 311,
+      "created_at": "2025-11-13T01:01:29.767Z",
+      "last_seen": "2025-11-13T01:01:29.767Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 382,
+      "surfaceForm": "Domi",
+      "normalizedKey": "domi",
+      "eid": 312,
+      "created_at": "2025-11-13T01:01:29.929Z",
+      "last_seen": "2025-11-13T01:01:29.929Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 383,
+      "surfaceForm": "Domin",
+      "normalizedKey": "domin",
+      "eid": 312,
+      "created_at": "2025-11-13T01:01:30.036Z",
+      "last_seen": "2025-11-13T01:01:30.036Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 384,
+      "surfaceForm": "Domini",
+      "normalizedKey": "domini",
+      "eid": 312,
+      "created_at": "2025-11-13T01:01:30.171Z",
+      "last_seen": "2025-11-13T01:01:30.171Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 385,
+      "surfaceForm": "Dominiq",
+      "normalizedKey": "dominiq",
+      "eid": 312,
+      "created_at": "2025-11-13T01:01:30.559Z",
+      "last_seen": "2025-11-13T01:01:30.559Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 386,
+      "surfaceForm": "Dominiqu",
+      "normalizedKey": "dominiqu",
+      "eid": 312,
+      "created_at": "2025-11-13T01:01:30.719Z",
+      "last_seen": "2025-11-13T01:01:30.719Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 387,
+      "surfaceForm": "Dominique",
+      "normalizedKey": "dominique",
+      "eid": 312,
+      "created_at": "2025-11-13T01:01:30.980Z",
+      "last_seen": "2025-11-13T01:01:30.980Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 388,
+      "surfaceForm": "Gi",
+      "normalizedKey": "gi",
+      "eid": 313,
+      "created_at": "2025-11-13T01:01:35.665Z",
+      "last_seen": "2025-11-13T01:01:35.665Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 389,
+      "surfaceForm": "Gil",
+      "normalizedKey": "gil",
+      "eid": 314,
+      "created_at": "2025-11-13T01:01:35.769Z",
+      "last_seen": "2025-11-13T01:01:35.769Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 390,
+      "surfaceForm": "Gilf",
+      "normalizedKey": "gilf",
+      "eid": 279,
+      "created_at": "2025-11-13T01:01:35.866Z",
+      "last_seen": "2025-11-13T01:01:35.866Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 391,
+      "surfaceForm": "Gilfo",
+      "normalizedKey": "gilfo",
+      "eid": 279,
+      "created_at": "2025-11-13T01:01:35.952Z",
+      "last_seen": "2025-11-13T01:01:35.952Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 392,
+      "surfaceForm": "Gilfor",
+      "normalizedKey": "gilfor",
+      "eid": 279,
+      "created_at": "2025-11-13T01:01:36.062Z",
+      "last_seen": "2025-11-13T01:01:36.062Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 393,
+      "surfaceForm": "Ni",
+      "normalizedKey": "ni",
+      "eid": 315,
+      "created_at": "2025-11-13T01:01:51.682Z",
+      "last_seen": "2025-11-13T01:01:51.682Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 394,
+      "surfaceForm": "Nik",
+      "normalizedKey": "nik",
+      "eid": 316,
+      "created_at": "2025-11-13T01:01:51.879Z",
+      "last_seen": "2025-11-13T01:01:51.879Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 395,
+      "surfaceForm": "Nikk",
+      "normalizedKey": "nikk",
+      "eid": 317,
+      "created_at": "2025-11-13T01:01:52.024Z",
+      "last_seen": "2025-11-13T01:01:52.024Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 396,
+      "surfaceForm": "Nikki",
+      "normalizedKey": "nikki",
+      "eid": 317,
+      "created_at": "2025-11-13T01:01:52.197Z",
+      "last_seen": "2025-11-13T01:01:52.197Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 397,
+      "surfaceForm": "NE",
+      "normalizedKey": "ne",
+      "eid": 318,
+      "created_at": "2025-11-13T01:03:52.380Z",
+      "last_seen": "2025-11-13T01:03:52.380Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 398,
+      "surfaceForm": "NEW",
+      "normalizedKey": "new",
+      "eid": 319,
+      "created_at": "2025-11-13T01:03:52.566Z",
+      "last_seen": "2025-11-13T01:03:52.566Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 399,
+      "surfaceForm": "PL",
+      "normalizedKey": "pl",
+      "eid": 320,
+      "created_at": "2025-11-13T01:03:58.843Z",
+      "last_seen": "2025-11-13T01:03:58.843Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 400,
+      "surfaceForm": "PLA",
+      "normalizedKey": "pla",
+      "eid": 321,
+      "created_at": "2025-11-13T01:03:59.019Z",
+      "last_seen": "2025-11-13T01:03:59.019Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 401,
+      "surfaceForm": "Dominique G",
+      "normalizedKey": "dominique g",
+      "eid": 312,
+      "created_at": "2025-11-13T01:08:38.908Z",
+      "last_seen": "2025-11-13T01:08:38.908Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 402,
+      "surfaceForm": "Dominique Gi",
+      "normalizedKey": "dominique gi",
+      "eid": 312,
+      "created_at": "2025-11-13T01:08:39.062Z",
+      "last_seen": "2025-11-13T01:08:39.062Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 403,
+      "surfaceForm": "Dominique Gil",
+      "normalizedKey": "dominique gil",
+      "eid": 312,
+      "created_at": "2025-11-13T01:08:39.165Z",
+      "last_seen": "2025-11-13T01:08:39.165Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 404,
+      "surfaceForm": "Dominique Gilf",
+      "normalizedKey": "dominique gilf",
+      "eid": 312,
+      "created_at": "2025-11-13T01:08:39.265Z",
+      "last_seen": "2025-11-13T01:08:39.265Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 405,
+      "surfaceForm": "Dominique Gilfo",
+      "normalizedKey": "dominique gilfo",
+      "eid": 312,
+      "created_at": "2025-11-13T01:08:39.375Z",
+      "last_seen": "2025-11-13T01:08:39.375Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 406,
+      "surfaceForm": "Dominique Gilfor",
+      "normalizedKey": "dominique gilfor",
+      "eid": 312,
+      "created_at": "2025-11-13T01:08:39.467Z",
+      "last_seen": "2025-11-13T01:08:39.467Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 407,
+      "surfaceForm": "Dominique Gilford",
+      "normalizedKey": "dominique gilford",
+      "eid": 279,
+      "created_at": "2025-11-13T01:08:39.710Z",
+      "last_seen": "2025-11-13T01:08:39.710Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
     }
   ],
   "metadata": {
-    "total_aliases": 311,
-    "total_entities": 281,
-    "last_updated": "2025-11-12T23:50:11.911Z"
+    "total_aliases": 407,
+    "total_entities": 321,
+    "last_updated": "2025-11-13T01:08:42.170Z"
   }
 }
