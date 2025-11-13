@@ -782,31 +782,51 @@ export async function extractFromSegments(
         console.log(`  - ${item.subjectCanonical} at position ${item.position}`);
       }
 
-      // If subjects are simple names (no shared substring overlap beyond 50%),
-      // they're likely coordinated entities, so keep all
-      const isCoordination = group.every((item, idx) => {
-        if (idx === 0) return true; // First item is always kept
+      // Check if this is coordination (multiple entities) vs appositive (one entity with multiple names)
+      // Strategy: Look for coordination markers ("and", ",") OR substring appositives
+      let hasAppositive = false;
+      let hasCoordination = false;
+
+      for (let idx = 1; idx < group.length; idx++) {
         const prevCanonical = group[idx - 1].subjectCanonical;
-        const currCanonical = item.subjectCanonical;
+        const currCanonical = group[idx].subjectCanonical;
         const prevPosition = group[idx - 1].position;
-        const currPosition = item.position;
+        const currPosition = group[idx].position;
 
         // Skip exact duplicates (same entity at same position - these will be deduped later)
         if (prevCanonical === currCanonical && prevPosition === currPosition) {
           console.log(`[APPOS-FILTER]   ${currCanonical} at ${currPosition} is duplicate - SKIP`);
-          return true; // Don't treat as appositive
+          continue;
         }
 
         // If one is a substring of the other AND at different positions, it's likely appositive
         if (prevCanonical !== currCanonical && (prevCanonical.includes(currCanonical) || currCanonical.includes(prevCanonical))) {
           console.log(`[APPOS-FILTER]   ${currCanonical} substring of ${prevCanonical} - APPOSITIVE`);
-          return false;
+          hasAppositive = true;
         }
+
+        // CRITICAL FIX: Check for coordination markers ("and", ",") between entities
+        // This handles "X and Y" coordination even if X and Y are far apart
+        // Example: "Harry Potter and Ron Weasley were also in Gryffindor"
+        const textBetween = fullText.slice(prevPosition, currPosition).toLowerCase();
+        const hasCoordinationMarker = /\b(and|or)\b|,/.test(textBetween);
+
+        if (hasCoordinationMarker) {
+          console.log(`[APPOS-FILTER]   Found coordination marker between "${prevCanonical}" and "${currCanonical}"`);
+          hasCoordination = true;
+        }
+
         // If they're very close (within 50 chars), likely coordination
         const distance = Math.abs(currPosition - prevPosition);
         console.log(`[APPOS-FILTER]   Distance between ${prevCanonical} and ${currCanonical}: ${distance}`);
-        return distance < 50;
-      });
+        if (distance < 50) {
+          hasCoordination = true;
+        }
+      }
+
+      // Decision: If we found ANY coordination markers, it's coordination
+      // If we found appositives and NO coordination, it's appositive
+      const isCoordination = hasCoordination || !hasAppositive;
 
       console.log(`[APPOS-FILTER]   isCoordination: ${isCoordination}`);
 
