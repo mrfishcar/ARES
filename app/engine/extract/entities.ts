@@ -1338,12 +1338,14 @@ export async function extractEntities(text: string): Promise<{
   const ner = parsed.sentences.flatMap(sent => splitCoordination(sent, nerSpans(sent)));
 
   // 3) Dependency-based extraction (uses syntactic patterns)
+  // TODO: Apply coordination splitting to dependency-based entities
   const dep = parsed.sentences.flatMap(depBasedEntities);
 
   // 4) Gazetteer-based place extraction
   const gazPlaces = gazetterPlaces(text);
 
   // 5) Fallback: capitalized names with context classification
+  // TODO: Apply coordination splitting to fallback entities
   const fb = fallbackNames(text);
 
   // 6) Merge all sources, deduplicate
