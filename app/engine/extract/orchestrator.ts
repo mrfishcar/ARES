@@ -389,6 +389,18 @@ export async function extractFromSegments(
     const validSpans = allSpans.filter(s => filteredIds.has(s.entity_id));
     allSpans.length = 0;
     allSpans.push(...validSpans);
+
+    // Update allRelations to only include relations with valid entity IDs
+    // This prevents "empty subject" errors in APPOS-FILTER
+    const validRelations = allRelations.filter(rel =>
+      filteredIds.has(rel.subj) && filteredIds.has(rel.obj)
+    );
+    const removedRelations = allRelations.length - validRelations.length;
+    if (removedRelations > 0) {
+      console.log(`[PRECISION-DEFENSE] Removed ${removedRelations} relations with filtered entities`);
+    }
+    allRelations.length = 0;
+    allRelations.push(...validRelations);
   }
 
   // 4. Build entity profiles (adaptive learning)
@@ -534,6 +546,18 @@ export async function extractFromSegments(
         });
       }
     }
+  }
+
+  // Validate corefRelations have valid entity IDs (entities may have been filtered earlier)
+  const validEntityIds = new Set(allEntities.map(e => e.id));
+  const validCorefRelations = corefRelations.filter(rel =>
+    validEntityIds.has(rel.subj) && validEntityIds.has(rel.obj)
+  );
+  const invalidCorefCount = corefRelations.length - validCorefRelations.length;
+  if (invalidCorefCount > 0) {
+    console.log(`[COREF] Filtered ${invalidCorefCount} relations with invalid entity IDs`);
+    corefRelations.length = 0;
+    corefRelations.push(...validCorefRelations);
   }
 
   // Filter relations to suppress parent_of/child_of when married_to is present

@@ -102,6 +102,35 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     symmetric: true,
     typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
   },
+  // Possessive: "Harry's best friend was Ron Weasley"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)'s\s+(?:best\s+)?friend\s+(?:was|is)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'friends_with',
+    symmetric: true,
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+
+  // === LOCATION/RESIDENCE PATTERNS ===
+  // "lived with X in Y" - extract lives_in(subj, Y) relation
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:lived|dwelt|dwelled|resides|resided)\s+with\s+[^.]+?\s+in\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'lives_in',
+    typeGuard: { subj: ['PERSON'], obj: ['PLACE'] }
+  },
+  // Simple "X lived in Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:lived|dwelt|dwelled|resides|resided|lives)\s+in\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'lives_in',
+    typeGuard: { subj: ['PERSON'], obj: ['PLACE'] }
+  },
+
+  // === EMPLOYMENT PATTERNS ===
+  // "X worked at/in Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:worked|works|labored|labors|served|serves|employed)\s+(?:at|in|for)\s+(?:the\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'works_at',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG', 'PLACE'] }
+  },
 
   // === ENEMY PATTERNS ===
   // "Aria became an enemy of Kara"
@@ -166,6 +195,14 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     predicate: 'parent_of',
     extractSubj: 1,  // This will be "their" or "the couple's" - needs coreference
     extractObj: 2,   // This is the child name
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // Possessive parent: "His/Her father/mother NAME"
+  {
+    regex: /\b(His|Her|his|her)\s+(father|mother)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'parent_of',
+    extractSubj: 3,  // Parent name
+    extractObj: 1,   // Pronoun - needs coreference resolution
     typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
   },
 
@@ -353,6 +390,33 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is\s+)?(?:a\s+)?member\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
     predicate: 'member_of',
     typeGuard: { subj: ['PERSON'], obj: ['ORG'] }
+  },
+  // "X was sorted into Y", "X joined Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:was|were)\s+sorted\s+into\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/g,
+    predicate: 'member_of',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG', 'HOUSE'] }
+  },
+  // "X joined Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+joined\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'member_of',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG', 'HOUSE'] }
+  },
+  // "X and Y were also in Z" or "X also in Z"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:was|were)\s+also\s+in\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'member_of',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG', 'HOUSE'] }
+  },
+  // Coordination: "X and Y were also in Z"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+and\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+were\s+also\s+in\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'member_of',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG', 'HOUSE'] },
+    extractSubj: null,
+    extractObj: 3,
+    coordination: true
   },
   // "X is CEO/president/director of Y"
   {
