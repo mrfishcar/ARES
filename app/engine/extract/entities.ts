@@ -914,9 +914,9 @@ function depBasedEntities(sent: ParsedSentence): Array<{ text: string; type: Ent
     traceSpan("dep", sent.tokens.map(tok => tok.text).join(" "), start, end, cleanedText);
   }
 
-  // Apply coordination splitting to PERSON entities from dependency extraction
-  // This handles cases like "James and Lily Potter" → ["James Potter", "Lily Potter"]
-  return splitCoordination(sent, spans);
+  // TODO: Apply coordination splitting to handle "James and Lily Potter"
+  // Currently causing performance issues, needs optimization
+  return spans;
 }
 
 /**
