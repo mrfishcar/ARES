@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextAID": 308,
+  "nextAID": 343,
   "mappings": [
     {
       "aid": 1,
@@ -3071,11 +3071,361 @@
       "last_seen": "2025-11-11T04:07:34.105Z",
       "occurrence_count": 1,
       "confidence": 1
+    },
+    {
+      "aid": 308,
+      "surfaceForm": "Harry Potter",
+      "normalizedKey": "harry potter",
+      "eid": 268,
+      "created_at": "2025-11-13T02:14:39.476Z",
+      "last_seen": "2025-11-13T02:14:39.476Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 309,
+      "surfaceForm": "Boy Who",
+      "normalizedKey": "boy who",
+      "eid": 279,
+      "created_at": "2025-11-13T02:14:39.476Z",
+      "last_seen": "2025-11-13T02:14:39.476Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 310,
+      "surfaceForm": "Lived",
+      "normalizedKey": "lived",
+      "eid": 280,
+      "created_at": "2025-11-13T02:14:39.477Z",
+      "last_seen": "2025-11-13T02:14:39.477Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 311,
+      "surfaceForm": "Witchcraft",
+      "normalizedKey": "witchcraft",
+      "eid": 281,
+      "created_at": "2025-11-13T02:14:39.478Z",
+      "last_seen": "2025-11-13T02:14:39.478Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 312,
+      "surfaceForm": "Ron Weasley",
+      "normalizedKey": "ron weasley",
+      "eid": 282,
+      "created_at": "2025-11-13T02:14:39.478Z",
+      "last_seen": "2025-11-13T02:14:39.478Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 313,
+      "surfaceForm": "Hogwarts Express",
+      "normalizedKey": "hogwarts express",
+      "eid": 269,
+      "created_at": "2025-11-13T02:14:39.478Z",
+      "last_seen": "2025-11-13T02:14:39.478Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 314,
+      "surfaceForm": "Arthur Weasley",
+      "normalizedKey": "arthur weasley",
+      "eid": 19,
+      "created_at": "2025-11-13T02:14:39.478Z",
+      "last_seen": "2025-11-13T02:14:39.478Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 315,
+      "surfaceForm": "Ministry of Magic",
+      "normalizedKey": "ministry of magic",
+      "eid": 283,
+      "created_at": "2025-11-13T02:14:39.479Z",
+      "last_seen": "2025-11-13T02:14:39.479Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 316,
+      "surfaceForm": "Molly Weasley",
+      "normalizedKey": "molly weasley",
+      "eid": 284,
+      "created_at": "2025-11-13T02:14:39.479Z",
+      "last_seen": "2025-11-13T02:14:39.479Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 317,
+      "surfaceForm": "Muggle",
+      "normalizedKey": "muggle",
+      "eid": 285,
+      "created_at": "2025-11-13T02:14:39.480Z",
+      "last_seen": "2025-11-13T02:14:39.480Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 318,
+      "surfaceForm": "Charms",
+      "normalizedKey": "charms",
+      "eid": 286,
+      "created_at": "2025-11-13T02:14:39.481Z",
+      "last_seen": "2025-11-13T02:14:39.481Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 319,
+      "surfaceForm": "Albus Dumbledore",
+      "normalizedKey": "albus dumbledore",
+      "eid": 275,
+      "created_at": "2025-11-13T02:14:39.481Z",
+      "last_seen": "2025-11-13T02:14:39.481Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 320,
+      "surfaceForm": "Grindelwald",
+      "normalizedKey": "grindelwald",
+      "eid": 287,
+      "created_at": "2025-11-13T02:14:39.481Z",
+      "last_seen": "2025-11-13T02:14:39.481Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 321,
+      "surfaceForm": "Lord Voldemort",
+      "normalizedKey": "lord voldemort",
+      "eid": 288,
+      "created_at": "2025-11-13T02:14:39.482Z",
+      "last_seen": "2025-11-13T02:14:39.482Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 322,
+      "surfaceForm": "Tom Riddle",
+      "normalizedKey": "tom riddle",
+      "eid": 289,
+      "created_at": "2025-11-13T02:14:39.482Z",
+      "last_seen": "2025-11-13T02:14:39.482Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 323,
+      "surfaceForm": "James Potter",
+      "normalizedKey": "james potter",
+      "eid": 14,
+      "created_at": "2025-11-13T02:14:39.482Z",
+      "last_seen": "2025-11-13T02:14:39.482Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 324,
+      "surfaceForm": "Lily Potter",
+      "normalizedKey": "lily potter",
+      "eid": 290,
+      "created_at": "2025-11-13T02:14:39.482Z",
+      "last_seen": "2025-11-13T02:14:39.482Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 325,
+      "surfaceForm": "Dark Lord",
+      "normalizedKey": "dark lord",
+      "eid": 291,
+      "created_at": "2025-11-13T02:14:39.482Z",
+      "last_seen": "2025-11-13T02:14:39.482Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 326,
+      "surfaceForm": "Severus Snape",
+      "normalizedKey": "severus snape",
+      "eid": 292,
+      "created_at": "2025-11-13T02:14:39.483Z",
+      "last_seen": "2025-11-13T02:14:39.483Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 327,
+      "surfaceForm": "Potions Master",
+      "normalizedKey": "potions master",
+      "eid": 293,
+      "created_at": "2025-11-13T02:14:39.483Z",
+      "last_seen": "2025-11-13T02:14:39.483Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 328,
+      "surfaceForm": "Rubeus Hagrid",
+      "normalizedKey": "rubeus hagrid",
+      "eid": 294,
+      "created_at": "2025-11-13T02:14:39.483Z",
+      "last_seen": "2025-11-13T02:14:39.483Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 329,
+      "surfaceForm": "Keeper of Keys",
+      "normalizedKey": "keeper of keys",
+      "eid": 295,
+      "created_at": "2025-11-13T02:14:39.483Z",
+      "last_seen": "2025-11-13T02:14:39.483Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 330,
+      "surfaceForm": "Grounds",
+      "normalizedKey": "grounds",
+      "eid": 296,
+      "created_at": "2025-11-13T02:14:39.483Z",
+      "last_seen": "2025-11-13T02:14:39.483Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 331,
+      "surfaceForm": "Forbidden Forest",
+      "normalizedKey": "forbidden forest",
+      "eid": 297,
+      "created_at": "2025-11-13T02:14:39.484Z",
+      "last_seen": "2025-11-13T02:14:39.484Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 332,
+      "surfaceForm": "Draco Malfoy",
+      "normalizedKey": "draco malfoy",
+      "eid": 298,
+      "created_at": "2025-11-13T02:14:39.484Z",
+      "last_seen": "2025-11-13T02:14:39.484Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 333,
+      "surfaceForm": "Lucius Malfoy",
+      "normalizedKey": "lucius malfoy",
+      "eid": 299,
+      "created_at": "2025-11-13T02:14:39.484Z",
+      "last_seen": "2025-11-13T02:14:39.484Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 334,
+      "surfaceForm": "Death Eater",
+      "normalizedKey": "death eater",
+      "eid": 300,
+      "created_at": "2025-11-13T02:14:39.484Z",
+      "last_seen": "2025-11-13T02:14:39.484Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 335,
+      "surfaceForm": "Slytherin",
+      "normalizedKey": "slytherin",
+      "eid": 301,
+      "created_at": "2025-11-13T02:14:39.485Z",
+      "last_seen": "2025-11-13T02:14:39.485Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 336,
+      "surfaceForm": "Sirius Black",
+      "normalizedKey": "sirius black",
+      "eid": 302,
+      "created_at": "2025-11-13T02:14:39.485Z",
+      "last_seen": "2025-11-13T02:14:39.485Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 337,
+      "surfaceForm": "Azkaban",
+      "normalizedKey": "azkaban",
+      "eid": 303,
+      "created_at": "2025-11-13T02:14:39.485Z",
+      "last_seen": "2025-11-13T02:14:39.485Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 338,
+      "surfaceForm": "Gryffindor",
+      "normalizedKey": "gryffindor",
+      "eid": 304,
+      "created_at": "2025-11-13T02:14:39.485Z",
+      "last_seen": "2025-11-13T02:14:39.485Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 339,
+      "surfaceForm": "Ravenclaw",
+      "normalizedKey": "ravenclaw",
+      "eid": 305,
+      "created_at": "2025-11-13T02:14:39.485Z",
+      "last_seen": "2025-11-13T02:14:39.485Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 340,
+      "surfaceForm": "Godric Gryffindor",
+      "normalizedKey": "godric gryffindor",
+      "eid": 304,
+      "created_at": "2025-11-13T02:14:39.486Z",
+      "last_seen": "2025-11-13T02:14:39.486Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 341,
+      "surfaceForm": "Hogwarts School",
+      "normalizedKey": "hogwarts school",
+      "eid": 269,
+      "created_at": "2025-11-13T02:20:54.285Z",
+      "last_seen": "2025-11-13T02:20:54.285Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 342,
+      "surfaceForm": "Professor Dumbledore",
+      "normalizedKey": "professor dumbledore",
+      "eid": 275,
+      "created_at": "2025-11-13T02:20:54.285Z",
+      "last_seen": "2025-11-13T02:20:54.285Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
     }
   ],
   "metadata": {
-    "total_aliases": 307,
-    "total_entities": 278,
-    "last_updated": "2025-11-11T04:08:03.895Z"
+    "total_aliases": 342,
+    "total_entities": 305,
+    "last_updated": "2025-11-13T02:21:20.860Z"
   }
 }
