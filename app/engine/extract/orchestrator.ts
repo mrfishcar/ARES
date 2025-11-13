@@ -1004,6 +1004,49 @@ export async function extractFromSegments(
     }
   }
 
+  // Populate entity.aliases from coreference links and alias registry
+  // This makes aliases visible to tests and downstream consumers
+  console.log(`[ORCHESTRATOR] Populating entity aliases from coref links and alias registry`);
+
+  for (const entity of filteredEntities) {
+    const aliasSet = new Set<string>();
+
+    // Add existing aliases (shouldn't be empty, but just in case)
+    for (const alias of entity.aliases) {
+      aliasSet.add(alias);
+    }
+
+    // 1. Add aliases from coreference links (pronouns, descriptive mentions)
+    for (const link of corefLinks.links) {
+      if (link.entity_id === entity.id) {
+        const mentionText = link.mention.text.trim();
+        // Add if it's different from canonical and not empty
+        if (mentionText && mentionText !== entity.canonical) {
+          aliasSet.add(mentionText);
+        }
+      }
+    }
+
+    // 2. Add aliases from alias registry (all registered surface forms for this EID)
+    if (entity.eid) {
+      const registeredAliases = aliasRegistry.getAliasesForEntity(entity.eid);
+      for (const mapping of registeredAliases) {
+        const surfaceForm = mapping.surfaceForm.trim();
+        // Add if different from canonical and not empty
+        if (surfaceForm && surfaceForm !== entity.canonical) {
+          aliasSet.add(surfaceForm);
+        }
+      }
+    }
+
+    // Update entity.aliases with unique values
+    entity.aliases = Array.from(aliasSet);
+
+    if (entity.aliases.length > 0) {
+      console.log(`[ORCHESTRATOR] Entity "${entity.canonical}" has ${entity.aliases.length} aliases: [${entity.aliases.slice(0, 3).join(', ')}${entity.aliases.length > 3 ? '...' : ''}]`);
+    }
+  }
+
   // HERT Phase 2: Generate HERTs for entity occurrences (optional)
   let herts: string[] | undefined;
 
