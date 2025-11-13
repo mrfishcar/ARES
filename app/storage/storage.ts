@@ -181,12 +181,23 @@ export async function appendDoc(
   const pronouns = new Set(['he', 'she', 'it', 'they', 'him', 'her', 'his', 'hers', 'its', 'their', 'theirs', 'them']);
   const deictics = new Set(['there', 'here']);
 
+  // Common verbs that indicate entity boundary issues (e.g., "the king ruled" should be "the king")
+  const commonVerbs = new Set(['ruled', 'teaches', 'lived', 'studied', 'went', 'became', 'was', 'were', 'is', 'are', 'has', 'have', 'had', 'said', 'says', 'asked', 'replied']);
+
   const normalizeCanonical = (type: string, canonical: string): string | null => {
     let value = canonical;
 
     // Filter out pronouns and deictic references (they should be in aliases, not as canonical names)
     const lowerValue = value.toLowerCase().trim();
     if (pronouns.has(lowerValue) || deictics.has(lowerValue)) {
+      return null;
+    }
+
+    // Filter out entities that contain verbs (e.g., "the king ruled", "the wizard teaches")
+    // These are incorrectly extracted entities with verb boundaries
+    const words = value.toLowerCase().split(/\s+/);
+    if (words.some(w => commonVerbs.has(w))) {
+      console.log(`[STORAGE] Filtering entity with verb: "${value}"`);
       return null;
     }
 

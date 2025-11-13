@@ -919,6 +919,18 @@ export function resolveCoref(
   const { links: quoteLinks, quotes } = resolveQuoteAttribution(mentions, entities, entitySpans, sentences, text);
   const coordinationLinks = resolveCoordination(entities, entitySpans, sentences, text);
 
+  // DEBUG: Log resolution results
+  if (titleLinks.length > 0) {
+    console.log(`[COREF] Found ${titleLinks.length} title back-links`);
+    for (const link of titleLinks) {
+      const entity = entities.find(e => e.id === link.entity_id);
+      console.log(`[COREF]   "${link.mention.text}" -> ${entity?.canonical} (${link.method})`);
+    }
+  }
+  if (nominalLinks.length > 0) {
+    console.log(`[COREF] Found ${nominalLinks.length} nominal back-links`);
+  }
+
   // Merge all links
   const allLinks = [
     ...pronounLinks,
