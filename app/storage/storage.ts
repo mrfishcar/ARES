@@ -440,9 +440,37 @@ export function getProvenance(
 
 /**
  * Clear storage (for testing)
+ * Also clears all registries to ensure test isolation
  */
-export function clearStorage(filePath: string = DEFAULT_STORAGE_PATH): void {
+export async function clearStorage(filePath: string = DEFAULT_STORAGE_PATH): Promise<void> {
+  // Clear main storage file
   if (fs.existsSync(filePath)) {
     fs.unlinkSync(filePath);
+  }
+
+  // Clear registries to prevent cross-test contamination
+  const registryFiles = [
+    './data/eid-registry.json',
+    './data/alias-registry.json',
+    './data/sense-registry.json'
+  ];
+
+  for (const registryFile of registryFiles) {
+    if (fs.existsSync(registryFile)) {
+      fs.unlinkSync(registryFile);
+    }
+  }
+
+  // Clear in-memory registry state
+  try {
+    const { eidRegistry } = await import('../engine/eid-registry');
+    const { aliasRegistry } = await import('../engine/alias-registry');
+    const { senseRegistry } = await import('../engine/sense-disambiguator');
+
+    eidRegistry.clear();
+    aliasRegistry.clear();
+    senseRegistry.clear();
+  } catch (error) {
+    // Registries not loaded yet, which is fine
   }
 }

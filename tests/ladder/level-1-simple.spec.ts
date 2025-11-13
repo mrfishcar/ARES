@@ -358,7 +358,7 @@ describe('Test Ladder - Level 1: Simple Sentences', () => {
     }> = [];
 
     for (const tc of testCases) {
-      clearStorage(testPath);
+      await clearStorage(testPath);
 
       // Extract
       await appendDoc(tc.id, tc.text, testPath);
