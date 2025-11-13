@@ -47,14 +47,24 @@ function validateSpan(
   text: string,
   span: { text: string; start: number; end: number },
   context: string
-): { valid: boolean; extracted: string } {
+): { valid: boolean; extracted: string; reason?: string } {
   // Extract actual text at this position
   const extracted = text.slice(span.start, span.end);
   const normalizedExtracted = normalizeName(extracted);
   const normalizedExpected = normalizeName(span.text);
 
+  // DEBUG: Log professor validation
+  if (span.text.toLowerCase().includes('professor')) {
+    console.log(`[VALIDATE-DETAIL] Span: "${span.text}" at [${span.start}, ${span.end}]`);
+    console.log(`  Extracted: "${extracted}"`);
+    console.log(`  Normalized expected: "${normalizedExpected}"`);
+    console.log(`  Normalized extracted: "${normalizedExtracted}"`);
+    console.log(`  Match: ${normalizedExtracted === normalizedExpected}`);
+  }
+
   // Check if normalized versions match
   let valid = normalizedExtracted === normalizedExpected;
+  let reason: string | undefined;
 
   // Additional check: ensure extracted text doesn't contain extra words
   // This catches cases where span.end extends beyond the entity
@@ -70,14 +80,22 @@ function validateSpan(
       const wordCountDiff = normalizedExtractedWords.length - normalizedExpectedWords.length;
       if (wordCountDiff > 1) {
         // Too many extra words - likely corruption
+        if (span.text.toLowerCase().includes('professor')) {
+          console.log(`  FAILED: Word count diff > 1: ${wordCountDiff}`);
+        }
         valid = false;
+        reason = "Too many extra words";
       } else if (wordCountDiff === 1) {
         // One extra word - check if it's a pronoun or common word that indicates corruption
         const extraWord = normalizedExtractedWords[normalizedExtractedWords.length - 1].toLowerCase();
         const pronouns = ['he', 'she', 'it', 'they', 'i', 'you', 'we', 'the', 'a', 'an'];
         if (pronouns.includes(extraWord)) {
           // Extracted text includes a pronoun after the entity - this is corruption
+          if (span.text.toLowerCase().includes('professor')) {
+            console.log(`  FAILED: Extra word is pronoun: "${extraWord}"`);
+          }
           valid = false;
+          reason = "Pronoun after entity";
         }
       }
     }
@@ -86,17 +104,32 @@ function validateSpan(
     // Pattern 1: Ends with ". [Word]" (entity spans past sentence boundary)
     if (/\.\s+[A-Z][a-z]+\s*$/.test(extracted)) {
       // Example: "Slytherin. He" or "Granger. The"
+      if (span.text.toLowerCase().includes('professor')) {
+        console.log(`  FAILED: Ends with sentence boundary pattern`);
+      }
       valid = false;
+      reason = "Ends with sentence boundary";
     }
 
     // Pattern 2: Word fragments being concatenated (e.g., "WeasleRon", "SlytheriHe")
     // This is detected by finding capitalized letters in the middle of a word
+    // BUT: Allow valid patterns like "McGonagall", "McDonald", "O'Brien"
     const extractedWords = extracted.split(/\s+/).filter(Boolean);
     for (const word of extractedWords) {
-      if (/[a-z][A-Z]/.test(word)) {
-        // Found lowercase followed by uppercase - likely corruption
-        valid = false;
-        break;
+      // Check for lowercase followed by uppercase
+      const match = word.match(/[a-z]([A-Z])/);
+      if (match) {
+        // Allow common prefixes: Mc, Mac, O', Fitz, etc.
+        const isValidPrefix = /^(Mc|Mac|O'|Fitz|De|Van|Von|Di|Da)/i.test(word);
+        if (!isValidPrefix) {
+          // Found lowercase followed by uppercase without valid prefix - likely corruption
+          if (span.text.toLowerCase().includes('professor')) {
+            console.log(`  FAILED: Word "${word}" has lowercase followed by uppercase (not a valid prefix)`);
+          }
+          valid = false;
+          reason = "Word fragment corruption";
+          break;
+        }
       }
     }
   }
@@ -537,16 +570,25 @@ function capitalizeEntityName(name: string): string {
 
 export function normalizeName(s: string): string {
   let normalized = s.replace(/\s+/g, " ").trim();
-  normalized = normalized.replace(/^[\-\u2013\u2014'"“”‘’]+/, "");
+  normalized = normalized.replace(/^[\-\u2013\u2014'"""'']+/, "");
   normalized = normalized.replace(/[,'"\u201c\u201d\u2018\u2019]+$/g, " ");
   normalized = normalized.replace(/\s*,\s*/g, " ");
   normalized = normalized.replace(/[.;:!?]+$/g, "");
   normalized = normalized.replace(/^(the|a|an)\s+/i, "");
-  normalized = normalized.replace(/^((?:[a-z]+\s+)+)(?=[A-Z0-9])/g, "");
-  normalized = normalized.replace(/['’]s$/i, "");
+
+  // Check if the name starts with a title word followed by a capitalized name
+  const titleWordsRegex = /^(mr|mrs|miss|ms|dr|doctor|prof|professor|sir|madam|lord|lady|king|queen|prince|princess|duke|duchess|baron|baroness|count|countess|captain|commander|general|admiral|colonel|major|sergeant|lieutenant|father|mother|brother|sister|master|archmagus|wizard|mage|sorcerer|sorceress)\s+[A-Z]/i;
+  const hasTitle = titleWordsRegex.test(normalized);
+
+  // Only strip lowercase prefixes if there's NO title at the start
+  if (!hasTitle) {
+    normalized = normalized.replace(/^((?:[a-z]+\s+)+)(?=[A-Z0-9])/g, "");
+  }
+
+  normalized = normalized.replace(/['']s$/i, "");
   normalized = normalized.replace(/\bfamily\b$/i, "").trim();
   normalized = normalized.replace(/\bHouse$/i, "");
-  const capitalized = normalized.match(/[A-Z][A-Za-z0-9'’\-]*(?:\s+(?:of|the|and|&)?\s*[A-Z][A-Za-z0-9'’\-]*)*/);
+  const capitalized = normalized.match(/[A-Z][A-Za-z0-9''\-]*(?:\s+(?:of|the|and|&)?\s*[A-Z][A-Za-z0-9''\-]*)*/);
   if (capitalized) {
     normalized = capitalized[0];
   }
@@ -1151,6 +1193,11 @@ function fallbackNames(text: string): Array<{ text: string; type: EntityType; st
     let value = m[1];
     let endIndex = m.index + value.length;
 
+    // DEBUG: Log all matches that contain "Professor"
+    if (value.toLowerCase().includes('professor')) {
+      console.log(`[FALLBACK] Matched: "${value}" at position ${m.index}`);
+    }
+
     const extend = () => {
       const after = text.slice(endIndex);
 
@@ -1236,6 +1283,11 @@ function fallbackNames(text: string): Array<{ text: string; type: EntityType; st
     // Classify using context and whitelists
     let type = classifyName(text, value, m.index, rawEnd);
 
+    // DEBUG: Log Professor classification
+    if (value.toLowerCase().includes('professor')) {
+      console.log(`[FALLBACK] Classified "${value}" as: ${type || 'NULL (filtered)'}`);
+    }
+
     if (!type) continue;
 
     if (type === 'ORG' && /\bHouse$/i.test(value)) {
@@ -1243,6 +1295,11 @@ function fallbackNames(text: string): Array<{ text: string; type: EntityType; st
     }
     const normalized = normalizeName(value);
     const entityType = refineEntityType(type, normalized);
+
+    // DEBUG: Log Professor normalization
+    if (value.toLowerCase().includes('professor')) {
+      console.log(`[FALLBACK] Normalized "${value}" to "${normalized}" (type: ${entityType})`);
+    }
 
     spans.push({
       text: normalized,
@@ -1334,14 +1391,34 @@ function dedupe<T extends { text: string; type: EntityType; start: number; end: 
   const seenCanonical = new Set<string>();
   const out: T[] = [];
 
+  // DEBUG: Check for Professor
+  const professorSpans = spans.filter(s => s.text.toLowerCase().includes('professor'));
+  if (professorSpans.length > 0) {
+    console.log(`[DEDUPE] Found ${professorSpans.length} spans with 'professor':`);
+    for (const span of professorSpans) {
+      console.log(`  - "${span.text}" (${span.type}) at [${span.start}, ${span.end}]`);
+    }
+  }
+
   for (const s of spans) {
     // Dedupe by canonical form (type + normalized text)
     // Since spans are ordered as [...dep, ...ner, ...fb], the first occurrence (most reliable) wins
     const canonicalKey = `${s.type}:${s.text.toLowerCase()}`;
-    if (seenCanonical.has(canonicalKey)) continue;
+    if (seenCanonical.has(canonicalKey)) {
+      if (s.text.toLowerCase().includes('professor')) {
+        console.log(`[DEDUPE] SKIPPING duplicate: "${s.text}" (${s.type})`);
+      }
+      continue;
+    }
 
     seenCanonical.add(canonicalKey);
     out.push(s);
+  }
+
+  // DEBUG: Check output
+  const professorOut = out.filter(s => s.text.toLowerCase().includes('professor'));
+  if (professorOut.length > 0) {
+    console.log(`[DEDUPE] Output has ${professorOut.length} spans with 'professor'`);
   }
 
   return out;
@@ -1425,6 +1502,10 @@ export async function extractEntities(text: string): Promise<{
   const validated = deduped.filter(span => {
     const validation = validateSpan(text, span, "pre-entity-creation");
     if (!validation.valid) {
+      // DEBUG: Log professor spans that fail validation
+      if (span.text.toLowerCase().includes('professor')) {
+        console.log(`[VALIDATION] REJECTING span "${span.text}" (${span.type}): ${validation.reason}`);
+      }
       // Skip corrupted spans to prevent bad data in registries
       return false;
     }
@@ -1567,6 +1648,11 @@ const chooseCanonical = (names: Set<string>): string => {
     const key = `${span.type}:${textLower}`;
     let matched = false;
 
+    // DEBUG: Log professor spans
+    if (textLower.includes('professor')) {
+      console.log(`[BUILD-ENTITIES] Processing span: "${span.text}" (${span.type})`);
+    }
+
     for (const entry of entries) {
       if (entry.entity.type !== span.type) continue;
 
@@ -1634,6 +1720,11 @@ const chooseCanonical = (names: Set<string>): string => {
         sources: new Set([span.source]) // Track extraction source
       };
       entries.push(entry);
+
+      // DEBUG: Log professor entity creation
+      if (textLower.includes('professor')) {
+        console.log(`[BUILD-ENTITIES] Created NEW entity: "${capitalizedText}" (${span.type})`);
+      }
     }
   }
 
@@ -1724,6 +1815,11 @@ const chooseCanonical = (names: Set<string>): string => {
           return alias.split(/\s+/).length > 1 && !GENERIC_TITLES.has(aliasLower);
         });
         if (!hasSpecificAlias) {
+          // DEBUG
+          if (canonicalLower.includes('professor')) {
+            console.log(`[FILTER-GENERIC] REMOVING entity "${entry.entity.canonical}" (GENERIC_TITLE without specific alias)`);
+            console.log(`  Aliases: [${entry.entity.aliases.join(', ')}]`);
+          }
           return false;
         }
       }

@@ -2,38 +2,38 @@
   "results": [
     {
       "id": "3.1",
-      "entityPrecision": 0.8888888888888888,
+      "entityPrecision": 1,
       "entityRecall": 1,
-      "relationPrecision": 0.8181818181818182,
+      "relationPrecision": 0.9,
       "relationRecall": 1
     },
     {
       "id": "3.2",
-      "entityPrecision": 0.8571428571428571,
+      "entityPrecision": 1,
       "entityRecall": 1,
-      "relationPrecision": 0.5555555555555556,
+      "relationPrecision": 1,
       "relationRecall": 0.8333333333333334
     },
     {
       "id": "3.3",
       "entityPrecision": 1,
-      "entityRecall": 1,
+      "entityRecall": 0.75,
       "relationPrecision": 1,
       "relationRecall": 1
     },
     {
       "id": "3.4",
       "entityPrecision": 1,
-      "entityRecall": 0.8333333333333334,
+      "entityRecall": 1,
       "relationPrecision": 1,
-      "relationRecall": 0.8571428571428571
+      "relationRecall": 1
     },
     {
       "id": "3.5",
       "entityPrecision": 1,
       "entityRecall": 0.8888888888888888,
-      "relationPrecision": 0.1111111111111111,
-      "relationRecall": 0.25
+      "relationPrecision": 0.4,
+      "relationRecall": 0.5
     },
     {
       "id": "3.6",
@@ -46,8 +46,8 @@
       "id": "3.7",
       "entityPrecision": 1,
       "entityRecall": 1,
-      "relationPrecision": 1,
-      "relationRecall": 0.3333333333333333
+      "relationPrecision": 0,
+      "relationRecall": 0
     },
     {
       "id": "3.8",
@@ -58,14 +58,14 @@
     },
     {
       "id": "3.9",
-      "entityPrecision": 0.8,
-      "entityRecall": 1,
-      "relationPrecision": 1,
-      "relationRecall": 0.5
+      "entityPrecision": 1,
+      "entityRecall": 0.5,
+      "relationPrecision": 0,
+      "relationRecall": 0
     },
     {
       "id": "3.10",
-      "entityPrecision": 0.7777777777777778,
+      "entityPrecision": 1,
       "entityRecall": 1,
       "relationPrecision": 1,
       "relationRecall": 1
@@ -86,19 +86,16 @@
       ],
       "extracted": [
         "PERSON::harry potter",
-        "PERSON::james",
         "PERSON::lily potter",
+        "PERSON::james",
         "PERSON::dursleys",
         "PERSON::ron weasley",
         "PERSON::arthur",
-        "PERSON::magic",
         "PLACE::privet drive",
         "ORG::ministry of magic"
       ],
       "missing": [],
-      "extra": [
-        "PERSON::magic"
-      ]
+      "extra": []
     },
     {
       "id": "3.2",
@@ -115,14 +112,11 @@
         "PERSON::ron weasley",
         "PERSON::harry potter",
         "PERSON::draco malfoy",
-        "PERSON::slytherin",
         "ORG::gryffindor",
         "ORG::slytherin"
       ],
       "missing": [],
-      "extra": [
-        "PERSON::slytherin"
-      ]
+      "extra": []
     },
     {
       "id": "3.3",
@@ -134,11 +128,12 @@
       ],
       "extracted": [
         "PERSON::albus dumbledore",
-        "PERSON::fawkes",
         "PERSON::severus snape",
         "ORG::hogwarts"
       ],
-      "missing": [],
+      "missing": [
+        "PERSON::fawkes"
+      ],
       "extra": []
     },
     {
@@ -153,14 +148,13 @@
       ],
       "extracted": [
         "PERSON::harry potter",
-        "PERSON::hermione",
         "PERSON::ron",
+        "PERSON::hermione",
         "PERSON::voldemort",
-        "ORG::hogwarts school"
-      ],
-      "missing": [
+        "ORG::hogwarts school",
         "DATE::1991"
       ],
+      "missing": [],
       "extra": []
     },
     {
@@ -177,17 +171,17 @@
         "ORG::gringotts bank"
       ],
       "extracted": [
-        "PLACE::burrow",
-        "PERSON::bill weasley",
+        "PERSON::molly weasley",
         "PERSON::arthur",
-        "PERSON::fred",
-        "PERSON::george",
         "PERSON::ron",
         "PERSON::ginny",
+        "PERSON::fred",
+        "PERSON::george",
+        "PLACE::burrow",
         "ORG::gringotts bank"
       ],
       "missing": [
-        "PERSON::molly weasley"
+        "PERSON::bill weasley"
       ],
       "extra": []
     },
@@ -201,10 +195,10 @@
         "WORK::quibbler"
       ],
       "extracted": [
-        "ORG::hogwarts",
-        "ORG::ravenclaw",
         "PERSON::luna lovegood",
-        "PERSON::ginny weasley"
+        "PERSON::ginny weasley",
+        "ORG::hogwarts",
+        "ORG::ravenclaw"
       ],
       "missing": [
         "WORK::quibbler"
@@ -220,8 +214,8 @@
       ],
       "extracted": [
         "PERSON::harry",
-        "PERSON::hermione",
-        "PERSON::ron"
+        "PERSON::ron",
+        "PERSON::hermione"
       ],
       "missing": [],
       "extra": []
@@ -235,8 +229,8 @@
         "PERSON::hermione granger"
       ],
       "extracted": [
-        "PERSON::harry potter",
         "PERSON::ginny weasley",
+        "PERSON::harry potter",
         "PERSON::ron weasley",
         "PERSON::hermione granger"
       ],
@@ -252,16 +246,14 @@
         "PERSON::professor snape"
       ],
       "extracted": [
-        "PERSON::professor mcgonagall",
-        "PERSON::professor snape",
-        "PERSON::potions",
         "ORG::hogwarts",
         "ORG::gryffindor"
       ],
-      "missing": [],
-      "extra": [
-        "PERSON::potions"
-      ]
+      "missing": [
+        "PERSON::professor mcgonagall",
+        "PERSON::professor snape"
+      ],
+      "extra": []
     },
     {
       "id": "3.10",
@@ -275,21 +267,16 @@
         "ORG::ravenclaw"
       ],
       "extracted": [
-        "PLACE::scotland",
-        "PLACE::platform",
         "ORG::hogwarts school",
+        "ORG::gryffindor",
+        "ORG::slytherin",
         "ORG::hufflepuff",
         "ORG::ravenclaw",
-        "ORG::slytherin",
-        "ORG::gryffindor",
-        "ITEM::hogwarts express",
-        "PERSON::ravenclaw"
+        "PLACE::scotland",
+        "ITEM::hogwarts express"
       ],
       "missing": [],
-      "extra": [
-        "PLACE::platform",
-        "PERSON::ravenclaw"
-      ]
+      "extra": []
     }
   ]
 }
