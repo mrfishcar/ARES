@@ -129,11 +129,15 @@ export async function extractFromSegments(
           let start = seg.start + (s.start - segOffsetInWindow);
           let end = seg.start + (s.end - segOffsetInWindow);
 
-          while (start < end && /[^A-Za-z]/.test(fullText[start])) {
-            start++;
-          }
-          while (end < fullText.length && /[a-z'’\-]/.test(fullText[end])) {
-            end++;
+          // Only adjust boundaries for text-based entities (PERSON, PLACE, ORG, etc.)
+          // Skip boundary adjustment for DATE, ITEM entities that may contain digits/numbers
+          if (entity.type !== 'DATE' && entity.type !== 'ITEM') {
+            while (start < end && /[^A-Za-z]/.test(fullText[start])) {
+              start++;
+            }
+            while (end < fullText.length && /[a-z''\-]/.test(fullText[end])) {
+              end++;
+            }
           }
 
           return {

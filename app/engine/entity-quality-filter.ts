@@ -162,9 +162,12 @@ export function filterLowQualityEntities(
       }
     }
 
-    // 5. Valid characters check
-    if (!hasValidCharacters(name)) {
-      return false;
+    // 5. Valid characters check (skip for DATE/ITEM which can be numeric)
+    // DATE entities like "3019" and ITEM entities like "3080" are valid without letters
+    if (entity.type !== 'DATE' && entity.type !== 'ITEM') {
+      if (!hasValidCharacters(name)) {
+        return false;
+      }
     }
 
     // 6. Type-specific validation

@@ -172,10 +172,13 @@ export function isValidEntity(
     return false;
   }
 
-  // 4. Check bad patterns
-  for (const pattern of BAD_PATTERNS) {
-    if (pattern.test(canonical)) {
-      return false;
+  // 4. Check bad patterns (except for DATE/ITEM entities which can be numeric)
+  // DATE entities like "3019" should not be filtered by "no letters" pattern
+  if (entityType !== 'DATE' && entityType !== 'ITEM') {
+    for (const pattern of BAD_PATTERNS) {
+      if (pattern.test(canonical)) {
+        return false;
+      }
     }
   }
 
@@ -191,9 +194,13 @@ export function isValidEntity(
     }
   }
 
-  // 6. Must contain at least one letter
-  if (!/[a-z]/i.test(canonical)) {
-    return false;
+  // 6. Must contain at least one letter (except for DATE/ITEM entities)
+  // DATE entities can be pure numbers (e.g., "3019", "2024")
+  // ITEM entities can be model numbers (e.g., "iPhone 15", "3080")
+  if (entityType !== 'DATE' && entityType !== 'ITEM') {
+    if (!/[a-z]/i.test(canonical)) {
+      return false;
+    }
   }
 
   // 7. For PERSON entities, filter chapter/section markers

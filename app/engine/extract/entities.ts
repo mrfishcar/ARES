@@ -1890,6 +1890,128 @@ const chooseCanonical = (names: Set<string>): string => {
     }
   }
 
+  // ========== PATTERN-BASED ENTITY EXTRACTION ==========
+  // Supplement spaCy with pattern-based detection for types it misses
+  // (DATE, PRODUCT, TECHNOLOGY, acronym ORGs)
+
+  const patternEntities: Entity[] = [];
+  let patternEntityCount = 0;
+
+  // DATE patterns - Critical! SpaCy often misses dates
+  const datePatterns = [
+    { regex: /\b\d{1,2}[-/]\d{1,2}[-/]\d{2,4}\b/g, format: 'numeric' },  // 01/15/2024, 1-15-24
+    { regex: /\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}\b/gi, format: 'month-day-year' },
+    { regex: /\b\d{1,2}\s+(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}\b/gi, format: 'day-month-year' },
+    { regex: /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*\s+\d{1,2},?\s+\d{4}\b/gi, format: 'abbrev-month' },
+    { regex: /\b\d{4}-\d{2}-\d{2}\b/g, format: 'ISO' },  // 2024-01-15
+    { regex: /\b\d{4}\b/g, format: 'year-only' },  // Just year (e.g., "in 3019")
+  ];
+
+  for (const { regex, format } of datePatterns) {
+    let match;
+    regex.lastIndex = 0;
+    while ((match = regex.exec(text)) !== null) {
+      const dateText = match[0].trim();
+
+      // Skip if this span already covered by existing entity
+      const start = match.index;
+      const end = match.index + dateText.length;
+      const overlaps = spans.some(s =>
+        (start >= s.start && start < s.end) || (end > s.start && end <= s.end)
+      );
+
+      if (!overlaps && dateText.length >= 4) {  // Minimum date length
+        const entityId = `pattern_date_${patternEntityCount++}`;
+        patternEntities.push({
+          id: entityId,
+          type: 'DATE',
+          canonical: dateText,
+          aliases: [],
+          created_at: new Date().toISOString(),
+        });
+
+        spans.push({ entity_id: entityId, start, end });
+        console.log(`[PATTERN-ENTITIES] Extracted DATE: "${dateText}" (${format})`);
+      }
+    }
+  }
+
+  // PRODUCT patterns - Tech products, consumer goods
+  const productPatterns = [
+    /\b(iPhone|iPad|MacBook|AirPods|Apple Watch|iMac)\s+[\w\s]+(Pro|Max|Plus|Air|Mini)?\b/gi,
+    /\b(Galaxy|Pixel|Surface|Kindle|PlayStation|Xbox|Switch)\s+[\w\s]+\b/gi,
+    /\b\w+\s+(Pro|Plus|Max|Ultra|Air|Mini|Lite)\s*\d*\b/g,  // Generic product variants
+  ];
+
+  for (const pattern of productPatterns) {
+    let match;
+    pattern.lastIndex = 0;
+    while ((match = pattern.exec(text)) !== null) {
+      const productText = match[0].trim();
+      const start = match.index;
+      const end = match.index + productText.length;
+
+      const overlaps = spans.some(s =>
+        (start >= s.start && start < s.end) || (end > s.start && end <= s.end)
+      );
+
+      if (!overlaps) {
+        const entityId = `pattern_product_${patternEntityCount++}`;
+        patternEntities.push({
+          id: entityId,
+          type: 'ITEM',  // Using ITEM for products
+          canonical: productText,
+          aliases: [],
+          created_at: new Date().toISOString(),
+        });
+
+        spans.push({ entity_id: entityId, start, end });
+        console.log(`[PATTERN-ENTITIES] Extracted PRODUCT: "${productText}"`);
+      }
+    }
+  }
+
+  // ORG acronym patterns - FBI, NASA, CIA, etc.
+  const acronymPattern = /\b[A-Z]{2,6}\b/g;  // 2-6 uppercase letters
+  const commonAcronyms = new Set(['FBI', 'CIA', 'NASA', 'NATO', 'UN', 'EU', 'USA', 'UK', 'US', 'IT', 'AI', 'ML', 'API']);
+
+  let match;
+  acronymPattern.lastIndex = 0;
+  while ((match = acronymPattern.exec(text)) !== null) {
+    const acronym = match[0];
+
+    // Only extract well-known acronyms to avoid false positives
+    if (commonAcronyms.has(acronym)) {
+      const start = match.index;
+      const end = match.index + acronym.length;
+
+      const overlaps = spans.some(s =>
+        (start >= s.start && start < s.end) || (end > s.start && end <= s.end)
+      );
+
+      if (!overlaps) {
+        const entityId = `pattern_org_${patternEntityCount++}`;
+        patternEntities.push({
+          id: entityId,
+          type: 'ORG',
+          canonical: acronym,
+          aliases: [],
+          created_at: new Date().toISOString(),
+        });
+
+        spans.push({ entity_id: entityId, start, end });
+        console.log(`[PATTERN-ENTITIES] Extracted ORG acronym: "${acronym}"`);
+      }
+    }
+  }
+
+  // Add pattern entities to main entities array
+  entities.push(...patternEntities);
+
+  if (patternEntities.length > 0) {
+    console.log(`[PATTERN-ENTITIES] Added ${patternEntities.length} pattern-based entities`);
+  }
+
   // Step 1: Pattern-based alias extraction for explicit patterns
   // Handles: "X called Y", "X nicknamed Y", "X also known as Y", etc.
   const aliasPatterns = [
