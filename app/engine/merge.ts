@@ -259,7 +259,7 @@ export function mergeEntitiesAcrossDocs(
         };
       };
 
-      // Sort by frequency (desc), then informative word count (desc), then total words (desc), then length (asc)
+      // Sort by informative word count (desc), then frequency (desc), then total words (desc), then length (DESC - prefer longer, more specific names)
       const sortedNames = Array.from(nameCounts.entries())
         .sort((a, b) => {
           const aScore = nameScore(a[0]);
@@ -272,7 +272,7 @@ export function mergeEntitiesAcrossDocs(
           if (aScore.total !== bScore.total) {
             return bScore.total - aScore.total;
           }
-          return aScore.length - bScore.length;
+          return bScore.length - aScore.length;  // FIX: Prefer longer names (Harry over He)
         });
 
       let canonical = sortedNames[0][0];

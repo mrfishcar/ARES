@@ -166,6 +166,9 @@ export async function appendDoc(
     id: `${docId}_entity_${idx}`
   }));
 
+  // DEBUG: Log entities before filtering
+  console.log(`[STORAGE] Received ${newEntities.length} entities from orchestrator:`, newEntities.map(e => `${e.type}::${e.canonical}`).join(', '));
+
   const connectors = new Set(['the', 'of', 'and', 'jr', 'sr', 'ii', 'iii', 'iv']);
   const lowercaseAllowed = new Set(['the', 'of', 'and']);
   const scoreName = (value: string) => {
@@ -174,8 +177,19 @@ export async function appendDoc(
     return { informative, total: parts.length, length: value.length };
   };
 
+  // Pronouns and deictic references that should be filtered out
+  const pronouns = new Set(['he', 'she', 'it', 'they', 'him', 'her', 'his', 'hers', 'its', 'their', 'theirs', 'them']);
+  const deictics = new Set(['there', 'here']);
+
   const normalizeCanonical = (type: string, canonical: string): string | null => {
     let value = canonical;
+
+    // Filter out pronouns and deictic references (they should be in aliases, not as canonical names)
+    const lowerValue = value.toLowerCase().trim();
+    if (pronouns.has(lowerValue) || deictics.has(lowerValue)) {
+      return null;
+    }
+
     if (type === 'ORG' && /\bHouse$/i.test(value)) {
       value = value.replace(/\s+House$/i, '');
     }
@@ -211,7 +225,7 @@ export async function appendDoc(
         newScore.informative > existingScore.informative ||
         (newScore.informative === existingScore.informative && (
           newScore.total > existingScore.total ||
-          (newScore.total === existingScore.total && newScore.length < existingScore.length)
+          (newScore.total === existingScore.total && newScore.length > existingScore.length)
         ))
       ) {
         localMap.set(key, entity);
@@ -220,6 +234,9 @@ export async function appendDoc(
   }
 
   const localEntities = Array.from(localMap.values());
+
+  // DEBUG: Log entities after local dedup
+  console.log(`[STORAGE] After local dedup: ${localEntities.length} entities:`, localEntities.map(e => `${e.type}::${e.canonical}`).join(', '));
 
   // Merge new entities with existing globals
   // To preserve determinism, we need to merge in a stable order
@@ -300,6 +317,9 @@ export async function appendDoc(
 
   // Count how many entities were merged (not new)
   const mergeCount = localEntities.length - (globals.length - graph.entities.length);
+
+  // DEBUG: Log globals before storing
+  console.log(`[STORAGE] Final globals for ${docId}: ${globals.length} entities:`, globals.slice(0, 5).map(e => `${e.type}::${e.canonical}`).join(', '));
 
   // Update graph
   graph.entities = globals;
