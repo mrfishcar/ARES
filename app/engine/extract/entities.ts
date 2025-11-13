@@ -1194,11 +1194,15 @@ function fallbackNames(text: string): Array<{ text: string; type: EntityType; st
     // Strip trailing punctuation and sentence fragments
     // This handles cases like "Ravenclaw. Each" being matched as 2 words
     // Remove: period/comma/etc followed by space and another capitalized word
+    const beforeCleanup = value;
     value = value.replace(/[.,;:!?]\s+[A-Z].*$/, '');
     // Also strip any remaining trailing punctuation
     value = value.replace(/[.,;:!?]+$/, '').trim();
 
-    const rawEnd = endIndex;
+    // CRITICAL FIX: Update end position after cleaning
+    // If we removed trailing content, adjust rawEnd accordingly
+    const lengthDiff = beforeCleanup.length - value.length;
+    const rawEnd = endIndex - lengthDiff;
 
     const tokens = value.split(/\s+/).filter(Boolean);
     const significantTokens = tokens.filter(tok => /^[A-Z]|^[IVXLCDM]+$/.test(tok));
@@ -1248,7 +1252,7 @@ function fallbackNames(text: string): Array<{ text: string; type: EntityType; st
     });
     traceSpan("fallback", text, m.index, rawEnd, normalized);
   }
-  
+
   return spans;
 }
 
