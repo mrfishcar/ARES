@@ -902,6 +902,7 @@ export async function extractFromSegments(
   // Phase 4: Sense disambiguation (SP assignment)
   const { eidRegistry } = await import('../eid-registry');
   const { aliasResolver } = await import('../alias-resolver');
+  const { aliasRegistry } = await import('../alias-registry');
   const { senseRegistry, discriminateSenses } = await import('../sense-disambiguator');
 
   for (const entity of filteredEntities) {
