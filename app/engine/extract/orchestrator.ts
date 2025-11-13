@@ -84,6 +84,10 @@ export async function extractFromSegments(
   // Track entity canonical names across segments to avoid duplicates
   const entityMap = new Map<string, Entity>(); // key: type::canonical_lower -> entity
 
+  // INTELLIGENT: Track seen relations to prevent duplicates from overlapping windows
+  // With large context windows (1500+ chars), same relations can be extracted multiple times
+  const seenRelations = new Set<string>(); // key: "subj_id:pred:obj_id"
+
   for (const seg of segs) {
     // Build context window (1500 chars before/after for complex narratives)
     // Expanded from 200 to handle multi-paragraph entity extraction with full context
@@ -280,7 +284,17 @@ export async function extractFromSegments(
       };
     });
 
-    allRelations.push(...remappedRelations);
+    // INTELLIGENT: Only add relations we haven't seen before (prevents duplicates from overlapping windows)
+    const uniqueRelations = remappedRelations.filter(rel => {
+      const key = `${rel.subj}:${rel.pred}:${rel.obj}`;
+      if (seenRelations.has(key)) {
+        return false; // Already seen, skip
+      }
+      seenRelations.add(key);
+      return true;
+    });
+
+    allRelations.push(...uniqueRelations);
   }
 
   // 3.5. Apply pattern-based extraction (if pattern library provided)
@@ -541,11 +555,18 @@ export async function extractFromSegments(
         const mergedSubj = entityMap.get(subjKey);
         const mergedObj = entityMap.get(objKey);
 
-        corefRelations.push({
+        const mappedRel = {
           ...rel,
           subj: mergedSubj?.id || rel.subj,
           obj: mergedObj?.id || rel.obj
-        });
+        };
+
+        // INTELLIGENT: Only add if we haven't seen this relation before
+        const relKey = `${mappedRel.subj}:${mappedRel.pred}:${mappedRel.obj}`;
+        if (!seenRelations.has(relKey)) {
+          seenRelations.add(relKey);
+          corefRelations.push(mappedRel);
+        }
       }
     }
   }
