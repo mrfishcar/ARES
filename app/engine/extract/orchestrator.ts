@@ -85,9 +85,10 @@ export async function extractFromSegments(
   const entityMap = new Map<string, Entity>(); // key: type::canonical_lower -> entity
 
   for (const seg of segs) {
-    // Build context window (200 chars before/after)
-    const contextBefore = fullText.slice(Math.max(0, seg.start - 200), seg.start);
-    const contextAfter = fullText.slice(seg.end, Math.min(fullText.length, seg.end + 200));
+    // Build context window (1500 chars before/after for complex narratives)
+    // Expanded from 200 to handle multi-paragraph entity extraction with full context
+    const contextBefore = fullText.slice(Math.max(0, seg.start - 1500), seg.start);
+    const contextAfter = fullText.slice(seg.end, Math.min(fullText.length, seg.end + 1500));
     const window = contextBefore + seg.text + contextAfter;
 
     // Compute offset adjustment: where seg.text starts in the window
@@ -497,8 +498,9 @@ export async function extractFromSegments(
 
   // 6. Re-extract relations with coref-enhanced entity spans
   // This allows "He studied" to find "He" as an entity mention
-  // Use larger context window (±1000 chars) for multi-paragraph narratives
-  const contextWindowSize = 1000;  // Increased from 200 to handle Stage 3 multi-paragraph tests
+  // Use LARGE context window (±2500 chars) for complex multi-paragraph narratives
+  // This ensures we capture long-distance relationships and coreference chains
+  const contextWindowSize = 2500;  // Increased from 1000 to exceed Stage 3 expectations
   const corefRelations: Relation[] = [];
   for (const seg of segs) {
     const contextBefore = fullText.slice(Math.max(0, seg.start - contextWindowSize), seg.start);

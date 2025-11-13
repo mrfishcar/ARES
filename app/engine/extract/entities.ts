@@ -1116,6 +1116,33 @@ function gazetterPlaces(text: string): Array<{ text: string; type: EntityType; s
 function fallbackNames(text: string): Array<{ text: string; type: EntityType; start: number; end: number }> {
   const spans: { text: string; type: EntityType; start: number; end: number }[] = [];
 
+  // INTELLIGENT: Extract coordinated person names first (e.g., "James and Lily Potter")
+  // Pattern: FirstName and SecondName LastName
+  const coordPattern = /\b([A-Z][\w'-]+)\s+and\s+([A-Z][\w'-]+)\s+([A-Z][\w'-]+)\b/g;
+  let coordMatch: RegExpExecArray | null;
+
+  while ((coordMatch = coordPattern.exec(text))) {
+    const firstName = coordMatch[1];
+    const secondName = coordMatch[2];
+    const lastName = coordMatch[3];
+
+    // Create two separate PERSON entities with full names
+    spans.push({
+      text: `${firstName} ${lastName}`,
+      type: 'PERSON',
+      start: coordMatch.index,
+      end: coordMatch.index + firstName.length + 1 + lastName.length
+    });
+
+    const secondStart = coordMatch.index + firstName.length + ' and '.length;
+    spans.push({
+      text: `${secondName} ${lastName}`,
+      type: 'PERSON',
+      start: secondStart,
+      end: secondStart + secondName.length + 1 + lastName.length
+    });
+  }
+
   // FIXED: {0,2} allows 1-3 words (including single words like "Gandalf")
   const rx = /\b([A-Z][\w''.-]+(?:\s+[A-Z][\w''.-]+){0,2})\b/g;
   let m: RegExpExecArray | null;
