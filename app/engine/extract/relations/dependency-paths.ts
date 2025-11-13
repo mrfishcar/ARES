@@ -594,8 +594,11 @@ const PATH_PATTERNS: PathPattern[] = [
 
   // === FAMILY RELATIONSHIPS ===
 
-  // "X is the parent/mother/father of Y"
-  { signature: /^(\w+):↑nsubj:be:↓attr:(parent|mother|father|son|daughter):↓prep:of:↓pobj:(\w+)$/, predicate: 'parent_of', subjectFirst: true },
+  // "X is the son/daughter of Y" → X child_of Y
+  { signature: /^(\w+):↑nsubj:be:↓attr:(son|daughter|child):↓prep:of:↓pobj:(\w+)$/, predicate: 'child_of', subjectFirst: true },
+
+  // "X is the parent/mother/father of Y" → X parent_of Y
+  { signature: /^(\w+):↑nsubj:be:↓attr:(parent|mother|father):↓prep:of:↓pobj:(\w+)$/, predicate: 'parent_of', subjectFirst: true },
 
   // "X, parent of Y" (appositive)
   { signature: /^(\w+):↑appos:(parent|mother|father):↓prep:of:↓pobj:(\w+)$/, predicate: 'parent_of', subjectFirst: true },

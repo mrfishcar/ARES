@@ -1,0 +1,346 @@
+[
+  {
+    "id": "edge-case-001",
+    "description": "Single word entities with ambiguous context",
+    "text": "Apple announced a new iPhone. Tim visited Apple Park in California. The apple tree in the garden needed pruning.",
+    "expectedEntities": [
+      {
+        "type": "ORGANIZATION",
+        "text": "Apple",
+        "context": "technology company",
+        "confidence": 0.95
+      },
+      {
+        "type": "PRODUCT",
+        "text": "iPhone",
+        "context": "mobile device",
+        "confidence": 0.98
+      },
+      {
+        "type": "PERSON",
+        "text": "Tim",
+        "context": "person visiting location",
+        "confidence": 0.85
+      },
+      {
+        "type": "LOCATION",
+        "text": "Apple Park",
+        "context": "Apple headquarters",
+        "confidence": 0.95
+      },
+      {
+        "type": "LOCATION",
+        "text": "California",
+        "context": "US state",
+        "confidence": 0.98
+      }
+    ]
+  },
+  {
+    "id": "edge-case-002",
+    "description": "Names with special characters and punctuation",
+    "text": "Dr. O'Brien-Smith (Ph.D.) works at Smith & Co., Ltd. His colleague, María José García-López, Ph.D., specializes in AI/ML research at MIT's CSAIL lab.",
+    "expectedEntities": [
+      {
+        "type": "PERSON",
+        "text": "O'Brien-Smith",
+        "aliases": ["Dr. O'Brien-Smith"],
+        "context": "Ph.D. researcher",
+        "confidence": 0.95
+      },
+      {
+        "type": "PERSON",
+        "text": "María José García-López",
+        "context": "Ph.D. AI/ML researcher",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Smith & Co., Ltd",
+        "aliases": ["Smith & Co."],
+        "context": "company",
+        "confidence": 0.90
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "MIT",
+        "context": "university",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "CSAIL",
+        "context": "MIT research lab",
+        "confidence": 0.95
+      }
+    ]
+  },
+  {
+    "id": "edge-case-003",
+    "description": "Very short text with minimal context",
+    "text": "Alice met Bob in Paris.",
+    "expectedEntities": [
+      {
+        "type": "PERSON",
+        "text": "Alice",
+        "context": "person",
+        "confidence": 0.90
+      },
+      {
+        "type": "PERSON",
+        "text": "Bob",
+        "context": "person",
+        "confidence": 0.90
+      },
+      {
+        "type": "LOCATION",
+        "text": "Paris",
+        "context": "city",
+        "confidence": 0.95
+      }
+    ]
+  },
+  {
+    "id": "edge-case-004",
+    "description": "Entities with numbers and mixed case",
+    "text": "The iPhone 15 Pro and iPad Pro M2 were announced at WWDC23. Apple's iOS17 includes new features developed by the ML team at Building 4C.",
+    "expectedEntities": [
+      {
+        "type": "PRODUCT",
+        "text": "iPhone 15 Pro",
+        "context": "mobile device",
+        "confidence": 0.95
+      },
+      {
+        "type": "PRODUCT",
+        "text": "iPad Pro M2",
+        "context": "tablet device",
+        "confidence": 0.95
+      },
+      {
+        "type": "EVENT",
+        "text": "WWDC23",
+        "aliases": ["WWDC"],
+        "context": "Apple developer conference",
+        "confidence": 0.90
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Apple",
+        "context": "technology company",
+        "confidence": 0.98
+      },
+      {
+        "type": "PRODUCT",
+        "text": "iOS17",
+        "aliases": ["iOS"],
+        "context": "operating system",
+        "confidence": 0.95
+      },
+      {
+        "type": "LOCATION",
+        "text": "Building 4C",
+        "context": "office building",
+        "confidence": 0.85
+      }
+    ]
+  },
+  {
+    "id": "edge-case-005",
+    "description": "Nested and overlapping entity references",
+    "text": "The University of California, Berkeley's Department of Computer Science announced that Prof. John Smith from the Smith Research Lab would lead the new AI initiative.",
+    "expectedEntities": [
+      {
+        "type": "ORGANIZATION",
+        "text": "University of California, Berkeley",
+        "aliases": ["Berkeley", "UC Berkeley"],
+        "context": "university",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Department of Computer Science",
+        "context": "academic department",
+        "confidence": 0.90
+      },
+      {
+        "type": "PERSON",
+        "text": "John Smith",
+        "aliases": ["Prof. John Smith", "Prof. Smith"],
+        "context": "professor",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Smith Research Lab",
+        "context": "research laboratory",
+        "confidence": 0.90
+      }
+    ]
+  },
+  {
+    "id": "edge-case-006",
+    "description": "Pronouns and anaphoric references",
+    "text": "Sarah founded TechCorp in 2010. She grew it from a small startup to a major player. The company now employs thousands.",
+    "expectedEntities": [
+      {
+        "type": "PERSON",
+        "text": "Sarah",
+        "context": "founder of TechCorp",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "TechCorp",
+        "aliases": ["it", "The company"],
+        "context": "startup company",
+        "confidence": 0.95
+      },
+      {
+        "type": "DATE",
+        "text": "2010",
+        "context": "founding year",
+        "confidence": 0.98
+      }
+    ]
+  },
+  {
+    "id": "edge-case-007",
+    "description": "Entities at sentence boundaries",
+    "text": "Microsoft. Google. Amazon. These companies dominate tech. Facebook changed its name. Meta was born.",
+    "expectedEntities": [
+      {
+        "type": "ORGANIZATION",
+        "text": "Microsoft",
+        "context": "tech company",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Google",
+        "context": "tech company",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Amazon",
+        "context": "tech company",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Facebook",
+        "context": "tech company",
+        "confidence": 0.95
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Meta",
+        "context": "renamed from Facebook",
+        "confidence": 0.95
+      }
+    ]
+  },
+  {
+    "id": "edge-case-008",
+    "description": "Dates and temporal expressions",
+    "text": "The meeting is scheduled for January 15, 2024 at 3:00 PM EST. It was originally planned for last Tuesday but was moved to next week.",
+    "expectedEntities": [
+      {
+        "type": "DATE",
+        "text": "January 15, 2024",
+        "context": "meeting date",
+        "confidence": 0.98
+      },
+      {
+        "type": "TIME",
+        "text": "3:00 PM EST",
+        "context": "meeting time",
+        "confidence": 0.95
+      }
+    ]
+  },
+  {
+    "id": "edge-case-009",
+    "description": "Acronyms and abbreviations with expansions",
+    "text": "The FBI (Federal Bureau of Investigation) works with CIA and NSA. Dr. Smith (MD) from the WHO (World Health Organization) presented at the UN.",
+    "expectedEntities": [
+      {
+        "type": "ORGANIZATION",
+        "text": "FBI",
+        "aliases": ["Federal Bureau of Investigation"],
+        "context": "US law enforcement",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "CIA",
+        "context": "US intelligence",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "NSA",
+        "context": "US security agency",
+        "confidence": 0.98
+      },
+      {
+        "type": "PERSON",
+        "text": "Smith",
+        "aliases": ["Dr. Smith"],
+        "context": "medical doctor",
+        "confidence": 0.90
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "WHO",
+        "aliases": ["World Health Organization"],
+        "context": "health organization",
+        "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "UN",
+        "context": "United Nations",
+        "confidence": 0.98
+      }
+    ]
+  },
+  {
+    "id": "edge-case-010",
+    "description": "Common words that are also entity names",
+    "text": "Hope visited Faith at the church in Providence. Grace works at Mercy Hospital. The speaker talked about hope, faith, grace, and mercy.",
+    "expectedEntities": [
+      {
+        "type": "PERSON",
+        "text": "Hope",
+        "context": "person name",
+        "confidence": 0.85
+      },
+      {
+        "type": "PERSON",
+        "text": "Faith",
+        "context": "person name",
+        "confidence": 0.85
+      },
+      {
+        "type": "LOCATION",
+        "text": "Providence",
+        "context": "city",
+        "confidence": 0.90
+      },
+      {
+        "type": "PERSON",
+        "text": "Grace",
+        "context": "person name",
+        "confidence": 0.85
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Mercy Hospital",
+        "context": "hospital",
+        "confidence": 0.95
+      }
+    ]
+  }
+]

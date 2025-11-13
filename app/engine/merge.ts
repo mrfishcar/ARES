@@ -243,8 +243,31 @@ export function mergeEntitiesAcrossDocs(
 
       // Pick canonical name (shortest, most common)
       const allNames = cluster.flatMap(e => [e.canonical, ...e.aliases]);
+
+      // Filter out bad canonical candidates (pronouns, deictics, verbs)
+      const pronouns = new Set(['he', 'she', 'it', 'they', 'him', 'her', 'his', 'hers', 'its', 'their', 'theirs', 'them']);
+      const deictics = new Set(['there', 'here']);
+      const commonVerbs = new Set(['ruled', 'teaches', 'lived', 'studied', 'went', 'became', 'was', 'were', 'is', 'are', 'has', 'have', 'had', 'said', 'says', 'asked', 'replied']);
+
+      const isValidCanonical = (name: string): boolean => {
+        const lower = name.toLowerCase().trim();
+        // Reject pronouns and deictics
+        if (pronouns.has(lower) || deictics.has(lower)) {
+          return false;
+        }
+        // Reject names containing verbs (e.g., "the king ruled")
+        const words = lower.split(/\s+/);
+        if (words.some(w => commonVerbs.has(w))) {
+          return false;
+        }
+        return true;
+      };
+
+      const validNames = allNames.filter(isValidCanonical);
+      const candidateNames = validNames.length > 0 ? validNames : allNames; // Fallback if all filtered
+
       const nameCounts = new Map<string, number>();
-      for (const name of allNames) {
+      for (const name of candidateNames) {
         nameCounts.set(name, (nameCounts.get(name) || 0) + 1);
       }
 
@@ -252,27 +275,52 @@ export function mergeEntitiesAcrossDocs(
         const parts = value.toLowerCase().split(/\s+/).filter(Boolean);
         const connectors = new Set(['the', 'of', 'and', 'jr', 'sr', 'ii', 'iii', 'iv']);
         const informative = parts.filter(p => !connectors.has(p)).length;
+
+        // Penalty: Descriptive titles starting with "the" are less desirable than proper names
+        // "Aragorn" should beat "the king"
+        const hasThe = parts[0] === 'the';
+        const isProperName = !hasThe && /^[A-Z]/.test(value);
+
         return {
           informative,
           total: parts.length,
-          length: value.length
+          length: value.length,
+          isProperName,  // true for "Aragorn", false for "the king"
+          hasThe         // false for "Aragorn", true for "the king"
         };
       };
 
-      // Sort by frequency (desc), then informative word count (desc), then total words (desc), then length (asc)
+      // Sort by: proper names first, then informative words, then frequency, then total words, then length
       const sortedNames = Array.from(nameCounts.entries())
         .sort((a, b) => {
           const aScore = nameScore(a[0]);
           const bScore = nameScore(b[0]);
 
+          // 1. Prefer proper names over descriptive titles ("Aragorn" over "the king")
+          if (aScore.isProperName !== bScore.isProperName) {
+            return bScore.isProperName ? 1 : -1;
+          }
+
+          // 2. Penalize "the" prefix (avoid "the king" when "Aragorn" available)
+          if (aScore.hasThe !== bScore.hasThe) {
+            return aScore.hasThe ? 1 : -1;
+          }
+
+          // 3. Prefer more informative words
           if (aScore.informative !== bScore.informative) {
             return bScore.informative - aScore.informative;
           }
-          if (a[1] !== b[1]) return b[1] - a[1];  // Frequency desc
+
+          // 4. Prefer higher frequency
+          if (a[1] !== b[1]) return b[1] - a[1];
+
+          // 5. Prefer more total words
           if (aScore.total !== bScore.total) {
             return bScore.total - aScore.total;
           }
-          return aScore.length - bScore.length;
+
+          // 6. Prefer longer names (more specific)
+          return bScore.length - aScore.length;
         });
 
       let canonical = sortedNames[0][0];

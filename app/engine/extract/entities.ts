@@ -1890,5 +1890,104 @@ const chooseCanonical = (names: Set<string>): string => {
     }
   }
 
+  // Step 1: Pattern-based alias extraction for explicit patterns
+  // Handles: "X called Y", "X nicknamed Y", "X also known as Y", etc.
+  const aliasPatterns = [
+    /([A-Z][A-Za-z\s\.]+?),?\s+(?:also known as|known as)\s+([A-Z][A-Za-z]+)/gi,
+    /([A-Z][A-Za-z\s\.]+?)\s+\((?:also known as|nicknamed|aka|a\.k\.a\.)\s+([A-Z][A-Za-z]+)\)/gi,
+    /([A-Z][A-Za-z\s\.]+?),?\s+(?:often )?(?:called|referred to as)\s+([A-Z][A-Za-z]+)/gi,
+  ];
+
+  const entityByCanonical = new Map<string, Entity>();
+  for (const entity of entities) {
+    entityByCanonical.set(entity.canonical.toLowerCase(), entity);
+  }
+
+  let aliasLinksFound = 0;
+
+  for (const pattern of aliasPatterns) {
+    let match;
+    pattern.lastIndex = 0; // Reset regex state
+    while ((match = pattern.exec(text)) !== null) {
+      const fullName = match[1].trim();
+      const nickname = match[2].trim();
+
+      // Find entities matching these names
+      const fullEntity = entityByCanonical.get(fullName.toLowerCase());
+      const nickEntity = entityByCanonical.get(nickname.toLowerCase());
+
+      if (fullEntity && nickEntity && fullEntity.id !== nickEntity.id) {
+        // Merge: add nickname's canonical to fullEntity's aliases
+        if (!fullEntity.aliases.includes(nickEntity.canonical)) {
+          fullEntity.aliases.push(nickEntity.canonical);
+        }
+
+        // Merge: add nickname entity's spans to full entity
+        for (const span of spans) {
+          if (span.entity_id === nickEntity.id) {
+            span.entity_id = fullEntity.id;
+          }
+        }
+
+        // Remove nickname entity from entities array
+        const nickIdx = entities.indexOf(nickEntity);
+        if (nickIdx >= 0) {
+          entities.splice(nickIdx, 1);
+        }
+
+        entityByCanonical.delete(nickname.toLowerCase());
+        aliasLinksFound++;
+
+        console.log(`[EXTRACT-ENTITIES] Merged "${nickname}" into "${fullName}" as alias`);
+      } else if (fullEntity && !nickEntity) {
+        // Nickname not extracted as separate entity, just add as alias
+        if (!fullEntity.aliases.includes(nickname)) {
+          fullEntity.aliases.push(nickname);
+          aliasLinksFound++;
+          console.log(`[EXTRACT-ENTITIES] Added "${nickname}" as alias to "${fullName}"`);
+        }
+      }
+    }
+  }
+
+  if (aliasLinksFound > 0) {
+    console.log(`[EXTRACT-ENTITIES] Found ${aliasLinksFound} explicit alias patterns`);
+  }
+
+  // Step 2: Run coreference resolution for pronouns and descriptive references
+  // This enables pronoun resolution ("he" -> "John") and descriptive references ("the wizard" -> "Gandalf")
+  try {
+    const { splitIntoSentences } = await import('../segment');
+    const { resolveCoref } = await import('../coref');
+
+    const sentences = splitIntoSentences(text);
+    const corefLinks = resolveCoref(sentences, entities, spans, text);
+
+    // Populate entity.aliases from coreference links
+    for (const entity of entities) {
+      const aliasSet = new Set<string>(entity.aliases);
+
+      // Add mentions from coreference links
+      for (const link of corefLinks.links) {
+        if (link.entity_id === entity.id) {
+          const mentionText = link.mention.text.trim();
+          // Add if different from canonical and not empty
+          if (mentionText && mentionText !== entity.canonical && mentionText.toLowerCase() !== entity.canonical.toLowerCase()) {
+            aliasSet.add(mentionText);
+          }
+        }
+      }
+
+      entity.aliases = Array.from(aliasSet);
+    }
+
+    if (corefLinks.links.length > 0) {
+      console.log(`[EXTRACT-ENTITIES] Resolved ${corefLinks.links.length} coreference links`);
+    }
+  } catch (error) {
+    // If coreference resolution fails, continue without it
+    console.warn(`[EXTRACT-ENTITIES] Coreference resolution failed:`, error);
+  }
+
   return { entities, spans };
 }
