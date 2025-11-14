@@ -10,19 +10,19 @@
 
 import type { EntityType } from "./schema";
 import type { EntityCluster, ExtractorSource, Mention } from "./mention-tracking";
+import { getConfidenceConfig } from "../config/extraction-config";
 
 /**
- * Base confidence scores by extraction source
+ * Get base confidence scores by extraction source from config
  */
-const SOURCE_CONFIDENCE: Record<ExtractorSource, number> = {
-  WHITELIST: 0.95,  // High confidence - explicitly curated
-  NER: 0.85,        // Good - spaCy NER is reliable
-  DEP: 0.75,        // Moderate - dependency patterns can be noisy
-  FALLBACK: 0.40    // Low - capitalized word regex is very noisy
-};
+function getSourceConfidence(): Record<ExtractorSource, number> {
+  const config = getConfidenceConfig();
+  return config.source_weights as Record<ExtractorSource, number>;
+}
 
 /**
  * Generic titles/words that are likely false positives
+ * TODO: Move this set to config file as generic_words property in ConfidenceConfig
  */
 const GENERIC_WORDS = new Set([
   // Titles
@@ -67,11 +67,15 @@ const STRONG_CONTEXT_PATTERNS = [
  */
 export function computeEntityConfidence(cluster: EntityCluster): number {
   // Start with base score from sources
-  const baseScore = Math.max(...cluster.sources.map(s => SOURCE_CONFIDENCE[s]));
+  const sourceConfidence = getSourceConfidence();
+  const baseScore = Math.max(...cluster.sources.map(s => sourceConfidence[s]));
 
   // Frequency bonus: Multiple mentions increase confidence
-  // Formula: 1.0 + (mentions * 0.05), capped at 1.2x
-  const mentionBonus = Math.min(1.2, 1.0 + (cluster.mentionCount * 0.05));
+  const config = getConfidenceConfig();
+  const mentionBonus = Math.min(
+    config.mention_frequency_bonus_max,
+    1.0 + (cluster.mentionCount * config.mention_frequency_bonus_per_count)
+  );
 
   // Generic word penalty: Single-word generic titles get penalized
   let genericPenalty = 1.0;
@@ -219,8 +223,13 @@ export function computeMentionConfidence(
  * Explain why an entity was filtered (for debugging)
  */
 export function explainConfidence(cluster: EntityCluster): string {
-  const baseScore = Math.max(...cluster.sources.map(s => SOURCE_CONFIDENCE[s]));
-  const mentionBonus = Math.min(1.2, 1.0 + (cluster.mentionCount * 0.05));
+  const sourceConfidence = getSourceConfidence();
+  const baseScore = Math.max(...cluster.sources.map(s => sourceConfidence[s]));
+  const config = getConfidenceConfig();
+  const mentionBonus = Math.min(
+    config.mention_frequency_bonus_max,
+    1.0 + (cluster.mentionCount * config.mention_frequency_bonus_per_count)
+  );
 
   let genericPenalty = 1.0;
   const canonicalLower = cluster.canonical.toLowerCase();

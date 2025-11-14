@@ -20,6 +20,7 @@ import { computeEntityConfidence, filterEntitiesByConfidence } from "../confiden
 import type { Token, ParsedSentence, ParseResponse } from "./parse-types";
 import { getParserClient } from "../../parser";
 import { analyzeEntityContext, classifyWithContext, shouldExtractByContext } from "./context-classifier";
+import { getEntityDetectionConfig, getGenericTitles, getValidNamePrefixesPattern } from "../../config/extraction-config";
 
 // Re-export types for test compatibility
 export type { Entity, EntityType } from "../schema";
@@ -102,8 +103,9 @@ function validateSpan(
       // Check for lowercase followed by uppercase
       const match = word.match(/[a-z]([A-Z])/);
       if (match) {
-        // Allow common prefixes: Mc, Mac, O', Fitz, etc.
-        const isValidPrefix = /^(Mc|Mac|O'|Fitz|De|Van|Von|Di|Da)/i.test(word);
+        // Allow common prefixes from config: Mc, Mac, O', Fitz, etc.
+        const validPrefixPattern = getValidNamePrefixesPattern();
+        const isValidPrefix = validPrefixPattern.test(word);
         if (!isValidPrefix) {
           // Found lowercase followed by uppercase without valid prefix - likely corruption
           valid = false;
@@ -140,14 +142,17 @@ function validateSpan(
   return { valid, extracted };
 }
 
-// Organization hint keywords
-const ORG_HINTS = /\b(school|university|academy|seminary|ministry|department|institute|college|inc\.?|corp\.?|llc|company|corporation|ltd\.?|technologies|labs|capital|ventures|partners|group|holdings|systems|solutions|consulting|associates|enterprises|industries|bank|financial|investment|fund|computing|software|networks|media|communications|pharmaceuticals|biotech|aerospace|robotics|semiconductor|electronics)\b/i;
+/**
+ * Build a regex pattern from organization hint keywords in config
+ * Pattern is built on-demand and cached within the config loading
+ */
+function getOrgHintsPattern(): RegExp {
+  const orgConfig = getEntityDetectionConfig();
+  return new RegExp(`\\b(${orgConfig.org_hint_keywords.join('|')})\\b`, 'i');
+}
 
-// Preposition patterns that suggest PLACE
-const PLACE_PREP = /\b(in|at|from|to|into|onto|toward|through|over|under|near|by|inside|outside|within|across|dwelt in|traveled to)\b/i;
-
-// Family relation words that indicate PERSON
-const FAMILY_WORDS = new Set(['son', 'daughter', 'father', 'mother', 'brother', 'sister', 'parent', 'child', 'ancestor', 'descendant']);
+// Note: Organization hints, place prepositions, and family words are now loaded from config
+// using getEntityDetectionConfig() for better maintainability
 
 // Motion/location verbs
 const MOTION_VERBS = new Set(['travel', 'traveled', 'go', 'went', 'move', 'moved', 'journey', 'journeyed', 'walk', 'walked', 'dwell', 'dwelt', 'live', 'lived']);
@@ -557,7 +562,9 @@ export function normalizeName(s: string): string {
   normalized = normalized.replace(/^(the|a|an)\s+/i, "");
 
   // Check if the name starts with a title word followed by a capitalized name
-  const titleWordsRegex = /^(mr|mrs|miss|ms|dr|doctor|prof|professor|sir|madam|lord|lady|king|queen|prince|princess|duke|duchess|baron|baroness|count|countess|captain|commander|general|admiral|colonel|major|sergeant|lieutenant|father|mother|brother|sister|master|archmagus|wizard|mage|sorcerer|sorceress)\s+[A-Z]/i;
+  // Build regex from generic titles config
+  const genericTitles = Array.from(getGenericTitles());
+  const titleWordsRegex = new RegExp(`^(${genericTitles.join('|')})\\s+[A-Z]`, 'i');
   const hasTitle = titleWordsRegex.test(normalized);
 
   // Only strip lowercase prefixes if there's NO title at the start
@@ -576,17 +583,8 @@ export function normalizeName(s: string): string {
   return normalized;
 }
 
-/**
- * Title words that should be included with person names
- */
-const TITLE_WORDS = new Set([
-  'mr', 'mrs', 'miss', 'ms', 'dr', 'doctor', 'prof', 'professor',
-  'sir', 'madam', 'lord', 'lady', 'king', 'queen', 'prince', 'princess',
-  'duke', 'duchess', 'baron', 'baroness', 'count', 'countess',
-  'captain', 'commander', 'general', 'admiral', 'colonel', 'major',
-  'sergeant', 'lieutenant', 'father', 'mother', 'brother', 'sister',
-  'master', 'archmagus', 'wizard', 'mage', 'sorcerer', 'sorceress'
-]);
+// Title words are now loaded from config (aliasing.title_overlap_prevention.generic_titles)
+// using getGenericTitles() for better maintainability
 
 /**
  * Extract NER spans from parsed sentence
@@ -649,7 +647,7 @@ function nerSpans(sent: ParsedSentence): Array<{ text: string; type: EntityType;
     if (mapped === 'PERSON' && i > 0) {
       const prevToken = sent.tokens[i - 1];
       if (prevToken.pos === 'PROPN' && !prevToken.ent &&
-          TITLE_WORDS.has(prevToken.text.toLowerCase())) {
+          getGenericTitles().has(prevToken.text.toLowerCase())) {
         spanStart = i - 1;
       }
     }
@@ -998,7 +996,7 @@ function classifyName(text: string, surface: string, start: number, end: number)
   }
 
   // Organization keywords in name → ORG
-  if (ORG_HINTS.test(surface)) {
+  if (getOrgHintsPattern().test(surface)) {
     return 'ORG';
   }
 

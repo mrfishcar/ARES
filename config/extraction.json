@@ -1,0 +1,184 @@
+{
+  "$schema": "./extraction-schema.json",
+  "version": "1.0.0",
+  "description": "ARES extraction engine configuration - all tunable parameters for entity and relation extraction",
+
+  "confidence": {
+    "description": "Confidence scoring and filtering thresholds",
+    "source_weights": {
+      "WHITELIST": 0.95,
+      "NER": 0.85,
+      "DEP": 0.75,
+      "FALLBACK": 0.40
+    },
+    "minimum_entity_confidence": 0.5,
+    "minimum_relation_confidence": 0.6,
+    "generic_penalty": 0.3,
+    "mention_frequency_bonus_max": 1.2,
+    "mention_frequency_bonus_per_count": 0.05
+  },
+
+  "context_windows": {
+    "description": "Context window sizes for extraction passes (in characters)",
+    "initial_extraction": {
+      "before": 1500,
+      "after": 1500,
+      "description": "Context window for initial entity extraction from segments"
+    },
+    "coreference_resolution": {
+      "before": 2500,
+      "after": 2500,
+      "description": "Context window for coreference re-extraction pass"
+    },
+    "adaptive_sizing": {
+      "enabled": false,
+      "min_document_length": 5000,
+      "description": "Future: Adjust window size based on document length"
+    }
+  },
+
+  "aliasing": {
+    "description": "Entity aliasing and name merging parameters",
+    "min_similarity_for_alias": 0.84,
+    "min_similarity_for_auto_merge": 0.92,
+    "max_pronoun_distance_sentences": 3,
+    "require_gender_agreement": true,
+    "title_overlap_prevention": {
+      "enabled": true,
+      "generic_titles": [
+        "mr", "mrs", "miss", "ms", "dr", "doctor",
+        "prof", "professor", "sir", "madam", "lord", "lady",
+        "king", "queen", "prince", "princess", "duke", "duchess",
+        "baron", "baroness", "count", "countess",
+        "captain", "commander", "general", "admiral", "colonel", "major", "sergeant", "lieutenant",
+        "father", "mother", "brother", "sister", "master"
+      ]
+    },
+    "valid_name_prefixes": [
+      "Mc", "Mac", "O'", "Fitz", "De", "Van", "Von", "Di", "Da"
+    ]
+  },
+
+  "entity_detection": {
+    "description": "Entity type classification patterns and keywords",
+    "org_hint_keywords": [
+      "school", "university", "academy", "college", "institute",
+      "ministry", "department", "bureau", "agency", "office",
+      "company", "corporation", "firm", "enterprise", "business",
+      "council", "committee", "commission", "board", "assembly",
+      "party", "movement", "organization", "association", "society",
+      "club", "guild", "order", "league", "alliance"
+    ],
+    "place_prepositions": [
+      "in", "at", "from", "to", "near", "around", "across", "through",
+      "into", "onto", "within", "throughout", "toward", "towards"
+    ],
+    "family_relation_words": [
+      "son", "daughter", "father", "mother", "brother", "sister",
+      "uncle", "aunt", "cousin", "nephew", "niece",
+      "grandfather", "grandmother", "grandson", "granddaughter",
+      "husband", "wife", "spouse", "parent", "child"
+    ],
+    "person_role_descriptors": [
+      "wizard", "witch", "mage", "sorcerer", "sorceress",
+      "king", "queen", "prince", "princess", "knight",
+      "scientist", "professor", "doctor", "teacher", "student",
+      "captain", "soldier", "warrior", "guard", "commander",
+      "minister", "president", "senator", "councilor"
+    ]
+  },
+
+  "relation_extraction": {
+    "description": "Relation detection patterns and verb classifications",
+    "verb_classes": {
+      "OWNERSHIP": {
+        "verbs": ["has", "holds", "carries", "owns", "possesses", "keeps", "wields"],
+        "relation_type": "owns"
+      },
+      "FAMILY": {
+        "verbs": ["father", "daughter of", "son of", "married", "brother", "sister", "parent of", "child of"],
+        "relation_types": ["parent_of", "child_of", "married_to", "sibling_of"]
+      },
+      "LOCATION": {
+        "verbs": ["is in", "lives in", "went to", "traveled to", "moved to", "stayed in", "visited"],
+        "relation_types": ["located_in", "traveled_to", "lives_in"]
+      },
+      "COMMUNICATION": {
+        "verbs": ["said", "told", "asked", "wrote to", "spoke to", "addressed", "replied to"],
+        "relation_type": "communicated_with"
+      },
+      "AFFILIATION": {
+        "verbs": ["works for", "member of", "belongs to", "part of", "joined", "serves"],
+        "relation_type": "member_of"
+      }
+    },
+    "max_relation_distance_tokens": 80,
+    "coordination_detection": {
+      "enabled": true,
+      "max_distance_chars": 50,
+      "markers": ["and", "or", ","]
+    }
+  },
+
+  "pattern_extraction": {
+    "description": "Pattern-based entity extraction (DATE, PRODUCT, ORG acronyms)",
+    "date_patterns": {
+      "enabled": true,
+      "year_only_range": {
+        "min": 1800,
+        "max": 2029,
+        "regex": "(1[89]\\d{2}|20[0-2]\\d)"
+      }
+    },
+    "product_patterns": {
+      "enabled": true,
+      "brand_keywords": ["iPhone", "iPad", "MacBook", "Galaxy", "Surface", "Kindle", "PlayStation", "Xbox"]
+    },
+    "org_acronyms": {
+      "enabled": true,
+      "min_length": 2,
+      "max_length": 6,
+      "common_acronyms": [
+        "FBI", "CIA", "NASA", "NATO", "UN", "EU", "WHO", "IMF",
+        "BBC", "CNN", "NBC", "ABC", "CBS", "PBS",
+        "MIT", "UCLA", "USC", "NYU", "UCLA"
+      ]
+    }
+  },
+
+  "quality_filters": {
+    "description": "Precision defense layers - entity and relation quality filtering",
+    "entity_filter": {
+      "enabled": true,
+      "min_length": 2,
+      "blocked_tokens": ["the", "a", "an", "and", "or", "but", "is", "was", "are", "were"],
+      "max_generic_word_count": 2
+    },
+    "relation_filter": {
+      "enabled": true,
+      "appositive_detection": {
+        "enabled": true,
+        "max_distance_chars": 50
+      },
+      "duplicate_suppression": {
+        "enabled": true,
+        "parent_child_when_married": true
+      }
+    }
+  },
+
+  "performance": {
+    "description": "Performance tuning parameters",
+    "max_entities_per_document": 10000,
+    "max_relations_per_document": 50000,
+    "enable_caching": false,
+    "cache_parse_results": false
+  },
+
+  "debug": {
+    "description": "Debugging and logging configuration",
+    "enable_extraction_logging": false,
+    "enable_span_tracing": false,
+    "log_level": "error"
+  }
+}

@@ -20,6 +20,7 @@ import { applyPatterns, type Pattern } from '../bootstrap';
 import type { PatternLibrary } from '../pattern-library';
 import { isValidEntity, correctEntityType } from '../entity-filter';
 import { loadRelationPatterns, type PatternsMode } from './load-relations';
+import { getInitialContextWindowSize, getCorefContextWindowSize, getGenericTitles, getRelationExtractionConfig } from '../../config/extraction-config';
 
 // 🛡️ PRECISION DEFENSE SYSTEM - LAYER 1 & 3
 import { filterLowQualityEntities, isEntityFilterEnabled, getFilterConfig, getFilterStats } from '../entity-quality-filter';
@@ -87,10 +88,10 @@ export async function extractFromSegments(
   const seenRelations = new Set<string>(); // key: "subj_id:pred:obj_id"
 
   for (const seg of segs) {
-    // Build context window (1500 chars before/after for complex narratives)
-    // Expanded from 200 to handle multi-paragraph entity extraction with full context
-    const contextBefore = fullText.slice(Math.max(0, seg.start - 1500), seg.start);
-    const contextAfter = fullText.slice(seg.end, Math.min(fullText.length, seg.end + 1500));
+    // Build context window using config-driven window sizes
+    const contextWindowConfig = getInitialContextWindowSize();
+    const contextBefore = fullText.slice(Math.max(0, seg.start - contextWindowConfig.before), seg.start);
+    const contextAfter = fullText.slice(seg.end, Math.min(fullText.length, seg.end + contextWindowConfig.after));
     const window = contextBefore + seg.text + contextAfter;
 
     // Compute offset adjustment: where seg.text starts in the window
@@ -168,9 +169,9 @@ export async function extractFromSegments(
         const canonicalLower = canonicalText.toLowerCase();
         const canonicalWords = canonicalLower.split(/\s+/);
 
-        // Filter out generic title words for overlap comparison
+        // Filter out generic title words for overlap comparison using config
         // This prevents "Professor McGonagall" from merging with "Professor Snape"
-        const genericTitles = new Set(['mr', 'mrs', 'miss', 'ms', 'dr', 'doctor', 'prof', 'professor', 'sir', 'madam', 'lord', 'lady']);
+        const genericTitles = getGenericTitles();
         const meaningfulWords = canonicalWords.filter(w => !genericTitles.has(w));
 
         for (const [key, ent] of entityMap.entries()) {
@@ -484,13 +485,13 @@ export async function extractFromSegments(
 
   // 6. Re-extract relations with coref-enhanced entity spans
   // This allows "He studied" to find "He" as an entity mention
-  // Use LARGE context window (±2500 chars) for complex multi-paragraph narratives
+  // Use LARGE context window for complex multi-paragraph narratives from config
   // This ensures we capture long-distance relationships and coreference chains
-  const contextWindowSize = 2500;  // Increased from 1000 to exceed Stage 3 expectations
+  const corefContextWindowConfig = getInitialContextWindowSize(); // Use initial extraction window for coref pass
   const corefRelations: Relation[] = [];
   for (const seg of segs) {
-    const contextBefore = fullText.slice(Math.max(0, seg.start - contextWindowSize), seg.start);
-    const contextAfter = fullText.slice(seg.end, Math.min(fullText.length, seg.end + contextWindowSize));
+    const contextBefore = fullText.slice(Math.max(0, seg.start - corefContextWindowConfig.before), seg.start);
+    const contextAfter = fullText.slice(seg.end, Math.min(fullText.length, seg.end + corefContextWindowConfig.after));
     const window = contextBefore + seg.text + contextAfter;
     const segOffsetInWindow = contextBefore.length;
 
@@ -755,9 +756,11 @@ export async function extractFromSegments(
           hasCoordination = true;
         }
 
-        // If they're very close (within 50 chars), likely coordination
+        // If they're very close (within configured distance), likely coordination
+        const relationConfig = getRelationExtractionConfig();
+        const maxDistanceChars = relationConfig.coordination_detection.max_distance_chars;
         const distance = Math.abs(currPosition - prevPosition);
-        if (distance < 50) {
+        if (distance < maxDistanceChars) {
           hasCoordination = true;
         }
       }
