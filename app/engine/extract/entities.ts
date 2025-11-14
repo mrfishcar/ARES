@@ -53,14 +53,6 @@ function validateSpan(
   const normalizedExtracted = normalizeName(extracted);
   const normalizedExpected = normalizeName(span.text);
 
-  // DEBUG: Log professor validation
-  if (span.text.toLowerCase().includes('professor')) {
-    console.log(`[VALIDATE-DETAIL] Span: "${span.text}" at [${span.start}, ${span.end}]`);
-    console.log(`  Extracted: "${extracted}"`);
-    console.log(`  Normalized expected: "${normalizedExpected}"`);
-    console.log(`  Normalized extracted: "${normalizedExtracted}"`);
-    console.log(`  Match: ${normalizedExtracted === normalizedExpected}`);
-  }
 
   // Check if normalized versions match
   let valid = normalizedExtracted === normalizedExpected;
@@ -80,9 +72,6 @@ function validateSpan(
       const wordCountDiff = normalizedExtractedWords.length - normalizedExpectedWords.length;
       if (wordCountDiff > 1) {
         // Too many extra words - likely corruption
-        if (span.text.toLowerCase().includes('professor')) {
-          console.log(`  FAILED: Word count diff > 1: ${wordCountDiff}`);
-        }
         valid = false;
         reason = "Too many extra words";
       } else if (wordCountDiff === 1) {
@@ -91,9 +80,6 @@ function validateSpan(
         const pronouns = ['he', 'she', 'it', 'they', 'i', 'you', 'we', 'the', 'a', 'an'];
         if (pronouns.includes(extraWord)) {
           // Extracted text includes a pronoun after the entity - this is corruption
-          if (span.text.toLowerCase().includes('professor')) {
-            console.log(`  FAILED: Extra word is pronoun: "${extraWord}"`);
-          }
           valid = false;
           reason = "Pronoun after entity";
         }
@@ -104,9 +90,6 @@ function validateSpan(
     // Pattern 1: Ends with ". [Word]" (entity spans past sentence boundary)
     if (/\.\s+[A-Z][a-z]+\s*$/.test(extracted)) {
       // Example: "Slytherin. He" or "Granger. The"
-      if (span.text.toLowerCase().includes('professor')) {
-        console.log(`  FAILED: Ends with sentence boundary pattern`);
-      }
       valid = false;
       reason = "Ends with sentence boundary";
     }
@@ -123,9 +106,6 @@ function validateSpan(
         const isValidPrefix = /^(Mc|Mac|O'|Fitz|De|Van|Von|Di|Da)/i.test(word);
         if (!isValidPrefix) {
           // Found lowercase followed by uppercase without valid prefix - likely corruption
-          if (span.text.toLowerCase().includes('professor')) {
-            console.log(`  FAILED: Word "${word}" has lowercase followed by uppercase (not a valid prefix)`);
-          }
           valid = false;
           reason = "Word fragment corruption";
           break;
@@ -1193,11 +1173,6 @@ function fallbackNames(text: string): Array<{ text: string; type: EntityType; st
     let value = m[1];
     let endIndex = m.index + value.length;
 
-    // DEBUG: Log all matches that contain "Professor"
-    if (value.toLowerCase().includes('professor')) {
-      console.log(`[FALLBACK] Matched: "${value}" at position ${m.index}`);
-    }
-
     const extend = () => {
       const after = text.slice(endIndex);
 
@@ -1283,11 +1258,6 @@ function fallbackNames(text: string): Array<{ text: string; type: EntityType; st
     // Classify using context and whitelists
     let type = classifyName(text, value, m.index, rawEnd);
 
-    // DEBUG: Log Professor classification
-    if (value.toLowerCase().includes('professor')) {
-      console.log(`[FALLBACK] Classified "${value}" as: ${type || 'NULL (filtered)'}`);
-    }
-
     if (!type) continue;
 
     if (type === 'ORG' && /\bHouse$/i.test(value)) {
@@ -1295,11 +1265,6 @@ function fallbackNames(text: string): Array<{ text: string; type: EntityType; st
     }
     const normalized = normalizeName(value);
     const entityType = refineEntityType(type, normalized);
-
-    // DEBUG: Log Professor normalization
-    if (value.toLowerCase().includes('professor')) {
-      console.log(`[FALLBACK] Normalized "${value}" to "${normalized}" (type: ${entityType})`);
-    }
 
     spans.push({
       text: normalized,
@@ -1391,34 +1356,16 @@ function dedupe<T extends { text: string; type: EntityType; start: number; end: 
   const seenCanonical = new Set<string>();
   const out: T[] = [];
 
-  // DEBUG: Check for Professor
-  const professorSpans = spans.filter(s => s.text.toLowerCase().includes('professor'));
-  if (professorSpans.length > 0) {
-    console.log(`[DEDUPE] Found ${professorSpans.length} spans with 'professor':`);
-    for (const span of professorSpans) {
-      console.log(`  - "${span.text}" (${span.type}) at [${span.start}, ${span.end}]`);
-    }
-  }
-
   for (const s of spans) {
     // Dedupe by canonical form (type + normalized text)
     // Since spans are ordered as [...dep, ...ner, ...fb], the first occurrence (most reliable) wins
     const canonicalKey = `${s.type}:${s.text.toLowerCase()}`;
     if (seenCanonical.has(canonicalKey)) {
-      if (s.text.toLowerCase().includes('professor')) {
-        console.log(`[DEDUPE] SKIPPING duplicate: "${s.text}" (${s.type})`);
-      }
       continue;
     }
 
     seenCanonical.add(canonicalKey);
     out.push(s);
-  }
-
-  // DEBUG: Check output
-  const professorOut = out.filter(s => s.text.toLowerCase().includes('professor'));
-  if (professorOut.length > 0) {
-    console.log(`[DEDUPE] Output has ${professorOut.length} spans with 'professor'`);
   }
 
   return out;
@@ -1502,10 +1449,6 @@ export async function extractEntities(text: string): Promise<{
   const validated = deduped.filter(span => {
     const validation = validateSpan(text, span, "pre-entity-creation");
     if (!validation.valid) {
-      // DEBUG: Log professor spans that fail validation
-      if (span.text.toLowerCase().includes('professor')) {
-        console.log(`[VALIDATION] REJECTING span "${span.text}" (${span.type}): ${validation.reason}`);
-      }
       // Skip corrupted spans to prevent bad data in registries
       return false;
     }
@@ -1648,11 +1591,6 @@ const chooseCanonical = (names: Set<string>): string => {
     const key = `${span.type}:${textLower}`;
     let matched = false;
 
-    // DEBUG: Log professor spans
-    if (textLower.includes('professor')) {
-      console.log(`[BUILD-ENTITIES] Processing span: "${span.text}" (${span.type})`);
-    }
-
     for (const entry of entries) {
       if (entry.entity.type !== span.type) continue;
 
@@ -1720,11 +1658,6 @@ const chooseCanonical = (names: Set<string>): string => {
         sources: new Set([span.source]) // Track extraction source
       };
       entries.push(entry);
-
-      // DEBUG: Log professor entity creation
-      if (textLower.includes('professor')) {
-        console.log(`[BUILD-ENTITIES] Created NEW entity: "${capitalizedText}" (${span.type})`);
-      }
     }
   }
 
@@ -1753,23 +1686,10 @@ const chooseCanonical = (names: Set<string>): string => {
   for (const entry of entries) {
     const key = entry.entity.canonical.toLowerCase();
 
-    // DEBUG: Log professor entities being merged
-    if (key.includes('professor')) {
-      console.log(`[MERGE] Processing entity: "${entry.entity.canonical}"`);
-    }
-
     const existing = mergedMap.get(key);
     if (!existing) {
       mergedMap.set(key, entry);
-      if (key.includes('professor')) {
-        console.log(`[MERGE]   Added as NEW entry`);
-      }
       continue;
-    }
-
-    // DEBUG: Log merge
-    if (key.includes('professor')) {
-      console.log(`[MERGE]   Merging with existing: "${existing.entity.canonical}"`);
     }
 
     const existingPriority = typePriority(existing.entity.type, existing.entity.canonical);
@@ -1798,15 +1718,6 @@ const chooseCanonical = (names: Set<string>): string => {
   }
 
   const mergedEntries = Array.from(mergedMap.values());
-
-  // DEBUG: Log professor entities before filtering
-  const professorsMerged = mergedEntries.filter(e => e.entity.canonical.toLowerCase().includes('professor'));
-  if (professorsMerged.length > 0) {
-    console.log(`[FINAL-FILTER] Merged entries with 'professor': ${professorsMerged.length}`);
-    for (const entry of professorsMerged) {
-      console.log(`  - "${entry.entity.canonical}" (aliases: [${entry.entity.aliases.join(', ')}])`);
-    }
-  }
 
   const finalEntries = mergedEntries.filter(entry => {
     if (STOP.has(entry.entity.canonical)) return false;
@@ -1838,11 +1749,6 @@ const chooseCanonical = (names: Set<string>): string => {
           return alias.split(/\s+/).length > 1 && !GENERIC_TITLES.has(aliasLower);
         });
         if (!hasSpecificAlias) {
-          // DEBUG
-          if (canonicalLower.includes('professor')) {
-            console.log(`[FILTER-GENERIC] REMOVING entity "${entry.entity.canonical}" (GENERIC_TITLE without specific alias)`);
-            console.log(`  Aliases: [${entry.entity.aliases.join(', ')}]`);
-          }
           return false;
         }
       }
@@ -1864,13 +1770,6 @@ const chooseCanonical = (names: Set<string>): string => {
       return otherScore.informative >= score.informative;
     });
   });
-
-  // DEBUG: Log professor entities after filtering
-  const professorsFinal = finalEntries.filter(e => e.entity.canonical.toLowerCase().includes('professor'));
-  if (professorsMerged.length > professorsFinal.length) {
-    console.log(`[FINAL-FILTER] Lost ${professorsMerged.length - professorsFinal.length} professor entities in filtering!`);
-    console.log(`  Final entities: ${professorsFinal.map(e => `"${e.entity.canonical}"`).join(', ')}`);
-  }
 
   // Phase E1: Apply confidence-based filtering
   // Convert EntityCluster for confidence scoring
@@ -2068,7 +1967,7 @@ const chooseCanonical = (names: Set<string>): string => {
     { regex: /\b\d{1,2}\s+(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}\b/gi, format: 'day-month-year' },
     { regex: /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*\s+\d{1,2},?\s+\d{4}\b/gi, format: 'abbrev-month' },
     { regex: /\b\d{4}-\d{2}-\d{2}\b/g, format: 'ISO' },  // 2024-01-15
-    { regex: /\b\d{4}\b/g, format: 'year-only' },  // Just year (e.g., "in 3019")
+    { regex: /\b(1[89]\d{2}|20[0-2]\d)\b/g, format: 'year-only' },  // Years 1800-2029 (prevents "1234" false positives)
   ];
 
   for (const { regex, format } of datePatterns) {
@@ -2095,7 +1994,6 @@ const chooseCanonical = (names: Set<string>): string => {
         });
 
         spans.push({ entity_id: entityId, start, end });
-        console.log(`[PATTERN-ENTITIES] Extracted DATE: "${dateText}" (${format})`);
       }
     }
   }
@@ -2130,7 +2028,6 @@ const chooseCanonical = (names: Set<string>): string => {
         });
 
         spans.push({ entity_id: entityId, start, end });
-        console.log(`[PATTERN-ENTITIES] Extracted PRODUCT: "${productText}"`);
       }
     }
   }
@@ -2164,17 +2061,12 @@ const chooseCanonical = (names: Set<string>): string => {
         });
 
         spans.push({ entity_id: entityId, start, end });
-        console.log(`[PATTERN-ENTITIES] Extracted ORG acronym: "${acronym}"`);
       }
     }
   }
 
   // Add pattern entities to main entities array
   entities.push(...patternEntities);
-
-  if (patternEntities.length > 0) {
-    console.log(`[PATTERN-ENTITIES] Added ${patternEntities.length} pattern-based entities`);
-  }
 
   // Step 1: Pattern-based alias extraction for explicit patterns
   // Handles: "X called Y", "X nicknamed Y", "X also known as Y", etc.
@@ -2223,21 +2115,14 @@ const chooseCanonical = (names: Set<string>): string => {
 
         entityByCanonical.delete(nickname.toLowerCase());
         aliasLinksFound++;
-
-        console.log(`[EXTRACT-ENTITIES] Merged "${nickname}" into "${fullName}" as alias`);
       } else if (fullEntity && !nickEntity) {
         // Nickname not extracted as separate entity, just add as alias
         if (!fullEntity.aliases.includes(nickname)) {
           fullEntity.aliases.push(nickname);
           aliasLinksFound++;
-          console.log(`[EXTRACT-ENTITIES] Added "${nickname}" as alias to "${fullName}"`);
         }
       }
     }
-  }
-
-  if (aliasLinksFound > 0) {
-    console.log(`[EXTRACT-ENTITIES] Found ${aliasLinksFound} explicit alias patterns`);
   }
 
   // Step 2: Run coreference resolution for pronouns and descriptive references
@@ -2267,12 +2152,8 @@ const chooseCanonical = (names: Set<string>): string => {
       entity.aliases = Array.from(aliasSet);
     }
 
-    if (corefLinks.links.length > 0) {
-      console.log(`[EXTRACT-ENTITIES] Resolved ${corefLinks.links.length} coreference links`);
-    }
   } catch (error) {
     // If coreference resolution fails, continue without it
-    console.warn(`[EXTRACT-ENTITIES] Coreference resolution failed:`, error);
   }
 
   return { entities, spans };

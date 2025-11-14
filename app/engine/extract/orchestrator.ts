@@ -63,8 +63,6 @@ export async function extractFromSegments(
   const validation = validateLLMConfig(resolvedConfig);
 
   if (resolvedConfig.enabled && !validation.valid) {
-    console.warn(`[ORCHESTRATOR] LLM config invalid: ${validation.error}`);
-    console.warn(`[ORCHESTRATOR] Falling back to spaCy-only extraction`);
     resolvedConfig.enabled = false;
   }
   // 1. Segment the document
@@ -175,12 +173,6 @@ export async function extractFromSegments(
         const genericTitles = new Set(['mr', 'mrs', 'miss', 'ms', 'dr', 'doctor', 'prof', 'professor', 'sir', 'madam', 'lord', 'lady']);
         const meaningfulWords = canonicalWords.filter(w => !genericTitles.has(w));
 
-        // DEBUG: Log professor name overlap checks
-        const isProf = canonicalLower.includes('professor');
-        if (isProf) {
-          console.log(`[NAME-OVERLAP] Checking: "${canonicalText}" for overlaps (meaningful words: [${meaningfulWords.join(', ')}])`);
-        }
-
         for (const [key, ent] of entityMap.entries()) {
           if (!key.startsWith('PERSON::')) continue;
 
@@ -198,18 +190,9 @@ export async function extractFromSegments(
             );
 
           if (isSubset) {
-            if (isProf || existingLower.includes('professor')) {
-              console.log(`[NAME-OVERLAP]   OVERLAP FOUND with "${ent.canonical}"`);
-              console.log(`[NAME-OVERLAP]   canonicalWords: [${canonicalWords.join(', ')}]`);
-              console.log(`[NAME-OVERLAP]   existingWords: [${existingWords.join(', ')}]`);
-            }
-
             // Merge into the longer name (more specific)
             if (canonicalWords.length > existingWords.length) {
               // Current name is longer - update the existing entity
-              if (isProf || existingLower.includes('professor')) {
-                console.log(`[NAME-OVERLAP]   MERGING: Replacing "${ent.canonical}" with "${canonicalText}"`);
-              }
               ent.canonical = canonicalText;
               if (!ent.aliases.includes(existingLower)) {
                 ent.aliases.push(existingLower);
@@ -217,9 +200,6 @@ export async function extractFromSegments(
               existingEntity = ent;
             } else {
               // Existing name is longer - use it as is
-              if (isProf || existingLower.includes('professor')) {
-                console.log(`[NAME-OVERLAP]   MERGING: Keeping existing "${ent.canonical}", skipping "${canonicalText}"`);
-              }
               existingEntity = ent;
             }
             break;
@@ -270,11 +250,6 @@ export async function extractFromSegments(
         }
         entityMap.set(entityKey, correctedEntity);
         allEntities.push(correctedEntity);
-
-        // DEBUG: Log professor entities being added
-        if (canonicalText.toLowerCase().includes('professor')) {
-          console.log(`[ORCHESTRATOR-ADD] Added entity: "${canonicalText}" (${correctedType})`);
-        }
 
         for (const span of segmentSpans) {
           allSpans.push({
@@ -332,16 +307,12 @@ export async function extractFromSegments(
   // 3.5. Apply pattern-based extraction (if pattern library provided)
   // Patterns are learned from bootstrapping and provide zero-cost entity extraction
   if (patternLibrary && patternLibrary.metadata.total_patterns > 0) {
-    console.log(`[ORCHESTRATOR] Applying ${patternLibrary.metadata.total_patterns} patterns from library`);
-
     // Collect all patterns from all entity types
     const allPatterns: Pattern[] = Object.values(patternLibrary.entityTypes)
       .flatMap(ps => ps.patterns);
 
     // Apply patterns to full text (more efficient than per-segment)
     const patternMatches = applyPatterns([fullText], allPatterns);
-
-    console.log(`[ORCHESTRATOR] Pattern extraction found ${patternMatches.length} candidates`);
 
     // Convert pattern matches to entities
     for (const match of patternMatches) {
@@ -392,8 +363,6 @@ export async function extractFromSegments(
         }
       }
     }
-
-    console.log(`[ORCHESTRATOR] Pattern extraction added ${patternMatches.length} entity mentions`);
   }
 
   // 🛡️ LAYER 1: Entity Quality Pre-Filter
@@ -401,33 +370,10 @@ export async function extractFromSegments(
   // Expected impact: +5-10% precision
   const preFilterCount = allEntities.length;
 
-  // DEBUG: Log professor entities before quality filter
-  const professorsBeforeFilter = allEntities.filter(e => e.canonical.toLowerCase().includes('professor'));
-  if (professorsBeforeFilter.length > 0) {
-    console.log(`[PRE-QUALITY-FILTER] Professor entities: ${professorsBeforeFilter.length}`);
-    for (const ent of professorsBeforeFilter) {
-      console.log(`  - "${ent.canonical}" (${ent.type})`);
-    }
-  }
-
   if (isEntityFilterEnabled()) {
     const config = getFilterConfig();
     const filteredEntities = filterLowQualityEntities(allEntities, config);
     const stats = getFilterStats(allEntities, filteredEntities, config);
-
-    console.log(`[PRECISION-DEFENSE] 🛡️ Layer 1: Entity Quality Filter`);
-    console.log(`  Original entities: ${stats.original}`);
-    console.log(`  Filtered entities: ${stats.filtered}`);
-    console.log(`  Removed: ${stats.removed} (${(stats.removalRate * 100).toFixed(1)}%)`);
-    console.log(`  Removal reasons:`);
-    console.log(`    - Low confidence: ${stats.removedByReason.lowConfidence}`);
-    console.log(`    - Too short: ${stats.removedByReason.tooShort}`);
-    console.log(`    - Blocked token: ${stats.removedByReason.blockedToken}`);
-    console.log(`    - No capitalization: ${stats.removedByReason.noCapitalization}`);
-    console.log(`    - Invalid characters: ${stats.removedByReason.invalidCharacters}`);
-    console.log(`    - Invalid date: ${stats.removedByReason.invalidDate}`);
-    console.log(`    - Too generic: ${stats.removedByReason.tooGeneric}`);
-    console.log(`    - Strict mode: ${stats.removedByReason.strictMode}`);
 
     // Update allEntities array
     allEntities.length = 0;
@@ -452,9 +398,6 @@ export async function extractFromSegments(
       filteredIds.has(rel.subj) && filteredIds.has(rel.obj)
     );
     const removedRelations = allRelations.length - validRelations.length;
-    if (removedRelations > 0) {
-      console.log(`[PRECISION-DEFENSE] Removed ${removedRelations} relations with filtered entities`);
-    }
     allRelations.length = 0;
     allRelations.push(...validRelations);
   }
@@ -474,13 +417,6 @@ export async function extractFromSegments(
   // This will create pronoun → entity mappings that can be used by relation extraction
   // Pass profiles to enable descriptor-based resolution ("the wizard" → Gandalf)
   const corefLinks = resolveCoref(sentences, allEntities, allSpans, fullText, profiles);
-
-  // DEBUG: Log coreference links
-  console.log(`[COREF] Found ${corefLinks.links.length} coreference links`);
-  for (const link of corefLinks.links) {
-    const entity = allEntities.find(e => e.id === link.entity_id);
-    console.log(`[COREF] "${link.mention.text}" [${link.mention.start},${link.mention.end}] -> ${entity?.canonical} (${link.method}, conf=${link.confidence.toFixed(2)})`);
-  }
 
   // 5.5 NEW: Resolve deictic references ("there", "here")
   // This must happen AFTER coreference but BEFORE relation extraction
@@ -516,7 +452,6 @@ export async function extractFromSegments(
     const previousPlace = placePositions.filter(p => p.position < match.index).pop();
 
     if (previousPlace) {
-      console.log(`[DEICTIC] Resolved "there" at position ${match.index} to "${previousPlace.name}"`);
       // Replace "there" with "in LocationName" to match extraction patterns
       // This works for both "lived in Rivendell" and "studied in Hogwarts"
       deicticSpans.push({
@@ -531,10 +466,6 @@ export async function extractFromSegments(
   for (let i = deicticSpans.length - 1; i >= 0; i--) {
     const span = deicticSpans[i];
     processedText = processedText.substring(0, span.start) + span.replacement + processedText.substring(span.end);
-  }
-
-  if (deicticSpans.length > 0) {
-    console.log(`[DEICTIC] Resolved ${deicticSpans.length} deictic references`);
   }
 
   // 5. Create virtual entity spans for pronouns that were resolved
@@ -618,11 +549,8 @@ export async function extractFromSegments(
     validEntityIds.has(rel.subj) && validEntityIds.has(rel.obj)
   );
   const invalidCorefCount = corefRelations.length - validCorefRelations.length;
-  if (invalidCorefCount > 0) {
-    console.log(`[COREF] Filtered ${invalidCorefCount} relations with invalid entity IDs`);
-    corefRelations.length = 0;
-    corefRelations.push(...validCorefRelations);
-  }
+  corefRelations.length = 0;
+  corefRelations.push(...validCorefRelations);
 
   // Filter relations to suppress parent_of/child_of when married_to is present
   // Step 1: Collect all married_to relations WITH their sentence indices
@@ -697,9 +625,6 @@ export async function extractFromSegments(
       );
 
       if (marriedToForPair && marriedToForPair.confidence > 0.75) {
-        const subj = allEntities.find(e => e.id === rel.subj);
-        const obj = allEntities.find(e => e.id === rel.obj);
-        console.log(`[MAIN-FILTER] Suppressing ${rel.pred}: ${subj?.canonical} -> ${obj?.canonical} (married_to in proximity, conf ${marriedToForPair.confidence.toFixed(2)})`);
         return false;
       }
     }
@@ -711,22 +636,12 @@ export async function extractFromSegments(
   const filteredCorefRelations = corefRelations.filter(rel => {
     if ((rel.pred === 'parent_of' || rel.pred === 'child_of') &&
         hasMarriedToInProximity(rel, 2)) {
-
-      const subj = allEntities.find(e => e.id === rel.subj);
-      const obj = allEntities.find(e => e.id === rel.obj);
-      console.log(`[COREF-FILTER] Suppressing ${rel.pred}: ${subj?.canonical} -> ${obj?.canonical} (married_to in proximity)`);
       return false;
     }
     return true;
   });
 
   // Combine filtered main relations with filtered coref relations
-  console.log(`[COREF] Found ${corefRelations.length} coref-enhanced relations (filtered to ${filteredCorefRelations.length})`);
-  for (const rel of filteredCorefRelations) {
-    const subj = allEntities.find(e => e.id === rel.subj);
-    const obj = allEntities.find(e => e.id === rel.obj);
-    console.log(`[COREF] ${subj?.canonical} --[${rel.pred}]--> ${obj?.canonical}`);
-  }
   const combinedRelations = [...filteredAllRelations, ...filteredCorefRelations];
 
   // 7. Extract narrative relations (pattern-based extraction)
@@ -746,10 +661,6 @@ export async function extractFromSegments(
   const filteredNarrativeRelations = narrativeRelations.filter(rel => {
     if ((rel.pred === 'parent_of' || rel.pred === 'child_of') &&
         hasMarriedToInProximity(rel, 2)) {
-
-      const subj = allEntities.find(e => e.id === rel.subj);
-      const obj = allEntities.find(e => e.id === rel.obj);
-      console.log(`[NARRATIVE-FILTER] Suppressing ${rel.pred}: ${subj?.canonical} -> ${obj?.canonical} (married_to in proximity)`);
       return false;
     }
     return true;
@@ -793,7 +704,6 @@ export async function extractFromSegments(
 
     // Skip relations with invalid/empty subjects (they break appositive detection)
     if (!subjectCanonical || !subjEntity) {
-      console.log(`[APPOS-FILTER] Skipping relation with empty subject (pred=${rel.pred}, obj=${rel.obj})`);
       continue;
     }
 
@@ -814,15 +724,6 @@ export async function extractFromSegments(
       // vs appositive (one name inside another, like "Aragorn, son of Arathorn")
       group.sort((a, b) => a.position - b.position);
 
-      // Debug: show what the object entity is
-      const objEntity = allEntities.find(e => e.id === group[0].rel.obj);
-      const objCanonical = objEntity?.canonical || 'UNKNOWN';
-
-      console.log(`[APPOS-FILTER] Checking ${predObjKey} with ${group.length} subjects (obj="${objCanonical}"):`);
-      for (const item of group) {
-        console.log(`  - ${item.subjectCanonical} at position ${item.position}`);
-      }
-
       // Check if this is coordination (multiple entities) vs appositive (one entity with multiple names)
       // Strategy: Look for coordination markers ("and", ",") OR substring appositives
       let hasAppositive = false;
@@ -836,13 +737,11 @@ export async function extractFromSegments(
 
         // Skip exact duplicates (same entity at same position - these will be deduped later)
         if (prevCanonical === currCanonical && prevPosition === currPosition) {
-          console.log(`[APPOS-FILTER]   ${currCanonical} at ${currPosition} is duplicate - SKIP`);
           continue;
         }
 
         // If one is a substring of the other AND at different positions, it's likely appositive
         if (prevCanonical !== currCanonical && (prevCanonical.includes(currCanonical) || currCanonical.includes(prevCanonical))) {
-          console.log(`[APPOS-FILTER]   ${currCanonical} substring of ${prevCanonical} - APPOSITIVE`);
           hasAppositive = true;
         }
 
@@ -853,13 +752,11 @@ export async function extractFromSegments(
         const hasCoordinationMarker = /\b(and|or)\b|,/.test(textBetween);
 
         if (hasCoordinationMarker) {
-          console.log(`[APPOS-FILTER]   Found coordination marker between "${prevCanonical}" and "${currCanonical}"`);
           hasCoordination = true;
         }
 
         // If they're very close (within 50 chars), likely coordination
         const distance = Math.abs(currPosition - prevPosition);
-        console.log(`[APPOS-FILTER]   Distance between ${prevCanonical} and ${currCanonical}: ${distance}`);
         if (distance < 50) {
           hasCoordination = true;
         }
@@ -869,17 +766,13 @@ export async function extractFromSegments(
       // If we found appositives and NO coordination, it's appositive
       const isCoordination = hasCoordination || !hasAppositive;
 
-      console.log(`[APPOS-FILTER]   isCoordination: ${isCoordination}`);
-
       if (isCoordination) {
         // Keep all coordinated subjects
-        console.log(`[APPOS-FILTER]   Keeping all ${group.length} subjects`);
         for (const item of group) {
           appositiveFilteredRelations.push(item.rel);
         }
       } else {
         // Appositive case - keep only the first subject
-        console.log(`[APPOS-FILTER]   Appositive detected - keeping only first subject`);
         appositiveFilteredRelations.push(group[0].rel);
       }
     }
@@ -897,14 +790,6 @@ export async function extractFromSegments(
     const preDedupeCount = contextFilteredRelations.length;
     uniqueRelations = deduplicateRelations(contextFilteredRelations);
     const stats = getDeduplicationStats(contextFilteredRelations, uniqueRelations);
-
-    console.log(`[PRECISION-DEFENSE] 🛡️ Layer 3: Relation Deduplication`);
-    console.log(`  Original relations: ${stats.original}`);
-    console.log(`  Deduplicated relations: ${stats.deduplicated}`);
-    console.log(`  Removed duplicates: ${stats.removed} (${(stats.removalRate * 100).toFixed(1)}%)`);
-    console.log(`  Duplicate groups: ${stats.duplicateGroups}`);
-    console.log(`  Avg group size: ${stats.avgGroupSize.toFixed(1)}`);
-    console.log(`  Max group size: ${stats.maxGroupSize}`);
   } else {
     // Fallback to simple deduplication
     const uniqueMap = new Map<string, Relation>();
@@ -999,12 +884,6 @@ export async function extractFromSegments(
   if (confidenceFilterEnabled) {
     const preConfidenceCount = filteredRelations.length;
     filteredRelations = filteredRelations.filter(rel => rel.confidence >= minConfidence);
-
-    console.log(`[PRECISION-DEFENSE] 🛡️ Layer 3: Confidence Threshold Filter`);
-    console.log(`  Threshold: ${minConfidence}`);
-    console.log(`  Before: ${preConfidenceCount} relations`);
-    console.log(`  After: ${filteredRelations.length} relations`);
-    console.log(`  Removed: ${preConfidenceCount - filteredRelations.length} (${((preConfidenceCount - filteredRelations.length) / preConfidenceCount * 100).toFixed(1)}%)`);
   }
 
   const fictionEntities = extractFictionEntities(fullText);
@@ -1033,8 +912,6 @@ export async function extractFromSegments(
       // Map to existing entity
       entity.eid = resolution.eid;
       entity.aid = resolution.aid;
-
-      console.log(`[ORCHESTRATOR] Resolved "${entity.canonical}" → EID ${resolution.eid} (method: ${resolution.method}, confidence: ${resolution.confidence.toFixed(2)})`);
 
       // Phase 4: Check if sense disambiguation is needed
       // If existing entity has different sense, assign new SP
@@ -1075,8 +952,6 @@ export async function extractFromSegments(
 
               // Register this sense
               senseRegistry.register(entity.canonical, newEID, entity.type, newSP, profile);
-
-              console.log(`[ORCHESTRATOR] Disambiguated "${entity.canonical}" → EID ${newEID}, SP ${JSON.stringify(newSP)} (${discrimination.reason})`);
             }
           }
         }
@@ -1110,8 +985,6 @@ export async function extractFromSegments(
           const newSP = senseRegistry.getNextSP(entity.canonical, entity.type);
           entity.sp = newSP;
           senseRegistry.register(entity.canonical, entity.eid, entity.type, newSP, profile);
-
-          console.log(`[ORCHESTRATOR] New sense for "${entity.canonical}" → EID ${entity.eid}, SP ${JSON.stringify(newSP)}`);
         }
       }
     }
@@ -1119,8 +992,6 @@ export async function extractFromSegments(
 
   // Populate entity.aliases from coreference links and alias registry
   // This makes aliases visible to tests and downstream consumers
-  console.log(`[ORCHESTRATOR] Populating entity aliases from coref links and alias registry`);
-
   for (const entity of filteredEntities) {
     const aliasSet = new Set<string>();
 
@@ -1154,10 +1025,6 @@ export async function extractFromSegments(
 
     // Update entity.aliases with unique values
     entity.aliases = Array.from(aliasSet);
-
-    if (entity.aliases.length > 0) {
-      console.log(`[ORCHESTRATOR] Entity "${entity.canonical}" has ${entity.aliases.length} aliases: [${entity.aliases.slice(0, 3).join(', ')}${entity.aliases.length > 3 ? '...' : ''}]`);
-    }
   }
 
   // HERT Phase 2: Generate HERTs for entity occurrences (optional)
@@ -1200,7 +1067,6 @@ export async function extractFromSegments(
     if (options.autoSaveHERTs && herts.length > 0) {
       const { hertStore } = await import('../../storage/hert-store');
       hertStore.addMany(herts);
-      console.log(`[ORCHESTRATOR] Saved ${herts.length} HERTs to store`);
     }
   }
 
