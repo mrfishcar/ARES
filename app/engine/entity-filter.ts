@@ -150,7 +150,14 @@ export function isValidEntity(
   canonical: string,
   entityType: EntityType
 ): boolean {
+  // DEBUG: Log professor entities
+  const isProf = canonical.toLowerCase().includes('professor');
+  if (isProf) {
+    console.log(`[isValidEntity] Checking: "${canonical}" (${entityType})`);
+  }
+
   if (!canonical || canonical.trim() === '') {
+    if (isProf) console.log(`  REJECT: empty canonical`);
     return false;
   }
 
@@ -158,19 +165,24 @@ export function isValidEntity(
 
   // 1. Filter pronouns
   if (PRONOUNS.has(normalized)) {
+    if (isProf) console.log(`  REJECT: is pronoun`);
     return false;
   }
 
   // 2. Filter common words
   if (COMMON_WORDS.has(normalized)) {
+    if (isProf) console.log(`  REJECT: is common word`);
     return false;
   }
 
   // 3. Filter type-specific blocklist
   const typeBlocklist = TYPE_SPECIFIC_BLOCKLIST[entityType];
   if (typeBlocklist && typeBlocklist.has(normalized)) {
+    if (isProf) console.log(`  REJECT: in type blocklist`);
     return false;
   }
+
+  if (isProf) console.log(`  PASS`);
 
   // 4. Check bad patterns (except for DATE/ITEM entities which can be numeric)
   // DATE entities like "3019" should not be filtered by "no letters" pattern

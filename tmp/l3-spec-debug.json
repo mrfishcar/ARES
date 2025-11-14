@@ -59,7 +59,7 @@
     {
       "id": "3.9",
       "entityPrecision": 1,
-      "entityRecall": 0.5,
+      "entityRecall": 1,
       "relationPrecision": 0,
       "relationRecall": 0
     },
@@ -247,12 +247,11 @@
       ],
       "extracted": [
         "ORG::hogwarts",
-        "ORG::gryffindor"
-      ],
-      "missing": [
+        "ORG::gryffindor",
         "PERSON::professor mcgonagall",
         "PERSON::professor snape"
       ],
+      "missing": [],
       "extra": []
     },
     {

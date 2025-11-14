@@ -170,22 +170,46 @@ export async function extractFromSegments(
         const canonicalLower = canonicalText.toLowerCase();
         const canonicalWords = canonicalLower.split(/\s+/);
 
+        // Filter out generic title words for overlap comparison
+        // This prevents "Professor McGonagall" from merging with "Professor Snape"
+        const genericTitles = new Set(['mr', 'mrs', 'miss', 'ms', 'dr', 'doctor', 'prof', 'professor', 'sir', 'madam', 'lord', 'lady']);
+        const meaningfulWords = canonicalWords.filter(w => !genericTitles.has(w));
+
+        // DEBUG: Log professor name overlap checks
+        const isProf = canonicalLower.includes('professor');
+        if (isProf) {
+          console.log(`[NAME-OVERLAP] Checking: "${canonicalText}" for overlaps (meaningful words: [${meaningfulWords.join(', ')}])`);
+        }
+
         for (const [key, ent] of entityMap.entries()) {
           if (!key.startsWith('PERSON::')) continue;
 
           const existingLower = ent.canonical.toLowerCase();
           const existingWords = existingLower.split(/\s+/);
+          const existingMeaningfulWords = existingWords.filter(w => !genericTitles.has(w));
 
           // Check if one is a subset of the other (same first/last name)
           // "Sarah" ⊂ "Sarah Chen" or "Sarah Chen" ⊃ "Sarah"
+          // BUT: Only compare MEANINGFUL words, not generic titles
           const isSubset =
-            (canonicalWords.length < existingWords.length && existingWords.some(w => canonicalWords.includes(w))) ||
-            (existingWords.length < canonicalWords.length && canonicalWords.some(w => existingWords.includes(w)));
+            meaningfulWords.length > 0 && existingMeaningfulWords.length > 0 && (
+              (meaningfulWords.length < existingMeaningfulWords.length && existingMeaningfulWords.some(w => meaningfulWords.includes(w))) ||
+              (existingMeaningfulWords.length < meaningfulWords.length && meaningfulWords.some(w => existingMeaningfulWords.includes(w)))
+            );
 
           if (isSubset) {
+            if (isProf || existingLower.includes('professor')) {
+              console.log(`[NAME-OVERLAP]   OVERLAP FOUND with "${ent.canonical}"`);
+              console.log(`[NAME-OVERLAP]   canonicalWords: [${canonicalWords.join(', ')}]`);
+              console.log(`[NAME-OVERLAP]   existingWords: [${existingWords.join(', ')}]`);
+            }
+
             // Merge into the longer name (more specific)
             if (canonicalWords.length > existingWords.length) {
               // Current name is longer - update the existing entity
+              if (isProf || existingLower.includes('professor')) {
+                console.log(`[NAME-OVERLAP]   MERGING: Replacing "${ent.canonical}" with "${canonicalText}"`);
+              }
               ent.canonical = canonicalText;
               if (!ent.aliases.includes(existingLower)) {
                 ent.aliases.push(existingLower);
@@ -193,6 +217,9 @@ export async function extractFromSegments(
               existingEntity = ent;
             } else {
               // Existing name is longer - use it as is
+              if (isProf || existingLower.includes('professor')) {
+                console.log(`[NAME-OVERLAP]   MERGING: Keeping existing "${ent.canonical}", skipping "${canonicalText}"`);
+              }
               existingEntity = ent;
             }
             break;
@@ -243,6 +270,11 @@ export async function extractFromSegments(
         }
         entityMap.set(entityKey, correctedEntity);
         allEntities.push(correctedEntity);
+
+        // DEBUG: Log professor entities being added
+        if (canonicalText.toLowerCase().includes('professor')) {
+          console.log(`[ORCHESTRATOR-ADD] Added entity: "${canonicalText}" (${correctedType})`);
+        }
 
         for (const span of segmentSpans) {
           allSpans.push({
@@ -368,6 +400,15 @@ export async function extractFromSegments(
   // Filter low-quality entities BEFORE relation extraction
   // Expected impact: +5-10% precision
   const preFilterCount = allEntities.length;
+
+  // DEBUG: Log professor entities before quality filter
+  const professorsBeforeFilter = allEntities.filter(e => e.canonical.toLowerCase().includes('professor'));
+  if (professorsBeforeFilter.length > 0) {
+    console.log(`[PRE-QUALITY-FILTER] Professor entities: ${professorsBeforeFilter.length}`);
+    for (const ent of professorsBeforeFilter) {
+      console.log(`  - "${ent.canonical}" (${ent.type})`);
+    }
+  }
 
   if (isEntityFilterEnabled()) {
     const config = getFilterConfig();

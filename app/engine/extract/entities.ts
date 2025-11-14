@@ -1752,10 +1752,24 @@ const chooseCanonical = (names: Set<string>): string => {
   const mergedMap = new Map<string, EntityEntry>();
   for (const entry of entries) {
     const key = entry.entity.canonical.toLowerCase();
+
+    // DEBUG: Log professor entities being merged
+    if (key.includes('professor')) {
+      console.log(`[MERGE] Processing entity: "${entry.entity.canonical}"`);
+    }
+
     const existing = mergedMap.get(key);
     if (!existing) {
       mergedMap.set(key, entry);
+      if (key.includes('professor')) {
+        console.log(`[MERGE]   Added as NEW entry`);
+      }
       continue;
+    }
+
+    // DEBUG: Log merge
+    if (key.includes('professor')) {
+      console.log(`[MERGE]   Merging with existing: "${existing.entity.canonical}"`);
     }
 
     const existingPriority = typePriority(existing.entity.type, existing.entity.canonical);
@@ -1784,6 +1798,15 @@ const chooseCanonical = (names: Set<string>): string => {
   }
 
   const mergedEntries = Array.from(mergedMap.values());
+
+  // DEBUG: Log professor entities before filtering
+  const professorsMerged = mergedEntries.filter(e => e.entity.canonical.toLowerCase().includes('professor'));
+  if (professorsMerged.length > 0) {
+    console.log(`[FINAL-FILTER] Merged entries with 'professor': ${professorsMerged.length}`);
+    for (const entry of professorsMerged) {
+      console.log(`  - "${entry.entity.canonical}" (aliases: [${entry.entity.aliases.join(', ')}])`);
+    }
+  }
 
   const finalEntries = mergedEntries.filter(entry => {
     if (STOP.has(entry.entity.canonical)) return false;
@@ -1842,8 +1865,15 @@ const chooseCanonical = (names: Set<string>): string => {
     });
   });
 
+  // DEBUG: Log professor entities after filtering
+  const professorsFinal = finalEntries.filter(e => e.entity.canonical.toLowerCase().includes('professor'));
+  if (professorsMerged.length > professorsFinal.length) {
+    console.log(`[FINAL-FILTER] Lost ${professorsMerged.length - professorsFinal.length} professor entities in filtering!`);
+    console.log(`  Final entities: ${professorsFinal.map(e => `"${e.entity.canonical}"`).join(', ')}`);
+  }
+
   // Phase E1: Apply confidence-based filtering
-  // Convert EntityEntry to EntityCluster for confidence scoring
+  // Convert EntityCluster for confidence scoring
   const clusters: EntityCluster[] = finalEntries.map(entry => {
     // Create a representative mention for the entity (required by EntityCluster)
     const firstSpan = entry.spanList[0] || { start: 0, end: 0 };
