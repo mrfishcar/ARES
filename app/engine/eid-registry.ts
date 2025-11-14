@@ -232,6 +232,18 @@ export class EIDRegistry {
       .trim()
       .replace(/\s+/g, ' ');
   }
+
+  /**
+   * Clear registry (for testing)
+   * Removes all mappings and resets to initial state
+   */
+  clear(): void {
+    this.mappings.clear();
+    this.reverseIndex.clear();
+    this.nextEID = 1;
+    this.isDirty = false;
+    console.log(`[EID-REGISTRY] Cleared all mappings`);
+  }
 }
 
 /**

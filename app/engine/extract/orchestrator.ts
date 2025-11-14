@@ -63,8 +63,6 @@ export async function extractFromSegments(
   const validation = validateLLMConfig(resolvedConfig);
 
   if (resolvedConfig.enabled && !validation.valid) {
-    console.warn(`[ORCHESTRATOR] LLM config invalid: ${validation.error}`);
-    console.warn(`[ORCHESTRATOR] Falling back to spaCy-only extraction`);
     resolvedConfig.enabled = false;
   }
   // 1. Segment the document
@@ -84,10 +82,15 @@ export async function extractFromSegments(
   // Track entity canonical names across segments to avoid duplicates
   const entityMap = new Map<string, Entity>(); // key: type::canonical_lower -> entity
 
+  // INTELLIGENT: Track seen relations to prevent duplicates from overlapping windows
+  // With large context windows (1500+ chars), same relations can be extracted multiple times
+  const seenRelations = new Set<string>(); // key: "subj_id:pred:obj_id"
+
   for (const seg of segs) {
-    // Build context window (200 chars before/after)
-    const contextBefore = fullText.slice(Math.max(0, seg.start - 200), seg.start);
-    const contextAfter = fullText.slice(seg.end, Math.min(fullText.length, seg.end + 200));
+    // Build context window (1500 chars before/after for complex narratives)
+    // Expanded from 200 to handle multi-paragraph entity extraction with full context
+    const contextBefore = fullText.slice(Math.max(0, seg.start - 1500), seg.start);
+    const contextAfter = fullText.slice(seg.end, Math.min(fullText.length, seg.end + 1500));
     const window = contextBefore + seg.text + contextAfter;
 
     // Compute offset adjustment: where seg.text starts in the window
@@ -129,11 +132,15 @@ export async function extractFromSegments(
           let start = seg.start + (s.start - segOffsetInWindow);
           let end = seg.start + (s.end - segOffsetInWindow);
 
-          while (start < end && /[^A-Za-z]/.test(fullText[start])) {
-            start++;
-          }
-          while (end < fullText.length && /[a-z'’\-]/.test(fullText[end])) {
-            end++;
+          // Only adjust boundaries for text-based entities (PERSON, PLACE, ORG, etc.)
+          // Skip boundary adjustment for DATE, ITEM entities that may contain digits/numbers
+          if (entity.type !== 'DATE' && entity.type !== 'ITEM') {
+            while (start < end && /[^A-Za-z]/.test(fullText[start])) {
+              start++;
+            }
+            while (end < fullText.length && /[a-z''\-]/.test(fullText[end])) {
+              end++;
+            }
           }
 
           return {
@@ -161,17 +168,26 @@ export async function extractFromSegments(
         const canonicalLower = canonicalText.toLowerCase();
         const canonicalWords = canonicalLower.split(/\s+/);
 
+        // Filter out generic title words for overlap comparison
+        // This prevents "Professor McGonagall" from merging with "Professor Snape"
+        const genericTitles = new Set(['mr', 'mrs', 'miss', 'ms', 'dr', 'doctor', 'prof', 'professor', 'sir', 'madam', 'lord', 'lady']);
+        const meaningfulWords = canonicalWords.filter(w => !genericTitles.has(w));
+
         for (const [key, ent] of entityMap.entries()) {
           if (!key.startsWith('PERSON::')) continue;
 
           const existingLower = ent.canonical.toLowerCase();
           const existingWords = existingLower.split(/\s+/);
+          const existingMeaningfulWords = existingWords.filter(w => !genericTitles.has(w));
 
           // Check if one is a subset of the other (same first/last name)
           // "Sarah" ⊂ "Sarah Chen" or "Sarah Chen" ⊃ "Sarah"
+          // BUT: Only compare MEANINGFUL words, not generic titles
           const isSubset =
-            (canonicalWords.length < existingWords.length && existingWords.some(w => canonicalWords.includes(w))) ||
-            (existingWords.length < canonicalWords.length && canonicalWords.some(w => existingWords.includes(w)));
+            meaningfulWords.length > 0 && existingMeaningfulWords.length > 0 && (
+              (meaningfulWords.length < existingMeaningfulWords.length && existingMeaningfulWords.some(w => meaningfulWords.includes(w))) ||
+              (existingMeaningfulWords.length < meaningfulWords.length && meaningfulWords.some(w => existingMeaningfulWords.includes(w)))
+            );
 
           if (isSubset) {
             // Merge into the longer name (more specific)
@@ -275,22 +291,28 @@ export async function extractFromSegments(
       };
     });
 
-    allRelations.push(...remappedRelations);
+    // INTELLIGENT: Only add relations we haven't seen before (prevents duplicates from overlapping windows)
+    const uniqueRelations = remappedRelations.filter(rel => {
+      const key = `${rel.subj}:${rel.pred}:${rel.obj}`;
+      if (seenRelations.has(key)) {
+        return false; // Already seen, skip
+      }
+      seenRelations.add(key);
+      return true;
+    });
+
+    allRelations.push(...uniqueRelations);
   }
 
   // 3.5. Apply pattern-based extraction (if pattern library provided)
   // Patterns are learned from bootstrapping and provide zero-cost entity extraction
   if (patternLibrary && patternLibrary.metadata.total_patterns > 0) {
-    console.log(`[ORCHESTRATOR] Applying ${patternLibrary.metadata.total_patterns} patterns from library`);
-
     // Collect all patterns from all entity types
     const allPatterns: Pattern[] = Object.values(patternLibrary.entityTypes)
       .flatMap(ps => ps.patterns);
 
     // Apply patterns to full text (more efficient than per-segment)
     const patternMatches = applyPatterns([fullText], allPatterns);
-
-    console.log(`[ORCHESTRATOR] Pattern extraction found ${patternMatches.length} candidates`);
 
     // Convert pattern matches to entities
     for (const match of patternMatches) {
@@ -341,8 +363,6 @@ export async function extractFromSegments(
         }
       }
     }
-
-    console.log(`[ORCHESTRATOR] Pattern extraction added ${patternMatches.length} entity mentions`);
   }
 
   // 🛡️ LAYER 1: Entity Quality Pre-Filter
@@ -354,20 +374,6 @@ export async function extractFromSegments(
     const config = getFilterConfig();
     const filteredEntities = filterLowQualityEntities(allEntities, config);
     const stats = getFilterStats(allEntities, filteredEntities, config);
-
-    console.log(`[PRECISION-DEFENSE] 🛡️ Layer 1: Entity Quality Filter`);
-    console.log(`  Original entities: ${stats.original}`);
-    console.log(`  Filtered entities: ${stats.filtered}`);
-    console.log(`  Removed: ${stats.removed} (${(stats.removalRate * 100).toFixed(1)}%)`);
-    console.log(`  Removal reasons:`);
-    console.log(`    - Low confidence: ${stats.removedByReason.lowConfidence}`);
-    console.log(`    - Too short: ${stats.removedByReason.tooShort}`);
-    console.log(`    - Blocked token: ${stats.removedByReason.blockedToken}`);
-    console.log(`    - No capitalization: ${stats.removedByReason.noCapitalization}`);
-    console.log(`    - Invalid characters: ${stats.removedByReason.invalidCharacters}`);
-    console.log(`    - Invalid date: ${stats.removedByReason.invalidDate}`);
-    console.log(`    - Too generic: ${stats.removedByReason.tooGeneric}`);
-    console.log(`    - Strict mode: ${stats.removedByReason.strictMode}`);
 
     // Update allEntities array
     allEntities.length = 0;
@@ -385,6 +391,15 @@ export async function extractFromSegments(
     const validSpans = allSpans.filter(s => filteredIds.has(s.entity_id));
     allSpans.length = 0;
     allSpans.push(...validSpans);
+
+    // Update allRelations to only include relations with valid entity IDs
+    // This prevents "empty subject" errors in APPOS-FILTER
+    const validRelations = allRelations.filter(rel =>
+      filteredIds.has(rel.subj) && filteredIds.has(rel.obj)
+    );
+    const removedRelations = allRelations.length - validRelations.length;
+    allRelations.length = 0;
+    allRelations.push(...validRelations);
   }
 
   // 4. Build entity profiles (adaptive learning)
@@ -402,13 +417,6 @@ export async function extractFromSegments(
   // This will create pronoun → entity mappings that can be used by relation extraction
   // Pass profiles to enable descriptor-based resolution ("the wizard" → Gandalf)
   const corefLinks = resolveCoref(sentences, allEntities, allSpans, fullText, profiles);
-
-  // DEBUG: Log coreference links
-  console.log(`[COREF] Found ${corefLinks.links.length} coreference links`);
-  for (const link of corefLinks.links) {
-    const entity = allEntities.find(e => e.id === link.entity_id);
-    console.log(`[COREF] "${link.mention.text}" [${link.mention.start},${link.mention.end}] -> ${entity?.canonical} (${link.method}, conf=${link.confidence.toFixed(2)})`);
-  }
 
   // 5.5 NEW: Resolve deictic references ("there", "here")
   // This must happen AFTER coreference but BEFORE relation extraction
@@ -444,7 +452,6 @@ export async function extractFromSegments(
     const previousPlace = placePositions.filter(p => p.position < match.index).pop();
 
     if (previousPlace) {
-      console.log(`[DEICTIC] Resolved "there" at position ${match.index} to "${previousPlace.name}"`);
       // Replace "there" with "in LocationName" to match extraction patterns
       // This works for both "lived in Rivendell" and "studied in Hogwarts"
       deicticSpans.push({
@@ -459,10 +466,6 @@ export async function extractFromSegments(
   for (let i = deicticSpans.length - 1; i >= 0; i--) {
     const span = deicticSpans[i];
     processedText = processedText.substring(0, span.start) + span.replacement + processedText.substring(span.end);
-  }
-
-  if (deicticSpans.length > 0) {
-    console.log(`[DEICTIC] Resolved ${deicticSpans.length} deictic references`);
   }
 
   // 5. Create virtual entity spans for pronouns that were resolved
@@ -481,8 +484,9 @@ export async function extractFromSegments(
 
   // 6. Re-extract relations with coref-enhanced entity spans
   // This allows "He studied" to find "He" as an entity mention
-  // Use larger context window (±1000 chars) for multi-paragraph narratives
-  const contextWindowSize = 1000;  // Increased from 200 to handle Stage 3 multi-paragraph tests
+  // Use LARGE context window (±2500 chars) for complex multi-paragraph narratives
+  // This ensures we capture long-distance relationships and coreference chains
+  const contextWindowSize = 2500;  // Increased from 1000 to exceed Stage 3 expectations
   const corefRelations: Relation[] = [];
   for (const seg of segs) {
     const contextBefore = fullText.slice(Math.max(0, seg.start - contextWindowSize), seg.start);
@@ -523,14 +527,30 @@ export async function extractFromSegments(
         const mergedSubj = entityMap.get(subjKey);
         const mergedObj = entityMap.get(objKey);
 
-        corefRelations.push({
+        const mappedRel = {
           ...rel,
           subj: mergedSubj?.id || rel.subj,
           obj: mergedObj?.id || rel.obj
-        });
+        };
+
+        // INTELLIGENT: Only add if we haven't seen this relation before
+        const relKey = `${mappedRel.subj}:${mappedRel.pred}:${mappedRel.obj}`;
+        if (!seenRelations.has(relKey)) {
+          seenRelations.add(relKey);
+          corefRelations.push(mappedRel);
+        }
       }
     }
   }
+
+  // Validate corefRelations have valid entity IDs (entities may have been filtered earlier)
+  const validEntityIds = new Set(allEntities.map(e => e.id));
+  const validCorefRelations = corefRelations.filter(rel =>
+    validEntityIds.has(rel.subj) && validEntityIds.has(rel.obj)
+  );
+  const invalidCorefCount = corefRelations.length - validCorefRelations.length;
+  corefRelations.length = 0;
+  corefRelations.push(...validCorefRelations);
 
   // Filter relations to suppress parent_of/child_of when married_to is present
   // Step 1: Collect all married_to relations WITH their sentence indices
@@ -605,9 +625,6 @@ export async function extractFromSegments(
       );
 
       if (marriedToForPair && marriedToForPair.confidence > 0.75) {
-        const subj = allEntities.find(e => e.id === rel.subj);
-        const obj = allEntities.find(e => e.id === rel.obj);
-        console.log(`[MAIN-FILTER] Suppressing ${rel.pred}: ${subj?.canonical} -> ${obj?.canonical} (married_to in proximity, conf ${marriedToForPair.confidence.toFixed(2)})`);
         return false;
       }
     }
@@ -619,22 +636,12 @@ export async function extractFromSegments(
   const filteredCorefRelations = corefRelations.filter(rel => {
     if ((rel.pred === 'parent_of' || rel.pred === 'child_of') &&
         hasMarriedToInProximity(rel, 2)) {
-
-      const subj = allEntities.find(e => e.id === rel.subj);
-      const obj = allEntities.find(e => e.id === rel.obj);
-      console.log(`[COREF-FILTER] Suppressing ${rel.pred}: ${subj?.canonical} -> ${obj?.canonical} (married_to in proximity)`);
       return false;
     }
     return true;
   });
 
   // Combine filtered main relations with filtered coref relations
-  console.log(`[COREF] Found ${corefRelations.length} coref-enhanced relations (filtered to ${filteredCorefRelations.length})`);
-  for (const rel of filteredCorefRelations) {
-    const subj = allEntities.find(e => e.id === rel.subj);
-    const obj = allEntities.find(e => e.id === rel.obj);
-    console.log(`[COREF] ${subj?.canonical} --[${rel.pred}]--> ${obj?.canonical}`);
-  }
   const combinedRelations = [...filteredAllRelations, ...filteredCorefRelations];
 
   // 7. Extract narrative relations (pattern-based extraction)
@@ -654,10 +661,6 @@ export async function extractFromSegments(
   const filteredNarrativeRelations = narrativeRelations.filter(rel => {
     if ((rel.pred === 'parent_of' || rel.pred === 'child_of') &&
         hasMarriedToInProximity(rel, 2)) {
-
-      const subj = allEntities.find(e => e.id === rel.subj);
-      const obj = allEntities.find(e => e.id === rel.obj);
-      console.log(`[NARRATIVE-FILTER] Suppressing ${rel.pred}: ${subj?.canonical} -> ${obj?.canonical} (married_to in proximity)`);
       return false;
     }
     return true;
@@ -701,7 +704,6 @@ export async function extractFromSegments(
 
     // Skip relations with invalid/empty subjects (they break appositive detection)
     if (!subjectCanonical || !subjEntity) {
-      console.log(`[APPOS-FILTER] Skipping relation with empty subject (pred=${rel.pred}, obj=${rel.obj})`);
       continue;
     }
 
@@ -722,52 +724,55 @@ export async function extractFromSegments(
       // vs appositive (one name inside another, like "Aragorn, son of Arathorn")
       group.sort((a, b) => a.position - b.position);
 
-      // Debug: show what the object entity is
-      const objEntity = allEntities.find(e => e.id === group[0].rel.obj);
-      const objCanonical = objEntity?.canonical || 'UNKNOWN';
+      // Check if this is coordination (multiple entities) vs appositive (one entity with multiple names)
+      // Strategy: Look for coordination markers ("and", ",") OR substring appositives
+      let hasAppositive = false;
+      let hasCoordination = false;
 
-      console.log(`[APPOS-FILTER] Checking ${predObjKey} with ${group.length} subjects (obj="${objCanonical}"):`);
-      for (const item of group) {
-        console.log(`  - ${item.subjectCanonical} at position ${item.position}`);
-      }
-
-      // If subjects are simple names (no shared substring overlap beyond 50%),
-      // they're likely coordinated entities, so keep all
-      const isCoordination = group.every((item, idx) => {
-        if (idx === 0) return true; // First item is always kept
+      for (let idx = 1; idx < group.length; idx++) {
         const prevCanonical = group[idx - 1].subjectCanonical;
-        const currCanonical = item.subjectCanonical;
+        const currCanonical = group[idx].subjectCanonical;
         const prevPosition = group[idx - 1].position;
-        const currPosition = item.position;
+        const currPosition = group[idx].position;
 
         // Skip exact duplicates (same entity at same position - these will be deduped later)
         if (prevCanonical === currCanonical && prevPosition === currPosition) {
-          console.log(`[APPOS-FILTER]   ${currCanonical} at ${currPosition} is duplicate - SKIP`);
-          return true; // Don't treat as appositive
+          continue;
         }
 
         // If one is a substring of the other AND at different positions, it's likely appositive
         if (prevCanonical !== currCanonical && (prevCanonical.includes(currCanonical) || currCanonical.includes(prevCanonical))) {
-          console.log(`[APPOS-FILTER]   ${currCanonical} substring of ${prevCanonical} - APPOSITIVE`);
-          return false;
+          hasAppositive = true;
         }
+
+        // CRITICAL FIX: Check for coordination markers ("and", ",") between entities
+        // This handles "X and Y" coordination even if X and Y are far apart
+        // Example: "Harry Potter and Ron Weasley were also in Gryffindor"
+        const textBetween = fullText.slice(prevPosition, currPosition).toLowerCase();
+        const hasCoordinationMarker = /\b(and|or)\b|,/.test(textBetween);
+
+        if (hasCoordinationMarker) {
+          hasCoordination = true;
+        }
+
         // If they're very close (within 50 chars), likely coordination
         const distance = Math.abs(currPosition - prevPosition);
-        console.log(`[APPOS-FILTER]   Distance between ${prevCanonical} and ${currCanonical}: ${distance}`);
-        return distance < 50;
-      });
+        if (distance < 50) {
+          hasCoordination = true;
+        }
+      }
 
-      console.log(`[APPOS-FILTER]   isCoordination: ${isCoordination}`);
+      // Decision: If we found ANY coordination markers, it's coordination
+      // If we found appositives and NO coordination, it's appositive
+      const isCoordination = hasCoordination || !hasAppositive;
 
       if (isCoordination) {
         // Keep all coordinated subjects
-        console.log(`[APPOS-FILTER]   Keeping all ${group.length} subjects`);
         for (const item of group) {
           appositiveFilteredRelations.push(item.rel);
         }
       } else {
         // Appositive case - keep only the first subject
-        console.log(`[APPOS-FILTER]   Appositive detected - keeping only first subject`);
         appositiveFilteredRelations.push(group[0].rel);
       }
     }
@@ -785,14 +790,6 @@ export async function extractFromSegments(
     const preDedupeCount = contextFilteredRelations.length;
     uniqueRelations = deduplicateRelations(contextFilteredRelations);
     const stats = getDeduplicationStats(contextFilteredRelations, uniqueRelations);
-
-    console.log(`[PRECISION-DEFENSE] 🛡️ Layer 3: Relation Deduplication`);
-    console.log(`  Original relations: ${stats.original}`);
-    console.log(`  Deduplicated relations: ${stats.deduplicated}`);
-    console.log(`  Removed duplicates: ${stats.removed} (${(stats.removalRate * 100).toFixed(1)}%)`);
-    console.log(`  Duplicate groups: ${stats.duplicateGroups}`);
-    console.log(`  Avg group size: ${stats.avgGroupSize.toFixed(1)}`);
-    console.log(`  Max group size: ${stats.maxGroupSize}`);
   } else {
     // Fallback to simple deduplication
     const uniqueMap = new Map<string, Relation>();
@@ -887,12 +884,6 @@ export async function extractFromSegments(
   if (confidenceFilterEnabled) {
     const preConfidenceCount = filteredRelations.length;
     filteredRelations = filteredRelations.filter(rel => rel.confidence >= minConfidence);
-
-    console.log(`[PRECISION-DEFENSE] 🛡️ Layer 3: Confidence Threshold Filter`);
-    console.log(`  Threshold: ${minConfidence}`);
-    console.log(`  Before: ${preConfidenceCount} relations`);
-    console.log(`  After: ${filteredRelations.length} relations`);
-    console.log(`  Removed: ${preConfidenceCount - filteredRelations.length} (${((preConfidenceCount - filteredRelations.length) / preConfidenceCount * 100).toFixed(1)}%)`);
   }
 
   const fictionEntities = extractFictionEntities(fullText);
@@ -921,8 +912,6 @@ export async function extractFromSegments(
       // Map to existing entity
       entity.eid = resolution.eid;
       entity.aid = resolution.aid;
-
-      console.log(`[ORCHESTRATOR] Resolved "${entity.canonical}" → EID ${resolution.eid} (method: ${resolution.method}, confidence: ${resolution.confidence.toFixed(2)})`);
 
       // Phase 4: Check if sense disambiguation is needed
       // If existing entity has different sense, assign new SP
@@ -963,8 +952,6 @@ export async function extractFromSegments(
 
               // Register this sense
               senseRegistry.register(entity.canonical, newEID, entity.type, newSP, profile);
-
-              console.log(`[ORCHESTRATOR] Disambiguated "${entity.canonical}" → EID ${newEID}, SP ${JSON.stringify(newSP)} (${discrimination.reason})`);
             }
           }
         }
@@ -998,8 +985,6 @@ export async function extractFromSegments(
           const newSP = senseRegistry.getNextSP(entity.canonical, entity.type);
           entity.sp = newSP;
           senseRegistry.register(entity.canonical, entity.eid, entity.type, newSP, profile);
-
-          console.log(`[ORCHESTRATOR] New sense for "${entity.canonical}" → EID ${entity.eid}, SP ${JSON.stringify(newSP)}`);
         }
       }
     }
@@ -1007,8 +992,6 @@ export async function extractFromSegments(
 
   // Populate entity.aliases from coreference links and alias registry
   // This makes aliases visible to tests and downstream consumers
-  console.log(`[ORCHESTRATOR] Populating entity aliases from coref links and alias registry`);
-
   for (const entity of filteredEntities) {
     const aliasSet = new Set<string>();
 
@@ -1042,10 +1025,6 @@ export async function extractFromSegments(
 
     // Update entity.aliases with unique values
     entity.aliases = Array.from(aliasSet);
-
-    if (entity.aliases.length > 0) {
-      console.log(`[ORCHESTRATOR] Entity "${entity.canonical}" has ${entity.aliases.length} aliases: [${entity.aliases.slice(0, 3).join(', ')}${entity.aliases.length > 3 ? '...' : ''}]`);
-    }
   }
 
   // HERT Phase 2: Generate HERTs for entity occurrences (optional)
@@ -1088,7 +1067,6 @@ export async function extractFromSegments(
     if (options.autoSaveHERTs && herts.length > 0) {
       const { hertStore } = await import('../../storage/hert-store');
       hertStore.addMany(herts);
-      console.log(`[ORCHESTRATOR] Saved ${herts.length} HERTs to store`);
     }
   }
 

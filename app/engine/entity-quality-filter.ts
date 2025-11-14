@@ -139,45 +139,64 @@ export function filterLowQualityEntities(
     const name = entity.canonical;
     const lowerName = name.toLowerCase();
 
+    // DEBUG: Log professor entities being filtered
+    const isProf = lowerName.includes('professor');
+    if (isProf) {
+      console.log(`[QUALITY-FILTER] Checking: "${name}"`);
+    }
+
     // 1. Confidence check
     const confidence = (entity.attrs?.confidence as number) || 1.0;
     if (confidence < config.minConfidence) {
+      if (isProf) console.log(`  REJECT: confidence ${confidence} < ${config.minConfidence}`);
       return false;
     }
 
     // 2. Name length check
     if (name.length < config.minNameLength) {
+      if (isProf) console.log(`  REJECT: length ${name.length} < ${config.minNameLength}`);
       return false;
     }
 
     // 3. Blocked tokens check
     if (config.blockedTokens.has(lowerName)) {
+      if (isProf) console.log(`  REJECT: blocked token`);
       return false;
     }
 
     // 4. Capitalization check for proper nouns
     if (config.requireCapitalization) {
       if (!isValidProperNoun(name, entity.type)) {
+        if (isProf) console.log(`  REJECT: invalid proper noun`);
         return false;
       }
     }
 
-    // 5. Valid characters check
-    if (!hasValidCharacters(name)) {
-      return false;
+    // 5. Valid characters check (skip for DATE/ITEM which can be numeric)
+    // DATE entities like "3019" and ITEM entities like "3080" are valid without letters
+    if (entity.type !== 'DATE' && entity.type !== 'ITEM') {
+      if (!hasValidCharacters(name)) {
+        if (isProf) console.log(`  REJECT: invalid characters`);
+        return false;
+      }
     }
 
     // 6. Type-specific validation
     if (entity.type === 'DATE') {
       if (!isValidDate(name)) {
+        if (isProf) console.log(`  REJECT: invalid date`);
         return false;
       }
     }
 
     // 7. Too generic check
     if (isTooGeneric(name)) {
+      if (isProf) console.log(`  REJECT: too generic`);
       return false;
     }
+
+    if (isProf) console.log(`  PASS`);
+
 
     // 8. Strict mode additional checks
     if (config.strictMode) {

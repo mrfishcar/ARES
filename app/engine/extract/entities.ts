@@ -21,6 +21,9 @@ import type { Token, ParsedSentence, ParseResponse } from "./parse-types";
 import { getParserClient } from "../../parser";
 import { analyzeEntityContext, classifyWithContext, shouldExtractByContext } from "./context-classifier";
 
+// Re-export types for test compatibility
+export type { Entity, EntityType } from "../schema";
+
 const TRACE_SPANS = process.env.L3_TRACE === "1";
 
 const traceSpan = (stage: string, source: string, start: number, end: number, value: string) => {
@@ -44,14 +47,16 @@ function validateSpan(
   text: string,
   span: { text: string; start: number; end: number },
   context: string
-): { valid: boolean; extracted: string } {
+): { valid: boolean; extracted: string; reason?: string } {
   // Extract actual text at this position
   const extracted = text.slice(span.start, span.end);
   const normalizedExtracted = normalizeName(extracted);
   const normalizedExpected = normalizeName(span.text);
 
+
   // Check if normalized versions match
   let valid = normalizedExtracted === normalizedExpected;
+  let reason: string | undefined;
 
   // Additional check: ensure extracted text doesn't contain extra words
   // This catches cases where span.end extends beyond the entity
@@ -68,6 +73,7 @@ function validateSpan(
       if (wordCountDiff > 1) {
         // Too many extra words - likely corruption
         valid = false;
+        reason = "Too many extra words";
       } else if (wordCountDiff === 1) {
         // One extra word - check if it's a pronoun or common word that indicates corruption
         const extraWord = normalizedExtractedWords[normalizedExtractedWords.length - 1].toLowerCase();
@@ -75,6 +81,7 @@ function validateSpan(
         if (pronouns.includes(extraWord)) {
           // Extracted text includes a pronoun after the entity - this is corruption
           valid = false;
+          reason = "Pronoun after entity";
         }
       }
     }
@@ -84,16 +91,25 @@ function validateSpan(
     if (/\.\s+[A-Z][a-z]+\s*$/.test(extracted)) {
       // Example: "Slytherin. He" or "Granger. The"
       valid = false;
+      reason = "Ends with sentence boundary";
     }
 
     // Pattern 2: Word fragments being concatenated (e.g., "WeasleRon", "SlytheriHe")
     // This is detected by finding capitalized letters in the middle of a word
+    // BUT: Allow valid patterns like "McGonagall", "McDonald", "O'Brien"
     const extractedWords = extracted.split(/\s+/).filter(Boolean);
     for (const word of extractedWords) {
-      if (/[a-z][A-Z]/.test(word)) {
-        // Found lowercase followed by uppercase - likely corruption
-        valid = false;
-        break;
+      // Check for lowercase followed by uppercase
+      const match = word.match(/[a-z]([A-Z])/);
+      if (match) {
+        // Allow common prefixes: Mc, Mac, O', Fitz, etc.
+        const isValidPrefix = /^(Mc|Mac|O'|Fitz|De|Van|Von|Di|Da)/i.test(word);
+        if (!isValidPrefix) {
+          // Found lowercase followed by uppercase without valid prefix - likely corruption
+          valid = false;
+          reason = "Word fragment corruption";
+          break;
+        }
       }
     }
   }
@@ -534,16 +550,25 @@ function capitalizeEntityName(name: string): string {
 
 export function normalizeName(s: string): string {
   let normalized = s.replace(/\s+/g, " ").trim();
-  normalized = normalized.replace(/^[\-\u2013\u2014'"“”‘’]+/, "");
+  normalized = normalized.replace(/^[\-\u2013\u2014'"""'']+/, "");
   normalized = normalized.replace(/[,'"\u201c\u201d\u2018\u2019]+$/g, " ");
   normalized = normalized.replace(/\s*,\s*/g, " ");
   normalized = normalized.replace(/[.;:!?]+$/g, "");
   normalized = normalized.replace(/^(the|a|an)\s+/i, "");
-  normalized = normalized.replace(/^((?:[a-z]+\s+)+)(?=[A-Z0-9])/g, "");
-  normalized = normalized.replace(/['’]s$/i, "");
+
+  // Check if the name starts with a title word followed by a capitalized name
+  const titleWordsRegex = /^(mr|mrs|miss|ms|dr|doctor|prof|professor|sir|madam|lord|lady|king|queen|prince|princess|duke|duchess|baron|baroness|count|countess|captain|commander|general|admiral|colonel|major|sergeant|lieutenant|father|mother|brother|sister|master|archmagus|wizard|mage|sorcerer|sorceress)\s+[A-Z]/i;
+  const hasTitle = titleWordsRegex.test(normalized);
+
+  // Only strip lowercase prefixes if there's NO title at the start
+  if (!hasTitle) {
+    normalized = normalized.replace(/^((?:[a-z]+\s+)+)(?=[A-Z0-9])/g, "");
+  }
+
+  normalized = normalized.replace(/['']s$/i, "");
   normalized = normalized.replace(/\bfamily\b$/i, "").trim();
   normalized = normalized.replace(/\bHouse$/i, "");
-  const capitalized = normalized.match(/[A-Z][A-Za-z0-9'’\-]*(?:\s+(?:of|the|and|&)?\s*[A-Z][A-Za-z0-9'’\-]*)*/);
+  const capitalized = normalized.match(/[A-Z][A-Za-z0-9''\-]*(?:\s+(?:of|the|and|&)?\s*[A-Z][A-Za-z0-9''\-]*)*/);
   if (capitalized) {
     normalized = capitalized[0];
   }
@@ -914,6 +939,8 @@ function depBasedEntities(sent: ParsedSentence): Array<{ text: string; type: Ent
     traceSpan("dep", sent.tokens.map(tok => tok.text).join(" "), start, end, cleanedText);
   }
 
+  // TODO: Apply coordination splitting to handle "James and Lily Potter"
+  // Currently causing performance issues, needs optimization
   return spans;
 }
 
@@ -1111,6 +1138,33 @@ function gazetterPlaces(text: string): Array<{ text: string; type: EntityType; s
 function fallbackNames(text: string): Array<{ text: string; type: EntityType; start: number; end: number }> {
   const spans: { text: string; type: EntityType; start: number; end: number }[] = [];
 
+  // INTELLIGENT: Extract coordinated person names first (e.g., "James and Lily Potter")
+  // Pattern: FirstName and SecondName LastName
+  const coordPattern = /\b([A-Z][\w'-]+)\s+and\s+([A-Z][\w'-]+)\s+([A-Z][\w'-]+)\b/g;
+  let coordMatch: RegExpExecArray | null;
+
+  while ((coordMatch = coordPattern.exec(text))) {
+    const firstName = coordMatch[1];
+    const secondName = coordMatch[2];
+    const lastName = coordMatch[3];
+
+    // Create two separate PERSON entities with full names
+    spans.push({
+      text: `${firstName} ${lastName}`,
+      type: 'PERSON',
+      start: coordMatch.index,
+      end: coordMatch.index + firstName.length + 1 + lastName.length
+    });
+
+    const secondStart = coordMatch.index + firstName.length + ' and '.length;
+    spans.push({
+      text: `${secondName} ${lastName}`,
+      type: 'PERSON',
+      start: secondStart,
+      end: secondStart + secondName.length + 1 + lastName.length
+    });
+  }
+
   // FIXED: {0,2} allows 1-3 words (including single words like "Gandalf")
   const rx = /\b([A-Z][\w''.-]+(?:\s+[A-Z][\w''.-]+){0,2})\b/g;
   let m: RegExpExecArray | null;
@@ -1162,11 +1216,15 @@ function fallbackNames(text: string): Array<{ text: string; type: EntityType; st
     // Strip trailing punctuation and sentence fragments
     // This handles cases like "Ravenclaw. Each" being matched as 2 words
     // Remove: period/comma/etc followed by space and another capitalized word
+    const beforeCleanup = value;
     value = value.replace(/[.,;:!?]\s+[A-Z].*$/, '');
     // Also strip any remaining trailing punctuation
     value = value.replace(/[.,;:!?]+$/, '').trim();
 
-    const rawEnd = endIndex;
+    // CRITICAL FIX: Update end position after cleaning
+    // If we removed trailing content, adjust rawEnd accordingly
+    const lengthDiff = beforeCleanup.length - value.length;
+    const rawEnd = endIndex - lengthDiff;
 
     const tokens = value.split(/\s+/).filter(Boolean);
     const significantTokens = tokens.filter(tok => /^[A-Z]|^[IVXLCDM]+$/.test(tok));
@@ -1216,7 +1274,7 @@ function fallbackNames(text: string): Array<{ text: string; type: EntityType; st
     });
     traceSpan("fallback", text, m.index, rawEnd, normalized);
   }
-  
+
   return spans;
 }
 
@@ -1302,7 +1360,9 @@ function dedupe<T extends { text: string; type: EntityType; start: number; end: 
     // Dedupe by canonical form (type + normalized text)
     // Since spans are ordered as [...dep, ...ner, ...fb], the first occurrence (most reliable) wins
     const canonicalKey = `${s.type}:${s.text.toLowerCase()}`;
-    if (seenCanonical.has(canonicalKey)) continue;
+    if (seenCanonical.has(canonicalKey)) {
+      continue;
+    }
 
     seenCanonical.add(canonicalKey);
     out.push(s);
@@ -1338,12 +1398,14 @@ export async function extractEntities(text: string): Promise<{
   const ner = parsed.sentences.flatMap(sent => splitCoordination(sent, nerSpans(sent)));
 
   // 3) Dependency-based extraction (uses syntactic patterns)
+  // TODO: Apply coordination splitting to dependency-based entities
   const dep = parsed.sentences.flatMap(depBasedEntities);
 
   // 4) Gazetteer-based place extraction
   const gazPlaces = gazetterPlaces(text);
 
   // 5) Fallback: capitalized names with context classification
+  // TODO: Apply coordination splitting to fallback entities
   const fb = fallbackNames(text);
 
   // 6) Merge all sources, deduplicate
@@ -1623,6 +1685,7 @@ const chooseCanonical = (names: Set<string>): string => {
   const mergedMap = new Map<string, EntityEntry>();
   for (const entry of entries) {
     const key = entry.entity.canonical.toLowerCase();
+
     const existing = mergedMap.get(key);
     if (!existing) {
       mergedMap.set(key, entry);
@@ -1709,7 +1772,7 @@ const chooseCanonical = (names: Set<string>): string => {
   });
 
   // Phase E1: Apply confidence-based filtering
-  // Convert EntityEntry to EntityCluster for confidence scoring
+  // Convert EntityCluster for confidence scoring
   const clusters: EntityCluster[] = finalEntries.map(entry => {
     // Create a representative mention for the entity (required by EntityCluster)
     const firstSpan = entry.spanList[0] || { start: 0, end: 0 };
@@ -1890,6 +1953,121 @@ const chooseCanonical = (names: Set<string>): string => {
     }
   }
 
+  // ========== PATTERN-BASED ENTITY EXTRACTION ==========
+  // Supplement spaCy with pattern-based detection for types it misses
+  // (DATE, PRODUCT, TECHNOLOGY, acronym ORGs)
+
+  const patternEntities: Entity[] = [];
+  let patternEntityCount = 0;
+
+  // DATE patterns - Critical! SpaCy often misses dates
+  const datePatterns = [
+    { regex: /\b\d{1,2}[-/]\d{1,2}[-/]\d{2,4}\b/g, format: 'numeric' },  // 01/15/2024, 1-15-24
+    { regex: /\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}\b/gi, format: 'month-day-year' },
+    { regex: /\b\d{1,2}\s+(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}\b/gi, format: 'day-month-year' },
+    { regex: /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*\s+\d{1,2},?\s+\d{4}\b/gi, format: 'abbrev-month' },
+    { regex: /\b\d{4}-\d{2}-\d{2}\b/g, format: 'ISO' },  // 2024-01-15
+    { regex: /\b(1[89]\d{2}|20[0-2]\d)\b/g, format: 'year-only' },  // Years 1800-2029 (prevents "1234" false positives)
+  ];
+
+  for (const { regex, format } of datePatterns) {
+    let match;
+    regex.lastIndex = 0;
+    while ((match = regex.exec(text)) !== null) {
+      const dateText = match[0].trim();
+
+      // Skip if this span already covered by existing entity
+      const start = match.index;
+      const end = match.index + dateText.length;
+      const overlaps = spans.some(s =>
+        (start >= s.start && start < s.end) || (end > s.start && end <= s.end)
+      );
+
+      if (!overlaps && dateText.length >= 4) {  // Minimum date length
+        const entityId = `pattern_date_${patternEntityCount++}`;
+        patternEntities.push({
+          id: entityId,
+          type: 'DATE',
+          canonical: dateText,
+          aliases: [],
+          created_at: new Date().toISOString(),
+        });
+
+        spans.push({ entity_id: entityId, start, end });
+      }
+    }
+  }
+
+  // PRODUCT patterns - Tech products, consumer goods
+  const productPatterns = [
+    /\b(iPhone|iPad|MacBook|AirPods|Apple Watch|iMac)\s+[\w\s]+(Pro|Max|Plus|Air|Mini)?\b/gi,
+    /\b(Galaxy|Pixel|Surface|Kindle|PlayStation|Xbox|Switch)\s+[\w\s]+\b/gi,
+    /\b\w+\s+(Pro|Plus|Max|Ultra|Air|Mini|Lite)\s*\d*\b/g,  // Generic product variants
+  ];
+
+  for (const pattern of productPatterns) {
+    let match;
+    pattern.lastIndex = 0;
+    while ((match = pattern.exec(text)) !== null) {
+      const productText = match[0].trim();
+      const start = match.index;
+      const end = match.index + productText.length;
+
+      const overlaps = spans.some(s =>
+        (start >= s.start && start < s.end) || (end > s.start && end <= s.end)
+      );
+
+      if (!overlaps) {
+        const entityId = `pattern_product_${patternEntityCount++}`;
+        patternEntities.push({
+          id: entityId,
+          type: 'ITEM',  // Using ITEM for products
+          canonical: productText,
+          aliases: [],
+          created_at: new Date().toISOString(),
+        });
+
+        spans.push({ entity_id: entityId, start, end });
+      }
+    }
+  }
+
+  // ORG acronym patterns - FBI, NASA, CIA, etc.
+  const acronymPattern = /\b[A-Z]{2,6}\b/g;  // 2-6 uppercase letters
+  const commonAcronyms = new Set(['FBI', 'CIA', 'NASA', 'NATO', 'UN', 'EU', 'USA', 'UK', 'US', 'IT', 'AI', 'ML', 'API']);
+
+  let match;
+  acronymPattern.lastIndex = 0;
+  while ((match = acronymPattern.exec(text)) !== null) {
+    const acronym = match[0];
+
+    // Only extract well-known acronyms to avoid false positives
+    if (commonAcronyms.has(acronym)) {
+      const start = match.index;
+      const end = match.index + acronym.length;
+
+      const overlaps = spans.some(s =>
+        (start >= s.start && start < s.end) || (end > s.start && end <= s.end)
+      );
+
+      if (!overlaps) {
+        const entityId = `pattern_org_${patternEntityCount++}`;
+        patternEntities.push({
+          id: entityId,
+          type: 'ORG',
+          canonical: acronym,
+          aliases: [],
+          created_at: new Date().toISOString(),
+        });
+
+        spans.push({ entity_id: entityId, start, end });
+      }
+    }
+  }
+
+  // Add pattern entities to main entities array
+  entities.push(...patternEntities);
+
   // Step 1: Pattern-based alias extraction for explicit patterns
   // Handles: "X called Y", "X nicknamed Y", "X also known as Y", etc.
   const aliasPatterns = [
@@ -1937,21 +2115,14 @@ const chooseCanonical = (names: Set<string>): string => {
 
         entityByCanonical.delete(nickname.toLowerCase());
         aliasLinksFound++;
-
-        console.log(`[EXTRACT-ENTITIES] Merged "${nickname}" into "${fullName}" as alias`);
       } else if (fullEntity && !nickEntity) {
         // Nickname not extracted as separate entity, just add as alias
         if (!fullEntity.aliases.includes(nickname)) {
           fullEntity.aliases.push(nickname);
           aliasLinksFound++;
-          console.log(`[EXTRACT-ENTITIES] Added "${nickname}" as alias to "${fullName}"`);
         }
       }
     }
-  }
-
-  if (aliasLinksFound > 0) {
-    console.log(`[EXTRACT-ENTITIES] Found ${aliasLinksFound} explicit alias patterns`);
   }
 
   // Step 2: Run coreference resolution for pronouns and descriptive references
@@ -1981,12 +2152,8 @@ const chooseCanonical = (names: Set<string>): string => {
       entity.aliases = Array.from(aliasSet);
     }
 
-    if (corefLinks.links.length > 0) {
-      console.log(`[EXTRACT-ENTITIES] Resolved ${corefLinks.links.length} coreference links`);
-    }
   } catch (error) {
     // If coreference resolution fails, continue without it
-    console.warn(`[EXTRACT-ENTITIES] Coreference resolution failed:`, error);
   }
 
   return { entities, spans };

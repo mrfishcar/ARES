@@ -39,3 +39,8 @@ ops/LOCK
 # Debug files
 debug-*.ts
 tmp/debug-*
+# Generated registry files
+data/*-registry.json
+
+# Debug test output files
+test-*-debug.json

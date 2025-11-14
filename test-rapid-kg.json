@@ -1,0 +1,573 @@
+{
+  "entities": [
+    {
+      "id": "global_person_0",
+      "type": "PERSON",
+      "canonical": "Harry Potter",
+      "aliases": [
+        "He",
+        "he",
+        "Harry"
+      ],
+      "created_at": "2025-11-13T02:20:54.288Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_1",
+      "type": "PERSON",
+      "canonical": "Boy Who",
+      "aliases": [
+        "The Boy Who"
+      ],
+      "created_at": "2025-11-13T02:20:54.288Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_2",
+      "type": "PERSON",
+      "canonical": "James Potter",
+      "aliases": [
+        "James"
+      ],
+      "created_at": "2025-11-13T02:20:54.288Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_3",
+      "type": "PERSON",
+      "canonical": "Ron Weasley",
+      "aliases": [],
+      "created_at": "2025-11-13T02:20:54.288Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_4",
+      "type": "PERSON",
+      "canonical": "Lord Voldemort",
+      "aliases": [
+        "The young wizard"
+      ],
+      "created_at": "2025-11-13T02:20:54.288Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_5",
+      "type": "PERSON",
+      "canonical": "Tom Riddle",
+      "aliases": [],
+      "created_at": "2025-11-13T02:20:54.288Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_6",
+      "type": "PERSON",
+      "canonical": "Professor Dumbledore",
+      "aliases": [
+        "his",
+        "Dumbledore",
+        "Albus Dumbledore"
+      ],
+      "created_at": "2025-11-13T02:20:54.288Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_7",
+      "type": "PERSON",
+      "canonical": "Hermione",
+      "aliases": [
+        "her",
+        "She"
+      ],
+      "created_at": "2025-11-13T02:20:54.288Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_org_8",
+      "type": "ORG",
+      "canonical": "Hogwarts Express",
+      "aliases": [
+        "Hogwarts School",
+        "Hogwarts"
+      ],
+      "created_at": "2025-11-13T02:20:54.288Z",
+      "centrality": 0
+    }
+  ],
+  "relations": [
+    {
+      "id": "7ae0da66-6943-42c5-82af-cd486dd2cdfd",
+      "subj": "global_person_7",
+      "pred": "studies_at",
+      "obj": "global_org_8",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 200,
+            "end": 232,
+            "text": "arry throughout his time at the school.\nHermione studied at Hogwarts and became the brightest witch of her age. "
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        },
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 128,
+            "end": 160,
+            "text": "arry throughout his time at the school.\nHermione studied at Hogwarts and became the brightest witch of her age. "
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        },
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 361,
+            "end": 393,
+            "text": "arry throughout his time at the school.\nHermione studied at Hogwarts and became the brightest witch of her age. "
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.7359667400024776,
+      "extractor": "dep"
+    },
+    {
+      "id": "d593c656-9c5c-4013-98b4-47b050b97161",
+      "subj": "global_person_7",
+      "pred": "attended",
+      "obj": "global_org_8",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 95,
+            "end": 122,
+            "text": "he son of James Potter and Lily Potter.\nHe attended Hogwarts School where he became friends with Ron Weasle"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "01168205-1cf4-4831-bae6-e889d54995ec",
+      "subj": "global_person_2",
+      "pred": "parent_of",
+      "obj": "global_person_0",
+      "evidence": [
+        {
+          "doc_id": "rapid-test",
+          "span": {
+            "start": 1,
+            "end": 93,
+            "text": "Harry Potter, also known as \"The Boy Who Lived,\" was the son of James Potter and Lily Potter"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.85,
+      "extractor": "regex"
+    },
+    {
+      "id": "b8ef4d07-0726-4f7c-8191-ac30759e3a01",
+      "subj": "global_person_7",
+      "pred": "studies_at",
+      "obj": "global_org_8",
+      "evidence": [
+        {
+          "doc_id": "rapid-test",
+          "span": {
+            "start": 361,
+            "end": 389,
+            "text": "Hermione studied at Hogwarts"
+          },
+          "sentence_index": 4,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.85,
+      "extractor": "regex"
+    },
+    {
+      "id": "005fd1bb-f477-48b1-bf9a-c701f4da1eb0",
+      "subj": "global_person_0",
+      "pred": "child_of",
+      "obj": "global_person_2",
+      "evidence": [
+        {
+          "doc_id": "rapid-test",
+          "span": {
+            "start": 1,
+            "end": 93,
+            "text": "Harry Potter, also known as \"The Boy Who Lived,\" was the son of James Potter and Lily Potter"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.85,
+      "extractor": "regex"
+    }
+  ],
+  "conflicts": [
+    {
+      "type": "cycle",
+      "severity": 3,
+      "description": "Cycle detected in parent_of/child_of: global_person_2 → global_person_0 → global_person_2",
+      "relations": [
+        {
+          "id": "01168205-1cf4-4831-bae6-e889d54995ec",
+          "subj": "global_person_2",
+          "pred": "parent_of",
+          "obj": "global_person_0",
+          "evidence": [
+            {
+              "doc_id": "rapid-test",
+              "span": {
+                "start": 1,
+                "end": 93,
+                "text": "Harry Potter, also known as \"The Boy Who Lived,\" was the son of James Potter and Lily Potter"
+              },
+              "sentence_index": 0,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.85,
+          "extractor": "regex"
+        },
+        {
+          "id": "005fd1bb-f477-48b1-bf9a-c701f4da1eb0",
+          "subj": "global_person_0",
+          "pred": "child_of",
+          "obj": "global_person_2",
+          "evidence": [
+            {
+              "doc_id": "rapid-test",
+              "span": {
+                "start": 1,
+                "end": 93,
+                "text": "Harry Potter, also known as \"The Boy Who Lived,\" was the son of James Potter and Lily Potter"
+              },
+              "sentence_index": 0,
+              "source": "RULE"
+            }
+          ],
+          "confidence": 0.85,
+          "extractor": "regex"
+        }
+      ]
+    }
+  ],
+  "provenance": {
+    "rapid-test_entity_0": {
+      "global_id": "global_person_0",
+      "doc_id": "rapid-test",
+      "merged_at": "2025-11-13T02:20:54.288Z",
+      "local_canonical": "Harry Potter"
+    },
+    "rapid-test_entity_1": {
+      "global_id": "global_person_1",
+      "doc_id": "rapid-test",
+      "merged_at": "2025-11-13T02:20:54.288Z",
+      "local_canonical": "Boy Who"
+    },
+    "rapid-test_entity_3": {
+      "global_id": "global_person_2",
+      "doc_id": "rapid-test",
+      "merged_at": "2025-11-13T02:20:54.288Z",
+      "local_canonical": "James Potter"
+    },
+    "rapid-test_entity_4": {
+      "global_id": "global_org_8",
+      "doc_id": "rapid-test",
+      "merged_at": "2025-11-13T02:20:54.288Z",
+      "local_canonical": "Hogwarts School"
+    },
+    "rapid-test_entity_5": {
+      "global_id": "global_person_3",
+      "doc_id": "rapid-test",
+      "merged_at": "2025-11-13T02:20:54.288Z",
+      "local_canonical": "Ron Weasley"
+    },
+    "rapid-test_entity_6": {
+      "global_id": "global_person_4",
+      "doc_id": "rapid-test",
+      "merged_at": "2025-11-13T02:20:54.288Z",
+      "local_canonical": "Lord Voldemort"
+    },
+    "rapid-test_entity_7": {
+      "global_id": "global_person_5",
+      "doc_id": "rapid-test",
+      "merged_at": "2025-11-13T02:20:54.288Z",
+      "local_canonical": "Tom Riddle"
+    },
+    "rapid-test_entity_8": {
+      "global_id": "global_person_6",
+      "doc_id": "rapid-test",
+      "merged_at": "2025-11-13T02:20:54.288Z",
+      "local_canonical": "Professor Dumbledore"
+    },
+    "rapid-test_entity_9": {
+      "global_id": "global_person_7",
+      "doc_id": "rapid-test",
+      "merged_at": "2025-11-13T02:20:54.288Z",
+      "local_canonical": "Hermione"
+    },
+    "rapid-test_entity_10": {
+      "global_id": "global_org_8",
+      "doc_id": "rapid-test",
+      "merged_at": "2025-11-13T02:20:54.288Z",
+      "local_canonical": "Hogwarts"
+    }
+  },
+  "profiles": {
+    "d99e4ab7-0f9b-4121-9744-dedb291f45a3": {
+      "entity_id": "d99e4ab7-0f9b-4121-9744-dedb291f45a3",
+      "entity_type": "PERSON",
+      "canonical": "Harry Potter",
+      "descriptors": [],
+      "titles": [
+        "Harry Potter"
+      ],
+      "roles": [],
+      "attributes": {
+        "color": [
+          "red"
+        ]
+      },
+      "contexts": [
+        "Harry Potter, also known as \"The Boy Who Lived,\" was the son of James Potter and Lily Potter.",
+        "Harry Potter, also known as \"The Boy Who Lived,\" was the son of James Potter and Lily Potter.",
+        "Professor Dumbledore, the headmaster, mentored Harry throughout his time at the school."
+      ],
+      "mention_count": 3,
+      "first_seen": "rapid-test",
+      "last_seen": "rapid-test",
+      "confidence_score": 0.65
+    },
+    "e61563b1-7acc-4b8c-9e7c-586a7945e24d": {
+      "entity_id": "e61563b1-7acc-4b8c-9e7c-586a7945e24d",
+      "entity_type": "PERSON",
+      "canonical": "Boy Who",
+      "descriptors": [],
+      "titles": [
+        "Boy Who"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Harry Potter, also known as \"The Boy Who Lived,\" was the son of James Potter and Lily Potter."
+      ],
+      "mention_count": 1,
+      "first_seen": "rapid-test",
+      "last_seen": "rapid-test",
+      "confidence_score": 0.55
+    },
+    "8a030876-809d-4836-bc71-a20b8fdabc52": {
+      "entity_id": "8a030876-809d-4836-bc71-a20b8fdabc52",
+      "entity_type": "PERSON",
+      "canonical": "Lived",
+      "descriptors": [],
+      "titles": [
+        "Lived"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Harry Potter, also known as \"The Boy Who Lived,\" was the son of James Potter and Lily Potter."
+      ],
+      "mention_count": 1,
+      "first_seen": "rapid-test",
+      "last_seen": "rapid-test",
+      "confidence_score": 0.55
+    },
+    "dc8045d2-4488-439d-9378-d8673b5dd086": {
+      "entity_id": "dc8045d2-4488-439d-9378-d8673b5dd086",
+      "entity_type": "PERSON",
+      "canonical": "James Potter",
+      "descriptors": [],
+      "titles": [
+        "James Potter"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Harry Potter, also known as \"The Boy Who Lived,\" was the son of James Potter and Lily Potter."
+      ],
+      "mention_count": 1,
+      "first_seen": "rapid-test",
+      "last_seen": "rapid-test",
+      "confidence_score": 0.55
+    },
+    "eac5c726-b932-4851-bce6-5129c3cc7cc9": {
+      "entity_id": "eac5c726-b932-4851-bce6-5129c3cc7cc9",
+      "entity_type": "ORG",
+      "canonical": "Hogwarts School",
+      "descriptors": [],
+      "titles": [
+        "Hogwarts School"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "He attended Hogwarts School where he became friends with Ron Weasley and Hermione Granger."
+      ],
+      "mention_count": 1,
+      "first_seen": "rapid-test",
+      "last_seen": "rapid-test",
+      "confidence_score": 0.55
+    },
+    "bf4df94f-4d15-473d-8dc7-11de910299d2": {
+      "entity_id": "bf4df94f-4d15-473d-8dc7-11de910299d2",
+      "entity_type": "PERSON",
+      "canonical": "Ron Weasley",
+      "descriptors": [],
+      "titles": [
+        "Ron Weasley"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "He attended Hogwarts School where he became friends with Ron Weasley and Hermione Granger.",
+        "He attended Hogwarts School where he became friends with Ron Weasley and Hermione Granger."
+      ],
+      "mention_count": 2,
+      "first_seen": "rapid-test",
+      "last_seen": "rapid-test",
+      "confidence_score": 0.6
+    },
+    "3193b184-2171-4e39-ba86-bdec58fb2a0c": {
+      "entity_id": "3193b184-2171-4e39-ba86-bdec58fb2a0c",
+      "entity_type": "PERSON",
+      "canonical": "Lord Voldemort",
+      "descriptors": [],
+      "titles": [
+        "Lord Voldemort"
+      ],
+      "roles": [
+        "wizard",
+        "lord"
+      ],
+      "attributes": {
+        "age": [
+          "old",
+          "young"
+        ]
+      },
+      "contexts": [
+        "The young wizard defeated Lord Voldemort, also known as Tom Riddle, in a final battle.",
+        "The young wizard defeated Lord Voldemort, also known as Tom Riddle, in a final battle."
+      ],
+      "mention_count": 2,
+      "first_seen": "rapid-test",
+      "last_seen": "rapid-test",
+      "confidence_score": 0.6
+    },
+    "299f9c6e-4263-4cf3-b199-d7a13ac068b6": {
+      "entity_id": "299f9c6e-4263-4cf3-b199-d7a13ac068b6",
+      "entity_type": "PERSON",
+      "canonical": "Tom Riddle",
+      "descriptors": [],
+      "titles": [
+        "Tom Riddle"
+      ],
+      "roles": [
+        "wizard",
+        "lord"
+      ],
+      "attributes": {
+        "age": [
+          "old",
+          "young"
+        ]
+      },
+      "contexts": [
+        "The young wizard defeated Lord Voldemort, also known as Tom Riddle, in a final battle."
+      ],
+      "mention_count": 1,
+      "first_seen": "rapid-test",
+      "last_seen": "rapid-test",
+      "confidence_score": 0.55
+    },
+    "876f90dd-cf33-4414-8e0a-fd71a410b44a": {
+      "entity_id": "876f90dd-cf33-4414-8e0a-fd71a410b44a",
+      "entity_type": "PERSON",
+      "canonical": "Professor Dumbledore",
+      "descriptors": [],
+      "titles": [
+        "Professor Dumbledore"
+      ],
+      "roles": [
+        "professor",
+        "mentor"
+      ],
+      "attributes": {
+        "color": [
+          "red"
+        ]
+      },
+      "contexts": [
+        "Professor Dumbledore, the headmaster, mentored Harry throughout his time at the school.",
+        "Professor Dumbledore, the headmaster, mentored Harry throughout his time at the school."
+      ],
+      "mention_count": 2,
+      "first_seen": "rapid-test",
+      "last_seen": "rapid-test",
+      "confidence_score": 0.6
+    },
+    "222cdcf3-a3c4-4038-9d23-a28f8ddccf3e": {
+      "entity_id": "222cdcf3-a3c4-4038-9d23-a28f8ddccf3e",
+      "entity_type": "PERSON",
+      "canonical": "Hermione",
+      "descriptors": [],
+      "titles": [
+        "Hermione",
+        "her",
+        "She"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Hermione studied at Hogwarts and became the brightest witch of her age."
+      ],
+      "mention_count": 1,
+      "first_seen": "rapid-test",
+      "last_seen": "rapid-test",
+      "confidence_score": 0.55
+    },
+    "443c8add-23c1-4c4a-9d46-8f0ed871e9fa": {
+      "entity_id": "443c8add-23c1-4c4a-9d46-8f0ed871e9fa",
+      "entity_type": "ORG",
+      "canonical": "Hogwarts",
+      "descriptors": [],
+      "titles": [
+        "Hogwarts"
+      ],
+      "roles": [
+        "witch"
+      ],
+      "attributes": {},
+      "contexts": [
+        "Hermione studied at Hogwarts and became the brightest witch of her age."
+      ],
+      "mention_count": 1,
+      "first_seen": "rapid-test",
+      "last_seen": "rapid-test",
+      "confidence_score": 0.55
+    }
+  },
+  "metadata": {
+    "created_at": "2025-11-13T02:20:54.018Z",
+    "updated_at": "2025-11-13T02:20:54.289Z",
+    "doc_count": 1,
+    "doc_ids": [
+      "rapid-test"
+    ]
+  }
+}

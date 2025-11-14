@@ -6,7 +6,7 @@
  * correlate with extraction accuracy.
  */
 
-import type { Entity } from '../../app/engine/schema';
+import type { Entity } from '../../app/engine/extract/entities';
 import type { TestEntity } from './test-utils';
 import { findMatchingEntity } from './test-utils';
 

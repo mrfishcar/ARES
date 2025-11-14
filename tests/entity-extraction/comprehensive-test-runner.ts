@@ -13,7 +13,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import type { Entity } from '../../app/engine/schema';
+import type { Entity } from '../../app/engine/extract/entities';
 import {
   calculateMetrics,
   compareEntities,
