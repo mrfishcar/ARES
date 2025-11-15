@@ -20,6 +20,7 @@ import { applyPatterns, type Pattern } from '../bootstrap';
 import type { PatternLibrary } from '../pattern-library';
 import { isValidEntity, correctEntityType } from '../entity-filter';
 import { loadRelationPatterns, type PatternsMode } from './load-relations';
+import { isContextDependent } from '../pronoun-utils';
 
 // 🛡️ PRECISION DEFENSE SYSTEM - LAYER 1 & 3
 import { filterLowQualityEntities, isEntityFilterEnabled, getFilterConfig, getFilterStats } from '../entity-quality-filter';
@@ -1017,12 +1018,17 @@ export async function extractFromSegments(
       aliasSet.add(alias);
     }
 
-    // 1. Add aliases from coreference links (pronouns, descriptive mentions)
+    // 1. Add aliases from coreference links (descriptive mentions ONLY - filter pronouns)
+    // Pronouns (he, she, it, etc.) are context-dependent and should NOT be permanent aliases
     for (const link of corefLinks.links) {
       if (link.entity_id === entity.id) {
         const mentionText = link.mention.text.trim();
-        // Add if it's different from canonical and not empty
-        if (mentionText && mentionText !== entity.canonical) {
+
+        // CRITICAL: Filter out pronouns and other context-dependent terms
+        // Pronouns must be resolved at extraction time, not stored as aliases
+        if (mentionText &&
+            mentionText !== entity.canonical &&
+            !isContextDependent(mentionText)) {
           aliasSet.add(mentionText);
         }
       }
@@ -1033,8 +1039,10 @@ export async function extractFromSegments(
       const registeredAliases = aliasRegistry.getAliasesForEntity(entity.eid);
       for (const mapping of registeredAliases) {
         const surfaceForm = mapping.surfaceForm.trim();
-        // Add if different from canonical and not empty
-        if (surfaceForm && surfaceForm !== entity.canonical) {
+        // Add if different from canonical, not empty, and NOT a pronoun
+        if (surfaceForm &&
+            surfaceForm !== entity.canonical &&
+            !isContextDependent(surfaceForm)) {
           aliasSet.add(surfaceForm);
         }
       }

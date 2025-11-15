@@ -244,17 +244,13 @@ export function mergeEntitiesAcrossDocs(
       // Pick canonical name (shortest, most common)
       const allNames = cluster.flatMap(e => [e.canonical, ...e.aliases]);
 
-      // Filter out bad canonical candidates (pronouns, deictics, verbs)
-      const pronouns = new Set(['he', 'she', 'it', 'they', 'him', 'her', 'his', 'hers', 'its', 'their', 'theirs', 'them']);
-      const deictics = new Set(['there', 'here']);
+      // Filter out bad canonical candidates (verbs)
+      // NOTE: Pronouns are no longer stored in aliases (filtered in orchestrator.ts)
+      // so we only need to filter verbs that might appear in extracted text
       const commonVerbs = new Set(['ruled', 'teaches', 'lived', 'studied', 'went', 'became', 'was', 'were', 'is', 'are', 'has', 'have', 'had', 'said', 'says', 'asked', 'replied']);
 
       const isValidCanonical = (name: string): boolean => {
         const lower = name.toLowerCase().trim();
-        // Reject pronouns and deictics
-        if (pronouns.has(lower) || deictics.has(lower)) {
-          return false;
-        }
         // Reject names containing verbs (e.g., "the king ruled")
         const words = lower.split(/\s+/);
         if (words.some(w => commonVerbs.has(w))) {

@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARES Grammar Rules Configuration",
+  "description": "Pronoun resolution and coreference rules based on Grammar Monster (https://www.grammar-monster.com/)",
+
+  "pronoun_resolution": {
+    "enabled": true,
+    "context_window_sentences": 3,
+    "prefer_subjects_over_objects": true,
+    "require_gender_agreement": true,
+    "require_number_agreement": true,
+
+    "weights": {
+      "recency": 0.6,
+      "salience": 0.4
+    },
+
+    "confidence_thresholds": {
+      "lookback_high": 0.85,
+      "lookback_medium": 0.70,
+      "lookback_low": 0.40,
+      "dependency_match": 0.75,
+      "salience_fallback": 0.50
+    }
+  },
+
+  "agreement_rules": {
+    "gendered_pronouns": {
+      "male": ["he", "him", "his", "himself"],
+      "female": ["she", "her", "hers", "herself"],
+      "neutral": ["it", "its", "itself"],
+      "plural": ["they", "them", "their", "theirs", "themselves"]
+    },
+
+    "number": {
+      "singular": [
+        "I", "me", "my", "mine", "myself",
+        "you", "your", "yours", "yourself",
+        "he", "him", "his", "himself",
+        "she", "her", "hers", "herself",
+        "it", "its", "itself"
+      ],
+      "plural": [
+        "we", "us", "our", "ours", "ourselves",
+        "you", "your", "yours", "yourselves",
+        "they", "them", "their", "theirs", "themselves"
+      ]
+    },
+
+    "person": {
+      "first": ["I", "me", "my", "mine", "myself", "we", "us", "our", "ours", "ourselves"],
+      "second": ["you", "your", "yours", "yourself", "yourselves"],
+      "third": [
+        "he", "him", "his", "himself",
+        "she", "her", "hers", "herself",
+        "it", "its", "itself",
+        "they", "them", "their", "theirs", "themselves"
+      ]
+    }
+  },
+
+  "pronoun_categories": {
+    "personal": {
+      "subjective": ["I", "you", "he", "she", "it", "we", "they"],
+      "objective": ["me", "you", "him", "her", "it", "us", "them"],
+      "possessive": ["my", "mine", "your", "yours", "his", "her", "hers", "its", "our", "ours", "their", "theirs"]
+    },
+
+    "demonstrative": ["this", "that", "these", "those"],
+
+    "reflexive": ["myself", "yourself", "himself", "herself", "itself", "ourselves", "yourselves", "themselves"],
+
+    "indefinite": [
+      "anyone", "everyone", "someone", "no one", "nobody",
+      "anybody", "everybody", "somebody",
+      "anything", "everything", "something", "nothing",
+      "one", "ones", "another", "other", "others",
+      "each", "either", "neither", "both", "all", "some", "any", "none"
+    ],
+
+    "relative": ["who", "whom", "whose", "which", "that"],
+
+    "interrogative": ["who", "whom", "whose", "which", "what"]
+  },
+
+  "deictic_expressions": {
+    "spatial": ["here", "there"],
+    "temporal": ["now", "then", "today", "yesterday", "tomorrow"],
+    "context_dependent": true,
+    "require_resolution": true
+  },
+
+  "entity_type_constraints": {
+    "personal_pronouns_only_refer_to": ["PERSON", "ORG"],
+    "neutral_pronouns_can_refer_to": ["PERSON", "ORG", "PLACE", "ITEM", "WORK", "SPECIES"],
+    "gender_inference_enabled": true
+  },
+
+  "antecedent_resolution": {
+    "strategies": [
+      {
+        "name": "lookback",
+        "priority": 1,
+        "max_distance_sentences": 3,
+        "confidence_decay_per_sentence": 0.15
+      },
+      {
+        "name": "dependency",
+        "priority": 2,
+        "same_clause_only": false,
+        "base_confidence": 0.75
+      },
+      {
+        "name": "salience",
+        "priority": 3,
+        "base_confidence": 0.50
+      }
+    ],
+
+    "salience_factors": {
+      "grammatical_subject": 2.0,
+      "sentence_initial_position": 1.5,
+      "frequency": 1.2
+    }
+  },
+
+  "storage_rules": {
+    "store_pronouns_in_aliases": false,
+    "store_deictics_in_aliases": false,
+    "allow_descriptive_mentions_in_aliases": true,
+    "filter_context_dependent_terms": true
+  },
+
+  "debugging": {
+    "log_pronoun_resolutions": true,
+    "log_confidence_scores": true,
+    "warn_on_low_confidence": true,
+    "low_confidence_threshold": 0.6
+  }
+}
