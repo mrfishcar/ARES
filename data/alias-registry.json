@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextAID": 408,
+  "nextAID": 501,
   "mappings": [
     {
       "aid": 1,
@@ -4071,11 +4071,941 @@
       "last_seen": "2025-11-13T01:08:39.710Z",
       "occurrence_count": 1,
       "confidence": 0.9
+    },
+    {
+      "aid": 408,
+      "surfaceForm": "Frederick",
+      "normalizedKey": "frederick",
+      "eid": 322,
+      "created_at": "2025-11-15T22:49:53.806Z",
+      "last_seen": "2025-11-15T22:49:53.806Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 409,
+      "surfaceForm": "Saul",
+      "normalizedKey": "saul",
+      "eid": 323,
+      "created_at": "2025-11-15T22:49:53.807Z",
+      "last_seen": "2025-11-15T22:49:53.807Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 410,
+      "surfaceForm": "In the City",
+      "normalizedKey": "in the city",
+      "eid": 324,
+      "created_at": "2025-11-15T23:19:14.038Z",
+      "last_seen": "2025-11-15T23:19:14.038Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 411,
+      "surfaceForm": "Perched",
+      "normalizedKey": "perched",
+      "eid": 325,
+      "created_at": "2025-11-15T23:19:14.039Z",
+      "last_seen": "2025-11-15T23:19:14.039Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 412,
+      "surfaceForm": "Song",
+      "normalizedKey": "song",
+      "eid": 326,
+      "created_at": "2025-11-15T23:19:14.039Z",
+      "last_seen": "2025-11-15T23:19:14.039Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 413,
+      "surfaceForm": "Like",
+      "normalizedKey": "like",
+      "eid": 327,
+      "created_at": "2025-11-15T23:19:14.040Z",
+      "last_seen": "2025-11-15T23:19:14.040Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 414,
+      "surfaceForm": "Hello",
+      "normalizedKey": "hello",
+      "eid": 191,
+      "created_at": "2025-11-15T23:19:14.040Z",
+      "last_seen": "2025-11-15T23:19:14.040Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 415,
+      "surfaceForm": "God",
+      "normalizedKey": "god",
+      "eid": 328,
+      "created_at": "2025-11-15T23:19:14.040Z",
+      "last_seen": "2025-11-15T23:19:14.040Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 416,
+      "surfaceForm": "Fredericks",
+      "normalizedKey": "fredericks",
+      "eid": 322,
+      "created_at": "2025-11-15T23:19:14.041Z",
+      "last_seen": "2025-11-15T23:19:14.041Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 417,
+      "surfaceForm": "Questions",
+      "normalizedKey": "questions",
+      "eid": 329,
+      "created_at": "2025-11-15T23:19:14.041Z",
+      "last_seen": "2025-11-15T23:19:14.041Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 418,
+      "surfaceForm": "Freddy",
+      "normalizedKey": "freddy",
+      "eid": 330,
+      "created_at": "2025-11-15T23:19:14.041Z",
+      "last_seen": "2025-11-15T23:19:14.041Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 419,
+      "surfaceForm": "Justice",
+      "normalizedKey": "justice",
+      "eid": 331,
+      "created_at": "2025-11-15T23:19:14.042Z",
+      "last_seen": "2025-11-15T23:19:14.042Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 420,
+      "surfaceForm": "Pool of Souls",
+      "normalizedKey": "pool of souls",
+      "eid": 332,
+      "created_at": "2025-11-15T23:19:14.042Z",
+      "last_seen": "2025-11-15T23:19:14.042Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 421,
+      "surfaceForm": "Familiar",
+      "normalizedKey": "familiar",
+      "eid": 333,
+      "created_at": "2025-11-15T23:19:14.042Z",
+      "last_seen": "2025-11-15T23:19:14.042Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 422,
+      "surfaceForm": "King of Souls",
+      "normalizedKey": "king of souls",
+      "eid": 332,
+      "created_at": "2025-11-15T23:19:14.043Z",
+      "last_seen": "2025-11-15T23:19:14.043Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 423,
+      "surfaceForm": "Darkness",
+      "normalizedKey": "darkness",
+      "eid": 334,
+      "created_at": "2025-11-15T23:19:14.043Z",
+      "last_seen": "2025-11-15T23:19:14.043Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 424,
+      "surfaceForm": "King Frederick",
+      "normalizedKey": "king frederick",
+      "eid": 322,
+      "created_at": "2025-11-15T23:22:38.197Z",
+      "last_seen": "2025-11-15T23:22:38.197Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 425,
+      "surfaceForm": "Prince Aragorn",
+      "normalizedKey": "prince aragorn",
+      "eid": 233,
+      "created_at": "2025-11-15T23:22:38.197Z",
+      "last_seen": "2025-11-15T23:22:38.197Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 426,
+      "surfaceForm": "Caged",
+      "normalizedKey": "caged",
+      "eid": 335,
+      "created_at": "2025-11-16T02:00:30.984Z",
+      "last_seen": "2025-11-16T02:00:30.984Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 427,
+      "surfaceForm": "Charles Garrison",
+      "normalizedKey": "charles garrison",
+      "eid": 336,
+      "created_at": "2025-11-16T02:00:30.984Z",
+      "last_seen": "2025-11-16T02:00:30.984Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 428,
+      "surfaceForm": "Steamy",
+      "normalizedKey": "steamy",
+      "eid": 337,
+      "created_at": "2025-11-16T02:00:30.985Z",
+      "last_seen": "2025-11-16T02:00:30.985Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 429,
+      "surfaceForm": "Da",
+      "normalizedKey": "da",
+      "eid": 338,
+      "created_at": "2025-11-16T02:22:49.957Z",
+      "last_seen": "2025-11-16T02:22:49.957Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 430,
+      "surfaceForm": "Dav",
+      "normalizedKey": "dav",
+      "eid": 339,
+      "created_at": "2025-11-16T02:22:50.210Z",
+      "last_seen": "2025-11-16T02:22:50.210Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 431,
+      "surfaceForm": "Davi",
+      "normalizedKey": "davi",
+      "eid": 69,
+      "created_at": "2025-11-16T02:22:50.412Z",
+      "last_seen": "2025-11-16T02:22:50.412Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 432,
+      "surfaceForm": "Ba",
+      "normalizedKey": "ba",
+      "eid": 340,
+      "created_at": "2025-11-16T02:22:54.740Z",
+      "last_seen": "2025-11-16T02:22:54.740Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 433,
+      "surfaceForm": "Bat",
+      "normalizedKey": "bat",
+      "eid": 341,
+      "created_at": "2025-11-16T02:22:54.844Z",
+      "last_seen": "2025-11-16T02:22:54.844Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 434,
+      "surfaceForm": "Bath",
+      "normalizedKey": "bath",
+      "eid": 342,
+      "created_at": "2025-11-16T02:22:55.005Z",
+      "last_seen": "2025-11-16T02:22:55.005Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 435,
+      "surfaceForm": "Baths",
+      "normalizedKey": "baths",
+      "eid": 342,
+      "created_at": "2025-11-16T02:22:55.226Z",
+      "last_seen": "2025-11-16T02:22:55.226Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 436,
+      "surfaceForm": "Bathsh",
+      "normalizedKey": "bathsh",
+      "eid": 342,
+      "created_at": "2025-11-16T02:22:55.396Z",
+      "last_seen": "2025-11-16T02:22:55.396Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 437,
+      "surfaceForm": "Bathshe",
+      "normalizedKey": "bathshe",
+      "eid": 342,
+      "created_at": "2025-11-16T02:22:56.257Z",
+      "last_seen": "2025-11-16T02:22:56.257Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 438,
+      "surfaceForm": "Bathsheb",
+      "normalizedKey": "bathsheb",
+      "eid": 342,
+      "created_at": "2025-11-16T02:22:56.467Z",
+      "last_seen": "2025-11-16T02:22:56.467Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 439,
+      "surfaceForm": "Bathsheba",
+      "normalizedKey": "bathsheba",
+      "eid": 342,
+      "created_at": "2025-11-16T02:22:56.757Z",
+      "last_seen": "2025-11-16T02:22:56.757Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 440,
+      "surfaceForm": "Wha",
+      "normalizedKey": "wha",
+      "eid": 343,
+      "created_at": "2025-11-16T02:52:24.024Z",
+      "last_seen": "2025-11-16T02:52:24.024Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 441,
+      "surfaceForm": "Fr",
+      "normalizedKey": "fr",
+      "eid": 344,
+      "created_at": "2025-11-16T02:52:27.068Z",
+      "last_seen": "2025-11-16T02:52:27.068Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 442,
+      "surfaceForm": "Fre",
+      "normalizedKey": "fre",
+      "eid": 345,
+      "created_at": "2025-11-16T02:52:27.173Z",
+      "last_seen": "2025-11-16T02:52:27.173Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 443,
+      "surfaceForm": "Fred",
+      "normalizedKey": "fred",
+      "eid": 322,
+      "created_at": "2025-11-16T02:52:27.360Z",
+      "last_seen": "2025-11-16T02:52:27.360Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 444,
+      "surfaceForm": "Frede",
+      "normalizedKey": "frede",
+      "eid": 322,
+      "created_at": "2025-11-16T02:52:27.520Z",
+      "last_seen": "2025-11-16T02:52:27.520Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 445,
+      "surfaceForm": "Freder",
+      "normalizedKey": "freder",
+      "eid": 322,
+      "created_at": "2025-11-16T02:52:27.640Z",
+      "last_seen": "2025-11-16T02:52:27.640Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 446,
+      "surfaceForm": "Frederi",
+      "normalizedKey": "frederi",
+      "eid": 322,
+      "created_at": "2025-11-16T02:52:27.819Z",
+      "last_seen": "2025-11-16T02:52:27.819Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 447,
+      "surfaceForm": "Frederic",
+      "normalizedKey": "frederic",
+      "eid": 322,
+      "created_at": "2025-11-16T02:52:27.929Z",
+      "last_seen": "2025-11-16T02:52:27.929Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 448,
+      "surfaceForm": "Fredd",
+      "normalizedKey": "fredd",
+      "eid": 330,
+      "created_at": "2025-11-16T02:52:35.842Z",
+      "last_seen": "2025-11-16T02:52:35.842Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 449,
+      "surfaceForm": "Freddi",
+      "normalizedKey": "freddi",
+      "eid": 322,
+      "created_at": "2025-11-16T02:52:35.985Z",
+      "last_seen": "2025-11-16T02:52:35.985Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 450,
+      "surfaceForm": "Freddie",
+      "normalizedKey": "freddie",
+      "eid": 322,
+      "created_at": "2025-11-16T02:52:36.126Z",
+      "last_seen": "2025-11-16T02:52:36.126Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 451,
+      "surfaceForm": "Cory M",
+      "normalizedKey": "cory m",
+      "eid": 279,
+      "created_at": "2025-11-16T04:12:26.518Z",
+      "last_seen": "2025-11-16T04:12:26.518Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 452,
+      "surfaceForm": "Cory Ma",
+      "normalizedKey": "cory ma",
+      "eid": 279,
+      "created_at": "2025-11-16T04:12:26.665Z",
+      "last_seen": "2025-11-16T04:12:26.665Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 453,
+      "surfaceForm": "Cory Mar",
+      "normalizedKey": "cory mar",
+      "eid": 279,
+      "created_at": "2025-11-16T04:12:26.792Z",
+      "last_seen": "2025-11-16T04:12:26.792Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 454,
+      "surfaceForm": "Cory Marr",
+      "normalizedKey": "cory marr",
+      "eid": 279,
+      "created_at": "2025-11-16T04:12:27.032Z",
+      "last_seen": "2025-11-16T04:12:27.032Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 455,
+      "surfaceForm": "Cory Marri",
+      "normalizedKey": "cory marri",
+      "eid": 279,
+      "created_at": "2025-11-16T04:12:27.122Z",
+      "last_seen": "2025-11-16T04:12:27.122Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 456,
+      "surfaceForm": "Cory Marrie",
+      "normalizedKey": "cory marrie",
+      "eid": 279,
+      "created_at": "2025-11-16T04:12:27.295Z",
+      "last_seen": "2025-11-16T04:12:27.295Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 457,
+      "surfaceForm": "Cory Married",
+      "normalizedKey": "cory married",
+      "eid": 279,
+      "created_at": "2025-11-16T04:12:28.009Z",
+      "last_seen": "2025-11-16T04:12:28.009Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 458,
+      "surfaceForm": "In M",
+      "normalizedKey": "in m",
+      "eid": 346,
+      "created_at": "2025-11-16T04:12:58.008Z",
+      "last_seen": "2025-11-16T04:12:58.008Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 459,
+      "surfaceForm": "In Ma",
+      "normalizedKey": "in ma",
+      "eid": 346,
+      "created_at": "2025-11-16T04:12:58.170Z",
+      "last_seen": "2025-11-16T04:12:58.170Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 460,
+      "surfaceForm": "In Man",
+      "normalizedKey": "in man",
+      "eid": 346,
+      "created_at": "2025-11-16T04:12:58.290Z",
+      "last_seen": "2025-11-16T04:12:58.290Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 461,
+      "surfaceForm": "In Mand",
+      "normalizedKey": "in mand",
+      "eid": 346,
+      "created_at": "2025-11-16T04:12:58.444Z",
+      "last_seen": "2025-11-16T04:12:58.444Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 462,
+      "surfaceForm": "In Mande",
+      "normalizedKey": "in mande",
+      "eid": 346,
+      "created_at": "2025-11-16T04:12:58.571Z",
+      "last_seen": "2025-11-16T04:12:58.571Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 463,
+      "surfaceForm": "In Mandev",
+      "normalizedKey": "in mandev",
+      "eid": 346,
+      "created_at": "2025-11-16T04:12:58.823Z",
+      "last_seen": "2025-11-16T04:12:58.823Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 464,
+      "surfaceForm": "In Mandevi",
+      "normalizedKey": "in mandevi",
+      "eid": 346,
+      "created_at": "2025-11-16T04:12:58.947Z",
+      "last_seen": "2025-11-16T04:12:58.947Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 465,
+      "surfaceForm": "In Mandevil",
+      "normalizedKey": "in mandevil",
+      "eid": 346,
+      "created_at": "2025-11-16T04:12:59.055Z",
+      "last_seen": "2025-11-16T04:12:59.055Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 466,
+      "surfaceForm": "In Mandevill",
+      "normalizedKey": "in mandevill",
+      "eid": 346,
+      "created_at": "2025-11-16T04:12:59.247Z",
+      "last_seen": "2025-11-16T04:12:59.247Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 467,
+      "surfaceForm": "In Mandeville",
+      "normalizedKey": "in mandeville",
+      "eid": 346,
+      "created_at": "2025-11-16T04:12:59.419Z",
+      "last_seen": "2025-11-16T04:12:59.419Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 468,
+      "surfaceForm": "Lo",
+      "normalizedKey": "lo",
+      "eid": 347,
+      "created_at": "2025-11-16T04:13:00.737Z",
+      "last_seen": "2025-11-16T04:13:00.737Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 469,
+      "surfaceForm": "Tr",
+      "normalizedKey": "tr",
+      "eid": 348,
+      "created_at": "2025-11-16T04:13:22.027Z",
+      "last_seen": "2025-11-16T04:13:22.027Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 470,
+      "surfaceForm": "Tra",
+      "normalizedKey": "tra",
+      "eid": 349,
+      "created_at": "2025-11-16T04:13:22.241Z",
+      "last_seen": "2025-11-16T04:13:22.241Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 471,
+      "surfaceForm": "Trav",
+      "normalizedKey": "trav",
+      "eid": 350,
+      "created_at": "2025-11-16T04:13:22.560Z",
+      "last_seen": "2025-11-16T04:13:22.560Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 472,
+      "surfaceForm": "Travi",
+      "normalizedKey": "travi",
+      "eid": 350,
+      "created_at": "2025-11-16T04:13:22.786Z",
+      "last_seen": "2025-11-16T04:13:22.786Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 473,
+      "surfaceForm": "Travis",
+      "normalizedKey": "travis",
+      "eid": 350,
+      "created_at": "2025-11-16T04:13:22.942Z",
+      "last_seen": "2025-11-16T04:13:22.942Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 474,
+      "surfaceForm": "Travis C",
+      "normalizedKey": "travis c",
+      "eid": 350,
+      "created_at": "2025-11-16T04:13:23.492Z",
+      "last_seen": "2025-11-16T04:13:23.492Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 475,
+      "surfaceForm": "Travis Cr",
+      "normalizedKey": "travis cr",
+      "eid": 350,
+      "created_at": "2025-11-16T04:13:23.841Z",
+      "last_seen": "2025-11-16T04:13:23.841Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 476,
+      "surfaceForm": "Travis Cry",
+      "normalizedKey": "travis cry",
+      "eid": 350,
+      "created_at": "2025-11-16T04:13:24.138Z",
+      "last_seen": "2025-11-16T04:13:24.138Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 477,
+      "surfaceForm": "Travis Crye",
+      "normalizedKey": "travis crye",
+      "eid": 350,
+      "created_at": "2025-11-16T04:13:24.390Z",
+      "last_seen": "2025-11-16T04:13:24.390Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 478,
+      "surfaceForm": "Travis Cryer",
+      "normalizedKey": "travis cryer",
+      "eid": 350,
+      "created_at": "2025-11-16T04:13:24.495Z",
+      "last_seen": "2025-11-16T04:13:24.495Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 479,
+      "surfaceForm": "Nikki's Un",
+      "normalizedKey": "nikki's un",
+      "eid": 317,
+      "created_at": "2025-11-16T04:13:27.678Z",
+      "last_seen": "2025-11-16T04:13:27.678Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 480,
+      "surfaceForm": "Th",
+      "normalizedKey": "th",
+      "eid": 351,
+      "created_at": "2025-11-16T04:13:44.857Z",
+      "last_seen": "2025-11-16T04:13:44.857Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 481,
+      "surfaceForm": "Ther",
+      "normalizedKey": "ther",
+      "eid": 5,
+      "created_at": "2025-11-16T04:13:45.061Z",
+      "last_seen": "2025-11-16T04:13:45.061Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 482,
+      "surfaceForm": "Jo",
+      "normalizedKey": "jo",
+      "eid": 352,
+      "created_at": "2025-11-16T04:13:55.326Z",
+      "last_seen": "2025-11-16T04:13:55.326Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 483,
+      "surfaceForm": "Joe",
+      "normalizedKey": "joe",
+      "eid": 353,
+      "created_at": "2025-11-16T04:13:55.538Z",
+      "last_seen": "2025-11-16T04:13:55.538Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 484,
+      "surfaceForm": "Joe M",
+      "normalizedKey": "joe m",
+      "eid": 354,
+      "created_at": "2025-11-16T04:13:58.348Z",
+      "last_seen": "2025-11-16T04:13:58.348Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 485,
+      "surfaceForm": "Joe Mu",
+      "normalizedKey": "joe mu",
+      "eid": 354,
+      "created_at": "2025-11-16T04:13:58.671Z",
+      "last_seen": "2025-11-16T04:13:58.671Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 486,
+      "surfaceForm": "Joe Mug",
+      "normalizedKey": "joe mug",
+      "eid": 354,
+      "created_at": "2025-11-16T04:13:59.058Z",
+      "last_seen": "2025-11-16T04:13:59.058Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 487,
+      "surfaceForm": "Joe Mugs",
+      "normalizedKey": "joe mugs",
+      "eid": 354,
+      "created_at": "2025-11-16T04:14:00.305Z",
+      "last_seen": "2025-11-16T04:14:00.306Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 488,
+      "surfaceForm": "Joe Mugsl",
+      "normalizedKey": "joe mugsl",
+      "eid": 354,
+      "created_at": "2025-11-16T04:14:01.503Z",
+      "last_seen": "2025-11-16T04:14:01.503Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 489,
+      "surfaceForm": "Joe Mugsle",
+      "normalizedKey": "joe mugsle",
+      "eid": 354,
+      "created_at": "2025-11-16T04:14:01.580Z",
+      "last_seen": "2025-11-16T04:14:01.580Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 490,
+      "surfaceForm": "Joe Mugsley",
+      "normalizedKey": "joe mugsley",
+      "eid": 354,
+      "created_at": "2025-11-16T04:14:01.751Z",
+      "last_seen": "2025-11-16T04:14:01.751Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 491,
+      "surfaceForm": "Gag",
+      "normalizedKey": "gag",
+      "eid": 355,
+      "created_at": "2025-11-16T04:14:35.153Z",
+      "last_seen": "2025-11-16T04:14:35.153Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 492,
+      "surfaceForm": "Gag of G",
+      "normalizedKey": "gag of g",
+      "eid": 356,
+      "created_at": "2025-11-16T04:14:36.845Z",
+      "last_seen": "2025-11-16T04:14:36.845Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 493,
+      "surfaceForm": "Gag of Gh",
+      "normalizedKey": "gag of gh",
+      "eid": 356,
+      "created_at": "2025-11-16T04:14:37.123Z",
+      "last_seen": "2025-11-16T04:14:37.123Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 494,
+      "surfaceForm": "Gag of Gho",
+      "normalizedKey": "gag of gho",
+      "eid": 356,
+      "created_at": "2025-11-16T04:14:37.267Z",
+      "last_seen": "2025-11-16T04:14:37.267Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 495,
+      "surfaceForm": "Gag of Ghou",
+      "normalizedKey": "gag of ghou",
+      "eid": 356,
+      "created_at": "2025-11-16T04:14:37.449Z",
+      "last_seen": "2025-11-16T04:14:37.449Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 496,
+      "surfaceForm": "Gag of Ghoul",
+      "normalizedKey": "gag of ghoul",
+      "eid": 356,
+      "created_at": "2025-11-16T04:14:37.517Z",
+      "last_seen": "2025-11-16T04:14:37.517Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 497,
+      "surfaceForm": "Gag of Ghouls",
+      "normalizedKey": "gag of ghouls",
+      "eid": 356,
+      "created_at": "2025-11-16T04:14:37.698Z",
+      "last_seen": "2025-11-16T04:14:37.698Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 498,
+      "surfaceForm": "Ghouls",
+      "normalizedKey": "ghouls",
+      "eid": 356,
+      "created_at": "2025-11-16T04:14:44.382Z",
+      "last_seen": "2025-11-16T04:14:44.382Z",
+      "occurrence_count": 1,
+      "confidence": 0.9
+    },
+    {
+      "aid": 499,
+      "surfaceForm": "ORG",
+      "normalizedKey": "org",
+      "eid": 357,
+      "created_at": "2025-11-16T04:14:44.382Z",
+      "last_seen": "2025-11-16T04:14:44.382Z",
+      "occurrence_count": 1,
+      "confidence": 1
+    },
+    {
+      "aid": 500,
+      "surfaceForm": "3019",
+      "normalizedKey": "3019",
+      "eid": 358,
+      "created_at": "2025-11-16T15:05:51.088Z",
+      "last_seen": "2025-11-16T15:05:51.088Z",
+      "occurrence_count": 1,
+      "confidence": 1
     }
   ],
   "metadata": {
-    "total_aliases": 407,
-    "total_entities": 321,
-    "last_updated": "2025-11-13T01:08:42.170Z"
+    "total_aliases": 500,
+    "total_entities": 358,
+    "last_updated": "2025-11-16T15:05:51.094Z"
   }
 }

@@ -139,7 +139,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
       try {
         // Call ARES engine API (use environment variable for production)
-        const apiUrl = import.meta.env.VITE_API_URL || 'https://ares-production-72ea.up.railway.app';
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';
         const response = await fetch(`${apiUrl}/extract-entities`, {
           method: 'POST',
           headers: {

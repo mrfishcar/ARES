@@ -20,10 +20,9 @@ import { computeEntityConfidence, filterEntitiesByConfidence } from "../confiden
 import type { Token, ParsedSentence, ParseResponse } from "./parse-types";
 import { getParserClient } from "../../parser";
 import { analyzeEntityContext, classifyWithContext, shouldExtractByContext } from "./context-classifier";
-import { getEntityDetectionConfig, getGenericTitles, getValidNamePrefixesPattern } from "../../config/extraction-config";
-
-// Re-export types for test compatibility
-export type { Entity, EntityType } from "../schema";
+import { filterPronouns } from "../pronoun-utils";
+import { detectNounCategory, nounCategoryToEntityType } from "../grammar/parts-of-speech";
+import { detectClauses } from "./clause-detector";
 
 const TRACE_SPANS = process.env.L3_TRACE === "1";
 
@@ -48,16 +47,14 @@ function validateSpan(
   text: string,
   span: { text: string; start: number; end: number },
   context: string
-): { valid: boolean; extracted: string; reason?: string } {
+): { valid: boolean; extracted: string } {
   // Extract actual text at this position
   const extracted = text.slice(span.start, span.end);
   const normalizedExtracted = normalizeName(extracted);
   const normalizedExpected = normalizeName(span.text);
 
-
   // Check if normalized versions match
   let valid = normalizedExtracted === normalizedExpected;
-  let reason: string | undefined;
 
   // Additional check: ensure extracted text doesn't contain extra words
   // This catches cases where span.end extends beyond the entity
@@ -74,7 +71,6 @@ function validateSpan(
       if (wordCountDiff > 1) {
         // Too many extra words - likely corruption
         valid = false;
-        reason = "Too many extra words";
       } else if (wordCountDiff === 1) {
         // One extra word - check if it's a pronoun or common word that indicates corruption
         const extraWord = normalizedExtractedWords[normalizedExtractedWords.length - 1].toLowerCase();
@@ -82,7 +78,6 @@ function validateSpan(
         if (pronouns.includes(extraWord)) {
           // Extracted text includes a pronoun after the entity - this is corruption
           valid = false;
-          reason = "Pronoun after entity";
         }
       }
     }
@@ -92,26 +87,16 @@ function validateSpan(
     if (/\.\s+[A-Z][a-z]+\s*$/.test(extracted)) {
       // Example: "Slytherin. He" or "Granger. The"
       valid = false;
-      reason = "Ends with sentence boundary";
     }
 
     // Pattern 2: Word fragments being concatenated (e.g., "WeasleRon", "SlytheriHe")
     // This is detected by finding capitalized letters in the middle of a word
-    // BUT: Allow valid patterns like "McGonagall", "McDonald", "O'Brien"
     const extractedWords = extracted.split(/\s+/).filter(Boolean);
     for (const word of extractedWords) {
-      // Check for lowercase followed by uppercase
-      const match = word.match(/[a-z]([A-Z])/);
-      if (match) {
-        // Allow common prefixes from config: Mc, Mac, O', Fitz, etc.
-        const validPrefixPattern = getValidNamePrefixesPattern();
-        const isValidPrefix = validPrefixPattern.test(word);
-        if (!isValidPrefix) {
-          // Found lowercase followed by uppercase without valid prefix - likely corruption
-          valid = false;
-          reason = "Word fragment corruption";
-          break;
-        }
+      if (/[a-z][A-Z]/.test(word)) {
+        // Found lowercase followed by uppercase - likely corruption
+        valid = false;
+        break;
       }
     }
   }
@@ -142,17 +127,14 @@ function validateSpan(
   return { valid, extracted };
 }
 
-/**
- * Build a regex pattern from organization hint keywords in config
- * Pattern is built on-demand and cached within the config loading
- */
-function getOrgHintsPattern(): RegExp {
-  const orgConfig = getEntityDetectionConfig();
-  return new RegExp(`\\b(${orgConfig.org_hint_keywords.join('|')})\\b`, 'i');
-}
+// Organization hint keywords
+const ORG_HINTS = /\b(school|university|academy|seminary|ministry|department|institute|college|inc\.?|corp\.?|llc|company|corporation|ltd\.?|technologies|labs|capital|ventures|partners|group|holdings|systems|solutions|consulting|associates|enterprises|industries|bank|financial|investment|fund|computing|software|networks|media|communications|pharmaceuticals|biotech|aerospace|robotics|semiconductor|electronics)\b/i;
 
-// Note: Organization hints, place prepositions, and family words are now loaded from config
-// using getEntityDetectionConfig() for better maintainability
+// Preposition patterns that suggest PLACE
+const PLACE_PREP = /\b(in|at|from|to|into|onto|toward|through|over|under|near|by|inside|outside|within|across|dwelt in|traveled to)\b/i;
+
+// Family relation words that indicate PERSON
+const FAMILY_WORDS = new Set(['son', 'daughter', 'father', 'mother', 'brother', 'sister', 'parent', 'child', 'ancestor', 'descendant']);
 
 // Motion/location verbs
 const MOTION_VERBS = new Set(['travel', 'traveled', 'go', 'went', 'move', 'moved', 'journey', 'journeyed', 'walk', 'walked', 'dwell', 'dwelt', 'live', 'lived']);
@@ -341,6 +323,9 @@ const STOP = new Set([
   // Transition/temporal words that should not be entities
   "Meanwhile","However","Moreover","Furthermore","Therefore","Nevertheless","Nonetheless"
 ]);
+for (const word of Array.from(STOP)) {
+  STOP.add(word.toLowerCase());
+}
 const PRON = new Set([
   "I","You","He","She","It","We","They","Me","Him","Her","Us","Them","My","Your","His","Its","Our","Their",
   "Mine","Yours","Hers","Ours","Theirs","Myself","Yourself","Himself","Herself","Itself","Ourselves","Yourselves","Themselves",
@@ -534,6 +519,53 @@ function refineEntityType(type: EntityType, text: string): EntityType {
 }
 
 /**
+ * Enhance entity type using POS-based noun categorization (Grammar Module Integration)
+ * Uses Grammar Monster rules to categorize nouns and map to entity types
+ */
+function enhanceEntityTypeWithPOS(
+  currentType: EntityType,
+  text: string,
+  tokens: Token[]
+): EntityType {
+  if (tokens.length === 0) return currentType;
+
+  // Get POS tag from first token (most important for proper nouns)
+  const firstToken = tokens[0];
+  const posTag = firstToken.pos;
+
+  // Skip if not a noun (preserve existing type)
+  if (posTag !== 'NOUN' && posTag !== 'PROPN') {
+    return currentType;
+  }
+
+  // Use grammar module to detect noun category
+  const isCapitalized = /^[A-Z]/.test(text);
+  const nounCategory = detectNounCategory(text, posTag, isCapitalized);
+  const grammaticalType = nounCategoryToEntityType(nounCategory);
+
+  // If grammar analysis agrees with current type, return current type (high confidence)
+  if (grammaticalType === currentType) {
+    return currentType;
+  }
+
+  // For proper nouns (PROPN), prefer grammatical analysis
+  if (posTag === 'PROPN') {
+    if (grammaticalType === 'PERSON' && currentType && currentType !== 'PERSON') {
+      return currentType;
+    }
+
+    if ((grammaticalType === 'ITEM' || grammaticalType === 'WORK') && currentType) {
+      return currentType;
+    }
+
+    return grammaticalType;
+  }
+
+  // For common nouns, prefer keyword-based analysis (more reliable for common nouns)
+  return currentType;
+}
+
+/**
  * Capitalize entity name to proper case (Title Case)
  * Handles multi-word names and preserves particles like "of", "the", "de", etc.
  */
@@ -555,27 +587,16 @@ function capitalizeEntityName(name: string): string {
 
 export function normalizeName(s: string): string {
   let normalized = s.replace(/\s+/g, " ").trim();
-  normalized = normalized.replace(/^[\-\u2013\u2014'"""'']+/, "");
+  normalized = normalized.replace(/^[\-\u2013\u2014'"“”‘’]+/, "");
   normalized = normalized.replace(/[,'"\u201c\u201d\u2018\u2019]+$/g, " ");
   normalized = normalized.replace(/\s*,\s*/g, " ");
   normalized = normalized.replace(/[.;:!?]+$/g, "");
   normalized = normalized.replace(/^(the|a|an)\s+/i, "");
-
-  // Check if the name starts with a title word followed by a capitalized name
-  // Build regex from generic titles config
-  const genericTitles = Array.from(getGenericTitles());
-  const titleWordsRegex = new RegExp(`^(${genericTitles.join('|')})\\s+[A-Z]`, 'i');
-  const hasTitle = titleWordsRegex.test(normalized);
-
-  // Only strip lowercase prefixes if there's NO title at the start
-  if (!hasTitle) {
-    normalized = normalized.replace(/^((?:[a-z]+\s+)+)(?=[A-Z0-9])/g, "");
-  }
-
-  normalized = normalized.replace(/['']s$/i, "");
+  normalized = normalized.replace(/^((?:[a-z]+\s+)+)(?=[A-Z0-9])/g, "");
+  normalized = normalized.replace(/['’]s$/i, "");
   normalized = normalized.replace(/\bfamily\b$/i, "").trim();
   normalized = normalized.replace(/\bHouse$/i, "");
-  const capitalized = normalized.match(/[A-Z][A-Za-z0-9''\-]*(?:\s+(?:of|the|and|&)?\s*[A-Z][A-Za-z0-9''\-]*)*/);
+  const capitalized = normalized.match(/[A-Z][A-Za-z0-9'’\-]*(?:\s+(?:of|the|and|&)?\s*[A-Z][A-Za-z0-9'’\-]*)*/);
   if (capitalized) {
     normalized = capitalized[0];
   }
@@ -583,8 +604,17 @@ export function normalizeName(s: string): string {
   return normalized;
 }
 
-// Title words are now loaded from config (aliasing.title_overlap_prevention.generic_titles)
-// using getGenericTitles() for better maintainability
+/**
+ * Title words that should be included with person names
+ */
+const TITLE_WORDS = new Set([
+  'mr', 'mrs', 'miss', 'ms', 'dr', 'doctor', 'prof', 'professor',
+  'sir', 'madam', 'lord', 'lady', 'king', 'queen', 'prince', 'princess',
+  'duke', 'duchess', 'baron', 'baroness', 'count', 'countess',
+  'captain', 'commander', 'general', 'admiral', 'colonel', 'major',
+  'sergeant', 'lieutenant', 'father', 'mother', 'brother', 'sister',
+  'master', 'archmagus', 'wizard', 'mage', 'sorcerer', 'sorceress'
+]);
 
 /**
  * Extract NER spans from parsed sentence
@@ -647,7 +677,7 @@ function nerSpans(sent: ParsedSentence): Array<{ text: string; type: EntityType;
     if (mapped === 'PERSON' && i > 0) {
       const prevToken = sent.tokens[i - 1];
       if (prevToken.pos === 'PROPN' && !prevToken.ent &&
-          getGenericTitles().has(prevToken.text.toLowerCase())) {
+          TITLE_WORDS.has(prevToken.text.toLowerCase())) {
         spanStart = i - 1;
       }
     }
@@ -659,6 +689,9 @@ function nerSpans(sent: ParsedSentence): Array<{ text: string; type: EntityType;
 
     // Refine type based on text content (e.g., "Battle of X" → EVENT)
     let refinedType = refineEntityType(mapped, text);
+
+    // Enhance with POS-based noun categorization (Grammar Module)
+    refinedType = enhanceEntityTypeWithPOS(refinedType, text, spanTokens);
 
     // Apply whitelist override (case-insensitive, e.g., "Hogwarts" → ORG, not PLACE)
     const whitelistMatch = lookupWhitelist(text);
@@ -691,6 +724,9 @@ function nerSpans(sent: ParsedSentence): Array<{ text: string; type: EntityType;
  * Split coordinated entities like "James and Lily Potter" into separate entities
  * Looks for patterns: [Name1] and [Name2] [SharedLastName]
  */
+const COORDINATABLE_TYPES = new Set<EntityType>(['PERSON', 'ORG', 'PLACE']);
+const CONJUNCTION_TOKENS = new Set(['and', 'or', '&']);
+
 function splitCoordination(
   sent: ParsedSentence,
   spans: Array<{ text: string; type: EntityType; start: number; end: number }>
@@ -722,12 +758,14 @@ function splitCoordination(
   };
 
   for (const span of spans) {
-    if (span.type !== 'PERSON') {
+    if (!COORDINATABLE_TYPES.has(span.type)) {
       result.push(span);
       continue;
     }
 
-    const spanTokens = tokens.filter(t => t.start >= span.start && t.end <= span.end);
+    const spanTokens = tokens
+      .filter(t => t.start >= span.start && t.end <= span.end)
+      .sort((a, b) => a.start - b.start);
     if (spanTokens.length === 0) {
       result.push(span);
       continue;
@@ -745,7 +783,15 @@ function splitCoordination(
         continue;
       }
 
-      if (isAllowedPersonToken(tok)) {
+      if (span.type === 'PERSON') {
+        if (isAllowedPersonToken(tok)) {
+          current.push(tok);
+        }
+        continue;
+      }
+
+      // For ORG/PLACE keep most lexical tokens (determiners included) to preserve names.
+      if (tok.pos !== 'CCONJ' && tok.pos !== 'SCONJ') {
         current.push(tok);
       }
     }
@@ -779,7 +825,7 @@ function splitCoordination(
     }
 
     let sharedSurname: string | null = null;
-    if (filteredSegments.length >= 2) {
+    if (span.type === 'PERSON' && filteredSegments.length >= 2) {
       const tail = filteredSegments[filteredSegments.length - 1];
       if (tail.length >= 2) {
         const surnameCandidate = tail[tail.length - 1];
@@ -793,6 +839,7 @@ function splitCoordination(
       const segment = filteredSegments[idx];
       let segmentTokens = segment.map(t => t.text);
       if (
+        span.type === 'PERSON' &&
         sharedSurname &&
         idx < filteredSegments.length - 1 &&
         segment.length === 1 &&
@@ -871,7 +918,11 @@ function depBasedEntities(sent: ParsedSentence): Array<{ text: string; type: Ent
       }
     }
 
-    const spanTokens = tokens.slice(startIdx, endIdx + 1);
+    let spanTokens = tokens.slice(startIdx, endIdx + 1);
+    spanTokens = spanTokens.filter(tok => !CONJUNCTION_TOKENS.has(tok.text.toLowerCase()));
+    if (!spanTokens.length) {
+      continue;
+    }
     const rawText = spanTokens.map(t => t.text).join(' ');
     const text = normalizeName(rawText);
 
@@ -937,8 +988,6 @@ function depBasedEntities(sent: ParsedSentence): Array<{ text: string; type: Ent
     traceSpan("dep", sent.tokens.map(tok => tok.text).join(" "), start, end, cleanedText);
   }
 
-  // TODO: Apply coordination splitting to handle "James and Lily Potter"
-  // Currently causing performance issues, needs optimization
   return spans;
 }
 
@@ -996,7 +1045,7 @@ function classifyName(text: string, surface: string, start: number, end: number)
   }
 
   // Organization keywords in name → ORG
-  if (getOrgHintsPattern().test(surface)) {
+  if (ORG_HINTS.test(surface)) {
     return 'ORG';
   }
 
@@ -1136,33 +1185,6 @@ function gazetterPlaces(text: string): Array<{ text: string; type: EntityType; s
 function fallbackNames(text: string): Array<{ text: string; type: EntityType; start: number; end: number }> {
   const spans: { text: string; type: EntityType; start: number; end: number }[] = [];
 
-  // INTELLIGENT: Extract coordinated person names first (e.g., "James and Lily Potter")
-  // Pattern: FirstName and SecondName LastName
-  const coordPattern = /\b([A-Z][\w'-]+)\s+and\s+([A-Z][\w'-]+)\s+([A-Z][\w'-]+)\b/g;
-  let coordMatch: RegExpExecArray | null;
-
-  while ((coordMatch = coordPattern.exec(text))) {
-    const firstName = coordMatch[1];
-    const secondName = coordMatch[2];
-    const lastName = coordMatch[3];
-
-    // Create two separate PERSON entities with full names
-    spans.push({
-      text: `${firstName} ${lastName}`,
-      type: 'PERSON',
-      start: coordMatch.index,
-      end: coordMatch.index + firstName.length + 1 + lastName.length
-    });
-
-    const secondStart = coordMatch.index + firstName.length + ' and '.length;
-    spans.push({
-      text: `${secondName} ${lastName}`,
-      type: 'PERSON',
-      start: secondStart,
-      end: secondStart + secondName.length + 1 + lastName.length
-    });
-  }
-
   // FIXED: {0,2} allows 1-3 words (including single words like "Gandalf")
   const rx = /\b([A-Z][\w''.-]+(?:\s+[A-Z][\w''.-]+){0,2})\b/g;
   let m: RegExpExecArray | null;
@@ -1214,15 +1236,11 @@ function fallbackNames(text: string): Array<{ text: string; type: EntityType; st
     // Strip trailing punctuation and sentence fragments
     // This handles cases like "Ravenclaw. Each" being matched as 2 words
     // Remove: period/comma/etc followed by space and another capitalized word
-    const beforeCleanup = value;
     value = value.replace(/[.,;:!?]\s+[A-Z].*$/, '');
     // Also strip any remaining trailing punctuation
     value = value.replace(/[.,;:!?]+$/, '').trim();
 
-    // CRITICAL FIX: Update end position after cleaning
-    // If we removed trailing content, adjust rawEnd accordingly
-    const lengthDiff = beforeCleanup.length - value.length;
-    const rawEnd = endIndex - lengthDiff;
+    const rawEnd = endIndex;
 
     const tokens = value.split(/\s+/).filter(Boolean);
     const significantTokens = tokens.filter(tok => /^[A-Z]|^[IVXLCDM]+$/.test(tok));
@@ -1272,7 +1290,7 @@ function fallbackNames(text: string): Array<{ text: string; type: EntityType; st
     });
     traceSpan("fallback", text, m.index, rawEnd, normalized);
   }
-
+  
   return spans;
 }
 
@@ -1346,6 +1364,69 @@ function extractWhitelistedNames(text: string): Array<{ text: string; type: Enti
 }
 
 /**
+ * Merge "X of Y" patterns into single entities
+ * E.g., "Battle" + "of" + "Pelennor Fields" → "Battle of Pelennor Fields" (EVENT)
+ */
+function mergeOfPatterns<T extends { text: string; type: EntityType; start: number; end: number; source: ExtractorSource }>(
+  spans: T[],
+  fullText: string
+): T[] {
+
+  // Sort by start position
+  const sorted = [...spans].sort((a, b) => a.start - b.start);
+  const merged: T[] = [];
+  const skip = new Set<number>();
+
+  for (let i = 0; i < sorted.length; i++) {
+    if (skip.has(i)) continue;
+
+    const span1 = sorted[i];
+    const span1Text = span1.text.trim().toLowerCase();
+
+    // Check if this is a "Battle/War/Siege" span
+    const isEventKeyword = /^(battle|war|siege|conflict|skirmish|campaign)$/i.test(span1Text);
+
+    if (isEventKeyword) {
+      // Look for " of " followed by another entity
+      const afterSpan1 = fullText.slice(span1.end).trim();
+
+      if (afterSpan1.startsWith('of ')) {
+        // Find the next span that starts after "of "
+        const ofEnd = span1.end + afterSpan1.indexOf('of ') + 3; // +3 for "of "
+
+        for (let j = i + 1; j < sorted.length; j++) {
+          const span2 = sorted[j];
+
+          // Check if span2 starts right after "of " (with some tolerance for whitespace)
+          if (span2.start >= ofEnd && span2.start <= ofEnd + 5) {
+            // Merge into one EVENT span
+            const mergedText = fullText.slice(span1.start, span2.end);
+            const mergedSpan = {
+              ...span1,
+              text: mergedText,
+              type: 'EVENT' as EntityType,
+              end: span2.end
+            };
+
+            merged.push(mergedSpan);
+            skip.add(i);
+            skip.add(j);
+            break;
+          }
+        }
+      }
+    }
+
+    // If not merged, keep original
+    if (!skip.has(i)) {
+      merged.push(span1);
+    }
+  }
+
+  return merged;
+}
+
+/**
  * Deduplicate entity spans
  * Priority: Keep the first occurrence per canonical form (dep > ner > fb)
  * Also removes spans that are subsumed by longer spans (e.g., "Battle" inside "Battle of Pelennor Fields")
@@ -1358,9 +1439,7 @@ function dedupe<T extends { text: string; type: EntityType; start: number; end: 
     // Dedupe by canonical form (type + normalized text)
     // Since spans are ordered as [...dep, ...ner, ...fb], the first occurrence (most reliable) wins
     const canonicalKey = `${s.type}:${s.text.toLowerCase()}`;
-    if (seenCanonical.has(canonicalKey)) {
-      continue;
-    }
+    if (seenCanonical.has(canonicalKey)) continue;
 
     seenCanonical.add(canonicalKey);
     out.push(s);
@@ -1389,21 +1468,46 @@ export async function extractEntities(text: string): Promise<{
   entities: Entity[];
   spans: Array<{entity_id: string; start: number; end: number}>;
 }> {
+  const DEBUG_ENTITIES = process.env.L3_DEBUG === "1";
+  if (DEBUG_ENTITIES) {
+    console.log(`[EXTRACT-ENTITIES][DEBUG] Debug logging enabled`);
+  }
   // 1) Parse with spaCy
   const parsed = await parseWithService(text);
 
-  // 2) Extract NER spans from all sentences, then split coordinations
-  const ner = parsed.sentences.flatMap(sent => splitCoordination(sent, nerSpans(sent)));
+  // 2) Extract NER spans from all sentences with clause awareness, then split coordinations
+  const ner = parsed.sentences.flatMap(sent => {
+    const spans = nerSpans(sent);
+    const clauses = detectClauses(sent, text);
+
+    if (!clauses.length) {
+      return splitCoordination(sent, spans);
+    }
+
+    const clauseSpans = clauses.flatMap(clause => {
+      const filtered = spans.filter(span =>
+        span.start >= clause.start && span.end <= clause.end
+      );
+      if (!filtered.length) {
+        return [];
+      }
+      return splitCoordination(sent, filtered);
+    });
+
+    if (clauseSpans.length === 0) {
+      return splitCoordination(sent, spans);
+    }
+
+    return clauseSpans;
+  });
 
   // 3) Dependency-based extraction (uses syntactic patterns)
-  // TODO: Apply coordination splitting to dependency-based entities
   const dep = parsed.sentences.flatMap(depBasedEntities);
 
   // 4) Gazetteer-based place extraction
   const gazPlaces = gazetterPlaces(text);
 
   // 5) Fallback: capitalized names with context classification
-  // TODO: Apply coordination splitting to fallback entities
   const fb = fallbackNames(text);
 
   // 6) Merge all sources, deduplicate
@@ -1443,8 +1547,11 @@ export async function extractEntities(text: string): Promise<{
 
   const deduped = dedupe(rawSpans);
 
+  // Merge "X of Y" patterns (e.g., "Battle" + "of" + "Pelennor Fields" → "Battle of Pelennor Fields")
+  const merged = mergeOfPatterns(deduped, text);
+
   // Validate all spans before processing to prevent corruption
-  const validated = deduped.filter(span => {
+  const validated = merged.filter(span => {
     const validation = validateSpan(text, span, "pre-entity-creation");
     if (!validation.valid) {
       // Skip corrupted spans to prevent bad data in registries
@@ -1683,7 +1790,6 @@ const chooseCanonical = (names: Set<string>): string => {
   const mergedMap = new Map<string, EntityEntry>();
   for (const entry of entries) {
     const key = entry.entity.canonical.toLowerCase();
-
     const existing = mergedMap.get(key);
     if (!existing) {
       mergedMap.set(key, entry);
@@ -1716,6 +1822,9 @@ const chooseCanonical = (names: Set<string>): string => {
   }
 
   const mergedEntries = Array.from(mergedMap.values());
+  if (DEBUG_ENTITIES) {
+    console.log(`[EXTRACT-ENTITIES][DEBUG] mergedEntries=${mergedEntries.length}`);
+  }
 
   const finalEntries = mergedEntries.filter(entry => {
     if (STOP.has(entry.entity.canonical)) return false;
@@ -1769,8 +1878,12 @@ const chooseCanonical = (names: Set<string>): string => {
     });
   });
 
+  if (DEBUG_ENTITIES) {
+    console.log(`[EXTRACT-ENTITIES][DEBUG] finalEntries=${finalEntries.length}`);
+  }
+
   // Phase E1: Apply confidence-based filtering
-  // Convert EntityCluster for confidence scoring
+  // Convert EntityEntry to EntityCluster for confidence scoring
   const clusters: EntityCluster[] = finalEntries.map(entry => {
     // Create a representative mention for the entity (required by EntityCluster)
     const firstSpan = entry.spanList[0] || { start: 0, end: 0 };
@@ -1804,6 +1917,11 @@ const chooseCanonical = (names: Set<string>): string => {
   // Lower threshold allows even low-confidence FALLBACK entities to pass
   // Note: FALLBACK base is 0.40, but can be penalized to ~0.30-0.35
   const filteredClusters = filterEntitiesByConfidence(clusters, 0.30);
+  if (DEBUG_ENTITIES) {
+    console.log(
+      `[EXTRACT-ENTITIES][DEBUG] confidence clusters=${clusters.length} kept=${filteredClusters.length}`
+    );
+  }
 
   // Build map of filtered entity IDs
   const filteredIds = new Set(filteredClusters.map(c => c.id));
@@ -1812,6 +1930,9 @@ const chooseCanonical = (names: Set<string>): string => {
   const confidenceFilteredEntries = finalEntries.filter(entry =>
     filteredIds.has(entry.entity.id)
   );
+  if (DEBUG_ENTITIES) {
+    console.log(`[EXTRACT-ENTITIES][DEBUG] confidenceFilteredEntries=${confidenceFilteredEntries.length}`);
+  }
 
   const entities: Entity[] = [];
   const spans: Array<{ entity_id: string; start: number; end: number }> = [];
@@ -1822,6 +1943,11 @@ const chooseCanonical = (names: Set<string>): string => {
     // Ensure aliases are unique
     const nameSet = new Set<string>([entry.entity.canonical, ...entry.entity.aliases]);
     const candidateRawByNormalized = new Map<string, string>();
+    if (DEBUG_ENTITIES) {
+      console.log(
+        `[EXTRACT-ENTITIES][DEBUG] Processing entity ${entry.entity.id} nameSet=${Array.from(nameSet).join(' | ')}`
+      );
+    }
 
     // Validate and filter out corrupted spans before processing
     const validSpans = entry.spanList.filter(span => {
@@ -1847,9 +1973,16 @@ const chooseCanonical = (names: Set<string>): string => {
     // With case-insensitive extraction, lowercase entity names are now valid and intentional
 
     const normalizedMap = new Map<string, string>();
-    for (const name of nameSet) {
+    for (const name of Array.from(nameSet)) {
       const normalized = normalizeName(name);
-      if (!normalized) continue;
+      if (!normalized) {
+        if (DEBUG_ENTITIES) {
+          console.warn(
+            `[EXTRACT-ENTITIES][DEBUG] normalizeName returned empty for "${name}" on entity ${entry.entity.id}`
+          );
+        }
+        continue;
+      }
       const rawCandidate =
         candidateRawByNormalized.get(normalized.toLowerCase()) ??
         entry.variants.get(normalized.toLowerCase()) ??
@@ -1859,15 +1992,36 @@ const chooseCanonical = (names: Set<string>): string => {
       // NOTE: Removed lowercase check - with case-insensitive extraction, lowercase names are valid
       if (!normalizedMap.has(normalized)) {
         normalizedMap.set(normalized, cleanedRaw);
+        if (DEBUG_ENTITIES) {
+          console.log(`[EXTRACT-ENTITIES][DEBUG] Added normalized key ${normalized} for entity ${entry.entity.id}`);
+        }
       }
     }
 
     if (!normalizedMap.size) {
+      if (DEBUG_ENTITIES) {
+        console.warn(
+          `[EXTRACT-ENTITIES][DEBUG] Skipping entity ${entry.entity.id} (${entry.entity.canonical}) - normalizedMap empty`
+        );
+      }
       continue;
     }
 
     const normalizedKeys = Array.from(normalizedMap.keys());
-    const chosen = chooseCanonical(new Set(normalizedKeys));
+    // CRITICAL: Filter pronouns from canonical name candidates
+    // Pronouns are context-dependent and should never be permanent entity identifiers
+    const nonPronounKeys = filterPronouns(normalizedKeys);
+    // Fallback to original keys if all were pronouns (defensive - shouldn't happen)
+    const candidateKeys = nonPronounKeys.length > 0 ? nonPronounKeys : normalizedKeys;
+
+    if (candidateKeys.length === 0 && DEBUG_ENTITIES) {
+      console.warn(
+        `[EXTRACT-ENTITIES][DEBUG] All canonical candidates filtered as pronouns for ${entry.entity.id} (${entry.entity.canonical})`,
+        { normalizedKeys }
+      );
+    }
+
+    const chosen = chooseCanonical(new Set(candidateKeys));
     const rawForChosen = normalizedMap.get(chosen) ?? chosen;
     entry.entity.canonical = chosen;
 
@@ -1890,13 +2044,26 @@ const chooseCanonical = (names: Set<string>): string => {
       }
     }
 
-    entry.entity.aliases = Array.from(aliasRawSet);
+    // CRITICAL: Filter pronouns from aliases before storing
+    // Pronouns are context-dependent and should never be permanent aliases
+    entry.entity.aliases = filterPronouns(Array.from(aliasRawSet));
 
     const dedupeKey = `${entry.entity.type}:${chosen.toLowerCase()}`;
     if (emittedKeys.has(dedupeKey)) {
+      if (DEBUG_ENTITIES) {
+        console.warn(
+          `[EXTRACT-ENTITIES][DEBUG] Deduped entity ${entry.entity.id} (${entry.entity.canonical}) due to key ${dedupeKey}`
+        );
+      }
       continue;
     }
     emittedKeys.add(dedupeKey);
+
+    if (DEBUG_ENTITIES) {
+      console.log(
+        `[EXTRACT-ENTITIES][DEBUG] Emitting entity ${entry.entity.id} (${entry.entity.canonical}) type=${entry.entity.type} aliases=${entry.entity.aliases.join(', ')}`
+      );
+    }
 
     entities.push(entry.entity);
 
@@ -1951,121 +2118,6 @@ const chooseCanonical = (names: Set<string>): string => {
     }
   }
 
-  // ========== PATTERN-BASED ENTITY EXTRACTION ==========
-  // Supplement spaCy with pattern-based detection for types it misses
-  // (DATE, PRODUCT, TECHNOLOGY, acronym ORGs)
-
-  const patternEntities: Entity[] = [];
-  let patternEntityCount = 0;
-
-  // DATE patterns - Critical! SpaCy often misses dates
-  const datePatterns = [
-    { regex: /\b\d{1,2}[-/]\d{1,2}[-/]\d{2,4}\b/g, format: 'numeric' },  // 01/15/2024, 1-15-24
-    { regex: /\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}\b/gi, format: 'month-day-year' },
-    { regex: /\b\d{1,2}\s+(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}\b/gi, format: 'day-month-year' },
-    { regex: /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*\s+\d{1,2},?\s+\d{4}\b/gi, format: 'abbrev-month' },
-    { regex: /\b\d{4}-\d{2}-\d{2}\b/g, format: 'ISO' },  // 2024-01-15
-    { regex: /\b(1[89]\d{2}|20[0-2]\d)\b/g, format: 'year-only' },  // Years 1800-2029 (prevents "1234" false positives)
-  ];
-
-  for (const { regex, format } of datePatterns) {
-    let match;
-    regex.lastIndex = 0;
-    while ((match = regex.exec(text)) !== null) {
-      const dateText = match[0].trim();
-
-      // Skip if this span already covered by existing entity
-      const start = match.index;
-      const end = match.index + dateText.length;
-      const overlaps = spans.some(s =>
-        (start >= s.start && start < s.end) || (end > s.start && end <= s.end)
-      );
-
-      if (!overlaps && dateText.length >= 4) {  // Minimum date length
-        const entityId = `pattern_date_${patternEntityCount++}`;
-        patternEntities.push({
-          id: entityId,
-          type: 'DATE',
-          canonical: dateText,
-          aliases: [],
-          created_at: new Date().toISOString(),
-        });
-
-        spans.push({ entity_id: entityId, start, end });
-      }
-    }
-  }
-
-  // PRODUCT patterns - Tech products, consumer goods
-  const productPatterns = [
-    /\b(iPhone|iPad|MacBook|AirPods|Apple Watch|iMac)\s+[\w\s]+(Pro|Max|Plus|Air|Mini)?\b/gi,
-    /\b(Galaxy|Pixel|Surface|Kindle|PlayStation|Xbox|Switch)\s+[\w\s]+\b/gi,
-    /\b\w+\s+(Pro|Plus|Max|Ultra|Air|Mini|Lite)\s*\d*\b/g,  // Generic product variants
-  ];
-
-  for (const pattern of productPatterns) {
-    let match;
-    pattern.lastIndex = 0;
-    while ((match = pattern.exec(text)) !== null) {
-      const productText = match[0].trim();
-      const start = match.index;
-      const end = match.index + productText.length;
-
-      const overlaps = spans.some(s =>
-        (start >= s.start && start < s.end) || (end > s.start && end <= s.end)
-      );
-
-      if (!overlaps) {
-        const entityId = `pattern_product_${patternEntityCount++}`;
-        patternEntities.push({
-          id: entityId,
-          type: 'ITEM',  // Using ITEM for products
-          canonical: productText,
-          aliases: [],
-          created_at: new Date().toISOString(),
-        });
-
-        spans.push({ entity_id: entityId, start, end });
-      }
-    }
-  }
-
-  // ORG acronym patterns - FBI, NASA, CIA, etc.
-  const acronymPattern = /\b[A-Z]{2,6}\b/g;  // 2-6 uppercase letters
-  const commonAcronyms = new Set(['FBI', 'CIA', 'NASA', 'NATO', 'UN', 'EU', 'USA', 'UK', 'US', 'IT', 'AI', 'ML', 'API']);
-
-  let match;
-  acronymPattern.lastIndex = 0;
-  while ((match = acronymPattern.exec(text)) !== null) {
-    const acronym = match[0];
-
-    // Only extract well-known acronyms to avoid false positives
-    if (commonAcronyms.has(acronym)) {
-      const start = match.index;
-      const end = match.index + acronym.length;
-
-      const overlaps = spans.some(s =>
-        (start >= s.start && start < s.end) || (end > s.start && end <= s.end)
-      );
-
-      if (!overlaps) {
-        const entityId = `pattern_org_${patternEntityCount++}`;
-        patternEntities.push({
-          id: entityId,
-          type: 'ORG',
-          canonical: acronym,
-          aliases: [],
-          created_at: new Date().toISOString(),
-        });
-
-        spans.push({ entity_id: entityId, start, end });
-      }
-    }
-  }
-
-  // Add pattern entities to main entities array
-  entities.push(...patternEntities);
-
   // Step 1: Pattern-based alias extraction for explicit patterns
   // Handles: "X called Y", "X nicknamed Y", "X also known as Y", etc.
   const aliasPatterns = [
@@ -2113,14 +2165,21 @@ const chooseCanonical = (names: Set<string>): string => {
 
         entityByCanonical.delete(nickname.toLowerCase());
         aliasLinksFound++;
+
+        console.log(`[EXTRACT-ENTITIES] Merged "${nickname}" into "${fullName}" as alias`);
       } else if (fullEntity && !nickEntity) {
         // Nickname not extracted as separate entity, just add as alias
         if (!fullEntity.aliases.includes(nickname)) {
           fullEntity.aliases.push(nickname);
           aliasLinksFound++;
+          console.log(`[EXTRACT-ENTITIES] Added "${nickname}" as alias to "${fullName}"`);
         }
       }
     }
+  }
+
+  if (aliasLinksFound > 0) {
+    console.log(`[EXTRACT-ENTITIES] Found ${aliasLinksFound} explicit alias patterns`);
   }
 
   // Step 2: Run coreference resolution for pronouns and descriptive references
@@ -2150,8 +2209,12 @@ const chooseCanonical = (names: Set<string>): string => {
       entity.aliases = Array.from(aliasSet);
     }
 
+    if (corefLinks.links.length > 0) {
+      console.log(`[EXTRACT-ENTITIES] Resolved ${corefLinks.links.length} coreference links`);
+    }
   } catch (error) {
     // If coreference resolution fails, continue without it
+    console.warn(`[EXTRACT-ENTITIES] Coreference resolution failed:`, error);
   }
 
   return { entities, spans };

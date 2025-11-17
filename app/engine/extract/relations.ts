@@ -17,6 +17,9 @@ import { INVERSE, passesGuard } from "../schema";
 import { parseWithService, normalizeName as normalizeEntityName } from "./entities";
 import type { Token, ParsedSentence } from "./parse-types";
 import { findShortestPath, matchDependencyPath, extractRelationFromPath } from "./relations/dependency-paths";
+import { analyzeSentenceStructure, SentencePattern } from "../grammar/sentence-analyzer";
+import { detectVerbCategory, detectVerbTense, getTenseTemporality } from "../grammar/parts-of-speech";
+import { detectClauses } from "./clause-detector";
 
 type Span = { entity_id: string; start: number; end: number };
 const TRACE_REL = process.env.L3_REL_TRACE === "1";
@@ -59,6 +62,18 @@ function normalizeAliasSurface(s: string): string {
   x = x.replace(/\bHouse$/i, "").trim();
   x = x.replace(/\s+/g, " ").trim();
   return x;
+}
+
+function cleanRelationSurface(surface: string): string {
+  if (!surface) return surface;
+  let cleaned = surface.trim();
+  cleaned = cleaned.replace(/\s+/g, " ");
+  if (cleaned.includes(",")) {
+    cleaned = cleaned.split(",")[0];
+  }
+  cleaned = cleaned.replace(/^[^A-Za-z0-9]+/, "").replace(/[^A-Za-z0-9]+$/, "");
+  cleaned = cleaned.replace(/^(of|in|at|against|to|from|with|by|for|where|when|which|who)\s+/i, "");
+  return normalizeAliasSurface(cleaned);
 }
 
 function sameNorm(a?: string, b?: string): boolean {
@@ -111,17 +126,46 @@ function pickBestEntityId(
   }
 
   const pool = exact.length ? exact : (fuzzy.length ? fuzzy : candidates);
-  pool.sort((a, b) => {
-    const aLen = normalizeAliasSurface(a.canonical).length;
-    const bLen = normalizeAliasSurface(b.canonical).length;
-    if (bLen !== aLen) return bLen - aLen;
-    const aAlias = a.aliases?.length ?? 0;
-    const bAlias = b.aliases?.length ?? 0;
-    if (bAlias !== aAlias) return bAlias - aAlias;
-    return a.canonical.localeCompare(b.canonical);
+
+  const scoreEntity = (entity: Entity) => {
+    const canonicalNorm = normalizeAliasSurface(entity.canonical);
+    const canonicalLower = canonicalNorm.toLowerCase();
+    const aliasExact = (entity.aliases || []).some(alias => sameNorm(alias, normSurface));
+    const canonicalExact = sameNorm(entity.canonical, normSurface);
+
+    let rank = 4;
+    if (canonicalExact) {
+      rank = 0;
+    } else if (aliasExact) {
+      rank = 1;
+    } else if (canonicalLower === lowerSurface) {
+      rank = 2;
+    } else if (
+      lowerSurface &&
+      (canonicalLower.includes(lowerSurface) || lowerSurface.includes(canonicalLower))
+    ) {
+      rank = 3;
+    }
+
+    const aliasCount = entity.aliases?.length ?? 0;
+    return { rank, length: canonicalNorm.length, aliasCount };
+  };
+
+  const scored = pool.map(entity => ({ entity, priority: scoreEntity(entity) }));
+  scored.sort((a, b) => {
+    if (a.priority.rank !== b.priority.rank) {
+      return a.priority.rank - b.priority.rank;
+    }
+    if (a.priority.length !== b.priority.length) {
+      return a.priority.length - b.priority.length;
+    }
+    if (a.priority.aliasCount !== b.priority.aliasCount) {
+      return b.priority.aliasCount - a.priority.aliasCount;
+    }
+    return a.entity.canonical.localeCompare(b.entity.canonical);
   });
 
-  return pool[0]?.id ?? null;
+  return scored[0]?.entity.id ?? null;
 }
 
 function getEntityCandidatesByOffset(spans: Span[], start: number, end: number): string[] {
@@ -509,6 +553,8 @@ function tryCreateRelation(
 ): Relation[] {
   const subjSurface = text.slice(subjStart, subjEnd);
   const objSurface = text.slice(objStart, objEnd);
+  const subjSurfaceRaw = (subjSurface || '').trim();
+  const objSurfaceRaw = (objSurface || '').trim();
 
   const subjRef = mapSurfaceToEntity(subjSurface, entities, spans, { start: subjStart, end: subjEnd });
   const objRef = mapSurfaceToEntity(objSurface, entities, spans, { start: objStart, end: objEnd });
@@ -520,8 +566,81 @@ function tryCreateRelation(
 
   if (subjEnt.id === objEnt.id) return [];
 
-  const subjId = subjEnt.id;
-  const objId = objEnt.id;
+  const defaultSubjSpan =
+    subjRef.span ??
+    selectEntitySpan(subjEnt.id, spans, { start: subjStart, end: subjEnd }) ??
+    { entity_id: subjEnt.id, start: subjStart, end: subjEnd };
+  const defaultObjSpan =
+    objRef.span ??
+    selectEntitySpan(objEnt.id, spans, { start: objStart, end: objEnd }) ??
+    { entity_id: objEnt.id, start: objStart, end: objEnd };
+
+  const mentionOrFallback = (ref: EntityRef, fallback: string) => {
+    if (ref.span) {
+      const mention = text.slice(ref.span.start, ref.span.end).trim();
+      const cleanedMention = cleanRelationSurface(mention);
+      if (cleanedMention) return cleanedMention;
+    }
+    return cleanRelationSurface(fallback);
+  };
+
+  const expandCoordinationRefs = (ref: EntityRef, baseSpan: Span): EntityRef[] => {
+    if (!tokens) return [ref];
+    const spanTokens = tokens.filter(t => t.start >= baseSpan.start && t.end <= baseSpan.end);
+    if (spanTokens.length <= 1) return [ref];
+    const hasCoordination = spanTokens.some(tok =>
+      tok.pos === 'CCONJ' || tok.dep === 'cc' || tok.text === ',' || tok.text === ';'
+    );
+    if (!hasCoordination) return [ref];
+
+    const segments: Token[][] = [];
+    let current: Token[] = [];
+    const isCoordToken = (tok: Token) =>
+      tok.pos === 'CCONJ' || tok.dep === 'cc' || tok.text === ',' || tok.text === ';';
+
+    for (const tok of spanTokens) {
+      if (isCoordToken(tok)) {
+        if (current.length) {
+          segments.push(current);
+          current = [];
+        }
+        continue;
+      }
+      current.push(tok);
+    }
+    if (current.length) segments.push(current);
+
+    const refs: EntityRef[] = [];
+    for (const segment of segments) {
+      if (!segment.length) continue;
+      const segRange = { start: segment[0].start, end: segment[segment.length - 1].end };
+      const mapped = mapSurfaceToEntity(
+        text.slice(segRange.start, segRange.end),
+        entities,
+        spans,
+        segRange
+      );
+      if (mapped && !refs.some(r => r.entity.id === mapped.entity.id)) {
+        refs.push(mapped);
+      }
+    }
+
+    return refs.length ? refs : [ref];
+  };
+
+  const subjCoordinationSpan: Span = {
+    entity_id: subjEnt.id,
+    start: Math.min(subjStart, defaultSubjSpan.start),
+    end: Math.max(subjEnd, defaultSubjSpan.end)
+  };
+  const objCoordinationSpan: Span = {
+    entity_id: objEnt.id,
+    start: Math.min(objStart, defaultObjSpan.start),
+    end: Math.max(objEnd, defaultObjSpan.end)
+  };
+
+  const subjVariants = expandCoordinationRefs(subjRef, subjCoordinationSpan);
+  const objVariants = expandCoordinationRefs(objRef, objCoordinationSpan);
 
   if (TRACE_REL) {
     const snippet = text.slice(Math.max(0, subjStart - 30), Math.min(text.length, objEnd + 30));
@@ -566,40 +685,65 @@ function tryCreateRelation(
   }
 
   // Primary relation
-  relations.push({
-    id: uuid(),
-    subj: subjId,
-    pred: pred,
-    obj: objId,
-    evidence: [{
-      doc_id: 'default',
-      span: { start: subjStart, end: objEnd, text: evidenceText },
-      sentence_index: 0,
-      source: source === 'DEP' ? 'RULE' : 'RAW'
-    }],
-    confidence,
-    extractor: source.toLowerCase() as 'dep' | 'regex',
-    qualifiers: qualifiers.length > 0 ? qualifiers : undefined
-  });
+  for (const subjVariant of subjVariants) {
+    for (const objVariant of objVariants) {
+      if (subjVariant.entity.id === objVariant.entity.id) continue;
 
-  // Inverse relation
-  const inversePred = INVERSE[pred];
-  if (inversePred && passesGuard(inversePred, objEnt, subjEnt)) {
-    relations.push({
-      id: uuid(),
-      subj: objId,
-      pred: inversePred,
-      obj: subjId,
-      evidence: [{
-        doc_id: 'default',
-        span: { start: subjStart, end: objEnd, text: evidenceText },
-        sentence_index: 0,
-        source: source === 'DEP' ? 'RULE' : 'RAW'
-      }],
-      confidence,
-      extractor: source.toLowerCase() as 'dep' | 'regex',
-      qualifiers: qualifiers.length > 0 ? qualifiers : undefined
-    });
+      const subjRange = subjVariant.span ?? defaultSubjSpan;
+      const objRange = objVariant.span ?? defaultObjSpan;
+
+      const subjSurfaceText = mentionOrFallback(
+        subjVariant,
+        text.slice(subjRange.start, subjRange.end) || subjSurfaceRaw || subjVariant.entity.canonical
+      );
+      const objSurfaceText = mentionOrFallback(
+        objVariant,
+        text.slice(objRange.start, objRange.end) || objSurfaceRaw || objVariant.entity.canonical
+      );
+
+      const primaryRelation: Relation = {
+        id: uuid(),
+        subj: subjVariant.entity.id,
+        pred: pred,
+        obj: objVariant.entity.id,
+        subj_surface: subjSurfaceText,
+        obj_surface: objSurfaceText,
+        evidence: [{
+          doc_id: 'default',
+          span: { start: subjRange.start, end: objRange.end, text: evidenceText },
+          sentence_index: 0,
+          source: source === 'DEP' ? 'RULE' : 'RAW'
+        }],
+        confidence,
+        extractor: source.toLowerCase() as 'dep' | 'regex',
+        qualifiers: qualifiers.length > 0 ? qualifiers : undefined
+      };
+
+      relations.push(primaryRelation);
+
+      const inversePred = INVERSE[pred];
+      if (inversePred && passesGuard(inversePred, objVariant.entity, subjVariant.entity)) {
+        const inverseRelation: Relation = {
+          id: uuid(),
+          subj: objVariant.entity.id,
+          pred: inversePred,
+          obj: subjVariant.entity.id,
+          subj_surface: objSurfaceText,
+          obj_surface: subjSurfaceText,
+          evidence: [{
+            doc_id: 'default',
+            span: { start: subjRange.start, end: objRange.end, text: evidenceText },
+            sentence_index: 0,
+            source: source === 'DEP' ? 'RULE' : 'RAW'
+          }],
+          confidence,
+          extractor: source.toLowerCase() as 'dep' | 'regex',
+          qualifiers: qualifiers.length > 0 ? qualifiers : undefined
+        };
+
+        relations.push(inverseRelation);
+      }
+    }
   }
 
   if (TRACE_REL) {
@@ -878,14 +1022,11 @@ function extractDepRelations(
     if (!produced.length) return;
 
     for (const rel of produced) {
-      // Only overwrite IDs if they don't already match what we expect
-      // (for symmetric relations like friends_with, both forward and inverse have the same pred)
       if (rel.subj === subjRef.entity.id && rel.obj === objRef.entity.id) {
-        // Forward relation already correct, keep as is
+        // already aligned
       } else if (rel.subj === objRef.entity.id && rel.obj === subjRef.entity.id) {
-        // Inverse relation already correct, keep as is
+        // inverse already aligned
       } else {
-        // IDs need to be updated (e.g., for enumeration patterns)
         if (rel.pred === pred) {
           rel.subj = subjRef.entity.id;
           rel.obj = objRef.entity.id;
@@ -1555,15 +1696,17 @@ function extractDepRelations(
           const destTok = tokens.find(t => t.dep === 'pobj' && t.head === toPrep.i);
           if (destTok) {
             // Expand to full NP spans
-            const subjSpan = expandNP(subjTok, tokens);
             const destSpan = expandNP(destTok, tokens);
-
-            const produced = tryCreateRelation(
-              text, entities, spans, 'traveled_to',
-              subjSpan.start, subjSpan.end, destSpan.start, destSpan.end, 'DEP',
-              tokens, tok.i
-            );
-            addProducedRelations(produced, tok);
+            const subjCandidates = collectConjTokens(subjTok, tokens);
+            for (const subjectCandidate of subjCandidates) {
+              const subjSpan = expandNP(subjectCandidate, tokens);
+              const produced = tryCreateRelation(
+                text, entities, spans, 'traveled_to',
+                subjSpan.start, subjSpan.end, destSpan.start, destSpan.end, 'DEP',
+                tokens, tok.i
+              );
+              addProducedRelations(produced, tok);
+            }
           }
         }
       }
@@ -1577,15 +1720,17 @@ function extractDepRelations(
         if (subjTok && atPrep) {
           const placeTok = tokens.find(t => t.dep === 'pobj' && t.head === atPrep.i);
           if (placeTok) {
-            const subjSpan = expandNP(subjTok, tokens);
             const placeSpan = expandNP(placeTok, tokens);
-
-            const produced = tryCreateRelation(
-              text, entities, spans, 'studies_at',
-              subjSpan.start, subjSpan.end, placeSpan.start, placeSpan.end, 'DEP',
-              tokens, tok.i
-            );
-            addProducedRelations(produced, tok);
+            const subjCandidates = collectConjTokens(subjTok, tokens);
+            for (const subjectCandidate of subjCandidates) {
+              const subjSpan = expandNP(subjectCandidate, tokens);
+              const produced = tryCreateRelation(
+                text, entities, spans, 'studies_at',
+                subjSpan.start, subjSpan.end, placeSpan.start, placeSpan.end, 'DEP',
+                tokens, tok.i
+              );
+              addProducedRelations(produced, tok);
+            }
           }
         }
       }
@@ -1602,15 +1747,17 @@ function extractDepRelations(
         if (subjTok && atPrep) {
           const placeTok = tokens.find(t => t.dep === 'pobj' && t.head === atPrep.i);
           if (placeTok) {
-            const subjSpan = expandNP(subjTok, tokens);
             const placeSpan = expandNP(placeTok, tokens);
-
-            const produced = tryCreateRelation(
-              text, entities, spans, 'attended',
-              subjSpan.start, subjSpan.end, placeSpan.start, placeSpan.end, 'DEP',
-              tokens, tok.i
-            );
-            addProducedRelations(produced, tok);
+            const subjCandidates = collectConjTokens(subjTok, tokens);
+            for (const subjectCandidate of subjCandidates) {
+              const subjSpan = expandNP(subjectCandidate, tokens);
+              const produced = tryCreateRelation(
+                text, entities, spans, 'attended',
+                subjSpan.start, subjSpan.end, placeSpan.start, placeSpan.end, 'DEP',
+                tokens, tok.i
+              );
+              addProducedRelations(produced, tok);
+            }
           }
         }
       }
@@ -1628,15 +1775,17 @@ function extractDepRelations(
         if (subjTok && fromPrep) {
           const schoolTok = tokens.find(t => t.dep === 'pobj' && t.head === fromPrep.i);
           if (schoolTok) {
-            const subjSpan = expandNP(subjTok, tokens);
             const schoolSpan = expandNP(schoolTok, tokens);
-
-            const produced = tryCreateRelation(
-              text, entities, spans, 'attended',
-              subjSpan.start, subjSpan.end, schoolSpan.start, schoolSpan.end, 'DEP',
-              tokens, tok.i
-            );
-            addProducedRelations(produced, tok);
+            const subjCandidates = collectConjTokens(subjTok, tokens);
+            for (const subjectCandidate of subjCandidates) {
+              const subjSpan = expandNP(subjectCandidate, tokens);
+              const produced = tryCreateRelation(
+                text, entities, spans, 'attended',
+                subjSpan.start, subjSpan.end, schoolSpan.start, schoolSpan.end, 'DEP',
+                tokens, tok.i
+              );
+              addProducedRelations(produced, tok);
+            }
           }
         }
       }
@@ -1650,15 +1799,17 @@ function extractDepRelations(
         if (subjTok && atPrep) {
           const placeTok = tokens.find(t => t.dep === 'pobj' && t.head === atPrep.i);
           if (placeTok) {
-            const subjSpan = expandNP(subjTok, tokens);
             const placeSpan = expandNP(placeTok, tokens);
-
-            const produced = tryCreateRelation(
-              text, entities, spans, 'teaches_at',
-              subjSpan.start, subjSpan.end, placeSpan.start, placeSpan.end, 'DEP',
-              tokens, tok.i
-            );
-            addProducedRelations(produced, tok);
+            const subjCandidates = collectConjTokens(subjTok, tokens);
+            for (const subjectCandidate of subjCandidates) {
+              const subjSpan = expandNP(subjectCandidate, tokens);
+              const produced = tryCreateRelation(
+                text, entities, spans, 'teaches_at',
+                subjSpan.start, subjSpan.end, placeSpan.start, placeSpan.end, 'DEP',
+                tokens, tok.i
+              );
+              addProducedRelations(produced, tok);
+            }
           }
         }
       }
@@ -2021,6 +2172,11 @@ function extractDepRelations(
 
       const livingVerbs = new Set(['live', 'lived', 'reside', 'resided', 'dwell', 'dwelt']);
       if (livingVerbs.has(lemma) || livingVerbs.has(textLower)) {
+        const relativeMarker = tokens.find(t =>
+          t.text.toLowerCase() === 'where' &&
+          t.start >= sent.start &&
+          t.start <= tok.start
+        );
         let subjTok = resolveSubjectToken(tok, tokens);
         if (subjTok && subjTok.pos === 'PRON') {
           if (lastNamedSubject) {
@@ -2033,6 +2189,12 @@ function extractDepRelations(
             }
           }
         }
+        if (!subjTok && relativeMarker) {
+          const candidate = tokens.find(t => t.start > relativeMarker.start && isNameToken(t));
+          if (candidate) {
+            subjTok = candidate;
+          }
+        }
         let placeTok = findPrepObject(tok, tokens, ['in', 'at', 'inside', 'within']);
         if (!placeTok) {
           const objTok = tokens.find(t => (t.dep === 'dobj' || t.dep === 'obj') && t.head === tok.i);
@@ -2040,11 +2202,32 @@ function extractDepRelations(
             placeTok = findPrepObject(objTok, tokens, ['in', 'at', 'inside', 'within']);
           }
         }
+        let placeRefFromRelative: EntityRef | null = null;
+        if (!placeTok && relativeMarker) {
+          placeRefFromRelative = findNearestEntityBefore(
+            relativeMarker.start,
+            ['PLACE', 'ORG', 'HOUSE'],
+            400
+          );
+        }
 
-        if (subjTok && placeTok) {
+        if (subjTok && (placeTok || placeRefFromRelative)) {
           updateLastNamedSubject(subjTok);
           const subjSpan = expandNP(subjTok, tokens);
-          const placeSpan = expandNP(placeTok, tokens);
+          if (relativeMarker && subjSpan.start < subjTok.start && subjTok.start > relativeMarker.start) {
+            subjSpan.start = subjTok.start;
+          }
+          let placeSpan;
+          if (placeTok) {
+            placeSpan = expandNP(placeTok, tokens);
+          } else if (placeRefFromRelative) {
+            placeSpan = placeRefFromRelative.span ??
+              ensureSpanForEntity(
+                placeRefFromRelative.entity,
+                { start: tok.start, end: tok.end }
+              );
+          }
+          if (!placeSpan) continue;
           const produced = tryCreateRelation(
             text, entities, spans, 'lives_in',
             subjSpan.start, subjSpan.end, placeSpan.start, placeSpan.end, 'DEP',
@@ -2907,9 +3090,39 @@ export async function extractRelations(
 
   // Parse text to get dependency structure
   const parsed = await parseWithService(text);
+  const clauseAwareSentences: ParsedSentence[] = [];
+
+  for (const sent of parsed.sentences) {
+    const clauses = detectClauses(sent, text);
+    if (!clauses.length) {
+      clauseAwareSentences.push(sent);
+      continue;
+    }
+
+    let addedClause = false;
+    for (const clause of clauses) {
+      const clauseTokens = sent.tokens.filter(tok =>
+        tok.start >= clause.start && tok.end <= clause.end
+      );
+      if (!clauseTokens.length) continue;
+
+      clauseAwareSentences.push({
+        sentence_index: clauseAwareSentences.length,
+        tokens: clauseTokens,
+        start: clause.start,
+        end: clause.end
+      });
+      addedClause = true;
+    }
+
+    if (!addedClause) {
+      clauseAwareSentences.push(sent);
+    }
+  }
 
   // Extract using dependency patterns (primary)
-  const depRelations = extractDepRelations(text, entities, spans, parsed.sentences);
+  const depInputSentences = clauseAwareSentences.length ? clauseAwareSentences : parsed.sentences;
+  const depRelations = extractDepRelations(text, entities, spans, depInputSentences);
 
   // Extract using regex fallback (secondary)
   const regexRelations = extractRegexRelations(text, entities, spans);

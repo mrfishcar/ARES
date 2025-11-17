@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextEID": 322,
+  "nextEID": 359,
   "mappings": [
     {
       "eid": 1,
@@ -2569,10 +2569,306 @@
       "created_at": "2025-11-13T01:03:59.019Z",
       "last_seen": "2025-11-13T01:03:59.019Z",
       "occurrence_count": 1
+    },
+    {
+      "eid": 322,
+      "canonical": "Frederick",
+      "normalizedKey": "frederick",
+      "created_at": "2025-11-15T22:49:53.806Z",
+      "last_seen": "2025-11-15T22:49:53.806Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 323,
+      "canonical": "Saul",
+      "normalizedKey": "saul",
+      "created_at": "2025-11-15T22:49:53.807Z",
+      "last_seen": "2025-11-15T22:49:53.807Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 324,
+      "canonical": "In the City",
+      "normalizedKey": "in the city",
+      "created_at": "2025-11-15T23:19:14.038Z",
+      "last_seen": "2025-11-15T23:19:14.038Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 325,
+      "canonical": "Perched",
+      "normalizedKey": "perched",
+      "created_at": "2025-11-15T23:19:14.039Z",
+      "last_seen": "2025-11-15T23:19:14.039Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 326,
+      "canonical": "Song",
+      "normalizedKey": "song",
+      "created_at": "2025-11-15T23:19:14.039Z",
+      "last_seen": "2025-11-15T23:19:14.039Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 327,
+      "canonical": "Like",
+      "normalizedKey": "like",
+      "created_at": "2025-11-15T23:19:14.040Z",
+      "last_seen": "2025-11-15T23:19:14.040Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 328,
+      "canonical": "God",
+      "normalizedKey": "god",
+      "created_at": "2025-11-15T23:19:14.040Z",
+      "last_seen": "2025-11-15T23:19:14.040Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 329,
+      "canonical": "Questions",
+      "normalizedKey": "questions",
+      "created_at": "2025-11-15T23:19:14.041Z",
+      "last_seen": "2025-11-15T23:19:14.041Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 330,
+      "canonical": "Freddy",
+      "normalizedKey": "freddy",
+      "created_at": "2025-11-15T23:19:14.041Z",
+      "last_seen": "2025-11-15T23:19:14.041Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 331,
+      "canonical": "Justice",
+      "normalizedKey": "justice",
+      "created_at": "2025-11-15T23:19:14.042Z",
+      "last_seen": "2025-11-15T23:19:14.042Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 332,
+      "canonical": "Pool of Souls",
+      "normalizedKey": "pool of souls",
+      "created_at": "2025-11-15T23:19:14.042Z",
+      "last_seen": "2025-11-15T23:19:14.042Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 333,
+      "canonical": "Familiar",
+      "normalizedKey": "familiar",
+      "created_at": "2025-11-15T23:19:14.042Z",
+      "last_seen": "2025-11-15T23:19:14.042Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 334,
+      "canonical": "Darkness",
+      "normalizedKey": "darkness",
+      "created_at": "2025-11-15T23:19:14.043Z",
+      "last_seen": "2025-11-15T23:19:14.043Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 335,
+      "canonical": "Caged",
+      "normalizedKey": "caged",
+      "created_at": "2025-11-16T02:00:30.983Z",
+      "last_seen": "2025-11-16T02:00:30.983Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 336,
+      "canonical": "Charles Garrison",
+      "normalizedKey": "charles garrison",
+      "created_at": "2025-11-16T02:00:30.984Z",
+      "last_seen": "2025-11-16T02:00:30.984Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 337,
+      "canonical": "Steamy",
+      "normalizedKey": "steamy",
+      "created_at": "2025-11-16T02:00:30.984Z",
+      "last_seen": "2025-11-16T02:00:30.984Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 338,
+      "canonical": "Da",
+      "normalizedKey": "da",
+      "created_at": "2025-11-16T02:22:49.956Z",
+      "last_seen": "2025-11-16T02:22:49.956Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 339,
+      "canonical": "Dav",
+      "normalizedKey": "dav",
+      "created_at": "2025-11-16T02:22:50.210Z",
+      "last_seen": "2025-11-16T02:22:50.210Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 340,
+      "canonical": "Ba",
+      "normalizedKey": "ba",
+      "created_at": "2025-11-16T02:22:54.740Z",
+      "last_seen": "2025-11-16T02:22:54.740Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 341,
+      "canonical": "Bat",
+      "normalizedKey": "bat",
+      "created_at": "2025-11-16T02:22:54.844Z",
+      "last_seen": "2025-11-16T02:22:54.844Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 342,
+      "canonical": "Bath",
+      "normalizedKey": "bath",
+      "created_at": "2025-11-16T02:22:55.005Z",
+      "last_seen": "2025-11-16T02:22:55.005Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 343,
+      "canonical": "Wha",
+      "normalizedKey": "wha",
+      "created_at": "2025-11-16T02:52:24.023Z",
+      "last_seen": "2025-11-16T02:52:24.023Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 344,
+      "canonical": "Fr",
+      "normalizedKey": "fr",
+      "created_at": "2025-11-16T02:52:27.068Z",
+      "last_seen": "2025-11-16T02:52:27.068Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 345,
+      "canonical": "Fre",
+      "normalizedKey": "fre",
+      "created_at": "2025-11-16T02:52:27.173Z",
+      "last_seen": "2025-11-16T02:52:27.173Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 346,
+      "canonical": "In M",
+      "normalizedKey": "in m",
+      "created_at": "2025-11-16T04:12:58.007Z",
+      "last_seen": "2025-11-16T04:12:58.007Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 347,
+      "canonical": "Lo",
+      "normalizedKey": "lo",
+      "created_at": "2025-11-16T04:13:00.737Z",
+      "last_seen": "2025-11-16T04:13:00.737Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 348,
+      "canonical": "Tr",
+      "normalizedKey": "tr",
+      "created_at": "2025-11-16T04:13:22.027Z",
+      "last_seen": "2025-11-16T04:13:22.027Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 349,
+      "canonical": "Tra",
+      "normalizedKey": "tra",
+      "created_at": "2025-11-16T04:13:22.241Z",
+      "last_seen": "2025-11-16T04:13:22.241Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 350,
+      "canonical": "Trav",
+      "normalizedKey": "trav",
+      "created_at": "2025-11-16T04:13:22.560Z",
+      "last_seen": "2025-11-16T04:13:22.560Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 351,
+      "canonical": "Th",
+      "normalizedKey": "th",
+      "created_at": "2025-11-16T04:13:44.857Z",
+      "last_seen": "2025-11-16T04:13:44.857Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 352,
+      "canonical": "Jo",
+      "normalizedKey": "jo",
+      "created_at": "2025-11-16T04:13:55.326Z",
+      "last_seen": "2025-11-16T04:13:55.326Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 353,
+      "canonical": "Joe",
+      "normalizedKey": "joe",
+      "created_at": "2025-11-16T04:13:55.538Z",
+      "last_seen": "2025-11-16T04:13:55.538Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 354,
+      "canonical": "Joe M",
+      "normalizedKey": "joe m",
+      "created_at": "2025-11-16T04:13:58.348Z",
+      "last_seen": "2025-11-16T04:13:58.348Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 355,
+      "canonical": "Gag",
+      "normalizedKey": "gag",
+      "created_at": "2025-11-16T04:14:35.153Z",
+      "last_seen": "2025-11-16T04:14:35.153Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 356,
+      "canonical": "Gag of G",
+      "normalizedKey": "gag of g",
+      "created_at": "2025-11-16T04:14:36.845Z",
+      "last_seen": "2025-11-16T04:14:36.845Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 357,
+      "canonical": "ORG",
+      "normalizedKey": "org",
+      "created_at": "2025-11-16T04:14:44.382Z",
+      "last_seen": "2025-11-16T04:14:44.382Z",
+      "occurrence_count": 1
+    },
+    {
+      "eid": 358,
+      "canonical": "3019",
+      "normalizedKey": "3019",
+      "created_at": "2025-11-16T15:05:51.088Z",
+      "last_seen": "2025-11-16T15:05:51.088Z",
+      "occurrence_count": 1
     }
   ],
   "metadata": {
-    "total_entities": 321,
-    "last_updated": "2025-11-13T01:04:12.162Z"
+    "total_entities": 358,
+    "last_updated": "2025-11-16T15:05:51.092Z"
   }
 }

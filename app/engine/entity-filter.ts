@@ -55,6 +55,7 @@ const COMMON_WORDS = new Set([
 /**
  * Patterns for entity names that are likely false positives
  */
+const NUMERIC_ONLY_PATTERN = /^[^a-z]+$/i;
 const BAD_PATTERNS = [
   // Leading conjunctions/articles/prepositions
   /^(and|or|but|the|a|an|when|where|seeing|meeting|before|after|if|take|gather|located)\s+/i,
@@ -63,7 +64,7 @@ const BAD_PATTERNS = [
   // Trailing location words (e.g., "magic there", "something here")
   /\s+(there|here)$/i,
   // Just punctuation/numbers
-  /^[^a-z]+$/i,
+  NUMERIC_ONLY_PATTERN,
   // Single letters (unless well-known acronyms)
   /^[a-z]$/i,
   // Chapter/section markers
@@ -150,14 +151,7 @@ export function isValidEntity(
   canonical: string,
   entityType: EntityType
 ): boolean {
-  // DEBUG: Log professor entities
-  const isProf = canonical.toLowerCase().includes('professor');
-  if (isProf) {
-    console.log(`[isValidEntity] Checking: "${canonical}" (${entityType})`);
-  }
-
   if (!canonical || canonical.trim() === '') {
-    if (isProf) console.log(`  REJECT: empty canonical`);
     return false;
   }
 
@@ -165,32 +159,27 @@ export function isValidEntity(
 
   // 1. Filter pronouns
   if (PRONOUNS.has(normalized)) {
-    if (isProf) console.log(`  REJECT: is pronoun`);
     return false;
   }
 
   // 2. Filter common words
   if (COMMON_WORDS.has(normalized)) {
-    if (isProf) console.log(`  REJECT: is common word`);
     return false;
   }
 
   // 3. Filter type-specific blocklist
   const typeBlocklist = TYPE_SPECIFIC_BLOCKLIST[entityType];
   if (typeBlocklist && typeBlocklist.has(normalized)) {
-    if (isProf) console.log(`  REJECT: in type blocklist`);
     return false;
   }
 
-  if (isProf) console.log(`  PASS`);
-
-  // 4. Check bad patterns (except for DATE/ITEM entities which can be numeric)
-  // DATE entities like "3019" should not be filtered by "no letters" pattern
-  if (entityType !== 'DATE' && entityType !== 'ITEM') {
-    for (const pattern of BAD_PATTERNS) {
-      if (pattern.test(canonical)) {
-        return false;
-      }
+  // 4. Check bad patterns
+  for (const pattern of BAD_PATTERNS) {
+    if (entityType === 'DATE' && pattern === NUMERIC_ONLY_PATTERN) {
+      continue; // Allow numeric-only values for DATE entities (e.g., years like 3019)
+    }
+    if (pattern.test(canonical)) {
+      return false;
     }
   }
 
@@ -206,13 +195,9 @@ export function isValidEntity(
     }
   }
 
-  // 6. Must contain at least one letter (except for DATE/ITEM entities)
-  // DATE entities can be pure numbers (e.g., "3019", "2024")
-  // ITEM entities can be model numbers (e.g., "iPhone 15", "3080")
-  if (entityType !== 'DATE' && entityType !== 'ITEM') {
-    if (!/[a-z]/i.test(canonical)) {
-      return false;
-    }
+  // 6. Must contain at least one letter
+  if (entityType !== 'DATE' && !/[a-z]/i.test(canonical)) {
+    return false;
   }
 
   // 7. For PERSON entities, filter chapter/section markers

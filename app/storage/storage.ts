@@ -130,6 +130,7 @@ export async function appendDoc(
   conflicts: Conflict[];
   mergeCount: number;
   fictionEntities: FictionEntity[];
+  localEntities: Entity[];
 }> {
   // Load existing graph or create new
   let graph = loadGraph(filePath);
@@ -351,7 +352,8 @@ export async function appendDoc(
     relations: filteredRelations,
     conflicts,
     mergeCount,
-    fictionEntities
+    fictionEntities,
+    localEntities
   };
 }
 

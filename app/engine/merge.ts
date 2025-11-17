@@ -273,7 +273,11 @@ export function mergeEntitiesAcrossDocs(
 
       const nameScore = (value: string) => {
         const parts = value.toLowerCase().split(/\s+/).filter(Boolean);
-        const connectors = new Set(['the', 'of', 'and', 'jr', 'sr', 'ii', 'iii', 'iv']);
+        const connectors = new Set([
+          'the', 'of', 'and', 'jr', 'sr', 'ii', 'iii', 'iv',
+          'sir', 'lord', 'lady', 'king', 'queen', 'prince', 'princess',
+          'professor', 'dr', 'mr', 'mrs', 'ms'
+        ]);
         const informative = parts.filter(p => !connectors.has(p)).length;
 
         // Penalty: Descriptive titles starting with "the" are less desirable than proper names
@@ -314,13 +318,17 @@ export function mergeEntitiesAcrossDocs(
           // 4. Prefer higher frequency
           if (a[1] !== b[1]) return b[1] - a[1];
 
-          // 5. Prefer more total words
+          // 5. Prefer fewer total words (simpler canonical)
           if (aScore.total !== bScore.total) {
-            return bScore.total - aScore.total;
+            return aScore.total - bScore.total;
           }
 
-          // 6. Prefer longer names (more specific)
-          return bScore.length - aScore.length;
+          // 6. Prefer shorter names
+          if (aScore.length !== bScore.length) {
+            return aScore.length - bScore.length;
+          }
+
+          return 0;
         });
 
       let canonical = sortedNames[0][0];

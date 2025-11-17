@@ -823,27 +823,21 @@ export async function startGraphQLServer(port: number = 4000, storagePath?: stri
           const appendResult = await appendDoc(`extract-${timestamp}`, text, tempPath);
           const extractTime = Date.now() - startTime;
 
-          // Load the graph to get the full results
-          const graph = loadGraph(tempPath);
-          if (!graph) {
-            clearStorage(tempPath);
-            res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ error: 'Failed to load extraction results' }));
-            return;
-          }
-
           logger.info({
             msg: 'extract_entities_complete',
-            entities: graph.entities.length,
-            relations: graph.relations.length,
+            entities: appendResult.entities.length,
+            relations: appendResult.relations.length,
             time: extractTime
           });
 
           // Cleanup temp storage
           clearStorage(tempPath);
 
+          const rawEntities = appendResult.localEntities?.length ? appendResult.localEntities : appendResult.entities;
+          const rawRelations = appendResult.relations;
+
           // Transform entities to frontend format with spans
-          const entitySpans = graph.entities.map(entity => {
+          const entitySpans = rawEntities.map(entity => {
             // Find all occurrences of this entity in the text
             const escapedCanonical = entity.canonical.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             const regex = new RegExp(`\\b${escapedCanonical}\\b`, 'gi');
@@ -866,15 +860,25 @@ export async function startGraphQLServer(port: number = 4000, storagePath?: stri
             };
           });
 
+          const entityMap = new Map<string, Entity>();
+          for (const entity of rawEntities) {
+            entityMap.set(entity.id, entity);
+          }
+          for (const entity of appendResult.entities) {
+            if (!entityMap.has(entity.id)) {
+              entityMap.set(entity.id, entity);
+            }
+          }
+
           // Transform relations to frontend format
-          const relations = graph.relations.map(rel => ({
+          const relations = rawRelations.map(rel => ({
             id: rel.id,
             subj: rel.subj,
             obj: rel.obj,
             pred: rel.pred,
             confidence: rel.confidence,
-            subjCanonical: graph.entities.find(e => e.id === rel.subj)?.canonical || 'UNKNOWN',
-            objCanonical: graph.entities.find(e => e.id === rel.obj)?.canonical || 'UNKNOWN',
+            subjCanonical: entityMap.get(rel.subj)?.canonical || 'UNKNOWN',
+            objCanonical: entityMap.get(rel.obj)?.canonical || 'UNKNOWN',
           }));
 
           // Send response
@@ -885,9 +889,9 @@ export async function startGraphQLServer(port: number = 4000, storagePath?: stri
             relations,
             stats: {
               extractionTime: extractTime,
-              entityCount: graph.entities.length,
-              relationCount: graph.relations.length,
-              conflictCount: graph.conflicts.length,
+              entityCount: rawEntities.length,
+              relationCount: rawRelations.length,
+              conflictCount: appendResult.conflicts?.length ?? 0,
             },
             fictionEntities: appendResult.fictionEntities.slice(0, 15),
           }));

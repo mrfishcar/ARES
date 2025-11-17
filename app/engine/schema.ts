@@ -198,6 +198,8 @@ export interface Relation {
   obj: string;
   evidence: Evidence[];
   confidence: number;
+  subj_surface?: string;
+  obj_surface?: string;
 
   // Phase 3 additions
   qualifiers?: Qualifier[];  // Time/place/source metadata
@@ -213,6 +215,26 @@ export interface Event {
   roles: { role: string; entity_id: string }[];
   evidence: Evidence[];
   confidence: number;
+}
+
+// Meaning Record - Canonical intermediate representation for extracted meaning
+// This is the clean layer between extraction mechanics and semantic content
+export interface MeaningRecord {
+  subjectId: string;           // Normalized entity ID (after alias resolution)
+  relation: string;            // Canonical verb class / relation type (Predicate or custom)
+  objectId?: string | null;    // Optional target entity ID (location, person, item, etc.)
+  qualifiers?: {
+    time?: string | null;      // Temporal qualifier ("in 3019", "yesterday", etc.)
+    place?: string | null;     // Location qualifier ("in Gondor", "at Hogwarts", etc.)
+    manner?: string | null;    // Manner qualifier ("wisely", "quickly", etc.)
+  };
+  source: {
+    docId: string;             // Document identifier
+    sentenceIndex: number;     // Sentence number in document
+    spanStart: number;         // Character offset start
+    spanEnd: number;           // Character offset end
+  };
+  confidence?: number;         // Optional confidence score
 }
 
 // Type Guards

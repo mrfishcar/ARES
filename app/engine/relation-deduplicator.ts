@@ -120,7 +120,7 @@ export function deduplicateRelations(relations: Relation[]): Relation[] {
   // Merge each group
   const deduplicated: Relation[] = [];
 
-  for (const [key, group] of groups) {
+  for (const [key, group] of Array.from(groups.entries())) {
     if (group.length === 1) {
       // No duplicates, keep as-is
       deduplicated.push(group[0]);

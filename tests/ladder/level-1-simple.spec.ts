@@ -377,8 +377,12 @@ describe('Test Ladder - Level 1: Simple Sentences', () => {
 
       const extractedRelations = new Set(
         graph!.relations.map(r => {
-          const subj = graph!.entities.find(e => e.id === r.subj)?.canonical.toLowerCase() || '';
-          const obj = graph!.entities.find(e => e.id === r.obj)?.canonical.toLowerCase() || '';
+          const subjSurface = r.subj_surface ? r.subj_surface.trim().toLowerCase() : '';
+          const objSurface = r.obj_surface ? r.obj_surface.trim().toLowerCase() : '';
+          const subjCanonical = graph!.entities.find(e => e.id === r.subj)?.canonical.toLowerCase() || '';
+          const objCanonical = graph!.entities.find(e => e.id === r.obj)?.canonical.toLowerCase() || '';
+          const subj = subjSurface || subjCanonical;
+          const obj = objSurface || objCanonical;
           return `${subj}::${r.pred}::${obj}`;
         })
       );

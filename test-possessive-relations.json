@@ -3,23 +3,27 @@
     {
       "id": "global_person_0",
       "type": "PERSON",
-      "canonical": "Aria",
-      "aliases": [],
-      "created_at": "2025-11-12T00:30:27.776Z",
+      "canonical": "Aria Junior",
+      "aliases": [
+        "Aria"
+      ],
+      "created_at": "2025-11-17T05:29:36.007Z",
       "centrality": 0
     },
     {
       "id": "global_person_1",
       "type": "PERSON",
-      "canonical": "Mira",
-      "aliases": [],
-      "created_at": "2025-11-12T00:30:27.776Z",
+      "canonical": "Mira Calder",
+      "aliases": [
+        "Mira"
+      ],
+      "created_at": "2025-11-17T05:29:36.007Z",
       "centrality": 0
     }
   ],
   "relations": [
     {
-      "id": "4709b79c-3da5-4db9-94bf-944557cd7eb6",
+      "id": "9506c9ae-f8ee-4743-aa11-c3499bbaf535",
       "subj": "global_person_0",
       "pred": "parent_of",
       "obj": "global_person_1",
@@ -39,7 +43,7 @@
       "extractor": "regex"
     },
     {
-      "id": "615ce811-b1ed-4b7a-a97e-f7460a937d96",
+      "id": "94445034-89fa-4b3d-a5bd-f50540d1516b",
       "subj": "global_person_1",
       "pred": "child_of",
       "obj": "global_person_0",
@@ -66,7 +70,7 @@
       "description": "Cycle detected in parent_of/child_of: global_person_0 → global_person_1 → global_person_0",
       "relations": [
         {
-          "id": "4709b79c-3da5-4db9-94bf-944557cd7eb6",
+          "id": "9506c9ae-f8ee-4743-aa11-c3499bbaf535",
           "subj": "global_person_0",
           "pred": "parent_of",
           "obj": "global_person_1",
@@ -86,7 +90,7 @@
           "extractor": "regex"
         },
         {
-          "id": "615ce811-b1ed-4b7a-a97e-f7460a937d96",
+          "id": "94445034-89fa-4b3d-a5bd-f50540d1516b",
           "subj": "global_person_1",
           "pred": "child_of",
           "obj": "global_person_0",
@@ -112,19 +116,19 @@
     "test-confidence_entity_0": {
       "global_id": "global_person_0",
       "doc_id": "test-confidence",
-      "merged_at": "2025-11-12T00:30:27.776Z",
+      "merged_at": "2025-11-17T05:29:36.007Z",
       "local_canonical": "Aria"
     },
     "test-confidence_entity_1": {
       "global_id": "global_person_1",
       "doc_id": "test-confidence",
-      "merged_at": "2025-11-12T00:30:27.776Z",
+      "merged_at": "2025-11-17T05:29:36.007Z",
       "local_canonical": "Mira"
     }
   },
   "profiles": {
-    "b7c5e2ea-97bf-4076-aa9e-479ef4380b74": {
-      "entity_id": "b7c5e2ea-97bf-4076-aa9e-479ef4380b74",
+    "2e98ae74-5c3d-4194-b551-d68931459400": {
+      "entity_id": "2e98ae74-5c3d-4194-b551-d68931459400",
       "entity_type": "PERSON",
       "canonical": "Aria",
       "descriptors": [],
@@ -141,8 +145,8 @@
       "last_seen": "test-confidence",
       "confidence_score": 0.55
     },
-    "1ccdf17e-04b4-4112-b79e-0607d541f71e": {
-      "entity_id": "1ccdf17e-04b4-4112-b79e-0607d541f71e",
+    "527e945a-9c37-40a4-a0d7-424bc1468029": {
+      "entity_id": "527e945a-9c37-40a4-a0d7-424bc1468029",
       "entity_type": "PERSON",
       "canonical": "Mira",
       "descriptors": [],
@@ -161,8 +165,8 @@
     }
   },
   "metadata": {
-    "created_at": "2025-11-12T00:30:27.755Z",
-    "updated_at": "2025-11-12T00:30:27.776Z",
+    "created_at": "2025-11-17T05:29:36.002Z",
+    "updated_at": "2025-11-17T05:29:36.007Z",
     "doc_count": 1,
     "doc_ids": [
       "test-confidence"
