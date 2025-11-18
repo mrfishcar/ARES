@@ -18,8 +18,8 @@
       "id": "3.3",
       "entityPrecision": 1,
       "entityRecall": 1,
-      "relationPrecision": 1,
-      "relationRecall": 1
+      "relationPrecision": 0,
+      "relationRecall": 0
     },
     {
       "id": "3.4",
@@ -32,8 +32,8 @@
       "id": "3.5",
       "entityPrecision": 0.9,
       "entityRecall": 1,
-      "relationPrecision": 0.35,
-      "relationRecall": 0.875
+      "relationPrecision": 0.2222222222222222,
+      "relationRecall": 0.5
     },
     {
       "id": "3.6",
@@ -44,7 +44,7 @@
     },
     {
       "id": "3.7",
-      "entityPrecision": 0.75,
+      "entityPrecision": 1,
       "entityRecall": 1,
       "relationPrecision": 1,
       "relationRecall": 1
@@ -59,9 +59,9 @@
     {
       "id": "3.9",
       "entityPrecision": 1,
-      "entityRecall": 0.75,
+      "entityRecall": 1,
       "relationPrecision": 1,
-      "relationRecall": 0.5
+      "relationRecall": 1
     },
     {
       "id": "3.10",
@@ -171,13 +171,13 @@
       ],
       "extracted": [
         "PERSON::weasley family",
-        "PERSON::arthur",
+        "PERSON::bill weasley",
         "PERSON::ron",
         "PERSON::ginny",
         "PERSON::fred",
         "PERSON::george",
         "PERSON::molly weasley",
-        "PERSON::bill weasley",
+        "PERSON::arthur",
         "PLACE::burrow",
         "ORG::gringotts bank"
       ],
@@ -216,13 +216,10 @@
       "extracted": [
         "PERSON::harry",
         "PERSON::ron",
-        "PERSON::hermione",
-        "PLACE::their quest"
+        "PERSON::hermione"
       ],
       "missing": [],
-      "extra": [
-        "PLACE::their quest"
-      ]
+      "extra": []
     },
     {
       "id": "3.8",
@@ -250,13 +247,12 @@
         "PERSON::professor snape"
       ],
       "extracted": [
+        "PERSON::professor mcgonagall",
+        "PERSON::professor snape",
         "ORG::hogwarts",
-        "ORG::gryffindor",
-        "PERSON::professor snape"
+        "ORG::gryffindor"
       ],
-      "missing": [
-        "PERSON::professor mcgonagall"
-      ],
+      "missing": [],
       "extra": []
     },
     {

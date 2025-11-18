@@ -97,6 +97,28 @@ function normalizeKey(name: string): string {
     .trim();
 }
 
+const SURNAME_STOPWORDS = new Set([
+  'mr', 'mrs', 'ms', 'miss', 'dr', 'doctor',
+  'prof', 'professor', 'sir', 'madam', 'lord', 'lady',
+  'king', 'queen', 'prince', 'princess', 'the', 'a', 'an',
+  'of', 'and', 'd', 'jr', 'sr', 'ii', 'iii', 'iv', 'head',
+  'headmaster', 'headmistress', 'captain', 'chief', 'lord',
+  'lady', 'former', 'later', 'stern', 'current', 'acting',
+  'young', 'youngest', 'older', 'elder'
+]);
+
+function getSurname(name: string): string | null {
+  const normalized = normalizeKey(name);
+  if (!normalized) return null;
+  const tokens = normalized
+    .split(/\s+/)
+    .map(token => token.replace(/[^a-z]/g, ''))
+    .filter(Boolean)
+    .filter(token => !SURNAME_STOPWORDS.has(token));
+  if (!tokens.length) return null;
+  return tokens[tokens.length - 1];
+}
+
 /**
  * Check if one name is a substring of another (after normalization)
  */
@@ -166,6 +188,9 @@ export function mergeEntitiesAcrossDocs(
     const clusters: Entity[][] = [];
 
     for (const entity of group) {
+      if (process.env.L3_DEBUG === '1' && entity.canonical.toLowerCase().includes('mcgonagall')) {
+        console.log(`[DEBUG-MCG][merge] processing candidate ${entity.canonical}`);
+      }
       const canonical = normalizeKey(entity.canonical);
       let bestClusterIdx = -1;
       let bestScore = 0;
@@ -211,12 +236,32 @@ export function mergeEntitiesAcrossDocs(
       }
 
       // Add to cluster if strong match or substring match, or create new cluster
+      if (entity.type === 'PERSON' && bestClusterIdx >= 0) {
+        const entitySurname = getSurname(entity.canonical);
+        const cluster = clusters[bestClusterIdx];
+        const clusterSurnames = new Set<string>();
+        for (const member of cluster) {
+          const memberSurname = getSurname(member.canonical);
+          if (memberSurname) {
+            clusterSurnames.add(memberSurname);
+          }
+        }
+        if (entitySurname && clusterSurnames.size > 0 && !clusterSurnames.has(entitySurname)) {
+          bestClusterIdx = -1;
+          hasSubstringMatch = false;
+        }
+      }
+
       if ((bestScore >= STRONG_THRESHOLD || hasSubstringMatch) && bestClusterIdx >= 0) {
         clusters[bestClusterIdx].push(entity);
 
         // Store merge metadata
         const method = hasSubstringMatch ? 'substring_match' :
                       (bestScore >= STRONG_THRESHOLD ? 'jaro_winkler_strong' : 'jaro_winkler_weak');
+
+        if (process.env.L3_DEBUG === '1' && entity.canonical.toLowerCase().includes('mcgonagall')) {
+          console.log(`[DEBUG-MCG][merge] merging ${entity.canonical} into cluster ${bestClusterIdx} via ${method} (${bestMatchedNames.local} vs ${bestMatchedNames.cluster})`);
+        }
 
         entityMergeInfo.set(entity.id, {
           score: bestScore,
@@ -231,6 +276,9 @@ export function mergeEntitiesAcrossDocs(
           method: 'substring_match',  // Using as default for singletons
           matchedNames: { local: entity.canonical, cluster: entity.canonical }
         });
+        if (process.env.L3_DEBUG === '1' && entity.canonical.toLowerCase().includes('mcgonagall')) {
+          console.log(`[DEBUG-MCG][merge] creating new cluster for ${entity.canonical}`);
+        }
       }
     }
 

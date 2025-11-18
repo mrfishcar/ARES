@@ -177,10 +177,11 @@ export function filterLowQualityEntities(
     }
 
     // 4. Capitalization check for proper nouns
-    if (config.requireCapitalization) {
-      if (!isValidProperNoun(name, entity.type)) {
-        return false;
+    if (config.requireCapitalization && !isValidProperNoun(name, entity.type)) {
+      if (name.toLowerCase().includes('mcgonagall') && process.env.L3_DEBUG === '1') {
+        console.log(`[DEBUG-MCG] filterLowQualityEntities rejecting ${name} due to capitalization`);
       }
+      return false;
     }
 
     // 5. Valid characters check

@@ -65,6 +65,34 @@ function normalizeAliasSurface(s: string): string {
   return x;
 }
 
+const DESCRIPTOR_KEYWORDS = new Set([
+  "family",
+  "quest",
+  "trio",
+  "three friends",
+  "friends",
+  "group",
+  "team",
+  "crew",
+  "clan",
+  "journey",
+  "mission",
+  "adventure",
+  "voyage",
+  "travel"
+]);
+
+function isDescriptorEntity(entity?: Entity | null): boolean {
+  if (!entity) return false;
+  const canonical = entity.canonical.toLowerCase();
+  for (const keyword of DESCRIPTOR_KEYWORDS) {
+    if (canonical.includes(keyword)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function cleanRelationSurface(surface: string): string {
   if (!surface) return surface;
   let cleaned = surface.trim();
@@ -1061,6 +1089,7 @@ function extractDepRelations(
     const subjEntity = getEntityById(rel.subj);
     const objEntity = getEntityById(rel.obj);
     if (!subjEntity || !objEntity) return;
+    if (isDescriptorEntity(subjEntity)) return;
     if (!/family/i.test(subjEntity.canonical)) return;
 
     const surnameMatch = subjEntity.canonical.match(/\b([A-Z][a-z]+)\b(?=\s+family)/);
@@ -1961,7 +1990,11 @@ function extractDepRelations(
 
         // Handle "co-founder of X" pattern
         if (textLower === 'co-founder' || textLower.startsWith('co-found')) {
-          const ofPrep = tokens.find(t => t.dep === 'prep' && t.head === tok.i && t.text.toLowerCase() === 'of');
+          const ofPrep = tokens.find(t =>
+            t.dep === 'prep' &&
+            (t.head === tok.i || t.head === copula.i) &&
+            t.text.toLowerCase() === 'of'
+          );
           if (ofPrep) {
             const orgTok = tokens.find(t => t.dep === 'pobj' && t.head === ofPrep.i);
             if (orgTok) {
@@ -2022,9 +2055,17 @@ function extractDepRelations(
           if (destTok) {
             // Expand to full NP spans
             const destSpan = expandNP(destTok, tokens);
+            const destSurface = text.slice(destSpan.start, destSpan.end);
+            const destRef = mapSurfaceToEntity(destSurface, entities, spans, destSpan);
+            if (isDescriptorEntity(destRef?.entity)) {
+              continue;
+            }
             const subjCandidates = collectConjTokens(subjTok, tokens);
             for (const subjectCandidate of subjCandidates) {
               const subjSpan = expandNP(subjectCandidate, tokens);
+              const candidateSurface = text.slice(subjSpan.start, subjSpan.end);
+              const subjRef = mapSurfaceToEntity(candidateSurface, entities, spans, subjSpan);
+              if (isDescriptorEntity(subjRef?.entity)) continue;
               const produced = tryCreateRelation(
                 text, entities, spans, 'traveled_to',
                 subjSpan.start, subjSpan.end, destSpan.start, destSpan.end, 'DEP',
@@ -2309,14 +2350,19 @@ function extractDepRelations(
             updateLastNamedSubject(resolvedSubj);
           }
           if (resolvedSubj) {
-            const ofPrep = tokens.find(t => t.dep === 'prep' && t.head === tok.i && t.text.toLowerCase() === 'of');
+            const ofPrep = tokens.find(t =>
+              t.dep === 'prep' &&
+              (t.head === tok.i || t.head === copula.i) &&
+              t.text.toLowerCase() === 'of'
+            );
             let orgTok = ofPrep ? tokens.find(t => t.dep === 'pobj' && t.head === ofPrep.i) : undefined;
             if (!orgTok) {
               orgTok = lastSchoolOrg ?? lastNamedOrg ?? undefined;
             }
             if (orgTok) {
               const subjSpan = expandNP(resolvedSubj, tokens);
-              const orgSpan = expandNP(orgTok, tokens);
+              const orgHead = chooseSemanticHead(orgTok, tokens);
+              const orgSpan = expandNP(orgHead, tokens);
               const produced = tryCreateRelation(
                 text, entities, spans, 'leads',
                 subjSpan.start, subjSpan.end, orgSpan.start, orgSpan.end, 'DEP',
@@ -2814,6 +2860,9 @@ function extractDepRelations(
               );
           }
           if (!placeSpan) continue;
+          const subjSurface = text.slice(subjSpan.start, subjSpan.end);
+          const subjRef = mapSurfaceToEntity(subjSurface, entities, spans, subjSpan);
+          if (isDescriptorEntity(subjRef?.entity)) continue;
           const produced = tryCreateRelation(
             text, entities, spans, 'lives_in',
             subjSpan.start, subjSpan.end, placeSpan.start, placeSpan.end, 'DEP',
@@ -3189,7 +3238,7 @@ function extractDepRelations(
       if (!items.length) return;
 
       const listStartAbs = sent.start + afterIndex;
-      const childRefs: EntityRef[] = [];
+      const childEntities: { entity: Entity; span: Span }[] = [];
       let cursor = listStartAbs;
 
       for (const surface of items) {
@@ -3197,48 +3246,46 @@ function extractDepRelations(
         if (!located) continue;
         cursor = located.end;
         const ref = mapSurfaceToEntity(surface, entities, spans, located);
-        if (ref && ref.entity.type === 'PERSON' && !childRefs.some(r => r.entity.id === ref.entity.id)) {
-          childRefs.push({
-            entity: ref.entity,
-            span: ref.span ?? selectEntitySpan(ref.entity.id, spans, located)
-          });
-        }
-      }
-
-      if (!childRefs.length) return;
-
-      const parentRefs: EntityRef[] = [];
-      const seenParents = new Set<string>();
-
-      for (const token of recentPersons) {
-        const entity = entityFromSpan(token.start, token.end);
-        if (!entity || entity.type !== 'PERSON') continue;
-        if (seenParents.has(entity.id)) continue;
-        const entitySpan = selectEntitySpan(entity.id, spans);
-        if (!entitySpan) continue;
-        if (entitySpan.end > listStartAbs) continue;
-        if ((listStartAbs - entitySpan.end) > 220) continue;
-        seenParents.add(entity.id);
-        parentRefs.push({
-          entity,
-          span: entitySpan
+        if (!ref || ref.entity.type !== 'PERSON') continue;
+        if (childEntities.some(r => r.entity.id === ref.entity.id)) continue;
+        childEntities.push({
+          entity: ref.entity,
+          span: ref.span ?? selectEntitySpan(ref.entity.id, spans, located)
         });
-        if (parentRefs.length >= 3) {
-          break;
-        }
       }
 
-      if (!parentRefs.length) return;
+      if (!childEntities.length) return;
 
-      for (const parent of parentRefs) {
-        for (const child of childRefs) {
-          if (parent.entity.id === child.entity.id) continue;
-          if (process.env.L3_ENUM_TRACE === '1') {
-            console.log('Enumeration parent_of', parent.entity.canonical, parent.entity.id, '->', child.entity.canonical, child.entity.id);
-          }
-          emitCandidate('parent_of', parent, child, includeTrigger);
+      const possToken = tokens
+        .filter(t => t.dep === 'poss' && t.start >= sent.start && t.start <= listStartAbs)
+        .filter(t => /^(their|his|her)$/i.test(t.text))
+        .sort((a, b) => b.start - a.start)[0];
+
+      const parentCandidates = possToken ? resolvePossessors(possToken) : [];
+      if (!parentCandidates.length && lastNamedSubject) parentCandidates.push(lastNamedSubject);
+      if (!parentCandidates.length && recentPersons.length) parentCandidates.push(recentPersons[0]);
+
+      const parentToken = parentCandidates.find(t => t.pos !== 'PRON') ?? parentCandidates[0];
+      if (!parentToken) return;
+      updateLastNamedSubject(parentToken);
+
+      const parentSpan = expandNP(parentToken, tokens);
+      const parentEntity = entityFromSpan(parentSpan.start, parentSpan.end);
+      if (!parentEntity || parentEntity.type !== 'PERSON') return;
+      const parentRef: EntityRef = {
+        entity: parentEntity,
+        span: ensureSpanForEntity(parentEntity, parentSpan)
+      };
+
+      for (const child of childEntities) {
+        if (parentRef.entity.id === child.entity.id) continue;
+        if (process.env.L3_ENUM_TRACE === '1') {
+          console.log('Enumeration parent_of', parentRef.entity.canonical, parentRef.entity.id, '->', child.entity.canonical, child.entity.id);
         }
+        emitCandidate('parent_of', parentRef, child, includeTrigger);
       }
+
+      handledChildrenSentences.add(sent.start);
     };
 
     const handleMembersEnumeration = () => {
