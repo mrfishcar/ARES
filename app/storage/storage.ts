@@ -53,6 +53,99 @@ export interface SerializedGraph {
 
 const DEFAULT_STORAGE_PATH = path.join(process.cwd(), 'ares_graph.json');
 
+const CONNECTOR_TOKENS = new Set(['the', 'of', 'and', 'jr', 'sr', 'ii', 'iii', 'iv']);
+const LOWERCASE_ALLOWED = new Set(['the', 'of', 'and']);
+const LOWERCASE_TITLE_TOKENS = new Set([
+  'professor', 'headmaster', 'headmistress', 'head', 'director', 'dean', 'captain', 'commander',
+  'chief', 'sir', 'lady', 'lord', 'madam', 'madame', 'dr', 'doctor', 'mr', 'mrs', 'ms', 'miss',
+  'father', 'mother', 'mom', 'dad', 'aunt', 'uncle', 'king', 'queen', 'prince', 'princess',
+  'duke', 'duchess', 'baron', 'baroness', 'mentor', 'teacher', 'mistress', 'master', 'coach'
+]);
+const SALVAGE_ENTITY_TYPES = new Set(['PERSON', 'ORG', 'HOUSE', 'PLACE']);
+
+const pronouns = new Set(['he', 'she', 'it', 'they', 'him', 'her', 'his', 'hers', 'its', 'their', 'theirs', 'them']);
+const deictics = new Set(['there', 'here']);
+const commonVerbs = new Set(['ruled', 'teaches', 'lived', 'studied', 'went', 'became', 'was', 'were', 'is', 'are', 'has', 'have', 'had', 'said', 'says', 'asked', 'replied']);
+
+const scoreName = (value: string) => {
+  const parts = value.toLowerCase().split(/\s+/).filter(Boolean);
+  const informative = parts.filter(p => !CONNECTOR_TOKENS.has(p)).length;
+  return { informative, total: parts.length, length: value.length };
+};
+
+function normalizeCanonical(type: string, canonical: string): string | null {
+  if (!canonical) return null;
+  let value = canonical.trim();
+  const debugEnabled = process.env.L3_DEBUG === '1';
+  const logFilter = (reason: string) => {
+    if (debugEnabled) {
+      console.log(`[STORAGE] Filtering ${type}::${canonical} - ${reason}`);
+    }
+  };
+
+  const lowerValue = value.toLowerCase();
+  if (pronouns.has(lowerValue) || deictics.has(lowerValue)) {
+    logFilter('pronoun/deictic');
+    return null;
+  }
+
+  const words = lowerValue.split(/\s+/);
+  if (words.some(w => commonVerbs.has(w))) {
+    logFilter('contains verb');
+    return null;
+  }
+
+  if (type === 'ORG' && /\bHouse$/i.test(value)) {
+    value = value.replace(/\s+House$/i, '');
+  }
+
+  if (!SALVAGE_ENTITY_TYPES.has(type)) {
+    return value;
+  }
+
+  const toTitleCase = (token: string) => {
+    if (!token.length) return token;
+    return token[0].toUpperCase() + token.slice(1);
+  };
+
+  let tokens = value.split(/\s+/).filter(Boolean);
+  const hasUppercase = tokens.some(token => /^[A-Z]/.test(token));
+
+  if (!hasUppercase) {
+    const informativeTokens = tokens.filter(token => {
+      const lower = token.toLowerCase();
+      return !LOWERCASE_ALLOWED.has(lower) && !LOWERCASE_TITLE_TOKENS.has(lower);
+    });
+
+    if (informativeTokens.length) {
+      const promotedTokens = tokens.map(toTitleCase);
+      const promotedValue = promotedTokens.join(' ');
+      if (debugEnabled) {
+        console.log(`[STORAGE] Promoted lowercase canonical "${value}" -> "${promotedValue}"`);
+      }
+      value = promotedValue;
+      tokens = promotedTokens;
+    } else {
+      logFilter('all lowercase tokens');
+      return null;
+    }
+  }
+
+  const blockingToken = tokens.find(token => {
+    if (!/^[a-z]/.test(token)) return false;
+    const lower = token.toLowerCase();
+    if (LOWERCASE_ALLOWED.has(lower) || LOWERCASE_TITLE_TOKENS.has(lower)) return false;
+    return true;
+  });
+
+  if (blockingToken) {
+    logFilter(`lowercase token "${blockingToken}"`);
+    return null;
+  }
+
+  return value;
+}
+
 /**
  * Save knowledge graph to JSON file
  */
@@ -169,50 +262,6 @@ export async function appendDoc(
 
   // DEBUG: Log entities before filtering
   console.log(`[STORAGE] Received ${newEntities.length} entities from orchestrator:`, newEntities.map(e => `${e.type}::${e.canonical}`).join(', '));
-
-  const connectors = new Set(['the', 'of', 'and', 'jr', 'sr', 'ii', 'iii', 'iv']);
-  const lowercaseAllowed = new Set(['the', 'of', 'and']);
-  const scoreName = (value: string) => {
-    const parts = value.toLowerCase().split(/\s+/).filter(Boolean);
-    const informative = parts.filter(p => !connectors.has(p)).length;
-    return { informative, total: parts.length, length: value.length };
-  };
-
-  // Pronouns and deictic references that should be filtered out
-  const pronouns = new Set(['he', 'she', 'it', 'they', 'him', 'her', 'his', 'hers', 'its', 'their', 'theirs', 'them']);
-  const deictics = new Set(['there', 'here']);
-
-  // Common verbs that indicate entity boundary issues (e.g., "the king ruled" should be "the king")
-  const commonVerbs = new Set(['ruled', 'teaches', 'lived', 'studied', 'went', 'became', 'was', 'were', 'is', 'are', 'has', 'have', 'had', 'said', 'says', 'asked', 'replied']);
-
-  const normalizeCanonical = (type: string, canonical: string): string | null => {
-    let value = canonical;
-
-    // Filter out pronouns and deictic references (they should be in aliases, not as canonical names)
-    const lowerValue = value.toLowerCase().trim();
-    if (pronouns.has(lowerValue) || deictics.has(lowerValue)) {
-      return null;
-    }
-
-    // Filter out entities that contain verbs (e.g., "the king ruled", "the wizard teaches")
-    // These are incorrectly extracted entities with verb boundaries
-    const words = value.toLowerCase().split(/\s+/);
-    if (words.some(w => commonVerbs.has(w))) {
-      console.log(`[STORAGE] Filtering entity with verb: "${value}"`);
-      return null;
-    }
-
-    if (type === 'ORG' && /\bHouse$/i.test(value)) {
-      value = value.replace(/\s+House$/i, '');
-    }
-    const tokens = value.split(/\s+/).filter(Boolean);
-    if (type === 'PERSON' || type === 'ORG' || type === 'HOUSE' || type === 'PLACE') {
-      if (tokens.some(token => /^[a-z]/.test(token) && !lowercaseAllowed.has(token.toLowerCase()))) {
-        return null;
-      }
-    }
-    return value;
-  };
 
   const normalizeLocal = (entity: Entity): Entity | null => {
     const normalized = normalizeCanonical(entity.type, entity.canonical);
@@ -362,32 +411,12 @@ export async function appendDoc(
  * Used for deterministic re-merging
  */
 function extractLocalEntitiesFromGraph(graph: KnowledgeGraph): Entity[] {
-  const localEntities: Entity[] = [];
-  const connectors = new Set(['the', 'of', 'and', 'jr', 'sr', 'ii', 'iii', 'iv']);
-  const lowercaseAllowed = new Set(['the', 'of', 'and']);
-  const scoreName = (value: string) => {
-    const parts = value.toLowerCase().split(/\s+/).filter(Boolean);
-    const informative = parts.filter(p => !connectors.has(p)).length;
-    return { informative, total: parts.length, length: value.length };
-  };
-  const normalize = (canonical: string, type: string) => {
-    if (type === 'ORG' && /\bHouse$/i.test(canonical)) {
-      canonical = canonical.replace(/\s+House$/i, '');
-    }
-    if (type === 'PERSON' || type === 'ORG' || type === 'HOUSE' || type === 'PLACE') {
-      const tokens = canonical.split(/\s+/).filter(Boolean);
-      if (tokens.some(token => /^[a-z]/.test(token) && !lowercaseAllowed.has(token.toLowerCase()))) {
-        return null;
-      }
-    }
-    return canonical;
-  };
   const byKey = new Map<string, Entity>();
 
   for (const [localId, entry] of graph.provenance.entries()) {
     const globalEntity = graph.entities.find(e => e.id === entry.global_id);
     if (globalEntity) {
-      const canonical = normalize(entry.local_canonical, globalEntity.type);
+      const canonical = normalizeCanonical(globalEntity.type, entry.local_canonical);
       if (!canonical) continue;
       const key = `${globalEntity.type}::${canonical.toLowerCase()}`;
       const candidate: Entity = {
@@ -416,10 +445,7 @@ function extractLocalEntitiesFromGraph(graph: KnowledgeGraph): Entity[] {
       }
     }
   }
-  for (const entity of byKey.values()) {
-    localEntities.push(entity);
-  }
-  return localEntities;
+  return Array.from(byKey.values());
 }
 
 /**
