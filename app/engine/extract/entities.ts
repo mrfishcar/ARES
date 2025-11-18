@@ -1806,6 +1806,11 @@ const nameScore = (value: string) => {
 };
 
 const descriptorPenalty = (value: string) => (/\b(the|of)\s+[A-Z]/.test(value) ? 0 : 1);
+const descriptorTokens = new Set(['former', 'latter', 'later', 'current', 'young', 'older', 'elder', 'stern', 'deputy', 'chief']);
+const containsDescriptor = (value: string) => {
+  const parts = value.toLowerCase().split(/\s+/).filter(Boolean);
+  return parts.some(part => descriptorTokens.has(part));
+};
 const cleanlinessScore = (value: string) => (/^[A-Za-z][A-Za-z\s'’.-]*$/.test(value) ? 1 : 0);
 
 const chooseCanonical = (names: Set<string>): string => {
@@ -1817,6 +1822,9 @@ const chooseCanonical = (names: Set<string>): string => {
     const aPenalty = descriptorPenalty(a);
     const bPenalty = descriptorPenalty(b);
     if (aPenalty !== bPenalty) return bPenalty - aPenalty;
+    const aDesc = containsDescriptor(a);
+    const bDesc = containsDescriptor(b);
+    if (aDesc !== bDesc) return aDesc ? 1 : -1;
     const aScore = nameScore(a);
     const bScore = nameScore(b);
     if (aScore.informative !== bScore.informative) return bScore.informative - aScore.informative;
@@ -2368,5 +2376,8 @@ const mergedEntries = Array.from(mergedMap.values());
     console.warn(`[EXTRACT-ENTITIES] Coreference resolution failed:`, error);
   }
 
+  if (process.env.L3_DEBUG === '1') {
+    console.log(`[EXTRACT-ENTITIES][DEBUG] returning ${entities.length} entities: ${entities.map(e => e.canonical).join(', ')}`);
+  }
   return { entities, spans };
 }

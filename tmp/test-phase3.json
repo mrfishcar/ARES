@@ -1,0 +1,818 @@
+{
+  "entities": [
+    {
+      "id": "global_person_0",
+      "type": "PERSON",
+      "canonical": "Molly Weasley",
+      "aliases": [
+        "weasley",
+        "Bill Weasley"
+      ],
+      "created_at": "2025-11-18T15:56:41.551Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_1",
+      "type": "PERSON",
+      "canonical": "Arthur",
+      "aliases": [],
+      "created_at": "2025-11-18T15:56:41.551Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_2",
+      "type": "PERSON",
+      "canonical": "Ron",
+      "aliases": [],
+      "created_at": "2025-11-18T15:56:41.551Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_3",
+      "type": "PERSON",
+      "canonical": "Ginny",
+      "aliases": [],
+      "created_at": "2025-11-18T15:56:41.551Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_4",
+      "type": "PERSON",
+      "canonical": "Fred",
+      "aliases": [],
+      "created_at": "2025-11-18T15:56:41.551Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_person_5",
+      "type": "PERSON",
+      "canonical": "George",
+      "aliases": [],
+      "created_at": "2025-11-18T15:56:41.551Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_place_6",
+      "type": "PLACE",
+      "canonical": "Burrow",
+      "aliases": [],
+      "created_at": "2025-11-18T15:56:41.551Z",
+      "centrality": 0
+    },
+    {
+      "id": "global_org_7",
+      "type": "ORG",
+      "canonical": "Gringotts Bank",
+      "aliases": [],
+      "created_at": "2025-11-18T15:56:41.551Z",
+      "centrality": 0
+    }
+  ],
+  "relations": [
+    {
+      "id": "9bebdfe9-e465-4995-bc33-62103b9d58ae",
+      "subj": "global_person_0",
+      "pred": "lives_in",
+      "obj": "global_place_6",
+      "subj_surface": "Weasley family",
+      "obj_surface": "Burrow",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 4,
+            "end": 38,
+            "text": "The Weasley family lived at the Burrow. Molly Weasley was Arthur's wife. Their"
+          },
+          "sentence_index": 0,
+          "source": "RULE"
+        }
+      ],
+      "confidence": 0.7483356401882587,
+      "extractor": "dep"
+    },
+    {
+      "id": "2c641504-ad16-4314-9b78-f68b206d5bbe",
+      "subj": "global_person_0",
+      "pred": "parent_of",
+      "obj": "global_person_2",
+      "subj_surface": "Weasley family",
+      "obj_surface": "Ron",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 4,
+            "end": 100,
+            "text": "Weasley family lived at the Burrow. Molly Weasley was Arthur's wife. Their children included Ron"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "4dc8e4ad-f831-4f49-891c-ebe38e36b831",
+      "subj": "global_person_2",
+      "pred": "child_of",
+      "obj": "global_person_0",
+      "subj_surface": "Ron",
+      "obj_surface": "Weasley family",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 4,
+            "end": 100,
+            "text": "Weasley family lived at the Burrow. Molly Weasley was Arthur's wife. Their children included Ron"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "47a361e2-b461-4543-996f-f3412829208f",
+      "subj": "global_person_3",
+      "pred": "child_of",
+      "obj": "global_person_0",
+      "subj_surface": "Ginny",
+      "obj_surface": "Weasley family",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 4,
+            "end": 107,
+            "text": "Weasley family lived at the Burrow. Molly Weasley was Arthur's wife. Their children included Ron, Ginny"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "e76ef6b6-5d1b-4f53-96ce-61d283534b67",
+      "subj": "global_person_4",
+      "pred": "child_of",
+      "obj": "global_person_0",
+      "subj_surface": "Fred",
+      "obj_surface": "Weasley family",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 4,
+            "end": 113,
+            "text": "Weasley family lived at the Burrow. Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "5bf7aa5f-188b-4cbd-9c83-eb3e18e3013b",
+      "subj": "global_person_5",
+      "pred": "child_of",
+      "obj": "global_person_0",
+      "subj_surface": "George",
+      "obj_surface": "Weasley family",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 4,
+            "end": 126,
+            "text": "Weasley family lived at the Burrow. Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred, and George."
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "0807e63c-5be6-42bb-9b8d-f296f353db2e",
+      "subj": "global_person_0",
+      "pred": "parent_of",
+      "obj": "global_person_3",
+      "subj_surface": "Weasley family",
+      "obj_surface": "Ginny",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 4,
+            "end": 107,
+            "text": "Weasley family lived at the Burrow. Molly Weasley was Arthur's wife. Their children included Ron, Ginny"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "cadaf4be-79a6-4a23-bf9b-bb78672554d5",
+      "subj": "global_person_0",
+      "pred": "parent_of",
+      "obj": "global_person_4",
+      "subj_surface": "Weasley family",
+      "obj_surface": "Fred",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 4,
+            "end": 113,
+            "text": "Weasley family lived at the Burrow. Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred"
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    },
+    {
+      "id": "f50832a2-d607-43ac-87e4-59f1302656e4",
+      "subj": "global_person_0",
+      "pred": "parent_of",
+      "obj": "global_person_5",
+      "subj_surface": "Weasley family",
+      "obj_surface": "George",
+      "evidence": [
+        {
+          "doc_id": "default",
+          "span": {
+            "start": 4,
+            "end": 126,
+            "text": "Weasley family lived at the Burrow. Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred, and George."
+          },
+          "sentence_index": 0,
+          "source": "RAW"
+        }
+      ],
+      "confidence": 0.7,
+      "extractor": "regex"
+    }
+  ],
+  "conflicts": [
+    {
+      "type": "single_valued",
+      "severity": 2,
+      "description": "Entity global_person_0 has multiple values for single-valued predicate 'parent_of': global_person_2, global_person_3, global_person_4, global_person_5",
+      "relations": [
+        {
+          "id": "2c641504-ad16-4314-9b78-f68b206d5bbe",
+          "subj": "global_person_0",
+          "pred": "parent_of",
+          "obj": "global_person_2",
+          "subj_surface": "Weasley family",
+          "obj_surface": "Ron",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 4,
+                "end": 100,
+                "text": "Weasley family lived at the Burrow. Molly Weasley was Arthur's wife. Their children included Ron"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "0807e63c-5be6-42bb-9b8d-f296f353db2e",
+          "subj": "global_person_0",
+          "pred": "parent_of",
+          "obj": "global_person_3",
+          "subj_surface": "Weasley family",
+          "obj_surface": "Ginny",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 4,
+                "end": 107,
+                "text": "Weasley family lived at the Burrow. Molly Weasley was Arthur's wife. Their children included Ron, Ginny"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "cadaf4be-79a6-4a23-bf9b-bb78672554d5",
+          "subj": "global_person_0",
+          "pred": "parent_of",
+          "obj": "global_person_4",
+          "subj_surface": "Weasley family",
+          "obj_surface": "Fred",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 4,
+                "end": 113,
+                "text": "Weasley family lived at the Burrow. Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "f50832a2-d607-43ac-87e4-59f1302656e4",
+          "subj": "global_person_0",
+          "pred": "parent_of",
+          "obj": "global_person_5",
+          "subj_surface": "Weasley family",
+          "obj_surface": "George",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 4,
+                "end": 126,
+                "text": "Weasley family lived at the Burrow. Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred, and George."
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        }
+      ]
+    },
+    {
+      "type": "cycle",
+      "severity": 3,
+      "description": "Cycle detected in parent_of/child_of: global_person_0 → global_person_2 → global_person_0",
+      "relations": [
+        {
+          "id": "2c641504-ad16-4314-9b78-f68b206d5bbe",
+          "subj": "global_person_0",
+          "pred": "parent_of",
+          "obj": "global_person_2",
+          "subj_surface": "Weasley family",
+          "obj_surface": "Ron",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 4,
+                "end": 100,
+                "text": "Weasley family lived at the Burrow. Molly Weasley was Arthur's wife. Their children included Ron"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "4dc8e4ad-f831-4f49-891c-ebe38e36b831",
+          "subj": "global_person_2",
+          "pred": "child_of",
+          "obj": "global_person_0",
+          "subj_surface": "Ron",
+          "obj_surface": "Weasley family",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 4,
+                "end": 100,
+                "text": "Weasley family lived at the Burrow. Molly Weasley was Arthur's wife. Their children included Ron"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        }
+      ]
+    },
+    {
+      "type": "cycle",
+      "severity": 3,
+      "description": "Cycle detected in parent_of/child_of: global_person_0 → global_person_2 → global_person_3 → global_person_0",
+      "relations": [
+        {
+          "id": "2c641504-ad16-4314-9b78-f68b206d5bbe",
+          "subj": "global_person_0",
+          "pred": "parent_of",
+          "obj": "global_person_2",
+          "subj_surface": "Weasley family",
+          "obj_surface": "Ron",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 4,
+                "end": 100,
+                "text": "Weasley family lived at the Burrow. Molly Weasley was Arthur's wife. Their children included Ron"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "47a361e2-b461-4543-996f-f3412829208f",
+          "subj": "global_person_3",
+          "pred": "child_of",
+          "obj": "global_person_0",
+          "subj_surface": "Ginny",
+          "obj_surface": "Weasley family",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 4,
+                "end": 107,
+                "text": "Weasley family lived at the Burrow. Molly Weasley was Arthur's wife. Their children included Ron, Ginny"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        }
+      ]
+    },
+    {
+      "type": "cycle",
+      "severity": 3,
+      "description": "Cycle detected in parent_of/child_of: global_person_0 → global_person_2 → global_person_3 → global_person_4 → global_person_0",
+      "relations": [
+        {
+          "id": "2c641504-ad16-4314-9b78-f68b206d5bbe",
+          "subj": "global_person_0",
+          "pred": "parent_of",
+          "obj": "global_person_2",
+          "subj_surface": "Weasley family",
+          "obj_surface": "Ron",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 4,
+                "end": 100,
+                "text": "Weasley family lived at the Burrow. Molly Weasley was Arthur's wife. Their children included Ron"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "e76ef6b6-5d1b-4f53-96ce-61d283534b67",
+          "subj": "global_person_4",
+          "pred": "child_of",
+          "obj": "global_person_0",
+          "subj_surface": "Fred",
+          "obj_surface": "Weasley family",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 4,
+                "end": 113,
+                "text": "Weasley family lived at the Burrow. Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        }
+      ]
+    },
+    {
+      "type": "cycle",
+      "severity": 3,
+      "description": "Cycle detected in parent_of/child_of: global_person_0 → global_person_2 → global_person_3 → global_person_4 → global_person_5 → global_person_0",
+      "relations": [
+        {
+          "id": "2c641504-ad16-4314-9b78-f68b206d5bbe",
+          "subj": "global_person_0",
+          "pred": "parent_of",
+          "obj": "global_person_2",
+          "subj_surface": "Weasley family",
+          "obj_surface": "Ron",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 4,
+                "end": 100,
+                "text": "Weasley family lived at the Burrow. Molly Weasley was Arthur's wife. Their children included Ron"
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        },
+        {
+          "id": "5bf7aa5f-188b-4cbd-9c83-eb3e18e3013b",
+          "subj": "global_person_5",
+          "pred": "child_of",
+          "obj": "global_person_0",
+          "subj_surface": "George",
+          "obj_surface": "Weasley family",
+          "evidence": [
+            {
+              "doc_id": "default",
+              "span": {
+                "start": 4,
+                "end": 126,
+                "text": "Weasley family lived at the Burrow. Molly Weasley was Arthur's wife. Their children included Ron, Ginny, Fred, and George."
+              },
+              "sentence_index": 0,
+              "source": "RAW"
+            }
+          ],
+          "confidence": 0.7,
+          "extractor": "regex"
+        }
+      ]
+    }
+  ],
+  "provenance": {
+    "t3.5_entity_0": {
+      "global_id": "global_person_0",
+      "doc_id": "t3.5",
+      "merged_at": "2025-11-18T15:56:41.551Z",
+      "local_canonical": "Molly Weasley"
+    },
+    "t3.5_entity_1": {
+      "global_id": "global_place_6",
+      "doc_id": "t3.5",
+      "merged_at": "2025-11-18T15:56:41.551Z",
+      "local_canonical": "Burrow"
+    },
+    "t3.5_entity_2": {
+      "global_id": "global_person_1",
+      "doc_id": "t3.5",
+      "merged_at": "2025-11-18T15:56:41.551Z",
+      "local_canonical": "Arthur"
+    },
+    "t3.5_entity_3": {
+      "global_id": "global_person_2",
+      "doc_id": "t3.5",
+      "merged_at": "2025-11-18T15:56:41.551Z",
+      "local_canonical": "Ron"
+    },
+    "t3.5_entity_4": {
+      "global_id": "global_person_3",
+      "doc_id": "t3.5",
+      "merged_at": "2025-11-18T15:56:41.551Z",
+      "local_canonical": "Ginny"
+    },
+    "t3.5_entity_5": {
+      "global_id": "global_person_4",
+      "doc_id": "t3.5",
+      "merged_at": "2025-11-18T15:56:41.551Z",
+      "local_canonical": "Fred"
+    },
+    "t3.5_entity_6": {
+      "global_id": "global_person_5",
+      "doc_id": "t3.5",
+      "merged_at": "2025-11-18T15:56:41.551Z",
+      "local_canonical": "George"
+    },
+    "t3.5_entity_7": {
+      "global_id": "global_person_0",
+      "doc_id": "t3.5",
+      "merged_at": "2025-11-18T15:56:41.551Z",
+      "local_canonical": "Bill Weasley"
+    },
+    "t3.5_entity_8": {
+      "global_id": "global_org_7",
+      "doc_id": "t3.5",
+      "merged_at": "2025-11-18T15:56:41.551Z",
+      "local_canonical": "Gringotts Bank"
+    }
+  },
+  "profiles": {
+    "bc4c72b3-0b99-4e49-b8c6-f636e5ab9ef1": {
+      "entity_id": "bc4c72b3-0b99-4e49-b8c6-f636e5ab9ef1",
+      "entity_type": "PERSON",
+      "canonical": "Molly Weasley",
+      "descriptors": [],
+      "titles": [
+        "Molly Weasley",
+        "weasley"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "The Weasley family lived at the Burrow.",
+        "Molly Weasley was Arthur's wife."
+      ],
+      "mention_count": 2,
+      "first_seen": "t3.5",
+      "last_seen": "t3.5",
+      "confidence_score": 0.6
+    },
+    "a2361ffc-b27f-4ed8-aee9-15769d420955": {
+      "entity_id": "a2361ffc-b27f-4ed8-aee9-15769d420955",
+      "entity_type": "PLACE",
+      "canonical": "Burrow",
+      "descriptors": [],
+      "titles": [
+        "Burrow"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "The Weasley family lived at the Burrow."
+      ],
+      "mention_count": 1,
+      "first_seen": "t3.5",
+      "last_seen": "t3.5",
+      "confidence_score": 0.55
+    },
+    "e47839c1-0293-4f22-88fa-6848604c8bdb": {
+      "entity_id": "e47839c1-0293-4f22-88fa-6848604c8bdb",
+      "entity_type": "PERSON",
+      "canonical": "Arthur",
+      "descriptors": [],
+      "titles": [
+        "Arthur"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Molly Weasley was Arthur's wife."
+      ],
+      "mention_count": 1,
+      "first_seen": "t3.5",
+      "last_seen": "t3.5",
+      "confidence_score": 0.55
+    },
+    "7d41ecd3-a1b5-4a89-94b3-057e4d276998": {
+      "entity_id": "7d41ecd3-a1b5-4a89-94b3-057e4d276998",
+      "entity_type": "PERSON",
+      "canonical": "Ron",
+      "descriptors": [],
+      "titles": [
+        "Ron"
+      ],
+      "roles": [],
+      "attributes": {
+        "color": [
+          "red"
+        ]
+      },
+      "contexts": [
+        "Their children included Ron, Ginny, Fred, and George."
+      ],
+      "mention_count": 1,
+      "first_seen": "t3.5",
+      "last_seen": "t3.5",
+      "confidence_score": 0.55
+    },
+    "24fc3121-dd71-44d1-89b2-5582ab34ce1a": {
+      "entity_id": "24fc3121-dd71-44d1-89b2-5582ab34ce1a",
+      "entity_type": "PERSON",
+      "canonical": "Ginny",
+      "descriptors": [],
+      "titles": [
+        "Ginny"
+      ],
+      "roles": [],
+      "attributes": {
+        "color": [
+          "red"
+        ]
+      },
+      "contexts": [
+        "Their children included Ron, Ginny, Fred, and George."
+      ],
+      "mention_count": 1,
+      "first_seen": "t3.5",
+      "last_seen": "t3.5",
+      "confidence_score": 0.55
+    },
+    "b61848d5-339d-48b5-bcc3-1c1831117fa9": {
+      "entity_id": "b61848d5-339d-48b5-bcc3-1c1831117fa9",
+      "entity_type": "PERSON",
+      "canonical": "Fred",
+      "descriptors": [],
+      "titles": [
+        "Fred"
+      ],
+      "roles": [],
+      "attributes": {
+        "color": [
+          "red"
+        ]
+      },
+      "contexts": [
+        "Their children included Ron, Ginny, Fred, and George."
+      ],
+      "mention_count": 1,
+      "first_seen": "t3.5",
+      "last_seen": "t3.5",
+      "confidence_score": 0.55
+    },
+    "fc32a2f4-39dc-417e-9d71-23545fa978a9": {
+      "entity_id": "fc32a2f4-39dc-417e-9d71-23545fa978a9",
+      "entity_type": "PERSON",
+      "canonical": "George",
+      "descriptors": [],
+      "titles": [
+        "George"
+      ],
+      "roles": [],
+      "attributes": {
+        "color": [
+          "red"
+        ]
+      },
+      "contexts": [
+        "Their children included Ron, Ginny, Fred, and George."
+      ],
+      "mention_count": 1,
+      "first_seen": "t3.5",
+      "last_seen": "t3.5",
+      "confidence_score": 0.55
+    },
+    "8e6789f8-83e6-4ff9-8592-f7feb97263c5": {
+      "entity_id": "8e6789f8-83e6-4ff9-8592-f7feb97263c5",
+      "entity_type": "PERSON",
+      "canonical": "Bill Weasley",
+      "descriptors": [],
+      "titles": [
+        "Bill Weasley"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Bill Weasley, the eldest son, worked for Gringotts Bank."
+      ],
+      "mention_count": 1,
+      "first_seen": "t3.5",
+      "last_seen": "t3.5",
+      "confidence_score": 0.55
+    },
+    "64ade72e-1e85-45d8-8654-92c14d17b8c4": {
+      "entity_id": "64ade72e-1e85-45d8-8654-92c14d17b8c4",
+      "entity_type": "ORG",
+      "canonical": "Gringotts Bank",
+      "descriptors": [],
+      "titles": [
+        "Gringotts Bank"
+      ],
+      "roles": [],
+      "attributes": {},
+      "contexts": [
+        "Bill Weasley, the eldest son, worked for Gringotts Bank."
+      ],
+      "mention_count": 1,
+      "first_seen": "t3.5",
+      "last_seen": "t3.5",
+      "confidence_score": 0.55
+    }
+  },
+  "metadata": {
+    "created_at": "2025-11-18T15:56:41.397Z",
+    "updated_at": "2025-11-18T15:56:41.552Z",
+    "doc_count": 1,
+    "doc_ids": [
+      "t3.5"
+    ]
+  }
+}

@@ -1,0 +1,388 @@
+
+=== Basic pronoun reference ===
+[EXTRACT-ENTITIES] Resolved 1 coreference links
+[EXTRACT-ENTITIES] Resolved 1 coreference links
+[PRECISION-DEFENSE] 🛡️ Layer 1: Entity Quality Filter
+  Original entities: 1
+  Filtered entities: 1
+  Removed: 0 (0.0%)
+  Removal reasons:
+    - Low confidence: 0
+    - Too short: 0
+    - Blocked token: 0
+    - No capitalization: 0
+    - Invalid characters: 0
+    - Invalid date: 0
+    - Too generic: 0
+    - Strict mode: 0
+[COREF] Found 1 coreference links
+[COREF] "He" [18,20] -> Frederick (pronoun_stack, conf=0.70)
+[COREF] Found 0 coref-enhanced relations (filtered to 0)
+[NarrativeRelations] Using 48 static + 0 dynamic patterns = 48 total
+[APPOS-FILTER] Total pred-obj groups: 0
+[APPOS-FILTER] Relations after filter: 0
+[DEDUP-ENTRY] Relations entering deduplication:
+[DEDUP-EXIT] Relations after deduplication:
+[PRECISION-DEFENSE] 🛡️ Layer 3: Relation Deduplication
+  Original relations: 0
+  Deduplicated relations: 0
+  Removed duplicates: 0 (NaN%)
+  Duplicate groups: 0
+  Avg group size: 0.0
+  Max group size: 0
+[PRECISION-DEFENSE] 🛡️ Layer 3: Confidence Threshold Filter
+  Threshold: 0.7
+  Before: 0 relations
+  After: 0 relations
+  Removed: 0 (NaN%)
+[EID-REGISTRY] Loaded 346 entities from ./data/eid-registry.json
+[ALIAS-REGISTRY] Loaded 451 aliases from ./data/alias-registry.json
+[ORCHESTRATOR] Resolved "Frederick" → EID 322 (method: exact, confidence: 1.00)
+[ORCHESTRATOR] Populating entity aliases from coref links and alias registry
+[ORCHESTRATOR] Entity "Frederick" has 10 aliases: [He, Fredericks, King Frederick...]
+  ✅ Entity canonical: Frederick
+  ❌ Aliases contain pronouns for Frederick: He
+
+=== Multiple people with pronouns ===
+[EXTRACT-ENTITIES] Resolved 2 coreference links
+[EXTRACT-ENTITIES] Resolved 2 coreference links
+[PRECISION-DEFENSE] 🛡️ Layer 1: Entity Quality Filter
+  Original entities: 2
+  Filtered entities: 2
+  Removed: 0 (0.0%)
+  Removal reasons:
+    - Low confidence: 0
+    - Too short: 0
+    - Blocked token: 0
+    - No capitalization: 0
+    - Invalid characters: 0
+    - Invalid date: 0
+    - Too generic: 0
+    - Strict mode: 0
+[COREF] Found 2 coreference links
+[COREF] "He" [20,22] -> Frederick (pronoun_stack, conf=0.70)
+[COREF] "him" [31,34] -> Frederick (pronoun_stack, conf=0.70)
+[COREF] Found 0 coref-enhanced relations (filtered to 0)
+[NarrativeRelations] Using 48 static + 0 dynamic patterns = 48 total
+[APPOS-FILTER] Total pred-obj groups: 0
+[APPOS-FILTER] Relations after filter: 0
+[DEDUP-ENTRY] Relations entering deduplication:
+[DEDUP-EXIT] Relations after deduplication:
+[PRECISION-DEFENSE] 🛡️ Layer 3: Relation Deduplication
+  Original relations: 0
+  Deduplicated relations: 0
+  Removed duplicates: 0 (NaN%)
+  Duplicate groups: 0
+  Avg group size: 0.0
+  Max group size: 0
+[PRECISION-DEFENSE] 🛡️ Layer 3: Confidence Threshold Filter
+  Threshold: 0.7
+  Before: 0 relations
+  After: 0 relations
+  Removed: 0 (NaN%)
+[ORCHESTRATOR] Resolved "Frederick" → EID 322 (method: exact, confidence: 1.00)
+[ORCHESTRATOR] Resolved "Saul" → EID 323 (method: exact, confidence: 1.00)
+[ORCHESTRATOR] Populating entity aliases from coref links and alias registry
+[ORCHESTRATOR] Entity "Frederick" has 11 aliases: [He, him, Fredericks...]
+  ✅ Entity canonical: Frederick
+  ❌ Aliases contain pronouns for Frederick: He, him
+  ✅ Entity canonical: Saul
+  ✅ Entities remained distinct
+
+=== Female pronouns ===
+[EXTRACT-ENTITIES] Resolved 1 coreference links
+[EXTRACT-ENTITIES] Resolved 1 coreference links
+[PRECISION-DEFENSE] 🛡️ Layer 1: Entity Quality Filter
+  Original entities: 2
+  Filtered entities: 2
+  Removed: 0 (0.0%)
+  Removal reasons:
+    - Low confidence: 0
+    - Too short: 0
+    - Blocked token: 0
+    - No capitalization: 0
+    - Invalid characters: 0
+    - Invalid date: 0
+    - Too generic: 0
+    - Strict mode: 0
+[COREF] Found 1 coreference links
+[COREF] "She" [22,25] -> Eowyn (pronoun_stack, conf=0.70)
+[RELATIONS-DEBUG] Created relation from dependencies
+  Predicate: defeated
+  Subject: "bc1bc9a0-217d-4ad0-9efe-b5fee53eb329" (type: string)
+  Object: "a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[RELATIONS-DEBUG] Created inverse relation from dependencies
+  Predicate: defeated
+  Subject: "a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a" (type: string)
+  Object: "bc1bc9a0-217d-4ad0-9efe-b5fee53eb329" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[RELATIONS-DEBUG] Created relation from dependencies
+  Predicate: enemy_of
+  Subject: "bc1bc9a0-217d-4ad0-9efe-b5fee53eb329" (type: string)
+  Object: "a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[RELATIONS-DEBUG] Created inverse relation from dependencies
+  Predicate: enemy_of
+  Subject: "a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a" (type: string)
+  Object: "bc1bc9a0-217d-4ad0-9efe-b5fee53eb329" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[RELATIONS-DEBUG] Created relation from dependencies
+  Predicate: defeated
+  Subject: "bc1bc9a0-217d-4ad0-9efe-b5fee53eb329" (type: string)
+  Object: "a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[RELATIONS-DEBUG] Created inverse relation from dependencies
+  Predicate: defeated
+  Subject: "a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a" (type: string)
+  Object: "bc1bc9a0-217d-4ad0-9efe-b5fee53eb329" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[RELATIONS-DEBUG] Created relation from dependencies
+  Predicate: enemy_of
+  Subject: "bc1bc9a0-217d-4ad0-9efe-b5fee53eb329" (type: string)
+  Object: "a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[RELATIONS-DEBUG] Created inverse relation from dependencies
+  Predicate: enemy_of
+  Subject: "a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a" (type: string)
+  Object: "bc1bc9a0-217d-4ad0-9efe-b5fee53eb329" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[COREF] Found 8 coref-enhanced relations (filtered to 8)
+[COREF] Eowyn --[defeated]--> Witch-king
+[COREF] Witch-king --[defeated]--> Eowyn
+[COREF] Eowyn --[enemy_of]--> Witch-king
+[COREF] Witch-king --[enemy_of]--> Eowyn
+[COREF] Eowyn --[defeated]--> Witch-king
+[COREF] Witch-king --[defeated]--> Eowyn
+[COREF] Eowyn --[enemy_of]--> Witch-king
+[COREF] Witch-king --[enemy_of]--> Eowyn
+[NarrativeRelations] Using 48 static + 0 dynamic patterns = 48 total
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: defeated
+  Subject on entry: "bc1bc9a0-217d-4ad0-9efe-b5fee53eb329"
+  Object on entry: "a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: defeated
+  Subject on entry: "a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a"
+  Object on entry: "bc1bc9a0-217d-4ad0-9efe-b5fee53eb329"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: enemy_of
+  Subject on entry: "bc1bc9a0-217d-4ad0-9efe-b5fee53eb329"
+  Object on entry: "a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: enemy_of
+  Subject on entry: "a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a"
+  Object on entry: "bc1bc9a0-217d-4ad0-9efe-b5fee53eb329"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: defeated
+  Subject on entry: "bc1bc9a0-217d-4ad0-9efe-b5fee53eb329"
+  Object on entry: "a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: defeated
+  Subject on entry: "a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a"
+  Object on entry: "bc1bc9a0-217d-4ad0-9efe-b5fee53eb329"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: enemy_of
+  Subject on entry: "bc1bc9a0-217d-4ad0-9efe-b5fee53eb329"
+  Object on entry: "a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: enemy_of
+  Subject on entry: "a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a"
+  Object on entry: "bc1bc9a0-217d-4ad0-9efe-b5fee53eb329"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: defeated
+  Subject on entry: "a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a"
+  Object on entry: "bc1bc9a0-217d-4ad0-9efe-b5fee53eb329"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: defeated
+  Subject on entry: "bc1bc9a0-217d-4ad0-9efe-b5fee53eb329"
+  Object on entry: "a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: enemy_of
+  Subject on entry: "a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a"
+  Object on entry: "bc1bc9a0-217d-4ad0-9efe-b5fee53eb329"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: enemy_of
+  Subject on entry: "bc1bc9a0-217d-4ad0-9efe-b5fee53eb329"
+  Object on entry: "a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: defeated
+  Subject on entry: "a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a"
+  Object on entry: "bc1bc9a0-217d-4ad0-9efe-b5fee53eb329"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: defeated
+  Subject on entry: "bc1bc9a0-217d-4ad0-9efe-b5fee53eb329"
+  Object on entry: "a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: enemy_of
+  Subject on entry: "a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a"
+  Object on entry: "bc1bc9a0-217d-4ad0-9efe-b5fee53eb329"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: enemy_of
+  Subject on entry: "bc1bc9a0-217d-4ad0-9efe-b5fee53eb329"
+  Object on entry: "a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a"
+  Subject type: string
+[APPOS-FILTER] Total pred-obj groups: 4
+[APPOS-FILTER]   Group defeated::a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a has 4 subjects
+[APPOS-FILTER]   Group defeated::bc1bc9a0-217d-4ad0-9efe-b5fee53eb329 has 4 subjects
+[APPOS-FILTER]   Group enemy_of::a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a has 4 subjects
+[APPOS-FILTER]   Group enemy_of::bc1bc9a0-217d-4ad0-9efe-b5fee53eb329 has 4 subjects
+[APPOS-FILTER] Checking defeated::a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a with 4 subjects (obj="Witch-king"):
+  - eowyn at position 0
+  - eowyn at position 0
+  - eowyn at position 0
+  - eowyn at position 0
+[APPOS-FILTER]   eowyn at 0 is duplicate - SKIP
+[APPOS-FILTER]   eowyn at 0 is duplicate - SKIP
+[APPOS-FILTER]   eowyn at 0 is duplicate - SKIP
+[APPOS-FILTER]   isCoordination: true
+[APPOS-FILTER]   Keeping all 4 subjects
+[APPOS-FILTER] Checking defeated::bc1bc9a0-217d-4ad0-9efe-b5fee53eb329 with 4 subjects (obj="Eowyn"):
+  - witch-king at position 39
+  - witch-king at position 39
+  - witch-king at position 39
+  - witch-king at position 39
+[APPOS-FILTER]   witch-king at 39 is duplicate - SKIP
+[APPOS-FILTER]   witch-king at 39 is duplicate - SKIP
+[APPOS-FILTER]   witch-king at 39 is duplicate - SKIP
+[APPOS-FILTER]   isCoordination: true
+[APPOS-FILTER]   Keeping all 4 subjects
+[APPOS-FILTER] Checking enemy_of::a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a with 4 subjects (obj="Witch-king"):
+  - eowyn at position 0
+  - eowyn at position 0
+  - eowyn at position 0
+  - eowyn at position 0
+[APPOS-FILTER]   eowyn at 0 is duplicate - SKIP
+[APPOS-FILTER]   eowyn at 0 is duplicate - SKIP
+[APPOS-FILTER]   eowyn at 0 is duplicate - SKIP
+[APPOS-FILTER]   isCoordination: true
+[APPOS-FILTER]   Keeping all 4 subjects
+[APPOS-FILTER] Checking enemy_of::bc1bc9a0-217d-4ad0-9efe-b5fee53eb329 with 4 subjects (obj="Eowyn"):
+  - witch-king at position 39
+  - witch-king at position 39
+  - witch-king at position 39
+  - witch-king at position 39
+[APPOS-FILTER]   witch-king at 39 is duplicate - SKIP
+[APPOS-FILTER]   witch-king at 39 is duplicate - SKIP
+[APPOS-FILTER]   witch-king at 39 is duplicate - SKIP
+[APPOS-FILTER]   isCoordination: true
+[APPOS-FILTER]   Keeping all 4 subjects
+[APPOS-FILTER] Relations after filter: 16
+[DEDUP-ENTRY] Relations entering deduplication:
+  1. bc1bc9a0-217d-4ad0-9efe-b5fee53eb329 → defeated → a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a (conf: 0.9)
+  2. bc1bc9a0-217d-4ad0-9efe-b5fee53eb329 → defeated → a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a (conf: 0.9)
+  3. bc1bc9a0-217d-4ad0-9efe-b5fee53eb329 → defeated → a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a (conf: 0.9)
+  4. bc1bc9a0-217d-4ad0-9efe-b5fee53eb329 → defeated → a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a (conf: 0.9)
+  5. a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a → defeated → bc1bc9a0-217d-4ad0-9efe-b5fee53eb329 (conf: 0.9)
+  6. a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a → defeated → bc1bc9a0-217d-4ad0-9efe-b5fee53eb329 (conf: 0.9)
+  7. a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a → defeated → bc1bc9a0-217d-4ad0-9efe-b5fee53eb329 (conf: 0.9)
+  8. a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a → defeated → bc1bc9a0-217d-4ad0-9efe-b5fee53eb329 (conf: 0.9)
+  9. bc1bc9a0-217d-4ad0-9efe-b5fee53eb329 → enemy_of → a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a (conf: 0.7088790555985779)
+  10. bc1bc9a0-217d-4ad0-9efe-b5fee53eb329 → enemy_of → a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a (conf: 0.7088790555985779)
+  11. bc1bc9a0-217d-4ad0-9efe-b5fee53eb329 → enemy_of → a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a (conf: 0.7088790555985779)
+  12. bc1bc9a0-217d-4ad0-9efe-b5fee53eb329 → enemy_of → a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a (conf: 0.7088790555985779)
+  13. a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a → enemy_of → bc1bc9a0-217d-4ad0-9efe-b5fee53eb329 (conf: 0.7088790555985779)
+  14. a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a → enemy_of → bc1bc9a0-217d-4ad0-9efe-b5fee53eb329 (conf: 0.7088790555985779)
+  15. a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a → enemy_of → bc1bc9a0-217d-4ad0-9efe-b5fee53eb329 (conf: 0.7088790555985779)
+  16. a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a → enemy_of → bc1bc9a0-217d-4ad0-9efe-b5fee53eb329 (conf: 0.7088790555985779)
+[DEDUP-EXIT] Relations after deduplication:
+  1. bc1bc9a0-217d-4ad0-9efe-b5fee53eb329 → defeated → a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a (conf: 0.9)
+  2. a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a → defeated → bc1bc9a0-217d-4ad0-9efe-b5fee53eb329 (conf: 0.9)
+  3. bc1bc9a0-217d-4ad0-9efe-b5fee53eb329 → enemy_of → a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a (conf: 0.7088790555985779)
+  4. a6b4c40d-00c5-4a38-aa28-85f4b2b4c63a → enemy_of → bc1bc9a0-217d-4ad0-9efe-b5fee53eb329 (conf: 0.7088790555985779)
+[PRECISION-DEFENSE] 🛡️ Layer 3: Relation Deduplication
+  Original relations: 16
+  Deduplicated relations: 4
+  Removed duplicates: 12 (75.0%)
+  Duplicate groups: 4
+  Avg group size: 4.0
+  Max group size: 4
+[PRECISION-DEFENSE] 🛡️ Layer 3: Confidence Threshold Filter
+  Threshold: 0.7
+  Before: 4 relations
+  After: 4 relations
+  Removed: 0 (0.0%)
+[ORCHESTRATOR] Resolved "Eowyn" → EID 239 (method: exact, confidence: 1.00)
+[ORCHESTRATOR] Resolved "Witch-king" → EID 346 (method: exact, confidence: 1.00)
+[ORCHESTRATOR] Populating entity aliases from coref links and alias registry
+[ORCHESTRATOR] Entity "Eowyn" has 1 aliases: [She]
+[ORCHESTRATOR] Entity "Witch-king" has 1 aliases: [Witch]
+  ✅ Entity canonical: Eowyn
+  ❌ Aliases contain pronouns for Eowyn: She
+  ✅ Entity canonical: Witch-king
+
+=== Possessive pronouns ===
+[EXTRACT-ENTITIES] Resolved 2 coreference links
+[EXTRACT-ENTITIES] Resolved 2 coreference links
+[PRECISION-DEFENSE] 🛡️ Layer 1: Entity Quality Filter
+  Original entities: 2
+  Filtered entities: 1
+  Removed: 1 (50.0%)
+  Removal reasons:
+    - Low confidence: 0
+    - Too short: 0
+    - Blocked token: 0
+    - No capitalization: 1
+    - Invalid characters: 0
+    - Invalid date: 0
+    - Too generic: 0
+    - Strict mode: 0
+[COREF] Found 2 coreference links
+[COREF] "his" [13,16] -> Aragorn (pronoun_stack, conf=0.70)
+[COREF] "His" [24,27] -> Aragorn (pronoun_stack, conf=0.70)
+[COREF] Found 0 coref-enhanced relations (filtered to 0)
+[NarrativeRelations] Using 48 static + 0 dynamic patterns = 48 total
+[APPOS-FILTER] Total pred-obj groups: 0
+[APPOS-FILTER] Relations after filter: 0
+[DEDUP-ENTRY] Relations entering deduplication:
+[DEDUP-EXIT] Relations after deduplication:
+[PRECISION-DEFENSE] 🛡️ Layer 3: Relation Deduplication
+  Original relations: 0
+  Deduplicated relations: 0
+  Removed duplicates: 0 (NaN%)
+  Duplicate groups: 0
+  Avg group size: 0.0
+  Max group size: 0
+[PRECISION-DEFENSE] 🛡️ Layer 3: Confidence Threshold Filter
+  Threshold: 0.7
+  Before: 0 relations
+  After: 0 relations
+  Removed: 0 (NaN%)
+[ORCHESTRATOR] Resolved "Aragorn" → EID 233 (method: exact, confidence: 1.00)
+[ORCHESTRATOR] Populating entity aliases from coref links and alias registry
+[ORCHESTRATOR] Entity "Aragorn" has 3 aliases: [his, His, Prince Aragorn]
+  ✅ Entity canonical: Aragorn
+  ❌ Aliases contain pronouns for Aragorn: his, His
+
+❌ Pronoun resolution test failed: Pronoun resolution test failed

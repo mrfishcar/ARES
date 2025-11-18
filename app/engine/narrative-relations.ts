@@ -19,12 +19,15 @@ interface RelationPattern {
   regex: RegExp;
   predicate: string;
   symmetric?: boolean;
-  extractSubj?: number;  // Capture group for subject (default: 1)
-  extractObj?: number;   // Capture group for object (default: 2)
+  extractSubj?: number | null;  // Capture group for subject (default: 1)
+  extractObj?: number | null;   // Capture group for object (default: 2)
   typeGuard?: {
     subj?: EntityType[];
     obj?: EntityType[];
   };
+  coordination?: boolean;
+  listExtraction?: boolean;
+  reversed?: boolean;
 }
 
 /**

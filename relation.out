@@ -1,0 +1,623 @@
+
+=== Ruling relation ===
+[RELATIONS-DEBUG] Created relation from dependencies
+  Predicate: rules
+  Subject: "2e33fe26-05cc-4768-960f-b74cd112a94e" (type: string)
+  Object: "7fee8dc7-65bc-459e-ba1b-a0361a4023e1" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[RELATIONS-DEBUG] Created relation from dependencies
+  Predicate: rules
+  Subject: "2e33fe26-05cc-4768-960f-b74cd112a94e" (type: string)
+  Object: "7fee8dc7-65bc-459e-ba1b-a0361a4023e1" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[RELATIONS-DEBUG] Created relation from regex
+  Predicate: rules
+  Subject: "2e33fe26-05cc-4768-960f-b74cd112a94e" (type: string)
+  Object: "7fee8dc7-65bc-459e-ba1b-a0361a4023e1" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[PRECISION-DEFENSE] 🛡️ Layer 1: Entity Quality Filter
+  Original entities: 2
+  Filtered entities: 2
+  Removed: 0 (0.0%)
+  Removal reasons:
+    - Low confidence: 0
+    - Too short: 0
+    - Blocked token: 0
+    - No capitalization: 0
+    - Invalid characters: 0
+    - Invalid date: 0
+    - Too generic: 0
+    - Strict mode: 0
+[COREF] Found 0 coreference links
+[RELATIONS-DEBUG] Created relation from dependencies
+  Predicate: rules
+  Subject: "2e33fe26-05cc-4768-960f-b74cd112a94e" (type: string)
+  Object: "7fee8dc7-65bc-459e-ba1b-a0361a4023e1" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[RELATIONS-DEBUG] Created relation from dependencies
+  Predicate: rules
+  Subject: "2e33fe26-05cc-4768-960f-b74cd112a94e" (type: string)
+  Object: "7fee8dc7-65bc-459e-ba1b-a0361a4023e1" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[RELATIONS-DEBUG] Created relation from regex
+  Predicate: rules
+  Subject: "2e33fe26-05cc-4768-960f-b74cd112a94e" (type: string)
+  Object: "7fee8dc7-65bc-459e-ba1b-a0361a4023e1" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[COREF] Found 1 coref-enhanced relations (filtered to 1)
+[COREF] Aragorn --[rules]--> Gondor
+[NarrativeRelations] Using 48 static + 0 dynamic patterns = 48 total
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: rules
+  Subject on entry: "2e33fe26-05cc-4768-960f-b74cd112a94e"
+  Object on entry: "7fee8dc7-65bc-459e-ba1b-a0361a4023e1"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: rules
+  Subject on entry: "2e33fe26-05cc-4768-960f-b74cd112a94e"
+  Object on entry: "7fee8dc7-65bc-459e-ba1b-a0361a4023e1"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: rules
+  Subject on entry: "2e33fe26-05cc-4768-960f-b74cd112a94e"
+  Object on entry: "7fee8dc7-65bc-459e-ba1b-a0361a4023e1"
+  Subject type: string
+[APPOS-FILTER] Total pred-obj groups: 1
+[APPOS-FILTER]   Group rules::7fee8dc7-65bc-459e-ba1b-a0361a4023e1 has 3 subjects
+[APPOS-FILTER] Checking rules::7fee8dc7-65bc-459e-ba1b-a0361a4023e1 with 3 subjects (obj="Gondor"):
+  - aragorn at position 0
+  - aragorn at position 0
+  - aragorn at position 0
+[APPOS-FILTER]   aragorn at 0 is duplicate - SKIP
+[APPOS-FILTER]   aragorn at 0 is duplicate - SKIP
+[APPOS-FILTER]   isCoordination: true
+[APPOS-FILTER]   Keeping all 3 subjects
+[APPOS-FILTER] Relations after filter: 3
+[DEDUP-ENTRY] Relations entering deduplication:
+  1. 2e33fe26-05cc-4768-960f-b74cd112a94e → rules → 7fee8dc7-65bc-459e-ba1b-a0361a4023e1 (conf: 0.9)
+  2. 2e33fe26-05cc-4768-960f-b74cd112a94e → rules → 7fee8dc7-65bc-459e-ba1b-a0361a4023e1 (conf: 0.9)
+  3. 2e33fe26-05cc-4768-960f-b74cd112a94e → rules → 7fee8dc7-65bc-459e-ba1b-a0361a4023e1 (conf: 0.85)
+[DEDUP-EXIT] Relations after deduplication:
+  1. 2e33fe26-05cc-4768-960f-b74cd112a94e → rules → 7fee8dc7-65bc-459e-ba1b-a0361a4023e1 (conf: 0.9)
+[PRECISION-DEFENSE] 🛡️ Layer 3: Relation Deduplication
+  Original relations: 3
+  Deduplicated relations: 1
+  Removed duplicates: 2 (66.7%)
+  Duplicate groups: 1
+  Avg group size: 3.0
+  Max group size: 3
+[PRECISION-DEFENSE] 🛡️ Layer 3: Confidence Threshold Filter
+  Threshold: 0.7
+  Before: 1 relations
+  After: 1 relations
+  Removed: 0 (0.0%)
+[EID-REGISTRY] Loaded 350 entities from ./data/eid-registry.json
+[ALIAS-REGISTRY] Loaded 479 aliases from ./data/alias-registry.json
+[ORCHESTRATOR] Resolved "Aragorn" → EID 233 (method: exact, confidence: 1.00)
+[ORCHESTRATOR] Resolved "Gondor" → EID 273 (method: exact, confidence: 1.00)
+[ORCHESTRATOR] Populating entity aliases from coref links and alias registry
+[ORCHESTRATOR] Entity "Aragorn" has 1 aliases: [Prince Aragorn]
+  ✅ rules: Aragorn → Gondor
+  Meaning records: 1
+
+=== Marriage relation ===
+[RELATIONS-DEBUG] Created relation from dependencies
+  Predicate: lives_in
+  Subject: "dfa00400-73fc-4033-8bb5-911fd9ada688" (type: string)
+  Object: "f261db8c-8b30-485c-85b4-2d8c151bb9fd" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[RELATIONS-DEBUG] Created relation from dependencies
+  Predicate: married_to
+  Subject: "40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3" (type: string)
+  Object: "dfa00400-73fc-4033-8bb5-911fd9ada688" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[RELATIONS-DEBUG] Created inverse relation from dependencies
+  Predicate: married_to
+  Subject: "dfa00400-73fc-4033-8bb5-911fd9ada688" (type: string)
+  Object: "40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[RELATIONS-DEBUG] Created relation from regex
+  Predicate: married_to
+  Subject: "40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3" (type: string)
+  Object: "dfa00400-73fc-4033-8bb5-911fd9ada688" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[RELATIONS-DEBUG] Created inverse relation from regex
+  Predicate: married_to
+  Subject: "dfa00400-73fc-4033-8bb5-911fd9ada688" (type: string)
+  Object: "40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[PRECISION-DEFENSE] 🛡️ Layer 1: Entity Quality Filter
+  Original entities: 3
+  Filtered entities: 3
+  Removed: 0 (0.0%)
+  Removal reasons:
+    - Low confidence: 0
+    - Too short: 0
+    - Blocked token: 0
+    - No capitalization: 0
+    - Invalid characters: 0
+    - Invalid date: 0
+    - Too generic: 0
+    - Strict mode: 0
+[COREF] Found 0 coreference links
+[RELATIONS-DEBUG] Created relation from dependencies
+  Predicate: lives_in
+  Subject: "dfa00400-73fc-4033-8bb5-911fd9ada688" (type: string)
+  Object: "f261db8c-8b30-485c-85b4-2d8c151bb9fd" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[RELATIONS-DEBUG] Created relation from dependencies
+  Predicate: married_to
+  Subject: "40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3" (type: string)
+  Object: "dfa00400-73fc-4033-8bb5-911fd9ada688" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[RELATIONS-DEBUG] Created inverse relation from dependencies
+  Predicate: married_to
+  Subject: "dfa00400-73fc-4033-8bb5-911fd9ada688" (type: string)
+  Object: "40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[RELATIONS-DEBUG] Created relation from regex
+  Predicate: married_to
+  Subject: "40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3" (type: string)
+  Object: "dfa00400-73fc-4033-8bb5-911fd9ada688" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[RELATIONS-DEBUG] Created inverse relation from regex
+  Predicate: married_to
+  Subject: "dfa00400-73fc-4033-8bb5-911fd9ada688" (type: string)
+  Object: "40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[COREF] Found 3 coref-enhanced relations (filtered to 3)
+[COREF] Arwen --[lives_in]--> Minas Tirith
+[COREF] Aragorn --[married_to]--> Arwen
+[COREF] Arwen --[married_to]--> Aragorn
+[NarrativeRelations] Using 48 static + 0 dynamic patterns = 48 total
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: lives_in
+  Subject on entry: "dfa00400-73fc-4033-8bb5-911fd9ada688"
+  Object on entry: "f261db8c-8b30-485c-85b4-2d8c151bb9fd"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: married_to
+  Subject on entry: "40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3"
+  Object on entry: "dfa00400-73fc-4033-8bb5-911fd9ada688"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: married_to
+  Subject on entry: "dfa00400-73fc-4033-8bb5-911fd9ada688"
+  Object on entry: "40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: lives_in
+  Subject on entry: "dfa00400-73fc-4033-8bb5-911fd9ada688"
+  Object on entry: "f261db8c-8b30-485c-85b4-2d8c151bb9fd"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: married_to
+  Subject on entry: "40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3"
+  Object on entry: "dfa00400-73fc-4033-8bb5-911fd9ada688"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: married_to
+  Subject on entry: "dfa00400-73fc-4033-8bb5-911fd9ada688"
+  Object on entry: "40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: married_to
+  Subject on entry: "40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3"
+  Object on entry: "dfa00400-73fc-4033-8bb5-911fd9ada688"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: married_to
+  Subject on entry: "dfa00400-73fc-4033-8bb5-911fd9ada688"
+  Object on entry: "40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: married_to
+  Subject on entry: "dfa00400-73fc-4033-8bb5-911fd9ada688"
+  Object on entry: "40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: married_to
+  Subject on entry: "40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3"
+  Object on entry: "dfa00400-73fc-4033-8bb5-911fd9ada688"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: married_to
+  Subject on entry: "dfa00400-73fc-4033-8bb5-911fd9ada688"
+  Object on entry: "40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: married_to
+  Subject on entry: "40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3"
+  Object on entry: "dfa00400-73fc-4033-8bb5-911fd9ada688"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: married_to
+  Subject on entry: "dfa00400-73fc-4033-8bb5-911fd9ada688"
+  Object on entry: "40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: married_to
+  Subject on entry: "40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3"
+  Object on entry: "dfa00400-73fc-4033-8bb5-911fd9ada688"
+  Subject type: string
+[APPOS-FILTER] Total pred-obj groups: 3
+[APPOS-FILTER]   Group lives_in::f261db8c-8b30-485c-85b4-2d8c151bb9fd has 2 subjects
+[APPOS-FILTER]   Group married_to::dfa00400-73fc-4033-8bb5-911fd9ada688 has 6 subjects
+[APPOS-FILTER]   Group married_to::40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3 has 6 subjects
+[APPOS-FILTER] Checking lives_in::f261db8c-8b30-485c-85b4-2d8c151bb9fd with 2 subjects (obj="Minas Tirith"):
+  - arwen at position 16
+  - arwen at position 16
+[APPOS-FILTER]   arwen at 16 is duplicate - SKIP
+[APPOS-FILTER]   isCoordination: true
+[APPOS-FILTER]   Keeping all 2 subjects
+[APPOS-FILTER] Checking married_to::dfa00400-73fc-4033-8bb5-911fd9ada688 with 6 subjects (obj="Arwen"):
+  - aragorn at position 0
+  - aragorn at position 0
+  - aragorn at position 0
+  - aragorn at position 0
+  - aragorn at position 0
+  - aragorn at position 0
+[APPOS-FILTER]   aragorn at 0 is duplicate - SKIP
+[APPOS-FILTER]   aragorn at 0 is duplicate - SKIP
+[APPOS-FILTER]   aragorn at 0 is duplicate - SKIP
+[APPOS-FILTER]   aragorn at 0 is duplicate - SKIP
+[APPOS-FILTER]   aragorn at 0 is duplicate - SKIP
+[APPOS-FILTER]   isCoordination: true
+[APPOS-FILTER]   Keeping all 6 subjects
+[APPOS-FILTER] Checking married_to::40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3 with 6 subjects (obj="Aragorn"):
+  - arwen at position 16
+  - arwen at position 16
+  - arwen at position 16
+  - arwen at position 16
+  - arwen at position 16
+  - arwen at position 16
+[APPOS-FILTER]   arwen at 16 is duplicate - SKIP
+[APPOS-FILTER]   arwen at 16 is duplicate - SKIP
+[APPOS-FILTER]   arwen at 16 is duplicate - SKIP
+[APPOS-FILTER]   arwen at 16 is duplicate - SKIP
+[APPOS-FILTER]   arwen at 16 is duplicate - SKIP
+[APPOS-FILTER]   isCoordination: true
+[APPOS-FILTER]   Keeping all 6 subjects
+[APPOS-FILTER] Relations after filter: 14
+[DEDUP-ENTRY] Relations entering deduplication:
+  1. dfa00400-73fc-4033-8bb5-911fd9ada688 → lives_in → f261db8c-8b30-485c-85b4-2d8c151bb9fd (conf: 0.9)
+  2. dfa00400-73fc-4033-8bb5-911fd9ada688 → lives_in → f261db8c-8b30-485c-85b4-2d8c151bb9fd (conf: 0.9)
+  3. 40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3 → married_to → dfa00400-73fc-4033-8bb5-911fd9ada688 (conf: 0.7737005616586928)
+  4. 40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3 → married_to → dfa00400-73fc-4033-8bb5-911fd9ada688 (conf: 0.7737005616586928)
+  5. 40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3 → married_to → dfa00400-73fc-4033-8bb5-911fd9ada688 (conf: 0.85)
+  6. 40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3 → married_to → dfa00400-73fc-4033-8bb5-911fd9ada688 (conf: 0.7737005616586928)
+  7. 40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3 → married_to → dfa00400-73fc-4033-8bb5-911fd9ada688 (conf: 0.7737005616586928)
+  8. 40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3 → married_to → dfa00400-73fc-4033-8bb5-911fd9ada688 (conf: 0.85)
+  9. dfa00400-73fc-4033-8bb5-911fd9ada688 → married_to → 40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3 (conf: 0.7737005616586928)
+  10. dfa00400-73fc-4033-8bb5-911fd9ada688 → married_to → 40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3 (conf: 0.7737005616586928)
+  11. dfa00400-73fc-4033-8bb5-911fd9ada688 → married_to → 40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3 (conf: 0.85)
+  12. dfa00400-73fc-4033-8bb5-911fd9ada688 → married_to → 40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3 (conf: 0.7737005616586928)
+  13. dfa00400-73fc-4033-8bb5-911fd9ada688 → married_to → 40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3 (conf: 0.7737005616586928)
+  14. dfa00400-73fc-4033-8bb5-911fd9ada688 → married_to → 40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3 (conf: 0.85)
+[DEDUP-EXIT] Relations after deduplication:
+  1. dfa00400-73fc-4033-8bb5-911fd9ada688 → lives_in → f261db8c-8b30-485c-85b4-2d8c151bb9fd (conf: 0.9)
+  2. 40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3 → married_to → dfa00400-73fc-4033-8bb5-911fd9ada688 (conf: 0.85)
+  3. dfa00400-73fc-4033-8bb5-911fd9ada688 → married_to → 40bc4d9d-1af7-49c8-97d2-fbb37b23d0f3 (conf: 0.85)
+[PRECISION-DEFENSE] 🛡️ Layer 3: Relation Deduplication
+  Original relations: 14
+  Deduplicated relations: 3
+  Removed duplicates: 11 (78.6%)
+  Duplicate groups: 3
+  Avg group size: 4.7
+  Max group size: 6
+[PRECISION-DEFENSE] 🛡️ Layer 3: Confidence Threshold Filter
+  Threshold: 0.7
+  Before: 3 relations
+  After: 3 relations
+  Removed: 0 (0.0%)
+[ORCHESTRATOR] Resolved "Arwen" → EID 229 (method: exact, confidence: 1.00)
+[EID-REGISTRY] New entity: "Minas Tirith" → EID=351
+[ALIAS-REGISTRY] New alias: "Minas Tirith" → AID=480 → EID=351 (confidence: 1.00)
+[ORCHESTRATOR] Resolved "Aragorn" → EID 233 (method: exact, confidence: 1.00)
+[ORCHESTRATOR] Populating entity aliases from coref links and alias registry
+[ORCHESTRATOR] Entity "Aragorn" has 1 aliases: [Prince Aragorn]
+  ✅ married_to: Aragorn → Arwen
+  Meaning records: 3
+
+=== Parent-child relation ===
+[RELATIONS-DEBUG] Created relation from dependencies
+  Predicate: parent_of
+  Subject: "0268d423-9de2-4ce0-ab36-a2cbddefb10e" (type: string)
+  Object: "3be55dcb-ad20-4f84-b024-c956f5ba393a" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[RELATIONS-DEBUG] Created inverse relation from dependencies
+  Predicate: child_of
+  Subject: "3be55dcb-ad20-4f84-b024-c956f5ba393a" (type: string)
+  Object: "0268d423-9de2-4ce0-ab36-a2cbddefb10e" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[PRECISION-DEFENSE] 🛡️ Layer 1: Entity Quality Filter
+  Original entities: 2
+  Filtered entities: 2
+  Removed: 0 (0.0%)
+  Removal reasons:
+    - Low confidence: 0
+    - Too short: 0
+    - Blocked token: 0
+    - No capitalization: 0
+    - Invalid characters: 0
+    - Invalid date: 0
+    - Too generic: 0
+    - Strict mode: 0
+[COREF] Found 0 coreference links
+[RELATIONS-DEBUG] Created relation from dependencies
+  Predicate: parent_of
+  Subject: "0268d423-9de2-4ce0-ab36-a2cbddefb10e" (type: string)
+  Object: "3be55dcb-ad20-4f84-b024-c956f5ba393a" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[RELATIONS-DEBUG] Created inverse relation from dependencies
+  Predicate: child_of
+  Subject: "3be55dcb-ad20-4f84-b024-c956f5ba393a" (type: string)
+  Object: "0268d423-9de2-4ce0-ab36-a2cbddefb10e" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[COREF] Found 2 coref-enhanced relations (filtered to 2)
+[COREF] Elrond --[parent_of]--> Arwen
+[COREF] Arwen --[child_of]--> Elrond
+[NarrativeRelations] Using 48 static + 0 dynamic patterns = 48 total
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: parent_of
+  Subject on entry: "0268d423-9de2-4ce0-ab36-a2cbddefb10e"
+  Object on entry: "3be55dcb-ad20-4f84-b024-c956f5ba393a"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: child_of
+  Subject on entry: "3be55dcb-ad20-4f84-b024-c956f5ba393a"
+  Object on entry: "0268d423-9de2-4ce0-ab36-a2cbddefb10e"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: parent_of
+  Subject on entry: "0268d423-9de2-4ce0-ab36-a2cbddefb10e"
+  Object on entry: "3be55dcb-ad20-4f84-b024-c956f5ba393a"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: child_of
+  Subject on entry: "3be55dcb-ad20-4f84-b024-c956f5ba393a"
+  Object on entry: "0268d423-9de2-4ce0-ab36-a2cbddefb10e"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: child_of
+  Subject on entry: "3be55dcb-ad20-4f84-b024-c956f5ba393a"
+  Object on entry: "0268d423-9de2-4ce0-ab36-a2cbddefb10e"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: parent_of
+  Subject on entry: "0268d423-9de2-4ce0-ab36-a2cbddefb10e"
+  Object on entry: "3be55dcb-ad20-4f84-b024-c956f5ba393a"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: child_of
+  Subject on entry: "3be55dcb-ad20-4f84-b024-c956f5ba393a"
+  Object on entry: "0268d423-9de2-4ce0-ab36-a2cbddefb10e"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: parent_of
+  Subject on entry: "0268d423-9de2-4ce0-ab36-a2cbddefb10e"
+  Object on entry: "3be55dcb-ad20-4f84-b024-c956f5ba393a"
+  Subject type: string
+[APPOS-FILTER] Total pred-obj groups: 2
+[APPOS-FILTER]   Group parent_of::3be55dcb-ad20-4f84-b024-c956f5ba393a has 4 subjects
+[APPOS-FILTER]   Group child_of::0268d423-9de2-4ce0-ab36-a2cbddefb10e has 4 subjects
+[APPOS-FILTER] Checking parent_of::3be55dcb-ad20-4f84-b024-c956f5ba393a with 4 subjects (obj="Arwen"):
+  - elrond at position 0
+  - elrond at position 0
+  - elrond at position 0
+  - elrond at position 0
+[APPOS-FILTER]   elrond at 0 is duplicate - SKIP
+[APPOS-FILTER]   elrond at 0 is duplicate - SKIP
+[APPOS-FILTER]   elrond at 0 is duplicate - SKIP
+[APPOS-FILTER]   isCoordination: true
+[APPOS-FILTER]   Keeping all 4 subjects
+[APPOS-FILTER] Checking child_of::0268d423-9de2-4ce0-ab36-a2cbddefb10e with 4 subjects (obj="Elrond"):
+  - arwen at position 24
+  - arwen at position 24
+  - arwen at position 24
+  - arwen at position 24
+[APPOS-FILTER]   arwen at 24 is duplicate - SKIP
+[APPOS-FILTER]   arwen at 24 is duplicate - SKIP
+[APPOS-FILTER]   arwen at 24 is duplicate - SKIP
+[APPOS-FILTER]   isCoordination: true
+[APPOS-FILTER]   Keeping all 4 subjects
+[APPOS-FILTER] Relations after filter: 8
+[DEDUP-ENTRY] Relations entering deduplication:
+  1. 0268d423-9de2-4ce0-ab36-a2cbddefb10e → parent_of → 3be55dcb-ad20-4f84-b024-c956f5ba393a (conf: 0.9)
+  2. 0268d423-9de2-4ce0-ab36-a2cbddefb10e → parent_of → 3be55dcb-ad20-4f84-b024-c956f5ba393a (conf: 0.9)
+  3. 0268d423-9de2-4ce0-ab36-a2cbddefb10e → parent_of → 3be55dcb-ad20-4f84-b024-c956f5ba393a (conf: 0.9)
+  4. 0268d423-9de2-4ce0-ab36-a2cbddefb10e → parent_of → 3be55dcb-ad20-4f84-b024-c956f5ba393a (conf: 0.9)
+  5. 3be55dcb-ad20-4f84-b024-c956f5ba393a → child_of → 0268d423-9de2-4ce0-ab36-a2cbddefb10e (conf: 0.9)
+  6. 3be55dcb-ad20-4f84-b024-c956f5ba393a → child_of → 0268d423-9de2-4ce0-ab36-a2cbddefb10e (conf: 0.9)
+  7. 3be55dcb-ad20-4f84-b024-c956f5ba393a → child_of → 0268d423-9de2-4ce0-ab36-a2cbddefb10e (conf: 0.9)
+  8. 3be55dcb-ad20-4f84-b024-c956f5ba393a → child_of → 0268d423-9de2-4ce0-ab36-a2cbddefb10e (conf: 0.9)
+[DEDUP-EXIT] Relations after deduplication:
+  1. 0268d423-9de2-4ce0-ab36-a2cbddefb10e → parent_of → 3be55dcb-ad20-4f84-b024-c956f5ba393a (conf: 0.9)
+  2. 3be55dcb-ad20-4f84-b024-c956f5ba393a → child_of → 0268d423-9de2-4ce0-ab36-a2cbddefb10e (conf: 0.9)
+[PRECISION-DEFENSE] 🛡️ Layer 3: Relation Deduplication
+  Original relations: 8
+  Deduplicated relations: 2
+  Removed duplicates: 6 (75.0%)
+  Duplicate groups: 2
+  Avg group size: 4.0
+  Max group size: 4
+[PRECISION-DEFENSE] 🛡️ Layer 3: Confidence Threshold Filter
+  Threshold: 0.7
+  Before: 2 relations
+  After: 2 relations
+  Removed: 0 (0.0%)
+[ORCHESTRATOR] Resolved "Elrond" → EID 219 (method: exact, confidence: 1.00)
+[ORCHESTRATOR] Resolved "Arwen" → EID 229 (method: exact, confidence: 1.00)
+[ORCHESTRATOR] Populating entity aliases from coref links and alias registry
+  ✅ parent_of: Elrond → Arwen
+  Meaning records: 2
+
+=== Location relation ===
+[RELATIONS-DEBUG] Created relation from dependencies
+  Predicate: lives_in
+  Subject: "a84e6d45-e52b-4618-9bfd-16849b04bc79" (type: string)
+  Object: "b6637870-0d1b-4eb1-b772-6b2a0fb9fd4e" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[RELATIONS-DEBUG] Created relation from dependencies
+  Predicate: lives_in
+  Subject: "a84e6d45-e52b-4618-9bfd-16849b04bc79" (type: string)
+  Object: "b6637870-0d1b-4eb1-b772-6b2a0fb9fd4e" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[PRECISION-DEFENSE] 🛡️ Layer 1: Entity Quality Filter
+  Original entities: 2
+  Filtered entities: 2
+  Removed: 0 (0.0%)
+  Removal reasons:
+    - Low confidence: 0
+    - Too short: 0
+    - Blocked token: 0
+    - No capitalization: 0
+    - Invalid characters: 0
+    - Invalid date: 0
+    - Too generic: 0
+    - Strict mode: 0
+[COREF] Found 0 coreference links
+[RELATIONS-DEBUG] Created relation from dependencies
+  Predicate: lives_in
+  Subject: "a84e6d45-e52b-4618-9bfd-16849b04bc79" (type: string)
+  Object: "b6637870-0d1b-4eb1-b772-6b2a0fb9fd4e" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[RELATIONS-DEBUG] Created relation from dependencies
+  Predicate: lives_in
+  Subject: "a84e6d45-e52b-4618-9bfd-16849b04bc79" (type: string)
+  Object: "b6637870-0d1b-4eb1-b772-6b2a0fb9fd4e" (type: string)
+  Subject is empty string: false
+  Subject is undefined: false
+  Subject is null: false
+[COREF] Found 1 coref-enhanced relations (filtered to 1)
+[COREF] Frodo --[lives_in]--> Shire
+[NarrativeRelations] Using 48 static + 0 dynamic patterns = 48 total
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: lives_in
+  Subject on entry: "a84e6d45-e52b-4618-9bfd-16849b04bc79"
+  Object on entry: "b6637870-0d1b-4eb1-b772-6b2a0fb9fd4e"
+  Subject type: string
+[APPOS-FILTER-ENTRY] Relation entering filter:
+  Predicate: lives_in
+  Subject on entry: "a84e6d45-e52b-4618-9bfd-16849b04bc79"
+  Object on entry: "b6637870-0d1b-4eb1-b772-6b2a0fb9fd4e"
+  Subject type: string
+[APPOS-FILTER] Total pred-obj groups: 1
+[APPOS-FILTER]   Group lives_in::b6637870-0d1b-4eb1-b772-6b2a0fb9fd4e has 2 subjects
+[APPOS-FILTER] Checking lives_in::b6637870-0d1b-4eb1-b772-6b2a0fb9fd4e with 2 subjects (obj="Shire"):
+  - frodo at position 0
+  - frodo at position 0
+[APPOS-FILTER]   frodo at 0 is duplicate - SKIP
+[APPOS-FILTER]   isCoordination: true
+[APPOS-FILTER]   Keeping all 2 subjects
+[APPOS-FILTER] Relations after filter: 2
+[DEDUP-ENTRY] Relations entering deduplication:
+  1. a84e6d45-e52b-4618-9bfd-16849b04bc79 → lives_in → b6637870-0d1b-4eb1-b772-6b2a0fb9fd4e (conf: 0.9)
+  2. a84e6d45-e52b-4618-9bfd-16849b04bc79 → lives_in → b6637870-0d1b-4eb1-b772-6b2a0fb9fd4e (conf: 0.9)
+[DEDUP-EXIT] Relations after deduplication:
+  1. a84e6d45-e52b-4618-9bfd-16849b04bc79 → lives_in → b6637870-0d1b-4eb1-b772-6b2a0fb9fd4e (conf: 0.9)
+[PRECISION-DEFENSE] 🛡️ Layer 3: Relation Deduplication
+  Original relations: 2
+  Deduplicated relations: 1
+  Removed duplicates: 1 (50.0%)
+  Duplicate groups: 1
+  Avg group size: 2.0
+  Max group size: 2
+[PRECISION-DEFENSE] 🛡️ Layer 3: Confidence Threshold Filter
+  Threshold: 0.7
+  Before: 1 relations
+  After: 1 relations
+  Removed: 0 (0.0%)
+[ORCHESTRATOR] Resolved "Frodo" → EID 211 (method: exact, confidence: 1.00)
+[ORCHESTRATOR] Resolved "Shire" → EID 215 (method: exact, confidence: 1.00)
+[ORCHESTRATOR] Populating entity aliases from coref links and alias registry
+  ✅ lives_in: Frodo → Shire
+  Meaning records: 1
+
+=== Travel relation ===
+[PRECISION-DEFENSE] 🛡️ Layer 1: Entity Quality Filter
+  Original entities: 1
+  Filtered entities: 1
+  Removed: 0 (0.0%)
+  Removal reasons:
+    - Low confidence: 0
+    - Too short: 0
+    - Blocked token: 0
+    - No capitalization: 0
+    - Invalid characters: 0
+    - Invalid date: 0
+    - Too generic: 0
+    - Strict mode: 0
+[COREF] Found 0 coreference links
+[COREF] Found 0 coref-enhanced relations (filtered to 0)
+[NarrativeRelations] Using 48 static + 0 dynamic patterns = 48 total
+[APPOS-FILTER] Total pred-obj groups: 0
+[APPOS-FILTER] Relations after filter: 0
+[DEDUP-ENTRY] Relations entering deduplication:
+[DEDUP-EXIT] Relations after deduplication:
+[PRECISION-DEFENSE] 🛡️ Layer 3: Relation Deduplication
+  Original relations: 0
+  Deduplicated relations: 0
+  Removed duplicates: 0 (NaN%)
+  Duplicate groups: 0
+  Avg group size: 0.0
+  Max group size: 0
+[PRECISION-DEFENSE] 🛡️ Layer 3: Confidence Threshold Filter
+  Threshold: 0.7
+  Before: 0 relations
+  After: 0 relations
+  Removed: 0 (NaN%)
+[ORCHESTRATOR] Resolved "Rivendell" → EID 218 (method: exact, confidence: 1.00)
+[ORCHESTRATOR] Populating entity aliases from coref links and alias registry
+  ❌ Relation not found: traveled_to
+     Available: (none)
+
+❌ Relation test failed: Relation extraction test failed
+[EID-REGISTRY] Saved 351 entities to ./data/eid-registry.json
+[ALIAS-REGISTRY] Saved 480 aliases to ./data/alias-registry.json
