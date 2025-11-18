@@ -31,6 +31,27 @@ const SEG_DEBUG = process.env.L3_SEG_DEBUG === '1';
 
 const APPOS_DEBUG = process.env.L3_APPOS_DEBUG === '1';
 const MULTI_ALIAS_PATTERN = /(?:,|\band\b|&)/i;
+const TITLE_DESCRIPTOR_TOKENS = new Set([
+  'professor',
+  'head',
+  'headmaster',
+  'headmistress',
+  'former',
+  'later',
+  'stern',
+  'current',
+  'acting',
+  'chief',
+  'deputy',
+  'assistant',
+  'retired',
+  'young',
+  'younger',
+  'older',
+  'elder',
+  'senior',
+  'junior'
+]);
 
 function isMultiEntityAlias(value: string): boolean {
   if (!value) return false;
@@ -229,6 +250,9 @@ export async function extractFromSegments(
       // Check if we've seen this entity before (by type + canonical)
       const entityKey = makeEntityKey(entity.type, canonicalText);
       let existingEntity = entityMap.get(entityKey);
+      if (!existingEntity && canonicalText.toLowerCase().includes('mcgonagall') && process.env.L3_DEBUG === '1') {
+        console.log(`[DEBUG-MCG] new canonicalText for ${entity.canonical}: ${canonicalText}`);
+      }
 
       // If no exact match, check for name overlap (e.g., "Sarah" matches "Sarah Chen")
       if (!existingEntity && entity.type === 'PERSON') {
@@ -241,11 +265,20 @@ export async function extractFromSegments(
           const existingLower = ent.canonical.toLowerCase();
           const existingWords = existingLower.split(/\s+/);
 
+          // Only consider overlapping tokens that carry meaning (not generic titles/descriptors)
+          const sharedMeaningful = canonicalWords.filter(word =>
+            existingWords.includes(word) && !TITLE_DESCRIPTOR_TOKENS.has(word)
+          );
+          const hasMeaningfulOverlap = sharedMeaningful.length > 0;
+
           // Check if one is a subset of the other (same first/last name)
           // "Sarah" ⊂ "Sarah Chen" or "Sarah Chen" ⊃ "Sarah"
           const isSubset =
-            (canonicalWords.length < existingWords.length && existingWords.some(w => canonicalWords.includes(w))) ||
-            (existingWords.length < canonicalWords.length && canonicalWords.some(w => existingWords.includes(w)));
+            hasMeaningfulOverlap &&
+            (
+              (canonicalWords.length < existingWords.length && existingWords.some(w => canonicalWords.includes(w))) ||
+              (existingWords.length < canonicalWords.length && canonicalWords.some(w => existingWords.includes(w)))
+            );
 
           if (isSubset) {
             // Merge into the longer name (more specific)
@@ -422,6 +455,8 @@ export async function extractFromSegments(
   // 🛡️ LAYER 1: Entity Quality Pre-Filter
   // Filter low-quality entities BEFORE relation extraction
   // Expected impact: +5-10% precision
+  allEntities.length = 0;
+  allEntities.push(...entityMap.values());
   const preFilterCount = allEntities.length;
 
   const logMcGEntries = (entities: Entity[], label: string) => {
