@@ -2387,7 +2387,20 @@ function extractDepRelations(
           return token;
         };
 
-        const descriptorPattern = /\b(girl|boy|woman|man|student|friend|friends|child|children|trio|duo|pair|couple|ally|wizard|witch)\b/i;
+        const descriptorPattern = /\b(girl|boy|woman|man|student|friend|friends|child|children|trio|duo|pair|couple|ally|allies|wizard|witch|companion|companions|group|team|crew|squad|siblings|brothers|sisters)\b/i;
+        const descriptorEntityPattern = /\b(?:friend|friends|trio|pair|couple|group|team|crew|squad|quest|mission|journey|adventure|travel|voyage)\b/i;
+        const descriptorNumberHints: Record<string, number> = {
+          both: 2,
+          couple: 2,
+          pair: 2,
+          duo: 2,
+          two: 2,
+          three: 3,
+          trio: 3,
+          four: 4,
+          five: 5,
+          six: 6
+        };
 
         const expandGroupWithPronouns = (group: Token[]): Token[] => {
           const expanded: Token[] = [];
@@ -2413,91 +2426,183 @@ function extractDepRelations(
           return expanded;
         };
 
-        const resolveDescriptorRef = (surface: string, avoidEntityId?: string): EntityRef | null => {
-          if (!descriptorPattern.test(surface)) return null;
-          for (const recent of recentPersons) {
-            const recentSpan = expandNP(recent, tokens);
-            const ref = mapSurfaceToEntity(
-              text.slice(recentSpan.start, recentSpan.end),
-              entities,
-              spans,
-              recentSpan
-            );
-            if (ref && (!avoidEntityId || ref.entity.id !== avoidEntityId)) {
-              if (L3_DEBUG) {
-                console.log(`[FRIENDS-DESCRIPTOR] "${surface.trim()}" -> ${ref.entity.canonical}`);
-              }
-              return ref;
+        const descriptorLimitFromSurface = (surfaceLower: string): number => {
+          for (const [hint, value] of Object.entries(descriptorNumberHints)) {
+            if (surfaceLower.includes(hint)) {
+              return value;
             }
           }
-          return null;
+          if (/\b(trio|triad)\b/.test(surfaceLower)) return 3;
+          if (/\b(pair|duo|couple)\b/.test(surfaceLower)) return 2;
+          if (/\b(friends|children|companions|allies|siblings|group|team|crew|squad)\b/.test(surfaceLower)) {
+            return 3;
+          }
+          return 1;
         };
 
-        const emitFriends = (subjectTokens: Token[], objectTokens: Token[]) => {
-          const expandedSubjects = expandGroupWithPronouns(subjectTokens);
-          const expandedObjects = expandGroupWithPronouns(objectTokens);
-          const resolvedSubjects = uniqueTokensByStart(expandedSubjects.map(resolveToken).filter(Boolean) as Token[]);
-          const resolvedObjects = uniqueTokensByStart(expandedObjects.map(resolveToken).filter(Boolean) as Token[]);
-          if (!resolvedSubjects.length || !resolvedObjects.length) return;
-
-          const seenPairs = new Set<string>();
-          for (const subjTok of resolvedSubjects) {
-            if (subjTok.pos !== 'PRON') {
-              updateLastNamedSubject(subjTok);
+        const mapRecentTokenToEntity = (token: Token): EntityRef | null => {
+          const candidateIds = getEntityCandidatesByOffset(spans, token.start, token.end);
+          for (const candidateId of candidateIds) {
+            const entity = getEntityById(candidateId);
+            if (entity && entity.type === 'PERSON') {
+              const matchedSpan = selectEntitySpan(entity.id, spans, { start: token.start, end: token.end });
+              return { entity, span: matchedSpan ?? null };
             }
-            const subjSpan = expandNP(subjTok, tokens);
-            let subjRef = mapSurfaceToEntity(
-              text.slice(subjSpan.start, subjSpan.end),
-              entities,
-              spans,
-              subjSpan
-            );
-            if (!subjRef && lastNamedSubject) {
-              const fallbackSpan = expandNP(lastNamedSubject, tokens);
-              subjRef = mapSurfaceToEntity(
+          }
+          return mapSurfaceToEntity(
+            text.slice(token.start, token.end),
+            entities,
+            spans,
+            { start: token.start, end: token.end }
+          );
+        };
+
+        const resolveDescriptorRefs = (
+          surface: string,
+          descriptorSpan?: { start: number; end: number },
+          options: { avoidIds?: Set<string>; limit?: number } = {}
+        ): EntityRef[] => {
+          if (!descriptorPattern.test(surface)) return [];
+          const lowerSurface = surface.toLowerCase();
+          const desired = options.limit ?? descriptorLimitFromSurface(lowerSurface);
+          const available = Math.max(1, Math.min(desired, recentPersons.length || desired));
+          const resolved: EntityRef[] = [];
+          const seen = new Set<string>();
+
+
+          for (const recent of recentPersons) {
+            const ref = mapRecentTokenToEntity(recent);
+            if (
+              ref &&
+              ref.entity.type === 'PERSON' &&
+              !seen.has(ref.entity.id) &&
+              !options.avoidIds?.has(ref.entity.id)
+            ) {
+              const canonicalLower = ref.entity.canonical.toLowerCase();
+              if (descriptorEntityPattern.test(canonicalLower)) {
+                continue;
+              }
+              seen.add(ref.entity.id);
+              resolved.push(ref);
+              if (resolved.length >= available) {
+                break;
+              }
+            }
+          }
+
+          if (!resolved.length && lastNamedSubject) {
+            const fallback = mapRecentTokenToEntity(lastNamedSubject);
+            if (
+              fallback &&
+              fallback.entity.type === 'PERSON' &&
+              !options.avoidIds?.has(fallback.entity.id)
+            ) {
+              const canonicalLower = fallback.entity.canonical.toLowerCase();
+              if (!descriptorEntityPattern.test(canonicalLower)) {
+                resolved.push(fallback);
+              }
+            }
+          }
+
+          if (!resolved.length && descriptorSpan) {
+            let closestDistance = Infinity;
+            const nearest: EntityRef[] = [];
+          for (const span of spans) {
+            if (span.end > descriptorSpan.start) continue;
+            const entity = entityById.get(span.entity_id);
+            if (!entity || entity.type !== 'PERSON') continue;
+            if (options.avoidIds?.has(entity.id)) continue;
+            const distance = descriptorSpan.start - span.end;
+            if (distance > 200) continue;
+            if (descriptorEntityPattern.test(entity.canonical.toLowerCase())) continue;
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                nearest.length = 0;
+                nearest.push({ entity, span });
+              } else if (distance === closestDistance) {
+                nearest.push({ entity, span });
+              }
+            }
+            if (nearest.length) {
+              const limit = Math.max(1, options.limit ?? descriptorLimitFromSurface(lowerSurface));
+              for (const ref of nearest) {
+                resolved.push(ref);
+                if (resolved.length >= limit) break;
+              }
+            }
+          }
+
+          if (resolved.length && L3_DEBUG) {
+            console.log(`[FRIENDS-DESCRIPTOR] "${surface.trim()}" -> ${resolved.map(r => r.entity.canonical).join(', ')}`);
+          }
+          return resolved;
+        };
+
+        const mapTokenToRefs = (token: Token): EntityRef[] => {
+          const refs: EntityRef[] = [];
+          const seen = new Set<string>();
+          const pushRef = (ref: EntityRef | null) => {
+            if (!ref) return;
+            if (seen.has(ref.entity.id)) return;
+            seen.add(ref.entity.id);
+            refs.push(ref);
+          };
+
+          const span = expandNP(token, tokens);
+          const surface = text.slice(span.start, span.end);
+          const treatAsName = token.pos === 'PROPN' || isNameToken(token);
+
+          if (treatAsName) {
+            updateLastNamedSubject(token);
+            pushRef(mapSurfaceToEntity(surface, entities, spans, span));
+          }
+
+          if (!refs.length && treatAsName && lastNamedSubject) {
+            const fallbackSpan = expandNP(lastNamedSubject, tokens);
+            pushRef(
+              mapSurfaceToEntity(
                 text.slice(fallbackSpan.start, fallbackSpan.end),
                 entities,
                 spans,
                 fallbackSpan
-              );
-            }
-            if (!subjRef && subjTok.pos !== 'PROPN') {
-              const descriptorFallback = resolveDescriptorRef(text.slice(subjSpan.start, subjSpan.end));
-              if (descriptorFallback) {
-                subjRef = descriptorFallback;
-              }
-            }
-            if (!subjRef) continue;
+              )
+            );
+          }
 
-            for (const objTok of resolvedObjects) {
-              const objSpan = expandNP(objTok, tokens);
-              let objRef = mapSurfaceToEntity(
-                text.slice(objSpan.start, objSpan.end),
-                entities,
-                spans,
-                objSpan
-              );
-              if (!objRef && lastNamedSubject && objTok.pos === 'PRON') {
-                const fallbackSpan = expandNP(lastNamedSubject, tokens);
-                objRef = mapSurfaceToEntity(
-                  text.slice(fallbackSpan.start, fallbackSpan.end),
-                  entities,
-                  spans,
-                  fallbackSpan
-                );
-              }
-              if (!objRef && objTok.pos !== 'PROPN') {
-                const descriptorFallback = resolveDescriptorRef(
-                  text.slice(objSpan.start, objSpan.end),
-                  subjRef.entity.id
-                );
-                if (descriptorFallback) {
-                  objRef = descriptorFallback;
-                }
-              }
-              if (!objRef) continue;
+          if (!refs.length) {
+            resolveDescriptorRefs(surface, span).forEach(pushRef);
+          }
+
+          return refs;
+        };
+
+        const resolveGroupRefs = (tokenGroup: Token[]): EntityRef[] => {
+          const expanded = expandGroupWithPronouns(tokenGroup);
+          const resolvedTokens = uniqueTokensByStart(expanded.map(resolveToken).filter(Boolean) as Token[]);
+          const refs: EntityRef[] = [];
+          const seen = new Set<string>();
+
+          for (const tok of resolvedTokens) {
+            const mapped = mapTokenToRefs(tok);
+            for (const ref of mapped) {
+              if (seen.has(ref.entity.id)) continue;
+              seen.add(ref.entity.id);
+              refs.push(ref);
+            }
+          }
+
+          return refs;
+        };
+
+        const emitFriends = (subjectTokens: Token[], objectTokens: Token[]) => {
+          const subjectRefs = resolveGroupRefs(subjectTokens);
+          const objectRefs = resolveGroupRefs(objectTokens);
+          if (!subjectRefs.length || !objectRefs.length) return;
+
+          const seenPairs = new Set<string>();
+          for (const subjRef of subjectRefs) {
+            for (const objRef of objectRefs) {
               if (subjRef.entity.id === objRef.entity.id) continue;
-
               const key = `${subjRef.entity.id}::${objRef.entity.id}`;
               if (seenPairs.has(key)) continue;
               seenPairs.add(key);
