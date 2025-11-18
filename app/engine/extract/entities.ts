@@ -21,10 +21,36 @@ import type { Token, ParsedSentence, ParseResponse } from "./parse-types";
 import { getParserClient } from "../../parser";
 import { analyzeEntityContext, classifyWithContext, shouldExtractByContext } from "./context-classifier";
 import { filterPronouns } from "../pronoun-utils";
-import { detectNounCategory, nounCategoryToEntityType } from "../grammar/parts-of-speech";
 import { detectClauses } from "./clause-detector";
 
 const TRACE_SPANS = process.env.L3_TRACE === "1";
+const CAMELCASE_ALLOWED_PREFIXES = [
+  'mc',
+  'mac',
+  'o',
+  "o'",
+  "d'",
+  'da',
+  'de',
+  'del',
+  'di',
+  'du',
+  'la',
+  'le',
+  'van',
+  'von',
+  'fitz',
+  'san',
+  'santa',
+  'al',
+  'el',
+  'ibn',
+  'bin',
+  'ben',
+  'ap',
+  'af',
+  'st'
+];
 
 const traceSpan = (stage: string, source: string, start: number, end: number, value: string) => {
   if (!TRACE_SPANS) return;
@@ -94,9 +120,14 @@ function validateSpan(
     const extractedWords = extracted.split(/\s+/).filter(Boolean);
     for (const word of extractedWords) {
       if (/[a-z][A-Z]/.test(word)) {
-        // Found lowercase followed by uppercase - likely corruption
-        valid = false;
-        break;
+        const sanitized = word.replace(/[^A-Za-z']/g, '');
+        const lower = sanitized.toLowerCase();
+        const isAllowedCamelCase = CAMELCASE_ALLOWED_PREFIXES.some(prefix => lower.startsWith(prefix));
+        if (!isAllowedCamelCase) {
+          // Found lowercase followed by uppercase without an approved prefix - likely corruption
+          valid = false;
+          break;
+        }
       }
     }
   }
@@ -325,6 +356,79 @@ const STOP = new Set([
 ]);
 for (const word of Array.from(STOP)) {
   STOP.add(word.toLowerCase());
+}
+
+type NounCategory =
+  | 'proper_person'
+  | 'proper_place'
+  | 'proper_org'
+  | 'common_concrete'
+  | 'common_abstract'
+  | 'collective'
+  | 'compound';
+
+const COLLECTIVE_NOUNS = new Set([
+  'family', 'group', 'team', 'army', 'crowd', 'council', 'committee',
+  'flock', 'herd', 'pack', 'tribe', 'clan', 'house'
+]);
+
+const ABSTRACT_NOUNS = new Set([
+  'love', 'hate', 'wisdom', 'freedom', 'justice', 'beauty', 'truth',
+  'courage', 'honor', 'glory', 'power', 'knowledge', 'faith'
+]);
+
+const TITLE_PATTERN = /\b(mr|mrs|ms|miss|dr|prof|sir|lady|lord|king|queen|prince|princess)\b/i;
+const PLACE_PATTERN = /\b(mount|river|lake|city|town|castle|kingdom|shire|forest|valley)\b/i;
+const ORG_PATTERN = /\b(house|company|corporation|university|council|alliance|order|society)\b/i;
+
+function detectNounCategory(word: string, pos: string, isCapitalized: boolean): NounCategory {
+  const lower = word.toLowerCase();
+
+  if (pos === 'PROPN' || (isCapitalized && pos === 'NOUN')) {
+    if (TITLE_PATTERN.test(word)) {
+      return 'proper_person';
+    }
+    if (PLACE_PATTERN.test(word)) {
+      return 'proper_place';
+    }
+    if (ORG_PATTERN.test(word)) {
+      return 'proper_org';
+    }
+    return 'proper_person';
+  }
+
+  if (COLLECTIVE_NOUNS.has(lower)) {
+    return 'collective';
+  }
+
+  if (word.includes('-')) {
+    return 'compound';
+  }
+
+  if (ABSTRACT_NOUNS.has(lower)) {
+    return 'common_abstract';
+  }
+
+  return 'common_concrete';
+}
+
+function nounCategoryToEntityType(category: NounCategory): EntityType {
+  switch (category) {
+    case 'proper_person':
+      return 'PERSON';
+    case 'proper_place':
+      return 'PLACE';
+    case 'proper_org':
+      return 'ORG';
+    case 'collective':
+      return 'ORG';
+    case 'compound':
+      return 'PERSON';
+    case 'common_abstract':
+      return 'WORK';
+    default:
+      return 'ITEM';
+  }
 }
 const PRON = new Set([
   "I","You","He","She","It","We","They","Me","Him","Her","Us","Them","My","Your","His","Its","Our","Their",
@@ -594,11 +698,14 @@ export function normalizeName(s: string): string {
   normalized = normalized.replace(/^(the|a|an)\s+/i, "");
   normalized = normalized.replace(/^((?:[a-z]+\s+)+)(?=[A-Z0-9])/g, "");
   normalized = normalized.replace(/['’]s$/i, "");
-  normalized = normalized.replace(/\bfamily\b$/i, "").trim();
   normalized = normalized.replace(/\bHouse$/i, "");
+  const hadFamilySuffix = /\bfamily$/i.test(normalized);
   const capitalized = normalized.match(/[A-Z][A-Za-z0-9'’\-]*(?:\s+(?:of|the|and|&)?\s*[A-Z][A-Za-z0-9'’\-]*)*/);
   if (capitalized) {
     normalized = capitalized[0];
+    if (hadFamilySuffix && !/\bfamily$/i.test(normalized)) {
+      normalized = `${normalized} family`;
+    }
   }
   normalized = normalized.replace(/\s+/g, " ").trim();
   return normalized;
@@ -1236,11 +1343,30 @@ function fallbackNames(text: string): Array<{ text: string; type: EntityType; st
     // Strip trailing punctuation and sentence fragments
     // This handles cases like "Ravenclaw. Each" being matched as 2 words
     // Remove: period/comma/etc followed by space and another capitalized word
-    value = value.replace(/[.,;:!?]\s+[A-Z].*$/, '');
-    // Also strip any remaining trailing punctuation
-    value = value.replace(/[.,;:!?]+$/, '').trim();
+    const sentenceMatch = value.match(/[.,;:!?]\s+[A-Z].*$/);
+    if (sentenceMatch) {
+      value = value.slice(0, value.length - sentenceMatch[0].length);
+      endIndex -= sentenceMatch[0].length;
+    }
+
+    const trailingPunctMatch = value.match(/[.,;:!?]+$/);
+    if (trailingPunctMatch) {
+      value = value.slice(0, value.length - trailingPunctMatch[0].length);
+      endIndex -= trailingPunctMatch[0].length;
+    }
+
+    const trailingSpaceMatch = value.match(/\s+$/);
+    if (trailingSpaceMatch) {
+      value = value.slice(0, value.length - trailingSpaceMatch[0].length);
+      endIndex -= trailingSpaceMatch[0].length;
+    }
 
     const rawEnd = endIndex;
+
+    const followingWordMatch = text.slice(rawEnd).match(/^\s+(family)\b/i);
+    if (followingWordMatch) {
+      continue;
+    }
 
     const tokens = value.split(/\s+/).filter(Boolean);
     const significantTokens = tokens.filter(tok => /^[A-Z]|^[IVXLCDM]+$/.test(tok));
@@ -1546,6 +1672,11 @@ export async function extractEntities(text: string): Promise<{
   const rawSpans = taggedSpans;
 
   const deduped = dedupe(rawSpans);
+  if (DEBUG_ENTITIES) {
+    console.log(
+      `[EXTRACT-ENTITIES][DEBUG] deduped=${deduped.map(span => `${span.type}:${span.text}@${span.start}-${span.end}`).join(', ')}`
+    );
+  }
 
   // Merge "X of Y" patterns (e.g., "Battle" + "of" + "Pelennor Fields" → "Battle of Pelennor Fields")
   const merged = mergeOfPatterns(deduped, text);
@@ -1559,6 +1690,11 @@ export async function extractEntities(text: string): Promise<{
     }
     return true;
   });
+  if (DEBUG_ENTITIES) {
+    console.log(
+      `[EXTRACT-ENTITIES][DEBUG] validated=${validated.map(span => `${span.type}:${span.text}@${span.start}-${span.end}`).join(', ')}`
+    );
+  }
 
   // Build positionsByKey from VALIDATED spans only (not raw spans)
   // This ensures we don't carry forward corrupted span positions
@@ -1581,7 +1717,7 @@ export async function extractEntities(text: string): Promise<{
     variants: Map<string, string>; // lowercase -> raw text
     sources: Set<ExtractorSource>; // Track which extractors found this entity
   };
-const entries: EntityEntry[] = [];
+  const entries: EntityEntry[] = [];
 
   const now = new Date().toISOString();
 const VARIANT_CONNECTORS = new Set(['the', 'of', 'and', 'son', 'daughter', 'jr', 'sr', 'ii', 'iii', 'iv']);
@@ -1670,6 +1806,11 @@ const nameScore = (value: string) => {
 };
 
 const descriptorPenalty = (value: string) => (/\b(the|of)\s+[A-Z]/.test(value) ? 0 : 1);
+const descriptorTokens = new Set(['former', 'latter', 'later', 'current', 'young', 'older', 'elder', 'stern', 'deputy', 'chief']);
+const containsDescriptor = (value: string) => {
+  const parts = value.toLowerCase().split(/\s+/).filter(Boolean);
+  return parts.some(part => descriptorTokens.has(part));
+};
 const cleanlinessScore = (value: string) => (/^[A-Za-z][A-Za-z\s'’.-]*$/.test(value) ? 1 : 0);
 
 const chooseCanonical = (names: Set<string>): string => {
@@ -1681,6 +1822,9 @@ const chooseCanonical = (names: Set<string>): string => {
     const aPenalty = descriptorPenalty(a);
     const bPenalty = descriptorPenalty(b);
     if (aPenalty !== bPenalty) return bPenalty - aPenalty;
+    const aDesc = containsDescriptor(a);
+    const bDesc = containsDescriptor(b);
+    if (aDesc !== bDesc) return aDesc ? 1 : -1;
     const aScore = nameScore(a);
     const bScore = nameScore(b);
     if (aScore.informative !== bScore.informative) return bScore.informative - aScore.informative;
@@ -1745,6 +1889,9 @@ const chooseCanonical = (names: Set<string>): string => {
     if (!matched) {
       const id = uuid();
       const positions = positionsByKey.get(key) ?? [{ start: span.start, end: span.end }];
+      if (span.text.includes('McGonagall')) {
+        console.log('[DEBUG-MCG] New entry', span.text, 'type', span.type);
+      }
       // Capitalize entity name if needed (for lowercase entities from case-insensitive extraction)
       const capitalizedText = (span.text.length > 0 && /^[a-z]/.test(span.text))
         ? capitalizeEntityName(span.text)
@@ -1821,7 +1968,11 @@ const chooseCanonical = (names: Set<string>): string => {
     mergedMap.set(key, primary);
   }
 
-  const mergedEntries = Array.from(mergedMap.values());
+if (DEBUG_ENTITIES) {
+  console.log(`[EXTRACT-ENTITIES][DEBUG] entries=${entries.map(e => e.entity.canonical).join(', ')}`);
+}
+
+const mergedEntries = Array.from(mergedMap.values());
   if (DEBUG_ENTITIES) {
     console.log(`[EXTRACT-ENTITIES][DEBUG] mergedEntries=${mergedEntries.length}`);
   }
@@ -1830,8 +1981,12 @@ const chooseCanonical = (names: Set<string>): string => {
     if (STOP.has(entry.entity.canonical)) return false;
 
     const canonicalLower = entry.entity.canonical.toLowerCase();
+    const isMcG = canonicalLower.includes('mcgonagall');
 
     if (entry.entity.type === 'PERSON' && PERSON_BLOCKLIST.has(canonicalLower)) {
+      if (isMcG) {
+        console.log('[DEBUG-MCG] filtered out by PERSON_BLOCKLIST', entry.entity.canonical);
+      }
       return false;
     }
 
@@ -1869,13 +2024,17 @@ const chooseCanonical = (names: Set<string>): string => {
     }
 
     const score = nameScore(entry.entity.canonical);
-    return !mergedEntries.some(other => {
+    const filteredOutByPrefix = mergedEntries.some(other => {
       if (other === entry) return false;
       const otherLower = other.entity.canonical.toLowerCase();
       if (!otherLower.startsWith(canonicalLower + ' ')) return false;
       const otherScore = nameScore(other.entity.canonical);
       return otherScore.informative >= score.informative;
     });
+    if (filteredOutByPrefix && canonicalLower.includes('mcgonagall')) {
+      console.log('[DEBUG-MCG] dropped by prefix rule', entry.entity.canonical);
+    }
+    return !filteredOutByPrefix;
   });
 
   if (DEBUG_ENTITIES) {
@@ -2217,5 +2376,8 @@ const chooseCanonical = (names: Set<string>): string => {
     console.warn(`[EXTRACT-ENTITIES] Coreference resolution failed:`, error);
   }
 
+  if (process.env.L3_DEBUG === '1') {
+    console.log(`[EXTRACT-ENTITIES][DEBUG] returning ${entities.length} entities: ${entities.map(e => e.canonical).join(', ')}`);
+  }
   return { entities, spans };
 }

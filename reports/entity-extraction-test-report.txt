@@ -1,0 +1,373 @@
+╔════════════════════════════════════════════════════════════════╗
+║    ARES Entity Extraction Test Suite - Comprehensive Report   ║
+╚════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OVERALL RESULTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Tests Passed:  0/25 (0.0%)
+
+Aggregated Metrics:
+  Precision: 0.0%
+  Recall:    0.0%
+  F1 Score:  0.0%
+
+  True Positives:  0
+  False Positives: 0
+  False Negatives: 229
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+RESULTS BY CATEGORY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Basic: 0/1 (0%)
+  ❌ basic-person-001: F1=0%
+     ⚠️  Precision 0.0% below threshold 80.0%
+     ⚠️  Recall 0.0% below threshold 75.0%
+     ... and 2 more issues
+
+Historical: 0/2 (0%)
+  ❌ historical-context-001: F1=0%
+     ⚠️  Precision 0.0% below threshold 80.0%
+     ⚠️  Recall 0.0% below threshold 75.0%
+     ... and 2 more issues
+  ❌ historical-002: F1=0%
+     ⚠️  Precision 0.0% below threshold 80.0%
+     ⚠️  Recall 0.0% below threshold 75.0%
+     ... and 2 more issues
+
+Modern: 0/1 (0%)
+  ❌ modern-informal-001: F1=0%
+     ⚠️  Precision 0.0% below threshold 80.0%
+     ⚠️  Recall 0.0% below threshold 75.0%
+     ... and 2 more issues
+
+Academic: 0/1 (0%)
+  ❌ academic-001: F1=0%
+     ⚠️  Precision 0.0% below threshold 80.0%
+     ⚠️  Recall 0.0% below threshold 75.0%
+     ... and 2 more issues
+
+Edge Cases: 0/10 (0%)
+  ❌ edge-case-001: F1=0%
+     ⚠️  Precision 0.0% below threshold 80.0%
+     ⚠️  Recall 0.0% below threshold 75.0%
+     ... and 2 more issues
+  ❌ edge-case-002: F1=0%
+     ⚠️  Precision 0.0% below threshold 80.0%
+     ⚠️  Recall 0.0% below threshold 75.0%
+     ... and 2 more issues
+  ❌ edge-case-003: F1=0%
+     ⚠️  Precision 0.0% below threshold 80.0%
+     ⚠️  Recall 0.0% below threshold 75.0%
+     ... and 2 more issues
+  ❌ edge-case-004: F1=0%
+     ⚠️  Precision 0.0% below threshold 80.0%
+     ⚠️  Recall 0.0% below threshold 75.0%
+     ... and 2 more issues
+  ❌ edge-case-005: F1=0%
+     ⚠️  Precision 0.0% below threshold 80.0%
+     ⚠️  Recall 0.0% below threshold 75.0%
+     ... and 2 more issues
+  ❌ edge-case-006: F1=0%
+     ⚠️  Precision 0.0% below threshold 80.0%
+     ⚠️  Recall 0.0% below threshold 75.0%
+     ... and 2 more issues
+  ❌ edge-case-007: F1=0%
+     ⚠️  Precision 0.0% below threshold 80.0%
+     ⚠️  Recall 0.0% below threshold 75.0%
+     ... and 2 more issues
+  ❌ edge-case-008: F1=0%
+     ⚠️  Precision 0.0% below threshold 80.0%
+     ⚠️  Recall 0.0% below threshold 75.0%
+     ... and 2 more issues
+  ❌ edge-case-009: F1=0%
+     ⚠️  Precision 0.0% below threshold 80.0%
+     ⚠️  Recall 0.0% below threshold 75.0%
+     ... and 2 more issues
+  ❌ edge-case-010: F1=0%
+     ⚠️  Precision 0.0% below threshold 80.0%
+     ⚠️  Recall 0.0% below threshold 75.0%
+     ... and 2 more issues
+
+Coreference: 0/5 (0%)
+  ❌ coref-001: F1=0%
+     ⚠️  Precision 0.0% below threshold 80.0%
+     ⚠️  Recall 0.0% below threshold 75.0%
+     ... and 2 more issues
+  ❌ coref-002: F1=0%
+     ⚠️  Precision 0.0% below threshold 80.0%
+     ⚠️  Recall 0.0% below threshold 75.0%
+     ... and 2 more issues
+  ❌ coref-003: F1=0%
+     ⚠️  Precision 0.0% below threshold 80.0%
+     ⚠️  Recall 0.0% below threshold 75.0%
+     ... and 2 more issues
+  ❌ coref-004: F1=0%
+     ⚠️  Precision 0.0% below threshold 80.0%
+     ⚠️  Recall 0.0% below threshold 75.0%
+     ... and 2 more issues
+  ❌ coref-005: F1=0%
+     ⚠️  Precision 0.0% below threshold 80.0%
+     ⚠️  Recall 0.0% below threshold 75.0%
+     ... and 2 more issues
+
+Other: 0/5 (0%)
+  ❌ complex-person-002: F1=0%
+     ⚠️  Precision 0.0% below threshold 80.0%
+     ⚠️  Recall 0.0% below threshold 75.0%
+     ... and 2 more issues
+  ❌ legal-001: F1=0%
+     ⚠️  Precision 0.0% below threshold 80.0%
+     ⚠️  Recall 0.0% below threshold 75.0%
+     ... and 2 more issues
+  ❌ multilingual-001: F1=0%
+     ⚠️  Precision 0.0% below threshold 80.0%
+     ⚠️  Recall 0.0% below threshold 75.0%
+     ... and 2 more issues
+  ❌ social-media-001: F1=0%
+     ⚠️  Precision 0.0% below threshold 80.0%
+     ⚠️  Recall 0.0% below threshold 75.0%
+     ... and 2 more issues
+  ❌ technical-001: F1=0%
+     ⚠️  Precision 0.0% below threshold 80.0%
+     ⚠️  Recall 0.0% below threshold 75.0%
+     ... and 2 more issues
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FAILED TESTS DETAIL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ basic-person-001
+   Description: Simple person identification with formal name and nickname
+   Metrics: P=0.0%, R=0.0%, F1=0.0%
+   Issues:
+     - Precision 0.0% below threshold 80.0%
+     - Recall 0.0% below threshold 75.0%
+     - F1 Score 0.0% below threshold 77.0%
+     - Confidence: Confidence scores don't correlate well with correctness (correlation: 0.0%). High-confidence entities should be more accurate.
+
+❌ complex-person-002
+   Description: Multiple persons with relationship context and informal references
+   Metrics: P=0.0%, R=0.0%, F1=0.0%
+   Issues:
+     - Precision 0.0% below threshold 80.0%
+     - Recall 0.0% below threshold 75.0%
+     - F1 Score 0.0% below threshold 77.0%
+     - Confidence: Confidence scores don't correlate well with correctness (correlation: 0.0%). High-confidence entities should be more accurate.
+
+❌ historical-context-001
+   Description: Historical figures with multiple titles and relationships
+   Metrics: P=0.0%, R=0.0%, F1=0.0%
+   Issues:
+     - Precision 0.0% below threshold 80.0%
+     - Recall 0.0% below threshold 75.0%
+     - F1 Score 0.0% below threshold 77.0%
+     - Confidence: Confidence scores don't correlate well with correctness (correlation: 0.0%). High-confidence entities should be more accurate.
+
+❌ modern-informal-001
+   Description: Modern tech industry with informal writing style and mixed references
+   Metrics: P=0.0%, R=0.0%, F1=0.0%
+   Issues:
+     - Precision 0.0% below threshold 80.0%
+     - Recall 0.0% below threshold 75.0%
+     - F1 Score 0.0% below threshold 77.0%
+     - Confidence: Confidence scores don't correlate well with correctness (correlation: 0.0%). High-confidence entities should be more accurate.
+
+❌ academic-001
+   Description: Academic paper with complex entity relationships and citations
+   Metrics: P=0.0%, R=0.0%, F1=0.0%
+   Issues:
+     - Precision 0.0% below threshold 80.0%
+     - Recall 0.0% below threshold 75.0%
+     - F1 Score 0.0% below threshold 77.0%
+     - Confidence: Confidence scores don't correlate well with correctness (correlation: 0.0%). High-confidence entities should be more accurate.
+
+❌ legal-001
+   Description: Legal document with complex organizational hierarchies and roles
+   Metrics: P=0.0%, R=0.0%, F1=0.0%
+   Issues:
+     - Precision 0.0% below threshold 80.0%
+     - Recall 0.0% below threshold 75.0%
+     - F1 Score 0.0% below threshold 77.0%
+     - Confidence: Confidence scores don't correlate well with correctness (correlation: 0.0%). High-confidence entities should be more accurate.
+
+❌ multilingual-001
+   Description: Mixed language content with transliterated names and cross-cultural references
+   Metrics: P=0.0%, R=0.0%, F1=0.0%
+   Issues:
+     - Precision 0.0% below threshold 80.0%
+     - Recall 0.0% below threshold 75.0%
+     - F1 Score 0.0% below threshold 77.0%
+     - Confidence: Confidence scores don't correlate well with correctness (correlation: 0.0%). High-confidence entities should be more accurate.
+
+❌ social-media-001
+   Description: Twitter/X thread about tech industry news
+   Metrics: P=0.0%, R=0.0%, F1=0.0%
+   Issues:
+     - Precision 0.0% below threshold 80.0%
+     - Recall 0.0% below threshold 75.0%
+     - F1 Score 0.0% below threshold 77.0%
+     - Confidence: Confidence scores don't correlate well with correctness (correlation: 0.0%). High-confidence entities should be more accurate.
+
+❌ historical-002
+   Description: Medieval European history with complex dynastic relationships
+   Metrics: P=0.0%, R=0.0%, F1=0.0%
+   Issues:
+     - Precision 0.0% below threshold 80.0%
+     - Recall 0.0% below threshold 75.0%
+     - F1 Score 0.0% below threshold 77.0%
+     - Confidence: Confidence scores don't correlate well with correctness (correlation: 0.0%). High-confidence entities should be more accurate.
+
+❌ technical-001
+   Description: Software documentation with API references and technical specifications
+   Metrics: P=0.0%, R=0.0%, F1=0.0%
+   Issues:
+     - Precision 0.0% below threshold 80.0%
+     - Recall 0.0% below threshold 75.0%
+     - F1 Score 0.0% below threshold 77.0%
+     - Confidence: Confidence scores don't correlate well with correctness (correlation: 0.0%). High-confidence entities should be more accurate.
+
+❌ edge-case-001
+   Description: Single word entities with ambiguous context
+   Metrics: P=0.0%, R=0.0%, F1=0.0%
+   Issues:
+     - Precision 0.0% below threshold 80.0%
+     - Recall 0.0% below threshold 75.0%
+     - F1 Score 0.0% below threshold 77.0%
+     - Confidence: Confidence scores don't correlate well with correctness (correlation: 0.0%). High-confidence entities should be more accurate.
+
+❌ edge-case-002
+   Description: Names with special characters and punctuation
+   Metrics: P=0.0%, R=0.0%, F1=0.0%
+   Issues:
+     - Precision 0.0% below threshold 80.0%
+     - Recall 0.0% below threshold 75.0%
+     - F1 Score 0.0% below threshold 77.0%
+     - Confidence: Confidence scores don't correlate well with correctness (correlation: 0.0%). High-confidence entities should be more accurate.
+
+❌ edge-case-003
+   Description: Very short text with minimal context
+   Metrics: P=0.0%, R=0.0%, F1=0.0%
+   Issues:
+     - Precision 0.0% below threshold 80.0%
+     - Recall 0.0% below threshold 75.0%
+     - F1 Score 0.0% below threshold 77.0%
+     - Confidence: Confidence scores don't correlate well with correctness (correlation: 0.0%). High-confidence entities should be more accurate.
+
+❌ edge-case-004
+   Description: Entities with numbers and mixed case
+   Metrics: P=0.0%, R=0.0%, F1=0.0%
+   Issues:
+     - Precision 0.0% below threshold 80.0%
+     - Recall 0.0% below threshold 75.0%
+     - F1 Score 0.0% below threshold 77.0%
+     - Confidence: Confidence scores don't correlate well with correctness (correlation: 0.0%). High-confidence entities should be more accurate.
+
+❌ edge-case-005
+   Description: Nested and overlapping entity references
+   Metrics: P=0.0%, R=0.0%, F1=0.0%
+   Issues:
+     - Precision 0.0% below threshold 80.0%
+     - Recall 0.0% below threshold 75.0%
+     - F1 Score 0.0% below threshold 77.0%
+     - Confidence: Confidence scores don't correlate well with correctness (correlation: 0.0%). High-confidence entities should be more accurate.
+
+❌ edge-case-006
+   Description: Pronouns and anaphoric references
+   Metrics: P=0.0%, R=0.0%, F1=0.0%
+   Issues:
+     - Precision 0.0% below threshold 80.0%
+     - Recall 0.0% below threshold 75.0%
+     - F1 Score 0.0% below threshold 77.0%
+     - Confidence: Confidence scores don't correlate well with correctness (correlation: 0.0%). High-confidence entities should be more accurate.
+
+❌ edge-case-007
+   Description: Entities at sentence boundaries
+   Metrics: P=0.0%, R=0.0%, F1=0.0%
+   Issues:
+     - Precision 0.0% below threshold 80.0%
+     - Recall 0.0% below threshold 75.0%
+     - F1 Score 0.0% below threshold 77.0%
+     - Confidence: Confidence scores don't correlate well with correctness (correlation: 0.0%). High-confidence entities should be more accurate.
+
+❌ edge-case-008
+   Description: Dates and temporal expressions
+   Metrics: P=0.0%, R=0.0%, F1=0.0%
+   Issues:
+     - Precision 0.0% below threshold 80.0%
+     - Recall 0.0% below threshold 75.0%
+     - F1 Score 0.0% below threshold 77.0%
+     - Confidence: Confidence scores don't correlate well with correctness (correlation: 0.0%). High-confidence entities should be more accurate.
+
+❌ edge-case-009
+   Description: Acronyms and abbreviations with expansions
+   Metrics: P=0.0%, R=0.0%, F1=0.0%
+   Issues:
+     - Precision 0.0% below threshold 80.0%
+     - Recall 0.0% below threshold 75.0%
+     - F1 Score 0.0% below threshold 77.0%
+     - Confidence: Confidence scores don't correlate well with correctness (correlation: 0.0%). High-confidence entities should be more accurate.
+
+❌ edge-case-010
+   Description: Common words that are also entity names
+   Metrics: P=0.0%, R=0.0%, F1=0.0%
+   Issues:
+     - Precision 0.0% below threshold 80.0%
+     - Recall 0.0% below threshold 75.0%
+     - F1 Score 0.0% below threshold 77.0%
+     - Confidence: Confidence scores don't correlate well with correctness (correlation: 0.0%). High-confidence entities should be more accurate.
+
+❌ coref-001
+   Description: Long coreference chain across multiple sentences
+   Metrics: P=0.0%, R=0.0%, F1=0.0%
+   Issues:
+     - Precision 0.0% below threshold 80.0%
+     - Recall 0.0% below threshold 75.0%
+     - F1 Score 0.0% below threshold 77.0%
+     - Confidence: Confidence scores don't correlate well with correctness (correlation: 0.0%). High-confidence entities should be more accurate.
+
+❌ coref-002
+   Description: Multiple entities with overlapping pronouns
+   Metrics: P=0.0%, R=0.0%, F1=0.0%
+   Issues:
+     - Precision 0.0% below threshold 80.0%
+     - Recall 0.0% below threshold 75.0%
+     - F1 Score 0.0% below threshold 77.0%
+     - Confidence: Confidence scores don't correlate well with correctness (correlation: 0.0%). High-confidence entities should be more accurate.
+
+❌ coref-003
+   Description: Corporate entity with multiple reference forms
+   Metrics: P=0.0%, R=0.0%, F1=0.0%
+   Issues:
+     - Precision 0.0% below threshold 80.0%
+     - Recall 0.0% below threshold 75.0%
+     - F1 Score 0.0% below threshold 77.0%
+     - Confidence: Confidence scores don't correlate well with correctness (correlation: 0.0%). High-confidence entities should be more accurate.
+
+❌ coref-004
+   Description: Title-based references resolving to person
+   Metrics: P=0.0%, R=0.0%, F1=0.0%
+   Issues:
+     - Precision 0.0% below threshold 80.0%
+     - Recall 0.0% below threshold 75.0%
+     - F1 Score 0.0% below threshold 77.0%
+     - Confidence: Confidence scores don't correlate well with correctness (correlation: 0.0%). High-confidence entities should be more accurate.
+
+❌ coref-005
+   Description: Geographic location with various descriptive references
+   Metrics: P=0.0%, R=0.0%, F1=0.0%
+   Issues:
+     - Precision 0.0% below threshold 80.0%
+     - Recall 0.0% below threshold 75.0%
+     - F1 Score 0.0% below threshold 77.0%
+     - Confidence: Confidence scores don't correlate well with correctness (correlation: 0.0%). High-confidence entities should be more accurate.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ Many tests failing. Major improvements needed.
+
+Overall Grade: F (Failing)

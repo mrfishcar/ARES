@@ -278,7 +278,11 @@ export function mergeEntitiesAcrossDocs(
           'sir', 'lord', 'lady', 'king', 'queen', 'prince', 'princess',
           'professor', 'dr', 'mr', 'mrs', 'ms'
         ]);
-        const informative = parts.filter(p => !connectors.has(p)).length;
+        const descriptors = new Set([
+          'former', 'latter', 'later', 'current', 'young', 'younger',
+          'older', 'eldest', 'elder', 'stern', 'brave', 'wise', 'noted'
+        ]);
+        const informative = parts.filter(p => !connectors.has(p) && !descriptors.has(p)).length;
 
         // Penalty: Descriptive titles starting with "the" are less desirable than proper names
         // "Aragorn" should beat "the king"

@@ -57,7 +57,8 @@ const LOWERCASE_TITLE_TOKENS = new Set([
     'professor', 'headmaster', 'headmistress', 'head', 'director', 'dean', 'captain', 'commander',
     'chief', 'sir', 'lady', 'lord', 'madam', 'madame', 'dr', 'doctor', 'mr', 'mrs', 'ms', 'miss',
     'father', 'mother', 'mom', 'dad', 'aunt', 'uncle', 'king', 'queen', 'prince', 'princess',
-    'duke', 'duchess', 'baron', 'baroness', 'mentor', 'teacher', 'mistress', 'master', 'coach'
+    'duke', 'duchess', 'baron', 'baroness', 'mentor', 'teacher', 'mistress', 'master', 'coach',
+    'family'
 ]);
 const SALVAGE_ENTITY_TYPES = new Set(['PERSON', 'ORG', 'HOUSE', 'PLACE']);
 const pronouns = new Set(['he', 'she', 'it', 'they', 'him', 'her', 'his', 'hers', 'its', 'their', 'theirs', 'them']);
@@ -395,9 +396,34 @@ function getProvenance(globalId, graph) {
 }
 /**
  * Clear storage (for testing)
+ * Also clears all registries to ensure test isolation
  */
-function clearStorage(filePath = DEFAULT_STORAGE_PATH) {
+async function clearStorage(filePath = DEFAULT_STORAGE_PATH) {
+    // Clear main storage file
     if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
+    }
+    // Clear registries to prevent cross-test contamination
+    const registryFiles = [
+        './data/eid-registry.json',
+        './data/alias-registry.json',
+        './data/sense-registry.json'
+    ];
+    for (const registryFile of registryFiles) {
+        if (fs.existsSync(registryFile)) {
+            fs.unlinkSync(registryFile);
+        }
+    }
+    // Clear in-memory registry state
+    try {
+        const { eidRegistry } = await Promise.resolve().then(() => __importStar(require('../engine/eid-registry')));
+        const { aliasRegistry } = await Promise.resolve().then(() => __importStar(require('../engine/alias-registry')));
+        const { senseRegistry } = await Promise.resolve().then(() => __importStar(require('../engine/sense-disambiguator')));
+        eidRegistry.clear();
+        aliasRegistry.clear();
+        senseRegistry.clear();
+    }
+    catch (error) {
+        // Registries not loaded yet, which is fine
     }
 }

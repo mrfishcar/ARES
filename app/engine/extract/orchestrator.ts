@@ -27,6 +27,39 @@ import { isContextDependent } from '../pronoun-utils';
 import { filterLowQualityEntities, isEntityFilterEnabled, getFilterConfig, getFilterStats } from '../entity-quality-filter';
 import { deduplicateRelations, isDeduplicationEnabled, getDeduplicationStats } from '../relation-deduplicator';
 
+const SEG_DEBUG = process.env.L3_SEG_DEBUG === '1';
+
+const APPOS_DEBUG = process.env.L3_APPOS_DEBUG === '1';
+const MULTI_ALIAS_PATTERN = /(?:,|\band\b|&)/i;
+
+function isMultiEntityAlias(value: string): boolean {
+  if (!value) return false;
+  if (!MULTI_ALIAS_PATTERN.test(value)) return false;
+  const parts = value.split(/(?:,|\band\b|&)/i).map(part => part.trim()).filter(Boolean);
+  const capitalized = parts.filter(part => /^[A-Z][A-Za-z]/.test(part));
+  return capitalized.length >= 2;
+}
+
+function computeAmbiguousSurnames(entities: Entity[]): Set<string> {
+  const counts = new Map<string, number>();
+  for (const entity of entities) {
+    if (entity.type !== 'PERSON') continue;
+    const tokens = entity.canonical
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(Boolean);
+    if (tokens.length < 2) continue;
+    const surname = tokens[tokens.length - 1];
+    if (!surname) continue;
+    counts.set(surname, (counts.get(surname) || 0) + 1);
+  }
+  const ambiguous = new Set<string>();
+  for (const [surname, count] of counts.entries()) {
+    if (count > 1) ambiguous.add(surname);
+  }
+  return ambiguous;
+}
+
 // Select relation patterns mode from environment (baseline | expanded | hybrid)
 const PATTERNS_MODE: PatternsMode = (process.env.RELATION_PATTERNS_MODE as PatternsMode) || 'baseline';
 // Note: Pattern loading available via loadRelationPatterns(PATTERNS_MODE)
@@ -107,12 +140,18 @@ export async function extractFromSegments(
       canonical,
       aliases: entity.aliases ? [...entity.aliases] : []
     };
+    if (canonical.toLowerCase().includes('mcgonagall')) {
+      console.log(`[DEBUG-MCG] registerWindowEntity added ${canonical}`);
+    }
     entityMap.set(key, normalizedEntity);
     allEntities.push(normalizedEntity);
     return normalizedEntity;
   };
 
   for (const seg of segs) {
+    if (SEG_DEBUG) {
+      console.log(`[SEG] Processing segment ${seg.sentIndex}: "${seg.text}"`);
+    }
     // Build context window (200 chars before/after)
     const contextBefore = fullText.slice(Math.max(0, seg.start - 200), seg.start);
     const contextAfter = fullText.slice(seg.end, Math.min(fullText.length, seg.end + 200));
@@ -146,6 +185,9 @@ export async function extractFromSegments(
     for (const entity of entities) {
       // Find all spans for this entity
       const entitySpans = spans.filter(s => s.entity_id === entity.id);
+      if (SEG_DEBUG) {
+        console.log(`[SEG-ENTITY] ${entity.canonical} spans=${entitySpans.length} (segment ${seg.sentIndex})`);
+      }
 
       // Keep only spans that are COMPLETELY within the segment
       const segStart = segOffsetInWindow;
@@ -173,6 +215,9 @@ export async function extractFromSegments(
         });
 
       if (segmentSpans.length === 0) {
+        if (SEG_DEBUG) {
+          console.log(`[SEG-ENTITY] Skipping ${entity.canonical} (no spans in segment ${seg.sentIndex})`);
+        }
         // Entity not in segment, skip
         continue;
       }
@@ -379,9 +424,23 @@ export async function extractFromSegments(
   // Expected impact: +5-10% precision
   const preFilterCount = allEntities.length;
 
+  const logMcGEntries = (entities: Entity[], label: string) => {
+    for (const entity of entities) {
+      if (entity.canonical.toLowerCase().includes('mcgonagall')) {
+        console.log(`[DEBUG-MCG] ${label}: ${entity.canonical} (type=${entity.type})`);
+      }
+    }
+  };
+
+  if (docId === '3.9') {
+    console.log('[DEBUG-MCG] allEntities before filter:', allEntities.map(e => e.canonical));
+  }
+
   if (isEntityFilterEnabled()) {
+    logMcGEntries(allEntities, 'pre-filter');
     const config = getFilterConfig();
     const filteredEntities = filterLowQualityEntities(allEntities, config);
+    logMcGEntries(filteredEntities, 'post-filter');
     const stats = getFilterStats(allEntities, filteredEntities, config);
 
     console.log(`[PRECISION-DEFENSE] 🛡️ Layer 1: Entity Quality Filter`);
@@ -743,6 +802,10 @@ export async function extractFromSegments(
     if (!predObjToSubjects.has(predObjKey)) {
       predObjToSubjects.set(predObjKey, []);
     }
+    if (APPOS_DEBUG) {
+      const spanInfo = subjSpan ? `${subjSpan.start}-${subjSpan.end}` : 'n/a';
+      console.log(`[APPOS-FILTER][TRACE] Tracking ${predObjKey} <= ${subjectCanonical} (id=${rel.subj}, span=${spanInfo})`);
+    }
     predObjToSubjects.get(predObjKey)!.push({ rel, position, subjectCanonical });
   }
 
@@ -771,45 +834,26 @@ export async function extractFromSegments(
         console.log(`  - ${item.subjectCanonical} at position ${item.position}`);
       }
 
-      // If subjects are simple names (no shared substring overlap beyond 50%),
-      // they're likely coordinated entities, so keep all
-      const isCoordination = group.every((item, idx) => {
-        if (idx === 0) return true; // First item is always kept
-        const prevCanonical = group[idx - 1].subjectCanonical;
-        const currCanonical = item.subjectCanonical;
-        const prevPosition = group[idx - 1].position;
-        const currPosition = item.position;
+      const uniqueSubjectIds = new Set(group.map(item => item.rel.subj));
+      console.log(`[APPOS-FILTER]   Unique subject IDs: ${Array.from(uniqueSubjectIds).join(', ')}`);
 
-        // Skip exact duplicates (same entity at same position - these will be deduped later)
-        if (prevCanonical === currCanonical && prevPosition === currPosition) {
-          console.log(`[APPOS-FILTER]   ${currCanonical} at ${currPosition} is duplicate - SKIP`);
-          return true; // Don't treat as appositive
-        }
-
-        // If one is a substring of the other AND at different positions, it's likely appositive
-        if (prevCanonical !== currCanonical && (prevCanonical.includes(currCanonical) || currCanonical.includes(prevCanonical))) {
-          console.log(`[APPOS-FILTER]   ${currCanonical} substring of ${prevCanonical} - APPOSITIVE`);
-          return false;
-        }
-        // If they're very close (within 50 chars), likely coordination
-        const distance = Math.abs(currPosition - prevPosition);
-        console.log(`[APPOS-FILTER]   Distance between ${prevCanonical} and ${currCanonical}: ${distance}`);
-        return distance < 50;
-      });
-
-      console.log(`[APPOS-FILTER]   isCoordination: ${isCoordination}`);
-
-      if (isCoordination) {
-        // Keep all coordinated subjects
-        console.log(`[APPOS-FILTER]   Keeping all ${group.length} subjects`);
+      if (uniqueSubjectIds.size > 1) {
+        console.log(`[APPOS-FILTER]   Treating as coordination via unique IDs`);
+        const seenSubjects = new Set<string>();
         for (const item of group) {
+          if (seenSubjects.has(item.rel.subj)) {
+            console.log(`[APPOS-FILTER]     Duplicate relation for subject ${item.subjectCanonical} - skip`);
+            continue;
+          }
+          seenSubjects.add(item.rel.subj);
           appositiveFilteredRelations.push(item.rel);
         }
-      } else {
-        // Appositive case - keep only the first subject
-        console.log(`[APPOS-FILTER]   Appositive detected - keeping only first subject`);
-        appositiveFilteredRelations.push(group[0].rel);
+        continue;
       }
+
+      // Only one unique subject ID, treat as potential appositive/duplicate
+      console.log(`[APPOS-FILTER]   Single subject detected - keeping first relation only`);
+      appositiveFilteredRelations.push(group[0].rel);
     }
   }
 
@@ -1078,6 +1122,7 @@ export async function extractFromSegments(
   // Populate entity.aliases from coreference links and alias registry
   // This makes aliases visible to tests and downstream consumers
   console.log(`[ORCHESTRATOR] Populating entity aliases from coref links and alias registry`);
+  const ambiguousSurnames = computeAmbiguousSurnames(filteredEntities);
 
   for (const entity of filteredEntities) {
     const aliasSet = new Set<string>();
@@ -1099,7 +1144,8 @@ export async function extractFromSegments(
         // Pronouns must be resolved at extraction time, not stored as aliases
         if (mentionText &&
             mentionText !== entity.canonical &&
-            !isContextDependent(mentionText)) {
+            !isContextDependent(mentionText) &&
+            !isMultiEntityAlias(mentionText)) {
           aliasSet.add(mentionText);
         }
       }
@@ -1113,14 +1159,31 @@ export async function extractFromSegments(
         // Add if different from canonical, not empty, and NOT a pronoun
         if (surfaceForm &&
             surfaceForm !== entity.canonical &&
-            !isContextDependent(surfaceForm)) {
+            !isContextDependent(surfaceForm) &&
+            !isMultiEntityAlias(surfaceForm)) {
           aliasSet.add(surfaceForm);
         }
       }
     }
 
-    // Update entity.aliases with unique values
-    entity.aliases = Array.from(aliasSet);
+    // Update entity.aliases with unique values, filtering ambiguous surname aliases (e.g., "Weasley")
+    const cleanedAliases = Array.from(aliasSet).filter(alias => {
+      if (entity.type !== 'PERSON') return true;
+      const aliasLower = alias.toLowerCase();
+      const canonicalTokens = entity.canonical.toLowerCase().split(/\s+/).filter(Boolean);
+      if (canonicalTokens.length < 2) return true;
+      const surname = canonicalTokens[canonicalTokens.length - 1];
+      if (!surname) return true;
+      if (aliasLower === surname && ambiguousSurnames.has(surname)) {
+        if (process.env.L3_DEBUG === '1') {
+          console.log(`[ALIAS-FILTER] Dropping ambiguous surname alias "${alias}" for ${entity.canonical}`);
+        }
+        return false;
+      }
+      return true;
+    });
+
+    entity.aliases = cleanedAliases;
 
     if (entity.aliases.length > 0) {
       console.log(`[ORCHESTRATOR] Entity "${entity.canonical}" has ${entity.aliases.length} aliases: [${entity.aliases.slice(0, 3).join(', ')}${entity.aliases.length > 3 ? '...' : ''}]`);

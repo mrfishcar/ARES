@@ -20,6 +20,23 @@ export interface EntityQualityConfig {
   strictMode: boolean; // Extra strict for complex text
 }
 
+const TITLE_PREFIXES = new Set([
+  'mr', 'mrs', 'miss', 'ms', 'dr', 'doctor',
+  'prof', 'professor', 'sir', 'madam', 'madame',
+  'lord', 'lady', 'king', 'queen', 'prince', 'princess',
+  'captain', 'commander', 'head', 'headmaster', 'headmistress',
+  'chief', 'general'
+]);
+
+function hasTitlePrefix(name: string): boolean {
+  const tokens = name
+    .split(/\s+/)
+    .map(token => token.toLowerCase())
+    .filter(Boolean);
+  if (tokens.length < 2) return false;
+  return TITLE_PREFIXES.has(tokens[0]);
+}
+
 export const DEFAULT_CONFIG: EntityQualityConfig = {
   minConfidence: 0.65,        // Reject entities with confidence < 65%
   minNameLength: 2,            // Reject single-letter entities
@@ -64,7 +81,11 @@ export const STRICT_CONFIG: EntityQualityConfig = {
 function isValidProperNoun(name: string, type: EntityType): boolean {
   // Proper nouns (PERSON, ORG, PLACE, HOUSE) should start with capital letter
   if (['PERSON', 'ORG', 'PLACE', 'HOUSE', 'TRIBE'].includes(type)) {
-    const firstChar = name[0];
+    if (hasTitlePrefix(name)) {
+      return true;
+    }
+    const trimmed = name.trim();
+    const firstChar = trimmed[0];
     if (!firstChar || firstChar !== firstChar.toUpperCase()) {
       return false;
     }

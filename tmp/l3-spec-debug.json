@@ -17,7 +17,7 @@
     {
       "id": "3.3",
       "entityPrecision": 1,
-      "entityRecall": 0.75,
+      "entityRecall": 1,
       "relationPrecision": 1,
       "relationRecall": 1
     },
@@ -30,24 +30,24 @@
     },
     {
       "id": "3.5",
-      "entityPrecision": 1,
-      "entityRecall": 0.8888888888888888,
-      "relationPrecision": 0.4,
-      "relationRecall": 0.5
+      "entityPrecision": 0.9,
+      "entityRecall": 1,
+      "relationPrecision": 0.35,
+      "relationRecall": 0.875
     },
     {
       "id": "3.6",
       "entityPrecision": 1,
       "entityRecall": 0.8,
       "relationPrecision": 1,
-      "relationRecall": 0.5
+      "relationRecall": 1
     },
     {
       "id": "3.7",
-      "entityPrecision": 1,
+      "entityPrecision": 0.75,
       "entityRecall": 1,
-      "relationPrecision": 0,
-      "relationRecall": 0
+      "relationPrecision": 1,
+      "relationRecall": 1
     },
     {
       "id": "3.8",
@@ -59,9 +59,9 @@
     {
       "id": "3.9",
       "entityPrecision": 1,
-      "entityRecall": 1,
-      "relationPrecision": 0,
-      "relationRecall": 0
+      "entityRecall": 0.75,
+      "relationPrecision": 1,
+      "relationRecall": 0.5
     },
     {
       "id": "3.10",
@@ -86,8 +86,8 @@
       ],
       "extracted": [
         "PERSON::harry potter",
-        "PERSON::lily potter",
         "PERSON::james",
+        "PERSON::lily potter",
         "PERSON::dursleys",
         "PERSON::ron weasley",
         "PERSON::arthur",
@@ -109,8 +109,8 @@
       ],
       "extracted": [
         "PERSON::hermione granger",
-        "PERSON::ron weasley",
         "PERSON::harry potter",
+        "PERSON::ron weasley",
         "PERSON::draco malfoy",
         "ORG::gryffindor",
         "ORG::slytherin"
@@ -128,12 +128,11 @@
       ],
       "extracted": [
         "PERSON::albus dumbledore",
+        "PERSON::fawkes",
         "PERSON::severus snape",
         "ORG::hogwarts"
       ],
-      "missing": [
-        "PERSON::fawkes"
-      ],
+      "missing": [],
       "extra": []
     },
     {
@@ -147,12 +146,12 @@
         "PERSON::voldemort"
       ],
       "extracted": [
+        "DATE::1991",
         "PERSON::harry potter",
         "PERSON::ron",
         "PERSON::hermione",
         "PERSON::voldemort",
-        "ORG::hogwarts school",
-        "DATE::1991"
+        "ORG::hogwarts school"
       ],
       "missing": [],
       "extra": []
@@ -171,19 +170,21 @@
         "ORG::gringotts bank"
       ],
       "extracted": [
-        "PERSON::molly weasley",
+        "PERSON::weasley family",
         "PERSON::arthur",
         "PERSON::ron",
         "PERSON::ginny",
         "PERSON::fred",
         "PERSON::george",
+        "PERSON::molly weasley",
+        "PERSON::bill weasley",
         "PLACE::burrow",
         "ORG::gringotts bank"
       ],
-      "missing": [
-        "PERSON::bill weasley"
-      ],
-      "extra": []
+      "missing": [],
+      "extra": [
+        "PERSON::weasley family"
+      ]
     },
     {
       "id": "3.6",
@@ -215,10 +216,13 @@
       "extracted": [
         "PERSON::harry",
         "PERSON::ron",
-        "PERSON::hermione"
+        "PERSON::hermione",
+        "PLACE::their quest"
       ],
       "missing": [],
-      "extra": []
+      "extra": [
+        "PLACE::their quest"
+      ]
     },
     {
       "id": "3.8",
@@ -229,8 +233,8 @@
         "PERSON::hermione granger"
       ],
       "extracted": [
-        "PERSON::ginny weasley",
         "PERSON::harry potter",
+        "PERSON::ginny weasley",
         "PERSON::ron weasley",
         "PERSON::hermione granger"
       ],
@@ -248,10 +252,11 @@
       "extracted": [
         "ORG::hogwarts",
         "ORG::gryffindor",
-        "PERSON::professor mcgonagall",
         "PERSON::professor snape"
       ],
-      "missing": [],
+      "missing": [
+        "PERSON::professor mcgonagall"
+      ],
       "extra": []
     },
     {

@@ -890,6 +890,10 @@ function extractDepRelations(
       spanLookup.set(span.entity_id, span);
     }
   }
+  const entityById = new Map<string, Entity>();
+  for (const entity of entities) {
+    entityById.set(entity.id, entity);
+  }
 
   const schoolKeywords = ['school', 'academy', 'institute', 'university', 'college', 'hogwarts', 'beauxbatons', 'durmstrang'];
 
@@ -950,6 +954,29 @@ function extractDepRelations(
       lastNamedSubject = candidate;
       pushRecentPerson(candidate);
     }
+  };
+
+  const ACADEMIC_TITLE_TOKENS = new Set([
+    'professor', 'teacher', 'instructor', 'head', 'headmaster', 'headmistress',
+    'dean', 'chair', 'director', 'warden', 'master'
+  ]);
+
+  const resolveAcademicSubject = (tok?: Token | null): Token | null => {
+    if (!tok) return null;
+    const lower = tok.text.toLowerCase();
+    if (tok.pos === 'PRON' && lastNamedSubject) {
+      return lastNamedSubject;
+    }
+    if (ACADEMIC_TITLE_TOKENS.has(lower)) {
+      const properChild = tokens.find(child =>
+        child.head === tok.i &&
+        child.pos === 'PROPN'
+      );
+      if (properChild) {
+        return properChild;
+      }
+    }
+    return tok;
   };
 
   const relationKeys = new Set<string>();
@@ -1462,9 +1489,21 @@ function extractDepRelations(
       const textLower = tok.text.toLowerCase();
 
       if (tok.pos === 'PROPN') {
-        if (tok.ent === 'PERSON') {
+        let entityType = tok.ent;
+        if (!entityType) {
+          const candidateIds = getEntityCandidatesByOffset(spans, tok.start, tok.end);
+          for (const candidateId of candidateIds) {
+            const entity = getEntityById(candidateId);
+            if (entity) {
+              entityType = entity.type;
+              break;
+            }
+          }
+        }
+
+        if (entityType === 'PERSON' || entityType === 'NORP') {
           pushRecentPerson(tok);
-        } else if (tok.ent === 'ORG' || tok.ent === 'FAC') {
+        } else if (entityType === 'ORG' || entityType === 'FAC') {
           pushRecentOrg(tok);
         }
       }
@@ -2088,7 +2127,12 @@ function extractDepRelations(
             const placeSpan = expandNP(placeTok, tokens);
             const subjCandidates = collectConjTokens(subjTok, tokens);
             for (const subjectCandidate of subjCandidates) {
-              const subjSpan = expandNP(subjectCandidate, tokens);
+              const resolvedSubject = resolveAcademicSubject(subjectCandidate);
+              if (!resolvedSubject) continue;
+              if (resolvedSubject.pos !== 'PRON') {
+                updateLastNamedSubject(resolvedSubject);
+              }
+              const subjSpan = expandNP(resolvedSubject, tokens);
               const produced = tryCreateRelation(
                 text, entities, spans, 'teaches_at',
                 subjSpan.start, subjSpan.end, placeSpan.start, placeSpan.end, 'DEP',
@@ -2255,18 +2299,23 @@ function extractDepRelations(
           ['become', 'be', 'was', 'were', 'is', 'became'].includes(t.lemma.toLowerCase())
         );
         if (copula) {
-          let subjTok = tokens.find(t => t.dep === 'nsubj' && t.head === copula.i);
-          if (subjTok && subjTok.pos === 'PRON' && lastNamedSubject) {
-            subjTok = lastNamedSubject;
+          const resolvedSubj = resolveAcademicSubject(
+            tokens.find(t => t.dep === 'nsubj' && t.head === copula.i)
+          );
+          if (!resolvedSubj) {
+            continue;
           }
-          if (subjTok) {
+          if (resolvedSubj.pos !== 'PRON') {
+            updateLastNamedSubject(resolvedSubj);
+          }
+          if (resolvedSubj) {
             const ofPrep = tokens.find(t => t.dep === 'prep' && t.head === tok.i && t.text.toLowerCase() === 'of');
             let orgTok = ofPrep ? tokens.find(t => t.dep === 'pobj' && t.head === ofPrep.i) : undefined;
             if (!orgTok) {
               orgTok = lastSchoolOrg ?? lastNamedOrg ?? undefined;
             }
             if (orgTok) {
-              const subjSpan = expandNP(subjTok, tokens);
+              const subjSpan = expandNP(resolvedSubj, tokens);
               const orgSpan = expandNP(orgTok, tokens);
               const produced = tryCreateRelation(
                 text, entities, spans, 'leads',
@@ -2387,7 +2436,20 @@ function extractDepRelations(
           return token;
         };
 
-        const descriptorPattern = /\b(girl|boy|woman|man|student|friend|friends|child|children|trio|duo|pair|couple|ally|wizard|witch)\b/i;
+        const descriptorPattern = /\b(girl|boy|woman|man|student|friend|friends|child|children|trio|duo|pair|couple|ally|allies|wizard|witch|companion|companions|group|team|crew|squad|siblings|brothers|sisters)\b/i;
+        const descriptorEntityPattern = /\b(?:friend|friends|trio|pair|couple|group|team|crew|squad|quest|mission|journey|adventure|travel|voyage)\b/i;
+        const descriptorNumberHints: Record<string, number> = {
+          both: 2,
+          couple: 2,
+          pair: 2,
+          duo: 2,
+          two: 2,
+          three: 3,
+          trio: 3,
+          four: 4,
+          five: 5,
+          six: 6
+        };
 
         const expandGroupWithPronouns = (group: Token[]): Token[] => {
           const expanded: Token[] = [];
@@ -2413,91 +2475,183 @@ function extractDepRelations(
           return expanded;
         };
 
-        const resolveDescriptorRef = (surface: string, avoidEntityId?: string): EntityRef | null => {
-          if (!descriptorPattern.test(surface)) return null;
-          for (const recent of recentPersons) {
-            const recentSpan = expandNP(recent, tokens);
-            const ref = mapSurfaceToEntity(
-              text.slice(recentSpan.start, recentSpan.end),
-              entities,
-              spans,
-              recentSpan
-            );
-            if (ref && (!avoidEntityId || ref.entity.id !== avoidEntityId)) {
-              if (L3_DEBUG) {
-                console.log(`[FRIENDS-DESCRIPTOR] "${surface.trim()}" -> ${ref.entity.canonical}`);
-              }
-              return ref;
+        const descriptorLimitFromSurface = (surfaceLower: string): number => {
+          for (const [hint, value] of Object.entries(descriptorNumberHints)) {
+            if (surfaceLower.includes(hint)) {
+              return value;
             }
           }
-          return null;
+          if (/\b(trio|triad)\b/.test(surfaceLower)) return 3;
+          if (/\b(pair|duo|couple)\b/.test(surfaceLower)) return 2;
+          if (/\b(friends|children|companions|allies|siblings|group|team|crew|squad)\b/.test(surfaceLower)) {
+            return 3;
+          }
+          return 1;
         };
 
-        const emitFriends = (subjectTokens: Token[], objectTokens: Token[]) => {
-          const expandedSubjects = expandGroupWithPronouns(subjectTokens);
-          const expandedObjects = expandGroupWithPronouns(objectTokens);
-          const resolvedSubjects = uniqueTokensByStart(expandedSubjects.map(resolveToken).filter(Boolean) as Token[]);
-          const resolvedObjects = uniqueTokensByStart(expandedObjects.map(resolveToken).filter(Boolean) as Token[]);
-          if (!resolvedSubjects.length || !resolvedObjects.length) return;
-
-          const seenPairs = new Set<string>();
-          for (const subjTok of resolvedSubjects) {
-            if (subjTok.pos !== 'PRON') {
-              updateLastNamedSubject(subjTok);
+        const mapRecentTokenToEntity = (token: Token): EntityRef | null => {
+          const candidateIds = getEntityCandidatesByOffset(spans, token.start, token.end);
+          for (const candidateId of candidateIds) {
+            const entity = getEntityById(candidateId);
+            if (entity && entity.type === 'PERSON') {
+              const matchedSpan = selectEntitySpan(entity.id, spans, { start: token.start, end: token.end });
+              return { entity, span: matchedSpan ?? null };
             }
-            const subjSpan = expandNP(subjTok, tokens);
-            let subjRef = mapSurfaceToEntity(
-              text.slice(subjSpan.start, subjSpan.end),
-              entities,
-              spans,
-              subjSpan
-            );
-            if (!subjRef && lastNamedSubject) {
-              const fallbackSpan = expandNP(lastNamedSubject, tokens);
-              subjRef = mapSurfaceToEntity(
+          }
+          return mapSurfaceToEntity(
+            text.slice(token.start, token.end),
+            entities,
+            spans,
+            { start: token.start, end: token.end }
+          );
+        };
+
+        const resolveDescriptorRefs = (
+          surface: string,
+          descriptorSpan?: { start: number; end: number },
+          options: { avoidIds?: Set<string>; limit?: number } = {}
+        ): EntityRef[] => {
+          if (!descriptorPattern.test(surface)) return [];
+          const lowerSurface = surface.toLowerCase();
+          const desired = options.limit ?? descriptorLimitFromSurface(lowerSurface);
+          const available = Math.max(1, Math.min(desired, recentPersons.length || desired));
+          const resolved: EntityRef[] = [];
+          const seen = new Set<string>();
+
+
+          for (const recent of recentPersons) {
+            const ref = mapRecentTokenToEntity(recent);
+            if (
+              ref &&
+              ref.entity.type === 'PERSON' &&
+              !seen.has(ref.entity.id) &&
+              !options.avoidIds?.has(ref.entity.id)
+            ) {
+              const canonicalLower = ref.entity.canonical.toLowerCase();
+              if (descriptorEntityPattern.test(canonicalLower)) {
+                continue;
+              }
+              seen.add(ref.entity.id);
+              resolved.push(ref);
+              if (resolved.length >= available) {
+                break;
+              }
+            }
+          }
+
+          if (!resolved.length && lastNamedSubject) {
+            const fallback = mapRecentTokenToEntity(lastNamedSubject);
+            if (
+              fallback &&
+              fallback.entity.type === 'PERSON' &&
+              !options.avoidIds?.has(fallback.entity.id)
+            ) {
+              const canonicalLower = fallback.entity.canonical.toLowerCase();
+              if (!descriptorEntityPattern.test(canonicalLower)) {
+                resolved.push(fallback);
+              }
+            }
+          }
+
+          if (!resolved.length && descriptorSpan) {
+            let closestDistance = Infinity;
+            const nearest: EntityRef[] = [];
+          for (const span of spans) {
+            if (span.end > descriptorSpan.start) continue;
+            const entity = entityById.get(span.entity_id);
+            if (!entity || entity.type !== 'PERSON') continue;
+            if (options.avoidIds?.has(entity.id)) continue;
+            const distance = descriptorSpan.start - span.end;
+            if (distance > 200) continue;
+            if (descriptorEntityPattern.test(entity.canonical.toLowerCase())) continue;
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                nearest.length = 0;
+                nearest.push({ entity, span });
+              } else if (distance === closestDistance) {
+                nearest.push({ entity, span });
+              }
+            }
+            if (nearest.length) {
+              const limit = Math.max(1, options.limit ?? descriptorLimitFromSurface(lowerSurface));
+              for (const ref of nearest) {
+                resolved.push(ref);
+                if (resolved.length >= limit) break;
+              }
+            }
+          }
+
+          if (resolved.length && L3_DEBUG) {
+            console.log(`[FRIENDS-DESCRIPTOR] "${surface.trim()}" -> ${resolved.map(r => r.entity.canonical).join(', ')}`);
+          }
+          return resolved;
+        };
+
+        const mapTokenToRefs = (token: Token): EntityRef[] => {
+          const refs: EntityRef[] = [];
+          const seen = new Set<string>();
+          const pushRef = (ref: EntityRef | null) => {
+            if (!ref) return;
+            if (seen.has(ref.entity.id)) return;
+            seen.add(ref.entity.id);
+            refs.push(ref);
+          };
+
+          const span = expandNP(token, tokens);
+          const surface = text.slice(span.start, span.end);
+          const treatAsName = token.pos === 'PROPN' || isNameToken(token);
+
+          if (treatAsName) {
+            updateLastNamedSubject(token);
+            pushRef(mapSurfaceToEntity(surface, entities, spans, span));
+          }
+
+          if (!refs.length && treatAsName && lastNamedSubject) {
+            const fallbackSpan = expandNP(lastNamedSubject, tokens);
+            pushRef(
+              mapSurfaceToEntity(
                 text.slice(fallbackSpan.start, fallbackSpan.end),
                 entities,
                 spans,
                 fallbackSpan
-              );
-            }
-            if (!subjRef && subjTok.pos !== 'PROPN') {
-              const descriptorFallback = resolveDescriptorRef(text.slice(subjSpan.start, subjSpan.end));
-              if (descriptorFallback) {
-                subjRef = descriptorFallback;
-              }
-            }
-            if (!subjRef) continue;
+              )
+            );
+          }
 
-            for (const objTok of resolvedObjects) {
-              const objSpan = expandNP(objTok, tokens);
-              let objRef = mapSurfaceToEntity(
-                text.slice(objSpan.start, objSpan.end),
-                entities,
-                spans,
-                objSpan
-              );
-              if (!objRef && lastNamedSubject && objTok.pos === 'PRON') {
-                const fallbackSpan = expandNP(lastNamedSubject, tokens);
-                objRef = mapSurfaceToEntity(
-                  text.slice(fallbackSpan.start, fallbackSpan.end),
-                  entities,
-                  spans,
-                  fallbackSpan
-                );
-              }
-              if (!objRef && objTok.pos !== 'PROPN') {
-                const descriptorFallback = resolveDescriptorRef(
-                  text.slice(objSpan.start, objSpan.end),
-                  subjRef.entity.id
-                );
-                if (descriptorFallback) {
-                  objRef = descriptorFallback;
-                }
-              }
-              if (!objRef) continue;
+          if (!refs.length) {
+            resolveDescriptorRefs(surface, span).forEach(pushRef);
+          }
+
+          return refs;
+        };
+
+        const resolveGroupRefs = (tokenGroup: Token[]): EntityRef[] => {
+          const expanded = expandGroupWithPronouns(tokenGroup);
+          const resolvedTokens = uniqueTokensByStart(expanded.map(resolveToken).filter(Boolean) as Token[]);
+          const refs: EntityRef[] = [];
+          const seen = new Set<string>();
+
+          for (const tok of resolvedTokens) {
+            const mapped = mapTokenToRefs(tok);
+            for (const ref of mapped) {
+              if (seen.has(ref.entity.id)) continue;
+              seen.add(ref.entity.id);
+              refs.push(ref);
+            }
+          }
+
+          return refs;
+        };
+
+        const emitFriends = (subjectTokens: Token[], objectTokens: Token[]) => {
+          const subjectRefs = resolveGroupRefs(subjectTokens);
+          const objectRefs = resolveGroupRefs(objectTokens);
+          if (!subjectRefs.length || !objectRefs.length) return;
+
+          const seenPairs = new Set<string>();
+          for (const subjRef of subjectRefs) {
+            for (const objRef of objectRefs) {
               if (subjRef.entity.id === objRef.entity.id) continue;
-
               const key = `${subjRef.entity.id}::${objRef.entity.id}`;
               if (seenPairs.has(key)) continue;
               seenPairs.add(key);
@@ -2507,12 +2661,11 @@ function extractDepRelations(
         };
 
         const emitFriendPairsWithin = (tokensList: Token[]) => {
-          const expanded = expandGroupWithPronouns(tokensList);
-          const group = uniqueTokensByStart(expanded.map(resolveToken).filter(Boolean) as Token[]);
-          if (group.length < 2) return;
-          for (let i = 0; i < group.length; i++) {
-            for (let j = i + 1; j < group.length; j++) {
-              emitFriends([group[i]], [group[j]]);
+          const refs = resolveGroupRefs(tokensList);
+          if (refs.length < 2) return;
+          for (let i = 0; i < refs.length; i++) {
+            for (let j = i + 1; j < refs.length; j++) {
+              emitCandidate('friends_with', refs[i], refs[j], tok);
             }
           }
         };
@@ -2532,7 +2685,15 @@ function extractDepRelations(
           subjectGroup.unshift(lastNamedSubject);
         }
 
-        const withPrep = tokens.find(t => t.dep === 'prep' && t.head === tok.i && t.text.toLowerCase() === 'with');
+        const findWithPrep = (): Token | undefined => {
+          const direct = tokens.find(t => t.dep === 'prep' && t.head === tok.i && t.text.toLowerCase() === 'with');
+          if (direct) return direct;
+          const headTok = tokens.find(t => t.i === tok.head);
+          if (!headTok) return undefined;
+          return tokens.find(t => t.dep === 'prep' && t.head === headTok.i && t.text.toLowerCase() === 'with');
+        };
+
+        const withPrep = findWithPrep();
         if (withPrep) {
           const friend = tokens.find(t => t.dep === 'pobj' && t.head === withPrep.i);
           if (friend) {
@@ -3046,22 +3207,25 @@ function extractDepRelations(
 
       if (!childRefs.length) return;
 
-      const parentTokens = recentPersons.filter(tok =>
-        tok.start < listStartAbs && (listStartAbs - tok.end) <= 220
-      );
-
       const parentRefs: EntityRef[] = [];
       const seenParents = new Set<string>();
 
-      for (const token of parentTokens) {
+      for (const token of recentPersons) {
         const entity = entityFromSpan(token.start, token.end);
         if (!entity || entity.type !== 'PERSON') continue;
         if (seenParents.has(entity.id)) continue;
+        const entitySpan = selectEntitySpan(entity.id, spans);
+        if (!entitySpan) continue;
+        if (entitySpan.end > listStartAbs) continue;
+        if ((listStartAbs - entitySpan.end) > 220) continue;
         seenParents.add(entity.id);
         parentRefs.push({
           entity,
-          span: selectEntitySpan(entity.id, spans, { start: token.start, end: token.end }) ?? ensureSpanForEntity(entity, { start: token.start, end: token.end })
+          span: entitySpan
         });
+        if (parentRefs.length >= 3) {
+          break;
+        }
       }
 
       if (!parentRefs.length) return;
@@ -3506,14 +3670,19 @@ function dedupeRelations(relations: Relation[]): Relation[] {
 function expandFamilyResidenceRelations(relations: Relation[], entities: Entity[]): Relation[] {
   const additions: Relation[] = [];
   const surnameCache = new Map<string, Entity[]>();
+  const parentSubjects = new Set(relations.filter(rel => rel.pred === 'parent_of').map(rel => rel.subj));
 
   for (const rel of relations) {
     if (rel.pred !== 'lives_in') continue;
     const subjEntity = entities.find(e => e.id === rel.subj);
     if (!subjEntity) continue;
-    const match = subjEntity.canonical.match(/^(.*)\s+family$/i);
-    if (!match) continue;
-    const surname = match[1].trim();
+    const familySurface = [subjEntity.canonical, ...(subjEntity.aliases ?? [])]
+      .find(name => /\bfamily$/i.test(name));
+    if (!familySurface) continue;
+    const surname = familySurface
+      .replace(/\bfamily$/i, "")
+      .replace(/^the\s+/i, "")
+      .trim();
     if (!surname) continue;
     const lowered = surname.toLowerCase();
 
@@ -3529,6 +3698,7 @@ function expandFamilyResidenceRelations(relations: Relation[], entities: Entity[
     const members = surnameCache.get(lowered) ?? [];
     const placeEntity = entities.find(e => e.id === rel.obj);
     for (const member of members) {
+      if (!parentSubjects.has(member.id)) continue;
       const newRelation: Relation = {
         ...rel,
         id: uuid(),
@@ -3600,12 +3770,34 @@ export async function extractRelations(
   // Merge and deduplicate (dep patterns take priority)
   const bridgedFamilyRelations = expandFamilyResidenceRelations([...depRelations, ...regexRelations], entities);
   const allRelations = [...depRelations, ...regexRelations, ...bridgedFamilyRelations];
+  const parentRoleSubjects = new Set(allRelations.filter(rel => rel.pred === 'parent_of').map(rel => rel.subj));
+  const familyResidenceKeys = new Set<string>();
+  for (const rel of allRelations) {
+    if (rel.pred !== 'lives_in') continue;
+    const subjEntity = entities.find(e => e.id === rel.subj);
+    if (!subjEntity) continue;
+    const familyMatch = subjEntity.canonical.match(/\b([A-Za-z][A-Za-z'-]+)\s+family\b/i);
+    if (familyMatch) {
+      familyResidenceKeys.add(`${familyMatch[1].toLowerCase()}::${rel.obj}`);
+    }
+  }
   const uniqueRelations = dedupeRelations(allRelations);
 
   const validRelations = uniqueRelations.filter(rel =>
     entities.some(e => e.id === rel.subj) &&
     entities.some(e => e.id === rel.obj)
-  );
+  ).filter(rel => {
+    if (rel.pred === 'lives_in') {
+      const subjEntity = entities.find(e => e.id === rel.subj);
+      if (subjEntity && subjEntity.type === 'PERSON') {
+        const surname = subjEntity.canonical.toLowerCase().split(/\s+/).pop();
+        if (surname && familyResidenceKeys.has(`${surname}::${rel.obj}`) && !parentRoleSubjects.has(rel.subj)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  });
 
   const seen = new Set<string>();
   const deduped: Relation[] = [];

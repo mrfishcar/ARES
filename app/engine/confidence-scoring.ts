@@ -173,7 +173,14 @@ export function filterEntitiesByConfidence(
 ): EntityCluster[] {
   return clusters.filter(cluster => {
     cluster.confidence = computeEntityConfidence(cluster);
-    return cluster.confidence >= threshold;
+    const isMcG = cluster.canonical.toLowerCase().includes('mcgonagall');
+    const kept = cluster.confidence >= threshold;
+    if (isMcG) {
+      console.log(
+        `[DEBUG-MCG] confidence ${cluster.canonical} = ${cluster.confidence.toFixed(3)} threshold=${threshold} kept=${kept}`
+      );
+    }
+    return kept;
   });
 }
 
