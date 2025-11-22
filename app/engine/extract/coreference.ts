@@ -193,7 +193,7 @@ function resolveLookback(
 
       return {
         pronoun_text: pronoun.text,
-        pronoun_position: pronoun.char_start || 0,
+        pronoun_position: pronoun.start,
         resolved_entity_id: best.id,
         resolved_entity_name: best.canonical_name,
         confidence: Math.max(confidence, 0.4),
@@ -217,7 +217,7 @@ function resolveDependency(
   registry: Map<string, CanonicalEntity>
 ): PronounResolution | null {
   // Find the head verb of this pronoun
-  const headVerb = sentence.tokens.find(t => t.idx === pronoun.head);
+  const headVerb = sentence.tokens.find(t => t.i === pronoun.head);
 
   if (!headVerb) {
     return null;
@@ -225,9 +225,9 @@ function resolveDependency(
 
   // Find other subjects of the same verb
   const otherSubjects = sentence.tokens.filter(t =>
-    t.head === headVerb.idx &&
+    t.head === headVerb.i &&
     (t.dep === 'nsubj' || t.dep === 'nsubjpass') &&
-    t.idx !== pronoun.idx
+    t.i !== pronoun.i
   );
 
   for (const subject of otherSubjects) {
@@ -240,13 +240,13 @@ function resolveDependency(
 
       if (matches) {
         return {
-          pronoun_text: pronoun.text,
-          pronoun_position: pronoun.char_start || 0,
-          resolved_entity_id: entity.id,
-          resolved_entity_name: entity.canonical_name,
-          confidence: 0.75,
-          strategy: 'dependency'
-        };
+        pronoun_text: pronoun.text,
+        pronoun_position: pronoun.start,
+        resolved_entity_id: entity.id,
+        resolved_entity_name: entity.canonical_name,
+        confidence: 0.75,
+        strategy: 'dependency'
+      };
       }
     }
   }
@@ -286,7 +286,7 @@ function resolveSalience(
 
   return {
     pronoun_text: pronoun.text,
-    pronoun_position: pronoun.char_start || 0,
+    pronoun_position: pronoun.start,
     resolved_entity_id: best.id,
     resolved_entity_name: best.canonical_name,
     confidence: 0.5,  // Low confidence for fallback

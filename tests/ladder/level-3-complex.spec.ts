@@ -381,6 +381,7 @@ describe('Test Ladder - Level 3: Complex Multi-Paragraph Narratives', () => {
         console.log(`   Gold entities: ${Array.from(goldEntities).slice(0, 5).join(', ')}...`);
         console.log(`   Extracted entities: ${Array.from(extractedEntities).slice(0, 5).join(', ')}...`);
         console.log(`   Missing relations: ${Array.from(goldRelations).filter(r => !extractedRelations.has(r)).slice(0, 3).join(', ')}`);
+        console.log(`   FALSE POSITIVES (extracted but not in gold): ${Array.from(extractedRelations).filter(r => !goldRelations.has(r)).slice(0, 5).join(', ')}`);
       }
     }
 

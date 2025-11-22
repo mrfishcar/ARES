@@ -16,7 +16,7 @@ export interface TimelineEvent {
 /**
  * Predicate salience weights for timeline event prioritization
  */
-const TIMELINE_WEIGHT: Record<Predicate, number> = {
+const TIMELINE_WEIGHT: Partial<Record<Predicate, number>> = {
   married_to: 1.0,
   rules: 0.95,
   leads: 0.9,

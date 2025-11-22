@@ -144,8 +144,12 @@ export class OpenAIProvider implements LLMProvider {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        const parsedError =
+          typeof errorData === 'object' && errorData !== null
+            ? (errorData as { error?: { message?: string } })
+            : undefined;
         throw new Error(
-          `HTTP ${response.status}: ${errorData.error?.message || response.statusText}`
+          `HTTP ${response.status}: ${parsedError?.error?.message || response.statusText}`
         );
       }
 

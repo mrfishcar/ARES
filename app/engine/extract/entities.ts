@@ -308,6 +308,8 @@ const FANTASY_WHITELIST = new Map<string, EntityType>([
   ['Nazareth', 'PLACE'],
   ['Bethlehem', 'PLACE'],
   ['Canaan', 'PLACE'],
+  ['Moab', 'PLACE'],
+  ['Bethlehem-judah', 'PLACE'],
 
   // Biblical figures
   ['Abram', 'PERSON'],
@@ -635,6 +637,10 @@ function enhanceEntityTypeWithPOS(
 
   // Get POS tag from first token (most important for proper nouns)
   const firstToken = tokens[0];
+
+  // Guard against undefined tokens or missing pos property
+  if (!firstToken || !firstToken.pos) return currentType;
+
   const posTag = firstToken.pos;
 
   // Skip if not a noun (preserve existing type)
@@ -691,16 +697,17 @@ function capitalizeEntityName(name: string): string {
 
 export function normalizeName(s: string): string {
   let normalized = s.replace(/\s+/g, " ").trim();
-  normalized = normalized.replace(/^[\-\u2013\u2014'"“”‘’]+/, "");
+  normalized = normalized.replace(/^[\-\u2013\u2014'"""'']+/, "");
   normalized = normalized.replace(/[,'"\u201c\u201d\u2018\u2019]+$/g, " ");
   normalized = normalized.replace(/\s*,\s*/g, " ");
   normalized = normalized.replace(/[.;:!?]+$/g, "");
-  normalized = normalized.replace(/^(the|a|an)\s+/i, "");
+  // Remove leading articles and conjunctions (case-insensitive)
+  normalized = normalized.replace(/^(the|a|an|and|or|but)\s+/i, "");
   normalized = normalized.replace(/^((?:[a-z]+\s+)+)(?=[A-Z0-9])/g, "");
-  normalized = normalized.replace(/['’]s$/i, "");
+  normalized = normalized.replace(/['']s$/i, "");
   normalized = normalized.replace(/\bHouse$/i, "");
   const hadFamilySuffix = /\bfamily$/i.test(normalized);
-  const capitalized = normalized.match(/[A-Z][A-Za-z0-9'’\-]*(?:\s+(?:of|the|and|&)?\s*[A-Z][A-Za-z0-9'’\-]*)*/);
+  const capitalized = normalized.match(/[A-Z][A-Za-z0-9''\-]*(?:\s+(?:of|the|and|&)?\s*[A-Z][A-Za-z0-9''\-]*)*/);
   if (capitalized) {
     normalized = capitalized[0];
     if (hadFamilySuffix && !/\bfamily$/i.test(normalized)) {
@@ -760,7 +767,7 @@ function nerSpans(sent: ParsedSentence): Array<{ text: string; type: EntityType;
         // Check if next token is tagged as PERSON or is a capitalized PROPN
         const nextIsPerson = nextToken && (
           mapEnt(nextToken.ent) === 'PERSON' ||
-          (nextToken.pos === 'PROPN' && /^[A-Z]/.test(nextToken.text))
+          (nextToken.pos && nextToken.pos === 'PROPN' && /^[A-Z]/.test(nextToken.text))
         );
 
         if (isNameParticle && nextIsPerson) {
@@ -769,7 +776,7 @@ function nerSpans(sent: ParsedSentence): Array<{ text: string; type: EntityType;
           // Continue including tokens that are part of the person name
           while (j < sent.tokens.length && (
             sent.tokens[j].ent === t.ent ||
-            (sent.tokens[j].pos === 'PROPN' && /^[A-Z]/.test(sent.tokens[j].text))
+            (sent.tokens[j].pos && sent.tokens[j].pos === 'PROPN' && /^[A-Z]/.test(sent.tokens[j].text))
           )) {
             j++;
           }
@@ -783,7 +790,7 @@ function nerSpans(sent: ParsedSentence): Array<{ text: string; type: EntityType;
     let spanStart = i;
     if (mapped === 'PERSON' && i > 0) {
       const prevToken = sent.tokens[i - 1];
-      if (prevToken.pos === 'PROPN' && !prevToken.ent &&
+      if (prevToken && prevToken.pos && prevToken.pos === 'PROPN' && !prevToken.ent &&
           TITLE_WORDS.has(prevToken.text.toLowerCase())) {
         spanStart = i - 1;
       }
@@ -846,13 +853,13 @@ function splitCoordination(
   const isSeparator = (tok: Token) => {
     const lower = tok.text.toLowerCase();
     return (
-      tok.pos === 'PUNCT' ||
+      (tok.pos && tok.pos === 'PUNCT') ||
       tok.dep === 'punct' ||
-      tok.pos === 'CCONJ' ||
+      (tok.pos && tok.pos === 'CCONJ') ||
       tok.dep === 'cc' ||
-      tok.pos === 'SCONJ' ||
-      tok.pos === 'VERB' ||
-      tok.pos === 'AUX' ||
+      (tok.pos && tok.pos === 'SCONJ') ||
+      (tok.pos && tok.pos === 'VERB') ||
+      (tok.pos && tok.pos === 'AUX') ||
       lower === 'and' ||
       lower === 'or' ||
       lower === '&'
@@ -860,7 +867,7 @@ function splitCoordination(
   };
 
   const isAllowedPersonToken = (tok: Token) => {
-    if (!ALLOWED_PERSON_POS.has(tok.pos)) return false;
+    if (!tok.pos || !ALLOWED_PERSON_POS.has(tok.pos)) return false;
     return /^[A-ZÁÀÄÂÉÈËÊÍÌÏÎÓÒÖÔÚÙÜÛ]/.test(tok.text);
   };
 
@@ -898,7 +905,7 @@ function splitCoordination(
       }
 
       // For ORG/PLACE keep most lexical tokens (determiners included) to preserve names.
-      if (tok.pos !== 'CCONJ' && tok.pos !== 'SCONJ') {
+      if (!tok.pos || (tok.pos !== 'CCONJ' && tok.pos !== 'SCONJ')) {
         current.push(tok);
       }
     }
@@ -1289,6 +1296,251 @@ function gazetterPlaces(text: string): Array<{ text: string; type: EntityType; s
   return spans;
 }
 
+/**
+ * Extract new fantasy/fiction entity types using pattern matching
+ * Extracts: RACE, CREATURE, ARTIFACT, TECHNOLOGY, MAGIC, LANGUAGE, CURRENCY, MATERIAL, DRUG, DEITY, ABILITY, SKILL, POWER, TECHNIQUE, SPELL
+ */
+function extractFantasyEntities(text: string): Array<{ text: string; type: EntityType; start: number; end: number }> {
+  const spans: { text: string; type: EntityType; start: number; end: number }[] = [];
+
+  // RACE patterns
+  // Pattern 1: [Name] the/a [race] (e.g., "Elves are ancient")
+  const racePattern1 = /\b([A-Z][a-z]+(?:ian|ite|fold)?(?:\s+(?:race|people|folk|kind|breed))?)\s+(?:are|were|have|possess|can)\b/gi;
+  let match: RegExpExecArray | null;
+  while ((match = racePattern1.exec(text))) {
+    const name = match[1].trim();
+    if (name && name.length > 2 && !/^(The|This|That|These|Those)$/i.test(name)) {
+      spans.push({ text: name, type: 'RACE', start: match.index, end: match.index + match[1].length });
+    }
+  }
+
+  // Pattern 2: [RACE] warrior/knight/mage (e.g., "Elven warrior")
+  const racePattern2 = /\b([A-Z][a-z]+(?:ian|ish|ic)?)\s+(?:warrior|knight|mage|lord|queen|king|prince|maiden|smith|chief)\b/gi;
+  while ((match = racePattern2.exec(text))) {
+    const name = match[1];
+    if (name && name.length > 2) {
+      spans.push({ text: name, type: 'RACE', start: match.index, end: match.index + match[1].length });
+    }
+  }
+
+  // CREATURE patterns
+  // Pattern 1: Possessive creatures (e.g., "Smaug's hoard")
+  const creaturePattern1 = /\b([A-Z][a-z]+(?:\s+(?:the|of|de)\s+[A-Z][a-z]+)?)\s+'s\s+(?:lair|nest|hoard|den|cave|mountain|domain)\b/gi;
+  while ((match = creaturePattern1.exec(text))) {
+    const name = match[1].trim();
+    if (name && name.length > 2) {
+      spans.push({ text: name, type: 'CREATURE', start: match.index, end: match.index + match[1].length });
+    }
+  }
+
+  // Pattern 2: Dragon/Phoenix type creatures (e.g., "dragon Smaug")
+  const creaturePattern2 = /\b(?:dragon|phoenix|basilisk|kraken|minotaur|chimera|wyvern|griffin|hydra|leviathan)\s+([A-Z][a-z]+)\b/gi;
+  while ((match = creaturePattern2.exec(text))) {
+    const name = match[1];
+    if (name && name.length > 2) {
+      spans.push({ text: name, type: 'CREATURE', start: match.index + match[0].indexOf(match[1]), end: match.index + match[0].length });
+    }
+  }
+
+  // ARTIFACT patterns
+  // Pattern 1: Famous artifacts with the/a (e.g., "the One Ring")
+  const artifactPattern1 = /\b(?:the|a)\s+([A-Z][a-z]+(?:\s+(?:of|the)\s+[A-Z][a-z]+)?(?:\s+(?:Stone|Ring|Sword|Crown|Wand|Staff|Book|Mirror|Cup|Goblet|Blade|Amulet|Pendant|Rune|Helm|Shield|Armor)))\b/gi;
+  while ((match = artifactPattern1.exec(text))) {
+    const name = match[1].trim();
+    if (name && name.length > 2) {
+      spans.push({ text: name, type: 'ARTIFACT', start: match.index + match[0].indexOf(name), end: match.index + match[0].indexOf(name) + name.length });
+    }
+  }
+
+  // Pattern 2: Possessive artifacts (e.g., "Frodo's ring")
+  const artifactPattern2 = /\b([A-Z][a-z]+(?:\s+(?:the|of)\s+[A-Z][a-z]+)?)\s+'s\s+([A-Z][a-z]+(?:\s+(?:of|the)\s+[A-Z][a-z]+)?)\b/gi;
+  while ((match = artifactPattern2.exec(text))) {
+    // Extract the artifact (second group)
+    const artifact = match[2] || match[1];
+    if (artifact && artifact.length > 2 && !/\b(?:family|house|kingdom|realm|people)$/i.test(artifact)) {
+      spans.push({ text: artifact, type: 'ARTIFACT', start: match.index + match[0].indexOf(match[2] || match[1]), end: match.index + match[0].length });
+    }
+  }
+
+  // TECHNOLOGY patterns
+  // Pattern: [name] was created/built/invented
+  const techPattern = /\b([A-Z][a-z]+(?:\s+(?:the|of|Mark|Model|Type|Series)\s+[A-Z0-9][a-zA-Z0-9]*)?)\s+(?:was|is)\s+(?:created|built|invented|designed|engineered|constructed)\b/gi;
+  while ((match = techPattern.exec(text))) {
+    const name = match[1].trim();
+    if (name && name.length > 2 && /^[A-Z]/.test(name)) {
+      spans.push({ text: name, type: 'TECHNOLOGY', start: match.index, end: match.index + match[1].length });
+    }
+  }
+
+  // MAGIC patterns
+  // Pattern: [type] magic/sorcery/witchcraft
+  const magicPattern = /\b([A-Z][a-z]+(?:\s+(?:and|or)\s+[A-Z][a-z]+)?)\s+(?:magic|sorcery|witchcraft|enchantment|conjuring)\b/gi;
+  while ((match = magicPattern.exec(text))) {
+    const name = match[1].trim();
+    if (name && name.length > 2) {
+      spans.push({ text: name, type: 'MAGIC', start: match.index, end: match.index + match[1].length });
+    }
+  }
+
+  // LANGUAGE patterns
+  // Pattern 1: Languages with -ish/-ian endings (e.g., "Elvish", "Klingon")
+  const langPattern1 = /\b([A-Z][a-z]+(?:ian|ish|ese|ine)?)\s+(?:language|tongue|dialect|runes|script)\b/gi;
+  while ((match = langPattern1.exec(text))) {
+    const name = match[1];
+    if (name && name.length > 2 && /(?:ian|ish|ese|ine)$/.test(name)) {
+      spans.push({ text: name, type: 'LANGUAGE', start: match.index, end: match.index + match[1].length });
+    }
+  }
+
+  // Pattern 2: Spoke/speaking patterns (e.g., "spoke Elvish")
+  const langPattern2 = /\b(?:spoke|speaks|speaking|language)\s+(?:in\s+)?([A-Z][a-z]+(?:ian|ish|ese)?)\b/gi;
+  while ((match = langPattern2.exec(text))) {
+    const name = match[1];
+    if (name && name.length > 2 && /(?:ian|ish|ese)$/.test(name)) {
+      spans.push({ text: name, type: 'LANGUAGE', start: match.index + match[0].indexOf(name), end: match.index + match[0].indexOf(name) + name.length });
+    }
+  }
+
+  // CURRENCY patterns
+  // Pattern: numeric [currency] or [currency] coins/notes
+  const currencyPattern = /\b([A-Z][a-z]+(?:s)?)\s+(?:coin|coins|note|notes|piece|pieces|bill|bills|currency)\b/gi;
+  while ((match = currencyPattern.exec(text))) {
+    const name = match[1];
+    if (name && name.length > 2 && /^[A-Z]/.test(name)) {
+      spans.push({ text: name, type: 'CURRENCY', start: match.index, end: match.index + match[1].length });
+    }
+  }
+
+  // MATERIAL patterns
+  // Pattern 1: made of [material] (e.g., "made of Mithril")
+  const materialPattern1 = /\b(?:made of|forged from|crafted from|wrought from)\s+([A-Z][a-z]+(?:\s+(?:ore|metal|stone|crystal))?)\b/gi;
+  while ((match = materialPattern1.exec(text))) {
+    const name = match[1].trim();
+    if (name && name.length > 2) {
+      spans.push({ text: name, type: 'MATERIAL', start: match.index + match[0].indexOf(name), end: match.index + match[0].indexOf(name) + name.length });
+    }
+  }
+
+  // Pattern 2: [material] ore/metal/stone
+  const materialPattern2 = /\b([A-Z][a-z]+)\s+(?:ore|metal|stone|crystal|deposit|vein|mine)\b/gi;
+  while ((match = materialPattern2.exec(text))) {
+    const name = match[1];
+    if (name && name.length > 2 && !['The', 'This', 'That'].includes(name)) {
+      spans.push({ text: name, type: 'MATERIAL', start: match.index, end: match.index + match[1].length });
+    }
+  }
+
+  // DRUG patterns
+  // Pattern: [name] potion/elixir/draught
+  const drugPattern = /\b([A-Z][a-z]+(?:\s+(?:the)?\s+[A-Z][a-z]+)?)\s+(?:potion|elixir|draught|brew|concoction|mixture)\b/gi;
+  while ((match = drugPattern.exec(text))) {
+    const name = match[1].trim();
+    if (name && name.length > 2) {
+      spans.push({ text: name, type: 'DRUG', start: match.index, end: match.index + match[1].length });
+    }
+  }
+
+  // DEITY patterns
+  // Pattern 1: [name] the god/goddess
+  const deityPattern1 = /\b([A-Z][a-z]+(?:\s+(?:the|of|and)\s+[A-Z][a-z]+)?)\s+(?:the\s+)?(?:god|goddess|divine|deity|almighty|supreme)\b/gi;
+  while ((match = deityPattern1.exec(text))) {
+    const name = match[1].trim();
+    if (name && name.length > 2) {
+      spans.push({ text: name, type: 'DEITY', start: match.index, end: match.index + match[1].length });
+    }
+  }
+
+  // Pattern 2: worship/pray to [deity]
+  const deityPattern2 = /\b(?:worship|prayed to|pray to|invoke|called upon)\s+([A-Z][a-z]+(?:\s+(?:the)?\s+[A-Z][a-z]+)?)\b/gi;
+  while ((match = deityPattern2.exec(text))) {
+    const name = match[1].trim();
+    if (name && name.length > 2) {
+      spans.push({ text: name, type: 'DEITY', start: match.index + match[0].indexOf(name), end: match.index + match[0].indexOf(name) + name.length });
+    }
+  }
+
+  // ABILITY patterns
+  // Pattern: has/had the ability to [verb]
+  const abilityPattern = /\b(?:has|had|possess|possessed)\s+(?:the\s+)?(?:ability|power|gift|talent|capacity)\s+(?:to|for)\s+([A-Za-z]+ing)\b/gi;
+  while ((match = abilityPattern.exec(text))) {
+    const name = match[1];
+    if (name && name.length > 3) {
+      spans.push({ text: name, type: 'ABILITY', start: match.index + match[0].indexOf(name), end: match.index + match[0].indexOf(name) + name.length });
+    }
+  }
+
+  // SKILL patterns
+  // Pattern: trained/skilled in [skill]
+  const skillPattern = /\b(?:trained|skilled|expert|master|proficient|accomplished|learned|studied|mastered)\s+(?:in|at|with|of|the\s+(?:art|craft|skill|trade)\s+of)\s+([A-Za-z]+(?:\s+and\s+[A-Za-z]+)?)\b/gi;
+  while ((match = skillPattern.exec(text))) {
+    const name = match[1];
+    if (name && name.length > 2) {
+      spans.push({ text: name, type: 'SKILL', start: match.index + match[0].indexOf(name), end: match.index + match[0].indexOf(name) + name.length });
+    }
+  }
+
+  // POWER patterns
+  // Pattern 1: has/wields the power of [power]
+  const powerPattern1 = /\b(?:has|had|wields|possess|granted)\s+(?:the\s+)?(?:power|ability)\s+(?:of|to)\s+([A-Z][a-z]+(?:\s+[a-z]+)*)\b/gi;
+  while ((match = powerPattern1.exec(text))) {
+    const name = match[1].trim();
+    if (name && name.length > 2) {
+      spans.push({ text: name, type: 'POWER', start: match.index + match[0].indexOf(name), end: match.index + match[0].indexOf(name) + name.length });
+    }
+  }
+
+  // Pattern 2: [power] was/is mystical/divine/ancient
+  const powerPattern2 = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(?:was|is|are|were)\s+(?:an?\s+)?(?:mystical|divine|ancient|supernatural|magical)\s+(?:power|ability|force)\b/gi;
+  while ((match = powerPattern2.exec(text))) {
+    const name = match[1].trim();
+    if (name && name.length > 2) {
+      spans.push({ text: name, type: 'POWER', start: match.index, end: match.index + match[1].length });
+    }
+  }
+
+  // TECHNIQUE patterns
+  // Pattern: [name] technique/move/strike/form/kata
+  const techniquePattern = /\b(?:used|performed|executed|unleashed|mastered|learned)\s+(?:the|a)?\s+([A-Z][a-z]+(?:\s+(?:Attack|Strike|Technique|Move|Form|Stance|Kata))?)\b/gi;
+  while ((match = techniquePattern.exec(text))) {
+    const name = match[1].trim();
+    if (name && name.length > 2 && /[A-Z]/.test(name)) {
+      spans.push({ text: name, type: 'TECHNIQUE', start: match.index + match[0].indexOf(name), end: match.index + match[0].indexOf(name) + name.length });
+    }
+  }
+
+  // SPELL patterns
+  // Pattern 1: cast/casted [spell]
+  const spellPattern1 = /\b(?:cast|casted|conjured|invoked|whispered|chanted)\s+(?:the|a)?\s+([A-Z][a-z]+(?:\s+(?:Spell|Curse|Charm))?)\b/gi;
+  while ((match = spellPattern1.exec(text))) {
+    const name = match[1].trim();
+    if (name && name.length > 2) {
+      spans.push({ text: name, type: 'SPELL', start: match.index + match[0].indexOf(name), end: match.index + match[0].indexOf(name) + name.length });
+    }
+  }
+
+  // Pattern 2: [spell] spell/curse/charm/hex
+  const spellPattern2 = /\b([A-Z][a-z]+(?:\s+(?:Spell|Curse|Charm))?)\s+(?:spell|curse|charm|hex|jinx|enchantment)\b/gi;
+  while ((match = spellPattern2.exec(text))) {
+    const name = match[1].trim();
+    if (name && name.length > 2) {
+      spans.push({ text: name, type: 'SPELL', start: match.index, end: match.index + match[1].length });
+    }
+  }
+
+  // Deduplicate spans and return
+  const seenKeys = new Set<string>();
+  const uniqueSpans: typeof spans = [];
+  for (const span of spans) {
+    const key = `${span.type}:${span.text.toLowerCase()}:${span.start}`;
+    if (!seenKeys.has(key)) {
+      seenKeys.add(key);
+      uniqueSpans.push(span);
+    }
+  }
+
+  return uniqueSpans;
+}
+
 function fallbackNames(text: string): Array<{ text: string; type: EntityType; start: number; end: number }> {
   const spans: { text: string; type: EntityType; start: number; end: number }[] = [];
 
@@ -1422,6 +1674,8 @@ function fallbackNames(text: string): Array<{ text: string; type: EntityType; st
 
 function extractYearSpans(text: string): Array<{ text: string; type: EntityType; start: number; end: number }> {
   const spans: { text: string; type: EntityType; start: number; end: number }[] = [];
+
+  // 1) Extract numeric years like 1775
   const yearPattern = /\b(1[6-9]\d{2}|20\d{2}|[3-9]\d{3})\b/g;
   let match: RegExpExecArray | null;
 
@@ -1435,7 +1689,82 @@ function extractYearSpans(text: string): Array<{ text: string; type: EntityType;
     });
   }
 
+  // 2) Extract spelled-out years like "one thousand seven hundred and seventy-five"
+  // Pattern: "one thousand [and] [1-9] hundred [and] [10-99 in words]"
+  const spelledOutPattern = /one\s+thousand\s+(?:and\s+)?(?:one|two|three|four|five|six|seven|eight|nine)\s+hundred(?:\s+and)?\s+(?:(?:twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)(?:\s*-?\s*(?:one|two|three|four|five|six|seven|eight|nine))?|(?:ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen))/gi;
+
+  while ((match = spelledOutPattern.exec(text))) {
+    const spelledYear = match[0];
+    // Try to convert to numeric year - but report the spelled-out text in span
+    // so validation passes. The canonical name will be converted to numeric later.
+    const numericYear = convertSpelledYearToNumeric(spelledYear);
+    if (process.env.L4_DEBUG === "1") {
+      console.log(`[EXTRACT-YEARS] Spelled year: "${spelledYear}" → numeric: ${numericYear}`);
+    }
+    if (numericYear && numericYear >= 1500 && numericYear <= 2100) {
+      spans.push({
+        // Keep the spelled-out text for validation to work
+        text: spelledYear,
+        type: 'DATE',
+        start: match.index,
+        end: match.index + spelledYear.length
+      });
+      if (process.env.L4_DEBUG === "1") {
+        console.log(`[EXTRACT-YEARS] Added DATE span: "${spelledYear}" (${match.index}-${match.index + spelledYear.length})`);
+      }
+    }
+  }
+
   return spans;
+}
+
+/**
+ * Convert spelled-out year like "one thousand seven hundred and seventy-five" to 1775
+ */
+function convertSpelledYearToNumeric(spelledYear: string): number | null {
+  const lower = spelledYear.toLowerCase();
+
+  // Pattern: "one thousand [and] XYZ hundred [and] AB"
+  // Example: "one thousand seven hundred and seventy-five" → 1775
+  const matches = /one\s+thousand\s+(?:and\s+)?([a-z]+)\s+hundred(?:\s+and)?\s+(.+)/i.exec(spelledYear);
+
+  if (!matches) return null;
+
+  const hundredsWord = matches[1].toLowerCase().trim();
+  let tensUnitsStr = matches[2].toLowerCase().trim();
+
+  // Map hundreds digit
+  const hundredsMap: Record<string, number> = {
+    'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
+    'six': 6, 'seven': 7, 'eight': 8, 'nine': 9
+  };
+
+  const hundredsDigit = hundredsMap[hundredsWord];
+  if (hundredsDigit === undefined) return null;
+
+  // Map tens and units
+  const tensUnitsMap: Record<string, number> = {
+    'ten': 10, 'eleven': 11, 'twelve': 12, 'thirteen': 13, 'fourteen': 14,
+    'fifteen': 15, 'sixteen': 16, 'seventeen': 17, 'eighteen': 18, 'nineteen': 19,
+    'twenty': 20, 'thirty': 30, 'forty': 40, 'fifty': 50, 'sixty': 60,
+    'seventy': 70, 'eighty': 80, 'ninety': 90,
+    'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
+    'six': 6, 'seven': 7, 'eight': 8, 'nine': 9
+  };
+
+  // Handle "twenty one", "seventy five", "seventy-five", etc.
+  const tensUnitsTokens = tensUnitsStr.split(/[\s\-]+/).filter(Boolean);
+  let tensUnits = 0;
+
+  if (tensUnitsTokens.length === 1) {
+    tensUnits = tensUnitsMap[tensUnitsTokens[0]] || 0;
+  } else if (tensUnitsTokens.length === 2) {
+    const tens = tensUnitsMap[tensUnitsTokens[0]] || 0;
+    const units = tensUnitsMap[tensUnitsTokens[1]] || 0;
+    tensUnits = tens + units;
+  }
+
+  return 1000 + (hundredsDigit * 100) + tensUnits;
 }
 
 function extractFamilySpans(text: string): Array<{ text: string; type: EntityType; start: number; end: number }> {
@@ -1450,6 +1779,55 @@ function extractFamilySpans(text: string): Array<{ text: string; type: EntityTyp
       start: match.index,
       end: match.index + match[0].length
     });
+  }
+
+  return spans;
+}
+
+/**
+ * Extract names missed by spaCy in conjunctive patterns
+ * Pattern: [Known PERSON] and [CapitalizedWord]
+ * Example: "Mahlon and Chilion" where spaCy caught "Mahlon" but missed "Chilion"
+ */
+function extractConjunctiveNames(
+  text: string,
+  existingSpans: Array<{ text: string; type: EntityType; start: number; end: number }>
+): Array<{ text: string; type: EntityType; start: number; end: number }> {
+  const spans: { text: string; type: EntityType; start: number; end: number }[] = [];
+  const existingNames = new Set(
+    existingSpans
+      .filter(s => s.type === 'PERSON')
+      .map(s => s.text.toLowerCase())
+  );
+
+  // Pattern: [CapitalizedWord] and [CapitalizedWord]
+  // Focus on cases where the first part is likely a known PERSON entity
+  const pattern = /\b([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)*)\s+and\s+([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)*)\b/g;
+  let match: RegExpExecArray | null;
+
+  while ((match = pattern.exec(text))) {
+    const firstPart = match[1];
+    const secondPart = match[2];
+
+    // Check if first part is a known PERSON and second part isn't already extracted
+    if (existingNames.has(firstPart.toLowerCase()) && !existingNames.has(secondPart.toLowerCase())) {
+      // Extract the second part as a PERSON
+      const secondPartStart = match.index + match[0].indexOf(secondPart);
+      const secondPartEnd = secondPartStart + secondPart.length;
+
+      spans.push({
+        text: secondPart,
+        type: 'PERSON',
+        start: secondPartStart,
+        end: secondPartEnd
+      });
+
+      existingNames.add(secondPart.toLowerCase());
+
+      if (process.env.L4_DEBUG === '1') {
+        console.log(`[PATTERN] Conjunctive name: "${firstPart} and ${secondPart}" → extracted "${secondPart}"`);
+      }
+    }
   }
 
   return spans;
@@ -1633,15 +2011,22 @@ export async function extractEntities(text: string): Promise<{
   // 4) Gazetteer-based place extraction
   const gazPlaces = gazetterPlaces(text);
 
-  // 5) Fallback: capitalized names with context classification
+  // 5) Fantasy/Fiction entity extraction (new 15 types)
+  const fantasy = extractFantasyEntities(text);
+
+  // 6) Fallback: capitalized names with context classification
   const fb = fallbackNames(text);
 
-  // 6) Merge all sources, deduplicate
-  // Priority: dependency-based > NER > fallback > whitelist
-  // Dependency patterns are most reliable, then spaCy NER, then regex fallback, then whitelisted names
+  // 7) Merge all sources, deduplicate
+  // Priority: dependency-based > NER > fantasy > fallback > whitelist
+  // Dependency patterns are most reliable, then spaCy NER, then fantasy patterns, then regex fallback, then whitelisted names
   const years = extractYearSpans(text);
   const families = extractFamilySpans(text);
   const whitelisted = extractWhitelistedNames(text);
+
+  // Extract conjunctive names (e.g., "Mahlon and Chilion") - must run after NER to know which names are known
+  const allNERSpans = [...ner, ...dep, ...gazPlaces, ...fantasy, ...fb, ...families, ...whitelisted];
+  const conjunctive = extractConjunctiveNames(text, allNERSpans);
 
   // Tag spans with extraction source
   type TaggedSpan = { text: string; type: EntityType; start: number; end: number; source: ExtractorSource };
@@ -1659,6 +2044,7 @@ export async function extractEntities(text: string): Promise<{
       return { ...s, source: (isWhitelisted ? 'WHITELIST' : 'NER') as ExtractorSource };
     }),
     ...gazPlaces.map(s => ({ ...s, source: 'NER' as ExtractorSource })), // Treat gazetteer as NER-quality
+    ...fantasy.map(s => ({ ...s, source: 'PATTERN' as ExtractorSource })), // Treat fantasy patterns as PATTERN-quality
     ...fb.map(s => {
       // Check if this span is from whitelist (normalize for matching)
       const normalized = normalizeName(s.text);
@@ -1667,6 +2053,7 @@ export async function extractEntities(text: string): Promise<{
     }),
     ...years.map(s => ({ ...s, source: 'NER' as ExtractorSource })),  // Treat dates as NER-quality
     ...families.map(s => ({ ...s, source: 'DEP' as ExtractorSource })), // Treat family patterns as DEP-quality
+    ...conjunctive.map(s => ({ ...s, source: 'PATTERN' as ExtractorSource })), // Treat conjunctive as PATTERN-quality
     ...whitelisted.map(s => ({ ...s, source: 'WHITELIST' as ExtractorSource })) // Whitelisted names
   ];
   const rawSpans = taggedSpans;
@@ -1677,6 +2064,7 @@ export async function extractEntities(text: string): Promise<{
       `[EXTRACT-ENTITIES][DEBUG] deduped=${deduped.map(span => `${span.type}:${span.text}@${span.start}-${span.end}`).join(', ')}`
     );
   }
+
 
   // Merge "X of Y" patterns (e.g., "Battle" + "of" + "Pelennor Fields" → "Battle of Pelennor Fields")
   const merged = mergeOfPatterns(deduped, text);
@@ -1897,11 +2285,20 @@ const chooseCanonical = (names: Set<string>): string => {
         ? capitalizeEntityName(span.text)
         : span.text;
 
+      // For DATE entities, convert spelled-out years to numeric form
+      let canonicalName = capitalizedText;
+      if (span.type === 'DATE') {
+        const numericYear = convertSpelledYearToNumeric(span.text);
+        if (numericYear !== null) {
+          canonicalName = numericYear.toString();
+        }
+      }
+
       const entry: EntityEntry = {
         entity: {
           id,
           type: span.type,
-          canonical: capitalizedText,
+          canonical: canonicalName,
           aliases: [],
           created_at: now
         },
@@ -1977,8 +2374,29 @@ const mergedEntries = Array.from(mergedMap.values());
     console.log(`[EXTRACT-ENTITIES][DEBUG] mergedEntries=${mergedEntries.length}`);
   }
 
+  // Debug Chilion in merged entries
+  if (process.env.L4_DEBUG === '1') {
+    const chilionInMerged = mergedEntries.filter(e => e.entity.canonical === 'Chilion');
+    if (chilionInMerged.length > 0) {
+      console.log(`[EXTRACT-ENTITIES] Chilion in mergedEntries: ${chilionInMerged.length}`);
+    } else if (mergedEntries.some(e => e.entity.canonical.toLowerCase() === 'chilion')) {
+      const chilionVariant = mergedEntries.find(e => e.entity.canonical.toLowerCase() === 'chilion');
+      console.log(`[EXTRACT-ENTITIES] Found variant: "${chilionVariant?.entity.canonical}"`);
+    } else {
+      console.log(`[EXTRACT-ENTITIES] NO Chilion in mergedEntries (${mergedEntries.length} total): ${mergedEntries.map(e => e.entity.canonical).slice(0, 10).join(', ')}`);
+    }
+  }
+
   const finalEntries = mergedEntries.filter(entry => {
-    if (STOP.has(entry.entity.canonical)) return false;
+    if (entry.entity.type === 'DATE' && process.env.L4_DEBUG === "1") {
+      console.log(`[FINAL-FILTER] Checking DATE: "${entry.entity.canonical}"`);
+    }
+    if (STOP.has(entry.entity.canonical)) {
+      if (entry.entity.type === 'DATE' && process.env.L4_DEBUG === "1") {
+        console.log(`[FINAL-FILTER] DATE "${entry.entity.canonical}" rejected by STOP list`);
+      }
+      return false;
+    }
 
     const canonicalLower = entry.entity.canonical.toLowerCase();
     const isMcG = canonicalLower.includes('mcgonagall');
@@ -1999,9 +2417,23 @@ const mergedEntries = Array.from(mergedMap.values());
       const seasonMatch = /^(spring|summer|fall|autumn|winter)$/i.test(canonical);
       const hasPronoun = /\b(his|her|their|our|my|your)\b/i.test(canonical);
       const ordinalBare = /^(first|second|third)\s+(day|year|term)$/i.test(canonicalLowerDate);
+
+      if (process.env.L4_DEBUG === "1") {
+        console.log(`[DATE-FILTER] canonical="${canonical}", hasDigits=${hasDigits}, monthMatch=${monthMatch}, seasonMatch=${seasonMatch}, hasPronoun=${hasPronoun}, ordinalBare=${ordinalBare}`);
+      }
+
       if (hasPronoun) return false;
       if (ordinalBare) return false;
-      if (!hasDigits && !monthMatch && !seasonMatch) return false;
+      if (!hasDigits && !monthMatch && !seasonMatch) {
+        if (process.env.L4_DEBUG === "1") {
+          console.log(`[DATE-FILTER] REJECTING "${canonical}" - no digits, month, or season`);
+        }
+        return false;
+      }
+
+      if (process.env.L4_DEBUG === "1") {
+        console.log(`[DATE-FILTER] ACCEPTING DATE "${canonical}"`);
+      }
     }
 
     if (entry.entity.type === 'PERSON') {
@@ -2055,13 +2487,17 @@ const mergedEntries = Array.from(mergedMap.values());
       0.9 // High confidence for canonical mentions
     );
 
+    // Pattern-extracted entities should have high confidence since we explicitly want them
+    const isPatternExtracted = entry.sources.has('PATTERN');
+    const initialConfidence = isPatternExtracted ? 1.0 : 0.8; // Max confidence for pattern entities
+
     // Create cluster
     const cluster = createEntityCluster(
       entry.entity.type,
       entry.entity.canonical,
       firstMention,
       Array.from(entry.sources),
-      0.8 // Initial confidence (will be recomputed)
+      initialConfidence // Initial confidence (will be recomputed)
     );
 
     // Update cluster with full entity data
@@ -2080,6 +2516,16 @@ const mergedEntries = Array.from(mergedMap.values());
     console.log(
       `[EXTRACT-ENTITIES][DEBUG] confidence clusters=${clusters.length} kept=${filteredClusters.length}`
     );
+  }
+
+  if (process.env.L4_DEBUG === "1") {
+    const dateClusters = clusters.filter(c => c.type === 'DATE');
+    const filteredDateClusters = filteredClusters.filter(c => c.type === 'DATE');
+    console.log(`[CONFIDENCE-FILTER] DATE clusters: ${dateClusters.length} → ${filteredDateClusters.length}`);
+    for (const cluster of dateClusters) {
+      const kept = filteredClusters.some(c => c.id === cluster.id);
+      console.log(`  [CONFIDENCE-FILTER] DATE "${cluster.canonical}": ${kept ? 'KEPT' : 'FILTERED OUT'}`);
+    }
   }
 
   // Build map of filtered entity IDs
@@ -2222,6 +2668,10 @@ const mergedEntries = Array.from(mergedMap.values());
       console.log(
         `[EXTRACT-ENTITIES][DEBUG] Emitting entity ${entry.entity.id} (${entry.entity.canonical}) type=${entry.entity.type} aliases=${entry.entity.aliases.join(', ')}`
       );
+    }
+
+    if (entry.entity.type === 'DATE' && process.env.L4_DEBUG === "1") {
+      console.log(`[FINAL-EMISSION] Adding DATE entity: "${entry.entity.canonical}"`);
     }
 
     entities.push(entry.entity);
@@ -2376,8 +2826,9 @@ const mergedEntries = Array.from(mergedMap.values());
     console.warn(`[EXTRACT-ENTITIES] Coreference resolution failed:`, error);
   }
 
-  if (process.env.L3_DEBUG === '1') {
-    console.log(`[EXTRACT-ENTITIES][DEBUG] returning ${entities.length} entities: ${entities.map(e => e.canonical).join(', ')}`);
+  if (process.env.L3_DEBUG === '1' || process.env.L4_DEBUG === '1') {
+    const dateCount = entities.filter(e => e.type === 'DATE').length;
+    console.log(`[EXTRACT-ENTITIES][DEBUG] returning ${entities.length} entities (${dateCount} DATEs): ${entities.map(e => `${e.type}:${e.canonical}`).slice(0, 20).join(', ')}`);
   }
   return { entities, spans };
 }

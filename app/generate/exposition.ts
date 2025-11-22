@@ -18,7 +18,7 @@ import { buildTimeline, renderBiography, type TimelineEvent } from './timeline';
  * friends_with/ally_of/enemy_of,
  * lives_in/traveled_to (undated), mentions
  */
-const PREDICATE_WEIGHT: Record<Predicate, number> = {
+const PREDICATE_WEIGHT: Partial<Record<Predicate, number>> = {
   married_to: 1.0,
   parent_of: 0.98,
   child_of: 0.98,

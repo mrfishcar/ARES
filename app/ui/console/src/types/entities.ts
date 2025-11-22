@@ -3,7 +3,41 @@
  * Copied from app/editor/entityHighlighter.ts to avoid importing backend code
  */
 
-export type EntityType = 'PERSON' | 'PLACE' | 'ORG' | 'EVENT' | 'CONCEPT' | 'OBJECT';
+export type EntityType =
+  // Core types (6)
+  | 'PERSON'
+  | 'PLACE'
+  | 'ORG'
+  | 'EVENT'
+  | 'CONCEPT'
+  | 'OBJECT'
+  // Fiction types (10)
+  | 'RACE'
+  | 'CREATURE'
+  | 'ARTIFACT'
+  | 'TECHNOLOGY'
+  | 'MAGIC'
+  | 'LANGUAGE'
+  | 'CURRENCY'
+  | 'MATERIAL'
+  | 'DRUG'
+  | 'DEITY'
+  // Ability types (5)
+  | 'ABILITY'
+  | 'SKILL'
+  | 'POWER'
+  | 'TECHNIQUE'
+  | 'SPELL'
+  // Schema types (6 additional)
+  | 'DATE'
+  | 'TIME'
+  | 'WORK'
+  | 'ITEM'
+  | 'MISC'
+  | 'SPECIES'
+  | 'HOUSE'
+  | 'TRIBE'
+  | 'TITLE';
 
 export interface EntitySpan {
   start: number;
@@ -27,18 +61,60 @@ export interface HighlightConfig {
 }
 
 /**
+ * Type guard: Validate if a value is a valid EntityType
+ */
+export function isValidEntityType(value: unknown): value is EntityType {
+  const validTypes = new Set<EntityType>([
+    'PERSON', 'PLACE', 'ORG', 'EVENT', 'CONCEPT', 'OBJECT',
+    'RACE', 'CREATURE', 'ARTIFACT', 'TECHNOLOGY', 'MAGIC', 'LANGUAGE',
+    'CURRENCY', 'MATERIAL', 'DRUG', 'DEITY', 'ABILITY', 'SKILL',
+    'POWER', 'TECHNIQUE', 'SPELL', 'DATE', 'TIME', 'WORK', 'ITEM',
+    'MISC', 'SPECIES', 'HOUSE', 'TRIBE', 'TITLE'
+  ]);
+  return typeof value === 'string' && validTypes.has(value as EntityType);
+}
+
+/**
  * Get color for entity type (for highlighting)
  */
 export function getEntityTypeColor(type: EntityType): string {
   const colors: Record<EntityType, string> = {
-    PERSON: '#3b82f6',    // blue
-    PLACE: '#10b981',     // green
-    ORG: '#f59e0b',       // amber
-    EVENT: '#ef4444',     // red
-    CONCEPT: '#8b5cf6',   // purple
-    OBJECT: '#ec4899',    // pink
+    // Core types (6) - keep existing colors
+    PERSON: '#3b82f6', // blue
+    PLACE: '#10b981', // green
+    ORG: '#8b5cf6', // purple
+    EVENT: '#f59e0b', // amber
+    CONCEPT: '#6366f1', // indigo
+    OBJECT: '#ec4899', // pink
+    // Fiction types (10) - vibrant colors
+    RACE: '#a78bfa', // violet
+    CREATURE: '#f97316', // orange
+    ARTIFACT: '#eab308', // yellow
+    TECHNOLOGY: '#06b6d4', // cyan
+    MAGIC: '#d946ef', // magenta
+    LANGUAGE: '#14b8a6', // teal
+    CURRENCY: '#84cc16', // lime
+    MATERIAL: '#64748b', // slate
+    DRUG: '#f43f5e', // rose
+    DEITY: '#fbbf24', // gold
+    // Ability types (5) - ability-focused colors
+    ABILITY: '#a855f7', // purple-light (distinct from ORG)
+    SKILL: '#0ea5e9', // blue-light (distinct from PERSON)
+    POWER: '#f472b6', // pink-light (distinct from OBJECT)
+    TECHNIQUE: '#facc15', // amber-light (distinct from EVENT)
+    SPELL: '#4ade80', // green-light (distinct from PLACE)
+    // Schema types (9) - remaining colors
+    DATE: '#7c3aed', // violet-dark
+    TIME: '#06b6d4', // cyan
+    WORK: '#c084fc', // purple-light
+    ITEM: '#fb923c', // orange-light
+    MISC: '#6b7280', // gray
+    SPECIES: '#059669', // emerald
+    HOUSE: '#d97706', // amber-dark
+    TRIBE: '#7c2d12', // orange-dark
+    TITLE: '#4f46e5', // indigo-dark
   };
-  return colors[type] || '#6b7280';
+  return colors[type] || '#6b7280'; // fallback to gray
 }
 
 /**
@@ -77,8 +153,14 @@ export async function highlightEntities(
       throw new Error(data.error || 'Extraction failed');
     }
 
-    // Transform ARES engine output to EntitySpan format
+    // Transform ARES engine output to EntitySpan format with validation
     const spans: EntitySpan[] = data.entities.flatMap((entity: any) => {
+      // Validate entity type before processing
+      if (!isValidEntityType(entity.type)) {
+        console.warn(`[EntityHighlighter] Skipping entity with invalid type: ${entity.type}, text: ${entity.text}`);
+        return [];
+      }
+
       return entity.spans.map((span: any) => ({
         start: span.start,
         end: span.end,
@@ -104,6 +186,7 @@ export async function highlightEntities(
 
 /**
  * Fallback: detect only explicit tags (no backend required)
+ * Uses validation function to accept all 27 entity types
  */
 function detectTagsOnly(text: string): EntitySpan[] {
   const spans: EntitySpan[] = [];
@@ -112,9 +195,11 @@ function detectTagsOnly(text: string): EntitySpan[] {
   let match;
   while ((match = tagRegex.exec(text)) !== null) {
     const [fullMatch, typeStr, name] = match;
-    const type = typeStr.toUpperCase() as EntityType;
+    const type = typeStr.toUpperCase();
 
-    if (!['PERSON', 'PLACE', 'ORG', 'EVENT', 'CONCEPT', 'OBJECT'].includes(type)) {
+    // Use validation function to accept all valid types
+    if (!isValidEntityType(type)) {
+      console.warn(`[EntityHighlighter] Invalid type in fallback detection: ${type}, skipping tag`);
       continue;
     }
 
@@ -123,7 +208,7 @@ function detectTagsOnly(text: string): EntitySpan[] {
       end: match.index + fullMatch.length,
       text: fullMatch,
       displayText: name.trim(),
-      type,
+      type: type as EntityType,
       confidence: 1.0,
       source: 'tag'
     });

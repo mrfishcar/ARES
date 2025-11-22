@@ -69,7 +69,7 @@ type TemplateFunction = (ctx: TemplateContext) => string;
  * Predicate-to-template mapping
  * Each template returns a complete sentence
  */
-export const TEMPLATES: Record<Predicate, TemplateFunction> = {
+export const TEMPLATES: Partial<Record<Predicate, TemplateFunction>> = {
   // Family relations
   married_to: (ctx) => {
     const h = ctx.confidence < 0.7 ? 'reportedly ' : '';

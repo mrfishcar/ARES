@@ -7,7 +7,7 @@
  * Based on: "A Shortest Path Dependency Kernel for Relation Extraction" (Bunescu & Mooney, 2005)
  */
 
-import type { Token } from '../parse';
+import type { Token } from './parse-types';
 
 export interface DependencyPath {
   tokens: Token[];

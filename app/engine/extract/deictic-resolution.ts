@@ -143,7 +143,7 @@ export async function resolveDeictics(
         if (location) {
           resolutions.push({
             deictic_word: token.text,
-            deictic_position: token.char_start || 0,
+            deictic_position: token.start,
             resolved_entity_id: location.id,
             resolved_entity_name: location.canonical_name,
             entity_type: location.type,
@@ -156,7 +156,7 @@ export async function resolveDeictics(
         if (timeEvent) {
           resolutions.push({
             deictic_word: token.text,
-            deictic_position: token.char_start || 0,
+            deictic_position: token.start,
             resolved_entity_id: timeEvent.id,
             resolved_entity_name: timeEvent.canonical_name,
             entity_type: timeEvent.type,

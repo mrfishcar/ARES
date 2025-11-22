@@ -5,17 +5,38 @@
 
 // Entity Types
 export type EntityType =
+  // Core types
   | 'PERSON'
   | 'ORG'
   | 'PLACE'
   | 'DATE'
+  | 'TIME'
   | 'WORK'
   | 'ITEM'
+  | 'MISC'
+  | 'OBJECT'
   | 'SPECIES'
   | 'HOUSE'
   | 'TRIBE'
   | 'TITLE'
-  | 'EVENT';
+  | 'EVENT'
+  // Fiction/world-building types
+  | 'RACE'
+  | 'CREATURE'
+  | 'ARTIFACT'
+  | 'TECHNOLOGY'
+  | 'MAGIC'
+  | 'LANGUAGE'
+  | 'CURRENCY'
+  | 'MATERIAL'
+  | 'DRUG'
+  | 'DEITY'
+  // Ability/skill types
+  | 'ABILITY'
+  | 'SKILL'
+  | 'POWER'
+  | 'TECHNIQUE'
+  | 'SPELL';
 
 // Relation Predicates
 export type Predicate =
@@ -152,7 +173,17 @@ export type Predicate =
   | 'painted'  // creation
   | 'composed'  // creation
   | 'designed'  // creation
-  | 'sculpted'  // creation;  // Temporal: X during Y
+  | 'sculpted'  // creation
+  // Ability/skill predicates
+  | 'possesses_ability'  // X possesses ability Y
+  | 'learned'  // X learned ability Y
+  | 'mastered'  // X mastered skill Y
+  | 'trained_in'  // X trained in technique Y
+  | 'grants'  // Ability X grants effect Y
+  | 'requires'  // Ability X requires condition Y
+  | 'countered_by'  // Ability X countered by ability Y
+  | 'enhances'  // Ability X enhances stat/attribute Y
+  | 'cast_by'  // Spell X cast by person Y
 
 // Evidence Source
 export interface Evidence {
@@ -179,6 +210,7 @@ export interface Entity {
   meta?: {
     isCollective?: boolean;
     surnameKey?: string;
+    nameSuffix?: string;
   };
   attrs?: Record<string, string | number | boolean>;
   created_at: string;
@@ -239,7 +271,7 @@ export interface MeaningRecord {
 
 // Type Guards
 export const GUARD: Record<Predicate, { subj: EntityType[]; obj: EntityType[] }> = {
-  alias_of: { subj: ['PERSON', 'ORG', 'PLACE', 'ITEM'], obj: ['PERSON', 'ORG', 'PLACE', 'ITEM'] },
+  alias_of: { subj: ['PERSON', 'ORG', 'PLACE', 'ITEM', 'ARTIFACT', 'CREATURE', 'RACE', 'DEITY', 'ABILITY', 'SKILL', 'SPELL'], obj: ['PERSON', 'ORG', 'PLACE', 'ITEM', 'ARTIFACT', 'CREATURE', 'RACE', 'DEITY', 'ABILITY', 'SKILL', 'SPELL'] },
   married_to: { subj: ['PERSON'], obj: ['PERSON'] },
   parent_of: { subj: ['PERSON'], obj: ['PERSON'] },
   child_of: { subj: ['PERSON'], obj: ['PERSON'] },
@@ -374,6 +406,16 @@ export const GUARD: Record<Predicate, { subj: EntityType[]; obj: EntityType[] }>
   composed: { subj: ['PERSON','ORG'], obj: ['WORK','ITEM','PLACE'] }, // creation
   designed: { subj: ['PERSON','ORG'], obj: ['WORK','ITEM','PLACE'] }, // creation
   sculpted: { subj: ['PERSON','ORG'], obj: ['WORK','ITEM','PLACE'] }, // creation
+  // Ability/skill predicates
+  possesses_ability: { subj: ['PERSON','CREATURE','DEITY','RACE'], obj: ['ABILITY','SKILL','POWER','SPELL','TECHNIQUE'] }, // X possesses ability Y
+  learned: { subj: ['PERSON','CREATURE'], obj: ['SKILL','TECHNIQUE','SPELL','ABILITY'] }, // X learned Y
+  mastered: { subj: ['PERSON','CREATURE'], obj: ['SKILL','TECHNIQUE','SPELL','ABILITY'] }, // X mastered Y
+  trained_in: { subj: ['PERSON','CREATURE'], obj: ['TECHNIQUE','SKILL','ABILITY'] }, // X trained in Y
+  grants: { subj: ['ABILITY','SPELL','POWER','ARTIFACT','TECHNOLOGY','MAGIC'], obj: ['ABILITY','POWER','SKILL'] }, // X grants Y
+  requires: { subj: ['ABILITY','SPELL','TECHNIQUE'], obj: ['ABILITY','SPELL','TECHNIQUE','MATERIAL','ITEM'] }, // X requires Y
+  countered_by: { subj: ['ABILITY','SPELL','POWER','TECHNIQUE'], obj: ['ABILITY','SPELL','POWER','TECHNIQUE'] }, // X countered by Y
+  enhances: { subj: ['ABILITY','SPELL','POWER','ARTIFACT','TECHNOLOGY'], obj: ['ABILITY','POWER','SKILL'] }, // X enhances Y
+  cast_by: { subj: ['SPELL','MAGIC'], obj: ['PERSON','CREATURE','DEITY'] }, // X cast by Y
 };
 
 // Inverse predicates
