@@ -8,6 +8,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { CodeMirrorEditor } from '../components/CodeMirrorEditor';
 import { EntityResultsPanel } from '../components/EntityResultsPanel';
 import { WikiModal } from '../components/WikiModal';
+import { isValidEntityType } from '../types/entities';
 
 interface ExtractionLabProps {
   project: string;
@@ -114,13 +115,18 @@ function deduplicateEntities(entities: EntitySpan[]): EntitySpan[] {
   return deduplicated.sort((a, b) => a.start - b.start);
 }
 
+interface SelectedEntityState {
+  name: string;
+  type: string;
+}
+
 export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [text, setText] = useState('');
   const [entities, setEntities] = useState<EntitySpan[]>([]);
   const [relations, setRelations] = useState<Relation[]>([]);
   const [processing, setProcessing] = useState(false);
   const [stats, setStats] = useState({ time: 0, confidence: 0, count: 0, relationCount: 0 });
-  const [selectedEntity, setSelectedEntity] = useState<string | null>(null);
+  const [selectedEntity, setSelectedEntity] = useState<SelectedEntityState | null>(null);
   const [showHighlighting, setShowHighlighting] = useState(true);
   const [renderMarkdown, setRenderMarkdown] = useState(false);
 
@@ -158,18 +164,28 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           throw new Error(data.error || 'Extraction failed');
         }
 
-        // Transform ARES engine output to EntitySpan format
+        // Transform ARES engine output to EntitySpan format with validation
         const extractedEntities: EntitySpan[] = data.entities.flatMap((entity: any) => {
-          // Create a span for each occurrence of the entity
-          return entity.spans.map((span: any) => ({
-            start: span.start,
-            end: span.end,
-            text: entity.text,
-            displayText: entity.text,
-            type: entity.type,
-            confidence: entity.confidence,
-            source: 'natural' as const,
-          }));
+          try {
+            // Validate entity type
+            if (!isValidEntityType(entity.type)) {
+              console.warn(`[ExtractionLab] Skipping entity with invalid type: ${entity.type}, text: ${entity.text}`);
+              return [];
+            }
+            // Create a span for each occurrence of the entity
+            return entity.spans.map((span: any) => ({
+              start: span.start,
+              end: span.end,
+              text: entity.text,
+              displayText: entity.text,
+              type: entity.type,
+              confidence: entity.confidence,
+              source: 'natural' as const,
+            }));
+          } catch (entityError) {
+            console.error('[ExtractionLab] Error processing entity:', { entity, error: entityError });
+            return [];
+          }
         });
 
         // Deduplicate: merge overlapping spans
@@ -331,16 +347,23 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         <EntityResultsPanel
           entities={entities}
           relations={relations}
-          onViewWiki={(entityName) => setSelectedEntity(entityName)}
+          onViewWiki={(entityName) => {
+            const entity = entities.find(e => e.text === entityName);
+            if (entity) {
+              setSelectedEntity({ name: entityName, type: entity.type });
+            }
+          }}
         />
       </div>
 
       {/* Wiki Modal */}
       {selectedEntity && (
         <WikiModal
-          entityName={selectedEntity}
+          entityName={selectedEntity.name}
+          entityType={selectedEntity.type}
           project={project}
           onClose={() => setSelectedEntity(null)}
+          extractionContext={{ entities, relations }}
         />
       )}
     </div>

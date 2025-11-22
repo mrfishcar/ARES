@@ -79,7 +79,10 @@ const DESCRIPTOR_KEYWORDS = new Set([
   "mission",
   "adventure",
   "voyage",
-  "travel"
+  "travel",
+  "couple",
+  "children",
+  "child"
 ]);
 
 function isDescriptorEntity(entity?: Entity | null): boolean {
@@ -493,7 +496,8 @@ function computeConfidence(
   passedTypeGuard: boolean
 ): number {
   // Base confidence
-  const base = extractor === 'DEP' ? 0.9 : 0.7;
+  // Slightly higher base for REGEX to account for filtering at 0.70 threshold
+  const base = extractor === 'DEP' ? 0.9 : 0.71;
 
   // Type guard bonus
   const typeBonus = passedTypeGuard ? 1.05 : 1.0;
@@ -628,6 +632,14 @@ function tryCreateRelation(
   const objEnt = objRef.entity;
 
   if (subjEnt.id === objEnt.id) return [];
+
+  // Filter out relations involving descriptor entities (family, couple, children, etc.)
+  if (isDescriptorEntity(subjEnt) || isDescriptorEntity(objEnt)) {
+    if (L3_DEBUG) {
+      console.log(`[DESCRIPTOR-FILTER] Blocked relation: ${subjEnt.canonical} --[${pred}]--> ${objEnt.canonical}`);
+    }
+    return [];
+  }
 
   const defaultSubjSpan =
     subjSpanOverride ??
@@ -989,14 +1001,14 @@ function extractDepRelations(
     'dean', 'chair', 'director', 'warden', 'master'
   ]);
 
-  const resolveAcademicSubject = (tok?: Token | null): Token | null => {
+  const resolveAcademicSubject = (tok?: Token | null, tokensRef?: Token[]): Token | null => {
     if (!tok) return null;
     const lower = tok.text.toLowerCase();
     if (tok.pos === 'PRON' && lastNamedSubject) {
       return lastNamedSubject;
     }
-    if (ACADEMIC_TITLE_TOKENS.has(lower)) {
-      const properChild = tokens.find(child =>
+    if (ACADEMIC_TITLE_TOKENS.has(lower) && tokensRef) {
+      const properChild = tokensRef.find(child =>
         child.head === tok.i &&
         child.pos === 'PROPN'
       );
@@ -1987,12 +1999,16 @@ function extractDepRelations(
         // Active voice: "X founded Y"
         const subjTok = resolveSubjectToken(tok, tokens);
         let objTok = tokens.find(t => (t.dep === 'dobj' || t.dep === 'obj') && t.head === tok.i);
+        const copula = tokens.find(t =>
+          t.i === tok.head &&
+          ['be', 'was', 'were', 'is', 'become', 'became'].includes(t.lemma.toLowerCase())
+        );
 
         // Handle "co-founder of X" pattern
         if (textLower === 'co-founder' || textLower.startsWith('co-found')) {
           const ofPrep = tokens.find(t =>
             t.dep === 'prep' &&
-            (t.head === tok.i || t.head === copula.i) &&
+            (t.head === tok.i || t.head === copula?.i) &&
             t.text.toLowerCase() === 'of'
           );
           if (ofPrep) {
@@ -2168,7 +2184,7 @@ function extractDepRelations(
             const placeSpan = expandNP(placeTok, tokens);
             const subjCandidates = collectConjTokens(subjTok, tokens);
             for (const subjectCandidate of subjCandidates) {
-              const resolvedSubject = resolveAcademicSubject(subjectCandidate);
+              const resolvedSubject = resolveAcademicSubject(subjectCandidate, tokens);
               if (!resolvedSubject) continue;
               if (resolvedSubject.pos !== 'PRON') {
                 updateLastNamedSubject(resolvedSubject);
@@ -2341,7 +2357,8 @@ function extractDepRelations(
         );
         if (copula) {
           const resolvedSubj = resolveAcademicSubject(
-            tokens.find(t => t.dep === 'nsubj' && t.head === copula.i)
+            tokens.find(t => t.dep === 'nsubj' && t.head === copula.i),
+            tokens
           );
           if (!resolvedSubj) {
             continue;
@@ -3248,9 +3265,12 @@ function extractDepRelations(
         const ref = mapSurfaceToEntity(surface, entities, spans, located);
         if (!ref || ref.entity.type !== 'PERSON') continue;
         if (childEntities.some(r => r.entity.id === ref.entity.id)) continue;
+        const span = ref.span
+          ?? selectEntitySpan(ref.entity.id, spans, located)
+          ?? ensureSpanForEntity(ref.entity, { start: located.start, end: located.end });
         childEntities.push({
           entity: ref.entity,
-          span: ref.span ?? selectEntitySpan(ref.entity.id, spans, located)
+          span
         });
       }
 

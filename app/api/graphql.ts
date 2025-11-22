@@ -40,10 +40,17 @@ import { entityHighlightingResolvers } from './resolvers/entity-highlighting';
 import { globalRateLimiter, extractClientId } from './rate-limit';
 import { invalidateProjectCache } from './cache-layer';
 import { handleUpload, handleMediaServe } from './upload';
+import { buildEntityWikiFromGraph } from '../generate/wiki';
 
 // Load schema
 const schemaPath = path.join(__dirname, 'schema.graphql');
 const typeDefs = fs.readFileSync(schemaPath, 'utf-8');
+
+interface GraphQLContext {
+  graph?: KnowledgeGraph | null;
+  log: Logger;
+  request_id: string;
+}
 
 // Create resolvers with optional storage path
 function createResolvers(storagePath?: string) {
@@ -505,7 +512,7 @@ function createResolvers(storagePath?: string) {
     // Field resolvers
     Entity: {
       createdAt: (entity: any) => entity.created_at || new Date().toISOString(),
-      localIds: (entity: any, _: any, context: { graph?: KnowledgeGraph }) => {
+    localIds: (entity: any, _: any, context: GraphQLContext) => {
         const graph = context.graph || loadGraph(storagePath);
         if (!graph) return [];
 
@@ -517,14 +524,14 @@ function createResolvers(storagePath?: string) {
     Relation: {
       predicate: (relation: any) => relation.pred || relation.predicate,
 
-      subject: (relation: any, _: any, context: { graph?: KnowledgeGraph }) => {
+      subject: (relation: any, _: any, context: GraphQLContext) => {
         const graph = context.graph || loadGraph(storagePath);
         if (!graph) return null;
 
         return graph.entities.find(e => e.id === relation.subj);
       },
 
-      object: (relation: any, _: any, context: { graph?: KnowledgeGraph }) => {
+      object: (relation: any, _: any, context: GraphQLContext) => {
         const graph = context.graph || loadGraph(storagePath);
         if (!graph) return null;
 
@@ -533,7 +540,7 @@ function createResolvers(storagePath?: string) {
     },
 
     Conflict: {
-      relations: (conflict: any, _: any, context: { graph?: KnowledgeGraph }) => {
+      relations: (conflict: any, _: any, context: GraphQLContext) => {
         // Conflicts already have relations embedded
         return conflict.relations;
       }
@@ -580,6 +587,189 @@ export async function startGraphQLServer(port: number = 4000, storagePath?: stri
       const { getPrometheusMetrics } = await import('../monitor/metrics');
       res.writeHead(200, { 'Content-Type': 'text/plain; version=0.0.4' });
       res.end(getPrometheusMetrics());
+      return;
+    }
+
+    if (req.url?.startsWith('/wiki-entity')) {
+      if (req.method !== 'GET') {
+        res.writeHead(405, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Method not allowed' }));
+        return;
+      }
+
+      const url = new URL(req.url, `http://${req.headers.host}`);
+      const entityId = url.searchParams.get('entityId');
+      const entityName = url.searchParams.get('entityName');
+
+      if (!entityId && !entityName) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'entityId or entityName is required' }));
+        return;
+      }
+
+      const graph = loadGraph(storagePath);
+      if (!graph) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Knowledge graph not available' }));
+        return;
+      }
+
+      let targetEntity = entityId
+        ? graph.entities.find(e => e.id === entityId)
+        : undefined;
+
+      if (!targetEntity && entityName) {
+        const normalized = entityName.trim().toLowerCase();
+        targetEntity = graph.entities.find(
+          e =>
+            e.canonical.toLowerCase() === normalized ||
+            e.aliases.some(alias => alias.toLowerCase() === normalized)
+        );
+
+        if (!targetEntity) {
+          targetEntity = graph.entities.find(
+            e =>
+              e.canonical.toLowerCase().includes(normalized) ||
+              e.aliases.some(alias => alias.toLowerCase().includes(normalized))
+          );
+        }
+      }
+
+      if (!targetEntity) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Entity not found in graph' }));
+        return;
+      }
+
+      const content = buildEntityWikiFromGraph(targetEntity.id, graph);
+      res.writeHead(200, { 'Content-Type': 'text/markdown; charset=utf-8' });
+      res.end(content);
+      return;
+    }
+
+    // Wiki generation from entity data (for extracted entities without persistent graph)
+    if (req.url?.startsWith('/wiki-from-text')) {
+      if (req.method === 'POST') {
+        // POST with extraction context (entities + relations)
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', () => {
+          try {
+            const data = JSON.parse(body);
+            const { entityName, entityType = 'PERSON', entities = [], relations = [] } = data;
+
+            if (!entityName) {
+              res.writeHead(400, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: 'entityName is required' }));
+              return;
+            }
+
+            // Find the target entity
+            const targetEntity = entities.find((e: any) => e.text === entityName);
+
+            // Find all relations involving this entity
+            const relatedRelations = relations.filter((r: any) =>
+              r.subjCanonical === entityName || r.objCanonical === entityName
+            );
+
+            // Generate wiki content
+            let wiki = `# ${entityName}\n\n`;
+            wiki += `**Type:** ${entityType}\n\n`;
+
+            // Infobox
+            wiki += `## Quick Info\n\n`;
+            wiki += `| | |\n|---|---|\n`;
+            wiki += `| **Name** | ${entityName} |\n`;
+            wiki += `| **Type** | ${entityType} |\n`;
+            if (targetEntity && targetEntity.aliases && targetEntity.aliases.length > 0) {
+              wiki += `| **Aliases** | ${targetEntity.aliases.join(', ')} |\n`;
+            }
+            wiki += `| **Mentions** | ${(targetEntity?.spans?.length || 0)} |\n\n`;
+
+            // Relationships section
+            if (relatedRelations.length > 0) {
+              wiki += `## Relationships\n\n`;
+
+              // Group by predicate
+              const byPredicate = new Map<string, any[]>();
+              relatedRelations.forEach((r: any) => {
+                const pred = r.pred.replace(/_/g, ' ');
+                if (!byPredicate.has(pred)) byPredicate.set(pred, []);
+                byPredicate.get(pred)!.push(r);
+              });
+
+              for (const [pred, rels] of byPredicate.entries()) {
+                wiki += `### ${pred.charAt(0).toUpperCase() + pred.slice(1)}\n\n`;
+                for (const rel of rels) {
+                  if (rel.subjCanonical === entityName) {
+                    wiki += `- **${rel.objCanonical}** (confidence: ${(rel.confidence * 100).toFixed(0)}%)\n`;
+                  } else {
+                    wiki += `- **${rel.subjCanonical}** (confidence: ${(rel.confidence * 100).toFixed(0)}%)\n`;
+                  }
+                }
+                wiki += '\n';
+              }
+            }
+
+            // Co-occurring entities
+            const cooccurring = entities.filter((e: any) =>
+              e.text !== entityName && e.type === entityType
+            );
+            if (cooccurring.length > 0) {
+              wiki += `## Related ${entityType === 'PERSON' ? 'People' : 'Entities'}\n\n`;
+              cooccurring.slice(0, 10).forEach((e: any) => {
+                wiki += `- **${e.text}**\n`;
+              });
+              wiki += '\n';
+            }
+
+            wiki += `---\n\n*Generated from extraction context*\n`;
+
+            res.writeHead(200, { 'Content-Type': 'text/markdown; charset=utf-8' });
+            res.end(wiki);
+          } catch (error) {
+            logger.error({ err: error }, 'wiki_from_text_error');
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Failed to generate wiki' }));
+          }
+        });
+        return;
+      }
+
+      if (req.method === 'GET') {
+        // Legacy GET support - basic template
+        const url = new URL(req.url, `http://${req.headers.host}`);
+        const entityName = url.searchParams.get('entityName');
+        const entityType = url.searchParams.get('entityType') || 'PERSON';
+
+        if (!entityName) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'entityName is required' }));
+          return;
+        }
+
+        const basicWiki = `# ${entityName}
+
+**Type:** ${entityType}
+
+## Overview
+
+This is an automatically generated page for **${entityName}**.
+
+No additional information is available at this time.
+
+---
+
+*Generated locally from extracted entities*
+`;
+
+        res.writeHead(200, { 'Content-Type': 'text/markdown; charset=utf-8' });
+        res.end(basicWiki);
+        return;
+      }
+
+      res.writeHead(405, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Method not allowed' }));
       return;
     }
 
@@ -958,11 +1148,12 @@ export async function startGraphQLServer(port: number = 4000, storagePath?: stri
 
             // Load graph for context
             const graph = loadGraph(storagePath);
+            const contextValue: GraphQLContext = { graph, log, request_id };
 
             // Execute GraphQL operation
             const result = await server.executeOperation(
               { query, variables, operationName },
-              { contextValue: { graph, log, request_id } }
+              { contextValue }
             );
 
             // Send response

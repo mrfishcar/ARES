@@ -95,7 +95,7 @@ function countDialogueFrequency(
       if (dialogueVerbs.has(token.lemma?.toLowerCase() || token.text.toLowerCase())) {
         // Check if entity is the subject of this verb
         const subject = sentence.tokens.find(t =>
-          t.head === token.idx && (t.dep === 'nsubj' || t.dep === 'nsubjpass')
+          t.head === token.i && (t.dep === 'nsubj' || t.dep === 'nsubjpass')
         );
 
         if (subject) {

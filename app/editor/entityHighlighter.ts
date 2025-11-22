@@ -1,11 +1,60 @@
 import { getParserClient } from "../parser";
 
 /**
- * Entity Highlighter - Sprint W2
+ * Entity Highlighter - Full 27-Type Support with Pattern Detection
  * Real-time entity detection with pattern matching and natural language processing
+ *
+ * Supported entity types (27 total):
+ * - Core (6): PERSON, PLACE, ORG, EVENT, CONCEPT, OBJECT
+ * - Fiction (10): RACE, CREATURE, ARTIFACT, TECHNOLOGY, MAGIC, LANGUAGE, CURRENCY, MATERIAL, DRUG, DEITY
+ * - Ability (5): ABILITY, SKILL, POWER, TECHNIQUE, SPELL
+ * - Schema (6): DATE, TIME, WORK, ITEM, MISC, SPECIES, HOUSE, TRIBE, TITLE
+ *
+ * Pattern-based detection implemented for:
+ * - SPELL: Cast actions, spell descriptors, learning verbs, famous spells
+ * - ARTIFACT: Possessive objects, titled artifacts, creation verbs, famous artifacts
+ * - ABILITY: Capability expressions, action verbs, skill indicators
+ * - RACE: Racial descriptors, plural forms, contextual mentions
+ * - CREATURE: Named creatures, possessive forms, creature types, famous creatures
+ *
+ * Other types detected via backend extraction engine (not pattern-based)
  */
 
-export type EntityType = 'PERSON' | 'PLACE' | 'ORG' | 'EVENT' | 'CONCEPT' | 'OBJECT';
+export type EntityType =
+  // Core types (6)
+  | 'PERSON'
+  | 'PLACE'
+  | 'ORG'
+  | 'EVENT'
+  | 'CONCEPT'
+  | 'OBJECT'
+  // Fiction types (10)
+  | 'RACE'
+  | 'CREATURE'
+  | 'ARTIFACT'
+  | 'TECHNOLOGY'
+  | 'MAGIC'
+  | 'LANGUAGE'
+  | 'CURRENCY'
+  | 'MATERIAL'
+  | 'DRUG'
+  | 'DEITY'
+  // Ability types (5)
+  | 'ABILITY'
+  | 'SKILL'
+  | 'POWER'
+  | 'TECHNIQUE'
+  | 'SPELL'
+  // Schema types (6 additional)
+  | 'DATE'
+  | 'TIME'
+  | 'WORK'
+  | 'ITEM'
+  | 'MISC'
+  | 'SPECIES'
+  | 'HOUSE'
+  | 'TRIBE'
+  | 'TITLE';
 
 export interface EntitySpan {
   start: number;
@@ -37,6 +86,20 @@ const DEFAULT_CONFIG = {
   enableLLM: false, // Dual approach: disabled by default (opt-in)
   llmMode: 'hybrid' as 'hybrid' | 'llm-only' | 'algorithm-only', // Best of both worlds
 };
+
+/**
+ * Type guard: Validate if a value is a valid EntityType
+ */
+export function isValidEntityType(value: unknown): value is EntityType {
+  const validTypes = new Set<EntityType>([
+    'PERSON', 'PLACE', 'ORG', 'EVENT', 'CONCEPT', 'OBJECT',
+    'RACE', 'CREATURE', 'ARTIFACT', 'TECHNOLOGY', 'MAGIC', 'LANGUAGE',
+    'CURRENCY', 'MATERIAL', 'DRUG', 'DEITY', 'ABILITY', 'SKILL',
+    'POWER', 'TECHNIQUE', 'SPELL', 'DATE', 'TIME', 'WORK', 'ITEM',
+    'MISC', 'SPECIES', 'HOUSE', 'TRIBE', 'TITLE'
+  ]);
+  return typeof value === 'string' && validTypes.has(value as EntityType);
+}
 
 // S2 constants staged for future implementation (commented out to avoid unused variable warnings)
 // Uncomment when implementing full S2 features
@@ -223,6 +286,86 @@ const ENTITY_PATTERNS = {
   DATE: [
     /\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}\b/g,
     /\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/g,
+  ],
+
+  // SPELL patterns (NEW PHASE 3)
+  // Matches cast actions, spell descriptions, learned spells, and famous spells
+  SPELL: [
+    // Cast patterns: "cast Fireball", "casts Expelliarmus", "casting Lightning"
+    new RegExp(`(?:cast|casts|casting)\\s+(${WORD}(?:\\s+${WORD})?)\\b`, 'gi'),
+
+    // Spell type: "Fireball spell", "healing charm", "protection enchantment"
+    new RegExp(`(${WORD}(?:\\s+${WORD})?)\\s+(?:spell|charm|curse|hex|enchantment|incantation|magic)\\b`, 'gi'),
+
+    // Learned/mastered spells: "learned Expelliarmus", "mastered Accio"
+    new RegExp(`(?:learned|mastered|taught|discovered)\\s+(${WORD}(?:\\s+${WORD})?)\\b`, 'gi'),
+
+    // Famous spells (seed list)
+    /\b(?:Expelliarmus|Accio|Fireball|Teleportation|Levitation|Confundus|Obliviate|Stupefy|Patronus|Horcrux|Lightning Bolt|Inferno|Cure|Summon|Transmute)\b/gi,
+  ],
+
+  // ARTIFACT patterns (NEW PHASE 3)
+  // Matches possessive objects, titled artifacts, created/enchanted items, and famous artifacts
+  ARTIFACT: [
+    // Possessive: "Harry's wand", "Frodo's ring", "the King's sword"
+    new RegExp(`(${WORD}(?:\\s+${WORD})?)['']s\\s+(?:wand|ring|sword|staff|crown|amulet|cup|chalice|grail|stone|book|mirror|artifact|necklace|dagger|bow)\\b`, 'gi'),
+
+    // Titled artifacts: "the One Ring", "the Philosopher's Stone", "the Sword of Truth"
+    /\bthe\s+(?:One\s+Ring|Philosopher's Stone|Holy Grail|Excalibur|Sting|Master Sword|Andúril|Arkenstone)\b/gi,
+
+    // Created/enchanted objects: "forged sword", "enchanted ring", "cursed amulet", "blessed chalice"
+    new RegExp(`(?:forged|crafted|created|enchanted|cursed|blessed|made|summoned)\\s+(${WORD}(?:\\s+${WORD})?)\\s+(?:sword|ring|staff|crown|amulet|cup|chalice|grail|wand|bow|dagger|necklace)\\b`, 'gi'),
+
+    // Famous artifacts (additional seed list)
+    /\b(?:One Ring|Philosopher's Stone|Holy Grail|Excalibur|Sting|Arkenstone|Master Sword|Andúril|Murrmur|Orcrist|Glamdring|Anduril|Crown of Gondor|Mithril|Silmaril|Ring of Power|Infinity Stone|Elder Wand)\b/gi,
+  ],
+
+  // ABILITY patterns (NEW PHASE 3)
+  // Matches expressions of capability and power
+  ABILITY: [
+    // "has the ability to X"
+    new RegExp(`(?:has|have)\\s+(?:the\\s+)?ability\\s+to\\s+([a-z]+(?:\\s+[a-z]+)*)\\b`, 'gi'),
+
+    // "ability to X"
+    new RegExp(`ability\\s+to\\s+([a-z]+(?:\\s+[a-z]+)*)\\b`, 'gi'),
+
+    // "can X", "could X", "able to X"
+    new RegExp(`(?:can|could|able)\\s+([a-z]+(?:\\s+[a-z]+)*)\\b`, 'gi'),
+
+    // "possesses X ability"
+    new RegExp(`possesses\\s+([a-z]+(?:\\s+[a-z]+)*)\\s+ability\\b`, 'gi'),
+
+    // "gifted at X", "talented in X"
+    new RegExp(`(?:gifted at|talented in|skilled at|adept at|proficient in)\\s+([a-z]+(?:\\s+[a-z]+)*)\\b`, 'gi'),
+  ],
+
+  // RACE patterns (NEW PHASE 3)
+  // Matches racial descriptors, plural races, and racial context
+  RACE: [
+    // Racial descriptors: "Elven warrior", "Dwarven king", "Orcish tribe"
+    new RegExp(`(?:Elven|Dwarven|Orcish|Halfling|Drow|Tiefling|Dragonborn|Gnomish|Human|Elvish)\\s+(?:warrior|smith|lord|queen|king|mage|soldier|ranger|paladin|priest|mage)\\b`, 'gi'),
+
+    // Plural races: "The Elves", "Dwarves are", "Orcs inhabit"
+    /\b(?:Elves|Dwarves|Orcs|Halflings|Drow|Tieflings|Dragonborn|Gnomes|Humans|Nymphs|Fairies|Centaurs)\b/g,
+
+    // Race context: "[RACE] are/have/possess/inhabit"
+    new RegExp(`(?:The\\s+)?(${WORD}(?:\\s+${WORD})?)\\s+(?:are|have|possess|inhabit|dwell|live)(?:\\s+(?:known for|famous for|said to))?`, 'gi'),
+  ],
+
+  // CREATURE patterns (NEW PHASE 3)
+  // Matches named creatures, possessive creatures, creature types, and famous creatures
+  CREATURE: [
+    // Named creatures with context: "the Dragon Smaug", "a Phoenix named Fawkes"
+    new RegExp(`(?:the|a|an)\\s+([A-Z][a-z]+)\\s+(?:is|was|lived|roamed|flew|emerged|appeared|dwelt)`, 'gi'),
+
+    // Possessive creatures: "Smaug's hoard", "the Dragon's lair", "Phoenix nesting"
+    new RegExp(`(${WORD})['']s\\s+(?:lair|nest|hoard|den|cave|mountain|domain|treasure|lair)\\b`, 'gi'),
+
+    // Creature types with names: "dragon Smaug", "phoenix Fawkes", "basilisk Serpent"
+    new RegExp(`(?:dragon|phoenix|basilisk|kraken|minotaur|chimera|hydra|leviathan|griffin|wyvern|dragon|demon|beast)\\s+(${WORD}(?:\\s+${WORD})?)\\b`, 'gi'),
+
+    // Famous creatures (seed list)
+    /\b(?:Smaug|Fawkes|Shelob|Gollum|Balrog|Sphinx|Medusa|Cerberus|Leviathan|Phoenix|Basilisk|Chimera|Dragon|Kraken|Wyvern|Hydra)\b/gi,
   ],
 };
 
@@ -790,12 +933,40 @@ function calculateConfidence(
   const context = before + after;
 
   const contextKeywords: Record<EntityType, string[]> = {
+    // Core types
     PERSON: ['said', 'told', 'met', 'knows', 'friend', 'character'],
     PLACE: ['traveled', 'went', 'visited', 'located', 'in', 'at'],
     ORG: ['joined', 'founded', 'member', 'group', 'organization'],
     EVENT: ['during', 'happened', 'occurred', 'battle', 'war'],
     CONCEPT: ['idea', 'theory', 'concept', 'belief'],
     OBJECT: ['artifact', 'item', 'thing', 'object'],
+    // Fiction types
+    RACE: ['race', 'species', 'heritage'],
+    CREATURE: ['creature', 'beast', 'animal', 'monster'],
+    ARTIFACT: ['artifact', 'item', 'thing'],
+    TECHNOLOGY: ['technology', 'device', 'tool', 'machine'],
+    MAGIC: ['magic', 'spell', 'enchantment', 'curse'],
+    LANGUAGE: ['language', 'spoke', 'tongue'],
+    CURRENCY: ['currency', 'gold', 'coin', 'money'],
+    MATERIAL: ['material', 'stone', 'metal', 'wood'],
+    DRUG: ['drug', 'potion', 'medicine', 'poison'],
+    DEITY: ['god', 'deity', 'divine', 'sacred'],
+    // Ability types
+    ABILITY: ['ability', 'power', 'skill', 'capable'],
+    SKILL: ['skill', 'trained', 'expert', 'master'],
+    POWER: ['power', 'strength', 'force', 'mighty'],
+    TECHNIQUE: ['technique', 'method', 'way'],
+    SPELL: ['spell', 'magic', 'enchantment'],
+    // Schema types
+    DATE: ['date', 'dated', 'when'],
+    TIME: ['time', 'hour', 'minute', 'second'],
+    WORK: ['work', 'wrote', 'published', 'author'],
+    ITEM: ['item', 'thing', 'object'],
+    MISC: ['miscellaneous', 'other', 'various'],
+    SPECIES: ['species', 'creature', 'race'],
+    HOUSE: ['house', 'home', 'family', 'dynasty'],
+    TRIBE: ['tribe', 'clan', 'people'],
+    TITLE: ['title', 'called', 'known', 'named'],
   };
 
   const keywords = contextKeywords[type] || [];
@@ -1275,12 +1446,40 @@ export function clearHighlightCache(): void {
  */
 export function getEntityTypeLabel(type: EntityType): string {
   const labels: Record<EntityType, string> = {
+    // Core types (6)
     PERSON: 'Person',
     PLACE: 'Place',
     ORG: 'Organization',
     EVENT: 'Event',
     CONCEPT: 'Concept',
     OBJECT: 'Object',
+    // Fiction types (10)
+    RACE: 'Race',
+    CREATURE: 'Creature',
+    ARTIFACT: 'Artifact',
+    TECHNOLOGY: 'Technology',
+    MAGIC: 'Magic',
+    LANGUAGE: 'Language',
+    CURRENCY: 'Currency',
+    MATERIAL: 'Material',
+    DRUG: 'Drug/Potion',
+    DEITY: 'Deity',
+    // Ability types (5)
+    ABILITY: 'Ability',
+    SKILL: 'Skill',
+    POWER: 'Power',
+    TECHNIQUE: 'Technique',
+    SPELL: 'Spell',
+    // Schema types (9)
+    DATE: 'Date',
+    TIME: 'Time',
+    WORK: 'Work',
+    ITEM: 'Item',
+    MISC: 'Miscellaneous',
+    SPECIES: 'Species',
+    HOUSE: 'House',
+    TRIBE: 'Tribe',
+    TITLE: 'Title',
   };
   return labels[type];
 }
@@ -1290,12 +1489,40 @@ export function getEntityTypeLabel(type: EntityType): string {
  */
 export function getEntityTypeColor(type: EntityType): string {
   const colors: Record<EntityType, string> = {
+    // Core types (6) - keep existing colors
     PERSON: '#3b82f6', // blue
     PLACE: '#10b981', // green
     ORG: '#8b5cf6', // purple
     EVENT: '#f59e0b', // amber
     CONCEPT: '#6366f1', // indigo
     OBJECT: '#ec4899', // pink
+    // Fiction types (10) - vibrant colors
+    RACE: '#a78bfa', // violet
+    CREATURE: '#f97316', // orange
+    ARTIFACT: '#eab308', // yellow
+    TECHNOLOGY: '#06b6d4', // cyan
+    MAGIC: '#d946ef', // magenta
+    LANGUAGE: '#14b8a6', // teal
+    CURRENCY: '#84cc16', // lime
+    MATERIAL: '#64748b', // slate
+    DRUG: '#f43f5e', // rose
+    DEITY: '#fbbf24', // gold
+    // Ability types (5) - ability-focused colors
+    ABILITY: '#a855f7', // purple-light (distinct from ORG)
+    SKILL: '#0ea5e9', // blue-light (distinct from PERSON)
+    POWER: '#f472b6', // pink-light (distinct from OBJECT)
+    TECHNIQUE: '#facc15', // amber-light (distinct from EVENT)
+    SPELL: '#4ade80', // green-light (distinct from PLACE)
+    // Schema types (9) - remaining colors
+    DATE: '#7c3aed', // violet-dark
+    TIME: '#06b6d4', // cyan
+    WORK: '#c084fc', // purple-light
+    ITEM: '#fb923c', // orange-light
+    MISC: '#6b7280', // gray
+    SPECIES: '#059669', // emerald
+    HOUSE: '#d97706', // amber-dark
+    TRIBE: '#7c2d12', // orange-dark
+    TITLE: '#4f46e5', // indigo-dark
   };
-  return colors[type];
+  return colors[type] || '#6b7280'; // fallback to gray
 }

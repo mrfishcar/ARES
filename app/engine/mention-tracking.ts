@@ -46,7 +46,7 @@ export interface EntityCluster {
   sources: ExtractorSource[];  // How was this entity discovered
 }
 
-export type ExtractorSource = 'NER' | 'DEP' | 'WHITELIST' | 'FALLBACK';
+export type ExtractorSource = 'NER' | 'DEP' | 'WHITELIST' | 'FALLBACK' | 'PATTERN';
 
 /**
  * Generate mention ID (M001, M002, ...)

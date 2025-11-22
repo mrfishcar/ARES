@@ -13,6 +13,7 @@
  */
 
 import type { RelationCandidate, RelationFeatures } from './relation-features';
+import type { EntityType } from './schema';
 
 /**
  * Re-scorer decision

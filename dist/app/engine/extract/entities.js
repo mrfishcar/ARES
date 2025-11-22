@@ -305,6 +305,8 @@ const FANTASY_WHITELIST = new Map([
     ['Nazareth', 'PLACE'],
     ['Bethlehem', 'PLACE'],
     ['Canaan', 'PLACE'],
+    ['Moab', 'PLACE'],
+    ['Bethlehem-judah', 'PLACE'],
     // Biblical figures
     ['Abram', 'PERSON'],
     ['Isaac', 'PERSON'],
@@ -584,6 +586,9 @@ function enhanceEntityTypeWithPOS(currentType, text, tokens) {
         return currentType;
     // Get POS tag from first token (most important for proper nouns)
     const firstToken = tokens[0];
+    // Guard against undefined tokens or missing pos property
+    if (!firstToken || !firstToken.pos)
+        return currentType;
     const posTag = firstToken.pos;
     // Skip if not a noun (preserve existing type)
     if (posTag !== 'NOUN' && posTag !== 'PROPN') {
@@ -630,16 +635,17 @@ function capitalizeEntityName(name) {
 }
 function normalizeName(s) {
     let normalized = s.replace(/\s+/g, " ").trim();
-    normalized = normalized.replace(/^[\-\u2013\u2014'"“”‘’]+/, "");
+    normalized = normalized.replace(/^[\-\u2013\u2014'"""'']+/, "");
     normalized = normalized.replace(/[,'"\u201c\u201d\u2018\u2019]+$/g, " ");
     normalized = normalized.replace(/\s*,\s*/g, " ");
     normalized = normalized.replace(/[.;:!?]+$/g, "");
-    normalized = normalized.replace(/^(the|a|an)\s+/i, "");
+    // Remove leading articles and conjunctions (case-insensitive)
+    normalized = normalized.replace(/^(the|a|an|and|or|but)\s+/i, "");
     normalized = normalized.replace(/^((?:[a-z]+\s+)+)(?=[A-Z0-9])/g, "");
-    normalized = normalized.replace(/['’]s$/i, "");
+    normalized = normalized.replace(/['']s$/i, "");
     normalized = normalized.replace(/\bHouse$/i, "");
     const hadFamilySuffix = /\bfamily$/i.test(normalized);
-    const capitalized = normalized.match(/[A-Z][A-Za-z0-9'’\-]*(?:\s+(?:of|the|and|&)?\s*[A-Z][A-Za-z0-9'’\-]*)*/);
+    const capitalized = normalized.match(/[A-Z][A-Za-z0-9''\-]*(?:\s+(?:of|the|and|&)?\s*[A-Z][A-Za-z0-9''\-]*)*/);
     if (capitalized) {
         normalized = capitalized[0];
         if (hadFamilySuffix && !/\bfamily$/i.test(normalized)) {
@@ -689,13 +695,13 @@ function nerSpans(sent) {
                 const isNameParticle = NAME_PARTICLES.has(currentToken.text.toLowerCase());
                 // Check if next token is tagged as PERSON or is a capitalized PROPN
                 const nextIsPerson = nextToken && (mapEnt(nextToken.ent) === 'PERSON' ||
-                    (nextToken.pos === 'PROPN' && /^[A-Z]/.test(nextToken.text)));
+                    (nextToken.pos && nextToken.pos === 'PROPN' && /^[A-Z]/.test(nextToken.text)));
                 if (isNameParticle && nextIsPerson) {
                     // Include the particle and scan forward to include the rest of the name
                     j++; // Include the particle
                     // Continue including tokens that are part of the person name
                     while (j < sent.tokens.length && (sent.tokens[j].ent === t.ent ||
-                        (sent.tokens[j].pos === 'PROPN' && /^[A-Z]/.test(sent.tokens[j].text)))) {
+                        (sent.tokens[j].pos && sent.tokens[j].pos === 'PROPN' && /^[A-Z]/.test(sent.tokens[j].text)))) {
                         j++;
                     }
                 }
@@ -708,7 +714,7 @@ function nerSpans(sent) {
         let spanStart = i;
         if (mapped === 'PERSON' && i > 0) {
             const prevToken = sent.tokens[i - 1];
-            if (prevToken.pos === 'PROPN' && !prevToken.ent &&
+            if (prevToken && prevToken.pos && prevToken.pos === 'PROPN' && !prevToken.ent &&
                 TITLE_WORDS.has(prevToken.text.toLowerCase())) {
                 spanStart = i - 1;
             }
@@ -755,19 +761,19 @@ function splitCoordination(sent, spans) {
     const ALLOWED_PERSON_POS = new Set(['PROPN', 'NOUN', 'ADJ']);
     const isSeparator = (tok) => {
         const lower = tok.text.toLowerCase();
-        return (tok.pos === 'PUNCT' ||
+        return ((tok.pos && tok.pos === 'PUNCT') ||
             tok.dep === 'punct' ||
-            tok.pos === 'CCONJ' ||
+            (tok.pos && tok.pos === 'CCONJ') ||
             tok.dep === 'cc' ||
-            tok.pos === 'SCONJ' ||
-            tok.pos === 'VERB' ||
-            tok.pos === 'AUX' ||
+            (tok.pos && tok.pos === 'SCONJ') ||
+            (tok.pos && tok.pos === 'VERB') ||
+            (tok.pos && tok.pos === 'AUX') ||
             lower === 'and' ||
             lower === 'or' ||
             lower === '&');
     };
     const isAllowedPersonToken = (tok) => {
-        if (!ALLOWED_PERSON_POS.has(tok.pos))
+        if (!tok.pos || !ALLOWED_PERSON_POS.has(tok.pos))
             return false;
         return /^[A-ZÁÀÄÂÉÈËÊÍÌÏÎÓÒÖÔÚÙÜÛ]/.test(tok.text);
     };
@@ -800,7 +806,7 @@ function splitCoordination(sent, spans) {
                 continue;
             }
             // For ORG/PLACE keep most lexical tokens (determiners included) to preserve names.
-            if (tok.pos !== 'CCONJ' && tok.pos !== 'SCONJ') {
+            if (!tok.pos || (tok.pos !== 'CCONJ' && tok.pos !== 'SCONJ')) {
                 current.push(tok);
             }
         }
@@ -1236,6 +1242,7 @@ function fallbackNames(text) {
 }
 function extractYearSpans(text) {
     const spans = [];
+    // 1) Extract numeric years like 1775
     const yearPattern = /\b(1[6-9]\d{2}|20\d{2}|[3-9]\d{3})\b/g;
     let match;
     while ((match = yearPattern.exec(text))) {
@@ -1247,7 +1254,73 @@ function extractYearSpans(text) {
             end: match.index + year.length
         });
     }
+    // 2) Extract spelled-out years like "one thousand seven hundred and seventy-five"
+    // Pattern: "one thousand [and] [1-9] hundred [and] [10-99 in words]"
+    const spelledOutPattern = /one\s+thousand\s+(?:and\s+)?(?:one|two|three|four|five|six|seven|eight|nine)\s+hundred(?:\s+and)?\s+(?:(?:twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)(?:\s*-?\s*(?:one|two|three|four|five|six|seven|eight|nine))?|(?:ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen))/gi;
+    while ((match = spelledOutPattern.exec(text))) {
+        const spelledYear = match[0];
+        // Try to convert to numeric year - but report the spelled-out text in span
+        // so validation passes. The canonical name will be converted to numeric later.
+        const numericYear = convertSpelledYearToNumeric(spelledYear);
+        if (process.env.L4_DEBUG === "1") {
+            console.log(`[EXTRACT-YEARS] Spelled year: "${spelledYear}" → numeric: ${numericYear}`);
+        }
+        if (numericYear && numericYear >= 1500 && numericYear <= 2100) {
+            spans.push({
+                // Keep the spelled-out text for validation to work
+                text: spelledYear,
+                type: 'DATE',
+                start: match.index,
+                end: match.index + spelledYear.length
+            });
+            if (process.env.L4_DEBUG === "1") {
+                console.log(`[EXTRACT-YEARS] Added DATE span: "${spelledYear}" (${match.index}-${match.index + spelledYear.length})`);
+            }
+        }
+    }
     return spans;
+}
+/**
+ * Convert spelled-out year like "one thousand seven hundred and seventy-five" to 1775
+ */
+function convertSpelledYearToNumeric(spelledYear) {
+    const lower = spelledYear.toLowerCase();
+    // Pattern: "one thousand [and] XYZ hundred [and] AB"
+    // Example: "one thousand seven hundred and seventy-five" → 1775
+    const matches = /one\s+thousand\s+(?:and\s+)?([a-z]+)\s+hundred(?:\s+and)?\s+(.+)/i.exec(spelledYear);
+    if (!matches)
+        return null;
+    const hundredsWord = matches[1].toLowerCase().trim();
+    let tensUnitsStr = matches[2].toLowerCase().trim();
+    // Map hundreds digit
+    const hundredsMap = {
+        'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
+        'six': 6, 'seven': 7, 'eight': 8, 'nine': 9
+    };
+    const hundredsDigit = hundredsMap[hundredsWord];
+    if (hundredsDigit === undefined)
+        return null;
+    // Map tens and units
+    const tensUnitsMap = {
+        'ten': 10, 'eleven': 11, 'twelve': 12, 'thirteen': 13, 'fourteen': 14,
+        'fifteen': 15, 'sixteen': 16, 'seventeen': 17, 'eighteen': 18, 'nineteen': 19,
+        'twenty': 20, 'thirty': 30, 'forty': 40, 'fifty': 50, 'sixty': 60,
+        'seventy': 70, 'eighty': 80, 'ninety': 90,
+        'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
+        'six': 6, 'seven': 7, 'eight': 8, 'nine': 9
+    };
+    // Handle "twenty one", "seventy five", "seventy-five", etc.
+    const tensUnitsTokens = tensUnitsStr.split(/[\s\-]+/).filter(Boolean);
+    let tensUnits = 0;
+    if (tensUnitsTokens.length === 1) {
+        tensUnits = tensUnitsMap[tensUnitsTokens[0]] || 0;
+    }
+    else if (tensUnitsTokens.length === 2) {
+        const tens = tensUnitsMap[tensUnitsTokens[0]] || 0;
+        const units = tensUnitsMap[tensUnitsTokens[1]] || 0;
+        tensUnits = tens + units;
+    }
+    return 1000 + (hundredsDigit * 100) + tensUnits;
 }
 function extractFamilySpans(text) {
     const spans = [];
@@ -1260,6 +1333,42 @@ function extractFamilySpans(text) {
             start: match.index,
             end: match.index + match[0].length
         });
+    }
+    return spans;
+}
+/**
+ * Extract names missed by spaCy in conjunctive patterns
+ * Pattern: [Known PERSON] and [CapitalizedWord]
+ * Example: "Mahlon and Chilion" where spaCy caught "Mahlon" but missed "Chilion"
+ */
+function extractConjunctiveNames(text, existingSpans) {
+    const spans = [];
+    const existingNames = new Set(existingSpans
+        .filter(s => s.type === 'PERSON')
+        .map(s => s.text.toLowerCase()));
+    // Pattern: [CapitalizedWord] and [CapitalizedWord]
+    // Focus on cases where the first part is likely a known PERSON entity
+    const pattern = /\b([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)*)\s+and\s+([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)*)\b/g;
+    let match;
+    while ((match = pattern.exec(text))) {
+        const firstPart = match[1];
+        const secondPart = match[2];
+        // Check if first part is a known PERSON and second part isn't already extracted
+        if (existingNames.has(firstPart.toLowerCase()) && !existingNames.has(secondPart.toLowerCase())) {
+            // Extract the second part as a PERSON
+            const secondPartStart = match.index + match[0].indexOf(secondPart);
+            const secondPartEnd = secondPartStart + secondPart.length;
+            spans.push({
+                text: secondPart,
+                type: 'PERSON',
+                start: secondPartStart,
+                end: secondPartEnd
+            });
+            existingNames.add(secondPart.toLowerCase());
+            if (process.env.L4_DEBUG === '1') {
+                console.log(`[PATTERN] Conjunctive name: "${firstPart} and ${secondPart}" → extracted "${secondPart}"`);
+            }
+        }
     }
     return spans;
 }
@@ -1415,6 +1524,9 @@ async function extractEntities(text) {
     const years = extractYearSpans(text);
     const families = extractFamilySpans(text);
     const whitelisted = extractWhitelistedNames(text);
+    // Extract conjunctive names (e.g., "Mahlon and Chilion") - must run after NER to know which names are known
+    const allNERSpans = [...ner, ...dep, ...gazPlaces, ...fb, ...families, ...whitelisted];
+    const conjunctive = extractConjunctiveNames(text, allNERSpans);
     const taggedSpans = [
         ...dep.map(s => {
             // Check if this span is from whitelist (normalize for matching)
@@ -1437,6 +1549,7 @@ async function extractEntities(text) {
         }),
         ...years.map(s => ({ ...s, source: 'NER' })), // Treat dates as NER-quality
         ...families.map(s => ({ ...s, source: 'DEP' })), // Treat family patterns as DEP-quality
+        ...conjunctive.map(s => ({ ...s, source: 'PATTERN' })), // Treat conjunctive as PATTERN-quality
         ...whitelisted.map(s => ({ ...s, source: 'WHITELIST' })) // Whitelisted names
     ];
     const rawSpans = taggedSpans;
@@ -1553,6 +1666,11 @@ async function extractEntities(text) {
         };
     };
     const descriptorPenalty = (value) => (/\b(the|of)\s+[A-Z]/.test(value) ? 0 : 1);
+    const descriptorTokens = new Set(['former', 'latter', 'later', 'current', 'young', 'older', 'elder', 'stern', 'deputy', 'chief']);
+    const containsDescriptor = (value) => {
+        const parts = value.toLowerCase().split(/\s+/).filter(Boolean);
+        return parts.some(part => descriptorTokens.has(part));
+    };
     const cleanlinessScore = (value) => (/^[A-Za-z][A-Za-z\s'’.-]*$/.test(value) ? 1 : 0);
     const chooseCanonical = (names) => {
         const candidates = Array.from(names);
@@ -1565,6 +1683,10 @@ async function extractEntities(text) {
             const bPenalty = descriptorPenalty(b);
             if (aPenalty !== bPenalty)
                 return bPenalty - aPenalty;
+            const aDesc = containsDescriptor(a);
+            const bDesc = containsDescriptor(b);
+            if (aDesc !== bDesc)
+                return aDesc ? 1 : -1;
             const aScore = nameScore(a);
             const bScore = nameScore(b);
             if (aScore.informative !== bScore.informative)
@@ -1615,15 +1737,26 @@ async function extractEntities(text) {
         if (!matched) {
             const id = (0, uuid_1.v4)();
             const positions = positionsByKey.get(key) ?? [{ start: span.start, end: span.end }];
+            if (span.text.includes('McGonagall')) {
+                console.log('[DEBUG-MCG] New entry', span.text, 'type', span.type);
+            }
             // Capitalize entity name if needed (for lowercase entities from case-insensitive extraction)
             const capitalizedText = (span.text.length > 0 && /^[a-z]/.test(span.text))
                 ? capitalizeEntityName(span.text)
                 : span.text;
+            // For DATE entities, convert spelled-out years to numeric form
+            let canonicalName = capitalizedText;
+            if (span.type === 'DATE') {
+                const numericYear = convertSpelledYearToNumeric(span.text);
+                if (numericYear !== null) {
+                    canonicalName = numericYear.toString();
+                }
+            }
             const entry = {
                 entity: {
                     id,
                     type: span.type,
-                    canonical: capitalizedText,
+                    canonical: canonicalName,
                     aliases: [],
                     created_at: now
                 },
@@ -1687,11 +1820,36 @@ async function extractEntities(text) {
     if (DEBUG_ENTITIES) {
         console.log(`[EXTRACT-ENTITIES][DEBUG] mergedEntries=${mergedEntries.length}`);
     }
+    // Debug Chilion in merged entries
+    if (process.env.L4_DEBUG === '1') {
+        const chilionInMerged = mergedEntries.filter(e => e.entity.canonical === 'Chilion');
+        if (chilionInMerged.length > 0) {
+            console.log(`[EXTRACT-ENTITIES] Chilion in mergedEntries: ${chilionInMerged.length}`);
+        }
+        else if (mergedEntries.some(e => e.entity.canonical.toLowerCase() === 'chilion')) {
+            const chilionVariant = mergedEntries.find(e => e.entity.canonical.toLowerCase() === 'chilion');
+            console.log(`[EXTRACT-ENTITIES] Found variant: "${chilionVariant?.entity.canonical}"`);
+        }
+        else {
+            console.log(`[EXTRACT-ENTITIES] NO Chilion in mergedEntries (${mergedEntries.length} total): ${mergedEntries.map(e => e.entity.canonical).slice(0, 10).join(', ')}`);
+        }
+    }
     const finalEntries = mergedEntries.filter(entry => {
-        if (STOP.has(entry.entity.canonical))
+        if (entry.entity.type === 'DATE' && process.env.L4_DEBUG === "1") {
+            console.log(`[FINAL-FILTER] Checking DATE: "${entry.entity.canonical}"`);
+        }
+        if (STOP.has(entry.entity.canonical)) {
+            if (entry.entity.type === 'DATE' && process.env.L4_DEBUG === "1") {
+                console.log(`[FINAL-FILTER] DATE "${entry.entity.canonical}" rejected by STOP list`);
+            }
             return false;
+        }
         const canonicalLower = entry.entity.canonical.toLowerCase();
+        const isMcG = canonicalLower.includes('mcgonagall');
         if (entry.entity.type === 'PERSON' && PERSON_BLOCKLIST.has(canonicalLower)) {
+            if (isMcG) {
+                console.log('[DEBUG-MCG] filtered out by PERSON_BLOCKLIST', entry.entity.canonical);
+            }
             return false;
         }
         if (entry.entity.type === 'DATE') {
@@ -1703,12 +1861,22 @@ async function extractEntities(text) {
             const seasonMatch = /^(spring|summer|fall|autumn|winter)$/i.test(canonical);
             const hasPronoun = /\b(his|her|their|our|my|your)\b/i.test(canonical);
             const ordinalBare = /^(first|second|third)\s+(day|year|term)$/i.test(canonicalLowerDate);
+            if (process.env.L4_DEBUG === "1") {
+                console.log(`[DATE-FILTER] canonical="${canonical}", hasDigits=${hasDigits}, monthMatch=${monthMatch}, seasonMatch=${seasonMatch}, hasPronoun=${hasPronoun}, ordinalBare=${ordinalBare}`);
+            }
             if (hasPronoun)
                 return false;
             if (ordinalBare)
                 return false;
-            if (!hasDigits && !monthMatch && !seasonMatch)
+            if (!hasDigits && !monthMatch && !seasonMatch) {
+                if (process.env.L4_DEBUG === "1") {
+                    console.log(`[DATE-FILTER] REJECTING "${canonical}" - no digits, month, or season`);
+                }
                 return false;
+            }
+            if (process.env.L4_DEBUG === "1") {
+                console.log(`[DATE-FILTER] ACCEPTING DATE "${canonical}"`);
+            }
         }
         if (entry.entity.type === 'PERSON') {
             if (GENERIC_TITLES.has(canonicalLower)) {
@@ -1728,7 +1896,7 @@ async function extractEntities(text) {
             }
         }
         const score = nameScore(entry.entity.canonical);
-        return !mergedEntries.some(other => {
+        const filteredOutByPrefix = mergedEntries.some(other => {
             if (other === entry)
                 return false;
             const otherLower = other.entity.canonical.toLowerCase();
@@ -1737,6 +1905,10 @@ async function extractEntities(text) {
             const otherScore = nameScore(other.entity.canonical);
             return otherScore.informative >= score.informative;
         });
+        if (filteredOutByPrefix && canonicalLower.includes('mcgonagall')) {
+            console.log('[DEBUG-MCG] dropped by prefix rule', entry.entity.canonical);
+        }
+        return !filteredOutByPrefix;
     });
     if (DEBUG_ENTITIES) {
         console.log(`[EXTRACT-ENTITIES][DEBUG] finalEntries=${finalEntries.length}`);
@@ -1750,8 +1922,11 @@ async function extractEntities(text) {
         [firstSpan.start, firstSpan.end], entry.entity.canonical, 0, // Sentence index (not used for filtering)
         'canonical', 0.9 // High confidence for canonical mentions
         );
+        // Pattern-extracted entities should have high confidence since we explicitly want them
+        const isPatternExtracted = entry.sources.has('PATTERN');
+        const initialConfidence = isPatternExtracted ? 1.0 : 0.8; // Max confidence for pattern entities
         // Create cluster
-        const cluster = (0, mention_tracking_1.createEntityCluster)(entry.entity.type, entry.entity.canonical, firstMention, Array.from(entry.sources), 0.8 // Initial confidence (will be recomputed)
+        const cluster = (0, mention_tracking_1.createEntityCluster)(entry.entity.type, entry.entity.canonical, firstMention, Array.from(entry.sources), initialConfidence // Initial confidence (will be recomputed)
         );
         // Update cluster with full entity data
         cluster.id = entry.entity.id; // Preserve original entity ID
@@ -1765,6 +1940,15 @@ async function extractEntities(text) {
     const filteredClusters = (0, confidence_scoring_1.filterEntitiesByConfidence)(clusters, 0.30);
     if (DEBUG_ENTITIES) {
         console.log(`[EXTRACT-ENTITIES][DEBUG] confidence clusters=${clusters.length} kept=${filteredClusters.length}`);
+    }
+    if (process.env.L4_DEBUG === "1") {
+        const dateClusters = clusters.filter(c => c.type === 'DATE');
+        const filteredDateClusters = filteredClusters.filter(c => c.type === 'DATE');
+        console.log(`[CONFIDENCE-FILTER] DATE clusters: ${dateClusters.length} → ${filteredDateClusters.length}`);
+        for (const cluster of dateClusters) {
+            const kept = filteredClusters.some(c => c.id === cluster.id);
+            console.log(`  [CONFIDENCE-FILTER] DATE "${cluster.canonical}": ${kept ? 'KEPT' : 'FILTERED OUT'}`);
+        }
     }
     // Build map of filtered entity IDs
     const filteredIds = new Set(filteredClusters.map(c => c.id));
@@ -1874,6 +2058,9 @@ async function extractEntities(text) {
         emittedKeys.add(dedupeKey);
         if (DEBUG_ENTITIES) {
             console.log(`[EXTRACT-ENTITIES][DEBUG] Emitting entity ${entry.entity.id} (${entry.entity.canonical}) type=${entry.entity.type} aliases=${entry.entity.aliases.join(', ')}`);
+        }
+        if (entry.entity.type === 'DATE' && process.env.L4_DEBUG === "1") {
+            console.log(`[FINAL-EMISSION] Adding DATE entity: "${entry.entity.canonical}"`);
         }
         entities.push(entry.entity);
         // Deduplicate and filter subsumed spans
@@ -2008,6 +2195,10 @@ async function extractEntities(text) {
     catch (error) {
         // If coreference resolution fails, continue without it
         console.warn(`[EXTRACT-ENTITIES] Coreference resolution failed:`, error);
+    }
+    if (process.env.L3_DEBUG === '1' || process.env.L4_DEBUG === '1') {
+        const dateCount = entities.filter(e => e.type === 'DATE').length;
+        console.log(`[EXTRACT-ENTITIES][DEBUG] returning ${entities.length} entities (${dateCount} DATEs): ${entities.map(e => `${e.type}:${e.canonical}`).slice(0, 20).join(', ')}`);
     }
     return { entities, spans };
 }

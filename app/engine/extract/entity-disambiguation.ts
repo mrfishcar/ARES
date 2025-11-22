@@ -177,10 +177,7 @@ export function extractEntityContext(
   );
 
   for (const sentence of relevantSentences) {
-    const sentText = sentence.text || fullText.substring(
-      sentence.tokens[0]?.char_start || 0,
-      sentence.tokens[sentence.tokens.length - 1]?.char_end || 0
-    );
+    const sentText = fullText.slice(sentence.start, sentence.end);
 
     // 1. Extract occupations
     for (const pattern of OCCUPATION_PATTERNS) {

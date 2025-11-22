@@ -13,6 +13,37 @@ import type { CorefLinks } from "./coref";
 import { getDynamicPatterns, type RelationPattern as DynamicRelationPattern } from "./dynamic-pattern-loader";
 
 /**
+ * Normalize text for pattern matching
+ * Removes leading conjunctions and articles that interfere with pattern matching
+ */
+function normalizeTextForPatterns(text: string): string {
+  let normalized = text.trim();
+
+  // Split into sentences, normalize each, then rejoin
+  // Use a simple heuristic: split on period + space, exclamation, question mark
+  const sentences = normalized.split(/(?<=[.!?])\s+/);
+
+  const normalizedSentences = sentences.map(sent => {
+    let s = sent.trim();
+
+    // Remove leading conjunctions at sentence start
+    s = s.replace(/^(And|But|Then|So|For|Yet|Nor|Or)\s+/i, '');
+
+    // Remove leading articles
+    s = s.replace(/^(The|A|An)\s+/i, '');
+
+    return s;
+  });
+
+  normalized = normalizedSentences.join(' ');
+
+  // Normalize whitespace
+  normalized = normalized.replace(/\s+/g, ' ');
+
+  return normalized;
+}
+
+/**
  * Relation pattern definition
  */
 interface RelationPattern {
@@ -85,6 +116,43 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     extractObj: 1,  // Same as subject - both are "the couple"
     typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
     // Note: Will resolve "the couple" to multiple entities via coreference
+  },
+
+  // === ARCHAIC/BIBLICAL PATTERNS ===
+  // "X's husband/wife died" → married_to(X, husband/wife reference)
+  // For biblical text like "And Naomi's husband died"
+  {
+    regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)'s\s+(?:husband|wife|spouse)\s+(?:died|had died|was dead)\b/g,
+    predicate: 'married_to',
+    symmetric: true,
+    extractSubj: 1,
+    extractObj: 1,  // Same person - indicates marriage to the named person
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X's son/daughter of Y" or "X's two sons" for genealogies
+  {
+    regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)'s\s+(?:(?:two|three|four)?\s+)?(?:sons?|daughters?|children?)\b/g,
+    predicate: 'parent_of',
+    extractSubj: 1,
+    extractObj: 1,  // Indicates parenthood for the named person
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X begat Y" - Biblical genealogy pattern
+  {
+    regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:begat|begot|fathered)\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
+    predicate: 'parent_of',
+    symmetric: false,
+    extractSubj: 1,  // Parent
+    extractObj: 2,   // Child
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "son/daughter of X" - Alternative genealogy pattern
+  {
+    regex: /\b(?:the\s+)?(?:son|daughter|child)\s+of\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b(?:,?\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*))?/g,
+    predicate: 'parent_of',
+    extractSubj: 1,  // Parent
+    extractObj: 2,   // Child (if mentioned)
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
   },
 
   // === FRIENDSHIP PATTERNS ===
@@ -790,6 +858,9 @@ export function extractNarrativeRelations(
 ): Relation[] {
   const relations: Relation[] = [];
 
+  // Normalize text for pattern matching (removes leading conjunctions/articles)
+  const normalizedText = normalizeTextForPatterns(text);
+
   // Combine static patterns with dynamic patterns
   const dynamicPatterns = getDynamicPatterns();
   const allPatterns = [...NARRATIVE_PATTERNS, ...dynamicPatterns];
@@ -801,7 +872,7 @@ export function extractNarrativeRelations(
     pattern.regex.lastIndex = 0;
 
     let match: RegExpExecArray | null;
-    while ((match = pattern.regex.exec(text)) !== null) {
+    while ((match = pattern.regex.exec(normalizedText)) !== null) {
       // Handle coordination patterns specially (e.g., "Harry and Ron studied at Hogwarts")
       if ((pattern as any).coordination && match[1] && match[2]) {
         const firstSubj = match[1];
@@ -990,11 +1061,29 @@ export function extractNarrativeRelations(
       const subjGroup = pattern.extractSubj ?? 1;
       const objGroup = pattern.extractObj ?? 2;
 
-      const subjSurface = match[subjGroup];
-      const objSurface = match[objGroup];
+      let subjSurface = match[subjGroup];
+      let objSurface = match[objGroup];
 
       // Skip if either capture is undefined
       if (!subjSurface || !objSurface) continue;
+
+      // Special handling: if subject matches "Word1 Word2" pattern with no surname in Word2,
+      // extract just Word2 (e.g., "Elimelech Naomi" -> "Naomi")
+      if (pattern.predicate === 'married_to' && subjSurface) {
+        const words = subjSurface.split(/\s+/);
+        if (words.length === 2 && /^[A-Z]/.test(words[1])) {
+          const secondWord = words[1];
+          // Check if second word looks like it could be a first name (not a surname)
+          const looksLikeSurname = /(?:son|sen|sson|ton|ham|ley|field|man|stein|berg|ski|sky|wicz|ing|ford|wood|ridge|dale|hill|er|or|ar|kins|kin|well|wall|wick|ape|ope|good|more|ore|grave|grove|stone|strom|water|worth|foy|roy|aw|ew|om|um|in|an|on)$/i.test(secondWord);
+          if (!looksLikeSurname) {
+            // Use just the second word
+            if (process.env.L4_DEBUG === '1') {
+              console.log(`[NARRATIVE-RELATIONS] Extracting "${secondWord}" from subject "${subjSurface}"`);
+            }
+            subjSurface = secondWord;
+          }
+        }
+      }
 
       const subjOffsetInMatch = match[0].indexOf(subjSurface);
       const subjAbsoluteStart = subjOffsetInMatch >= 0 ? match.index + subjOffsetInMatch : match.index;

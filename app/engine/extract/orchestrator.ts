@@ -148,12 +148,21 @@ export async function extractFromSegments(
 
   const registerWindowEntity = (entity: Entity): Entity | null => {
     const canonical = normalizeName(entity.canonical);
+    if (process.env.L4_DEBUG === '1' && entity.type === 'DATE') {
+      console.log(`[REGISTER-WINDOW] DATE entity: original="${entity.canonical}", normalized="${canonical}"`);
+    }
     if (!canonical || canonical.trim() === '') {
+      if (process.env.L4_DEBUG === '1' && entity.type === 'DATE') {
+        console.log(`[REGISTER-WINDOW] DATE rejected: empty canonical`);
+      }
       return null;
     }
     const key = `${entity.type}::${canonical.toLowerCase()}`;
     let existing = entityMap.get(key);
     if (existing) {
+      if (process.env.L4_DEBUG === '1' && entity.type === 'DATE') {
+        console.log(`[REGISTER-WINDOW] DATE already registered: ${key}`);
+      }
       return existing;
     }
     const normalizedEntity: Entity = {
@@ -203,11 +212,19 @@ export async function extractFromSegments(
     }
 
     // Filter and remap entities/spans that fall within the actual segment bounds
+    if (process.env.L4_DEBUG === '1' && entities.some(e => e.type === 'DATE')) {
+      console.log(`[ORCHESTRATOR-DATE-PROCESS] Window has ${entities.filter(e => e.type === 'DATE').length} DATE entities`);
+    }
+
     for (const entity of entities) {
       // Find all spans for this entity
       const entitySpans = spans.filter(s => s.entity_id === entity.id);
       if (SEG_DEBUG) {
         console.log(`[SEG-ENTITY] ${entity.canonical} spans=${entitySpans.length} (segment ${seg.sentIndex})`);
+      }
+
+      if (process.env.L4_DEBUG === '1' && entity.type === 'DATE') {
+        console.log(`[ORCHESTRATOR-DATE] Processing DATE: "${entity.canonical}", spans=${entitySpans.length}`);
       }
 
       // Keep only spans that are COMPLETELY within the segment
@@ -244,8 +261,14 @@ export async function extractFromSegments(
       }
 
       // Derive canonical name from first span's absolute position in document
-      const canonicalRaw = fullText.slice(segmentSpans[0].start, segmentSpans[0].end);
-      const canonicalText = normalizeName(canonicalRaw);
+      // For DATE/TIME entities, preserve the already-converted canonical (e.g., "1775" instead of "one thousand seven hundred and seventy-five")
+      let canonicalText: string;
+      if (entity.type === 'DATE' || entity.type === 'TIME') {
+        canonicalText = normalizeName(entity.canonical);
+      } else {
+        const canonicalRaw = fullText.slice(segmentSpans[0].start, segmentSpans[0].end);
+        canonicalText = normalizeName(canonicalRaw);
+      }
 
       // Check if we've seen this entity before (by type + canonical)
       const entityKey = makeEntityKey(entity.type, canonicalText);
@@ -315,6 +338,9 @@ export async function extractFromSegments(
 
         // Skip low-quality entities (pronouns, common words, false positives)
         if (!isValidEntity(canonicalText, entity.type)) {
+          if (process.env.L4_DEBUG === '1' && entity.type === 'DATE') {
+            console.log(`[ORCHESTRATOR-DATE-REJECT] DATE "${canonicalText}" rejected by isValidEntity`);
+          }
           continue;
         }
 
@@ -339,6 +365,11 @@ export async function extractFromSegments(
             entity.canonical
           ];
         }
+
+        if (process.env.L4_DEBUG === '1' && correctedEntity.type === 'DATE') {
+          console.log(`[ORCHESTRATOR-DATE-REGISTER] Registering DATE: "${canonicalText}", segment ${seg.sentIndex}`);
+        }
+
         entityMap.set(entityKey, correctedEntity);
         allEntities.push(correctedEntity);
 
@@ -948,6 +979,42 @@ export async function extractFromSegments(
     }
   }
 
+  // Additional precision filters for Level 3
+  const beforePrecisionFilter = uniqueRelations.length;
+  uniqueRelations = uniqueRelations.filter(rel => {
+    const subjEntity = allEntities.find(e => e.id === rel.subj);
+    const objEntity = allEntities.find(e => e.id === rel.obj);
+    if (!subjEntity || !objEntity) return true;
+
+    // Filter 1: Don't allow someone with "son/daughter/child" in their name to be subject of parent_of
+    if (rel.pred === 'parent_of') {
+      const subjLower = subjEntity.canonical.toLowerCase();
+      if (/\b(son|daughter|child|eldest|youngest|sibling|brother|sister)\b/.test(subjLower)) {
+        console.log(`[PRECISION-DEFENSE] Removing parent_of from child-labeled entity: ${subjEntity.canonical}`);
+        return false;
+      }
+    }
+
+    // Filter 2: Don't allow married_to between people who aren't explicitly married in the text
+    // (Prevent Harry married_to Ron when text says Harry married Ginny)
+    if (rel.pred === 'married_to') {
+      // Check if either person is already married to someone else
+      const subjMarriedTo = uniqueRelations.filter(r =>
+        r.pred === 'married_to' && r.subj === rel.subj && r.obj !== rel.obj
+      );
+      if (subjMarriedTo.length > 0) {
+        console.log(`[PRECISION-DEFENSE] Removing spurious married_to: ${subjEntity.canonical} already married`);
+        return false;
+      }
+    }
+
+    return true;
+  });
+  const removedByPrecisionFilter = beforePrecisionFilter - uniqueRelations.length;
+  if (removedByPrecisionFilter > 0) {
+    console.log(`[PRECISION-DEFENSE] Removed ${removedByPrecisionFilter} relations via precision filters`);
+  }
+
   // 9. Optional: Filter entities to improve precision in dense narratives
   // For mega regression, we want to focus on entities involved in the narrative structure
   // But for simple sentences, we should keep all high-quality entities
@@ -964,6 +1031,35 @@ export async function extractFromSegments(
     entityMentionCounts.set(span.entity_id, (entityMentionCounts.get(span.entity_id) || 0) + 1);
   }
 
+  // Helper: Check if entity was extracted via pattern matching
+  const isPatternExtracted = (entity: Entity): boolean => {
+    const source = entity.attrs?.source;
+    return source === 'PATTERN' || source === 'pattern-conjunctive';
+  };
+
+  // Debug: Check if Chilion and DATEs are in allEntities
+  if (process.env.L4_DEBUG === '1') {
+    const chilionEntities = allEntities.filter(e => e.canonical === 'Chilion');
+    const dateEntities = allEntities.filter(e => e.type === 'DATE');
+    if (chilionEntities.length > 0) {
+      console.log(`[ORCHESTRATOR-ENTRY] Found ${chilionEntities.length} Chilion entities before filtering:`);
+      chilionEntities.forEach(e => {
+        console.log(`  - id: ${e.id}, source: ${e.attrs?.source}, attrs: ${JSON.stringify(e.attrs)}`);
+      });
+    }
+    if (dateEntities.length > 0) {
+      console.log(`[ORCHESTRATOR-ENTRY] Found ${dateEntities.length} DATE entities before filtering`);
+      dateEntities.forEach(e => {
+        console.log(`  - DATE: "${e.canonical}" (id: ${e.id})`);
+      });
+    } else {
+      console.log(`[ORCHESTRATOR-ENTRY] No DATE entities in allEntities`);
+    }
+    if (allEntities.length <= 10 && chilionEntities.length === 0) {
+      console.log(`  Entities present: ${allEntities.map(e => e.canonical).join(', ')}`);
+    }
+  }
+
   // Keep entities that meet ANY of these criteria:
   // 1. Involved in at least one relation (narrative-connected)
   // 2. High mention frequency (≥3 mentions = clearly important)
@@ -976,17 +1072,37 @@ export async function extractFromSegments(
   const isDenseNarrative = allEntities.length > 12 && uniqueRelations.length >= allEntities.length;
 
   const filteredEntities = allEntities.filter(e => {
+    // DATEs and TIMEs are always important - keep them regardless of narrative density
+    // Even single mentions of dates are valuable for historical/temporal context
+    if (e.type === 'DATE' || e.type === 'TIME') {
+      return true;
+    }
+
     const inRelation = entitiesInRelations.has(e.id);
     const mentionCount = entityMentionCounts.get(e.id) || 0;
     const highMentionCount = mentionCount >= 3;
+    const patternBased = isPatternExtracted(e);
+
+    // Debug logging for Chilion
+    if (process.env.L4_DEBUG === '1' && e.canonical === 'Chilion') {
+      console.log(`[ORCHESTRATOR] Chilion analysis:`);
+      console.log(`  - source: ${e.attrs?.source}`);
+      console.log(`  - inRelation: ${inRelation}`);
+      console.log(`  - mentionCount: ${mentionCount}`);
+      console.log(`  - patternBased: ${patternBased}`);
+      console.log(`  - isDenseNarrative: ${isDenseNarrative}`);
+      console.log(`  - allEntities.length: ${allEntities.length}`);
+      console.log(`  - uniqueRelations.length: ${uniqueRelations.length}`);
+      console.log(`  - KEEP? ${!isDenseNarrative || inRelation || highMentionCount || patternBased}`);
+    }
 
     // For simple/moderate texts, keep all entities (don't filter)
     if (!isDenseNarrative) {
       return true;
     }
 
-    // For dense narratives, keep entities in relations OR with high mention count
-    return inRelation || highMentionCount;
+    // For dense narratives, keep entities that are: in relations, have high mention count, OR pattern-extracted
+    return inRelation || highMentionCount || patternBased;
   });
 
   const filteredSpans = allSpans.filter(s =>

@@ -1,51 +1,726 @@
 {
-  "version": "1.0.0",
-  "created_at": "2025-10-29T22:13:20.876Z",
-  "updated_at": "2025-10-29T22:13:20.877Z",
+  "version": "2.0.0",
+  "created_at": "2025-11-21T00:00:00Z",
+  "updated_at": "2025-11-21T00:00:00Z",
   "entityTypes": {
-    "SPELL": {
-      "type": "SPELL",
+    "RACE": {
+      "type": "RACE",
+      "description": "Sentient species or racial groups (Elves, Dwarves, Humans)",
       "patterns": [
         {
-          "type": "SPELL",
-          "template": "cast X",
-          "regex_source": "cast\\s+([A-Z][a-z]+(?:\\s+(?:the|of|de)\\s+[A-Z][a-z]+|\\s+[A-Z][a-z]+)?)",
+          "name": "singular_race",
+          "template": "The [RACE] are",
+          "regex_source": "(?:an?|the)\\s+([A-Z][a-z]+(?:ian|ite|fold)?(?:\\s+(?:race|people|folk|kind|breed))?)",
           "regex_flags": "gi",
-          "confidence": 0.5,
-          "examples": [
-            "Expelliarmus"
-          ],
-          "extractionCount": 1
+          "confidence": 0.85,
+          "examples": ["Elves", "Dwarves", "Humans", "Drow", "Orc", "Halfling"],
+          "context": ["race", "people", "folk", "kind", "breed"]
         },
         {
-          "type": "SPELL",
-          "template": "used X",
-          "regex_source": "used\\s+([A-Z][a-z]+(?:\\s+(?:the|of|de)\\s+[A-Z][a-z]+|\\s+[A-Z][a-z]+)?)",
+          "name": "plural_races",
+          "template": "[RACE] are known for",
+          "regex_source": "\\b([A-Z][a-z]+(?:ian|ite)?(?:s|folk)?(?:\\s+(?:race|people))?)\\s+(?:are|were|have|possess|can)",
           "regex_flags": "gi",
-          "confidence": 0.5,
-          "examples": [
-            "Patronus"
-          ],
-          "extractionCount": 1
+          "confidence": 0.78,
+          "examples": ["Elves are immortal", "Dwarves have strength", "Halflings prefer", "Drow society"],
+          "context": ["are", "were", "have", "possess", "prefer"]
+        },
+        {
+          "name": "racial_adjectives",
+          "template": "[RACE] warrior",
+          "regex_source": "\\b([A-Z][a-z]+(?:ian|ish|ic)?)\\s+(?:warrior|knight|mage|lord|queen|king|prince|maiden)",
+          "regex_flags": "gi",
+          "confidence": 0.82,
+          "examples": ["Elven warrior", "Dwarven smith", "Elvish king", "Orc chief"],
+          "context": ["warrior", "knight", "mage", "lord", "queen", "smith", "maiden"]
+        },
+        {
+          "name": "species_suffix",
+          "template": "[name]-fold, [name]-kind",
+          "regex_source": "\\b([A-Z][a-z]+)(?:fold|kind|ish|-people|-race|ian)(?:\\s|,|$)",
+          "regex_flags": "gi",
+          "confidence": 0.80,
+          "examples": ["Dragonkind", "Elfold", "Dwarvish", "Humankind"],
+          "context": []
         }
       ],
-      "seeds": [
-        "Expelliarmus",
-        "Patronus"
-      ],
+      "seeds": ["Elves", "Dwarves", "Humans", "Drow", "Orc", "Halfling", "Dragonborn", "Tiefling", "Gnome"],
       "corpus_stats": {
-        "documents_seen": 1,
-        "total_extractions": 2,
-        "last_updated": "2025-10-29T22:13:20.877Z"
+        "documents_seen": 0,
+        "total_extractions": 0,
+        "last_updated": "2025-11-21T00:00:00Z"
+      }
+    },
+    "CREATURE": {
+      "type": "CREATURE",
+      "description": "Specific creatures or monsters with names (Smaug, Phoenix, Basilisk)",
+      "patterns": [
+        {
+          "name": "named_creature",
+          "template": "The [creature name] is/was",
+          "regex_source": "(?:the|a)\\s+([A-Z][a-z]+(?:\\s+(?:the|of|de)\\s+[A-Z][a-z]+)?)\\s+(?:is|was|lived|lurked|dwelled|flew|roamed)",
+          "regex_flags": "gi",
+          "confidence": 0.80,
+          "examples": ["the Phoenix rose", "the Basilisk emerged", "Smaug the dragon"],
+          "context": ["is", "was", "lived", "lurked", "dwelled", "flew", "roamed"]
+        },
+        {
+          "name": "creature_possessive",
+          "template": "[creature]'s lair/nest/hoard",
+          "regex_source": "([A-Z][a-z]+(?:\\s+(?:the|of|de)\\s+[A-Z][a-z]+)?)\\s+'s\\s+(?:lair|nest|hoard|den|cave|mountain)",
+          "regex_flags": "gi",
+          "confidence": 0.88,
+          "examples": ["Smaug's hoard", "the Dragon's lair", "Phoenix's nest"],
+          "context": ["lair", "nest", "hoard", "den", "cave", "mountain", "domain"]
+        },
+        {
+          "name": "creature_type_named",
+          "template": "the [type] [name]",
+          "regex_source": "\\b(?:dragon|phoenix|basilisk|kraken|minotaur|chimera|wyvern|griffin|hydra|leviathan)\\s+([A-Z][a-z]+)",
+          "regex_flags": "gi",
+          "confidence": 0.82,
+          "examples": ["dragon Smaug", "phoenix Fawkes", "basilisk Tom"],
+          "context": []
+        },
+        {
+          "name": "mythical_creature",
+          "template": "[creature] hunted/fought/battled",
+          "regex_source": "\\b([A-Z][a-z]+)\\s+(?:hunted|fought|battled|defeated|slayed|awakened|summoned)(?:\\s+the)?",
+          "regex_flags": "gi",
+          "confidence": 0.75,
+          "examples": ["Smaug hunted", "the Balrog fought", "Medusa slayed"],
+          "context": ["hunted", "fought", "battled", "defeated", "slayed"]
+        }
+      ],
+      "seeds": ["Smaug", "Phoenix", "Basilisk", "Kraken", "Minotaur", "Chimera", "Hydra", "Leviathan"],
+      "corpus_stats": {
+        "documents_seen": 0,
+        "total_extractions": 0,
+        "last_updated": "2025-11-21T00:00:00Z"
+      }
+    },
+    "ARTIFACT": {
+      "type": "ARTIFACT",
+      "description": "Magical or significant items (Excalibur, Ring, Wand, Sword)",
+      "patterns": [
+        {
+          "name": "possessive_artifact",
+          "template": "[person]'s [artifact]",
+          "regex_source": "([A-Z][a-z]+(?:\\s+(?:the|of)\\s+[A-Z][a-z]+)?)\\s+'s\\s+([A-Z][a-z]+(?:\\s+(?:of|the)\\s+(?:[A-Z][a-z]+|[A-Za-z]+))?)",
+          "regex_flags": "gi",
+          "confidence": 0.85,
+          "examples": ["Aragorn's sword", "Harry's wand", "Frodo's ring"],
+          "context": []
+        },
+        {
+          "name": "famous_artifact",
+          "template": "the [artifact]",
+          "regex_source": "(?:the|a)\\s+([A-Z][a-z]+(?:\\s+(?:of|the)\\s+[A-Z][a-z]+)?(?:\\s+(?:Stone|Ring|Sword|Crown|Wand|Staff|Book|Mirror|Cup|Goblet|Blade|Amulet|Pendant|Rune|Helm|Shield|Armor)))",
+          "regex_flags": "gi",
+          "confidence": 0.82,
+          "examples": ["the One Ring", "the Philosopher's Stone", "the Sword of Elendil"],
+          "context": ["Stone", "Ring", "Sword", "Crown", "Wand", "Staff", "Book", "Mirror", "Cup", "Goblet"]
+        },
+        {
+          "name": "artifact_type_named",
+          "template": "[name] the [type]",
+          "regex_source": "([A-Z][a-z]+(?:\\s+the\\s+[A-Z][a-z]+)?)\\s+(?:the\\s+)?(?:Sword|Ring|Wand|Crown|Armor|Shield|Blade|Staff|Amulet|Bow)",
+          "regex_flags": "gi",
+          "confidence": 0.80,
+          "examples": ["Excalibur the Sword", "Sting the dagger"],
+          "context": []
+        },
+        {
+          "name": "magical_item_verb",
+          "template": "[artifact] was forged/created/enchanted",
+          "regex_source": "([A-Z][a-z]+(?:\\s+(?:the|of|de)\\s+[A-Z][a-z]+)?)\\s+(?:was|were)\\s+(?:forged|created|enchanted|crafted|made|blessed)",
+          "regex_flags": "gi",
+          "confidence": 0.78,
+          "examples": ["Excalibur was forged", "the One Ring was crafted"],
+          "context": ["forged", "created", "enchanted", "crafted", "made", "blessed"]
+        }
+      ],
+      "seeds": ["Excalibur", "One Ring", "Philosopher's Stone", "Sting", "Gundam", "Muramasa", "Kusanagi"],
+      "corpus_stats": {
+        "documents_seen": 0,
+        "total_extractions": 0,
+        "last_updated": "2025-11-21T00:00:00Z"
+      }
+    },
+    "TECHNOLOGY": {
+      "type": "TECHNOLOGY",
+      "description": "Fictional technology or devices (robot, spaceship, android)",
+      "patterns": [
+        {
+          "name": "tech_device",
+          "template": "[tech] is/was/has",
+          "regex_source": "\\b([A-Z][a-z]+(?:\\s+(?:the|of|Model)\\s+[A-Z0-9][a-zA-Z0-9]*)?)\\s+(?:is|was|has|can|could)\\s+(?:a|an|advanced|futuristic|powerful)",
+          "regex_flags": "gi",
+          "confidence": 0.75,
+          "examples": ["Terminator-800 is", "the Android is", "R2-D2 was"],
+          "context": []
+        },
+        {
+          "name": "tech_creation",
+          "template": "[tech] was created/built/invented",
+          "regex_source": "([A-Z][a-z]+(?:\\s+(?:Mark|Model|Type|Series)\\s+[A-Z0-9][a-zA-Z0-9]*)?)\\s+(?:was|is)\\s+(?:created|built|invented|designed|engineered|constructed)",
+          "regex_flags": "gi",
+          "confidence": 0.80,
+          "examples": ["the Gundam was created", "Iron Man's suit was built"],
+          "context": ["created", "built", "invented", "designed", "engineered"]
+        },
+        {
+          "name": "tech_type_named",
+          "template": "[tech type] [name]",
+          "regex_source": "\\b(?:robot|android|cyborg|AI|machine|computer|device|spacecraft|ship|vessel|suit)\\s+([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)",
+          "regex_flags": "gi",
+          "confidence": 0.78,
+          "examples": ["robot Wall-E", "android Vision", "AI Skynet"],
+          "context": []
+        },
+        {
+          "name": "model_number",
+          "template": "[name]-[number/designation]",
+          "regex_source": "([A-Z][a-z]+(?:\\s+T|-)?(?:\\d+|Series|Mark|Model|Generation)(?:[A-Z]{0,3})?)",
+          "regex_flags": "gi",
+          "confidence": 0.72,
+          "examples": ["T-800", "Model-3", "Generation-X", "Series-7"],
+          "context": []
+        }
+      ],
+      "seeds": ["T-800", "R2-D2", "Wall-E", "Iron Man suit", "Gundam", "Android"],
+      "corpus_stats": {
+        "documents_seen": 0,
+        "total_extractions": 0,
+        "last_updated": "2025-11-21T00:00:00Z"
+      }
+    },
+    "MAGIC": {
+      "type": "MAGIC",
+      "description": "Magical concepts, systems, or phenomena (magic itself, different magical traditions)",
+      "patterns": [
+        {
+          "name": "magic_system",
+          "template": "[magic type] magic",
+          "regex_source": "\\b([A-Z][a-z]+(?:\\s+(?:and|or)\\s+[A-Z][a-z]+)?)\\s+(?:magic|sorcery|witchcraft|enchantment|conjuring)",
+          "regex_flags": "gi",
+          "confidence": 0.80,
+          "examples": ["Dark magic", "White magic", "Elemental magic", "Blood magic"],
+          "context": ["magic", "sorcery", "witchcraft", "enchantment", "conjuring"]
+        },
+        {
+          "name": "magical_art",
+          "template": "[magic] was/is used",
+          "regex_source": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)\\s+(?:was|is|were|are)\\s+(?:used|practiced|wielded|mastered|taught|forbidden)",
+          "regex_flags": "gi",
+          "confidence": 0.75,
+          "examples": ["Necromancy was forbidden", "Divination is ancient"],
+          "context": ["used", "practiced", "wielded", "mastered", "taught", "forbidden"]
+        },
+        {
+          "name": "magical_school",
+          "template": "[magic] school/school of [magic]",
+          "regex_source": "(?:school|school of|tradition of|art of)\\s+([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+          "regex_flags": "gi",
+          "confidence": 0.78,
+          "examples": ["school of Transmutation", "art of Alchemy", "tradition of Runes"],
+          "context": ["school", "tradition", "art", "branch"]
+        }
+      ],
+      "seeds": ["Dark magic", "White magic", "Elemental magic", "Necromancy", "Divination", "Alchemy"],
+      "corpus_stats": {
+        "documents_seen": 0,
+        "total_extractions": 0,
+        "last_updated": "2025-11-21T00:00:00Z"
+      }
+    },
+    "LANGUAGE": {
+      "type": "LANGUAGE",
+      "description": "Fictional languages (Klingon, Elvish, Parseltongue)",
+      "patterns": [
+        {
+          "name": "language_ending",
+          "template": "[language]",
+          "regex_source": "\\b([A-Z][a-z]+(?:(?:ian|ish|ese|ine)$))",
+          "regex_flags": "gi",
+          "confidence": 0.80,
+          "examples": ["Elvish", "Klingon", "Parseltongue", "Draconic", "Sindarin"],
+          "context": []
+        },
+        {
+          "name": "language_spoken",
+          "template": "spoke [language]",
+          "regex_source": "\\b(?:spoke|speaking|speaks|language|tongue|dialect)\\s+(?:in\\s+)?([A-Z][a-z]+(?:(?:ian|ish|ese))?)",
+          "regex_flags": "gi",
+          "confidence": 0.78,
+          "examples": ["spoke in Elvish", "the Klingon language", "Parseltongue"],
+          "context": ["spoke", "speaking", "language", "tongue", "dialect"]
+        },
+        {
+          "name": "ancient_language",
+          "template": "ancient [language]/[language] of the ancients",
+          "regex_source": "(?:ancient|old|forgotten)\\s+([A-Z][a-z]+(?:\\s+(?:tongue|language|dialect))?)",
+          "regex_flags": "gi",
+          "confidence": 0.75,
+          "examples": ["ancient Elvish", "old Dwarvish", "forgotten Draconic"],
+          "context": ["ancient", "old", "forgotten", "lost"]
+        },
+        {
+          "name": "script_language",
+          "template": "[language] runes/script",
+          "regex_source": "([A-Z][a-z]+(?:ian|ish)?)\\s+(?:runes|script|alphabet|writing)",
+          "regex_flags": "gi",
+          "confidence": 0.77,
+          "examples": ["Elvish runes", "Dwarven script", "Angelic alphabet"],
+          "context": ["runes", "script", "alphabet", "writing"]
+        }
+      ],
+      "seeds": ["Elvish", "Klingon", "Parseltongue", "Draconic", "Sindarin", "Dwarvish"],
+      "corpus_stats": {
+        "documents_seen": 0,
+        "total_extractions": 0,
+        "last_updated": "2025-11-21T00:00:00Z"
+      }
+    },
+    "CURRENCY": {
+      "type": "CURRENCY",
+      "description": "Fictional currency systems (Galleon, credit, drachma)",
+      "patterns": [
+        {
+          "name": "numeric_currency",
+          "template": "[number] [currency]",
+          "regex_source": "(?:(?:\\d+|a|one|two|three|four|five|ten|hundred|thousand)\\s+)?([A-Z][a-z]+(?:s|coins?)(?:\\s+(?:of|and)\\s+[A-Z][a-z]+)*)",
+          "regex_flags": "gi",
+          "confidence": 0.78,
+          "examples": ["10 Galleons", "five Credits", "a Drachma", "three Sickles"],
+          "context": []
+        },
+        {
+          "name": "currency_type",
+          "template": "[currency] coin/note/piece",
+          "regex_source": "\\b([A-Z][a-z]+(?:s)?)\\s+(?:coin|coins|note|notes|piece|pieces|bill|bills)",
+          "regex_flags": "gi",
+          "confidence": 0.80,
+          "examples": ["Galleon coins", "Credit notes", "Drachma pieces"],
+          "context": ["coin", "coins", "note", "notes", "piece", "pieces", "bill"]
+        },
+        {
+          "name": "currency_exchange",
+          "template": "[currency] worth/value",
+          "regex_source": "([A-Z][a-z]+(?:s)?)\\s+(?:worth|valued at|equivalent to|equals)",
+          "regex_flags": "gi",
+          "confidence": 0.75,
+          "examples": ["Galleons worth", "Credits valued at"],
+          "context": ["worth", "valued at", "equivalent to", "equals"]
+        },
+        {
+          "name": "currency_system",
+          "template": "system of [currency]/[currency] system",
+          "regex_source": "(?:system|currency|money)\\s+(?:of\\s+)?([A-Z][a-z]+(?:s)?)",
+          "regex_flags": "gi",
+          "confidence": 0.72,
+          "examples": ["system of Galleons", "currency of Credits"],
+          "context": []
+        }
+      ],
+      "seeds": ["Galleon", "Sickle", "Knut", "Credit", "Drachma", "Denar"],
+      "corpus_stats": {
+        "documents_seen": 0,
+        "total_extractions": 0,
+        "last_updated": "2025-11-21T00:00:00Z"
+      }
+    },
+    "MATERIAL": {
+      "type": "MATERIAL",
+      "description": "Special substances or elements (Mithril, Vibranium, Orichalcum)",
+      "patterns": [
+        {
+          "name": "material_property",
+          "template": "[material] is/was",
+          "regex_source": "\\b([A-Z][a-z]+(?:\\s+(?:ore|metal|stone|glass|wood|crystal|alloy))?)\\s+(?:is|was|has|can)\\s+(?:stronger|harder|rarer|more|precious)",
+          "regex_flags": "gi",
+          "confidence": 0.80,
+          "examples": ["Mithril is precious", "Vibranium was rare", "Orichalcum ore"],
+          "context": []
+        },
+        {
+          "name": "made_of_material",
+          "template": "made of [material]",
+          "regex_source": "(?:made of|forged from|crafted from)\\s+([A-Z][a-z]+(?:\\s+(?:ore|metal|stone|crystal))?)",
+          "regex_flags": "gi",
+          "confidence": 0.85,
+          "examples": ["made of Mithril", "forged from Vibranium", "crafted from Orichalcum"],
+          "context": ["made of", "forged from", "crafted from", "wrought from"]
+        },
+        {
+          "name": "material_object",
+          "template": "[material] [object]",
+          "regex_source": "([A-Z][a-z]+(?:\\s+(?:ore|metal|stone|crystal))?)\\s+(?:ring|sword|armor|shield|helmet|crown|amulet)",
+          "regex_flags": "gi",
+          "confidence": 0.82,
+          "examples": ["Mithril ring", "Vibranium shield", "Orichalcum crown"],
+          "context": []
+        },
+        {
+          "name": "precious_material",
+          "template": "[material] deposit/vein/mine",
+          "regex_source": "([A-Z][a-z]+)\\s+(?:deposit|deposits|vein|veins|mine|mines|ore|stone)",
+          "regex_flags": "gi",
+          "confidence": 0.77,
+          "examples": ["Mithril ore", "Adamantite deposit", "Truesilver vein"],
+          "context": ["deposit", "vein", "mine", "ore", "stone", "crystal"]
+        }
+      ],
+      "seeds": ["Mithril", "Vibranium", "Orichalcum", "Adamantite", "Truesilver", "Starlight metal"],
+      "corpus_stats": {
+        "documents_seen": 0,
+        "total_extractions": 0,
+        "last_updated": "2025-11-21T00:00:00Z"
+      }
+    },
+    "DRUG": {
+      "type": "DRUG",
+      "description": "Potions, elixirs, or chemical substances (Veritaserum, Felix Felicis)",
+      "patterns": [
+        {
+          "name": "potion_drink",
+          "template": "[potion] potion/elixir/draught",
+          "regex_source": "([A-Z][a-z]+(?:\\s+(?:the)?\\s+[A-Z][a-z]+)?)\\s+(?:potion|elixir|draught|brew|concoction|mixture)",
+          "regex_flags": "gi",
+          "confidence": 0.82,
+          "examples": ["Veritaserum potion", "Felix Felicis elixir", "Love potion"],
+          "context": ["potion", "elixir", "draught", "brew", "concoction", "mixture"]
+        },
+        {
+          "name": "drank_substance",
+          "template": "drank/consumed [drug]",
+          "regex_source": "\\b(?:drank|drank of|consumed|swallowed|administered)\\s+(?:the|a)?\\s+([A-Z][a-z]+(?:\\s+potion)?)",
+          "regex_flags": "gi",
+          "confidence": 0.78,
+          "examples": ["drank the Veritaserum", "consumed Felix Felicis", "swallowed the potion"],
+          "context": ["drank", "consumed", "swallowed", "administered", "ingested"]
+        },
+        {
+          "name": "drug_effect",
+          "template": "[drug] caused/produced/granted",
+          "regex_source": "([A-Z][a-z]+(?:\\s+(?:potion|elixir))?)\\s+(?:caused|produced|granted|gave|bestowed|induced)",
+          "regex_flags": "gi",
+          "confidence": 0.75,
+          "examples": ["Veritaserum caused", "Felix Felicis granted", "Love potion induced"],
+          "context": ["caused", "produced", "granted", "gave", "bestowed", "induced"]
+        },
+        {
+          "name": "drug_creation",
+          "template": "[drug] was brewed/made/created",
+          "regex_source": "([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)\\s+(?:was|is)\\s+(?:brewed|made|created|mixed|prepared|distilled)",
+          "regex_flags": "gi",
+          "confidence": 0.76,
+          "examples": ["Veritaserum was brewed", "the potion was mixed"],
+          "context": ["brewed", "made", "created", "mixed", "prepared", "distilled"]
+        }
+      ],
+      "seeds": ["Veritaserum", "Felix Felicis", "Polyjuice potion", "Dreamless sleep draught", "Amortentia"],
+      "corpus_stats": {
+        "documents_seen": 0,
+        "total_extractions": 0,
+        "last_updated": "2025-11-21T00:00:00Z"
+      }
+    },
+    "DEITY": {
+      "type": "DEITY",
+      "description": "Gods, goddesses, spiritual entities (Zeus, Athena, Odin)",
+      "patterns": [
+        {
+          "name": "god_goddess",
+          "template": "[deity] the god/goddess",
+          "regex_source": "([A-Z][a-z]+(?:\\s+(?:the|of|and)\\s+[A-Z][a-z]+)?)\\s+(?:the\\s+)?(?:god|goddess|divine|deity|supreme|almighty)",
+          "regex_flags": "gi",
+          "confidence": 0.85,
+          "examples": ["Zeus the god", "Athena goddess", "Odin the divine"],
+          "context": ["god", "goddess", "divine", "deity", "almighty", "supreme"]
+        },
+        {
+          "name": "deity_action",
+          "template": "[deity] blessed/cursed/smote",
+          "regex_source": "([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)\\s+(?:blessed|cursed|smote|favored|protected|watched over)",
+          "regex_flags": "gi",
+          "confidence": 0.78,
+          "examples": ["Zeus blessed", "Athena favored", "Odin protected"],
+          "context": ["blessed", "cursed", "smote", "favored", "protected", "watched over"]
+        },
+        {
+          "name": "deity_worship",
+          "template": "worship/pray to [deity]",
+          "regex_source": "\\b(?:worship|prayed to|pray to|invoke|called upon)\\s+([A-Z][a-z]+(?:\\s+(?:the)?\\s+[A-Z][a-z]+)?)",
+          "regex_flags": "gi",
+          "confidence": 0.80,
+          "examples": ["worship Zeus", "prayed to Athena", "invoke Odin"],
+          "context": ["worship", "prayed to", "pray to", "invoke", "called upon"]
+        },
+        {
+          "name": "divine_temple",
+          "template": "temple/shrine of [deity]",
+          "regex_source": "(?:temple|shrine|altar|sanctuary)\\s+(?:of|to)\\s+([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)",
+          "regex_flags": "gi",
+          "confidence": 0.82,
+          "examples": ["temple of Zeus", "shrine to Athena", "altar of Odin"],
+          "context": ["temple", "shrine", "altar", "sanctuary"]
+        }
+      ],
+      "seeds": ["Zeus", "Athena", "Odin", "Frigg", "Thor", "Loki", "Hades", "Poseidon"],
+      "corpus_stats": {
+        "documents_seen": 0,
+        "total_extractions": 0,
+        "last_updated": "2025-11-21T00:00:00Z"
+      }
+    },
+    "ABILITY": {
+      "type": "ABILITY",
+      "description": "General abilities/powers (strength, telepathy, flight, regeneration)",
+      "patterns": [
+        {
+          "name": "ability_possession",
+          "template": "[person] has/had the ability to [verb]",
+          "regex_source": "\\b(?:has|had|possess|possessed)\\s+(?:the\\s+)?(?:ability|power|gift|talent|capacity)\\s+(?:to|for)\\s+([A-Za-z]+ing\\b)",
+          "regex_flags": "gi",
+          "confidence": 0.85,
+          "examples": ["has the ability to fly", "possessed the power to heal", "gift of telepathy"],
+          "context": ["ability", "power", "gift", "talent", "capacity"]
+        },
+        {
+          "name": "ability_noun",
+          "template": "[ability] is/was [adjective]",
+          "regex_source": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)\\s+(?:is|was|are|were)\\s+(?:a rare|an ancient|a powerful|the\\s+)?(?:ability|power|gift|talent)",
+          "regex_flags": "gi",
+          "confidence": 0.78,
+          "examples": ["Telepathy is a rare ability", "Flight was their power"],
+          "context": []
+        },
+        {
+          "name": "innate_power",
+          "template": "born/blessed with [ability]",
+          "regex_source": "\\b(?:born|blessed|cursed|gifted|endowed|granted)\\s+(?:with|for)\\s+(?:the\\s+)?(?:ability|power|gift|talent)\\s+(?:of|to)?\\s+([A-Za-z]+)",
+          "regex_flags": "gi",
+          "confidence": 0.80,
+          "examples": ["born with strength", "blessed with telepathy", "cursed with regeneration"],
+          "context": ["born", "blessed", "cursed", "gifted", "endowed", "granted"]
+        },
+        {
+          "name": "enhanced_ability",
+          "template": "[person] could [ability]/had [adjective] [noun]",
+          "regex_source": "\\b(?:could|can|was able to|were able to|has|had)\\s+(?:an?\\s+)?(?:incredible|enhanced|superhuman|extraordinary)\\s+([A-Za-z]+\\b)",
+          "regex_flags": "gi",
+          "confidence": 0.76,
+          "examples": ["could fly", "had superhuman strength", "incredible intellect"],
+          "context": ["incredible", "enhanced", "superhuman", "extraordinary", "exceptional"]
+        }
+      ],
+      "seeds": ["flight", "telepathy", "strength", "speed", "healing", "regeneration", "invisibility", "shape-shifting"],
+      "corpus_stats": {
+        "documents_seen": 0,
+        "total_extractions": 0,
+        "last_updated": "2025-11-21T00:00:00Z"
+      }
+    },
+    "SKILL": {
+      "type": "SKILL",
+      "description": "Learned skills/crafts (swordsmanship, archery, brewing, smithing)",
+      "patterns": [
+        {
+          "name": "trained_skill",
+          "template": "[person] trained in [skill]",
+          "regex_source": "\\b(?:trained|skilled|expert|master|proficient|accomplished)\\s+(?:in|at|with|of)\\s+([A-Za-z]+(?:\\s+and\\s+[A-Za-z]+)*)",
+          "regex_flags": "gi",
+          "confidence": 0.84,
+          "examples": ["trained in swordsmanship", "skilled at archery", "expert in brewing"],
+          "context": ["trained", "skilled", "expert", "master", "proficient", "accomplished"]
+        },
+        {
+          "name": "learned_skill",
+          "template": "[person] learned/studied [skill]",
+          "regex_source": "\\b(?:learned|studied|mastered|practiced|perfected|devoted to)\\s+(?:the\\s+)?(?:art|craft|skill|technique|trade)\\s+(?:of|in)\\s+([A-Za-z]+)",
+          "regex_flags": "gi",
+          "confidence": 0.82,
+          "examples": ["learned swordsmanship", "studied the craft of brewing", "mastered archery"],
+          "context": ["learned", "studied", "mastered", "practiced", "perfected"]
+        },
+        {
+          "name": "skill_teaching",
+          "template": "[person] taught [skill] to",
+          "regex_source": "\\b(?:taught|instructed|trained|mentored|guided)\\s+(?:in|the\\s+)?([A-Za-z]+(?:\\s+and\\s+[A-Za-z]+)*)",
+          "regex_flags": "gi",
+          "confidence": 0.80,
+          "examples": ["taught swordsmanship", "instructed in archery", "mentored in smithing"],
+          "context": ["taught", "instructed", "trained", "mentored", "guided"]
+        },
+        {
+          "name": "masterful_skill",
+          "template": "[person] was a master of [skill]",
+          "regex_source": "\\b(?:master|expert|virtuoso|champion|renowned|legendary)\\s+(?:in|at|of|with)\\s+([A-Za-z]+)",
+          "regex_flags": "gi",
+          "confidence": 0.81,
+          "examples": ["master of swordsmanship", "expert at archery", "virtuoso with instruments"],
+          "context": ["master", "expert", "virtuoso", "champion", "renowned", "legendary"]
+        }
+      ],
+      "seeds": ["swordsmanship", "archery", "brewing", "smithing", "magic", "diplomacy", "stealth", "lockpicking"],
+      "corpus_stats": {
+        "documents_seen": 0,
+        "total_extractions": 0,
+        "last_updated": "2025-11-21T00:00:00Z"
+      }
+    },
+    "POWER": {
+      "type": "POWER",
+      "description": "Innate/supernatural powers (telekinesis, immortality, mind control)",
+      "patterns": [
+        {
+          "name": "supernatural_power",
+          "template": "[person] has the power to [verb]",
+          "regex_source": "\\b(?:has|had|wields|possess|granted)\\s+(?:the\\s+)?(?:power|ability)\\s+(?:of|to)\\s+([A-Z][a-z]+(?:\\s+[a-z]+)*)",
+          "regex_flags": "gi",
+          "confidence": 0.85,
+          "examples": ["has the power of telekinesis", "granted immortality", "wields telepathy"],
+          "context": ["power", "ability", "gift"]
+        },
+        {
+          "name": "mystical_power",
+          "template": "[power] was/is a mystical/divine/ancient power",
+          "regex_source": "([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)\\s+(?:was|is|are|were)\\s+(?:an?\\s+)?(?:mystical|divine|ancient|supernatural|magical)\\s+(?:power|ability|force)",
+          "regex_flags": "gi",
+          "confidence": 0.80,
+          "examples": ["Telekinesis was a mystical power", "Immortality is divine"],
+          "context": ["mystical", "divine", "ancient", "supernatural", "magical"]
+        },
+        {
+          "name": "power_manifestation",
+          "template": "[power] manifested/emerged/awakened",
+          "regex_source": "([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)\\s+(?:manifested|emerged|awakened|surfaced|appeared|developed)",
+          "regex_flags": "gi",
+          "confidence": 0.78,
+          "examples": ["Telekinesis manifested", "her power emerged", "the curse awakened"],
+          "context": ["manifested", "emerged", "awakened", "surfaced", "appeared"]
+        },
+        {
+          "name": "power_source",
+          "template": "source of [power]/[power] stemmed from",
+          "regex_source": "(?:source of|root of|stemmed from)\\s+([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)",
+          "regex_flags": "gi",
+          "confidence": 0.76,
+          "examples": ["source of her power", "stemmed from ancient magic"],
+          "context": []
+        }
+      ],
+      "seeds": ["telekinesis", "immortality", "mind control", "time manipulation", "shapeshifting", "precognition"],
+      "corpus_stats": {
+        "documents_seen": 0,
+        "total_extractions": 0,
+        "last_updated": "2025-11-21T00:00:00Z"
+      }
+    },
+    "TECHNIQUE": {
+      "type": "TECHNIQUE",
+      "description": "Combat/magical techniques (Hadoken, Shield Charm, Whirlwind Attack)",
+      "patterns": [
+        {
+          "name": "combat_technique",
+          "template": "[person] used/performed [technique]",
+          "regex_source": "\\b(?:used|performed|executed|unleashed|employed|demonstrated)\\s+(?:the|a)?\\s+([A-Z][a-z]+(?:\\s+(?:Attack|Strike|Technique|Move|Form|Stance|Kata))?)",
+          "regex_flags": "gi",
+          "confidence": 0.82,
+          "examples": ["used Hadoken", "performed Shield Charm", "executed Whirlwind Attack"],
+          "context": ["used", "performed", "executed", "unleashed", "employed", "demonstrated"]
+        },
+        {
+          "name": "technique_mastery",
+          "template": "[person] mastered [technique]",
+          "regex_source": "\\b(?:mastered|learned|discovered|developed|invented|created)\\s+(?:the|a)?\\s+([A-Z][a-z]+(?:\\s+(?:technique|move|strike|form|kata))?)",
+          "regex_flags": "gi",
+          "confidence": 0.80,
+          "examples": ["mastered Hadoken", "learned the Whirlwind", "invented the Shield Charm"],
+          "context": ["mastered", "learned", "discovered", "developed", "invented", "created"]
+        },
+        {
+          "name": "technique_effect",
+          "template": "[technique] dealt/caused/created",
+          "regex_source": "([A-Z][a-z]+(?:\\s+(?:Attack|Strike|Spell|Charm))?)\\s+(?:dealt|caused|created|produced|inflicted|generated)",
+          "regex_flags": "gi",
+          "confidence": 0.78,
+          "examples": ["Hadoken dealt damage", "Shield Charm created protection"],
+          "context": ["dealt", "caused", "created", "produced", "inflicted", "generated"]
+        },
+        {
+          "name": "technique_type",
+          "template": "[technique type] [name]",
+          "regex_source": "\\b(?:technique|move|strike|form|stance|kata|spell|charm)\\s+([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)",
+          "regex_flags": "gi",
+          "confidence": 0.77,
+          "examples": ["technique Hadoken", "strike Whirlwind", "spell Shield Charm"],
+          "context": []
+        }
+      ],
+      "seeds": ["Hadoken", "Shield Charm", "Whirlwind Attack", "Dragon Punch", "Kamehameha", "Expelliarmus"],
+      "corpus_stats": {
+        "documents_seen": 0,
+        "total_extractions": 0,
+        "last_updated": "2025-11-21T00:00:00Z"
+      }
+    },
+    "SPELL": {
+      "type": "SPELL",
+      "description": "Spells and incantations (Fireball, Expelliarmus, Avada Kedavra)",
+      "patterns": [
+        {
+          "name": "cast_spell",
+          "template": "[person] cast/casted [spell]",
+          "regex_source": "\\b(?:cast|casted|conjured|invoked|whispered|chanted)\\s+(?:the|a)?\\s+([A-Z][a-z]+(?:\\s+(?:Spell|Curse|Charm))?)",
+          "regex_flags": "gi",
+          "confidence": 0.88,
+          "examples": ["cast Fireball", "casted Expelliarmus", "invoked the curse"],
+          "context": ["cast", "casted", "conjured", "invoked", "whispered", "chanted"]
+        },
+        {
+          "name": "spell_effect",
+          "template": "[spell] caused/dealt/created",
+          "regex_source": "([A-Z][a-z]+(?:\\s+(?:Spell|Curse|Charm))?)\\s+(?:dealt|caused|created|destroyed|killed|saved)",
+          "regex_flags": "gi",
+          "confidence": 0.85,
+          "examples": ["Fireball dealt damage", "Expelliarmus destroyed", "Avada Kedavra killed"],
+          "context": ["dealt", "caused", "created", "destroyed", "killed", "saved"]
+        },
+        {
+          "name": "spell_type",
+          "template": "the [spell] spell/curse/charm",
+          "regex_source": "(?:the|a)?\\s+([A-Z][a-z]+)\\s+(?:spell|curse|charm|hex|jinx|enchantment)",
+          "regex_flags": "gi",
+          "confidence": 0.84,
+          "examples": ["the Fireball spell", "Expelliarmus curse", "Love Charm"],
+          "context": ["spell", "curse", "charm", "hex", "jinx", "enchantment"]
+        },
+        {
+          "name": "spell_learning",
+          "template": "[person] learned/taught [spell]",
+          "regex_source": "\\b(?:learned|taught|mastered|discovered)\\s+(?:the|a)?\\s+([A-Z][a-z]+(?:\\s+(?:spell|curse|charm))?)",
+          "regex_flags": "gi",
+          "confidence": 0.82,
+          "examples": ["learned Fireball", "taught Expelliarmus", "mastered the Healing spell"],
+          "context": ["learned", "taught", "mastered", "discovered", "developed", "invented"]
+        }
+      ],
+      "seeds": ["Fireball", "Expelliarmus", "Avada Kedavra", "Healing spell", "Patronus", "Lightning Bolt"],
+      "corpus_stats": {
+        "documents_seen": 0,
+        "total_extractions": 0,
+        "last_updated": "2025-11-21T00:00:00Z"
       }
     }
   },
   "metadata": {
-    "name": "Fantasy Entities",
-    "description": "Patterns for wizards, spells, and magical entities",
+    "name": "Fantasy Entities - Comprehensive",
+    "description": "Patterns for 15 new entity types: RACE, CREATURE, ARTIFACT, TECHNOLOGY, MAGIC, LANGUAGE, CURRENCY, MATERIAL, DRUG, DEITY, ABILITY, SKILL, POWER, TECHNIQUE, SPELL",
     "domain": "fantasy",
-    "total_patterns": 2,
-    "total_types": 1,
-    "notes": ""
+    "total_patterns": 60,
+    "total_types": 15,
+    "notes": "Based on entity-extraction-sota.pdf and skills-detection-guide.pdf research documents. Confidence scores range from 0.72-0.88 to balance precision and recall."
   }
 }

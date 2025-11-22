@@ -9,6 +9,7 @@
       "WHITELIST": 0.95,
       "NER": 0.85,
       "DEP": 0.75,
+      "PATTERN": 0.90,
       "FALLBACK": 0.40
     },
     "minimum_entity_confidence": 0.5,

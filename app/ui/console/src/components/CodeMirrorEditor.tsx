@@ -4,7 +4,7 @@ import { EditorView, keymap, ViewPlugin, ViewUpdate, Decoration, DecorationSet }
 import { defaultKeymap } from '@codemirror/commands';
 import { markdown } from '@codemirror/lang-markdown';
 import type { EntitySpan, EntityType } from '../types/entities';
-import { highlightEntities, getEntityTypeColor } from '../types/entities';
+import { highlightEntities, getEntityTypeColor, isValidEntityType } from '../types/entities';
 import { EntityContextMenu } from './EntityContextMenu';
 import { entityAutoReplaceExtension } from './entityAutoReplace';
 import { wysiwygMarkdownExtension } from './wysiwygMarkdown';
@@ -85,18 +85,21 @@ function entityHighlighterExtension(setContextMenu?: (ctx: any) => void) {
           const name = isMultiWord ? match[1] : match[3];
           const type = isMultiWord ? match[2] : match[4];
 
-          // Validate type is a valid EntityType
-          if (['PERSON', 'PLACE', 'ORG', 'EVENT', 'CONCEPT', 'OBJECT'].includes(type.toUpperCase())) {
+          // Validate type is a valid EntityType using validation function
+          const upperType = type.toUpperCase();
+          if (isValidEntityType(upperType)) {
             manualTags.push({
               start: match.index,
               end: match.index + match[0].length,
               text: match[0], // Keep the full tag as text
               displayText: name,
               canonicalName: name,
-              type: type.toUpperCase() as EntityType,
+              type: upperType as EntityType,
               confidence: 1.0,
               source: 'tag'
             });
+          } else {
+            console.warn(`[EntityHighlighter] Invalid entity type in tag: ${type}, skipping tag at position ${match.index}`);
           }
         }
 

@@ -18,6 +18,7 @@ export interface ConfidenceConfig {
     NER: number;
     DEP: number;
     FALLBACK: number;
+    PATTERN: number;  // Added for pattern-extracted entities (e.g., conjunctive names)
   };
   minimum_entity_confidence: number;
   minimum_relation_confidence: number;

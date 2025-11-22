@@ -3,6 +3,44 @@
 """Relay-style cursor for pagination"""
 scalar Cursor
 
+"""Entity type enum - all 27 supported entity types"""
+enum EntityType {
+  # Core types (6)
+  PERSON
+  PLACE
+  ORG
+  EVENT
+  CONCEPT
+  OBJECT
+  # Fiction types (10)
+  RACE
+  CREATURE
+  ARTIFACT
+  TECHNOLOGY
+  MAGIC
+  LANGUAGE
+  CURRENCY
+  MATERIAL
+  DRUG
+  DEITY
+  # Ability types (5)
+  ABILITY
+  SKILL
+  POWER
+  TECHNIQUE
+  SPELL
+  # Schema types (9)
+  DATE
+  TIME
+  WORK
+  ITEM
+  MISC
+  SPECIES
+  HOUSE
+  TRIBE
+  TITLE
+}
+
 """Page info for Relay-style pagination"""
 type PageInfo {
   hasNextPage: Boolean!
@@ -13,7 +51,7 @@ type PageInfo {
 
 type Entity {
   id: ID!
-  type: String!
+  type: EntityType!
   canonical: String!
   aliases: [String!]!
   centrality: Float
@@ -181,7 +219,7 @@ type PendingEntity {
   id: ID!
   name: String!
   aliases: [String!]!
-  types: [String!]!
+  types: [EntityType!]!
   evidence: [PendingEvidence!]!
   project: String!
   createdAt: String!
@@ -211,7 +249,7 @@ type ReviewHeartbeat {
 type SearchResult {
   id: ID!
   name: String!
-  type: String!
+  type: EntityType!
   snippet: String
 }
 
@@ -249,7 +287,7 @@ extend type Mutation {
 type EntityLite {
   id: ID!
   name: String!
-  types: [String!]!
+  types: [EntityType!]!
   aliases: [String!]!
   mentionCount: Int
 }
@@ -307,7 +345,7 @@ type RelationConnectionR4 {
 
 """Filter for entity queries"""
 input EntityFilter {
-  type: String
+  type: EntityType
   nameContains: String
 }
 
@@ -384,7 +422,7 @@ extend type Mutation {
 type GraphNode {
   id: ID!
   name: String!
-  types: [String!]!
+  types: [EntityType!]!
 }
 
 """Graph edge for visualization"""
@@ -873,7 +911,7 @@ type EntitySpan {
   text: String!
   displayText: String
   canonicalName: String
-  type: String!
+  type: EntityType!
   confidence: Float!
   source: String!
 }
@@ -995,7 +1033,7 @@ type EntityMention {
   noteId: ID!
   projectId: String!
   text: String!
-  type: String!
+  type: EntityType!
   confidence: Float!
   status: String!
   start: Int!
@@ -1026,13 +1064,13 @@ extend type Mutation {
     project: String!
     noteId: ID!
     entityName: String!
-    type: String!
+    type: EntityType!
   ): EntityMention!
 
   """Update entity mention type"""
   updateEntityMentionType(
     id: ID!
-    newType: String!
+    newType: EntityType!
   ): EntityMention!
 
   """Reject an entity mention"""
@@ -1042,7 +1080,7 @@ extend type Mutation {
   updateEntityType(
     project: String!
     entityId: ID!
-    newType: String!
+    newType: EntityType!
   ): EntityLite!
 }
 
@@ -1053,7 +1091,7 @@ type AliasEntry {
   entityId: ID!
   entityName: String!
   alias: String!
-  type: String!
+  type: EntityType!
   confidence: Float!
   confirmedAt: String!
 }
@@ -1083,7 +1121,7 @@ extend type Mutation {
     entityId: ID!
     entityName: String!
     alias: String!
-    type: String!
+    type: EntityType!
   ): AliasEntry!
 
   """S8: Reject an alias (remove from dictionary)"""
@@ -1098,7 +1136,7 @@ extend type Mutation {
     project: String!
     entityId: ID!
     alias: String!
-    newType: String!
+    newType: EntityType!
   ): AliasEntry!
 
   """S3: Rebuild alias index from knowledge graph"""

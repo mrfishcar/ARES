@@ -140,13 +140,13 @@ async function collectAllMentions(fullText: string): Promise<EntityMention[]> {
     } | null = null;
 
     for (const token of sentence.tokens) {
-      if (token.ent_type && token.ent_type !== 'O') {
+      if (token.ent && token.ent !== '') {
         // Token is part of an entity
-        if (currentEntity && token.ent_type === currentEntity.type) {
+        if (currentEntity && token.ent === currentEntity.type) {
           // Continue existing entity
           currentEntity.tokens.push(token.text);
-          currentEntity.starts.push(token.char_start || 0);
-          currentEntity.ends.push(token.char_end || 0);
+          currentEntity.starts.push(token.start || 0);
+          currentEntity.ends.push(token.end || 0);
         } else {
           // Save previous entity if exists
           if (currentEntity) {
@@ -155,16 +155,16 @@ async function collectAllMentions(fullText: string): Promise<EntityMention[]> {
               type: mapSpacyToEntityType(currentEntity.type),
               start: Math.min(...currentEntity.starts),
               end: Math.max(...currentEntity.ends),
-              sentence_idx: sentence.idx || 0
+              sentence_idx: sentence.sentence_index || 0
             });
           }
 
           // Start new entity
           currentEntity = {
             tokens: [token.text],
-            type: token.ent_type,
-            starts: [token.char_start || 0],
-            ends: [token.char_end || 0]
+            type: token.ent,
+            starts: [token.start || 0],
+            ends: [token.end || 0]
           };
         }
       } else {
@@ -175,7 +175,7 @@ async function collectAllMentions(fullText: string): Promise<EntityMention[]> {
             type: mapSpacyToEntityType(currentEntity.type),
             start: Math.min(...currentEntity.starts),
             end: Math.max(...currentEntity.ends),
-            sentence_idx: sentence.idx || 0
+            sentence_idx: sentence.sentence_index || 0
           });
           currentEntity = null;
         }
@@ -189,7 +189,7 @@ async function collectAllMentions(fullText: string): Promise<EntityMention[]> {
         type: mapSpacyToEntityType(currentEntity.type),
         start: Math.min(...currentEntity.starts),
         end: Math.max(...currentEntity.ends),
-        sentence_idx: sentence.idx || 0
+        sentence_idx: sentence.sentence_index || 0
       });
     }
   }
@@ -331,8 +331,8 @@ function splitEntityByContext(
     // Extract context just around this mention
     const localSentences = sentences.filter(s =>
       s.tokens.some((t: any) =>
-        t.char_start >= mention.start - 200 &&
-        t.char_start <= mention.end + 200
+        t.start >= mention.start - 200 &&
+        t.start <= mention.end + 200
       )
     );
 
@@ -347,8 +347,8 @@ function splitEntityByContext(
       const groupFirstMention = groupMentions[0];
       const groupLocalSentences = sentences.filter(s =>
         s.tokens.some((t: any) =>
-          t.char_start >= groupFirstMention.start - 200 &&
-          t.char_start <= groupFirstMention.end + 200
+          t.start >= groupFirstMention.start - 200 &&
+          t.start <= groupFirstMention.end + 200
         )
       );
       const groupContext = extractEntityContext(baseName, baseAliases, groupLocalSentences, fullText);
@@ -377,8 +377,8 @@ function splitEntityByContext(
     const groupSentences = sentences.filter(s =>
       groupMentions.some(m =>
         s.tokens.some((t: any) =>
-          t.char_start >= m.start - 50 &&
-          t.char_start <= m.end + 50
+          t.start >= m.start - 50 &&
+          t.start <= m.end + 50
         )
       )
     );
@@ -417,12 +417,11 @@ function canonicalToEntities(registry: Map<string, CanonicalEntity>): Entity[] {
   for (const canonical of registry.values()) {
     entities.push({
       id: canonical.id,
-      name: canonical.canonical_name,
+      canonical: canonical.canonical_name,
       type: canonical.type,
-      confidence: 1.0,  // All spaCy entities high confidence
-      extractor_source: 'spacy-ner',
-      metadata: {
-        aliases: canonical.aliases,
+      aliases: canonical.aliases,
+      created_at: new Date().toISOString(),
+      attrs: {
         mention_count: canonical.mention_count,
         first_position: canonical.first_mention_position
       }

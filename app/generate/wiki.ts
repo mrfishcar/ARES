@@ -9,6 +9,7 @@ import type { KnowledgeGraph } from '../storage/storage';
 import type { Entity, Relation } from '../engine/schema';
 import { recordWikiRebuild } from '../monitor/metrics';
 import { logger } from '../infra/logger';
+import { generateMarkdownPage } from './markdown';
 
 export interface WikiOptions {
   outputDir: string;
@@ -39,29 +40,14 @@ export function generateWiki(
     entityById.set(entity.id, entity);
   }
 
-  // Index relations by entity
-  const relationsByEntity = new Map<string, Relation[]>();
-  for (const relation of graph.relations) {
-    if (!relationsByEntity.has(relation.subj)) {
-      relationsByEntity.set(relation.subj, []);
-    }
-    if (!relationsByEntity.has(relation.obj)) {
-      relationsByEntity.set(relation.obj, []);
-    }
-    relationsByEntity.get(relation.subj)!.push(relation);
-    if (relation.subj !== relation.obj) {
-      relationsByEntity.get(relation.obj)!.push(relation);
-    }
-  }
-
   // Generate page for each entity
   for (const entity of graph.entities) {
-    const content = generateEntityPage(
-      entity,
-      relationsByEntity.get(entity.id) || [],
-      entityById,
-      graph,
-      { includeProvenance, includeConfidence, includeEvidence }
+    const conflicts: any[] = (graph as any).conflicts ?? [];
+    const content = generateMarkdownPage(
+      entity.id,
+      graph.entities,
+      graph.relations,
+      conflicts
     );
 
     const filename = sanitizeFilename(entity.canonical) + '.md';
@@ -91,102 +77,17 @@ export function generateWiki(
   });
 }
 
-/**
- * Generate page for a single entity
- */
-function generateEntityPage(
-  entity: Entity,
-  relations: Relation[],
-  entityById: Map<string, Entity>,
-  graph: KnowledgeGraph,
-  options: { includeProvenance: boolean; includeConfidence: boolean; includeEvidence: boolean }
+export function buildEntityWikiFromGraph(
+  entityId: string,
+  graph: KnowledgeGraph
 ): string {
-  const sections: string[] = [];
-
-  // Title
-  sections.push(`# ${entity.canonical}\n`);
-
-  // Metadata
-  sections.push(`**Type:** ${entity.type}`);
-  if (entity.aliases.length > 0) {
-    sections.push(`**Aliases:** ${entity.aliases.join(', ')}`);
-  }
-  if (entity.centrality) {
-    sections.push(`**Centrality:** ${entity.centrality.toFixed(2)}`);
-  }
-  sections.push('');
-
-  // Relations
-  sections.push('## Relations\n');
-  if (relations.length === 0) {
-    sections.push('_No relations found._\n');
-  } else {
-    // Group by predicate
-    const byPredicate = new Map<string, Relation[]>();
-    for (const rel of relations) {
-      if (!byPredicate.has(rel.pred)) {
-        byPredicate.set(rel.pred, []);
-      }
-      byPredicate.get(rel.pred)!.push(rel);
-    }
-
-    for (const [pred, rels] of Array.from(byPredicate.entries()).sort()) {
-      sections.push(`### ${pred}\n`);
-      for (const rel of rels) {
-        const isSubject = rel.subj === entity.id;
-        const otherId = isSubject ? rel.obj : rel.subj;
-        const otherEntity = entityById.get(otherId);
-        const otherName = otherEntity ? otherEntity.canonical : otherId;
-        const filename = otherEntity ? sanitizeFilename(otherEntity.canonical) + '.md' : '#';
-
-        const direction = isSubject ? '→' : '←';
-        let line = `- ${direction} [${otherName}](${filename})`;
-
-        if (options.includeConfidence && rel.confidence) {
-          line += ` _(confidence: ${rel.confidence.toFixed(2)})_`;
-        }
-
-        sections.push(line);
-
-        // Evidence
-        if (options.includeEvidence && rel.evidence && rel.evidence.length > 0) {
-          const evidence = rel.evidence[0];
-          const snippet = evidence.span.text.replace(/\n/g, ' ').slice(0, 100);
-          sections.push(`  > ${snippet}${snippet.length === 100 ? '...' : ''}`);
-        }
-      }
-      sections.push('');
-    }
-  }
-
-  // Provenance
-  if (options.includeProvenance) {
-    sections.push('## Provenance\n');
-    const provenance: Array<{ doc: string; localName: string; mergedAt: string }> = [];
-    for (const [localId, entry] of graph.provenance.entries()) {
-      if (entry.global_id === entity.id) {
-        provenance.push({
-          doc: entry.doc_id,
-          localName: entry.local_canonical,
-          mergedAt: entry.merged_at
-        });
-      }
-    }
-
-    if (provenance.length === 0) {
-      sections.push('_No provenance data available._\n');
-    } else {
-      sections.push('| Document | Local Name | Merged At |');
-      sections.push('|----------|------------|-----------|');
-      for (const p of provenance) {
-        const date = new Date(p.mergedAt).toLocaleString();
-        sections.push(`| ${p.doc} | ${p.localName} | ${date} |`);
-      }
-      sections.push('');
-    }
-  }
-
-  return sections.join('\n');
+  const conflicts: any[] = (graph as any).conflicts ?? [];
+  return generateMarkdownPage(
+    entityId,
+    graph.entities,
+    graph.relations,
+    conflicts
+  );
 }
 
 /**

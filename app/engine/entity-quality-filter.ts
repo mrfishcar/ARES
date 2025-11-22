@@ -116,8 +116,10 @@ function isValidDate(name: string): boolean {
   // Dates should contain numbers or temporal keywords
   const hasNumbers = /\d/.test(name);
   const hasTemporalKeywords = /\b(year|month|day|century|age|era|bc|ad|today|yesterday|tomorrow)\b/i.test(name);
+  // Also check for spelled-out numbers like "one thousand seven hundred"
+  const hasSpelledOutNumbers = /\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand)\b/i.test(name);
 
-  return hasNumbers || hasTemporalKeywords;
+  return hasNumbers || hasTemporalKeywords || hasSpelledOutNumbers;
 }
 
 /**
@@ -150,30 +152,163 @@ function isTooGeneric(name: string): boolean {
 }
 
 /**
+ * Check if word looks like a surname (vs first name)
+ */
+function looksLikeSurname(word: string): boolean {
+  const lower = word.toLowerCase();
+
+  // Common surname endings
+  const surnameEndings = [
+    // Patronymic/occupational endings
+    'son', 'sen', 'sson', 'ton', 'ham', 'ley', 'field',
+    'man', 'stein', 'berg', 'ski', 'sky', 'wicz',
+    'ing', 'ford', 'wood', 'ridge', 'dale', 'hill',
+    // Additional common endings
+    'er', 'or', 'ar',           // Potter, Miller, Granger, etc.
+    'kins', 'kin',              // Larkins, Perkins, etc.
+    'well', 'wall', 'wick',     // Maxwell, Powell, Warwick, etc.
+    'ape', 'ope',               // Snape, Pope, etc.
+    'good',                     // Lovegood, etc.
+    'more', 'ore',              // Blackmore, Dumbledore, etc.
+    'grave', 'grove',           // Graves, Groves, etc.
+    'stone', 'strom',           // Stone, Stromberg, etc.
+    'water', 'worth',           // Waterford, Worthing, etc.
+    'foy', 'roy',               // Malfoy, Leroy, etc.
+    'aw', 'ew',                 // Ravenclaw, Crenshaw, etc.
+    'om', 'um',                 // Longbottom, etc.
+    'in', 'an', 'on',           // Lupin, Petunia->Pettigrew pattern (wider), etc.
+  ];
+
+  if (surnameEndings.some(end => lower.endsWith(end))) {
+    return true;
+  }
+
+  // Common surname prefixes
+  const surnamePrefixes = ['mc', 'mac', "o'", 'van', 'von', 'de', 'di', 'du', 'le', 'la'];
+  if (surnamePrefixes.some(pre => lower.startsWith(pre))) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Check if name looks like two first names mashed together (no surname)
+ */
+function looksLikeTwoFirstNames(name: string): boolean {
+  const words = name.split(/\s+/).filter(Boolean);
+
+  // Must be exactly 2 words
+  if (words.length !== 2) return false;
+
+  // Both must be capitalized
+  if (!words.every(w => /^[A-Z]/.test(w))) return false;
+
+  // Check if second word looks like a surname
+  const secondWord = words[1];
+  if (looksLikeSurname(secondWord)) {
+    return false; // Valid: "Harry Potter" (Potter is a surname)
+  }
+
+  // Two capitalized words, second is NOT a surname
+  // Pattern: "Elimelech Naomi" (two first names - REJECT)
+  return true;
+}
+
+/**
+ * Check if name is a role/title description rather than a proper name
+ */
+function isRoleBasedName(name: string): boolean {
+  const lowerName = name.toLowerCase();
+  const words = lowerName.split(/\s+/).filter(Boolean);
+
+  const ROLE_DESCRIPTORS = new Set([
+    'man', 'woman', 'boy', 'girl', 'child', 'person', 'people',
+    'young', 'old', 'elder', 'eldest', 'youngest',
+    'master', 'mistress', 'servant', 'slave',
+    'messenger', 'soldier', 'warrior', 'guard',
+    'stranger', 'visitor', 'traveler'
+  ]);
+
+  // Single role word
+  if (words.length === 1 && ROLE_DESCRIPTORS.has(words[0])) {
+    return true;
+  }
+
+  // "the [role]" or "a [role]"
+  if (words.length === 2) {
+    const [first, second] = words;
+    if ((first === 'the' || first === 'a' || first === 'an') && ROLE_DESCRIPTORS.has(second)) {
+      return true;
+    }
+
+    // "young man", "old woman"
+    if (ROLE_DESCRIPTORS.has(first) && ROLE_DESCRIPTORS.has(second)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Split a two-first-names entity into constituent parts
+ */
+function splitTwoFirstNamesEntity(entity: Entity): Entity[] {
+  const words = entity.canonical.split(/\s+/).filter(Boolean);
+  if (words.length !== 2) return [];
+
+  // Create two entities from the parts
+  // Use canonical names as basis for IDs so they naturally dedupe with separately-extracted entities
+  return words.map(word => {
+    // Generate a deterministic ID based on canonical name (similar to how entities are normally created)
+    const canonicalLower = word.toLowerCase();
+    const newId = `entity-${entity.type.toLowerCase()}-${canonicalLower}`;
+
+    return {
+      ...entity,
+      id: newId,
+      canonical: word,
+      attrs: {
+        ...entity.attrs,
+        confidence: ((entity.attrs?.confidence as number) || 1.0) * 0.95, // Slightly lower confidence
+      }
+    };
+  });
+}
+
+/**
  * Main entity quality filter
  */
 export function filterLowQualityEntities(
   entities: Entity[],
   config: EntityQualityConfig = DEFAULT_CONFIG
 ): Entity[] {
-  const filtered = entities.filter(entity => {
+  const filtered: Entity[] = [];
+
+  for (const entity of entities) {
     const name = entity.canonical;
     const lowerName = name.toLowerCase();
+
+    const isDateEntity = entity.type === 'DATE';
+    if (isDateEntity && process.env.L4_DEBUG === "1") {
+      console.log(`[QUALITY-FILTER] Processing DATE: "${name}"`);
+    }
 
     // 1. Confidence check
     const confidence = (entity.attrs?.confidence as number) || 1.0;
     if (confidence < config.minConfidence) {
-      return false;
+      continue;
     }
 
     // 2. Name length check
     if (name.length < config.minNameLength) {
-      return false;
+      continue;
     }
 
     // 3. Blocked tokens check
     if (config.blockedTokens.has(lowerName)) {
-      return false;
+      continue;
     }
 
     // 4. Capitalization check for proper nouns
@@ -181,24 +316,29 @@ export function filterLowQualityEntities(
       if (name.toLowerCase().includes('mcgonagall') && process.env.L3_DEBUG === '1') {
         console.log(`[DEBUG-MCG] filterLowQualityEntities rejecting ${name} due to capitalization`);
       }
-      return false;
+      continue;
     }
 
     // 5. Valid characters check
     if (entity.type !== 'DATE' && !hasValidCharacters(name)) {
-      return false;
+      continue;
     }
 
     // 6. Type-specific validation
     if (entity.type === 'DATE') {
-      if (!isValidDate(name)) {
-        return false;
+      // Allow simple numeric years (like "1775", "2024", etc.)
+      const isSimpleYear = /^\d{4}$/.test(name);
+      if (!isSimpleYear && !isValidDate(name)) {
+        if (isDateEntity && process.env.L4_DEBUG === "1") {
+          console.log(`[QUALITY-FILTER] DATE "${name}" failed isValidDate check`);
+        }
+        continue;
       }
     }
 
     // 7. Too generic check
     if (isTooGeneric(name)) {
-      return false;
+      continue;
     }
 
     // 8. Strict mode additional checks
@@ -210,7 +350,7 @@ export function filterLowQualityEntities(
         // Allow known acronyms like "US", "UK", "FBI"
         const knownAcronyms = ['US', 'UK', 'USA', 'FBI', 'CIA', 'NASA', 'NATO'];
         if (!knownAcronyms.includes(name)) {
-          return false;
+          continue;
         }
       }
 
@@ -219,13 +359,33 @@ export function filterLowQualityEntities(
       if (words.length === 1) {
         // Single-word proper nouns should be at least 3 chars in strict mode
         if (name.length < 3) {
-          return false;
+          continue;
         }
       }
     }
 
-    return true;
-  });
+    // 9. Handle entities with two first names (biblical text issue - FILTER 1)
+    if (entity.type === 'PERSON' && looksLikeTwoFirstNames(name)) {
+      // Instead of rejecting, split into constituent parts
+      if (process.env.L4_DEBUG === '1') {
+        console.log(`[QUALITY-FILTER] Splitting PERSON "${name}" into constituent parts`);
+      }
+      const splitEntities = splitTwoFirstNamesEntity(entity);
+      filtered.push(...splitEntities);
+      continue;
+    }
+
+    // 10. Reject role-based names (FILTER 2)
+    if (isRoleBasedName(name)) {
+      if (process.env.L4_DEBUG === '1') {
+        console.log(`[QUALITY-FILTER] Rejecting "${name}" - role descriptor`);
+      }
+      continue;
+    }
+
+    // Entity passed all checks, add to filtered list
+    filtered.push(entity);
+  }
 
   return filtered;
 }
@@ -247,6 +407,8 @@ export interface FilterStats {
     invalidDate: number;
     tooGeneric: number;
     strictMode: number;
+    twoFirstNames: number;
+    roleDescriptor: number;
   };
 }
 
@@ -273,6 +435,8 @@ export function getFilterStats(
       invalidDate: 0,
       tooGeneric: 0,
       strictMode: 0,
+      twoFirstNames: 0,
+      roleDescriptor: 0,
     }
   };
 
@@ -296,6 +460,10 @@ export function getFilterStats(
       stats.removedByReason.invalidDate++;
     } else if (isTooGeneric(name)) {
       stats.removedByReason.tooGeneric++;
+    } else if (entity.type === 'PERSON' && looksLikeTwoFirstNames(name)) {
+      stats.removedByReason.twoFirstNames++;
+    } else if (isRoleBasedName(name)) {
+      stats.removedByReason.roleDescriptor++;
     } else if (config.strictMode) {
       stats.removedByReason.strictMode++;
     }
