@@ -4,11 +4,17 @@
  * https://www.grammar-monster.com/lessons/pronouns.htm
  */
 
+/**
+ * Personal pronouns (subjective, objective, possessive)
+ * These should NEVER be stored as permanent entity aliases
+ */
 export const PERSONAL_PRONOUNS = new Set([
   // Subjective (subject of sentence)
   'i', 'you', 'he', 'she', 'it', 'we', 'they',
+
   // Objective (object of verb/preposition)
   'me', 'you', 'him', 'her', 'it', 'us', 'them',
+
   // Possessive (ownership)
   'my', 'mine', 'your', 'yours', 'his', 'her', 'hers', 'its', 'our', 'ours', 'their', 'theirs'
 ]);
@@ -100,16 +106,28 @@ export function isContextDependent(text: string): boolean {
   return CONTEXT_DEPENDENT_TERMS.has(normalized);
 }
 
-export function inferGenderFromPronoun(pronoun: string): 'male' | 'female' | 'neutral' | 'plural' {
+/**
+ * Infer grammatical gender from pronoun
+ */
+export type Gender = 'male' | 'female' | 'neutral' | 'plural';
+
+export function inferGenderFromPronoun(pronoun: string): Gender {
   const lower = pronoun.toLowerCase();
+
   if (['he', 'him', 'his', 'himself'].includes(lower)) return 'male';
   if (['she', 'her', 'hers', 'herself'].includes(lower)) return 'female';
   if (['it', 'its', 'itself'].includes(lower)) return 'neutral';
   if (['they', 'them', 'their', 'theirs', 'themselves'].includes(lower)) return 'plural';
+
   return 'neutral';
 }
 
-export function inferNumberFromPronoun(pronoun: string): 'singular' | 'plural' {
+/**
+ * Infer grammatical number from pronoun
+ */
+export type Number = 'singular' | 'plural';
+
+export function inferNumberFromPronoun(pronoun: string): Number {
   const lower = pronoun.toLowerCase();
   return ['they', 'them', 'their', 'theirs', 'themselves', 'we', 'us', 'our', 'ours', 'ourselves'].includes(lower)
     ? 'plural'
@@ -121,12 +139,14 @@ export function inferNumberFromPronoun(pronoun: string): 'singular' | 'plural' {
  */
 export function getPronounCategory(pronoun: string): string | null {
   const lower = pronoun.toLowerCase().trim();
+
   if (PERSONAL_PRONOUNS.has(lower)) return 'personal';
   if (DEMONSTRATIVE_PRONOUNS.has(lower)) return 'demonstrative';
   if (REFLEXIVE_PRONOUNS.has(lower)) return 'reflexive';
   if (INDEFINITE_PRONOUNS.has(lower)) return 'indefinite';
   if (RELATIVE_PRONOUNS.has(lower)) return 'relative';
   if (INTERROGATIVE_PRONOUNS.has(lower)) return 'interrogative';
+
   return null;
 }
 

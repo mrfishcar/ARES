@@ -3,9 +3,8 @@
  * Processes documents using sentence-level segmentation with context windows
  */
 
-import type { Entity, Relation, MeaningRecord } from '../schema';
+import type { Entity, Relation } from '../schema';
 import { INVERSE } from '../schema';
-import { assembleMeaningRecords, logMeaningRecords } from '../meaning-assembly';
 import { v4 as uuid } from 'uuid';
 import { segmentDocument, type Seg } from '../segmenter';
 import { extractEntities, parseWithService, normalizeName } from './entities';
@@ -26,60 +25,6 @@ import { isContextDependent } from '../pronoun-utils';
 // 🛡️ PRECISION DEFENSE SYSTEM - LAYER 1 & 3
 import { filterLowQualityEntities, isEntityFilterEnabled, getFilterConfig, getFilterStats } from '../entity-quality-filter';
 import { deduplicateRelations, isDeduplicationEnabled, getDeduplicationStats } from '../relation-deduplicator';
-
-const SEG_DEBUG = process.env.L3_SEG_DEBUG === '1';
-
-const APPOS_DEBUG = process.env.L3_APPOS_DEBUG === '1';
-const MULTI_ALIAS_PATTERN = /(?:,|\band\b|&)/i;
-const TITLE_DESCRIPTOR_TOKENS = new Set([
-  'professor',
-  'head',
-  'headmaster',
-  'headmistress',
-  'former',
-  'later',
-  'stern',
-  'current',
-  'acting',
-  'chief',
-  'deputy',
-  'assistant',
-  'retired',
-  'young',
-  'younger',
-  'older',
-  'elder',
-  'senior',
-  'junior'
-]);
-
-function isMultiEntityAlias(value: string): boolean {
-  if (!value) return false;
-  if (!MULTI_ALIAS_PATTERN.test(value)) return false;
-  const parts = value.split(/(?:,|\band\b|&)/i).map(part => part.trim()).filter(Boolean);
-  const capitalized = parts.filter(part => /^[A-Z][A-Za-z]/.test(part));
-  return capitalized.length >= 2;
-}
-
-function computeAmbiguousSurnames(entities: Entity[]): Set<string> {
-  const counts = new Map<string, number>();
-  for (const entity of entities) {
-    if (entity.type !== 'PERSON') continue;
-    const tokens = entity.canonical
-      .toLowerCase()
-      .split(/\s+/)
-      .filter(Boolean);
-    if (tokens.length < 2) continue;
-    const surname = tokens[tokens.length - 1];
-    if (!surname) continue;
-    counts.set(surname, (counts.get(surname) || 0) + 1);
-  }
-  const ambiguous = new Set<string>();
-  for (const [surname, count] of counts.entries()) {
-    if (count > 1) ambiguous.add(surname);
-  }
-  return ambiguous;
-}
 
 // Select relation patterns mode from environment (baseline | expanded | hybrid)
 const PATTERNS_MODE: PatternsMode = (process.env.RELATION_PATTERNS_MODE as PatternsMode) || 'baseline';
@@ -110,7 +55,6 @@ export async function extractFromSegments(
   entities: Entity[];
   spans: Array<{ entity_id: string; start: number; end: number }>;
   relations: Relation[];
-  meaningRecords: MeaningRecord[];  // Clean intermediate representation
   fictionEntities: FictionEntity[];
   profiles: Map<string, EntityProfile>;
   herts?: string[];              // Generated HERTs (if enabled)
@@ -141,47 +85,7 @@ export async function extractFromSegments(
   // Track entity canonical names across segments to avoid duplicates
   const entityMap = new Map<string, Entity>(); // key: type::canonical_lower -> entity
 
-  const makeEntityKey = (type: Entity['type'], canonical: string) => {
-    const normalized = normalizeName(canonical);
-    return `${type}::${normalized.toLowerCase()}`;
-  };
-
-  const registerWindowEntity = (entity: Entity): Entity | null => {
-    const canonical = normalizeName(entity.canonical);
-    if (process.env.L4_DEBUG === '1' && entity.type === 'DATE') {
-      console.log(`[REGISTER-WINDOW] DATE entity: original="${entity.canonical}", normalized="${canonical}"`);
-    }
-    if (!canonical || canonical.trim() === '') {
-      if (process.env.L4_DEBUG === '1' && entity.type === 'DATE') {
-        console.log(`[REGISTER-WINDOW] DATE rejected: empty canonical`);
-      }
-      return null;
-    }
-    const key = `${entity.type}::${canonical.toLowerCase()}`;
-    let existing = entityMap.get(key);
-    if (existing) {
-      if (process.env.L4_DEBUG === '1' && entity.type === 'DATE') {
-        console.log(`[REGISTER-WINDOW] DATE already registered: ${key}`);
-      }
-      return existing;
-    }
-    const normalizedEntity: Entity = {
-      ...entity,
-      canonical,
-      aliases: entity.aliases ? [...entity.aliases] : []
-    };
-    if (canonical.toLowerCase().includes('mcgonagall')) {
-      console.log(`[DEBUG-MCG] registerWindowEntity added ${canonical}`);
-    }
-    entityMap.set(key, normalizedEntity);
-    allEntities.push(normalizedEntity);
-    return normalizedEntity;
-  };
-
   for (const seg of segs) {
-    if (SEG_DEBUG) {
-      console.log(`[SEG] Processing segment ${seg.sentIndex}: "${seg.text}"`);
-    }
     // Build context window (200 chars before/after)
     const contextBefore = fullText.slice(Math.max(0, seg.start - 200), seg.start);
     const contextAfter = fullText.slice(seg.end, Math.min(fullText.length, seg.end + 200));
@@ -212,20 +116,9 @@ export async function extractFromSegments(
     }
 
     // Filter and remap entities/spans that fall within the actual segment bounds
-    if (process.env.L4_DEBUG === '1' && entities.some(e => e.type === 'DATE')) {
-      console.log(`[ORCHESTRATOR-DATE-PROCESS] Window has ${entities.filter(e => e.type === 'DATE').length} DATE entities`);
-    }
-
     for (const entity of entities) {
       // Find all spans for this entity
       const entitySpans = spans.filter(s => s.entity_id === entity.id);
-      if (SEG_DEBUG) {
-        console.log(`[SEG-ENTITY] ${entity.canonical} spans=${entitySpans.length} (segment ${seg.sentIndex})`);
-      }
-
-      if (process.env.L4_DEBUG === '1' && entity.type === 'DATE') {
-        console.log(`[ORCHESTRATOR-DATE] Processing DATE: "${entity.canonical}", spans=${entitySpans.length}`);
-      }
 
       // Keep only spans that are COMPLETELY within the segment
       const segStart = segOffsetInWindow;
@@ -237,8 +130,7 @@ export async function extractFromSegments(
           let start = seg.start + (s.start - segOffsetInWindow);
           let end = seg.start + (s.end - segOffsetInWindow);
 
-          // Allow years/dates (which begin with digits) by trimming only non-alphanumeric chars
-          while (start < end && /[^A-Za-z0-9]/.test(fullText[start])) {
+          while (start < end && /[^A-Za-z]/.test(fullText[start])) {
             start++;
           }
           while (end < fullText.length && /[a-z'’\-]/.test(fullText[end])) {
@@ -253,29 +145,17 @@ export async function extractFromSegments(
         });
 
       if (segmentSpans.length === 0) {
-        if (SEG_DEBUG) {
-          console.log(`[SEG-ENTITY] Skipping ${entity.canonical} (no spans in segment ${seg.sentIndex})`);
-        }
         // Entity not in segment, skip
         continue;
       }
 
       // Derive canonical name from first span's absolute position in document
-      // For DATE/TIME entities, preserve the already-converted canonical (e.g., "1775" instead of "one thousand seven hundred and seventy-five")
-      let canonicalText: string;
-      if (entity.type === 'DATE' || entity.type === 'TIME') {
-        canonicalText = normalizeName(entity.canonical);
-      } else {
-        const canonicalRaw = fullText.slice(segmentSpans[0].start, segmentSpans[0].end);
-        canonicalText = normalizeName(canonicalRaw);
-      }
+      const canonicalRaw = fullText.slice(segmentSpans[0].start, segmentSpans[0].end);
+      const canonicalText = normalizeName(canonicalRaw);
 
       // Check if we've seen this entity before (by type + canonical)
-      const entityKey = makeEntityKey(entity.type, canonicalText);
+      const entityKey = `${entity.type}::${canonicalText.toLowerCase()}`;
       let existingEntity = entityMap.get(entityKey);
-      if (!existingEntity && canonicalText.toLowerCase().includes('mcgonagall') && process.env.L3_DEBUG === '1') {
-        console.log(`[DEBUG-MCG] new canonicalText for ${entity.canonical}: ${canonicalText}`);
-      }
 
       // If no exact match, check for name overlap (e.g., "Sarah" matches "Sarah Chen")
       if (!existingEntity && entity.type === 'PERSON') {
@@ -288,20 +168,11 @@ export async function extractFromSegments(
           const existingLower = ent.canonical.toLowerCase();
           const existingWords = existingLower.split(/\s+/);
 
-          // Only consider overlapping tokens that carry meaning (not generic titles/descriptors)
-          const sharedMeaningful = canonicalWords.filter(word =>
-            existingWords.includes(word) && !TITLE_DESCRIPTOR_TOKENS.has(word)
-          );
-          const hasMeaningfulOverlap = sharedMeaningful.length > 0;
-
           // Check if one is a subset of the other (same first/last name)
           // "Sarah" ⊂ "Sarah Chen" or "Sarah Chen" ⊃ "Sarah"
           const isSubset =
-            hasMeaningfulOverlap &&
-            (
-              (canonicalWords.length < existingWords.length && existingWords.some(w => canonicalWords.includes(w))) ||
-              (existingWords.length < canonicalWords.length && canonicalWords.some(w => existingWords.includes(w)))
-            );
+            (canonicalWords.length < existingWords.length && existingWords.some(w => canonicalWords.includes(w))) ||
+            (existingWords.length < canonicalWords.length && canonicalWords.some(w => existingWords.includes(w)));
 
           if (isSubset) {
             // Merge into the longer name (more specific)
@@ -338,9 +209,6 @@ export async function extractFromSegments(
 
         // Skip low-quality entities (pronouns, common words, false positives)
         if (!isValidEntity(canonicalText, entity.type)) {
-          if (process.env.L4_DEBUG === '1' && entity.type === 'DATE') {
-            console.log(`[ORCHESTRATOR-DATE-REJECT] DATE "${canonicalText}" rejected by isValidEntity`);
-          }
           continue;
         }
 
@@ -365,11 +233,6 @@ export async function extractFromSegments(
             entity.canonical
           ];
         }
-
-        if (process.env.L4_DEBUG === '1' && correctedEntity.type === 'DATE') {
-          console.log(`[ORCHESTRATOR-DATE-REGISTER] Registering DATE: "${canonicalText}", segment ${seg.sentIndex}`);
-        }
-
         entityMap.set(entityKey, correctedEntity);
         allEntities.push(correctedEntity);
 
@@ -400,11 +263,11 @@ export async function extractFromSegments(
         return rel; // Skip if entities not found
       }
 
-      const subjKey = makeEntityKey(subjEntity.type, subjEntity.canonical);
-      const objKey = makeEntityKey(objEntity.type, objEntity.canonical);
+      const subjKey = `${subjEntity.type}::${subjEntity.canonical.toLowerCase()}`;
+      const objKey = `${objEntity.type}::${objEntity.canonical.toLowerCase()}`;
 
-      let mergedSubj = entityMap.get(subjKey) || registerWindowEntity(subjEntity);
-      let mergedObj = entityMap.get(objKey) || registerWindowEntity(objEntity);
+      const mergedSubj = entityMap.get(subjKey);
+      const mergedObj = entityMap.get(objKey);
 
       return {
         ...rel,
@@ -486,27 +349,11 @@ export async function extractFromSegments(
   // 🛡️ LAYER 1: Entity Quality Pre-Filter
   // Filter low-quality entities BEFORE relation extraction
   // Expected impact: +5-10% precision
-  allEntities.length = 0;
-  allEntities.push(...entityMap.values());
   const preFilterCount = allEntities.length;
 
-  const logMcGEntries = (entities: Entity[], label: string) => {
-    for (const entity of entities) {
-      if (entity.canonical.toLowerCase().includes('mcgonagall')) {
-        console.log(`[DEBUG-MCG] ${label}: ${entity.canonical} (type=${entity.type})`);
-      }
-    }
-  };
-
-  if (docId === '3.9') {
-    console.log('[DEBUG-MCG] allEntities before filter:', allEntities.map(e => e.canonical));
-  }
-
   if (isEntityFilterEnabled()) {
-    logMcGEntries(allEntities, 'pre-filter');
     const config = getFilterConfig();
     const filteredEntities = filterLowQualityEntities(allEntities, config);
-    logMcGEntries(filteredEntities, 'post-filter');
     const stats = getFilterStats(allEntities, filteredEntities, config);
 
     console.log(`[PRECISION-DEFENSE] 🛡️ Layer 1: Entity Quality Filter`);
@@ -670,19 +517,13 @@ export async function extractFromSegments(
       const subjEntity = windowEntities.find(e => e.id === rel.subj);
       const objEntity = windowEntities.find(e => e.id === rel.obj);
 
-      const subjKey = subjEntity ? `${subjEntity.type}::${subjEntity.canonical.toLowerCase()}` : null;
-      const objKey = objEntity ? `${objEntity.type}::${objEntity.canonical.toLowerCase()}` : null;
-      const mergedSubj = subjKey ? entityMap.get(subjKey) : undefined;
-      const mergedObj = objKey ? entityMap.get(objKey) : undefined;
-
-      console.log('[COREF-DEBUG] Creating relation:');
-      console.log(`  Predicate: ${rel.pred}`);
-      console.log(`  Subject ID: "${mergedSubj?.id || rel.subj}" (window entity: ${subjEntity?.id ?? '(none)'})`);
-      console.log(`  Object ID: "${mergedObj?.id || rel.obj}" (window entity: ${objEntity?.id ?? '(none)'})`);
-      console.log(`  Subject is empty: ${(mergedSubj?.id || rel.subj) === ''}`);
-      console.log(`  Subject is undefined: ${(mergedSubj?.id || rel.subj) === undefined}`);
-
       if (subjEntity && objEntity) {
+        const subjKey = `${subjEntity.type}::${subjEntity.canonical.toLowerCase()}`;
+        const objKey = `${objEntity.type}::${objEntity.canonical.toLowerCase()}`;
+
+        const mergedSubj = entityMap.get(subjKey);
+        const mergedObj = entityMap.get(objKey);
+
         corefRelations.push({
           ...rel,
           subj: mergedSubj?.id || rel.subj,
@@ -868,21 +709,12 @@ export async function extractFromSegments(
     if (!predObjToSubjects.has(predObjKey)) {
       predObjToSubjects.set(predObjKey, []);
     }
-    if (APPOS_DEBUG) {
-      const spanInfo = subjSpan ? `${subjSpan.start}-${subjSpan.end}` : 'n/a';
-      console.log(`[APPOS-FILTER][TRACE] Tracking ${predObjKey} <= ${subjectCanonical} (id=${rel.subj}, span=${spanInfo})`);
-    }
     predObjToSubjects.get(predObjKey)!.push({ rel, position, subjectCanonical });
   }
 
-  const predObjEntries = Array.from(predObjToSubjects.entries());
   // For each pred+obj group, decide whether to keep all (coordination) or just first (appositive)
   const appositiveFilteredRelations: Relation[] = [];
-  console.log(`[APPOS-FILTER] Total pred-obj groups: ${predObjEntries.length}`);
-  for (const [predObjKey, group] of predObjEntries) {
-    console.log(`[APPOS-FILTER]   Group ${predObjKey} has ${group.length} subjects`);
-  }
-  for (const [predObjKey, group] of predObjEntries) {
+  for (const [predObjKey, group] of predObjToSubjects.entries()) {
     if (group.length === 1) {
       // No conflict, keep the relation
       appositiveFilteredRelations.push(group[0].rel);
@@ -900,30 +732,48 @@ export async function extractFromSegments(
         console.log(`  - ${item.subjectCanonical} at position ${item.position}`);
       }
 
-      const uniqueSubjectIds = new Set(group.map(item => item.rel.subj));
-      console.log(`[APPOS-FILTER]   Unique subject IDs: ${Array.from(uniqueSubjectIds).join(', ')}`);
+      // If subjects are simple names (no shared substring overlap beyond 50%),
+      // they're likely coordinated entities, so keep all
+      const isCoordination = group.every((item, idx) => {
+        if (idx === 0) return true; // First item is always kept
+        const prevCanonical = group[idx - 1].subjectCanonical;
+        const currCanonical = item.subjectCanonical;
+        const prevPosition = group[idx - 1].position;
+        const currPosition = item.position;
 
-      if (uniqueSubjectIds.size > 1) {
-        console.log(`[APPOS-FILTER]   Treating as coordination via unique IDs`);
-        const seenSubjects = new Set<string>();
+        // Skip exact duplicates (same entity at same position - these will be deduped later)
+        if (prevCanonical === currCanonical && prevPosition === currPosition) {
+          console.log(`[APPOS-FILTER]   ${currCanonical} at ${currPosition} is duplicate - SKIP`);
+          return true; // Don't treat as appositive
+        }
+
+        // If one is a substring of the other AND at different positions, it's likely appositive
+        if (prevCanonical !== currCanonical && (prevCanonical.includes(currCanonical) || currCanonical.includes(prevCanonical))) {
+          console.log(`[APPOS-FILTER]   ${currCanonical} substring of ${prevCanonical} - APPOSITIVE`);
+          return false;
+        }
+        // If they're very close (within 50 chars), likely coordination
+        const distance = Math.abs(currPosition - prevPosition);
+        console.log(`[APPOS-FILTER]   Distance between ${prevCanonical} and ${currCanonical}: ${distance}`);
+        return distance < 50;
+      });
+
+      console.log(`[APPOS-FILTER]   isCoordination: ${isCoordination}`);
+
+      if (isCoordination) {
+        // Keep all coordinated subjects
+        console.log(`[APPOS-FILTER]   Keeping all ${group.length} subjects`);
         for (const item of group) {
-          if (seenSubjects.has(item.rel.subj)) {
-            console.log(`[APPOS-FILTER]     Duplicate relation for subject ${item.subjectCanonical} - skip`);
-            continue;
-          }
-          seenSubjects.add(item.rel.subj);
           appositiveFilteredRelations.push(item.rel);
         }
-        continue;
+      } else {
+        // Appositive case - keep only the first subject
+        console.log(`[APPOS-FILTER]   Appositive detected - keeping only first subject`);
+        appositiveFilteredRelations.push(group[0].rel);
       }
-
-      // Only one unique subject ID, treat as potential appositive/duplicate
-      console.log(`[APPOS-FILTER]   Single subject detected - keeping first relation only`);
-      appositiveFilteredRelations.push(group[0].rel);
     }
   }
 
-  console.log(`[APPOS-FILTER] Relations after filter: ${appositiveFilteredRelations.length}`);
   // No context-aware filtering for now - work with relations as-is
   const contextFilteredRelations = appositiveFilteredRelations;
 
@@ -956,65 +806,6 @@ export async function extractFromSegments(
     uniqueRelations = Array.from(uniqueMap.values());
   }
 
-  // Remove family relations that conflict with explicit married_to links
-  const marriedPairs = new Set<string>();
-  for (const rel of uniqueRelations) {
-    if (rel.pred === 'married_to') {
-      marriedPairs.add(`${rel.subj}::${rel.obj}`);
-      marriedPairs.add(`${rel.obj}::${rel.subj}`);
-    }
-  }
-  if (marriedPairs.size > 0) {
-    const beforeConflictFilter = uniqueRelations.length;
-    uniqueRelations = uniqueRelations.filter(rel => {
-      if ((rel.pred === 'parent_of' || rel.pred === 'child_of') && marriedPairs.has(`${rel.subj}::${rel.obj}`)) {
-        console.log(`[PRECISION-DEFENSE] Removing ${rel.pred}: conflict with married_to (${rel.subj} ↔ ${rel.obj})`);
-        return false;
-      }
-      return true;
-    });
-    const removedConflicts = beforeConflictFilter - uniqueRelations.length;
-    if (removedConflicts > 0) {
-      console.log(`[PRECISION-DEFENSE] Removed ${removedConflicts} conflicting family relations`);
-    }
-  }
-
-  // Additional precision filters for Level 3
-  const beforePrecisionFilter = uniqueRelations.length;
-  uniqueRelations = uniqueRelations.filter(rel => {
-    const subjEntity = allEntities.find(e => e.id === rel.subj);
-    const objEntity = allEntities.find(e => e.id === rel.obj);
-    if (!subjEntity || !objEntity) return true;
-
-    // Filter 1: Don't allow someone with "son/daughter/child" in their name to be subject of parent_of
-    if (rel.pred === 'parent_of') {
-      const subjLower = subjEntity.canonical.toLowerCase();
-      if (/\b(son|daughter|child|eldest|youngest|sibling|brother|sister)\b/.test(subjLower)) {
-        console.log(`[PRECISION-DEFENSE] Removing parent_of from child-labeled entity: ${subjEntity.canonical}`);
-        return false;
-      }
-    }
-
-    // Filter 2: Don't allow married_to between people who aren't explicitly married in the text
-    // (Prevent Harry married_to Ron when text says Harry married Ginny)
-    if (rel.pred === 'married_to') {
-      // Check if either person is already married to someone else
-      const subjMarriedTo = uniqueRelations.filter(r =>
-        r.pred === 'married_to' && r.subj === rel.subj && r.obj !== rel.obj
-      );
-      if (subjMarriedTo.length > 0) {
-        console.log(`[PRECISION-DEFENSE] Removing spurious married_to: ${subjEntity.canonical} already married`);
-        return false;
-      }
-    }
-
-    return true;
-  });
-  const removedByPrecisionFilter = beforePrecisionFilter - uniqueRelations.length;
-  if (removedByPrecisionFilter > 0) {
-    console.log(`[PRECISION-DEFENSE] Removed ${removedByPrecisionFilter} relations via precision filters`);
-  }
-
   // 9. Optional: Filter entities to improve precision in dense narratives
   // For mega regression, we want to focus on entities involved in the narrative structure
   // But for simple sentences, we should keep all high-quality entities
@@ -1031,35 +822,6 @@ export async function extractFromSegments(
     entityMentionCounts.set(span.entity_id, (entityMentionCounts.get(span.entity_id) || 0) + 1);
   }
 
-  // Helper: Check if entity was extracted via pattern matching
-  const isPatternExtracted = (entity: Entity): boolean => {
-    const source = entity.attrs?.source;
-    return source === 'PATTERN' || source === 'pattern-conjunctive';
-  };
-
-  // Debug: Check if Chilion and DATEs are in allEntities
-  if (process.env.L4_DEBUG === '1') {
-    const chilionEntities = allEntities.filter(e => e.canonical === 'Chilion');
-    const dateEntities = allEntities.filter(e => e.type === 'DATE');
-    if (chilionEntities.length > 0) {
-      console.log(`[ORCHESTRATOR-ENTRY] Found ${chilionEntities.length} Chilion entities before filtering:`);
-      chilionEntities.forEach(e => {
-        console.log(`  - id: ${e.id}, source: ${e.attrs?.source}, attrs: ${JSON.stringify(e.attrs)}`);
-      });
-    }
-    if (dateEntities.length > 0) {
-      console.log(`[ORCHESTRATOR-ENTRY] Found ${dateEntities.length} DATE entities before filtering`);
-      dateEntities.forEach(e => {
-        console.log(`  - DATE: "${e.canonical}" (id: ${e.id})`);
-      });
-    } else {
-      console.log(`[ORCHESTRATOR-ENTRY] No DATE entities in allEntities`);
-    }
-    if (allEntities.length <= 10 && chilionEntities.length === 0) {
-      console.log(`  Entities present: ${allEntities.map(e => e.canonical).join(', ')}`);
-    }
-  }
-
   // Keep entities that meet ANY of these criteria:
   // 1. Involved in at least one relation (narrative-connected)
   // 2. High mention frequency (≥3 mentions = clearly important)
@@ -1072,37 +834,17 @@ export async function extractFromSegments(
   const isDenseNarrative = allEntities.length > 12 && uniqueRelations.length >= allEntities.length;
 
   const filteredEntities = allEntities.filter(e => {
-    // DATEs and TIMEs are always important - keep them regardless of narrative density
-    // Even single mentions of dates are valuable for historical/temporal context
-    if (e.type === 'DATE' || e.type === 'TIME') {
-      return true;
-    }
-
     const inRelation = entitiesInRelations.has(e.id);
     const mentionCount = entityMentionCounts.get(e.id) || 0;
     const highMentionCount = mentionCount >= 3;
-    const patternBased = isPatternExtracted(e);
-
-    // Debug logging for Chilion
-    if (process.env.L4_DEBUG === '1' && e.canonical === 'Chilion') {
-      console.log(`[ORCHESTRATOR] Chilion analysis:`);
-      console.log(`  - source: ${e.attrs?.source}`);
-      console.log(`  - inRelation: ${inRelation}`);
-      console.log(`  - mentionCount: ${mentionCount}`);
-      console.log(`  - patternBased: ${patternBased}`);
-      console.log(`  - isDenseNarrative: ${isDenseNarrative}`);
-      console.log(`  - allEntities.length: ${allEntities.length}`);
-      console.log(`  - uniqueRelations.length: ${uniqueRelations.length}`);
-      console.log(`  - KEEP? ${!isDenseNarrative || inRelation || highMentionCount || patternBased}`);
-    }
 
     // For simple/moderate texts, keep all entities (don't filter)
     if (!isDenseNarrative) {
       return true;
     }
 
-    // For dense narratives, keep entities that are: in relations, have high mention count, OR pattern-extracted
-    return inRelation || highMentionCount || patternBased;
+    // For dense narratives, keep entities in relations OR with high mention count
+    return inRelation || highMentionCount;
   });
 
   const filteredSpans = allSpans.filter(s =>
@@ -1117,9 +859,6 @@ export async function extractFromSegments(
   // Get confidence threshold from environment (default: 0.70, proven effective in Phase 1)
   // To disable: ARES_MIN_CONFIDENCE=0
   const minConfidence = parseFloat(process.env.ARES_MIN_CONFIDENCE || '0.70');
-  const predicateConfidenceOverrides: Record<string, number> = {
-    married_to: 0.60
-  };
   const precisionMode = process.env.ARES_PRECISION_MODE === 'strict';
   const confidenceFilterEnabled = minConfidence > 0;
 
@@ -1148,10 +887,7 @@ export async function extractFromSegments(
   // Expected impact: +5-8% precision
   if (confidenceFilterEnabled) {
     const preConfidenceCount = filteredRelations.length;
-    filteredRelations = filteredRelations.filter(rel => {
-      const predicateThreshold = predicateConfidenceOverrides[rel.pred] ?? minConfidence;
-      return rel.confidence >= predicateThreshold;
-    });
+    filteredRelations = filteredRelations.filter(rel => rel.confidence >= minConfidence);
 
     console.log(`[PRECISION-DEFENSE] 🛡️ Layer 3: Confidence Threshold Filter`);
     console.log(`  Threshold: ${minConfidence}`);
@@ -1273,16 +1009,13 @@ export async function extractFromSegments(
   // Populate entity.aliases from coreference links and alias registry
   // This makes aliases visible to tests and downstream consumers
   console.log(`[ORCHESTRATOR] Populating entity aliases from coref links and alias registry`);
-  const ambiguousSurnames = computeAmbiguousSurnames(filteredEntities);
 
   for (const entity of filteredEntities) {
     const aliasSet = new Set<string>();
 
-    // Add existing aliases (filter pronouns in case any slipped through earlier stages)
+    // Add existing aliases (shouldn't be empty, but just in case)
     for (const alias of entity.aliases) {
-      if (!isContextDependent(alias)) {
-        aliasSet.add(alias);
-      }
+      aliasSet.add(alias);
     }
 
     // 1. Add aliases from coreference links (descriptive mentions ONLY - filter pronouns)
@@ -1295,8 +1028,7 @@ export async function extractFromSegments(
         // Pronouns must be resolved at extraction time, not stored as aliases
         if (mentionText &&
             mentionText !== entity.canonical &&
-            !isContextDependent(mentionText) &&
-            !isMultiEntityAlias(mentionText)) {
+            !isContextDependent(mentionText)) {
           aliasSet.add(mentionText);
         }
       }
@@ -1310,31 +1042,14 @@ export async function extractFromSegments(
         // Add if different from canonical, not empty, and NOT a pronoun
         if (surfaceForm &&
             surfaceForm !== entity.canonical &&
-            !isContextDependent(surfaceForm) &&
-            !isMultiEntityAlias(surfaceForm)) {
+            !isContextDependent(surfaceForm)) {
           aliasSet.add(surfaceForm);
         }
       }
     }
 
-    // Update entity.aliases with unique values, filtering ambiguous surname aliases (e.g., "Weasley")
-    const cleanedAliases = Array.from(aliasSet).filter(alias => {
-      if (entity.type !== 'PERSON') return true;
-      const aliasLower = alias.toLowerCase();
-      const canonicalTokens = entity.canonical.toLowerCase().split(/\s+/).filter(Boolean);
-      if (canonicalTokens.length < 2) return true;
-      const surname = canonicalTokens[canonicalTokens.length - 1];
-      if (!surname) return true;
-      if (aliasLower === surname && ambiguousSurnames.has(surname)) {
-        if (process.env.L3_DEBUG === '1') {
-          console.log(`[ALIAS-FILTER] Dropping ambiguous surname alias "${alias}" for ${entity.canonical}`);
-        }
-        return false;
-      }
-      return true;
-    });
-
-    entity.aliases = cleanedAliases;
+    // Update entity.aliases with unique values
+    entity.aliases = Array.from(aliasSet);
 
     if (entity.aliases.length > 0) {
       console.log(`[ORCHESTRATOR] Entity "${entity.canonical}" has ${entity.aliases.length} aliases: [${entity.aliases.slice(0, 3).join(', ')}${entity.aliases.length > 3 ? '...' : ''}]`);
@@ -1385,20 +1100,10 @@ export async function extractFromSegments(
     }
   }
 
-  // MEANING ASSEMBLY - Convert relations to clean intermediate representation
-  const meaningRecords = assembleMeaningRecords(filteredRelations, filteredEntities, docId);
-
-  // Debug logging if MEANING_DEBUG=1
-  if (process.env.MEANING_DEBUG === '1') {
-    const testName = docId.replace(/[^a-zA-Z0-9]/g, '-');
-    logMeaningRecords(meaningRecords, testName);
-  }
-
   return {
     entities: filteredEntities,
     spans: filteredSpans, // Don't include virtual spans in output
     relations: filteredRelations,
-    meaningRecords, // Clean intermediate representation for testing/debugging
     fictionEntities,
     profiles, // Return updated profiles for cross-document learning
     herts     // Return HERTs if generated
