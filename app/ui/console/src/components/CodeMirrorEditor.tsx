@@ -625,6 +625,9 @@ const markdownHighlightStyle = HighlightStyle.define([
 
 const editorTheme = EditorView.theme({
   '.cm-editor': {
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif',
     fontSize: '15px',
     lineHeight: '1.75',
@@ -635,9 +638,13 @@ const editorTheme = EditorView.theme({
   '.cm-content': {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif !important',
     padding: '16px',
-    minHeight: '100%',
+    flex: 1,
     backgroundColor: 'var(--bg-primary)',
     color: 'var(--text-primary)'
+  },
+  '.cm-scroller': {
+    height: '100%',
+    overflow: 'auto'
   },
   '.cm-line': {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif !important',
@@ -951,7 +958,6 @@ export function CodeMirrorEditor({
         style={{
           border: '1px solid var(--border-color)',
           borderRadius: '0',
-          minHeight,
           height: '100%',
           backgroundColor: 'var(--bg-primary)',
           width: '100%',
