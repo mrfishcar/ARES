@@ -627,6 +627,7 @@ const editorTheme = EditorView.theme({
   '.cm-editor': {
     height: '100% !important',
     cursor: 'text',
+    caretColor: 'var(--accent-color) !important',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif',
     fontSize: '15px',
     lineHeight: '1.75',
@@ -638,6 +639,7 @@ const editorTheme = EditorView.theme({
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif !important',
     padding: '16px',
     cursor: 'text',
+    caretColor: 'var(--accent-color) !important',
     backgroundColor: 'var(--bg-primary)',
     color: 'var(--text-primary)'
   },
@@ -649,7 +651,8 @@ const editorTheme = EditorView.theme({
   '.cm-line': {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif !important',
     position: 'relative',
-    color: 'var(--text-primary)'
+    color: 'var(--text-primary)',
+    caretColor: 'var(--accent-color) !important'
   },
   '.cm-gutters': {
     backgroundColor: 'var(--bg-secondary)',
@@ -779,14 +782,17 @@ const editorTheme = EditorView.theme({
     borderLeftColor: 'var(--accent-color) !important',
     borderLeftWidth: '2px !important',
     borderLeftStyle: 'solid !important',
-    marginLeft: '-1px'
+    marginLeft: '-1px',
+    caretColor: 'var(--accent-color) !important'
   },
   '.cm-cursor-primary': {
     borderLeftColor: 'var(--accent-color) !important',
-    borderLeftWidth: '2px !important'
+    borderLeftWidth: '2px !important',
+    caretColor: 'var(--accent-color) !important'
   },
   '.cm-cursor-secondary': {
-    borderLeftColor: 'var(--accent-color) !important'
+    borderLeftColor: 'var(--accent-color) !important',
+    caretColor: 'var(--accent-color) !important'
   }
 });
 
