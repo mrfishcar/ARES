@@ -628,95 +628,105 @@ const editorTheme = EditorView.theme({
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif',
     fontSize: '15px',
     lineHeight: '1.75',
-    color: '#4a403a'
+    color: 'var(--text-primary)',
+    backgroundColor: 'var(--bg-primary)',
+    transition: 'background-color 0.3s ease, color 0.3s ease'
   },
   '.cm-content': {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif !important',
     padding: '16px',
-    minHeight: '100%'
+    minHeight: '100%',
+    backgroundColor: 'var(--bg-primary)',
+    color: 'var(--text-primary)'
   },
   '.cm-line': {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif !important',
-    position: 'relative'
+    position: 'relative',
+    color: 'var(--text-primary)'
+  },
+  '.cm-gutters': {
+    backgroundColor: 'var(--bg-secondary)',
+    borderRight: '1px solid var(--border-color)',
+    color: 'var(--text-secondary)'
   },
   // === Markdown Live Preview Styling ===
   // Heading level 1 (#)
   '.cm-heading1': {
     fontSize: '2.2em !important',
     fontWeight: 'bold !important',
-    color: '#4a403a'
+    color: 'var(--md-heading)'
   },
   // Heading level 2 (##)
   '.cm-heading2': {
     fontSize: '1.8em !important',
     fontWeight: 'bold !important',
-    color: '#4a403a'
+    color: 'var(--md-heading)'
   },
   // Heading level 3 (###)
   '.cm-heading3': {
     fontSize: '1.4em !important',
     fontWeight: 'bold !important',
-    color: '#4a403a'
+    color: 'var(--md-heading)'
   },
   // Headings level 4-6
   '.cm-heading4': {
     fontSize: '1.2em !important',
     fontWeight: 'bold !important',
-    color: '#4a403a'
+    color: 'var(--md-heading)'
   },
   '.cm-heading5': {
     fontSize: '1.1em !important',
     fontWeight: 'bold !important',
-    color: '#4a403a'
+    color: 'var(--md-heading)'
   },
   '.cm-heading6': {
     fontWeight: 'bold !important',
-    color: '#4a403a'
+    color: 'var(--md-heading)'
   },
   // Strong (bold) text - **text** or __text__
   '.cm-strong': {
     fontWeight: 'bold !important',
-    color: '#4a403a'
+    color: 'var(--text-primary)'
   },
   // Emphasis (italic) text - *text* or _text_
   '.cm-em': {
     fontStyle: 'italic !important',
-    color: '#8b7e77'
+    color: 'var(--text-secondary)'
   },
   // Strikethrough - ~~text~~
   '.cm-strikethrough': {
     textDecoration: 'line-through',
-    color: '#9ca3af'
+    color: 'var(--text-tertiary)'
   },
   // Markdown formatting punctuation (*, _, -, #, etc.) - subtle gray
   '.cm-formatting': {
-    color: '#d1d5db',
+    color: 'var(--md-format)',
     opacity: '0.5'
   },
   '.cm-formatting-heading': {
-    color: '#d1d5db',
+    color: 'var(--md-format)',
     opacity: '0.5'
   },
   '.cm-formatting-em': {
-    color: '#d1d5db',
+    color: 'var(--md-format)',
     opacity: '0.5'
   },
   '.cm-formatting-strong': {
-    color: '#d1d5db',
+    color: 'var(--md-format)',
     opacity: '0.5'
   },
   '.cm-formatting-list': {
-    color: '#d1d5db',
+    color: 'var(--md-format)',
     opacity: '0.5'
   },
   // Links [text](url)
   '.cm-link': {
-    color: '#3b82f6',
+    color: 'var(--md-link)',
     textDecoration: 'underline'
   },
   // Quotes > text
   '.cm-quote': {
-    color: '#9ca3af',
+    color: 'var(--md-quote)',
     fontStyle: 'italic'
   },
   // === Entity Highlighting ===
@@ -739,8 +749,8 @@ const editorTheme = EditorView.theme({
   // (no special styling needed - browser handles this)
   // === Code ===
   '.cm-inline-code': {
-    backgroundColor: '#fef4e6',
-    color: '#c28b6b',
+    backgroundColor: 'var(--md-code-bg)',
+    color: 'var(--md-code-color)',
     padding: '2px 4px',
     borderRadius: '3px',
     fontFamily: '"Courier New", monospace',

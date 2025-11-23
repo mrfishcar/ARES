@@ -1,0 +1,248 @@
+/**
+ * Night Sky Dark Mode Theme
+ * Deep midnight blue with starlight accents
+ */
+
+/* Light Mode (Default) */
+:root,
+html[data-theme="light"],
+.light-mode {
+  /* Background Colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f7f6;
+  --bg-tertiary: #f0ede8;
+
+  /* Text Colors */
+  --text-primary: #4a403a;
+  --text-secondary: #8b7e77;
+  --text-tertiary: #c2b8af;
+  --text-inverse: #ffffff;
+
+  /* Border & Accent Colors */
+  --border-color: #e8e6e3;
+  --border-light: #f0ede8;
+  --accent-color: #5a4d46;
+  --accent-light: #e8e6e1;
+
+  /* Semantic Colors */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+
+  /* Markdown Colors */
+  --md-heading: #2d2420;
+  --md-link: #3b82f6;
+  --md-quote: #9ca3af;
+  --md-code-bg: #fef4e6;
+  --md-code-color: #c28b6b;
+  --md-format: #d1d5db;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark Mode (Night Sky) */
+html[data-theme="dark"],
+.dark-mode {
+  /* Background Colors */
+  --bg-primary: #0a0e27;      /* Deep midnight blue */
+  --bg-secondary: #141829;    /* Slightly lighter midnight */
+  --bg-tertiary: #1a1f3a;     /* Code night blue */
+
+  /* Text Colors */
+  --text-primary: #e8e6e1;    /* Soft starlight */
+  --text-secondary: #a8b5cc;  /* Twilight gray-blue */
+  --text-tertiary: #6d7a99;   /* Deep twilight */
+  --text-inverse: #0a0e27;
+
+  /* Border & Accent Colors */
+  --border-color: #2a2f4a;    /* Twilight blue */
+  --border-light: #3a4159;    /* Lighter twilight */
+  --accent-color: #64d5ff;    /* Lunar glow cyan */
+  --accent-light: #a8b5cc;    /* Soft twilight */
+
+  /* Semantic Colors - adjusted for dark mode */
+  --color-success: #6ee7b7;   /* Emerald */
+  --color-warning: #fbbf24;   /* Golden */
+  --color-error: #f87171;     /* Soft red */
+  --color-info: #7dd3fc;      /* Sky blue */
+
+  /* Markdown Colors */
+  --md-heading: #7dd3fc;      /* Sky blue */
+  --md-link: #bb86fc;         /* Aurora violet */
+  --md-quote: #a8b5cc;        /* Twilight blue */
+  --md-code-bg: #1a1f3a;      /* Code night */
+  --md-code-color: #ffd89b;   /* Golden starlight */
+  --md-format: #6d7a99;       /* Deep twilight */
+
+  /* Shadows - subtle on dark */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* Body Styling */
+body.dark-mode {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.light-mode {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Extraction Lab Styling */
+.extraction-lab {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.lab-header {
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.3s ease;
+}
+
+.lab-content {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.editor-panel,
+.results-panel {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.panel-header {
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.panel-header h2 {
+  color: var(--text-primary);
+}
+
+.panel-subtitle {
+  color: var(--text-secondary);
+}
+
+/* Buttons */
+button {
+  background-color: var(--accent-color);
+  color: var(--text-inverse);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  opacity: 0.9;
+  box-shadow: var(--shadow-md);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Input Elements */
+input[type="checkbox"],
+input[type="text"],
+input[type="email"],
+textarea,
+select {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+input[type="checkbox"]:checked {
+  accent-color: var(--accent-color);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(100, 213, 255, 0.1);
+}
+
+/* Entity Results Panel */
+.entity-item,
+.relation-item {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.entity-type {
+  color: var(--text-secondary);
+}
+
+.entity-confidence {
+  color: var(--text-tertiary);
+}
+
+/* Labels */
+label {
+  color: var(--text-primary);
+}
+
+/* Links */
+a {
+  color: var(--md-link);
+}
+
+a:hover {
+  opacity: 0.8;
+}
+
+/* Code blocks */
+code,
+pre {
+  background-color: var(--md-code-bg);
+  color: var(--md-code-color);
+  border: 1px solid var(--border-color);
+}
+
+/* Modal & Overlays */
+.modal-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+/* Stat Badges */
+.stat-badge {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.stat-badge.processing {
+  background-color: var(--color-info);
+  color: white;
+}
+
+/* Smooth transitions for all theme-affected elements */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Disable transitions for animations to be smooth */
+.cm-editor * {
+  transition: none;
+}

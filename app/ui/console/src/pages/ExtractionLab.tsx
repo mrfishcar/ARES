@@ -9,6 +9,8 @@ import { CodeMirrorEditor } from '../components/CodeMirrorEditor';
 import { EntityResultsPanel } from '../components/EntityResultsPanel';
 import { WikiModal } from '../components/WikiModal';
 import { isValidEntityType, type EntitySpan, type EntityType } from '../types/entities';
+import { initializeTheme, toggleTheme, loadThemePreference } from '../utils/darkMode';
+import '../styles/darkMode.css';
 
 interface ExtractionLabProps {
   project: string;
@@ -344,6 +346,18 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [selectedEntity, setSelectedEntity] = useState<SelectedEntityState | null>(null);
   const [showHighlighting, setShowHighlighting] = useState(true);
   const [renderMarkdown, setRenderMarkdown] = useState(true);
+  const [theme, setTheme] = useState(loadThemePreference());
+
+  // Initialize theme on mount
+  useEffect(() => {
+    initializeTheme();
+  }, []);
+
+  // Handle theme toggle
+  const handleThemeToggle = () => {
+    const newTheme = toggleTheme();
+    setTheme(newTheme);
+  };
 
   // Real-time extraction using FULL ARES ENGINE (debounced 1000ms for heavier processing)
   const extractEntities = useCallback(
@@ -641,6 +655,14 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
               </button>
             </>
           )}
+          <button
+            onClick={handleThemeToggle}
+            className="theme-toggle"
+            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            style={{ marginLeft: '16px' }}
+          >
+            {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
+          </button>
         </div>
       </div>
 
