@@ -7,6 +7,7 @@ export interface CodeMirrorEditorProps {
   project?: string;
   noteId?: string;
   disableHighlighting?: boolean;
+  highlightOpacity?: number; // 0.0 to 1.0 opacity multiplier for all highlights
   enableWYSIWYG?: boolean;
   renderMarkdown?: boolean; // true = hide inline tags, render markdown visually; false = show raw text with tags
   entities?: EntitySpan[];

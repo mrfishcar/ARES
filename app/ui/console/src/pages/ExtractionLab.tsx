@@ -81,6 +81,7 @@ function parseManualTags(rawText: string): ParsedTags {
           confidence: 1.0,
           source: 'manual' as const,
         });
+        console.log(`[ManualTag] Bracketed: "${match[0]}" → entity="${text}" at ${entityStart}-${entityEnd}, actual text in range: "${rawText.substring(entityStart, entityEnd)}"`);
       }
     } else if (match[3]) {
       // Pattern: #Entity:TYPE (unbracketed form)
@@ -101,6 +102,7 @@ function parseManualTags(rawText: string): ParsedTags {
           confidence: 1.0,
           source: 'manual' as const,
         });
+        console.log(`[ManualTag] Simple: "${match[0]}" → entity="${text}" at ${entityStart}-${entityEnd}, actual text in range: "${rawText.substring(entityStart, entityEnd)}"`);
       }
     } else if (match[5]) {
       // Pattern: Entity:ALIAS_OF_Canonical:TYPE (alias form)
@@ -355,6 +357,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [stats, setStats] = useState({ time: 0, confidence: 0, count: 0, relationCount: 0 });
   const [selectedEntity, setSelectedEntity] = useState<SelectedEntityState | null>(null);
   const [showHighlighting, setShowHighlighting] = useState(true);
+  const [highlightOpacity, setHighlightOpacity] = useState(1.0);
   const [renderMarkdown, setRenderMarkdown] = useState(true);
   const [theme, setTheme] = useState(loadThemePreference());
 
@@ -686,7 +689,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                 <h2>Write or paste text...</h2>
                 <p className="panel-subtitle">Full ARES engine extracts entities AND relations (updates after typing)</p>
               </div>
-              <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px' }}>
                   <input
                     type="checkbox"
@@ -696,6 +699,20 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                   />
                   <span>✨ Entity Highlighting</span>
                 </label>
+                {showHighlighting && (
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+                    <span style={{ whiteSpace: 'nowrap' }}>Opacity:</span>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={highlightOpacity * 100}
+                      onChange={(e) => setHighlightOpacity(Number(e.target.value) / 100)}
+                      style={{ width: '120px', cursor: 'pointer' }}
+                    />
+                    <span style={{ minWidth: '35px', textAlign: 'right' }}>{Math.round(highlightOpacity * 100)}%</span>
+                  </label>
+                )}
                 <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px' }}>
                   <input
                     type="checkbox"
@@ -714,6 +731,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
             onChange={(newText) => setText(newText)}
             minHeight="calc(100vh - 280px)"
             disableHighlighting={!showHighlighting}
+            highlightOpacity={highlightOpacity}
             enableWYSIWYG={false}
             renderMarkdown={renderMarkdown}
             entities={entities}

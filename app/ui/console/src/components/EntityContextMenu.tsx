@@ -121,6 +121,24 @@ export function EntityContextMenu({
   const [showTypeMenu, setShowTypeMenu] = useState(false);
   const [mode, setMode] = useState<'main' | 'select-type'>('main');
 
+  // Detect current theme
+  const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+
+  // Theme-aware colors
+  const colors = isDarkMode ? {
+    bg: 'var(--bg-secondary)',
+    text: 'var(--text-primary)',
+    border: 'var(--border-color)',
+    hoverBg: 'var(--bg-tertiary)',
+    subtleText: 'var(--text-secondary)',
+  } : {
+    bg: 'var(--bg-secondary)',
+    text: 'var(--text-primary)',
+    border: 'var(--border-color)',
+    hoverBg: 'var(--bg-tertiary)',
+    subtleText: 'var(--text-secondary)',
+  };
+
   // Close when clicking outside
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -150,25 +168,26 @@ export function EntityContextMenu({
           position: 'fixed',
           top: `${position.y}px`,
           left: `${position.x}px`,
-          background: 'white',
-          border: '1px solid #e5e7eb',
+          background: colors.bg,
+          border: `1px solid ${colors.border}`,
           borderRadius: '8px',
           boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
           zIndex: 1000,
           minWidth: '200px',
           padding: '4px 0',
+          color: colors.text,
         }}
       >
         {/* Entity info header */}
         <div
           style={{
             padding: '12px 16px',
-            borderBottom: '1px solid #e5e7eb',
+            borderBottom: `1px solid ${colors.border}`,
             fontSize: '13px',
           }}
         >
           <div style={{ fontWeight: '600', marginBottom: '4px' }}>{entity.text}</div>
-          <div style={{ color: '#6b7280', fontSize: '11px' }}>
+          <div style={{ color: colors.subtleText, fontSize: '11px' }}>
             {isNewEntity ? (
               <>✨ Create new entity</>
             ) : (
@@ -199,7 +218,7 @@ export function EntityContextMenu({
                   justifyContent: 'space-between',
                   alignItems: 'center',
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = '#eff6ff')}
+                onMouseEnter={(e) => (e.currentTarget.style.background = colors.hoverBg)}
                 onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
               >
                 <span>⚙️ Change Type</span>
@@ -213,8 +232,8 @@ export function EntityContextMenu({
                     left: 0,
                     top: '100%',
                     marginTop: '4px',
-                    background: 'white',
-                    border: '1px solid #e5e7eb',
+                    background: colors.bg,
+                    border: `1px solid ${colors.border}`,
                     borderRadius: '8px',
                     boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                     minWidth: '200px',
@@ -222,6 +241,7 @@ export function EntityContextMenu({
                     overflowY: 'auto',
                     padding: '4px 0',
                     zIndex: 1001,
+                    color: colors.text,
                   }}
                 >
                   {ENTITY_TYPES.map((type) => (
@@ -234,7 +254,7 @@ export function EntityContextMenu({
                       style={{
                         width: '100%',
                         padding: '8px 12px',
-                        background: type === entity.type ? '#f3f4f6' : 'none',
+                        background: type === entity.type ? colors.hoverBg : 'none',
                         border: 'none',
                         textAlign: 'left',
                         cursor: 'pointer',
@@ -243,10 +263,11 @@ export function EntityContextMenu({
                         alignItems: 'center',
                         gap: '8px',
                         fontWeight: type === entity.type ? '500' : '400',
+                        color: colors.text,
                       }}
                       onMouseEnter={(e) => {
                         if (type !== entity.type) {
-                          e.currentTarget.style.background = '#f9fafb';
+                          e.currentTarget.style.background = colors.hoverBg;
                         }
                       }}
                       onMouseLeave={(e) => {
@@ -280,14 +301,14 @@ export function EntityContextMenu({
                 fontSize: '14px',
                 color: '#059669',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = '#f0fdf4')}
+              onMouseEnter={(e) => (e.currentTarget.style.background = colors.hoverBg)}
               onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
             >
               🔗 Tag Entity
             </button>
 
             {/* Separator */}
-            <div style={{ height: '1px', background: '#e5e7eb', margin: '4px 0' }} />
+            <div style={{ height: '1px', background: colors.border, margin: '4px 0' }} />
 
             {/* Option 3: Create New Entity */}
             <button
@@ -302,14 +323,14 @@ export function EntityContextMenu({
                 fontSize: '14px',
                 color: '#7c3aed',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = '#faf5ff')}
+              onMouseEnter={(e) => (e.currentTarget.style.background = colors.hoverBg)}
               onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
             >
               ✨ Create New Entity
             </button>
 
             {/* Separator */}
-            <div style={{ height: '1px', background: '#e5e7eb', margin: '4px 0' }} />
+            <div style={{ height: '1px', background: colors.border, margin: '4px 0' }} />
 
             {/* Option 4: Reject */}
             <button
@@ -327,7 +348,7 @@ export function EntityContextMenu({
                 fontSize: '14px',
                 color: '#ef4444',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = '#fef2f2')}
+              onMouseEnter={(e) => (e.currentTarget.style.background = colors.hoverBg)}
               onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
             >
               ✕ Reject
@@ -346,9 +367,9 @@ export function EntityContextMenu({
                 textAlign: 'left',
                 cursor: 'pointer',
                 fontSize: '14px',
-                color: '#6b7280',
+                color: colors.text,
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = '#f9fafb')}
+              onMouseEnter={(e) => (e.currentTarget.style.background = colors.hoverBg)}
               onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
             >
               ← Back
@@ -375,8 +396,9 @@ export function EntityContextMenu({
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
+                    color: colors.text,
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = '#f9fafb')}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = colors.hoverBg)}
                   onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
                 >
                   <span>{TYPE_ICONS[type]}</span>

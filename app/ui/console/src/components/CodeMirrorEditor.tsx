@@ -102,29 +102,46 @@ function lightenColor(hex: string, amount: number): string {
   return `#${toHex(r2)}${toHex(g2)}${toHex(b2)}`;
 }
 
+/**
+ * Convert hex color to RGBA string with specified opacity
+ */
+function hexToRgba(hex: string, opacity: number = 1): string {
+  const color = hex.replace('#', '');
+  const r = parseInt(color.substr(0, 2), 16);
+  const g = parseInt(color.substr(2, 2), 16);
+  const b = parseInt(color.substr(4, 2), 16);
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
+
 // ============================================================================
 // 1. ENTITY HIGHLIGHTING EXTENSION
 // ============================================================================
 
 function entityHighlighterExtension(
-  getEntities: () => EntitySpan[]
+  getEntities: () => EntitySpan[],
+  isHighlightingDisabled: () => boolean,
+  getHighlightOpacity: () => number
 ) {
   return StateField.define<DecorationSet>({
     create(state) {
-      return buildEntityDecorations(state, getEntities());
+      return buildEntityDecorations(state, getEntities(), isHighlightingDisabled(), getHighlightOpacity());
     },
     update(deco, tr) {
       // Always rebuild - we read fresh entities from the getter
       // The key insight: entitiesRef is always in sync with latest extraction
       // because useEffect updates it when entities prop changes.
       // So rebuilding here with getEntities() always gives us current data.
-      return buildEntityDecorations(tr.state, getEntities());
+      return buildEntityDecorations(tr.state, getEntities(), isHighlightingDisabled(), getHighlightOpacity());
     },
     provide: f => EditorView.decorations.from(f)
   });
 }
 
-function buildEntityDecorations(state: EditorState, entities: EntitySpan[]): DecorationSet {
+function buildEntityDecorations(state: EditorState, entities: EntitySpan[], isDisabled: boolean, opacityMultiplier: number = 1.0): DecorationSet {
+  // If highlighting is disabled, return empty decorations
+  if (isDisabled) {
+    return Decoration.none;
+  }
   const builder = new RangeSetBuilder<Decoration>();
   const text = state.doc.toString();
 
@@ -139,10 +156,47 @@ function buildEntityDecorations(state: EditorState, entities: EntitySpan[]): Dec
     });
   }
 
+  // Find all manual tag syntax regions (the :TYPE parts) to exclude them from auto-detected entities
+  // This prevents ":ORG", ":PERSON" etc from being highlighted as separate entities
+  const tagSyntaxRegions: Array<{ start: number; end: number }> = [];
+  const tagRegex = /#\[([^\]]+)\]:(\w+)|#(\w+):(\w+)|(\w+):ALIAS_OF_([^:]+):(\w+)|\[([^\]]+)\]:REJECT_ENTITY|(\w+)(?:[.,!?;-]*):REJECT_ENTITY/g;
+  while ((match = tagRegex.exec(text)) !== null) {
+    // Extract just the :TYPE or :REJECT_ENTITY syntax part
+    if (match[1]) {
+      // Pattern: #[Multi Word]:TYPE - hide ]:TYPE part
+      const typeStart = match.index + match[0].indexOf(']:') + 1;
+      tagSyntaxRegions.push({ start: typeStart, end: match.index + match[0].length });
+    } else if (match[3]) {
+      // Pattern: #Entity:TYPE - hide :TYPE part
+      const typeStart = match.index + match[0].indexOf(':');
+      tagSyntaxRegions.push({ start: typeStart, end: match.index + match[0].length });
+    } else if (match[5]) {
+      // Pattern: Entity:ALIAS_OF_...:TYPE - hide :ALIAS_OF_... part
+      const aliasStart = match.index + match[0].indexOf(':');
+      tagSyntaxRegions.push({ start: aliasStart, end: match.index + match[0].length });
+    } else if (match[8]) {
+      // Pattern: [Multi Word]:REJECT_ENTITY - hide ]:REJECT_ENTITY part
+      const typeStart = match.index + match[0].indexOf(']:') + 1;
+      tagSyntaxRegions.push({ start: typeStart, end: match.index + match[0].length });
+    } else if (match[9]) {
+      // Pattern: Word:REJECT_ENTITY - hide :REJECT_ENTITY part
+      const typeStart = match.index + match[0].indexOf(':');
+      tagSyntaxRegions.push({ start: typeStart, end: match.index + match[0].length });
+    }
+  }
+
   // Helper to check if position overlaps with any rejected region
   const isInRejectedRegion = (start: number, end: number): boolean => {
     return rejectedRegions.some(region => !(end <= region.start || start >= region.end));
   };
+
+  // Helper to check if position overlaps with any tag syntax region
+  const isInTagSyntaxRegion = (start: number, end: number): boolean => {
+    return tagSyntaxRegions.some(region => !(end <= region.start || start >= region.end));
+  };
+
+  // Detect current theme
+  const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
 
   for (const entity of entities) {
     if (entity.start >= 0 && entity.end <= text.length && entity.start < entity.end) {
@@ -151,24 +205,60 @@ function buildEntityDecorations(state: EditorState, entities: EntitySpan[]): Dec
         continue;
       }
 
+      // Skip entities that are tag syntax parts (like ":ORG", ":PERSON")
+      // These are artifacts from manual tag detection in the backend
+      if (isInTagSyntaxRegion(entity.start, entity.end)) {
+        continue;
+      }
+
       const color = getEntityTypeColor(entity.type);
-      // Create a more saturated glow color for the outer glow effect
-      const glowColor = lightenColor(color, 15);
+      let style: string;
+
+      if (isDarkMode) {
+        // Dark mode: Use text-shadow glow effect with opacity control
+        const glowColor = lightenColor(color, 15);
+        const glowColorAlpha = hexToRgba(glowColor, 0.7 * opacityMultiplier);
+        const glowColorAlpha2 = hexToRgba(glowColor, 0.5 * opacityMultiplier);
+        const glowColorAlpha3 = hexToRgba(glowColor, 0.3 * opacityMultiplier);
+        style = `
+          text-shadow:
+            0 0 4px ${glowColorAlpha},
+            0 0 8px ${glowColorAlpha2},
+            0 0 12px ${glowColorAlpha2},
+            0 0 16px ${glowColorAlpha3};
+          font-weight: 500;
+          cursor: pointer;
+        `;
+      } else {
+        // Light mode: Use background highlight with feathering
+        // Use lighter version of the color with reduced opacity for soft appearance
+        const highlightColor = lightenColor(color, 10);
+        const softColor = hexToRgba(highlightColor, 0.55 * opacityMultiplier);
+        const featherColor1 = hexToRgba(highlightColor, 0.35 * opacityMultiplier);
+        const featherColor2 = hexToRgba(highlightColor, 0.20 * opacityMultiplier);
+        const featherColor3 = hexToRgba(highlightColor, 0.10 * opacityMultiplier);
+        const featherColor4 = hexToRgba(highlightColor, 0.04 * opacityMultiplier);
+        style = `
+          background-color: ${softColor};
+          box-shadow:
+            -20px 0 16px -8px ${featherColor4},
+            -14px 0 12px -6px ${featherColor3},
+            -8px 0 10px -4px ${featherColor2},
+            -4px 0 6px -2px ${featherColor1},
+            4px 0 6px -2px ${featherColor1},
+            8px 0 10px -4px ${featherColor2},
+            14px 0 12px -6px ${featherColor3},
+            20px 0 16px -8px ${featherColor4};
+          font-weight: 500;
+          cursor: pointer;
+        `;
+      }
+
       builder.add(entity.start, entity.end, Decoration.mark({
         class: 'cm-entity-highlight',
         attributes: {
           'data-entity': JSON.stringify(entity),
-          // Outer glow effect: text-shadow creates a glowing halo around the text
-          // This makes highlighted text glow instead of darkening it
-          style: `
-            text-shadow:
-              0 0 4px ${glowColor},
-              0 0 8px ${glowColor},
-              0 0 12px ${glowColor},
-              0 0 16px ${glowColor};
-            font-weight: 500;
-            cursor: pointer;
-          `
+          style
         }
       }));
     }
@@ -864,6 +954,7 @@ export function CodeMirrorEditor({
   onChange,
   minHeight = '400px',
   disableHighlighting = false,
+  highlightOpacity = 1.0,
   entities = [],
   renderMarkdown = true,
   onChangeType,
@@ -877,6 +968,8 @@ export function CodeMirrorEditor({
   // Refs for passing data to decorations (must be mutable refs, not props)
   const entitiesRef = useRef<EntitySpan[]>(entities);
   const renderMarkdownRef = useRef<boolean>(renderMarkdown);
+  const disableHighlightingRef = useRef<boolean>(disableHighlighting);
+  const highlightOpacityRef = useRef<number>(highlightOpacity);
 
   // Context menu state
   const [contextMenu, setContextMenu] = useState<{
@@ -950,6 +1043,50 @@ export function CodeMirrorEditor({
     }
   }, [renderMarkdown]);
 
+  useEffect(() => {
+    disableHighlightingRef.current = disableHighlighting;
+    // Trigger view update to toggle entity highlighting on/off
+    const view = viewRef.current;
+    if (view) {
+      requestAnimationFrame(() => {
+        // Empty dispatch triggers StateField update to rebuild decorations
+        view.dispatch({});
+      });
+    }
+  }, [disableHighlighting]);
+
+  useEffect(() => {
+    highlightOpacityRef.current = highlightOpacity;
+    // Trigger view update when opacity changes
+    const view = viewRef.current;
+    if (view) {
+      requestAnimationFrame(() => {
+        // Empty dispatch triggers StateField update to rebuild decorations with new opacity
+        view.dispatch({});
+      });
+    }
+  }, [highlightOpacity]);
+
+  // Watch for theme changes and rebuild entity decorations
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const view = viewRef.current;
+      if (view) {
+        requestAnimationFrame(() => {
+          // Empty dispatch triggers StateField update to rebuild decorations with new theme
+          view.dispatch({});
+        });
+      }
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme']
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   // Initialize editor on mount
   useEffect(() => {
     if (!editorRef.current || viewRef.current) return;
@@ -961,7 +1098,7 @@ export function CodeMirrorEditor({
         markdown(),
         // Enable live markdown syntax highlighting with custom markdown styles
         syntaxHighlighting(markdownHighlightStyle),
-        ...(disableHighlighting ? [] : [entityHighlighterExtension(() => entitiesRef.current)]),
+        entityHighlighterExtension(() => entitiesRef.current, () => disableHighlightingRef.current, () => highlightOpacityRef.current),
         manualTagHidingExtension(() => renderMarkdownRef.current, () => entitiesRef.current),
         contextMenuHandler(setContextMenu, entitiesRef),
         editorTheme,
@@ -1016,7 +1153,22 @@ export function CodeMirrorEditor({
       ? `#[${entity.text}]:${newType}`
       : `#${entity.text}:${newType}`;
 
-    const newText = value.slice(0, entity.start) + tag + value.slice(entity.end);
+    // Find the full tag in the text starting from entity.start
+    // Search backward for the # and forward for the end of the tag
+    let tagStart = entity.start;
+    let tagEnd = entity.end;
+
+    // Search backward for # (could be #[ or just #)
+    while (tagStart > 0 && value[tagStart - 1] !== ' ' && value[tagStart - 1] !== '\n') {
+      tagStart--;
+    }
+
+    // Search forward for whitespace or end of string (marks end of tag)
+    while (tagEnd < value.length && value[tagEnd] !== ' ' && value[tagEnd] !== '\n') {
+      tagEnd++;
+    }
+
+    const newText = value.slice(0, tagStart) + tag + value.slice(tagEnd);
     onChange(newText);
     setContextMenu(null);
 
@@ -1033,7 +1185,22 @@ export function CodeMirrorEditor({
       ? `#[${entity.text}]:${type}`
       : `#${entity.text}:${type}`;
 
-    const newText = value.slice(0, entity.start) + tag + value.slice(entity.end);
+    // Find the full tag in the text starting from entity.start
+    // Search backward for the # and forward for the end of the tag
+    let tagStart = entity.start;
+    let tagEnd = entity.end;
+
+    // Search backward for # (could be #[ or just #)
+    while (tagStart > 0 && value[tagStart - 1] !== ' ' && value[tagStart - 1] !== '\n') {
+      tagStart--;
+    }
+
+    // Search forward for whitespace or end of string (marks end of tag)
+    while (tagEnd < value.length && value[tagEnd] !== ' ' && value[tagEnd] !== '\n') {
+      tagEnd++;
+    }
+
+    const newText = value.slice(0, tagStart) + tag + value.slice(tagEnd);
     onChange(newText);
     setContextMenu(null);
 
@@ -1051,7 +1218,22 @@ export function CodeMirrorEditor({
       ? `[${entity.text}]:REJECT_ENTITY`
       : `${entity.text}:REJECT_ENTITY`;
 
-    const newText = value.slice(0, entity.start) + rejectTag + value.slice(entity.end);
+    // Find the full tag in the text starting from entity.start
+    // Search backward for the # and forward for the end of the tag
+    let tagStart = entity.start;
+    let tagEnd = entity.end;
+
+    // Search backward for # (could be #[ or just #)
+    while (tagStart > 0 && value[tagStart - 1] !== ' ' && value[tagStart - 1] !== '\n') {
+      tagStart--;
+    }
+
+    // Search forward for whitespace or end of string (marks end of tag)
+    while (tagEnd < value.length && value[tagEnd] !== ' ' && value[tagEnd] !== '\n') {
+      tagEnd++;
+    }
+
+    const newText = value.slice(0, tagStart) + rejectTag + value.slice(tagEnd);
     onChange(newText);
     setContextMenu(null);
 
