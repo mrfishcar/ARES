@@ -636,7 +636,8 @@ const editorTheme = EditorView.theme({
     minHeight: '100%'
   },
   '.cm-line': {
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif !important'
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif !important',
+    position: 'relative'
   },
   // === Markdown Live Preview Styling ===
   // Heading level 1 (#)
@@ -733,6 +734,9 @@ const editorTheme = EditorView.theme({
     userSelect: 'none',
     pointerEvents: 'none'
   },
+  // === Spell Check Styling ===
+  // Browser native spell-check will show red wavy underline
+  // (no special styling needed - browser handles this)
   // === Code ===
   '.cm-inline-code': {
     backgroundColor: '#fef4e6',
@@ -840,6 +844,12 @@ export function CodeMirrorEditor({
       state,
       parent: editorRef.current
     });
+
+    // Enable native browser spell-check and autocorrect on the editor DOM element
+    const editorDOM = view.dom;
+    if (editorDOM) {
+      editorDOM.setAttribute('spellcheck', 'true');
+    }
 
     viewRef.current = view;
 
