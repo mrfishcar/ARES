@@ -643,7 +643,8 @@ const editorTheme = EditorView.theme({
   },
   '.cm-scroller': {
     height: '100% !important',
-    flex: 1
+    flex: 1,
+    overflow: 'auto !important'
   },
   '.cm-line': {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif !important',
@@ -775,14 +776,17 @@ const editorTheme = EditorView.theme({
   },
   // === Text Cursor (Caret) ===
   '.cm-cursor': {
-    borderLeftColor: 'var(--text-primary)',
-    borderLeftWidth: '2px',
-    borderLeftStyle: 'solid',
+    borderLeftColor: 'var(--accent-color) !important',
+    borderLeftWidth: '2px !important',
+    borderLeftStyle: 'solid !important',
     marginLeft: '-1px'
   },
   '.cm-cursor-primary': {
-    borderLeftColor: 'var(--text-primary)',
-    borderLeftWidth: '2px'
+    borderLeftColor: 'var(--accent-color) !important',
+    borderLeftWidth: '2px !important'
+  },
+  '.cm-cursor-secondary': {
+    borderLeftColor: 'var(--accent-color) !important'
   }
 });
 
