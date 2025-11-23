@@ -949,12 +949,13 @@ export function CodeMirrorEditor({
       <div
         ref={editorRef}
         style={{
-          border: '1px solid #e5e7eb',
-          borderRadius: '6px',
+          border: '1px solid var(--border-color)',
+          borderRadius: '0',
           minHeight,
-          backgroundColor: '#ffffff',
+          backgroundColor: 'var(--bg-primary)',
           width: '100%',
-          overflow: 'auto'
+          overflow: 'hidden',
+          flex: 1
         }}
       />
 
