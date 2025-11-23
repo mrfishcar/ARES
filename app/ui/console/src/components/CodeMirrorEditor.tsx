@@ -626,6 +626,7 @@ const markdownHighlightStyle = HighlightStyle.define([
 const editorTheme = EditorView.theme({
   '.cm-editor': {
     height: '100% !important',
+    cursor: 'text',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif',
     fontSize: '15px',
     lineHeight: '1.75',
@@ -636,6 +637,7 @@ const editorTheme = EditorView.theme({
   '.cm-content': {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif !important',
     padding: '16px',
+    cursor: 'text',
     backgroundColor: 'var(--bg-primary)',
     color: 'var(--text-primary)'
   },
@@ -770,6 +772,17 @@ const editorTheme = EditorView.theme({
     // Cancel out entity highlight background on the underscore character
     background: 'transparent !important',
     'box-shadow': 'none !important'
+  },
+  // === Text Cursor (Caret) ===
+  '.cm-cursor': {
+    borderLeftColor: 'var(--text-primary)',
+    borderLeftWidth: '2px',
+    borderLeftStyle: 'solid',
+    marginLeft: '-1px'
+  },
+  '.cm-cursor-primary': {
+    borderLeftColor: 'var(--text-primary)',
+    borderLeftWidth: '2px'
   }
 });
 
