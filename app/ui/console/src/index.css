@@ -78,9 +78,10 @@ a:hover {
   align-items: center;
   justify-content: space-between;
   padding: 20px 32px;
-  background: white;
-  border-bottom: 1px solid var(--border-soft);
-  box-shadow: var(--shadow-soft);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: none;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .lab-title {
@@ -173,15 +174,20 @@ a:hover {
 .editor-panel {
   display: flex;
   flex-direction: column;
-  background: white;
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-soft);
-  overflow: auto;
+  flex: 1;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 0;
+  box-shadow: none;
+  overflow: hidden;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .panel-header {
   padding: 24px 24px 16px;
-  border-bottom: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .panel-header h2 {
@@ -201,11 +207,13 @@ a:hover {
 .results-panel {
   display: flex;
   flex-direction: column;
-  background: white;
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-soft);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 0;
+  box-shadow: none;
   padding: 24px;
   overflow-y: auto;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .universe-section {
@@ -448,13 +456,14 @@ a:hover {
   width: 90%;
   max-width: 700px;
   max-height: 85vh;
-  background: white;
+  background: var(--bg-secondary);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-strong);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   animation: slideUp 0.3s ease;
+  transition: background-color 0.3s ease;
 }
 
 @keyframes slideUp {
