@@ -175,7 +175,7 @@ a:hover {
 .editor-panel {
   display: flex;
   flex-direction: column;
-  flex: 1;
+  height: 100%;
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: 0;
@@ -185,6 +185,7 @@ a:hover {
 }
 
 .panel-header {
+  flex-shrink: 0;
   padding: 24px 24px 16px;
   border-bottom: 1px solid var(--border-color);
   background-color: var(--bg-secondary);
@@ -208,6 +209,7 @@ a:hover {
 .results-panel {
   display: flex;
   flex-direction: column;
+  height: 100%;
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: 0;

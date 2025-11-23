@@ -949,7 +949,7 @@ export function CodeMirrorEditor({
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', flex: 1 }}>
       <div
         ref={editorRef}
         style={{
@@ -958,7 +958,6 @@ export function CodeMirrorEditor({
           height: '100%',
           backgroundColor: 'var(--bg-primary)',
           width: '100%',
-          overflow: 'hidden',
           flex: 1
         }}
       />
