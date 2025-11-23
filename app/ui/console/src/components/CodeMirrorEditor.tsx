@@ -450,9 +450,12 @@ function buildTagHidingDecorations(
       entityPos: `${entityToUse.start}-${entityToUse.end}`
     });
 
-    const color = getEntityTypeColor(entityToUse.type);
+    // Note: The entity highlighting layer (buildEntityDecorations) already handles
+    // highlighting the entity text with glow effects. We don't add highlighting here
+    // to avoid duplicate overlapping highlights on the manual tags.
+    // The mark below is only for structural/event handling (context menus).
 
-    // Part 1: Parent mark spanning entire tag with background color
+    // Part 1: Parent mark spanning entire tag for event handling
     // SKIP for rejected entities - they should have NO highlighting
     // match[8] = bracketed multi-word rejection, match[9] = single-word rejection
     if (!match[8] && !match[9]) {
@@ -463,17 +466,7 @@ function buildTagHidingDecorations(
           class: 'cm-tag-highlight',
           attributes: {
             'data-entity': JSON.stringify(entityToUse),
-            style: `
-              background: linear-gradient(90deg,
-                ${color}00 0%,
-                ${color}20 10%,
-                ${color}30 30%,
-                ${color}30 70%,
-                ${color}20 90%,
-                ${color}00 100%);
-              box-shadow: inset 0 2px 4px ${color}26, inset 0 -2px 4px ${color}26;
-              cursor: pointer;
-            `
+            style: `cursor: pointer;`
           }
         })
       );
