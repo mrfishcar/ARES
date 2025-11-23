@@ -945,13 +945,14 @@ export function CodeMirrorEditor({
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div
         ref={editorRef}
         style={{
           border: '1px solid var(--border-color)',
           borderRadius: '0',
           minHeight,
+          height: '100%',
           backgroundColor: 'var(--bg-primary)',
           width: '100%',
           overflow: 'hidden',
