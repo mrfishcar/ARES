@@ -626,8 +626,6 @@ const markdownHighlightStyle = HighlightStyle.define([
 const editorTheme = EditorView.theme({
   '.cm-editor': {
     height: '100% !important',
-    display: 'flex !important',
-    flexDirection: 'row !important',
     cursor: 'text',
     caretColor: 'var(--accent-color) !important',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif',
@@ -648,10 +646,7 @@ const editorTheme = EditorView.theme({
   '.cm-scroller': {
     height: '100% !important',
     minHeight: '0 !important',
-    minWidth: '0 !important',
-    flex: '1 1 0 !important',
-    overflow: 'auto !important',
-    overflowX: 'hidden !important'
+    overflow: 'auto !important'
   },
   '.cm-line': {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif !important',
@@ -660,11 +655,9 @@ const editorTheme = EditorView.theme({
     caretColor: 'var(--accent-color) !important'
   },
   '.cm-gutters': {
-    flexShrink: 0,
     backgroundColor: 'var(--bg-secondary)',
     borderRight: '1px solid var(--border-color)',
-    color: 'var(--text-secondary)',
-    overflow: 'hidden'
+    color: 'var(--text-secondary)'
   },
   // === Markdown Live Preview Styling ===
   // Heading level 1 (#)
