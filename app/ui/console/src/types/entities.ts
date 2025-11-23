@@ -47,7 +47,7 @@ export interface EntitySpan {
   canonicalName?: string;
   type: EntityType;
   confidence: number;
-  source: 'tag' | 'natural';
+  source: 'tag' | 'natural' | 'alias' | 'manual';
 }
 
 export interface HighlightConfig {
@@ -58,6 +58,58 @@ export interface HighlightConfig {
   enableAliasPass?: boolean;
   enableLLM?: boolean;
   llmMode?: 'hybrid' | 'llm-only' | 'algorithm-only';
+}
+
+/**
+ * Document-level entity metadata
+ * Stores user actions that override auto-detection
+ */
+export interface DocumentEntityMetadata {
+  rejectedMentions: string[];  // Words rejected in THIS document only
+  typeOverrides: Record<string, EntityType>;  // User changed type
+  aliasReferences: Record<string, string>;  // "Cory" → "CORY_GILFORD:PERSON"
+}
+
+/**
+ * Rejection tracking across project
+ */
+export interface RejectionTracking {
+  word: string;
+  rejectionCount: number;
+  rejectedInDocuments: string[];
+  lastRejected: Date;
+}
+
+/**
+ * Blacklist entry for entity creation
+ */
+export interface BlacklistEntry {
+  word: string;
+  reason: 'auto-rejected-threshold' | 'manual-blocked';
+  rejectionCount: number;
+  addedDate: Date;
+  status: 'active' | 'removed';
+}
+
+/**
+ * Project-level settings and blacklist
+ */
+export interface ProjectSettings {
+  projectId: string;
+  rejectionTracking: RejectionTracking[];
+  entityBlacklist: BlacklistEntry[];
+}
+
+/**
+ * Enhanced extraction request body
+ */
+export interface ExtractEntityRequest {
+  text: string;
+  projectId: string;
+  manualTags?: EntitySpan[];
+  typeOverrides?: Record<string, EntityType>;
+  aliasReferences?: Record<string, string>;
+  rejectedMentions?: string[];
 }
 
 /**

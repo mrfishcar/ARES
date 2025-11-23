@@ -7,16 +7,7 @@
 
 import { useState } from 'react';
 import { NeonPlanet } from './NeonPlanet';
-
-interface EntitySpan {
-  start: number;
-  end: number;
-  text: string;
-  displayText?: string;
-  type: string;
-  confidence: number;
-  source: 'tag' | 'natural';
-}
+import type { EntitySpan } from '../types/entities';
 
 interface Relation {
   id: string;

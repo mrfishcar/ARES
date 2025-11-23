@@ -1134,6 +1134,225 @@ function gazetterPlaces(text) {
     }
     return spans;
 }
+/**
+ * Extract new fantasy/fiction entity types using pattern matching
+ * Extracts: RACE, CREATURE, ARTIFACT, TECHNOLOGY, MAGIC, LANGUAGE, CURRENCY, MATERIAL, DRUG, DEITY, ABILITY, SKILL, POWER, TECHNIQUE, SPELL
+ */
+function extractFantasyEntities(text) {
+    const spans = [];
+    // RACE patterns
+    // Pattern 1: [Name] the/a [race] (e.g., "Elves are ancient")
+    const racePattern1 = /\b([A-Z][a-z]+(?:ian|ite|fold)?(?:\s+(?:race|people|folk|kind|breed))?)\s+(?:are|were|have|possess|can)\b/gi;
+    let match;
+    while ((match = racePattern1.exec(text))) {
+        const name = match[1].trim();
+        if (name && name.length > 2 && !/^(The|This|That|These|Those)$/i.test(name)) {
+            spans.push({ text: name, type: 'RACE', start: match.index, end: match.index + match[1].length });
+        }
+    }
+    // Pattern 2: [RACE] warrior/knight/mage (e.g., "Elven warrior")
+    const racePattern2 = /\b([A-Z][a-z]+(?:ian|ish|ic)?)\s+(?:warrior|knight|mage|lord|queen|king|prince|maiden|smith|chief)\b/gi;
+    while ((match = racePattern2.exec(text))) {
+        const name = match[1];
+        if (name && name.length > 2) {
+            spans.push({ text: name, type: 'RACE', start: match.index, end: match.index + match[1].length });
+        }
+    }
+    // CREATURE patterns
+    // Pattern 1: Possessive creatures (e.g., "Smaug's hoard")
+    const creaturePattern1 = /\b([A-Z][a-z]+(?:\s+(?:the|of|de)\s+[A-Z][a-z]+)?)\s+'s\s+(?:lair|nest|hoard|den|cave|mountain|domain)\b/gi;
+    while ((match = creaturePattern1.exec(text))) {
+        const name = match[1].trim();
+        if (name && name.length > 2) {
+            spans.push({ text: name, type: 'CREATURE', start: match.index, end: match.index + match[1].length });
+        }
+    }
+    // Pattern 2: Dragon/Phoenix type creatures (e.g., "dragon Smaug")
+    const creaturePattern2 = /\b(?:dragon|phoenix|basilisk|kraken|minotaur|chimera|wyvern|griffin|hydra|leviathan)\s+([A-Z][a-z]+)\b/gi;
+    while ((match = creaturePattern2.exec(text))) {
+        const name = match[1];
+        if (name && name.length > 2) {
+            spans.push({ text: name, type: 'CREATURE', start: match.index + match[0].indexOf(match[1]), end: match.index + match[0].length });
+        }
+    }
+    // ARTIFACT patterns
+    // Pattern 1: Famous artifacts with the/a (e.g., "the One Ring")
+    const artifactPattern1 = /\b(?:the|a)\s+([A-Z][a-z]+(?:\s+(?:of|the)\s+[A-Z][a-z]+)?(?:\s+(?:Stone|Ring|Sword|Crown|Wand|Staff|Book|Mirror|Cup|Goblet|Blade|Amulet|Pendant|Rune|Helm|Shield|Armor)))\b/gi;
+    while ((match = artifactPattern1.exec(text))) {
+        const name = match[1].trim();
+        if (name && name.length > 2) {
+            spans.push({ text: name, type: 'ARTIFACT', start: match.index + match[0].indexOf(name), end: match.index + match[0].indexOf(name) + name.length });
+        }
+    }
+    // Pattern 2: Possessive artifacts (e.g., "Frodo's ring")
+    const artifactPattern2 = /\b([A-Z][a-z]+(?:\s+(?:the|of)\s+[A-Z][a-z]+)?)\s+'s\s+([A-Z][a-z]+(?:\s+(?:of|the)\s+[A-Z][a-z]+)?)\b/gi;
+    while ((match = artifactPattern2.exec(text))) {
+        // Extract the artifact (second group)
+        const artifact = match[2] || match[1];
+        if (artifact && artifact.length > 2 && !/\b(?:family|house|kingdom|realm|people)$/i.test(artifact)) {
+            spans.push({ text: artifact, type: 'ARTIFACT', start: match.index + match[0].indexOf(match[2] || match[1]), end: match.index + match[0].length });
+        }
+    }
+    // TECHNOLOGY patterns
+    // Pattern: [name] was created/built/invented
+    const techPattern = /\b([A-Z][a-z]+(?:\s+(?:the|of|Mark|Model|Type|Series)\s+[A-Z0-9][a-zA-Z0-9]*)?)\s+(?:was|is)\s+(?:created|built|invented|designed|engineered|constructed)\b/gi;
+    while ((match = techPattern.exec(text))) {
+        const name = match[1].trim();
+        if (name && name.length > 2 && /^[A-Z]/.test(name)) {
+            spans.push({ text: name, type: 'TECHNOLOGY', start: match.index, end: match.index + match[1].length });
+        }
+    }
+    // MAGIC patterns
+    // Pattern: [type] magic/sorcery/witchcraft
+    const magicPattern = /\b([A-Z][a-z]+(?:\s+(?:and|or)\s+[A-Z][a-z]+)?)\s+(?:magic|sorcery|witchcraft|enchantment|conjuring)\b/gi;
+    while ((match = magicPattern.exec(text))) {
+        const name = match[1].trim();
+        if (name && name.length > 2) {
+            spans.push({ text: name, type: 'MAGIC', start: match.index, end: match.index + match[1].length });
+        }
+    }
+    // LANGUAGE patterns
+    // Pattern 1: Languages with -ish/-ian endings (e.g., "Elvish", "Klingon")
+    const langPattern1 = /\b([A-Z][a-z]+(?:ian|ish|ese|ine)?)\s+(?:language|tongue|dialect|runes|script)\b/gi;
+    while ((match = langPattern1.exec(text))) {
+        const name = match[1];
+        if (name && name.length > 2 && /(?:ian|ish|ese|ine)$/.test(name)) {
+            spans.push({ text: name, type: 'LANGUAGE', start: match.index, end: match.index + match[1].length });
+        }
+    }
+    // Pattern 2: Spoke/speaking patterns (e.g., "spoke Elvish")
+    const langPattern2 = /\b(?:spoke|speaks|speaking|language)\s+(?:in\s+)?([A-Z][a-z]+(?:ian|ish|ese)?)\b/gi;
+    while ((match = langPattern2.exec(text))) {
+        const name = match[1];
+        if (name && name.length > 2 && /(?:ian|ish|ese)$/.test(name)) {
+            spans.push({ text: name, type: 'LANGUAGE', start: match.index + match[0].indexOf(name), end: match.index + match[0].indexOf(name) + name.length });
+        }
+    }
+    // CURRENCY patterns
+    // Pattern: numeric [currency] or [currency] coins/notes
+    const currencyPattern = /\b([A-Z][a-z]+(?:s)?)\s+(?:coin|coins|note|notes|piece|pieces|bill|bills|currency)\b/gi;
+    while ((match = currencyPattern.exec(text))) {
+        const name = match[1];
+        if (name && name.length > 2 && /^[A-Z]/.test(name)) {
+            spans.push({ text: name, type: 'CURRENCY', start: match.index, end: match.index + match[1].length });
+        }
+    }
+    // MATERIAL patterns
+    // Pattern 1: made of [material] (e.g., "made of Mithril")
+    const materialPattern1 = /\b(?:made of|forged from|crafted from|wrought from)\s+([A-Z][a-z]+(?:\s+(?:ore|metal|stone|crystal))?)\b/gi;
+    while ((match = materialPattern1.exec(text))) {
+        const name = match[1].trim();
+        if (name && name.length > 2) {
+            spans.push({ text: name, type: 'MATERIAL', start: match.index + match[0].indexOf(name), end: match.index + match[0].indexOf(name) + name.length });
+        }
+    }
+    // Pattern 2: [material] ore/metal/stone
+    const materialPattern2 = /\b([A-Z][a-z]+)\s+(?:ore|metal|stone|crystal|deposit|vein|mine)\b/gi;
+    while ((match = materialPattern2.exec(text))) {
+        const name = match[1];
+        if (name && name.length > 2 && !['The', 'This', 'That'].includes(name)) {
+            spans.push({ text: name, type: 'MATERIAL', start: match.index, end: match.index + match[1].length });
+        }
+    }
+    // DRUG patterns
+    // Pattern: [name] potion/elixir/draught
+    const drugPattern = /\b([A-Z][a-z]+(?:\s+(?:the)?\s+[A-Z][a-z]+)?)\s+(?:potion|elixir|draught|brew|concoction|mixture)\b/gi;
+    while ((match = drugPattern.exec(text))) {
+        const name = match[1].trim();
+        if (name && name.length > 2) {
+            spans.push({ text: name, type: 'DRUG', start: match.index, end: match.index + match[1].length });
+        }
+    }
+    // DEITY patterns
+    // Pattern 1: [name] the god/goddess
+    const deityPattern1 = /\b([A-Z][a-z]+(?:\s+(?:the|of|and)\s+[A-Z][a-z]+)?)\s+(?:the\s+)?(?:god|goddess|divine|deity|almighty|supreme)\b/gi;
+    while ((match = deityPattern1.exec(text))) {
+        const name = match[1].trim();
+        if (name && name.length > 2) {
+            spans.push({ text: name, type: 'DEITY', start: match.index, end: match.index + match[1].length });
+        }
+    }
+    // Pattern 2: worship/pray to [deity]
+    const deityPattern2 = /\b(?:worship|prayed to|pray to|invoke|called upon)\s+([A-Z][a-z]+(?:\s+(?:the)?\s+[A-Z][a-z]+)?)\b/gi;
+    while ((match = deityPattern2.exec(text))) {
+        const name = match[1].trim();
+        if (name && name.length > 2) {
+            spans.push({ text: name, type: 'DEITY', start: match.index + match[0].indexOf(name), end: match.index + match[0].indexOf(name) + name.length });
+        }
+    }
+    // ABILITY patterns
+    // Pattern: has/had the ability to [verb]
+    const abilityPattern = /\b(?:has|had|possess|possessed)\s+(?:the\s+)?(?:ability|power|gift|talent|capacity)\s+(?:to|for)\s+([A-Za-z]+ing)\b/gi;
+    while ((match = abilityPattern.exec(text))) {
+        const name = match[1];
+        if (name && name.length > 3) {
+            spans.push({ text: name, type: 'ABILITY', start: match.index + match[0].indexOf(name), end: match.index + match[0].indexOf(name) + name.length });
+        }
+    }
+    // SKILL patterns
+    // Pattern: trained/skilled in [skill]
+    const skillPattern = /\b(?:trained|skilled|expert|master|proficient|accomplished|learned|studied|mastered)\s+(?:in|at|with|of|the\s+(?:art|craft|skill|trade)\s+of)\s+([A-Za-z]+(?:\s+and\s+[A-Za-z]+)?)\b/gi;
+    while ((match = skillPattern.exec(text))) {
+        const name = match[1];
+        if (name && name.length > 2) {
+            spans.push({ text: name, type: 'SKILL', start: match.index + match[0].indexOf(name), end: match.index + match[0].indexOf(name) + name.length });
+        }
+    }
+    // POWER patterns
+    // Pattern 1: has/wields the power of [power]
+    const powerPattern1 = /\b(?:has|had|wields|possess|granted)\s+(?:the\s+)?(?:power|ability)\s+(?:of|to)\s+([A-Z][a-z]+(?:\s+[a-z]+)*)\b/gi;
+    while ((match = powerPattern1.exec(text))) {
+        const name = match[1].trim();
+        if (name && name.length > 2) {
+            spans.push({ text: name, type: 'POWER', start: match.index + match[0].indexOf(name), end: match.index + match[0].indexOf(name) + name.length });
+        }
+    }
+    // Pattern 2: [power] was/is mystical/divine/ancient
+    const powerPattern2 = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(?:was|is|are|were)\s+(?:an?\s+)?(?:mystical|divine|ancient|supernatural|magical)\s+(?:power|ability|force)\b/gi;
+    while ((match = powerPattern2.exec(text))) {
+        const name = match[1].trim();
+        if (name && name.length > 2) {
+            spans.push({ text: name, type: 'POWER', start: match.index, end: match.index + match[1].length });
+        }
+    }
+    // TECHNIQUE patterns
+    // Pattern: [name] technique/move/strike/form/kata
+    const techniquePattern = /\b(?:used|performed|executed|unleashed|mastered|learned)\s+(?:the|a)?\s+([A-Z][a-z]+(?:\s+(?:Attack|Strike|Technique|Move|Form|Stance|Kata))?)\b/gi;
+    while ((match = techniquePattern.exec(text))) {
+        const name = match[1].trim();
+        if (name && name.length > 2 && /[A-Z]/.test(name)) {
+            spans.push({ text: name, type: 'TECHNIQUE', start: match.index + match[0].indexOf(name), end: match.index + match[0].indexOf(name) + name.length });
+        }
+    }
+    // SPELL patterns
+    // Pattern 1: cast/casted [spell]
+    const spellPattern1 = /\b(?:cast|casted|conjured|invoked|whispered|chanted)\s+(?:the|a)?\s+([A-Z][a-z]+(?:\s+(?:Spell|Curse|Charm))?)\b/gi;
+    while ((match = spellPattern1.exec(text))) {
+        const name = match[1].trim();
+        if (name && name.length > 2) {
+            spans.push({ text: name, type: 'SPELL', start: match.index + match[0].indexOf(name), end: match.index + match[0].indexOf(name) + name.length });
+        }
+    }
+    // Pattern 2: [spell] spell/curse/charm/hex
+    const spellPattern2 = /\b([A-Z][a-z]+(?:\s+(?:Spell|Curse|Charm))?)\s+(?:spell|curse|charm|hex|jinx|enchantment)\b/gi;
+    while ((match = spellPattern2.exec(text))) {
+        const name = match[1].trim();
+        if (name && name.length > 2) {
+            spans.push({ text: name, type: 'SPELL', start: match.index, end: match.index + match[1].length });
+        }
+    }
+    // Deduplicate spans and return
+    const seenKeys = new Set();
+    const uniqueSpans = [];
+    for (const span of spans) {
+        const key = `${span.type}:${span.text.toLowerCase()}:${span.start}`;
+        if (!seenKeys.has(key)) {
+            seenKeys.add(key);
+            uniqueSpans.push(span);
+        }
+    }
+    return uniqueSpans;
+}
 function fallbackNames(text) {
     const spans = [];
     // FIXED: {0,2} allows 1-3 words (including single words like "Gandalf")
@@ -1516,16 +1735,18 @@ async function extractEntities(text) {
     const dep = parsed.sentences.flatMap(depBasedEntities);
     // 4) Gazetteer-based place extraction
     const gazPlaces = gazetterPlaces(text);
-    // 5) Fallback: capitalized names with context classification
+    // 5) Fantasy/Fiction entity extraction (new 15 types)
+    const fantasy = extractFantasyEntities(text);
+    // 6) Fallback: capitalized names with context classification
     const fb = fallbackNames(text);
-    // 6) Merge all sources, deduplicate
-    // Priority: dependency-based > NER > fallback > whitelist
-    // Dependency patterns are most reliable, then spaCy NER, then regex fallback, then whitelisted names
+    // 7) Merge all sources, deduplicate
+    // Priority: dependency-based > NER > fantasy > fallback > whitelist
+    // Dependency patterns are most reliable, then spaCy NER, then fantasy patterns, then regex fallback, then whitelisted names
     const years = extractYearSpans(text);
     const families = extractFamilySpans(text);
     const whitelisted = extractWhitelistedNames(text);
     // Extract conjunctive names (e.g., "Mahlon and Chilion") - must run after NER to know which names are known
-    const allNERSpans = [...ner, ...dep, ...gazPlaces, ...fb, ...families, ...whitelisted];
+    const allNERSpans = [...ner, ...dep, ...gazPlaces, ...fantasy, ...fb, ...families, ...whitelisted];
     const conjunctive = extractConjunctiveNames(text, allNERSpans);
     const taggedSpans = [
         ...dep.map(s => {
@@ -1541,6 +1762,7 @@ async function extractEntities(text) {
             return { ...s, source: (isWhitelisted ? 'WHITELIST' : 'NER') };
         }),
         ...gazPlaces.map(s => ({ ...s, source: 'NER' })), // Treat gazetteer as NER-quality
+        ...fantasy.map(s => ({ ...s, source: 'PATTERN' })), // Treat fantasy patterns as PATTERN-quality
         ...fb.map(s => {
             // Check if this span is from whitelist (normalize for matching)
             const normalized = normalizeName(s.text);

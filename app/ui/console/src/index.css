@@ -176,6 +176,7 @@ a:hover {
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0;
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: 0;
@@ -605,6 +606,102 @@ a:hover {
 .wiki-content li {
   margin: 6px 0;
   color: var(--text-secondary);
+}
+
+/* Editor Scrollbar Styling - Light Mode (Default) */
+.cm-editor-wrapper {
+  scrollbar-color: #E8A87C #FFEFD5 !important;
+  scrollbar-width: thin !important;
+}
+
+.cm-editor-wrapper::-webkit-scrollbar {
+  width: 12px !important;
+  height: 12px !important;
+}
+
+.cm-editor-wrapper::-webkit-scrollbar-track {
+  background: #FFEFD5 !important;
+  border-radius: 6px !important;
+}
+
+.cm-editor-wrapper::-webkit-scrollbar-thumb {
+  background: #E8A87C !important;
+  border-radius: 6px !important;
+  border: 2px solid #FFEFD5 !important;
+}
+
+.cm-editor-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #FFB347 !important;
+}
+
+/* Dark mode scrollbar */
+html[data-theme="dark"] .cm-editor-wrapper {
+  scrollbar-color: #64d5ff #1a1f3a !important;
+}
+
+html[data-theme="dark"] .cm-editor-wrapper::-webkit-scrollbar-track {
+  background: #1a1f3a !important;
+}
+
+html[data-theme="dark"] .cm-editor-wrapper::-webkit-scrollbar-thumb {
+  background: #64d5ff !important;
+  border: 2px solid #1a1f3a !important;
+}
+
+html[data-theme="dark"] .cm-editor-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #a0e7ff !important;
+}
+
+/* Apply color-scheme to control native scrollbar colors */
+.cm-editor-wrapper {
+  color-scheme: light !important;
+}
+
+html[data-theme="dark"] .cm-editor-wrapper {
+  color-scheme: dark !important;
+}
+
+/* Also style .cm-scroller scrollbar (CodeMirror's internal scrollable element) - Light Mode */
+.cm-scroller {
+  color-scheme: light !important;
+}
+
+.cm-scroller::-webkit-scrollbar {
+  width: 12px !important;
+  height: 12px !important;
+}
+
+.cm-scroller::-webkit-scrollbar-track {
+  background: #FFEFD5 !important;
+  border-radius: 6px !important;
+}
+
+.cm-scroller::-webkit-scrollbar-thumb {
+  background: #E8A87C !important;
+  border-radius: 6px !important;
+  border: 2px solid #FFEFD5 !important;
+}
+
+.cm-scroller::-webkit-scrollbar-thumb:hover {
+  background: #FFB347 !important;
+}
+
+/* .cm-scroller scrollbar - Dark Mode */
+html[data-theme="dark"] .cm-scroller {
+  color-scheme: dark !important;
+}
+
+html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-track {
+  background: #1a1f3a !important;
+}
+
+html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb {
+  background: #64d5ff !important;
+  border: 2px solid #1a1f3a !important;
+}
+
+html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
+  background: #a0e7ff !important;
 }
 
 /* Responsive: Mobile */

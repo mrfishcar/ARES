@@ -38,6 +38,71 @@ import { EntityContextMenu } from './EntityContextMenu';
 import type { CodeMirrorEditorProps } from './CodeMirrorEditorProps';
 
 // ============================================================================
+// 0. UTILITY FUNCTIONS
+// ============================================================================
+
+/**
+ * Lighten and saturate a hex color for better glow visibility
+ * Converts hex to HSL, increases lightness, increases saturation, converts back
+ * @param hex - Color in hex format (e.g., '#3b82f6')
+ * @param amount - Amount to lighten (0-100)
+ * @returns Lightened color in hex format
+ */
+function lightenColor(hex: string, amount: number): string {
+  // Remove # if present
+  const color = hex.replace('#', '');
+
+  // Convert hex to RGB
+  const r = parseInt(color.substr(0, 2), 16) / 255;
+  const g = parseInt(color.substr(2, 2), 16) / 255;
+  const b = parseInt(color.substr(4, 2), 16) / 255;
+
+  // Convert RGB to HSL
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0, s = 0, l = (max + min) / 2;
+
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      case b: h = ((r - g) / d + 4) / 6; break;
+    }
+  }
+
+  // Increase lightness and saturation for glow effect
+  l = Math.min(1, l + amount / 100);
+  s = Math.min(1, s + 0.2); // Increase saturation by 20%
+
+  // Convert HSL back to RGB
+  const hue2rgb = (p: number, q: number, t: number): number => {
+    if (t < 0) t += 1;
+    if (t > 1) t -= 1;
+    if (t < 1/6) return p + (q - p) * 6 * t;
+    if (t < 1/2) return q;
+    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+    return p;
+  };
+
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+  const p = 2 * l - q;
+  const r2 = Math.round(hue2rgb(p, q, h + 1/3) * 255);
+  const g2 = Math.round(hue2rgb(p, q, h) * 255);
+  const b2 = Math.round(hue2rgb(p, q, h - 1/3) * 255);
+
+  // Convert back to hex
+  const toHex = (x: number): string => {
+    const hex = x.toString(16);
+    return hex.length === 1 ? '0' + hex : hex;
+  };
+
+  return `#${toHex(r2)}${toHex(g2)}${toHex(b2)}`;
+}
+
+// ============================================================================
 // 1. ENTITY HIGHLIGHTING EXTENSION
 // ============================================================================
 
@@ -87,21 +152,21 @@ function buildEntityDecorations(state: EditorState, entities: EntitySpan[]): Dec
       }
 
       const color = getEntityTypeColor(entity.type);
+      // Create a more saturated glow color for the outer glow effect
+      const glowColor = lightenColor(color, 15);
       builder.add(entity.start, entity.end, Decoration.mark({
         class: 'cm-entity-highlight',
         attributes: {
           'data-entity': JSON.stringify(entity),
-          // Kindle-style: 80% height, feathered edges on all 4 sides
-          // Entities that aren't tagged will get this mark decoration
+          // Outer glow effect: text-shadow creates a glowing halo around the text
+          // This makes highlighted text glow instead of darkening it
           style: `
-            background: linear-gradient(90deg,
-              ${color}00 0%,
-              ${color}20 10%,
-              ${color}30 30%,
-              ${color}30 70%,
-              ${color}20 90%,
-              ${color}00 100%);
-            box-shadow: inset 0 2px 4px ${color}26, inset 0 -2px 4px ${color}26;
+            text-shadow:
+              0 0 4px ${glowColor},
+              0 0 8px ${glowColor},
+              0 0 12px ${glowColor},
+              0 0 16px ${glowColor};
+            font-weight: 500;
             cursor: pointer;
           `
         }
@@ -646,7 +711,8 @@ const editorTheme = EditorView.theme({
   '.cm-scroller': {
     height: '100% !important',
     minHeight: '0 !important',
-    overflow: 'auto !important'
+    scrollbarColor: 'var(--accent-color) var(--bg-tertiary) !important',
+    scrollbarWidth: 'thin !important'
   },
   '.cm-line': {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif !important',
@@ -825,6 +891,44 @@ export function CodeMirrorEditor({
     entity: EntitySpan;
   } | null>(null);
 
+  // Apply dynamic scrollbar colors based on theme
+  useEffect(() => {
+    const theme = document.documentElement.getAttribute('data-theme') || 'light';
+    const isDark = theme === 'dark';
+
+    // Remove old style tag if it exists
+    const oldStyle = document.getElementById('cm-scrollbar-colors');
+    if (oldStyle) oldStyle.remove();
+
+    // Create new style tag with theme-specific scrollbar colors
+    const styleTag = document.createElement('style');
+    styleTag.id = 'cm-scrollbar-colors';
+
+    if (isDark) {
+      styleTag.textContent = `
+        .cm-editor-wrapper::-webkit-scrollbar-thumb {
+          background: #64d5ff !important;
+        }
+        .cm-editor-wrapper::-webkit-scrollbar-thumb:hover {
+          background: #a0e7ff !important;
+        }
+      `;
+    } else {
+      styleTag.textContent = `
+        .cm-editor-wrapper::-webkit-scrollbar-thumb {
+          background: #E8A87C !important;
+        }
+        .cm-editor-wrapper::-webkit-scrollbar-thumb:hover {
+          background: #FFB347 !important;
+        }
+      `;
+    }
+
+    document.head.appendChild(styleTag);
+
+    return () => styleTag.remove();
+  }, []);
+
   // Keep refs in sync and trigger decoration updates
   useEffect(() => {
     console.log('[CodeMirror] entities prop changed:', entities.length, 'entities');
@@ -972,18 +1076,20 @@ export function CodeMirrorEditor({
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+    <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div
         ref={editorRef}
+        className="cm-editor-wrapper"
         style={{
           border: '1px solid var(--border-color)',
           borderRadius: '0',
-          height: '100%',
           backgroundColor: 'var(--bg-primary)',
           width: '100%',
-          flex: 1,
-          minHeight: 0
-        }}
+          height: '100%',
+          overflow: 'auto',
+          scrollbarColor: '#E8A87C #FFEFD5',
+          scrollbarWidth: 'thin'
+        } as React.CSSProperties}
       />
 
       {contextMenu && (

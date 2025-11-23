@@ -65,13 +65,16 @@ function parseManualTags(rawText: string): ParsedTags {
 
     if (match[1]) {
       // Pattern: #[Multi Word]:TYPE (bracketed form)
-      // Keep exactly as typed (including underscores) - user explicitly bracketed it
+      // Entity text is between [ and ]
       const text = match[1];
       const type = match[2].toUpperCase();
       if (isValidEntityType(type as EntityType)) {
+        // Find the position of the entity text (after the #[)
+        const entityStart = matchStart + match[0].indexOf('[') + 1;
+        const entityEnd = entityStart + text.length;
         manualEntities.push({
-          start: matchStart,
-          end: matchEnd,
+          start: entityStart,
+          end: entityEnd,
           text,
           displayText: text,
           type: type as EntityType,
@@ -81,14 +84,17 @@ function parseManualTags(rawText: string): ParsedTags {
       }
     } else if (match[3]) {
       // Pattern: #Entity:TYPE (unbracketed form)
-      // Normalize underscores to spaces - they're just a typing convenience
+      // Entity text is after the # and before the :
       let text = match[3];
       text = text.replace(/_/g, ' ');  // Normalize underscores to spaces
       const type = match[4].toUpperCase();
       if (isValidEntityType(type as EntityType)) {
+        // Find the position of the entity text (after the #)
+        const entityStart = matchStart + 1;  // +1 to skip the #
+        const entityEnd = entityStart + match[3].length;  // Use original match length
         manualEntities.push({
-          start: matchStart,
-          end: matchEnd,
+          start: entityStart,
+          end: entityEnd,
           text,
           displayText: text,
           type: type as EntityType,
@@ -98,16 +104,17 @@ function parseManualTags(rawText: string): ParsedTags {
       }
     } else if (match[5]) {
       // Pattern: Entity:ALIAS_OF_Canonical:TYPE (alias form)
-      // The entity text is the alias form (Entity:ALIAS_OF_...)
-      // but we highlight just the entity word part
-      // Normalize underscores in the alias entity word since it's unbracketed
+      // Entity text is at the start before the first :
       let entityWord = match[5];
       entityWord = entityWord.replace(/_/g, ' ');  // Normalize underscores to spaces
       const type = match[7].toUpperCase();
       if (isValidEntityType(type as EntityType)) {
+        // Entity text starts at matchStart and goes for the length of match[5]
+        const entityStart = matchStart;
+        const entityEnd = entityStart + match[5].length;
         manualEntities.push({
-          start: matchStart,
-          end: matchEnd,
+          start: entityStart,
+          end: entityEnd,
           text: entityWord,
           displayText: entityWord,
           type: type as EntityType,
@@ -117,7 +124,7 @@ function parseManualTags(rawText: string): ParsedTags {
       }
     } else if (match[8]) {
       // Pattern: Entity:REJECT_ENTITY
-      // Normalize underscores to spaces
+      // Entity text is at the start before the :
       let rejectedWord = match[8];
       rejectedWord = rejectedWord.replace(/_/g, ' ');
 
@@ -125,9 +132,12 @@ function parseManualTags(rawText: string): ParsedTags {
       rejections.add(match[8].toLowerCase());
 
       // Also create an entity so the decoration layer can find and replace the entire tag
+      // Entity position is just the word part, not the entire tag
+      const entityStart = matchStart;
+      const entityEnd = entityStart + match[8].length;
       manualEntities.push({
-        start: matchStart,
-        end: matchEnd,
+        start: entityStart,
+        end: entityEnd,
         text: rejectedWord,
         displayText: rejectedWord,
         type: 'REJECT_ENTITY' as EntityType,

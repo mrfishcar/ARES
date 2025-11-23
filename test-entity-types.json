@@ -7,7 +7,7 @@
       "aliases": [
         "Aria"
       ],
-      "created_at": "2025-11-22T02:06:06.396Z",
+      "created_at": "2025-11-22T06:09:22.317Z",
       "centrality": 0
     },
     {
@@ -17,7 +17,7 @@
       "aliases": [
         "Elias"
       ],
-      "created_at": "2025-11-22T02:06:06.396Z",
+      "created_at": "2025-11-22T06:09:22.317Z",
       "centrality": 0
     },
     {
@@ -25,13 +25,13 @@
       "type": "PLACE",
       "canonical": "Mistward River",
       "aliases": [],
-      "created_at": "2025-11-22T02:06:06.396Z",
+      "created_at": "2025-11-22T06:09:22.317Z",
       "centrality": 0
     }
   ],
   "relations": [
     {
-      "id": "ad20b47b-43ad-428f-b43c-b6506c4e4430",
+      "id": "ef6c8f62-8ed2-4d78-8fc8-c2a1d4d11be3",
       "subj": "global_person_0",
       "pred": "lives_in",
       "obj": "global_place_2",
@@ -56,25 +56,25 @@
     "test-mega-context_entity_0": {
       "global_id": "global_person_0",
       "doc_id": "test-mega-context",
-      "merged_at": "2025-11-22T02:06:06.396Z",
+      "merged_at": "2025-11-22T06:09:22.317Z",
       "local_canonical": "Aria"
     },
     "test-mega-context_entity_1": {
       "global_id": "global_person_1",
       "doc_id": "test-mega-context",
-      "merged_at": "2025-11-22T02:06:06.396Z",
+      "merged_at": "2025-11-22T06:09:22.317Z",
       "local_canonical": "Elias"
     },
     "test-mega-context_entity_2": {
       "global_id": "global_place_2",
       "doc_id": "test-mega-context",
-      "merged_at": "2025-11-22T02:06:06.396Z",
+      "merged_at": "2025-11-22T06:09:22.317Z",
       "local_canonical": "Mistward River"
     }
   },
   "profiles": {
-    "35ad961b-bc49-4edc-a24f-c043d4bb2799": {
-      "entity_id": "35ad961b-bc49-4edc-a24f-c043d4bb2799",
+    "4ebe6063-cb29-4e0f-924c-979d37fefb3b": {
+      "entity_id": "4ebe6063-cb29-4e0f-924c-979d37fefb3b",
       "entity_type": "PERSON",
       "canonical": "Aria",
       "descriptors": [],
@@ -92,8 +92,8 @@
       "last_seen": "test-mega-context",
       "confidence_score": 0.55
     },
-    "4d39e056-df40-45a6-97e0-c3b438d25333": {
-      "entity_id": "4d39e056-df40-45a6-97e0-c3b438d25333",
+    "b1285804-cd14-46f4-89c4-54d5809535cc": {
+      "entity_id": "b1285804-cd14-46f4-89c4-54d5809535cc",
       "entity_type": "PERSON",
       "canonical": "Elias",
       "descriptors": [],
@@ -114,8 +114,8 @@
       "last_seen": "test-mega-context",
       "confidence_score": 0.55
     },
-    "1740a9f2-f1f2-489e-bd80-83ec6c4c9ea6": {
-      "entity_id": "1740a9f2-f1f2-489e-bd80-83ec6c4c9ea6",
+    "88033959-58ba-4848-8261-22c9be19d48c": {
+      "entity_id": "88033959-58ba-4848-8261-22c9be19d48c",
       "entity_type": "PLACE",
       "canonical": "Mistward River",
       "descriptors": [],
@@ -136,8 +136,8 @@
     }
   },
   "metadata": {
-    "created_at": "2025-11-22T02:06:06.341Z",
-    "updated_at": "2025-11-22T02:06:06.396Z",
+    "created_at": "2025-11-22T06:09:22.288Z",
+    "updated_at": "2025-11-22T06:09:22.317Z",
     "doc_count": 1,
     "doc_ids": [
       "test-mega-context"

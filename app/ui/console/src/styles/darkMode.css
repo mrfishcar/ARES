@@ -246,3 +246,44 @@ pre {
 .cm-editor * {
   transition: none;
 }
+
+/* Scrollbar Styling - Light Mode (applied to wrapper) */
+.cm-editor-wrapper {
+  scrollbar-color: #E8A87C #FFEFD5 !important;
+  scrollbar-width: thin !important;
+}
+
+.cm-editor-wrapper::-webkit-scrollbar {
+  width: 12px !important;
+  height: 12px !important;
+}
+
+.cm-editor-wrapper::-webkit-scrollbar-track {
+  background: #FFEFD5 !important;
+}
+
+.cm-editor-wrapper::-webkit-scrollbar-thumb {
+  background: #E8A87C !important;
+  border-radius: 6px !important;
+}
+
+.cm-editor-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #FFB347 !important;
+}
+
+/* Scrollbar Styling - Dark Mode */
+html[data-theme="dark"] .cm-editor-wrapper {
+  scrollbar-color: #64d5ff #1a1f3a !important;
+}
+
+html[data-theme="dark"] .cm-editor-wrapper::-webkit-scrollbar-track {
+  background: #1a1f3a !important;
+}
+
+html[data-theme="dark"] .cm-editor-wrapper::-webkit-scrollbar-thumb {
+  background: #64d5ff !important;
+}
+
+html[data-theme="dark"] .cm-editor-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #a0e7ff !important;
+}
