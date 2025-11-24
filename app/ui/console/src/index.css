@@ -834,3 +834,200 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   display: block;
   line-height: 1;
 }
+
+/* Entity Modal */
+.entity-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  cursor: pointer;
+}
+
+.entity-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  max-width: 600px;
+  width: 90%;
+  max-height: 70vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.entity-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.entity-modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--text-primary);
+}
+
+.entity-modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.entity-modal-close:hover {
+  color: var(--text-primary);
+}
+
+.entity-modal-content {
+  padding: 20px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.entity-section {
+  margin-bottom: 24px;
+}
+
+.entity-section:last-child {
+  margin-bottom: 0;
+}
+
+.entity-section h3 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.entity-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.entity-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  color: var(--text-primary);
+  text-align: left;
+}
+
+.entity-badge:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--text-secondary);
+  transform: translateX(4px);
+}
+
+.entity-badge-color {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.entity-badge-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.entity-badge-type {
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  padding: 2px 6px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.relation-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.relation-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text-primary);
+  overflow-x: auto;
+}
+
+.relation-subject,
+.relation-object {
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.relation-predicate {
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 20px;
+  font-size: 13px;
+}
+
+/* Entities Button */
+.entities-button {
+  padding: 6px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.entities-button:hover:not(:disabled) {
+  background: var(--bg-tertiary);
+  border-color: var(--text-secondary);
+}
+
+.entities-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

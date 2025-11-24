@@ -8,6 +8,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { CodeMirrorEditor } from '../components/CodeMirrorEditor';
 import { EntityResultsPanel } from '../components/EntityResultsPanel';
 import { EntityIndicators } from '../components/EntityIndicators';
+import { EntityModal } from '../components/EntityModal';
 import { WikiModal } from '../components/WikiModal';
 import { isValidEntityType, type EntitySpan, type EntityType } from '../types/entities';
 import { initializeTheme, toggleTheme, loadThemePreference } from '../utils/darkMode';
@@ -360,6 +361,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [showHighlighting, setShowHighlighting] = useState(true);
   const [highlightOpacity, setHighlightOpacity] = useState(1.0);
   const [showAdvancedControls, setShowAdvancedControls] = useState(false);
+  const [showEntityModal, setShowEntityModal] = useState(false);
   const [renderMarkdown, setRenderMarkdown] = useState(true);
   const [theme, setTheme] = useState(loadThemePreference());
 
@@ -684,6 +686,14 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
             </>
           )}
           <button
+            onClick={() => setShowEntityModal(true)}
+            className="entities-button"
+            disabled={entities.length === 0}
+            title="View extracted entities and relations"
+          >
+            📊 {entities.length}
+          </button>
+          <button
             onClick={handleThemeToggle}
             className="theme-toggle"
             title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
@@ -790,6 +800,21 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           </div>
         </div>
       </div>
+
+      {/* Entity Modal */}
+      {showEntityModal && (
+        <EntityModal
+          entities={entities}
+          relations={relations}
+          onClose={() => setShowEntityModal(false)}
+          onViewWiki={(entityName) => {
+            const entity = entities.find(e => e.text === entityName);
+            if (entity) {
+              setSelectedEntity({ name: entityName, type: entity.type });
+            }
+          }}
+        />
+      )}
 
       {/* Wiki Modal */}
       {selectedEntity && (
