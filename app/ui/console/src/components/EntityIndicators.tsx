@@ -89,8 +89,8 @@ export function EntityIndicators({ entities, text, editorHeight }: EntityIndicat
       {indicatorsByLine.map((indicator) => {
         // Random animation delay (0 to 2 seconds) for staggered twinkling
         const randomDelay = Math.random() * 2;
-        // Random duration (1.5 to 2.5 seconds) for varying rhythm
-        const randomDuration = 1.5 + Math.random() * 1;
+        // Random duration (2.5 to 3.5 seconds) for varying rhythm
+        const randomDuration = 2.5 + Math.random() * 1;
 
         return (
           <div
