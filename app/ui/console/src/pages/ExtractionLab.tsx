@@ -7,6 +7,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { CodeMirrorEditor } from '../components/CodeMirrorEditor';
 import { EntityResultsPanel } from '../components/EntityResultsPanel';
+import { EntityIndicators } from '../components/EntityIndicators';
 import { WikiModal } from '../components/WikiModal';
 import { isValidEntityType, type EntitySpan, type EntityType } from '../types/entities';
 import { initializeTheme, toggleTheme, loadThemePreference } from '../utils/darkMode';
@@ -762,22 +763,30 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                 </div>
               )}
             </div>
-            {/* Single Editor: CodeMirror with markdown + highlighting */}
-            <CodeMirrorEditor
-              value={text}
-              onChange={(newText) => setText(newText)}
-              minHeight="calc(100vh - 380px)"
-              disableHighlighting={!showHighlighting}
-              highlightOpacity={highlightOpacity}
-              enableWYSIWYG={false}
-              renderMarkdown={renderMarkdown}
-              entities={entities}
-              projectId={project}
-              onReject={handleReject}
-              onChangeType={handleChangeType}
-              onTagEntity={handleTagEntity}
-              onCreateNew={handleCreateNew}
-            />
+            {/* Editor with entity indicators on right */}
+            <div className="editor-with-indicators">
+              <CodeMirrorEditor
+                value={text}
+                onChange={(newText) => setText(newText)}
+                minHeight="calc(100vh - 380px)"
+                disableHighlighting={!showHighlighting}
+                highlightOpacity={highlightOpacity}
+                enableWYSIWYG={false}
+                renderMarkdown={renderMarkdown}
+                entities={entities}
+                projectId={project}
+                onReject={handleReject}
+                onChangeType={handleChangeType}
+                onTagEntity={handleTagEntity}
+                onCreateNew={handleCreateNew}
+              />
+              {/* Entity indicators on right margin */}
+              <EntityIndicators
+                entities={entities}
+                text={text}
+                editorHeight={Math.max(400, window.innerHeight - 380)}
+              />
+            </div>
 
             {/* Mobile: Bottom dropdown for entities */}
             <div className="entities-dropdown-mobile">
