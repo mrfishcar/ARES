@@ -305,8 +305,9 @@ export async function appendDoc(
 
   const localEntities = Array.from(localMap.values());
 
-  // DEBUG: Log entities after local dedup
-  console.log(`[STORAGE] After local dedup: ${localEntities.length} entities:`, localEntities.map(e => `${e.type}::${e.canonical}`).join(', '));
+  // DEBUG: Log entities after local dedup with confidence
+  console.log(`[STORAGE] After local dedup: ${localEntities.length} entities:`);
+  localEntities.forEach(e => console.log(`  - ${e.type}::${e.canonical} (confidence: ${e.confidence?.toFixed(3) || 'N/A'})`));
 
   // Merge new entities with existing globals
   // To preserve determinism, we need to merge in a stable order
@@ -317,6 +318,11 @@ export async function appendDoc(
 
   const mergeResult = mergeEntitiesAcrossDocs(allLocalEntities);
   const { globals, idMap, stats } = mergeResult;
+
+  // DEBUG: Log what happened during merge
+  console.log(`[STORAGE] Merge result: ${allLocalEntities.length} entities → ${globals.length} globals`);
+  console.log(`[STORAGE] Globals after merge:`);
+  globals.forEach(g => console.log(`  - ${g.type}::${g.canonical} (confidence: ${g.confidence?.toFixed(3) || 'N/A'})`));
 
   // Log merge statistics for debugging
   if (process.env.DEBUG_MERGE === '1') {

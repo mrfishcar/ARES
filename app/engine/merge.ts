@@ -120,11 +120,38 @@ function getSurname(name: string): string | null {
 }
 
 /**
+ * Pronouns and non-discriminative terms that should NEVER be used for entity matching
+ * These are temporary references, not permanent entity identifiers
+ */
+const INVALID_MATCH_TERMS = new Set([
+  'he', 'she', 'it', 'they', 'him', 'her', 'his', 'hers', 'its', 'their', 'theirs', 'them',
+  'i', 'you', 'we', 'me', 'us', 'my', 'your', 'our',
+  'this', 'that', 'these', 'those',
+  'here', 'there',
+  'the', 'a', 'an'
+]);
+
+/**
+ * Check if a name is a pronoun or other invalid match term
+ */
+function isPronounOrInvalidTerm(name: string): boolean {
+  const normalized = normalizeKey(name);
+  return INVALID_MATCH_TERMS.has(normalized);
+}
+
+/**
  * Check if one name is a substring of another (after normalization)
+ * IMPORTANT: Filters out pronouns and non-discriminative words to prevent false merges
  */
 function isSubstringMatch(name1: string, name2: string): boolean {
+  // Reject if either name is a pronoun/article
+  if (isPronounOrInvalidTerm(name1) || isPronounOrInvalidTerm(name2)) {
+    return false;
+  }
+
   const n1 = normalizeKey(name1);
   const n2 = normalizeKey(name2);
+
   if (n1 === n2) return true;
   if (!n1.length || !n2.length) return false;
   return (
@@ -208,6 +235,11 @@ export function mergeEntitiesAcrossDocs(
 
           for (const mName of memberNames) {
             for (const eName of entityNames) {
+              // CRITICAL: Skip pronouns entirely - they are temporary references, not entity identifiers
+              if (isPronounOrInvalidTerm(mName) || isPronounOrInvalidTerm(eName)) {
+                continue;  // Don't use pronouns for matching at all
+              }
+
               // Check for substring match (e.g., "Harry" in "Harry Potter")
               if (isSubstringMatch(mName, eName)) {
                 hasSubstringMatch = true;
@@ -253,6 +285,9 @@ export function mergeEntitiesAcrossDocs(
       }
 
       if ((bestScore >= STRONG_THRESHOLD || hasSubstringMatch) && bestClusterIdx >= 0) {
+        // DEBUG: Log why this entity is being merged
+        console.log(`[MERGE] Merging "${entity.canonical}" into cluster ${bestClusterIdx} (score: ${bestScore.toFixed(3)}, method: ${hasSubstringMatch ? 'substring' : 'jaro-winkler'}, matched: "${bestMatchedNames.local}" ↔ "${bestMatchedNames.cluster}")`);
+
         clusters[bestClusterIdx].push(entity);
 
         // Store merge metadata
@@ -269,6 +304,9 @@ export function mergeEntitiesAcrossDocs(
           matchedNames: bestMatchedNames
         });
       } else {
+        // DEBUG: Log new cluster creation
+        console.log(`[MERGE] Creating new cluster ${clusters.length} for "${entity.canonical}"`);
+
         clusters.push([entity]);
         // Singleton cluster - perfect confidence
         entityMergeInfo.set(entity.id, {
@@ -283,6 +321,14 @@ export function mergeEntitiesAcrossDocs(
     }
 
     // Convert clusters to global entities
+    // DEBUG: Log all clusters to diagnose why Frederick/Saul disappear
+    console.log(`[MERGE] Type ${type}: ${clusters.length} clusters from ${group.length} entities`);
+    clusters.forEach((cluster, idx) => {
+      const names = cluster.map(e => e.canonical).join(', ');
+      const confidences = cluster.map(e => e.confidence?.toFixed(3) || 'N/A').join(', ');
+      console.log(`  Cluster ${idx}: [${names}] (confidences: ${confidences})`);
+    });
+
     for (const cluster of clusters) {
       // Debug: log person clusters
       if (type === 'PERSON' && process.env.DEBUG_MERGE === '1') {
@@ -395,7 +441,8 @@ export function mergeEntitiesAcrossDocs(
         canonical,
         aliases,
         created_at: new Date().toISOString(),
-        centrality: Math.max(...cluster.map(e => e.centrality || 0))
+        centrality: Math.max(...cluster.map(e => e.centrality || 0)),
+        confidence: Math.max(...cluster.map(e => e.confidence || 0.5))  // Preserve max confidence from cluster
       };
 
       globals.push(globalEntity);

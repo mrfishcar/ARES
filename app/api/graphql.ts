@@ -1044,7 +1044,7 @@ No additional information is available at this time.
               id: entity.id,
               text: entity.canonical,
               type: entity.type,
-              confidence: entity.centrality || 1.0,
+              confidence: entity.confidence || 0.5,
               spans: matches,
               aliases: entity.aliases || [],
             };

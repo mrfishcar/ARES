@@ -215,6 +215,7 @@ export interface Entity {
   attrs?: Record<string, string | number | boolean>;
   created_at: string;
   centrality?: number;
+  confidence?: number;   // Extraction confidence (0-1) from confidence-scoring.ts
 
   // HERT integration (Phase 1-3)
   eid?: number;          // Stable entity ID (cross-document)
