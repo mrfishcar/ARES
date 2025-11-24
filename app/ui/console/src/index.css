@@ -835,28 +835,38 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   position: relative;
 }
 
+/* Twinkling star animation */
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.3;
+    filter: drop-shadow(0 0 4px currentColor);
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 12px currentColor);
+  }
+}
+
 .entity-indicator {
   border-radius: 50%;
   cursor: pointer;
   pointer-events: auto;
-  transition: transform 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
-  font-weight: bold;
-  color: white;
-  text-shadow: 0 0 2px rgba(0,0,0,0.5);
+  animation: twinkle 2s ease-in-out infinite;
+  transition: transform 0.2s ease;
 }
 
 .entity-indicator:hover {
-  transform: scale(1.2);
-  filter: brightness(1.2);
+  animation: none;
+  opacity: 1;
+  filter: drop-shadow(0 0 16px currentColor) brightness(1.3);
+  transform: scale(1.3);
 }
 
 .entity-indicator-count {
-  display: block;
-  line-height: 1;
+  display: none;
 }
 
 /* Entity Modal */

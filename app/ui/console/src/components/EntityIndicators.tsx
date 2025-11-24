@@ -76,13 +76,10 @@ export function EntityIndicators({ entities, text, editorHeight }: EntityIndicat
     return Array.from(groupedByLine.entries()).map(([line, lineEntities]) => {
       const colors = lineEntities.map(e => getEntityTypeColor(e.type));
       const averageColor = lineEntities.length > 1 ? averageColors(colors) : colors[0];
-      const size = Math.min(24, 8 + lineEntities.length * 2); // Bigger if more entities
 
       return {
         line,
-        count: lineEntities.length,
-        color: averageColor,
-        size
+        color: averageColor
       };
     });
   }, [entities, text]);
@@ -98,17 +95,13 @@ export function EntityIndicators({ entities, text, editorHeight }: EntityIndicat
             top: `${indicator.line * lineHeight}px`,
             left: '50%',
             transform: 'translateX(-50%)',
-            width: `${indicator.size}px`,
-            height: `${indicator.size}px`,
+            width: '8px',
+            height: '8px',
             background: indicator.color,
-            boxShadow: `0 0 12px ${indicator.color}66, 0 0 24px ${indicator.color}33`
+            boxShadow: `0 0 8px ${indicator.color}99, 0 0 16px ${indicator.color}66`
           }}
-          title={`${indicator.count} entit${indicator.count > 1 ? 'ies' : 'y'} on line ${indicator.line + 1}`}
-        >
-          {indicator.count > 1 && (
-            <span className="entity-indicator-count">{indicator.count}</span>
-          )}
-        </div>
+          title={`Entity on line ${indicator.line + 1}`}
+        />
       ))}
     </div>
   );
