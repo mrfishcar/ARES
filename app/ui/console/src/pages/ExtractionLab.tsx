@@ -358,6 +358,8 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [selectedEntity, setSelectedEntity] = useState<SelectedEntityState | null>(null);
   const [showHighlighting, setShowHighlighting] = useState(true);
   const [highlightOpacity, setHighlightOpacity] = useState(1.0);
+  const [showAdvancedControls, setShowAdvancedControls] = useState(false);
+  const [showEntityPanel, setShowEntityPanel] = useState(false);
   const [renderMarkdown, setRenderMarkdown] = useState(true);
   const [theme, setTheme] = useState(loadThemePreference());
 
@@ -694,79 +696,128 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
       {/* Main Content */}
       <div className="lab-content">
-        {/* Left: Editor */}
-        <div className="editor-panel">
-          <div className="panel-header">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-              <div>
-                <h2>Write or paste text...</h2>
-                <p className="panel-subtitle">Full ARES engine extracts entities AND relations (updates after typing)</p>
-              </div>
-              <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px' }}>
-                  <input
-                    type="checkbox"
-                    checked={showHighlighting}
-                    onChange={(e) => setShowHighlighting(e.target.checked)}
-                    style={{ cursor: 'pointer' }}
-                  />
-                  <span>✨ Entity Highlighting</span>
-                </label>
-                {showHighlighting && (
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
-                    <span style={{ whiteSpace: 'nowrap' }}>Opacity:</span>
+        {/* Center: Editor with side margins */}
+        <div className="editor-wrapper">
+          <div className="editor-panel">
+            <div className="panel-header">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '16px', flexWrap: 'wrap' }}>
+                <div>
+                  <h2>Write or paste text...</h2>
+                  <p className="panel-subtitle">Full ARES engine extracts entities AND relations (updates after typing)</p>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px' }}>
                     <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={highlightOpacity * 100}
-                      onChange={(e) => setHighlightOpacity(Number(e.target.value) / 100)}
-                      style={{ width: '120px', cursor: 'pointer' }}
+                      type="checkbox"
+                      checked={!renderMarkdown}
+                      onChange={(e) => setRenderMarkdown(!e.target.checked)}
+                      style={{ cursor: 'pointer' }}
                     />
-                    <span style={{ minWidth: '35px', textAlign: 'right' }}>{Math.round(highlightOpacity * 100)}%</span>
+                    <span>📄 Show Raw Text</span>
                   </label>
-                )}
-                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px' }}>
-                  <input
-                    type="checkbox"
-                    checked={!renderMarkdown}
-                    onChange={(e) => setRenderMarkdown(!e.target.checked)}
-                    style={{ cursor: 'pointer' }}
-                  />
-                  <span>📄 Show Raw Text</span>
-                </label>
+                  <button
+                    onClick={() => setShowAdvancedControls(!showAdvancedControls)}
+                    style={{
+                      padding: '6px 12px',
+                      background: showAdvancedControls ? 'var(--bg-tertiary)' : 'transparent',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      color: 'var(--text-primary)',
+                    }}
+                    title="Toggle highlighting options"
+                  >
+                    ⚙️ {showAdvancedControls ? 'Hide' : 'Show'} Options
+                  </button>
+                </div>
               </div>
+
+              {/* Advanced Controls - Hidden by default */}
+              {showAdvancedControls && (
+                <div style={{ marginTop: '12px', display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px' }}>
+                    <input
+                      type="checkbox"
+                      checked={showHighlighting}
+                      onChange={(e) => setShowHighlighting(e.target.checked)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                    <span>✨ Entity Highlighting</span>
+                  </label>
+                  {showHighlighting && (
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+                      <span style={{ whiteSpace: 'nowrap' }}>Opacity:</span>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={highlightOpacity * 100}
+                        onChange={(e) => setHighlightOpacity(Number(e.target.value) / 100)}
+                        style={{ width: '120px', cursor: 'pointer' }}
+                      />
+                      <span style={{ minWidth: '35px', textAlign: 'right' }}>{Math.round(highlightOpacity * 100)}%</span>
+                    </label>
+                  )}
+                </div>
+              )}
+            </div>
+            {/* Single Editor: CodeMirror with markdown + highlighting */}
+            <CodeMirrorEditor
+              value={text}
+              onChange={(newText) => setText(newText)}
+              minHeight="calc(100vh - 380px)"
+              disableHighlighting={!showHighlighting}
+              highlightOpacity={highlightOpacity}
+              enableWYSIWYG={false}
+              renderMarkdown={renderMarkdown}
+              entities={entities}
+              projectId={project}
+              onReject={handleReject}
+              onChangeType={handleChangeType}
+              onTagEntity={handleTagEntity}
+              onCreateNew={handleCreateNew}
+            />
+
+            {/* Mobile: Bottom dropdown for entities */}
+            <div className="entities-dropdown-mobile">
+              <button
+                onClick={() => setShowEntityPanel(!showEntityPanel)}
+                className="dropdown-toggle"
+              >
+                📊 Entities & Relations {entities.length > 0 && `(${entities.length})`}
+              </button>
+              {showEntityPanel && (
+                <div className="dropdown-content">
+                  <EntityResultsPanel
+                    entities={entities}
+                    relations={relations}
+                    onViewWiki={(entityName) => {
+                      const entity = entities.find(e => e.text === entityName);
+                      if (entity) {
+                        setSelectedEntity({ name: entityName, type: entity.type });
+                      }
+                    }}
+                  />
+                </div>
+              )}
             </div>
           </div>
-          {/* Single Editor: CodeMirror with markdown + highlighting */}
-          <CodeMirrorEditor
-            value={text}
-            onChange={(newText) => setText(newText)}
-            minHeight="calc(100vh - 280px)"
-            disableHighlighting={!showHighlighting}
-            highlightOpacity={highlightOpacity}
-            enableWYSIWYG={false}
-            renderMarkdown={renderMarkdown}
-            entities={entities}
-            projectId={project}
-            onReject={handleReject}
-            onChangeType={handleChangeType}
-            onTagEntity={handleTagEntity}
-            onCreateNew={handleCreateNew}
-          />
-        </div>
 
-        {/* Right: Results */}
-        <EntityResultsPanel
-          entities={entities}
-          relations={relations}
-          onViewWiki={(entityName) => {
-            const entity = entities.find(e => e.text === entityName);
-            if (entity) {
-              setSelectedEntity({ name: entityName, type: entity.type });
-            }
-          }}
-        />
+          {/* Desktop: Right sidebar */}
+          <div className="entities-sidebar-desktop">
+            <EntityResultsPanel
+              entities={entities}
+              relations={relations}
+              onViewWiki={(entityName) => {
+                const entity = entities.find(e => e.text === entityName);
+                if (entity) {
+                  setSelectedEntity({ name: entityName, type: entity.type });
+                }
+              }}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Wiki Modal */}

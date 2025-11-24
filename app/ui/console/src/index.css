@@ -162,27 +162,68 @@ a:hover {
 }
 
 .lab-content {
-  display: grid;
-  grid-template-columns: 1fr 420px;
-  grid-template-rows: 1fr;
-  gap: 24px;
+  display: flex;
+  justify-content: center;
   flex: 1;
-  padding: 24px;
-  overflow: hidden;
+  padding: 24px 16px;
+  overflow: auto;
+}
+
+.editor-wrapper {
+  display: flex;
+  width: 100%;
+  max-width: 1200px;
+  gap: 24px;
 }
 
 /* Editor Panel */
 .editor-panel {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 0;
+  flex: 1;
+  min-width: 0;
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: 0;
   box-shadow: none;
   overflow: hidden;
   transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Desktop sidebar for entities */
+.entities-sidebar-desktop {
+  flex: 0 0 420px;
+  display: none;
+}
+
+/* Mobile dropdown for entities */
+.entities-dropdown-mobile {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--border-color);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.dropdown-toggle {
+  padding: 12px 16px;
+  background: var(--bg-secondary);
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: background-color 0.2s ease;
+}
+
+.dropdown-toggle:hover {
+  background: var(--bg-tertiary);
+}
+
+.dropdown-content {
+  flex: 1;
+  overflow-y: auto;
 }
 
 .panel-header {
@@ -706,17 +747,45 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
 
 /* Responsive: Mobile */
 @media (max-width: 768px) {
-  .lab-content {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr auto;
+  .editor-wrapper {
+    flex-direction: column;
   }
 
-  .results-panel {
-    max-height: 50vh;
+  .entities-sidebar-desktop {
+    display: none;
+  }
+
+  .entities-dropdown-mobile {
+    display: flex;
+  }
+
+  .lab-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .lab-stats {
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   .wiki-modal-content {
     width: 95%;
     max-height: 90vh;
+  }
+}
+
+/* Responsive: Desktop */
+@media (min-width: 769px) {
+  .entities-sidebar-desktop {
+    display: flex;
+  }
+
+  .entities-dropdown-mobile {
+    display: none;
+  }
+
+  .editor-wrapper {
+    flex-direction: row;
   }
 }
