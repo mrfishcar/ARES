@@ -94,7 +94,10 @@ export function EntityIndicators({ entities, text, editorHeight }: EntityIndicat
           key={indicator.line}
           className="entity-indicator"
           style={{
+            position: 'absolute',
             top: `${indicator.line * lineHeight}px`,
+            left: '50%',
+            transform: 'translateX(-50%)',
             width: `${indicator.size}px`,
             height: `${indicator.size}px`,
             background: indicator.color,

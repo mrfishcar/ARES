@@ -772,29 +772,32 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                 </div>
               )}
             </div>
-            {/* Editor with entity indicators on right */}
-            <div className="editor-with-indicators">
-              <CodeMirrorEditor
-                value={text}
-                onChange={(newText) => setText(newText)}
-                minHeight="calc(100vh - 380px)"
-                disableHighlighting={!showHighlighting}
-                highlightOpacity={highlightOpacity}
-                enableWYSIWYG={false}
-                renderMarkdown={renderMarkdown}
-                entities={entities}
-                projectId={project}
-                onReject={handleReject}
-                onChangeType={handleChangeType}
-                onTagEntity={handleTagEntity}
-                onCreateNew={handleCreateNew}
-              />
-              {/* Entity indicators on right margin */}
+            {/* Entity indicators on left + Editor on right */}
+            <div className="editor-with-indicators-wrapper">
+              {/* Entity indicators on left side */}
               <EntityIndicators
                 entities={entities}
                 text={text}
                 editorHeight={Math.max(400, window.innerHeight - 380)}
               />
+              {/* Editor area */}
+              <div className="editor-with-indicators">
+                <CodeMirrorEditor
+                  value={text}
+                  onChange={(newText) => setText(newText)}
+                  minHeight="calc(100vh - 380px)"
+                  disableHighlighting={!showHighlighting}
+                  highlightOpacity={highlightOpacity}
+                  enableWYSIWYG={false}
+                  renderMarkdown={renderMarkdown}
+                  entities={entities}
+                  projectId={project}
+                  onReject={handleReject}
+                  onChangeType={handleChangeType}
+                  onTagEntity={handleTagEntity}
+                  onCreateNew={handleCreateNew}
+                />
+              </div>
             </div>
 
           </div>
