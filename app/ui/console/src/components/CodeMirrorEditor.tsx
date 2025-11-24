@@ -671,72 +671,124 @@ function contextMenuHandler(
   setContextMenu: (ctx: any) => void,
   entitiesRef: React.MutableRefObject<EntitySpan[]>
 ) {
-  return EditorView.domEventHandlers({
-    contextmenu: (event, view) => {
-      console.log('[ContextMenu] Handler called!', {
-        eventType: event.type,
-        targetTag: (event.target as HTMLElement)?.tagName,
-        targetClass: (event.target as HTMLElement)?.className
-      });
+  // Long-press tracking for touch devices
+  let touchStartTime = 0;
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let longPressTimer: NodeJS.Timeout | null = null;
+  const LONG_PRESS_DURATION = 500; // milliseconds
+  const TOUCH_MOVEMENT_THRESHOLD = 10; // pixels
 
-      const target = event.target as HTMLElement;
+  const findEntityAtEvent = (event: any, view: EditorView) => {
+    const target = event.target as HTMLElement;
 
-      // First, try to find data-entity attribute in DOM (works for regular highlights)
-      const elementWithData = target.closest('[data-entity]') as HTMLElement | null;
-      if (elementWithData) {
-        const entityData = elementWithData.getAttribute('data-entity');
-        if (entityData) {
-          event.preventDefault();
-          try {
-            const entity = JSON.parse(entityData) as EntitySpan;
-            console.log('[ContextMenu] Found entity via DOM data-entity:', entity.text);
-            setContextMenu({
-              position: { x: event.clientX, y: event.clientY },
-              entity
-            });
-            return true;
-          } catch (e) {
-            console.error('[ContextMenu] Failed to parse entity data:', entityData, e);
-            return false;
-          }
+    // First, try to find data-entity attribute in DOM (works for regular highlights)
+    const elementWithData = target.closest('[data-entity]') as HTMLElement | null;
+    if (elementWithData) {
+      const entityData = elementWithData.getAttribute('data-entity');
+      if (entityData) {
+        try {
+          const entity = JSON.parse(entityData) as EntitySpan;
+          return entity;
+        } catch (e) {
+          console.error('[ContextMenu] Failed to parse entity data:', entityData, e);
+          return null;
         }
       }
+    }
 
-      // Fallback: use cursor position to find entity
-      // This works when widgets are blocking DOM traversal
-      console.log('[ContextMenu] No data-entity in DOM. Using cursor position fallback.');
+    // Fallback: use cursor position to find entity
+    const coords = view.posAtCoords({ x: event.clientX, y: event.clientY });
+    if (coords === null) {
+      return null;
+    }
 
-      // Get the editor state
-      const state = view.state;
+    const clickPos = coords;
+    const clickedEntity = entitiesRef.current.find(e =>
+      e.start <= clickPos && clickPos <= e.end
+    );
 
-      // Get the position of the click in the editor
-      // We need to find which character position the user right-clicked on
-      const coords = view.posAtCoords({x: event.clientX, y: event.clientY});
+    return clickedEntity || null;
+  };
 
-      if (coords === null) {
-        console.log('[ContextMenu] Could not determine click position');
-        return false;
-      }
+  return EditorView.domEventHandlers({
+    contextmenu: (event, view) => {
+      console.log('[ContextMenu] Right-click handler called');
+      const entity = findEntityAtEvent(event, view);
 
-      const clickPos = coords;
-      console.log('[ContextMenu] Click position:', clickPos);
-
-      // Find entity at this position
-      const clickedEntity = entitiesRef.current.find(e =>
-        e.start <= clickPos && clickPos <= e.end
-      );
-
-      if (clickedEntity) {
+      if (entity) {
         event.preventDefault();
-        console.log('[ContextMenu] Found entity via position fallback:', clickedEntity.text);
+        console.log('[ContextMenu] Found entity via right-click:', entity.text);
         setContextMenu({
           position: { x: event.clientX, y: event.clientY },
-          entity: clickedEntity
+          entity
         });
         return true;
       }
 
       console.log('[ContextMenu] No entity found at cursor position');
+      return false;
+    },
+
+    touchstart: (event, view) => {
+      const touch = event.touches[0];
+      if (!touch) return false;
+
+      touchStartTime = Date.now();
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+
+      // Clear any previous timer
+      if (longPressTimer) clearTimeout(longPressTimer);
+
+      // Set timer for long-press
+      longPressTimer = setTimeout(() => {
+        console.log('[ContextMenu] Long-press detected');
+        const entity = findEntityAtEvent({
+          target: event.target,
+          clientX: touch.clientX,
+          clientY: touch.clientY
+        }, view);
+
+        if (entity) {
+          console.log('[ContextMenu] Found entity via long-press:', entity.text);
+          setContextMenu({
+            position: { x: touch.clientX, y: touch.clientY },
+            entity
+          });
+        }
+      }, LONG_PRESS_DURATION);
+
+      return false;
+    },
+
+    touchmove: (event, view) => {
+      const touch = event.touches[0];
+      if (!touch) return false;
+
+      // If user moved finger too far, cancel long-press
+      const distance = Math.sqrt(
+        Math.pow(touch.clientX - touchStartX, 2) +
+        Math.pow(touch.clientY - touchStartY, 2)
+      );
+
+      if (distance > TOUCH_MOVEMENT_THRESHOLD) {
+        if (longPressTimer) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
+      }
+
+      return false;
+    },
+
+    touchend: (event, view) => {
+      // Cancel long-press if finger lifted before timer completed
+      if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+      }
+
       return false;
     }
   });
