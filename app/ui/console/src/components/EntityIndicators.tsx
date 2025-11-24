@@ -86,23 +86,32 @@ export function EntityIndicators({ entities, text, editorHeight }: EntityIndicat
 
   return (
     <div className="entity-indicators">
-      {indicatorsByLine.map((indicator) => (
-        <div
-          key={indicator.line}
-          className="entity-indicator"
-          style={{
-            position: 'absolute',
-            top: `${indicator.line * lineHeight}px`,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '8px',
-            height: '8px',
-            background: indicator.color,
-            boxShadow: `0 0 8px ${indicator.color}99, 0 0 16px ${indicator.color}66`
-          }}
-          title={`Entity on line ${indicator.line + 1}`}
-        />
-      ))}
+      {indicatorsByLine.map((indicator) => {
+        // Random animation delay (0 to 2 seconds) for staggered twinkling
+        const randomDelay = Math.random() * 2;
+        // Random duration (1.5 to 2.5 seconds) for varying rhythm
+        const randomDuration = 1.5 + Math.random() * 1;
+
+        return (
+          <div
+            key={indicator.line}
+            className="entity-indicator"
+            style={{
+              position: 'absolute',
+              top: `${indicator.line * lineHeight}px`,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: '8px',
+              height: '8px',
+              background: indicator.color,
+              boxShadow: `0 0 8px ${indicator.color}99, 0 0 16px ${indicator.color}66`,
+              '--animation-delay': `${randomDelay}s`,
+              '--animation-duration': `${randomDuration}s`
+            } as React.CSSProperties}
+            title={`Entity on line ${indicator.line + 1}`}
+          />
+        );
+      })}
     </div>
   );
 }
