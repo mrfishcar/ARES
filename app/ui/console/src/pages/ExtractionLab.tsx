@@ -391,8 +391,21 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         // Incomplete tags like "#Cory:" won't be sent, so backend won't try to extract from them
         const textForExtraction = stripIncompleteTagsForExtraction(text);
 
-        // Call ARES engine API (use environment variable for production)
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+        // Call ARES engine API
+        // For production (Vercel): use Railway backend
+        // For local dev: use localhost
+        let apiUrl = import.meta.env.VITE_API_URL;
+        if (!apiUrl) {
+          // If VITE_API_URL not set, detect environment
+          const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+          if (hostname.includes('vercel.app')) {
+            // Production on Vercel - use Railway backend
+            apiUrl = 'https://ares-production-72ea.up.railway.app';
+          } else {
+            // Local development
+            apiUrl = 'http://localhost:4000';
+          }
+        }
         const response = await fetch(`${apiUrl}/extract-entities`, {
           method: 'POST',
           headers: {

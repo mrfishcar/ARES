@@ -1,7 +1,19 @@
-// Use environment variable, fallback to localhost for local development
-const GRAPHQL_URL =
-  import.meta.env.VITE_GRAPHQL_URL ||
-  "http://localhost:4000/graphql";
+// Determine GraphQL URL based on environment
+function getGraphQLURL(): string {
+  // Try environment variable first
+  if (import.meta.env.VITE_GRAPHQL_URL) {
+    return import.meta.env.VITE_GRAPHQL_URL;
+  }
+
+  // If no env var, detect environment
+  if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
+    // Production on Vercel - use Railway backend
+    return 'https://ares-production-72ea.up.railway.app/graphql';
+  }
+
+  // Local development
+  return 'http://localhost:4000/graphql';
+}
 
 interface GraphQLResponse<T> {
   data?: T;
@@ -14,7 +26,7 @@ async function executeGraphQL<T>(
   document: string,
   variables?: Record<string, any>
 ): Promise<T> {
-  const response = await fetch(GRAPHQL_URL, {
+  const response = await fetch(getGraphQLURL(), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ query: document, variables }),
@@ -78,7 +90,7 @@ export async function fetchWikiFile(
   id: string
 ): Promise<string> {
   try {
-    const response = await fetch(GRAPHQL_URL, {
+    const response = await fetch(getGraphQLURL(), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
