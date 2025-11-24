@@ -360,7 +360,6 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [showHighlighting, setShowHighlighting] = useState(true);
   const [highlightOpacity, setHighlightOpacity] = useState(1.0);
   const [showAdvancedControls, setShowAdvancedControls] = useState(false);
-  const [showEntityPanel, setShowEntityPanel] = useState(false);
   const [renderMarkdown, setRenderMarkdown] = useState(true);
   const [theme, setTheme] = useState(loadThemePreference());
 
@@ -788,43 +787,6 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
               />
             </div>
 
-            {/* Mobile: Bottom dropdown for entities */}
-            <div className="entities-dropdown-mobile">
-              <button
-                onClick={() => setShowEntityPanel(!showEntityPanel)}
-                className="dropdown-toggle"
-              >
-                📊 Entities & Relations {entities.length > 0 && `(${entities.length})`}
-              </button>
-              {showEntityPanel && (
-                <div className="dropdown-content">
-                  <EntityResultsPanel
-                    entities={entities}
-                    relations={relations}
-                    onViewWiki={(entityName) => {
-                      const entity = entities.find(e => e.text === entityName);
-                      if (entity) {
-                        setSelectedEntity({ name: entityName, type: entity.type });
-                      }
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Desktop: Right sidebar */}
-          <div className="entities-sidebar-desktop">
-            <EntityResultsPanel
-              entities={entities}
-              relations={relations}
-              onViewWiki={(entityName) => {
-                const entity = entities.find(e => e.text === entityName);
-                if (entity) {
-                  setSelectedEntity({ name: entityName, type: entity.type });
-                }
-              }}
-            />
           </div>
         </div>
       </div>
