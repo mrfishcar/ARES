@@ -20,7 +20,7 @@ import { computeEntityConfidence, filterEntitiesByConfidence } from "../confiden
 import type { Token, ParsedSentence, ParseResponse } from "./parse-types";
 import { getParserClient } from "../../parser";
 import { analyzeEntityContext, classifyWithContext, shouldExtractByContext } from "./context-classifier";
-import { filterPronouns } from "../pronoun-utils";
+import { filterPronouns, isContextDependent } from "../pronoun-utils";
 import { detectClauses } from "./clause-detector";
 
 const TRACE_SPANS = process.env.L3_TRACE === "1";
@@ -2804,12 +2804,15 @@ const mergedEntries = Array.from(mergedMap.values());
     for (const entity of entities) {
       const aliasSet = new Set<string>(entity.aliases);
 
-      // Add mentions from coreference links
+      // Add mentions from coreference links (FILTER PRONOUNS - they're context-dependent)
       for (const link of corefLinks.links) {
         if (link.entity_id === entity.id) {
           const mentionText = link.mention.text.trim();
-          // Add if different from canonical and not empty
-          if (mentionText && mentionText !== entity.canonical && mentionText.toLowerCase() !== entity.canonical.toLowerCase()) {
+          // Add if different from canonical, not empty, AND not a pronoun
+          if (mentionText &&
+              mentionText !== entity.canonical &&
+              mentionText.toLowerCase() !== entity.canonical.toLowerCase() &&
+              !isContextDependent(mentionText)) {
             aliasSet.add(mentionText);
           }
         }

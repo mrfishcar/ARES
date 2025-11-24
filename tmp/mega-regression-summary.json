@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2025-11-22T06:09:29.841Z",
+  "generatedAt": "2025-11-24T07:17:12.374Z",
   "suite": "ARES Mega Regression Suite",
   "description": "High-word-count narratives for large-scale regression tracking.",
   "targets": {
@@ -9,22 +9,22 @@
     "relationRecall": 0.75
   },
   "averages": {
-    "entityPrecision": 0.4166666666666667,
+    "entityPrecision": 0.20833333333333334,
     "entityRecall": 0.625,
-    "entityF1": 0.5,
-    "relationPrecision": 0.25,
-    "relationRecall": 0.3076923076923077,
-    "relationF1": 0.27586206896551724
+    "entityF1": 0.3125,
+    "relationPrecision": 0.16666666666666666,
+    "relationRecall": 0.15384615384615385,
+    "relationF1": 0.16
   },
   "cases": [
     {
       "id": "mega-001",
       "title": "Emerald Chronicle - Meridian Ridge",
       "words": 933,
-      "entityPrecision": 0.4166666666666667,
+      "entityPrecision": 0.20833333333333334,
       "entityRecall": 0.625,
-      "relationPrecision": 0.25,
-      "relationRecall": 0.3076923076923077
+      "relationPrecision": 0.16666666666666666,
+      "relationRecall": 0.15384615384615385
     }
   ]
 }
