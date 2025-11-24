@@ -799,6 +799,7 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   display: flex;
   flex: 1;
   min-width: 0;
+  min-height: 0;
 }
 
 .entity-indicators {
