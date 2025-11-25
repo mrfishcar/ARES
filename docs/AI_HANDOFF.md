@@ -163,6 +163,21 @@ Next Steps:
 - [What to do next]
 ```
 
+### Latest Update (Documentation Sync)
+
+Status Update - Documentation Review
+
+Completed:
+- Reviewed `CODEX_ONLINE_PROMPT.md` for the active mission brief and prioritized tasks.
+- Re-read `CLAUDE.md` sections 7-9 to refresh debugging conventions (inverse relations, pronoun filtering, troubleshooting flow).
+- Synced `CODEX.MD` tips and added reminder to keep this handoff document current after each task.
+
+Results:
+- Tests not run (documentation-only update).
+
+Next Steps:
+- When implementing fixes, start parser (`make parser`) and rerun blocker test (`npx ts-node tests/ladder/test-2.12-only.ts`) followed by Stage 2 suite.
+
 ## Instructions for Claude
 
 ### Review Checklist

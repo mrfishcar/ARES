@@ -348,6 +348,35 @@ function chooseSemanticHead(tok: Token, tokens: Token[]): Token {
   return tok;
 }
 
+function resolveAppositiveSubject(tok: Token, tokens: Token[]): Token {
+  let current = tok;
+  let guard = 0;
+
+  while (guard++ < 4) {
+    const parent = tokens.find(t => t.i === current.head);
+    if (!parent || parent.i === current.i) break;
+
+    // If the subject token itself is an appositive, climb to its head (e.g., "Arathorn" appos of "Aragorn")
+    if (current.dep === 'appos' && isNameToken(parent)) {
+      current = parent;
+      continue;
+    }
+
+    // Handle "X, son of Y" where the parser may return the inner pobj (Y) instead of the appositive head (X/son)
+    if (current.dep === 'pobj' && parent.dep === 'prep') {
+      const grand = tokens.find(t => t.i === parent.head);
+      if (grand && grand.dep === 'appos' && isNameToken(grand)) {
+        current = grand;
+        continue;
+      }
+    }
+
+    break;
+  }
+
+  return current;
+}
+
 /**
  * Expand token to full NP span including all modifiers
  * Handles cases like "Gandalf the Grey", "Professor McGonagall", "Minas Tirith"
@@ -384,6 +413,15 @@ function expandNP(tok: Token, tokens: Token[]): { start: number; end: number } {
   const start = Math.min(...members.map(m => m.start));
   const end = Math.max(...members.map(m => m.end));
   return { start, end };
+}
+
+function trimAppositiveSpan(base: Token, span: { start: number; end: number }, tokens: Token[]) {
+  const apposChildren = tokens.filter(t => t.head === base.i && t.dep === 'appos');
+  if (!apposChildren.length) return span;
+
+  // When a subject has an appositive ("Aragorn, son of Arathorn"), prefer the head token span
+  // to avoid stretching confidence windows across the appositive phrase.
+  return { start: base.start, end: base.end };
 }
 
 function collectConjTokens(base: Token, tokens: Token[]): Token[] {
@@ -452,7 +490,7 @@ function buildOrgSpan(token: Token, tokens: Token[]): { start: number; end: numb
 function resolveSubjectToken(verb: Token, tokens: Token[]): Token | undefined {
   const direct = tokens.find(t => t.dep === 'nsubj' && t.head === verb.i);
   if (direct) {
-    const semantic = chooseSemanticHead(direct, tokens);
+    const semantic = resolveAppositiveSubject(chooseSemanticHead(direct, tokens), tokens);
     const siblings = tokens
       .filter(t => t.head === verb.i && isNameToken(t))
       .sort((a, b) => a.start - b.start);
@@ -504,7 +542,7 @@ function computeConfidence(
 
   // Distance penalty (exponential decay - gentler for Phase 3)
   const charDist = Math.abs(objTok.start - subjTok.start);
-  const distPenalty = Math.exp(-charDist / 120);
+  const distPenalty = Math.exp(-charDist / 150);
 
   return Math.min(1.0, base * typeBonus * distPenalty);
 }
@@ -2078,7 +2116,7 @@ function extractDepRelations(
             }
             const subjCandidates = collectConjTokens(subjTok, tokens);
             for (const subjectCandidate of subjCandidates) {
-              const subjSpan = expandNP(subjectCandidate, tokens);
+              const subjSpan = trimAppositiveSpan(subjectCandidate, expandNP(subjectCandidate, tokens), tokens);
               const candidateSurface = text.slice(subjSpan.start, subjSpan.end);
               const subjRef = mapSurfaceToEntity(candidateSurface, entities, spans, subjSpan);
               if (isDescriptorEntity(subjRef?.entity)) continue;
