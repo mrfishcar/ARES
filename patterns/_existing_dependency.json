@@ -1968,8 +1968,8 @@
   },
   {
     "id": "dep_0133",
-    "signature_regex": "(\\w+):↑nsubj:be:↓attr:(parent|mother|father|son|daughter):↓prep:of:↓pobj:(\\w+)",
-    "predicate": "parent_of",
+    "signature_regex": "(\\w+):↑nsubj:be:↓attr:(son|daughter|child):↓prep:of:↓pobj:(\\w+)",
+    "predicate": "child_of",
     "family": "kinship",
     "dep_roles": [
       "nsubj",
@@ -1985,6 +1985,23 @@
   },
   {
     "id": "dep_0134",
+    "signature_regex": "(\\w+):↑nsubj:be:↓attr:(parent|mother|father):↓prep:of:↓pobj:(\\w+)",
+    "predicate": "parent_of",
+    "family": "kinship",
+    "dep_roles": [
+      "nsubj",
+      "attr",
+      "prep",
+      "pobj"
+    ],
+    "lemmas": [
+      "be",
+      "of"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dep_0135",
     "signature_regex": "(\\w+):↑appos:(parent|mother|father):↓prep:of:↓pobj:(\\w+)",
     "predicate": "parent_of",
     "family": "kinship",
@@ -1999,7 +2016,7 @@
     "examples": []
   },
   {
-    "id": "dep_0135",
+    "id": "dep_0136",
     "signature_regex": "(son|daughter|child):↓poss:(\\w+)",
     "predicate": "parent_of",
     "family": "kinship",
@@ -2010,7 +2027,7 @@
     "examples": []
   },
   {
-    "id": "dep_0136",
+    "id": "dep_0137",
     "signature_regex": "(mother|father|parent):↓poss:(\\w+)",
     "predicate": "child_of",
     "family": "kinship",
@@ -2021,7 +2038,7 @@
     "examples": []
   },
   {
-    "id": "dep_0137",
+    "id": "dep_0138",
     "signature_regex": "(\\w+):↑appos:(son|daughter|child):↓prep:of:↓pobj:(\\w+)",
     "predicate": "child_of",
     "family": "kinship",
@@ -2036,7 +2053,7 @@
     "examples": []
   },
   {
-    "id": "dep_0138",
+    "id": "dep_0139",
     "signature_regex": "(\\w+):↑appos:child:↓prep:of:↓pobj:(\\w+)",
     "predicate": "child_of",
     "family": "kinship",
@@ -2052,7 +2069,7 @@
     "examples": []
   },
   {
-    "id": "dep_0139",
+    "id": "dep_0140",
     "signature_regex": "(\\w+):↑conj:(\\w+):↑nsubj:be:↓attr:sibling",
     "predicate": "sibling_of",
     "family": "kinship",
@@ -2068,7 +2085,7 @@
     "examples": []
   },
   {
-    "id": "dep_0140",
+    "id": "dep_0141",
     "signature_regex": "(brother|sister|sibling):↓poss:(\\w+)",
     "predicate": "sibling_of",
     "family": "kinship",
@@ -2079,7 +2096,7 @@
     "examples": []
   },
   {
-    "id": "dep_0141",
+    "id": "dep_0142",
     "signature_regex": "(\\w+):↑nsubj:(mentor|train|teach):↓(dobj|obj):(\\w+)",
     "predicate": "mentored",
     "family": "employment",
@@ -2090,7 +2107,7 @@
     "examples": []
   },
   {
-    "id": "dep_0142",
+    "id": "dep_0143",
     "signature_regex": "(\\w+):↓relcl:(mentor|train|teach):↓(dobj|obj):(\\w+)",
     "predicate": "mentored",
     "family": "employment",
@@ -2101,7 +2118,7 @@
     "examples": []
   },
   {
-    "id": "dep_0143",
+    "id": "dep_0144",
     "signature_regex": "(\\w+):↑nsubj:(train|study):↓prep:under:↓pobj:(\\w+)",
     "predicate": "mentored_by",
     "family": "employment",
@@ -2116,7 +2133,7 @@
     "examples": []
   },
   {
-    "id": "dep_0144",
+    "id": "dep_0145",
     "signature_regex": "(\\w+):↑nsubj:mentor:↓(dobj|obj):(\\w+)",
     "predicate": "mentored",
     "family": "employment",
@@ -2129,7 +2146,7 @@
     "examples": []
   },
   {
-    "id": "dep_0145",
+    "id": "dep_0146",
     "signature_regex": "(\\w+):↑nsubj:(rule|govern|reign):↓(dobj|obj):(\\w+)",
     "predicate": "rules",
     "family": "power",
@@ -2140,7 +2157,7 @@
     "examples": []
   },
   {
-    "id": "dep_0146",
+    "id": "dep_0147",
     "signature_regex": "(\\w+):↑nsubj:(rule|reign):↓prep:over:↓pobj:(\\w+)",
     "predicate": "rules",
     "family": "power",
@@ -2155,7 +2172,7 @@
     "examples": []
   },
   {
-    "id": "dep_0147",
+    "id": "dep_0148",
     "signature_regex": "(\\w+):↑appos:(ruler|king|queen|lord|emperor|monarch):↓prep:of:↓pobj:(\\w+)",
     "predicate": "rules",
     "family": "power",
@@ -2170,7 +2187,7 @@
     "examples": []
   },
   {
-    "id": "dep_0148",
+    "id": "dep_0149",
     "signature_regex": "(king|queen|lord|emperor):↑compound:(\\w+):↓prep:of:↓pobj:(\\w+)",
     "predicate": "rules",
     "family": "power",
@@ -2185,7 +2202,7 @@
     "examples": []
   },
   {
-    "id": "dep_0149",
+    "id": "dep_0150",
     "signature_regex": "(\\w+):↑nsubj:guard:↓(dobj|obj):(\\w+)",
     "predicate": "guards",
     "family": "power",
@@ -2198,7 +2215,7 @@
     "examples": []
   },
   {
-    "id": "dep_0150",
+    "id": "dep_0151",
     "signature_regex": "(\\w+):↑nsubj:(seek|search|hunt):↓(dobj|obj):(\\w+)",
     "predicate": "seeks",
     "family": "event",
@@ -2209,7 +2226,7 @@
     "examples": []
   },
   {
-    "id": "dep_0151",
+    "id": "dep_0152",
     "signature_regex": "(\\w+):↑nsubj:(seek|search|hunt):↓prep:for:↓pobj:(\\w+)",
     "predicate": "seeks",
     "family": "event",
@@ -2224,7 +2241,7 @@
     "examples": []
   },
   {
-    "id": "dep_0152",
+    "id": "dep_0153",
     "signature_regex": "(\\w+):↑nsubj:(possess|hold|wield|carry):↓(dobj|obj):(\\w+)",
     "predicate": "possesses",
     "family": "ownership",
@@ -2235,7 +2252,7 @@
     "examples": []
   },
   {
-    "id": "dep_0153",
+    "id": "dep_0154",
     "signature_regex": "(\\w+):↑nsubj:(obtain|acquire|take|seize|steal):↓(dobj|obj):(\\w+)",
     "predicate": "possesses",
     "family": "ownership",
@@ -2246,7 +2263,7 @@
     "examples": []
   },
   {
-    "id": "dep_0154",
+    "id": "dep_0155",
     "signature_regex": "(\\w+):↑nsubj:(fight|battle|combat):↓(dobj|obj):(\\w+)",
     "predicate": "enemy_of",
     "family": "social",
@@ -2257,7 +2274,7 @@
     "examples": []
   },
   {
-    "id": "dep_0155",
+    "id": "dep_0156",
     "signature_regex": "(\\w+):↑nsubj:(attack|assault|strike):↓(dobj|obj):(\\w+)",
     "predicate": "enemy_of",
     "family": "social",
@@ -2268,7 +2285,7 @@
     "examples": []
   },
   {
-    "id": "dep_0156",
+    "id": "dep_0157",
     "signature_regex": "(\\w+):↑nsubj:(defeat|destroy|vanquish|conquer):↓(dobj|obj):(\\w+)",
     "predicate": "defeated",
     "family": "power",
@@ -2279,7 +2296,7 @@
     "examples": []
   },
   {
-    "id": "dep_0157",
+    "id": "dep_0158",
     "signature_regex": "(\\w+):↑nsubjpass:(defeat|destroy|vanquish):↓agent:by:↓pobj:(\\w+)",
     "predicate": "defeated",
     "family": "power",
@@ -2294,7 +2311,7 @@
     "examples": []
   },
   {
-    "id": "dep_0158",
+    "id": "dep_0159",
     "signature_regex": "(\\w+):↑nsubj:(kill|slay|murder|assassinate):↓(dobj|obj):(\\w+)",
     "predicate": "killed",
     "family": "power",
@@ -2305,7 +2322,7 @@
     "examples": []
   },
   {
-    "id": "dep_0159",
+    "id": "dep_0160",
     "signature_regex": "(\\w+):↑nsubjpass:(kill|slay|murder):↓agent:by:↓pobj:(\\w+)",
     "predicate": "killed",
     "family": "power",
@@ -2320,7 +2337,7 @@
     "examples": []
   },
   {
-    "id": "dep_0160",
+    "id": "dep_0161",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:enemy:↓prep:of:↓pobj:(\\w+)",
     "predicate": "enemy_of",
     "family": "social",
@@ -2338,7 +2355,7 @@
     "examples": []
   },
   {
-    "id": "dep_0161",
+    "id": "dep_0162",
     "signature_regex": "(\\w+):↑appos:enemy:↓prep:of:↓pobj:(\\w+)",
     "predicate": "enemy_of",
     "family": "social",
@@ -2354,7 +2371,7 @@
     "examples": []
   },
   {
-    "id": "dep_0162",
+    "id": "dep_0163",
     "signature_regex": "(\\w+):↑nsubj:ally:↓prep:with:↓pobj:(\\w+)",
     "predicate": "ally_of",
     "family": "social",
@@ -2370,7 +2387,7 @@
     "examples": []
   },
   {
-    "id": "dep_0163",
+    "id": "dep_0164",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:ally:↓prep:of:↓pobj:(\\w+)",
     "predicate": "ally_of",
     "family": "social",
@@ -2388,7 +2405,7 @@
     "examples": []
   },
   {
-    "id": "dep_0164",
+    "id": "dep_0165",
     "signature_regex": "(\\w+):↑nsubj:(accompany|join|follow):↓(dobj|obj):(\\w+)",
     "predicate": "ally_of",
     "family": "social",
@@ -2399,7 +2416,7 @@
     "examples": []
   },
   {
-    "id": "dep_0165",
+    "id": "dep_0166",
     "signature_regex": "(\\w+):↑nsubjpass:(imprison|confine|trap|lock):↓prep:in:↓pobj:(\\w+)",
     "predicate": "imprisoned_in",
     "family": "power",
@@ -2414,7 +2431,7 @@
     "examples": []
   },
   {
-    "id": "dep_0166",
+    "id": "dep_0167",
     "signature_regex": "(\\w+):↑nsubj:break:↓acomp:free:↓prep:from:↓pobj:(\\w+)",
     "predicate": "freed_from",
     "family": "power",
@@ -2432,7 +2449,7 @@
     "examples": []
   },
   {
-    "id": "dep_0167",
+    "id": "dep_0168",
     "signature_regex": "(\\w+):↑nsubj:escape:↓prep:from:↓pobj:(\\w+)",
     "predicate": "freed_from",
     "family": "power",
@@ -2448,7 +2465,7 @@
     "examples": []
   },
   {
-    "id": "dep_0168",
+    "id": "dep_0169",
     "signature_regex": "(\\w+):↑nsubj:join:↓(dobj|obj):(\\w+)",
     "predicate": "member_of",
     "family": "employment",
@@ -2461,7 +2478,7 @@
     "examples": []
   },
   {
-    "id": "dep_0169",
+    "id": "dep_0170",
     "signature_regex": "(\\w+):↑appos:member:↓prep:of:↓pobj:(\\w+)",
     "predicate": "member_of",
     "family": "employment",
@@ -2477,7 +2494,7 @@
     "examples": []
   },
   {
-    "id": "dep_0170",
+    "id": "dep_0171",
     "signature_regex": "(\\w+):↑nsubj:send:↓prep:for:↓pobj:(\\w+)",
     "predicate": "summoned",
     "family": "power",
@@ -2493,7 +2510,7 @@
     "examples": []
   },
   {
-    "id": "dep_0171",
+    "id": "dep_0172",
     "signature_regex": "(\\w+):↑nsubj:require:↓(dobj|obj):(\\w+)",
     "predicate": "summoned",
     "family": "power",
@@ -2506,7 +2523,7 @@
     "examples": []
   },
   {
-    "id": "dep_0172",
+    "id": "dep_0173",
     "signature_regex": "(\\w+):↓prep:(at|in|on):↓pobj:(\\w+)",
     "predicate": "located_at",
     "family": "location",
@@ -2518,7 +2535,7 @@
     "examples": []
   },
   {
-    "id": "dep_0173",
+    "id": "dep_0174",
     "signature_regex": "(\\w+):↑nsubj:stand:↓prep:(on|at):↓pobj:(\\w+)",
     "predicate": "located_at",
     "family": "location",
@@ -2533,7 +2550,7 @@
     "examples": []
   },
   {
-    "id": "dep_0174",
+    "id": "dep_0175",
     "signature_regex": "(\\w+):↓prep:(beneath|under|below):↓pobj:(\\w+)",
     "predicate": "located_beneath",
     "family": "location",
@@ -2545,7 +2562,7 @@
     "examples": []
   },
   {
-    "id": "dep_0175",
+    "id": "dep_0176",
     "signature_regex": "(\\w+):↑nsubjpass:hide:↓prep:in:↓pobj:(\\w+)",
     "predicate": "hidden_in",
     "family": "location",
@@ -2561,7 +2578,7 @@
     "examples": []
   },
   {
-    "id": "dep_0176",
+    "id": "dep_0177",
     "signature_regex": "(\\w+):↑nsubj:gather:↓prep:in:↓pobj:(\\w+)",
     "predicate": "located_at",
     "family": "location",
@@ -2577,7 +2594,7 @@
     "examples": []
   },
   {
-    "id": "dep_0177",
+    "id": "dep_0178",
     "signature_regex": "(\\w+):↑nsubj:lead:↓(dobj|obj):(\\w+)",
     "predicate": "leads",
     "family": "employment",
@@ -2590,7 +2607,7 @@
     "examples": []
   },
   {
-    "id": "dep_0178",
+    "id": "dep_0179",
     "signature_regex": "(\\w+):↑appos:leader:↓prep:of:↓pobj:(\\w+)",
     "predicate": "leads",
     "family": "employment",
@@ -2606,7 +2623,7 @@
     "examples": []
   },
   {
-    "id": "dep_0179",
+    "id": "dep_0180",
     "signature_regex": "(leader|general|commander|captain):↓poss:(\\w+)",
     "predicate": "leads",
     "family": "employment",
@@ -2617,7 +2634,7 @@
     "examples": []
   },
   {
-    "id": "dep_0180",
+    "id": "dep_0181",
     "signature_regex": "(\\w+):↑nsubjpass:lead:↓agent:by:↓pobj:(\\w+)",
     "predicate": "leads",
     "family": "employment",
@@ -2633,7 +2650,7 @@
     "examples": []
   },
   {
-    "id": "dep_0181",
+    "id": "dep_0182",
     "signature_regex": "(\\w+):↑nsubj:(paint|write|compose|author|create|invent|design|build|sculpt|craft):↓(dobj|obj):(\\w+)",
     "predicate": "created_by",
     "family": "creation",
@@ -2644,7 +2661,7 @@
     "examples": []
   },
   {
-    "id": "dep_0182",
+    "id": "dep_0183",
     "signature_regex": "(\\w+):↑nsubjpass:(paint|write|compose|author|create|invent|design|build|sculpt|craft):↓agent:by:↓pobj:(\\w+)",
     "predicate": "created_by",
     "family": "creation",
@@ -2659,7 +2676,7 @@
     "examples": []
   },
   {
-    "id": "dep_0183",
+    "id": "dep_0184",
     "signature_regex": "(\\w+):↑nsubjpass:(locate|situate):↓prep:in:↓pobj:(\\w+)",
     "predicate": "located_in",
     "family": "other",
@@ -2674,7 +2691,7 @@
     "examples": []
   },
   {
-    "id": "dep_0184",
+    "id": "dep_0185",
     "signature_regex": "(\\w+):↑nsubj:stand:↓prep:in:↓pobj:(\\w+)",
     "predicate": "located_in",
     "family": "other",
@@ -2690,7 +2707,7 @@
     "examples": []
   },
   {
-    "id": "dep_0185",
+    "id": "dep_0186",
     "signature_regex": "(\\w+):↑nsubjpass:base:↓prep:in:↓pobj:(\\w+)",
     "predicate": "located_in",
     "family": "other",
@@ -2706,7 +2723,7 @@
     "examples": []
   },
   {
-    "id": "dep_0186",
+    "id": "dep_0187",
     "signature_regex": "(\\w+):↑nsubj:(write|tell|speak|say|communicate):↓prep:to:↓pobj:(\\w+)",
     "predicate": "wrote_to",
     "family": "communication",
@@ -2721,7 +2738,7 @@
     "examples": []
   },
   {
-    "id": "dep_0187",
+    "id": "dep_0188",
     "signature_regex": "(\\w+):↑nsubj:(tell|inform|notify):↓(dobj|obj):(\\w+)",
     "predicate": "wrote_to",
     "family": "communication",
@@ -2732,7 +2749,7 @@
     "examples": []
   },
   {
-    "id": "dep_0188",
+    "id": "dep_0189",
     "signature_regex": "(\\w+):↑nsubj:(ask|reply|respond):↓prep:to:↓pobj:(\\w+)",
     "predicate": "wrote_to",
     "family": "communication",
@@ -2747,7 +2764,7 @@
     "examples": []
   },
   {
-    "id": "dep_0189",
+    "id": "dep_0190",
     "signature_regex": "(\\w+):↑nsubj:(report|convey):↓(dobj|obj):(\\w+):↓prep:to:↓pobj:(\\w+)",
     "predicate": "wrote_to",
     "family": "communication",
@@ -2762,7 +2779,7 @@
     "examples": []
   },
   {
-    "id": "dep_0190",
+    "id": "dep_0191",
     "signature_regex": "(\\w+):↑nsubj:contact:↓(dobj|obj):(\\w+)",
     "predicate": "wrote_to",
     "family": "communication",
@@ -2775,7 +2792,7 @@
     "examples": []
   },
   {
-    "id": "dep_0191",
+    "id": "dep_0192",
     "signature_regex": "(\\w+):↑nsubj:address:↓(dobj|obj):(\\w+)",
     "predicate": "wrote_to",
     "family": "communication",
@@ -2788,7 +2805,7 @@
     "examples": []
   },
   {
-    "id": "dep_0192",
+    "id": "dep_0193",
     "signature_regex": "(\\w+):↑nsubj:message:↓(dobj|obj):(\\w+)",
     "predicate": "wrote_to",
     "family": "communication",
@@ -2801,7 +2818,7 @@
     "examples": []
   },
   {
-    "id": "dep_0193",
+    "id": "dep_0194",
     "signature_regex": "(\\w+):↑nsubj:call:↓(dobj|obj):(\\w+)",
     "predicate": "wrote_to",
     "family": "communication",
@@ -2814,7 +2831,7 @@
     "examples": []
   },
   {
-    "id": "dep_0194",
+    "id": "dep_0195",
     "signature_regex": "(\\w+):↑nsubj:discuss:↓prep:with:↓pobj:(\\w+)",
     "predicate": "wrote_to",
     "family": "communication",
@@ -2830,7 +2847,7 @@
     "examples": []
   },
   {
-    "id": "dep_0195",
+    "id": "dep_0196",
     "signature_regex": "(\\w+):↑nsubj:converse:↓prep:with:↓pobj:(\\w+)",
     "predicate": "wrote_to",
     "family": "communication",
@@ -2846,7 +2863,7 @@
     "examples": []
   },
   {
-    "id": "dep_0196",
+    "id": "dep_0197",
     "signature_regex": "(\\w+):↑nsubj:communicate:↓prep:with:↓pobj:(\\w+)",
     "predicate": "wrote_to",
     "family": "communication",
@@ -2862,7 +2879,7 @@
     "examples": []
   },
   {
-    "id": "dep_0197",
+    "id": "dep_0198",
     "signature_regex": "(\\w+):↑nsubj:(attend|participate):↓prep:in:↓pobj:(\\w+)",
     "predicate": "attended",
     "family": "event",
@@ -2877,7 +2894,7 @@
     "examples": []
   },
   {
-    "id": "dep_0198",
+    "id": "dep_0199",
     "signature_regex": "(\\w+):↑nsubj:(attend|perform):↓prep:at:↓pobj:(\\w+)",
     "predicate": "attended",
     "family": "event",
@@ -2892,7 +2909,7 @@
     "examples": []
   },
   {
-    "id": "dep_0199",
+    "id": "dep_0200",
     "signature_regex": "(\\w+):↑nsubj:(host|organize|arrange|convene):↓(dobj|obj):(\\w+)",
     "predicate": "hosted",
     "family": "event",
@@ -2903,7 +2920,7 @@
     "examples": []
   },
   {
-    "id": "dep_0200",
+    "id": "dep_0201",
     "signature_regex": "(\\w+):↑nsubj:witness:↓(dobj|obj):(\\w+)",
     "predicate": "attended",
     "family": "event",
@@ -2916,7 +2933,7 @@
     "examples": []
   },
   {
-    "id": "dep_0201",
+    "id": "dep_0202",
     "signature_regex": "(\\w+):↑nsubj:(rule|govern|control|command|dominate|reign):↓(dobj|obj):(\\w+)",
     "predicate": "ruled_by",
     "family": "other",
@@ -2927,7 +2944,7 @@
     "examples": []
   },
   {
-    "id": "dep_0202",
+    "id": "dep_0203",
     "signature_regex": "(\\w+):↑nsubjpass:(rule|govern|control|command):↓agent:by:↓pobj:(\\w+)",
     "predicate": "ruled_by",
     "family": "other",
@@ -2942,7 +2959,7 @@
     "examples": []
   },
   {
-    "id": "dep_0203",
+    "id": "dep_0204",
     "signature_regex": "(\\w+):↑nsubj:(love|admire|respect|fear|hate|envy):↓(dobj|obj):(\\w+)",
     "predicate": "loved",
     "family": "emotional",
@@ -2953,7 +2970,7 @@
     "examples": []
   },
   {
-    "id": "dep_0204",
+    "id": "dep_0205",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:(\\w+)",
     "predicate": "is",
     "family": "identity",
@@ -2967,7 +2984,7 @@
     "examples": []
   },
   {
-    "id": "dep_0205",
+    "id": "dep_0206",
     "signature_regex": "(\\w+):↑nsubj:equal:↓(dobj|obj):(\\w+)",
     "predicate": "is",
     "family": "identity",
@@ -2980,7 +2997,7 @@
     "examples": []
   },
   {
-    "id": "dep_0206",
+    "id": "dep_0207",
     "signature_regex": "(\\w+):↑nsubjpass:know:↓prep:as:↓pobj:(\\w+)",
     "predicate": "is",
     "family": "identity",
@@ -2996,7 +3013,7 @@
     "examples": []
   },
   {
-    "id": "dep_0207",
+    "id": "dep_0208",
     "signature_regex": "(\\w+):↑nsubj:be:↓advmod:formerly:↓attr:(\\w+)",
     "predicate": "is",
     "family": "identity",
@@ -3012,7 +3029,7 @@
     "examples": []
   },
   {
-    "id": "dep_0208",
+    "id": "dep_0209",
     "signature_regex": "(\\w+):↑nsubj:be:↓advmod:previously:↓attr:(\\w+)",
     "predicate": "is",
     "family": "identity",
@@ -3028,7 +3045,7 @@
     "examples": []
   },
   {
-    "id": "dep_0209",
+    "id": "dep_0210",
     "signature_regex": "(\\w+):↑nsubj:be:↓acomp:(large|great|long|cold|hot|high|big):↓prep:than:↓pobj:(\\w+)",
     "predicate": "greater_than",
     "family": "comparison",
@@ -3045,7 +3062,7 @@
     "examples": []
   },
   {
-    "id": "dep_0210",
+    "id": "dep_0211",
     "signature_regex": "(\\w+):↑nsubj:have:↓(dobj|obj):(population|size|area):↓amod:great:↓prep:than:↓pobj:(\\w+)",
     "predicate": "greater_than",
     "family": "comparison",
@@ -3063,7 +3080,7 @@
     "examples": []
   },
   {
-    "id": "dep_0211",
+    "id": "dep_0212",
     "signature_regex": "(\\w+):↑nsubj:(follow|precede):↓(dobj|obj):(\\w+)",
     "predicate": "after",
     "family": "temporal",
@@ -3074,7 +3091,7 @@
     "examples": []
   },
   {
-    "id": "dep_0212",
+    "id": "dep_0213",
     "signature_regex": "(\\w+):↑nsubj:begin:↓prep:before:↓pobj:(\\w+)",
     "predicate": "before",
     "family": "temporal",
@@ -3090,7 +3107,7 @@
     "examples": []
   },
   {
-    "id": "dep_0213",
+    "id": "dep_0214",
     "signature_regex": "(\\w+):↑nsubj:happen:↓prep:after:↓pobj:(\\w+)",
     "predicate": "after",
     "family": "temporal",
@@ -3106,7 +3123,7 @@
     "examples": []
   },
   {
-    "id": "dep_0214",
+    "id": "dep_0215",
     "signature_regex": "(\\w+):↑nsubj:live:↓prep:during:↓pobj:(\\w+)",
     "predicate": "during",
     "family": "temporal",
@@ -3122,7 +3139,7 @@
     "examples": []
   },
   {
-    "id": "dep_0215",
+    "id": "dep_0216",
     "signature_regex": "(\\w+):↑nsubj:arrive:↓prep:before:↓pobj:(\\w+)",
     "predicate": "before",
     "family": "temporal",
@@ -3138,7 +3155,7 @@
     "examples": []
   },
   {
-    "id": "dep_0216",
+    "id": "dep_0217",
     "signature_regex": "(\\w+):↑nsubj:exist:↓prep:before:↓pobj:(\\w+)",
     "predicate": "before",
     "family": "temporal",
@@ -3154,7 +3171,7 @@
     "examples": []
   },
   {
-    "id": "dep_0217",
+    "id": "dep_0218",
     "signature_regex": "(\\w+):↑nsubj:end:↓prep:after:↓pobj:(\\w+)",
     "predicate": "after",
     "family": "temporal",
@@ -3170,7 +3187,7 @@
     "examples": []
   },
   {
-    "id": "dep_0218",
+    "id": "dep_0219",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:part:↓prep:of:↓pobj:(\\w+)",
     "predicate": "part_of",
     "family": "part_whole",
@@ -3188,7 +3205,7 @@
     "examples": []
   },
   {
-    "id": "dep_0219",
+    "id": "dep_0220",
     "signature_regex": "(\\w+):↑nsubj:consist:↓prep:of:↓pobj:(\\w+)",
     "predicate": "part_of",
     "family": "part_whole",
@@ -3204,7 +3221,7 @@
     "examples": []
   },
   {
-    "id": "dep_0220",
+    "id": "dep_0221",
     "signature_regex": "(\\w+):↑nsubj:include:↓(dobj|obj):(\\w+)",
     "predicate": "part_of",
     "family": "part_whole",
@@ -3217,7 +3234,7 @@
     "examples": []
   },
   {
-    "id": "dep_0221",
+    "id": "dep_0222",
     "signature_regex": "(\\w+):↑nsubj:comprise:↓(dobj|obj):(\\w+)",
     "predicate": "part_of",
     "family": "part_whole",
@@ -3230,7 +3247,7 @@
     "examples": []
   },
   {
-    "id": "dep_0222",
+    "id": "dep_0223",
     "signature_regex": "(\\w+):↑nsubj:contain:↓(dobj|obj):(\\w+)",
     "predicate": "part_of",
     "family": "part_whole",
@@ -3243,7 +3260,7 @@
     "examples": []
   },
   {
-    "id": "dep_0223",
+    "id": "dep_0224",
     "signature_regex": "(\\w+):↑appos:part:↓prep:of:↓pobj:(\\w+)",
     "predicate": "part_of",
     "family": "part_whole",
@@ -3259,7 +3276,7 @@
     "examples": []
   },
   {
-    "id": "dep_0224",
+    "id": "dep_0225",
     "signature_regex": "(\\w+):↑appos:component:↓prep:of:↓pobj:(\\w+)",
     "predicate": "part_of",
     "family": "part_whole",
@@ -3275,7 +3292,7 @@
     "examples": []
   },
   {
-    "id": "dep_0225",
+    "id": "dep_0226",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:component:↓prep:of:↓pobj:(\\w+)",
     "predicate": "part_of",
     "family": "part_whole",
@@ -3293,7 +3310,7 @@
     "examples": []
   },
   {
-    "id": "dep_0226",
+    "id": "dep_0227",
     "signature_regex": "part:↓prep:of:↓pobj:(\\w+)",
     "predicate": "part_of",
     "family": "part_whole",
@@ -3307,7 +3324,7 @@
     "examples": []
   },
   {
-    "id": "dep_0227",
+    "id": "dep_0228",
     "signature_regex": "component:↓prep:of:↓pobj:(\\w+)",
     "predicate": "part_of",
     "family": "part_whole",
@@ -3321,7 +3338,7 @@
     "examples": []
   },
   {
-    "id": "dep_0228",
+    "id": "dep_0229",
     "signature_regex": "(\\w+):↑nsubj:be:↓prep:made:↓prep:of:↓pobj:(\\w+)",
     "predicate": "part_of",
     "family": "part_whole",
@@ -3339,7 +3356,7 @@
     "examples": []
   },
   {
-    "id": "dep_0229",
+    "id": "dep_0230",
     "signature_regex": "(\\w+):↑appos:element:↓prep:of:↓pobj:(\\w+)",
     "predicate": "part_of",
     "family": "part_whole",
@@ -3355,7 +3372,7 @@
     "examples": []
   },
   {
-    "id": "dep_0230",
+    "id": "dep_0231",
     "signature_regex": "(\\w+):↑nsubj:form:↓(dobj|obj):part:↓prep:of:↓pobj:(\\w+)",
     "predicate": "part_of",
     "family": "part_whole",
@@ -3372,7 +3389,7 @@
     "examples": []
   },
   {
-    "id": "dep_0231",
+    "id": "dep_0232",
     "signature_regex": "(\\w+):↑nsubj:married:↓(?:dobj|obj):(\\w+)",
     "predicate": "parent_of",
     "family": "kinship",
@@ -3386,7 +3403,7 @@
     "examples": []
   },
   {
-    "id": "dep_0232",
+    "id": "dep_0233",
     "signature_regex": "(\\w+):↑nsubj:wed:↓(?:dobj|obj):(\\w+)",
     "predicate": "child_of",
     "family": "kinship",
@@ -3400,7 +3417,7 @@
     "examples": []
   },
   {
-    "id": "dep_0233",
+    "id": "dep_0234",
     "signature_regex": "(\\w+):↑nsubj:begat:↓(?:dobj|obj):(\\w+)",
     "predicate": "sibling_of",
     "family": "kinship",
@@ -3414,7 +3431,7 @@
     "examples": []
   },
   {
-    "id": "dep_0234",
+    "id": "dep_0235",
     "signature_regex": "(\\w+):↑appos:father:↓prep:of:↓pobj:(\\w+)",
     "predicate": "married_to",
     "family": "kinship",
@@ -3430,7 +3447,7 @@
     "examples": []
   },
   {
-    "id": "dep_0235",
+    "id": "dep_0236",
     "signature_regex": "(\\w+):↑appos:father:↓prep:to:↓pobj:(\\w+)",
     "predicate": "cousin_of",
     "family": "other",
@@ -3446,7 +3463,7 @@
     "examples": []
   },
   {
-    "id": "dep_0236",
+    "id": "dep_0237",
     "signature_regex": "(\\w+):↑appos:mother:↓prep:of:↓pobj:(\\w+)",
     "predicate": "ancestor_of",
     "family": "other",
@@ -3462,7 +3479,7 @@
     "examples": []
   },
   {
-    "id": "dep_0237",
+    "id": "dep_0238",
     "signature_regex": "(\\w+):↑appos:mother:↓prep:to:↓pobj:(\\w+)",
     "predicate": "descendant_of",
     "family": "other",
@@ -3478,7 +3495,7 @@
     "examples": []
   },
   {
-    "id": "dep_0238",
+    "id": "dep_0239",
     "signature_regex": "(\\w+):↑appos:parent:↓prep:of:↓pobj:(\\w+)",
     "predicate": "parent_of",
     "family": "kinship",
@@ -3494,7 +3511,7 @@
     "examples": []
   },
   {
-    "id": "dep_0239",
+    "id": "dep_0240",
     "signature_regex": "(\\w+):↑appos:parent:↓prep:to:↓pobj:(\\w+)",
     "predicate": "child_of",
     "family": "kinship",
@@ -3510,7 +3527,7 @@
     "examples": []
   },
   {
-    "id": "dep_0240",
+    "id": "dep_0241",
     "signature_regex": "(\\w+):↑nsubjpass:married:↓agent:by:↓pobj:(\\w+)",
     "predicate": "sibling_of",
     "family": "kinship",
@@ -3526,7 +3543,7 @@
     "examples": []
   },
   {
-    "id": "dep_0241",
+    "id": "dep_0242",
     "signature_regex": "father:↓poss:(\\w+)",
     "predicate": "cousin_of",
     "family": "other",
@@ -3537,7 +3554,7 @@
     "examples": []
   },
   {
-    "id": "dep_0242",
+    "id": "dep_0243",
     "signature_regex": "mother:↓poss:(\\w+)",
     "predicate": "ancestor_of",
     "family": "other",
@@ -3548,7 +3565,7 @@
     "examples": []
   },
   {
-    "id": "dep_0243",
+    "id": "dep_0244",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:father:↓prep:of:↓pobj:(\\w+)",
     "predicate": "descendant_of",
     "family": "other",
@@ -3566,7 +3583,7 @@
     "examples": []
   },
   {
-    "id": "dep_0244",
+    "id": "dep_0245",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:father:↓prep:to:↓pobj:(\\w+)",
     "predicate": "parent_of",
     "family": "kinship",
@@ -3584,7 +3601,7 @@
     "examples": []
   },
   {
-    "id": "dep_0245",
+    "id": "dep_0246",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:mother:↓prep:of:↓pobj:(\\w+)",
     "predicate": "child_of",
     "family": "kinship",
@@ -3602,7 +3619,7 @@
     "examples": []
   },
   {
-    "id": "dep_0246",
+    "id": "dep_0247",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:mother:↓prep:to:↓pobj:(\\w+)",
     "predicate": "sibling_of",
     "family": "kinship",
@@ -3620,7 +3637,7 @@
     "examples": []
   },
   {
-    "id": "dep_0247",
+    "id": "dep_0248",
     "signature_regex": "(\\w+):↑nsubj:owns:↓(?:dobj|obj):(\\w+)",
     "predicate": "owns",
     "family": "ownership",
@@ -3634,7 +3651,7 @@
     "examples": []
   },
   {
-    "id": "dep_0248",
+    "id": "dep_0249",
     "signature_regex": "(\\w+):↑nsubj:owned:↓(?:dobj|obj):(\\w+)",
     "predicate": "owned_by",
     "family": "other",
@@ -3648,7 +3665,7 @@
     "examples": []
   },
   {
-    "id": "dep_0249",
+    "id": "dep_0250",
     "signature_regex": "(\\w+):↑nsubj:possesses:↓(?:dobj|obj):(\\w+)",
     "predicate": "belongs_to",
     "family": "other",
@@ -3662,7 +3679,7 @@
     "examples": []
   },
   {
-    "id": "dep_0250",
+    "id": "dep_0251",
     "signature_regex": "(\\w+):↑appos:owner:↓prep:of:↓pobj:(\\w+)",
     "predicate": "property_of",
     "family": "other",
@@ -3678,7 +3695,7 @@
     "examples": []
   },
   {
-    "id": "dep_0251",
+    "id": "dep_0252",
     "signature_regex": "(\\w+):↑appos:owner:↓prep:by:↓pobj:(\\w+)",
     "predicate": "possessed_by",
     "family": "ownership",
@@ -3694,7 +3711,7 @@
     "examples": []
   },
   {
-    "id": "dep_0252",
+    "id": "dep_0253",
     "signature_regex": "(\\w+):↑appos:property:↓prep:of:↓pobj:(\\w+)",
     "predicate": "owns",
     "family": "ownership",
@@ -3710,7 +3727,7 @@
     "examples": []
   },
   {
-    "id": "dep_0253",
+    "id": "dep_0254",
     "signature_regex": "(\\w+):↑appos:property:↓prep:by:↓pobj:(\\w+)",
     "predicate": "owned_by",
     "family": "other",
@@ -3726,7 +3743,7 @@
     "examples": []
   },
   {
-    "id": "dep_0254",
+    "id": "dep_0255",
     "signature_regex": "(\\w+):↑appos:possession:↓prep:of:↓pobj:(\\w+)",
     "predicate": "belongs_to",
     "family": "other",
@@ -3742,7 +3759,7 @@
     "examples": []
   },
   {
-    "id": "dep_0255",
+    "id": "dep_0256",
     "signature_regex": "(\\w+):↑appos:possession:↓prep:by:↓pobj:(\\w+)",
     "predicate": "property_of",
     "family": "other",
@@ -3758,7 +3775,7 @@
     "examples": []
   },
   {
-    "id": "dep_0256",
+    "id": "dep_0257",
     "signature_regex": "(\\w+):↑nsubjpass:owns:↓agent:by:↓pobj:(\\w+)",
     "predicate": "possessed_by",
     "family": "ownership",
@@ -3774,7 +3791,7 @@
     "examples": []
   },
   {
-    "id": "dep_0257",
+    "id": "dep_0258",
     "signature_regex": "(\\w+):↑nsubjpass:owned:↓agent:by:↓pobj:(\\w+)",
     "predicate": "owns",
     "family": "ownership",
@@ -3790,7 +3807,7 @@
     "examples": []
   },
   {
-    "id": "dep_0258",
+    "id": "dep_0259",
     "signature_regex": "owner:↓poss:(\\w+)",
     "predicate": "owned_by",
     "family": "other",
@@ -3801,7 +3818,7 @@
     "examples": []
   },
   {
-    "id": "dep_0259",
+    "id": "dep_0260",
     "signature_regex": "property:↓poss:(\\w+)",
     "predicate": "belongs_to",
     "family": "other",
@@ -3812,7 +3829,7 @@
     "examples": []
   },
   {
-    "id": "dep_0260",
+    "id": "dep_0261",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:owner:↓prep:of:↓pobj:(\\w+)",
     "predicate": "property_of",
     "family": "other",
@@ -3830,7 +3847,7 @@
     "examples": []
   },
   {
-    "id": "dep_0261",
+    "id": "dep_0262",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:owner:↓prep:by:↓pobj:(\\w+)",
     "predicate": "possessed_by",
     "family": "ownership",
@@ -3848,7 +3865,7 @@
     "examples": []
   },
   {
-    "id": "dep_0262",
+    "id": "dep_0263",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:property:↓prep:of:↓pobj:(\\w+)",
     "predicate": "owns",
     "family": "ownership",
@@ -3866,7 +3883,7 @@
     "examples": []
   },
   {
-    "id": "dep_0263",
+    "id": "dep_0264",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:property:↓prep:by:↓pobj:(\\w+)",
     "predicate": "owned_by",
     "family": "other",
@@ -3884,7 +3901,7 @@
     "examples": []
   },
   {
-    "id": "dep_0264",
+    "id": "dep_0265",
     "signature_regex": "(\\w+):↑nsubj:works:↓(?:dobj|obj):(\\w+)",
     "predicate": "works_for",
     "family": "other",
@@ -3898,7 +3915,7 @@
     "examples": []
   },
   {
-    "id": "dep_0265",
+    "id": "dep_0266",
     "signature_regex": "(\\w+):↑nsubj:employed:↓(?:dobj|obj):(\\w+)",
     "predicate": "employed_by",
     "family": "employment",
@@ -3912,7 +3929,7 @@
     "examples": []
   },
   {
-    "id": "dep_0266",
+    "id": "dep_0267",
     "signature_regex": "(\\w+):↑nsubj:serves:↓(?:dobj|obj):(\\w+)",
     "predicate": "member_of",
     "family": "employment",
@@ -3926,7 +3943,7 @@
     "examples": []
   },
   {
-    "id": "dep_0267",
+    "id": "dep_0268",
     "signature_regex": "(\\w+):↑appos:employee:↓prep:for:↓pobj:(\\w+)",
     "predicate": "affiliated_with",
     "family": "other",
@@ -3942,7 +3959,7 @@
     "examples": []
   },
   {
-    "id": "dep_0268",
+    "id": "dep_0269",
     "signature_regex": "(\\w+):↑appos:employee:↓prep:by:↓pobj:(\\w+)",
     "predicate": "partner_at",
     "family": "other",
@@ -3958,7 +3975,7 @@
     "examples": []
   },
   {
-    "id": "dep_0269",
+    "id": "dep_0270",
     "signature_regex": "(\\w+):↑appos:employer:↓prep:for:↓pobj:(\\w+)",
     "predicate": "serves",
     "family": "other",
@@ -3974,7 +3991,7 @@
     "examples": []
   },
   {
-    "id": "dep_0270",
+    "id": "dep_0271",
     "signature_regex": "(\\w+):↑appos:employer:↓prep:by:↓pobj:(\\w+)",
     "predicate": "works_for",
     "family": "other",
@@ -3990,7 +4007,7 @@
     "examples": []
   },
   {
-    "id": "dep_0271",
+    "id": "dep_0272",
     "signature_regex": "(\\w+):↑appos:member:↓prep:for:↓pobj:(\\w+)",
     "predicate": "employed_by",
     "family": "employment",
@@ -4006,7 +4023,7 @@
     "examples": []
   },
   {
-    "id": "dep_0272",
+    "id": "dep_0273",
     "signature_regex": "(\\w+):↑nsubjpass:works:↓agent:by:↓pobj:(\\w+)",
     "predicate": "affiliated_with",
     "family": "other",
@@ -4022,7 +4039,7 @@
     "examples": []
   },
   {
-    "id": "dep_0273",
+    "id": "dep_0274",
     "signature_regex": "(\\w+):↑nsubjpass:employed:↓agent:by:↓pobj:(\\w+)",
     "predicate": "partner_at",
     "family": "other",
@@ -4038,7 +4055,7 @@
     "examples": []
   },
   {
-    "id": "dep_0274",
+    "id": "dep_0275",
     "signature_regex": "employee:↓poss:(\\w+)",
     "predicate": "serves",
     "family": "other",
@@ -4049,7 +4066,7 @@
     "examples": []
   },
   {
-    "id": "dep_0275",
+    "id": "dep_0276",
     "signature_regex": "employer:↓poss:(\\w+)",
     "predicate": "works_for",
     "family": "other",
@@ -4060,7 +4077,7 @@
     "examples": []
   },
   {
-    "id": "dep_0276",
+    "id": "dep_0277",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:employee:↓prep:for:↓pobj:(\\w+)",
     "predicate": "employed_by",
     "family": "employment",
@@ -4078,7 +4095,7 @@
     "examples": []
   },
   {
-    "id": "dep_0277",
+    "id": "dep_0278",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:employee:↓prep:by:↓pobj:(\\w+)",
     "predicate": "member_of",
     "family": "employment",
@@ -4096,7 +4113,7 @@
     "examples": []
   },
   {
-    "id": "dep_0278",
+    "id": "dep_0279",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:employer:↓prep:for:↓pobj:(\\w+)",
     "predicate": "affiliated_with",
     "family": "other",
@@ -4114,7 +4131,7 @@
     "examples": []
   },
   {
-    "id": "dep_0279",
+    "id": "dep_0280",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:employer:↓prep:by:↓pobj:(\\w+)",
     "predicate": "partner_at",
     "family": "other",
@@ -4132,7 +4149,7 @@
     "examples": []
   },
   {
-    "id": "dep_0280",
+    "id": "dep_0281",
     "signature_regex": "(\\w+):↑nsubj:created:↓(?:dobj|obj):(\\w+)",
     "predicate": "created_by",
     "family": "creation",
@@ -4146,7 +4163,7 @@
     "examples": []
   },
   {
-    "id": "dep_0281",
+    "id": "dep_0282",
     "signature_regex": "(\\w+):↑nsubj:authored:↓(?:dobj|obj):(\\w+)",
     "predicate": "authored",
     "family": "creation",
@@ -4160,7 +4177,7 @@
     "examples": []
   },
   {
-    "id": "dep_0282",
+    "id": "dep_0283",
     "signature_regex": "(\\w+):↑nsubj:wrote:↓(?:dobj|obj):(\\w+)",
     "predicate": "authored",
     "family": "creation",
@@ -4174,7 +4191,7 @@
     "examples": []
   },
   {
-    "id": "dep_0283",
+    "id": "dep_0284",
     "signature_regex": "(\\w+):↑appos:author:↓prep:by:↓pobj:(\\w+)",
     "predicate": "invented_by",
     "family": "creation",
@@ -4190,7 +4207,7 @@
     "examples": []
   },
   {
-    "id": "dep_0284",
+    "id": "dep_0285",
     "signature_regex": "(\\w+):↑appos:author:↓prep:of:↓pobj:(\\w+)",
     "predicate": "painted_by",
     "family": "other",
@@ -4206,7 +4223,7 @@
     "examples": []
   },
   {
-    "id": "dep_0285",
+    "id": "dep_0286",
     "signature_regex": "(\\w+):↑appos:creator:↓prep:by:↓pobj:(\\w+)",
     "predicate": "built_by",
     "family": "other",
@@ -4222,7 +4239,7 @@
     "examples": []
   },
   {
-    "id": "dep_0286",
+    "id": "dep_0287",
     "signature_regex": "(\\w+):↑appos:creator:↓prep:of:↓pobj:(\\w+)",
     "predicate": "composed_by",
     "family": "other",
@@ -4238,7 +4255,7 @@
     "examples": []
   },
   {
-    "id": "dep_0287",
+    "id": "dep_0288",
     "signature_regex": "(\\w+):↑appos:inventor:↓prep:by:↓pobj:(\\w+)",
     "predicate": "designed_by",
     "family": "other",
@@ -4254,7 +4271,7 @@
     "examples": []
   },
   {
-    "id": "dep_0288",
+    "id": "dep_0289",
     "signature_regex": "(\\w+):↑appos:inventor:↓prep:of:↓pobj:(\\w+)",
     "predicate": "created_by",
     "family": "creation",
@@ -4270,7 +4287,7 @@
     "examples": []
   },
   {
-    "id": "dep_0289",
+    "id": "dep_0290",
     "signature_regex": "(\\w+):↑nsubjpass:created:↓agent:by:↓pobj:(\\w+)",
     "predicate": "authored",
     "family": "creation",
@@ -4286,7 +4303,7 @@
     "examples": []
   },
   {
-    "id": "dep_0290",
+    "id": "dep_0291",
     "signature_regex": "(\\w+):↑nsubjpass:authored:↓agent:by:↓pobj:(\\w+)",
     "predicate": "written_by",
     "family": "creation",
@@ -4302,7 +4319,7 @@
     "examples": []
   },
   {
-    "id": "dep_0291",
+    "id": "dep_0292",
     "signature_regex": "author:↓poss:(\\w+)",
     "predicate": "invented_by",
     "family": "creation",
@@ -4313,7 +4330,7 @@
     "examples": []
   },
   {
-    "id": "dep_0292",
+    "id": "dep_0293",
     "signature_regex": "creator:↓poss:(\\w+)",
     "predicate": "painted_by",
     "family": "other",
@@ -4324,7 +4341,7 @@
     "examples": []
   },
   {
-    "id": "dep_0293",
+    "id": "dep_0294",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:author:↓prep:by:↓pobj:(\\w+)",
     "predicate": "built_by",
     "family": "other",
@@ -4342,7 +4359,7 @@
     "examples": []
   },
   {
-    "id": "dep_0294",
+    "id": "dep_0295",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:author:↓prep:of:↓pobj:(\\w+)",
     "predicate": "composed_by",
     "family": "other",
@@ -4360,7 +4377,7 @@
     "examples": []
   },
   {
-    "id": "dep_0295",
+    "id": "dep_0296",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:creator:↓prep:by:↓pobj:(\\w+)",
     "predicate": "designed_by",
     "family": "other",
@@ -4378,7 +4395,7 @@
     "examples": []
   },
   {
-    "id": "dep_0296",
+    "id": "dep_0297",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:creator:↓prep:of:↓pobj:(\\w+)",
     "predicate": "created_by",
     "family": "creation",
@@ -4396,7 +4413,7 @@
     "examples": []
   },
   {
-    "id": "dep_0297",
+    "id": "dep_0298",
     "signature_regex": "(\\w+):↑nsubj:located:↓(?:dobj|obj):(\\w+)",
     "predicate": "located_in",
     "family": "other",
@@ -4410,7 +4427,7 @@
     "examples": []
   },
   {
-    "id": "dep_0298",
+    "id": "dep_0299",
     "signature_regex": "(\\w+):↑nsubj:situated:↓(?:dobj|obj):(\\w+)",
     "predicate": "located_at",
     "family": "location",
@@ -4424,7 +4441,7 @@
     "examples": []
   },
   {
-    "id": "dep_0299",
+    "id": "dep_0300",
     "signature_regex": "(\\w+):↑nsubj:positioned:↓(?:dobj|obj):(\\w+)",
     "predicate": "near",
     "family": "location",
@@ -4438,7 +4455,7 @@
     "examples": []
   },
   {
-    "id": "dep_0300",
+    "id": "dep_0301",
     "signature_regex": "(\\w+):↑appos:location:↓prep:in:↓pobj:(\\w+)",
     "predicate": "within",
     "family": "location",
@@ -4454,7 +4471,7 @@
     "examples": []
   },
   {
-    "id": "dep_0301",
+    "id": "dep_0302",
     "signature_regex": "(\\w+):↑appos:location:↓prep:at:↓pobj:(\\w+)",
     "predicate": "across_from",
     "family": "other",
@@ -4470,7 +4487,7 @@
     "examples": []
   },
   {
-    "id": "dep_0302",
+    "id": "dep_0303",
     "signature_regex": "(\\w+):↑appos:place:↓prep:in:↓pobj:(\\w+)",
     "predicate": "adjacent_to",
     "family": "other",
@@ -4486,7 +4503,7 @@
     "examples": []
   },
   {
-    "id": "dep_0303",
+    "id": "dep_0304",
     "signature_regex": "(\\w+):↑appos:place:↓prep:at:↓pobj:(\\w+)",
     "predicate": "based_in",
     "family": "other",
@@ -4502,7 +4519,7 @@
     "examples": []
   },
   {
-    "id": "dep_0304",
+    "id": "dep_0305",
     "signature_regex": "(\\w+):↑appos:position:↓prep:in:↓pobj:(\\w+)",
     "predicate": "north_of",
     "family": "other",
@@ -4518,7 +4535,7 @@
     "examples": []
   },
   {
-    "id": "dep_0305",
+    "id": "dep_0306",
     "signature_regex": "(\\w+):↑appos:position:↓prep:at:↓pobj:(\\w+)",
     "predicate": "south_of",
     "family": "other",
@@ -4534,7 +4551,7 @@
     "examples": []
   },
   {
-    "id": "dep_0306",
+    "id": "dep_0307",
     "signature_regex": "(\\w+):↑nsubjpass:located:↓agent:by:↓pobj:(\\w+)",
     "predicate": "located_in",
     "family": "other",
@@ -4550,7 +4567,7 @@
     "examples": []
   },
   {
-    "id": "dep_0307",
+    "id": "dep_0308",
     "signature_regex": "(\\w+):↑nsubjpass:situated:↓agent:by:↓pobj:(\\w+)",
     "predicate": "located_at",
     "family": "location",
@@ -4566,7 +4583,7 @@
     "examples": []
   },
   {
-    "id": "dep_0308",
+    "id": "dep_0309",
     "signature_regex": "location:↓poss:(\\w+)",
     "predicate": "near",
     "family": "location",
@@ -4577,7 +4594,7 @@
     "examples": []
   },
   {
-    "id": "dep_0309",
+    "id": "dep_0310",
     "signature_regex": "place:↓poss:(\\w+)",
     "predicate": "within",
     "family": "location",
@@ -4588,7 +4605,7 @@
     "examples": []
   },
   {
-    "id": "dep_0310",
+    "id": "dep_0311",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:location:↓prep:in:↓pobj:(\\w+)",
     "predicate": "across_from",
     "family": "other",
@@ -4606,7 +4623,7 @@
     "examples": []
   },
   {
-    "id": "dep_0311",
+    "id": "dep_0312",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:location:↓prep:at:↓pobj:(\\w+)",
     "predicate": "adjacent_to",
     "family": "other",
@@ -4624,7 +4641,7 @@
     "examples": []
   },
   {
-    "id": "dep_0312",
+    "id": "dep_0313",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:place:↓prep:in:↓pobj:(\\w+)",
     "predicate": "based_in",
     "family": "other",
@@ -4642,7 +4659,7 @@
     "examples": []
   },
   {
-    "id": "dep_0313",
+    "id": "dep_0314",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:place:↓prep:at:↓pobj:(\\w+)",
     "predicate": "north_of",
     "family": "other",
@@ -4660,7 +4677,7 @@
     "examples": []
   },
   {
-    "id": "dep_0314",
+    "id": "dep_0315",
     "signature_regex": "(\\w+):↑nsubj:preceded:↓(?:dobj|obj):(\\w+)",
     "predicate": "before",
     "family": "temporal",
@@ -4674,7 +4691,7 @@
     "examples": []
   },
   {
-    "id": "dep_0315",
+    "id": "dep_0316",
     "signature_regex": "(\\w+):↑nsubj:followed:↓(?:dobj|obj):(\\w+)",
     "predicate": "after",
     "family": "temporal",
@@ -4688,7 +4705,7 @@
     "examples": []
   },
   {
-    "id": "dep_0316",
+    "id": "dep_0317",
     "signature_regex": "(\\w+):↑nsubj:occurred:↓(?:dobj|obj):(\\w+)",
     "predicate": "during",
     "family": "temporal",
@@ -4702,7 +4719,7 @@
     "examples": []
   },
   {
-    "id": "dep_0317",
+    "id": "dep_0318",
     "signature_regex": "(\\w+):↑appos:time:↓prep:before:↓pobj:(\\w+)",
     "predicate": "since",
     "family": "temporal",
@@ -4718,7 +4735,7 @@
     "examples": []
   },
   {
-    "id": "dep_0318",
+    "id": "dep_0319",
     "signature_regex": "(\\w+):↑appos:time:↓prep:after:↓pobj:(\\w+)",
     "predicate": "until",
     "family": "other",
@@ -4734,7 +4751,7 @@
     "examples": []
   },
   {
-    "id": "dep_0319",
+    "id": "dep_0320",
     "signature_regex": "(\\w+):↑appos:date:↓prep:before:↓pobj:(\\w+)",
     "predicate": "on",
     "family": "other",
@@ -4750,7 +4767,7 @@
     "examples": []
   },
   {
-    "id": "dep_0320",
+    "id": "dep_0321",
     "signature_regex": "(\\w+):↑appos:date:↓prep:after:↓pobj:(\\w+)",
     "predicate": "between",
     "family": "other",
@@ -4766,7 +4783,7 @@
     "examples": []
   },
   {
-    "id": "dep_0321",
+    "id": "dep_0322",
     "signature_regex": "(\\w+):↑appos:period:↓prep:before:↓pobj:(\\w+)",
     "predicate": "before",
     "family": "temporal",
@@ -4782,7 +4799,7 @@
     "examples": []
   },
   {
-    "id": "dep_0322",
+    "id": "dep_0323",
     "signature_regex": "(\\w+):↑appos:period:↓prep:after:↓pobj:(\\w+)",
     "predicate": "after",
     "family": "temporal",
@@ -4798,7 +4815,7 @@
     "examples": []
   },
   {
-    "id": "dep_0323",
+    "id": "dep_0324",
     "signature_regex": "(\\w+):↑nsubjpass:preceded:↓agent:by:↓pobj:(\\w+)",
     "predicate": "during",
     "family": "temporal",
@@ -4814,7 +4831,7 @@
     "examples": []
   },
   {
-    "id": "dep_0324",
+    "id": "dep_0325",
     "signature_regex": "(\\w+):↑nsubjpass:followed:↓agent:by:↓pobj:(\\w+)",
     "predicate": "since",
     "family": "temporal",
@@ -4830,7 +4847,7 @@
     "examples": []
   },
   {
-    "id": "dep_0325",
+    "id": "dep_0326",
     "signature_regex": "time:↓poss:(\\w+)",
     "predicate": "until",
     "family": "other",
@@ -4841,7 +4858,7 @@
     "examples": []
   },
   {
-    "id": "dep_0326",
+    "id": "dep_0327",
     "signature_regex": "date:↓poss:(\\w+)",
     "predicate": "on",
     "family": "other",
@@ -4852,7 +4869,7 @@
     "examples": []
   },
   {
-    "id": "dep_0327",
+    "id": "dep_0328",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:time:↓prep:before:↓pobj:(\\w+)",
     "predicate": "between",
     "family": "other",
@@ -4870,7 +4887,7 @@
     "examples": []
   },
   {
-    "id": "dep_0328",
+    "id": "dep_0329",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:time:↓prep:after:↓pobj:(\\w+)",
     "predicate": "before",
     "family": "temporal",
@@ -4888,7 +4905,7 @@
     "examples": []
   },
   {
-    "id": "dep_0329",
+    "id": "dep_0330",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:date:↓prep:before:↓pobj:(\\w+)",
     "predicate": "after",
     "family": "temporal",
@@ -4906,7 +4923,7 @@
     "examples": []
   },
   {
-    "id": "dep_0330",
+    "id": "dep_0331",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:date:↓prep:after:↓pobj:(\\w+)",
     "predicate": "during",
     "family": "temporal",
@@ -4924,7 +4941,7 @@
     "examples": []
   },
   {
-    "id": "dep_0331",
+    "id": "dep_0332",
     "signature_regex": "(\\w+):↑nsubj:caused:↓(?:dobj|obj):(\\w+)",
     "predicate": "caused_by",
     "family": "causation",
@@ -4938,7 +4955,7 @@
     "examples": []
   },
   {
-    "id": "dep_0332",
+    "id": "dep_0333",
     "signature_regex": "(\\w+):↑nsubj:led:↓(?:dobj|obj):(\\w+)",
     "predicate": "led_to",
     "family": "causation",
@@ -4952,7 +4969,7 @@
     "examples": []
   },
   {
-    "id": "dep_0333",
+    "id": "dep_0334",
     "signature_regex": "(\\w+):↑nsubj:influenced:↓(?:dobj|obj):(\\w+)",
     "predicate": "influenced_by",
     "family": "other",
@@ -4966,7 +4983,7 @@
     "examples": []
   },
   {
-    "id": "dep_0334",
+    "id": "dep_0335",
     "signature_regex": "(\\w+):↑appos:cause:↓prep:by:↓pobj:(\\w+)",
     "predicate": "resulted_from",
     "family": "causation",
@@ -4982,7 +4999,7 @@
     "examples": []
   },
   {
-    "id": "dep_0335",
+    "id": "dep_0336",
     "signature_regex": "(\\w+):↑appos:cause:↓prep:to:↓pobj:(\\w+)",
     "predicate": "due_to",
     "family": "other",
@@ -4998,7 +5015,7 @@
     "examples": []
   },
   {
-    "id": "dep_0336",
+    "id": "dep_0337",
     "signature_regex": "(\\w+):↑appos:result:↓prep:by:↓pobj:(\\w+)",
     "predicate": "triggered_by",
     "family": "other",
@@ -5014,7 +5031,7 @@
     "examples": []
   },
   {
-    "id": "dep_0337",
+    "id": "dep_0338",
     "signature_regex": "(\\w+):↑appos:result:↓prep:to:↓pobj:(\\w+)",
     "predicate": "caused_by",
     "family": "causation",
@@ -5030,7 +5047,7 @@
     "examples": []
   },
   {
-    "id": "dep_0338",
+    "id": "dep_0339",
     "signature_regex": "(\\w+):↑appos:consequence:↓prep:by:↓pobj:(\\w+)",
     "predicate": "led_to",
     "family": "causation",
@@ -5046,7 +5063,7 @@
     "examples": []
   },
   {
-    "id": "dep_0339",
+    "id": "dep_0340",
     "signature_regex": "(\\w+):↑appos:consequence:↓prep:to:↓pobj:(\\w+)",
     "predicate": "influenced_by",
     "family": "other",
@@ -5062,7 +5079,7 @@
     "examples": []
   },
   {
-    "id": "dep_0340",
+    "id": "dep_0341",
     "signature_regex": "(\\w+):↑nsubjpass:caused:↓agent:by:↓pobj:(\\w+)",
     "predicate": "resulted_from",
     "family": "causation",
@@ -5078,7 +5095,7 @@
     "examples": []
   },
   {
-    "id": "dep_0341",
+    "id": "dep_0342",
     "signature_regex": "(\\w+):↑nsubjpass:led:↓agent:by:↓pobj:(\\w+)",
     "predicate": "due_to",
     "family": "other",
@@ -5094,7 +5111,7 @@
     "examples": []
   },
   {
-    "id": "dep_0342",
+    "id": "dep_0343",
     "signature_regex": "cause:↓poss:(\\w+)",
     "predicate": "triggered_by",
     "family": "other",
@@ -5105,7 +5122,7 @@
     "examples": []
   },
   {
-    "id": "dep_0343",
+    "id": "dep_0344",
     "signature_regex": "result:↓poss:(\\w+)",
     "predicate": "caused_by",
     "family": "causation",
@@ -5116,7 +5133,7 @@
     "examples": []
   },
   {
-    "id": "dep_0344",
+    "id": "dep_0345",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:cause:↓prep:by:↓pobj:(\\w+)",
     "predicate": "led_to",
     "family": "causation",
@@ -5134,7 +5151,7 @@
     "examples": []
   },
   {
-    "id": "dep_0345",
+    "id": "dep_0346",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:cause:↓prep:to:↓pobj:(\\w+)",
     "predicate": "influenced_by",
     "family": "other",
@@ -5152,7 +5169,7 @@
     "examples": []
   },
   {
-    "id": "dep_0346",
+    "id": "dep_0347",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:result:↓prep:by:↓pobj:(\\w+)",
     "predicate": "resulted_from",
     "family": "causation",
@@ -5170,7 +5187,7 @@
     "examples": []
   },
   {
-    "id": "dep_0347",
+    "id": "dep_0348",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:result:↓prep:to:↓pobj:(\\w+)",
     "predicate": "due_to",
     "family": "other",
@@ -5188,7 +5205,7 @@
     "examples": []
   },
   {
-    "id": "dep_0348",
+    "id": "dep_0349",
     "signature_regex": "(\\w+):↑nsubj:comprises:↓(?:dobj|obj):(\\w+)",
     "predicate": "part_of",
     "family": "part_whole",
@@ -5202,7 +5219,7 @@
     "examples": []
   },
   {
-    "id": "dep_0349",
+    "id": "dep_0350",
     "signature_regex": "(\\w+):↑nsubj:consists:↓(?:dobj|obj):(\\w+)",
     "predicate": "consists_of",
     "family": "other",
@@ -5216,7 +5233,7 @@
     "examples": []
   },
   {
-    "id": "dep_0350",
+    "id": "dep_0351",
     "signature_regex": "(\\w+):↑nsubj:includes:↓(?:dobj|obj):(\\w+)",
     "predicate": "includes",
     "family": "other",
@@ -5230,7 +5247,7 @@
     "examples": []
   },
   {
-    "id": "dep_0351",
+    "id": "dep_0352",
     "signature_regex": "(\\w+):↑appos:part:↓prep:of:↓pobj:(\\w+)",
     "predicate": "contains",
     "family": "other",
@@ -5246,7 +5263,7 @@
     "examples": []
   },
   {
-    "id": "dep_0352",
+    "id": "dep_0353",
     "signature_regex": "(\\w+):↑appos:part:↓prep:in:↓pobj:(\\w+)",
     "predicate": "made_of",
     "family": "other",
@@ -5262,7 +5279,7 @@
     "examples": []
   },
   {
-    "id": "dep_0353",
+    "id": "dep_0354",
     "signature_regex": "(\\w+):↑appos:component:↓prep:of:↓pobj:(\\w+)",
     "predicate": "comprises",
     "family": "other",
@@ -5278,7 +5295,7 @@
     "examples": []
   },
   {
-    "id": "dep_0354",
+    "id": "dep_0355",
     "signature_regex": "(\\w+):↑appos:component:↓prep:in:↓pobj:(\\w+)",
     "predicate": "part_of",
     "family": "part_whole",
@@ -5294,7 +5311,7 @@
     "examples": []
   },
   {
-    "id": "dep_0355",
+    "id": "dep_0356",
     "signature_regex": "(\\w+):↑appos:piece:↓prep:of:↓pobj:(\\w+)",
     "predicate": "consists_of",
     "family": "other",
@@ -5310,7 +5327,7 @@
     "examples": []
   },
   {
-    "id": "dep_0356",
+    "id": "dep_0357",
     "signature_regex": "(\\w+):↑appos:piece:↓prep:in:↓pobj:(\\w+)",
     "predicate": "includes",
     "family": "other",
@@ -5326,7 +5343,7 @@
     "examples": []
   },
   {
-    "id": "dep_0357",
+    "id": "dep_0358",
     "signature_regex": "(\\w+):↑nsubjpass:comprises:↓agent:by:↓pobj:(\\w+)",
     "predicate": "contains",
     "family": "other",
@@ -5342,7 +5359,7 @@
     "examples": []
   },
   {
-    "id": "dep_0358",
+    "id": "dep_0359",
     "signature_regex": "(\\w+):↑nsubjpass:consists:↓agent:by:↓pobj:(\\w+)",
     "predicate": "made_of",
     "family": "other",
@@ -5358,7 +5375,7 @@
     "examples": []
   },
   {
-    "id": "dep_0359",
+    "id": "dep_0360",
     "signature_regex": "part:↓poss:(\\w+)",
     "predicate": "comprises",
     "family": "other",
@@ -5369,7 +5386,7 @@
     "examples": []
   },
   {
-    "id": "dep_0360",
+    "id": "dep_0361",
     "signature_regex": "component:↓poss:(\\w+)",
     "predicate": "part_of",
     "family": "part_whole",
@@ -5380,7 +5397,7 @@
     "examples": []
   },
   {
-    "id": "dep_0361",
+    "id": "dep_0362",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:part:↓prep:of:↓pobj:(\\w+)",
     "predicate": "consists_of",
     "family": "other",
@@ -5398,7 +5415,7 @@
     "examples": []
   },
   {
-    "id": "dep_0362",
+    "id": "dep_0363",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:part:↓prep:in:↓pobj:(\\w+)",
     "predicate": "includes",
     "family": "other",
@@ -5416,7 +5433,7 @@
     "examples": []
   },
   {
-    "id": "dep_0363",
+    "id": "dep_0364",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:component:↓prep:of:↓pobj:(\\w+)",
     "predicate": "contains",
     "family": "other",
@@ -5434,7 +5451,7 @@
     "examples": []
   },
   {
-    "id": "dep_0364",
+    "id": "dep_0365",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:component:↓prep:in:↓pobj:(\\w+)",
     "predicate": "made_of",
     "family": "other",
@@ -5452,7 +5469,7 @@
     "examples": []
   },
   {
-    "id": "dep_0365",
+    "id": "dep_0366",
     "signature_regex": "(\\w+):↑nsubj:is:↓(?:dobj|obj):(\\w+)",
     "predicate": "is",
     "family": "identity",
@@ -5466,7 +5483,7 @@
     "examples": []
   },
   {
-    "id": "dep_0366",
+    "id": "dep_0367",
     "signature_regex": "(\\w+):↑nsubj:equals:↓(?:dobj|obj):(\\w+)",
     "predicate": "equals",
     "family": "identity",
@@ -5480,7 +5497,7 @@
     "examples": []
   },
   {
-    "id": "dep_0367",
+    "id": "dep_0368",
     "signature_regex": "(\\w+):↑nsubj:represents:↓(?:dobj|obj):(\\w+)",
     "predicate": "same_as",
     "family": "identity",
@@ -5494,7 +5511,7 @@
     "examples": []
   },
   {
-    "id": "dep_0368",
+    "id": "dep_0369",
     "signature_regex": "(\\w+):↑appos:alias:↓prep:as:↓pobj:(\\w+)",
     "predicate": "alias_of",
     "family": "identity",
@@ -5510,7 +5527,7 @@
     "examples": []
   },
   {
-    "id": "dep_0369",
+    "id": "dep_0370",
     "signature_regex": "(\\w+):↑appos:alias:↓prep:to:↓pobj:(\\w+)",
     "predicate": "also_known_as",
     "family": "other",
@@ -5526,7 +5543,7 @@
     "examples": []
   },
   {
-    "id": "dep_0370",
+    "id": "dep_0371",
     "signature_regex": "(\\w+):↑appos:name:↓prep:as:↓pobj:(\\w+)",
     "predicate": "represents",
     "family": "identity",
@@ -5542,7 +5559,7 @@
     "examples": []
   },
   {
-    "id": "dep_0371",
+    "id": "dep_0372",
     "signature_regex": "(\\w+):↑appos:name:↓prep:to:↓pobj:(\\w+)",
     "predicate": "is",
     "family": "identity",
@@ -5558,7 +5575,7 @@
     "examples": []
   },
   {
-    "id": "dep_0372",
+    "id": "dep_0373",
     "signature_regex": "(\\w+):↑appos:title:↓prep:as:↓pobj:(\\w+)",
     "predicate": "equals",
     "family": "identity",
@@ -5574,7 +5591,7 @@
     "examples": []
   },
   {
-    "id": "dep_0373",
+    "id": "dep_0374",
     "signature_regex": "(\\w+):↑appos:title:↓prep:to:↓pobj:(\\w+)",
     "predicate": "same_as",
     "family": "identity",
@@ -5590,7 +5607,7 @@
     "examples": []
   },
   {
-    "id": "dep_0374",
+    "id": "dep_0375",
     "signature_regex": "(\\w+):↑nsubjpass:is:↓agent:by:↓pobj:(\\w+)",
     "predicate": "alias_of",
     "family": "identity",
@@ -5606,7 +5623,7 @@
     "examples": []
   },
   {
-    "id": "dep_0375",
+    "id": "dep_0376",
     "signature_regex": "(\\w+):↑nsubjpass:equals:↓agent:by:↓pobj:(\\w+)",
     "predicate": "also_known_as",
     "family": "other",
@@ -5622,7 +5639,7 @@
     "examples": []
   },
   {
-    "id": "dep_0376",
+    "id": "dep_0377",
     "signature_regex": "alias:↓poss:(\\w+)",
     "predicate": "represents",
     "family": "identity",
@@ -5633,7 +5650,7 @@
     "examples": []
   },
   {
-    "id": "dep_0377",
+    "id": "dep_0378",
     "signature_regex": "name:↓poss:(\\w+)",
     "predicate": "is",
     "family": "identity",
@@ -5644,7 +5661,7 @@
     "examples": []
   },
   {
-    "id": "dep_0378",
+    "id": "dep_0379",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:alias:↓prep:as:↓pobj:(\\w+)",
     "predicate": "equals",
     "family": "identity",
@@ -5662,7 +5679,7 @@
     "examples": []
   },
   {
-    "id": "dep_0379",
+    "id": "dep_0380",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:alias:↓prep:to:↓pobj:(\\w+)",
     "predicate": "same_as",
     "family": "identity",
@@ -5680,7 +5697,7 @@
     "examples": []
   },
   {
-    "id": "dep_0380",
+    "id": "dep_0381",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:name:↓prep:as:↓pobj:(\\w+)",
     "predicate": "alias_of",
     "family": "identity",
@@ -5698,7 +5715,7 @@
     "examples": []
   },
   {
-    "id": "dep_0381",
+    "id": "dep_0382",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:name:↓prep:to:↓pobj:(\\w+)",
     "predicate": "also_known_as",
     "family": "other",
@@ -5716,7 +5733,7 @@
     "examples": []
   },
   {
-    "id": "dep_0382",
+    "id": "dep_0383",
     "signature_regex": "(\\w+):↑nsubj:attended:↓(?:dobj|obj):(\\w+)",
     "predicate": "attended",
     "family": "event",
@@ -5730,7 +5747,7 @@
     "examples": []
   },
   {
-    "id": "dep_0383",
+    "id": "dep_0384",
     "signature_regex": "(\\w+):↑nsubj:participated:↓(?:dobj|obj):(\\w+)",
     "predicate": "participated_in",
     "family": "event",
@@ -5744,7 +5761,7 @@
     "examples": []
   },
   {
-    "id": "dep_0384",
+    "id": "dep_0385",
     "signature_regex": "(\\w+):↑nsubj:hosted:↓(?:dobj|obj):(\\w+)",
     "predicate": "hosted",
     "family": "event",
@@ -5758,7 +5775,7 @@
     "examples": []
   },
   {
-    "id": "dep_0385",
+    "id": "dep_0386",
     "signature_regex": "(\\w+):↑appos:participant:↓prep:at:↓pobj:(\\w+)",
     "predicate": "performed_at",
     "family": "event",
@@ -5774,7 +5791,7 @@
     "examples": []
   },
   {
-    "id": "dep_0386",
+    "id": "dep_0387",
     "signature_regex": "(\\w+):↑appos:participant:↓prep:in:↓pobj:(\\w+)",
     "predicate": "witnessed",
     "family": "other",
@@ -5790,7 +5807,7 @@
     "examples": []
   },
   {
-    "id": "dep_0387",
+    "id": "dep_0388",
     "signature_regex": "(\\w+):↑appos:attendee:↓prep:at:↓pobj:(\\w+)",
     "predicate": "organized",
     "family": "other",
@@ -5806,7 +5823,7 @@
     "examples": []
   },
   {
-    "id": "dep_0388",
+    "id": "dep_0389",
     "signature_regex": "(\\w+):↑appos:attendee:↓prep:in:↓pobj:(\\w+)",
     "predicate": "attended",
     "family": "event",
@@ -5822,7 +5839,7 @@
     "examples": []
   },
   {
-    "id": "dep_0389",
+    "id": "dep_0390",
     "signature_regex": "(\\w+):↑appos:host:↓prep:at:↓pobj:(\\w+)",
     "predicate": "participated_in",
     "family": "event",
@@ -5838,7 +5855,7 @@
     "examples": []
   },
   {
-    "id": "dep_0390",
+    "id": "dep_0391",
     "signature_regex": "(\\w+):↑appos:host:↓prep:in:↓pobj:(\\w+)",
     "predicate": "hosted",
     "family": "event",
@@ -5854,7 +5871,7 @@
     "examples": []
   },
   {
-    "id": "dep_0391",
+    "id": "dep_0392",
     "signature_regex": "(\\w+):↑nsubjpass:attended:↓agent:by:↓pobj:(\\w+)",
     "predicate": "performed_at",
     "family": "event",
@@ -5870,7 +5887,7 @@
     "examples": []
   },
   {
-    "id": "dep_0392",
+    "id": "dep_0393",
     "signature_regex": "(\\w+):↑nsubjpass:participated:↓agent:by:↓pobj:(\\w+)",
     "predicate": "witnessed",
     "family": "other",
@@ -5886,7 +5903,7 @@
     "examples": []
   },
   {
-    "id": "dep_0393",
+    "id": "dep_0394",
     "signature_regex": "participant:↓poss:(\\w+)",
     "predicate": "organized",
     "family": "other",
@@ -5897,7 +5914,7 @@
     "examples": []
   },
   {
-    "id": "dep_0394",
+    "id": "dep_0395",
     "signature_regex": "attendee:↓poss:(\\w+)",
     "predicate": "attended",
     "family": "event",
@@ -5908,7 +5925,7 @@
     "examples": []
   },
   {
-    "id": "dep_0395",
+    "id": "dep_0396",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:participant:↓prep:at:↓pobj:(\\w+)",
     "predicate": "participated_in",
     "family": "event",
@@ -5926,7 +5943,7 @@
     "examples": []
   },
   {
-    "id": "dep_0396",
+    "id": "dep_0397",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:participant:↓prep:in:↓pobj:(\\w+)",
     "predicate": "hosted",
     "family": "event",
@@ -5944,7 +5961,7 @@
     "examples": []
   },
   {
-    "id": "dep_0397",
+    "id": "dep_0398",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:attendee:↓prep:at:↓pobj:(\\w+)",
     "predicate": "performed_at",
     "family": "event",
@@ -5962,7 +5979,7 @@
     "examples": []
   },
   {
-    "id": "dep_0398",
+    "id": "dep_0399",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:attendee:↓prep:in:↓pobj:(\\w+)",
     "predicate": "witnessed",
     "family": "other",
@@ -5980,7 +5997,7 @@
     "examples": []
   },
   {
-    "id": "dep_0399",
+    "id": "dep_0400",
     "signature_regex": "(\\w+):↑nsubj:told:↓(?:dobj|obj):(\\w+)",
     "predicate": "told",
     "family": "communication",
@@ -5994,7 +6011,7 @@
     "examples": []
   },
   {
-    "id": "dep_0400",
+    "id": "dep_0401",
     "signature_regex": "(\\w+):↑nsubj:said:↓(?:dobj|obj):(\\w+)",
     "predicate": "said_to",
     "family": "communication",
@@ -6008,7 +6025,7 @@
     "examples": []
   },
   {
-    "id": "dep_0401",
+    "id": "dep_0402",
     "signature_regex": "(\\w+):↑nsubj:wrote:↓(?:dobj|obj):(\\w+)",
     "predicate": "wrote_to",
     "family": "communication",
@@ -6022,7 +6039,7 @@
     "examples": []
   },
   {
-    "id": "dep_0402",
+    "id": "dep_0403",
     "signature_regex": "(\\w+):↑appos:message:↓prep:to:↓pobj:(\\w+)",
     "predicate": "asked",
     "family": "communication",
@@ -6038,7 +6055,7 @@
     "examples": []
   },
   {
-    "id": "dep_0403",
+    "id": "dep_0404",
     "signature_regex": "(\\w+):↑appos:message:↓prep:with:↓pobj:(\\w+)",
     "predicate": "informed",
     "family": "other",
@@ -6054,7 +6071,7 @@
     "examples": []
   },
   {
-    "id": "dep_0404",
+    "id": "dep_0405",
     "signature_regex": "(\\w+):↑appos:letter:↓prep:to:↓pobj:(\\w+)",
     "predicate": "replied",
     "family": "other",
@@ -6070,7 +6087,7 @@
     "examples": []
   },
   {
-    "id": "dep_0405",
+    "id": "dep_0406",
     "signature_regex": "(\\w+):↑appos:letter:↓prep:with:↓pobj:(\\w+)",
     "predicate": "reported",
     "family": "other",
@@ -6086,7 +6103,7 @@
     "examples": []
   },
   {
-    "id": "dep_0406",
+    "id": "dep_0407",
     "signature_regex": "(\\w+):↑appos:speech:↓prep:to:↓pobj:(\\w+)",
     "predicate": "spoke_to",
     "family": "communication",
@@ -6102,7 +6119,7 @@
     "examples": []
   },
   {
-    "id": "dep_0407",
+    "id": "dep_0408",
     "signature_regex": "(\\w+):↑appos:speech:↓prep:with:↓pobj:(\\w+)",
     "predicate": "told",
     "family": "communication",
@@ -6118,7 +6135,7 @@
     "examples": []
   },
   {
-    "id": "dep_0408",
+    "id": "dep_0409",
     "signature_regex": "(\\w+):↑nsubjpass:told:↓agent:by:↓pobj:(\\w+)",
     "predicate": "said_to",
     "family": "communication",
@@ -6134,7 +6151,7 @@
     "examples": []
   },
   {
-    "id": "dep_0409",
+    "id": "dep_0410",
     "signature_regex": "(\\w+):↑nsubjpass:said:↓agent:by:↓pobj:(\\w+)",
     "predicate": "wrote_to",
     "family": "communication",
@@ -6150,7 +6167,7 @@
     "examples": []
   },
   {
-    "id": "dep_0410",
+    "id": "dep_0411",
     "signature_regex": "message:↓poss:(\\w+)",
     "predicate": "asked",
     "family": "communication",
@@ -6161,7 +6178,7 @@
     "examples": []
   },
   {
-    "id": "dep_0411",
+    "id": "dep_0412",
     "signature_regex": "letter:↓poss:(\\w+)",
     "predicate": "informed",
     "family": "other",
@@ -6172,7 +6189,7 @@
     "examples": []
   },
   {
-    "id": "dep_0412",
+    "id": "dep_0413",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:message:↓prep:to:↓pobj:(\\w+)",
     "predicate": "replied",
     "family": "other",
@@ -6190,7 +6207,7 @@
     "examples": []
   },
   {
-    "id": "dep_0413",
+    "id": "dep_0414",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:message:↓prep:with:↓pobj:(\\w+)",
     "predicate": "reported",
     "family": "other",
@@ -6208,7 +6225,7 @@
     "examples": []
   },
   {
-    "id": "dep_0414",
+    "id": "dep_0415",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:letter:↓prep:to:↓pobj:(\\w+)",
     "predicate": "spoke_to",
     "family": "communication",
@@ -6226,7 +6243,7 @@
     "examples": []
   },
   {
-    "id": "dep_0415",
+    "id": "dep_0416",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:letter:↓prep:with:↓pobj:(\\w+)",
     "predicate": "told",
     "family": "communication",
@@ -6244,7 +6261,7 @@
     "examples": []
   },
   {
-    "id": "dep_0416",
+    "id": "dep_0417",
     "signature_regex": "(\\w+):↑nsubj:controlled:↓(?:dobj|obj):(\\w+)",
     "predicate": "controlled_by",
     "family": "power",
@@ -6258,7 +6275,7 @@
     "examples": []
   },
   {
-    "id": "dep_0417",
+    "id": "dep_0418",
     "signature_regex": "(\\w+):↑nsubj:ruled:↓(?:dobj|obj):(\\w+)",
     "predicate": "ruled_by",
     "family": "other",
@@ -6272,7 +6289,7 @@
     "examples": []
   },
   {
-    "id": "dep_0418",
+    "id": "dep_0419",
     "signature_regex": "(\\w+):↑nsubj:commanded:↓(?:dobj|obj):(\\w+)",
     "predicate": "commanded_by",
     "family": "power",
@@ -6286,7 +6303,7 @@
     "examples": []
   },
   {
-    "id": "dep_0419",
+    "id": "dep_0420",
     "signature_regex": "(\\w+):↑appos:ruler:↓prep:by:↓pobj:(\\w+)",
     "predicate": "managed_by",
     "family": "other",
@@ -6302,7 +6319,7 @@
     "examples": []
   },
   {
-    "id": "dep_0420",
+    "id": "dep_0421",
     "signature_regex": "(\\w+):↑appos:ruler:↓prep:over:↓pobj:(\\w+)",
     "predicate": "governed_by",
     "family": "power",
@@ -6318,7 +6335,7 @@
     "examples": []
   },
   {
-    "id": "dep_0421",
+    "id": "dep_0422",
     "signature_regex": "(\\w+):↑appos:king:↓prep:by:↓pobj:(\\w+)",
     "predicate": "led_by",
     "family": "other",
@@ -6334,7 +6351,7 @@
     "examples": []
   },
   {
-    "id": "dep_0422",
+    "id": "dep_0423",
     "signature_regex": "(\\w+):↑appos:king:↓prep:over:↓pobj:(\\w+)",
     "predicate": "controlled_by",
     "family": "power",
@@ -6350,7 +6367,7 @@
     "examples": []
   },
   {
-    "id": "dep_0423",
+    "id": "dep_0424",
     "signature_regex": "(\\w+):↑appos:queen:↓prep:by:↓pobj:(\\w+)",
     "predicate": "ruled_by",
     "family": "other",
@@ -6366,7 +6383,7 @@
     "examples": []
   },
   {
-    "id": "dep_0424",
+    "id": "dep_0425",
     "signature_regex": "(\\w+):↑appos:queen:↓prep:over:↓pobj:(\\w+)",
     "predicate": "commanded_by",
     "family": "power",
@@ -6382,7 +6399,7 @@
     "examples": []
   },
   {
-    "id": "dep_0425",
+    "id": "dep_0426",
     "signature_regex": "(\\w+):↑nsubjpass:controlled:↓agent:by:↓pobj:(\\w+)",
     "predicate": "managed_by",
     "family": "other",
@@ -6398,7 +6415,7 @@
     "examples": []
   },
   {
-    "id": "dep_0426",
+    "id": "dep_0427",
     "signature_regex": "(\\w+):↑nsubjpass:ruled:↓agent:by:↓pobj:(\\w+)",
     "predicate": "governed_by",
     "family": "power",
@@ -6414,7 +6431,7 @@
     "examples": []
   },
   {
-    "id": "dep_0427",
+    "id": "dep_0428",
     "signature_regex": "ruler:↓poss:(\\w+)",
     "predicate": "led_by",
     "family": "other",
@@ -6425,7 +6442,7 @@
     "examples": []
   },
   {
-    "id": "dep_0428",
+    "id": "dep_0429",
     "signature_regex": "king:↓poss:(\\w+)",
     "predicate": "controlled_by",
     "family": "power",
@@ -6436,7 +6453,7 @@
     "examples": []
   },
   {
-    "id": "dep_0429",
+    "id": "dep_0430",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:ruler:↓prep:by:↓pobj:(\\w+)",
     "predicate": "ruled_by",
     "family": "other",
@@ -6454,7 +6471,7 @@
     "examples": []
   },
   {
-    "id": "dep_0430",
+    "id": "dep_0431",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:ruler:↓prep:over:↓pobj:(\\w+)",
     "predicate": "commanded_by",
     "family": "power",
@@ -6472,7 +6489,7 @@
     "examples": []
   },
   {
-    "id": "dep_0431",
+    "id": "dep_0432",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:king:↓prep:by:↓pobj:(\\w+)",
     "predicate": "managed_by",
     "family": "other",
@@ -6490,7 +6507,7 @@
     "examples": []
   },
   {
-    "id": "dep_0432",
+    "id": "dep_0433",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:king:↓prep:over:↓pobj:(\\w+)",
     "predicate": "governed_by",
     "family": "power",
@@ -6508,7 +6525,7 @@
     "examples": []
   },
   {
-    "id": "dep_0433",
+    "id": "dep_0434",
     "signature_regex": "(\\w+):↑nsubj:exceeds:↓(?:dobj|obj):(\\w+)",
     "predicate": "greater_than",
     "family": "comparison",
@@ -6522,7 +6539,7 @@
     "examples": []
   },
   {
-    "id": "dep_0434",
+    "id": "dep_0435",
     "signature_regex": "(\\w+):↑nsubj:surpasses:↓(?:dobj|obj):(\\w+)",
     "predicate": "less_than",
     "family": "comparison",
@@ -6536,7 +6553,7 @@
     "examples": []
   },
   {
-    "id": "dep_0435",
+    "id": "dep_0436",
     "signature_regex": "(\\w+):↑nsubj:equals:↓(?:dobj|obj):(\\w+)",
     "predicate": "equal_to",
     "family": "other",
@@ -6550,7 +6567,7 @@
     "examples": []
   },
   {
-    "id": "dep_0436",
+    "id": "dep_0437",
     "signature_regex": "(\\w+):↑appos:greater:↓prep:than:↓pobj:(\\w+)",
     "predicate": "higher_than",
     "family": "other",
@@ -6566,7 +6583,7 @@
     "examples": []
   },
   {
-    "id": "dep_0437",
+    "id": "dep_0438",
     "signature_regex": "(\\w+):↑appos:greater:↓prep:to:↓pobj:(\\w+)",
     "predicate": "similar_to",
     "family": "comparison",
@@ -6582,7 +6599,7 @@
     "examples": []
   },
   {
-    "id": "dep_0438",
+    "id": "dep_0439",
     "signature_regex": "(\\w+):↑appos:less:↓prep:than:↓pobj:(\\w+)",
     "predicate": "different_from",
     "family": "other",
@@ -6598,7 +6615,7 @@
     "examples": []
   },
   {
-    "id": "dep_0439",
+    "id": "dep_0440",
     "signature_regex": "(\\w+):↑appos:less:↓prep:to:↓pobj:(\\w+)",
     "predicate": "greater_than",
     "family": "comparison",
@@ -6614,7 +6631,7 @@
     "examples": []
   },
   {
-    "id": "dep_0440",
+    "id": "dep_0441",
     "signature_regex": "(\\w+):↑appos:equal:↓prep:than:↓pobj:(\\w+)",
     "predicate": "less_than",
     "family": "comparison",
@@ -6630,7 +6647,7 @@
     "examples": []
   },
   {
-    "id": "dep_0441",
+    "id": "dep_0442",
     "signature_regex": "(\\w+):↑appos:equal:↓prep:to:↓pobj:(\\w+)",
     "predicate": "equal_to",
     "family": "other",
@@ -6646,7 +6663,7 @@
     "examples": []
   },
   {
-    "id": "dep_0442",
+    "id": "dep_0443",
     "signature_regex": "(\\w+):↑nsubjpass:exceeds:↓agent:by:↓pobj:(\\w+)",
     "predicate": "higher_than",
     "family": "other",
@@ -6662,7 +6679,7 @@
     "examples": []
   },
   {
-    "id": "dep_0443",
+    "id": "dep_0444",
     "signature_regex": "(\\w+):↑nsubjpass:surpasses:↓agent:by:↓pobj:(\\w+)",
     "predicate": "similar_to",
     "family": "comparison",
@@ -6678,7 +6695,7 @@
     "examples": []
   },
   {
-    "id": "dep_0444",
+    "id": "dep_0445",
     "signature_regex": "greater:↓poss:(\\w+)",
     "predicate": "different_from",
     "family": "other",
@@ -6689,7 +6706,7 @@
     "examples": []
   },
   {
-    "id": "dep_0445",
+    "id": "dep_0446",
     "signature_regex": "less:↓poss:(\\w+)",
     "predicate": "greater_than",
     "family": "comparison",
@@ -6700,7 +6717,7 @@
     "examples": []
   },
   {
-    "id": "dep_0446",
+    "id": "dep_0447",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:greater:↓prep:than:↓pobj:(\\w+)",
     "predicate": "less_than",
     "family": "comparison",
@@ -6718,7 +6735,7 @@
     "examples": []
   },
   {
-    "id": "dep_0447",
+    "id": "dep_0448",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:greater:↓prep:to:↓pobj:(\\w+)",
     "predicate": "equal_to",
     "family": "other",
@@ -6736,7 +6753,7 @@
     "examples": []
   },
   {
-    "id": "dep_0448",
+    "id": "dep_0449",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:less:↓prep:than:↓pobj:(\\w+)",
     "predicate": "higher_than",
     "family": "other",
@@ -6754,7 +6771,7 @@
     "examples": []
   },
   {
-    "id": "dep_0449",
+    "id": "dep_0450",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:less:↓prep:to:↓pobj:(\\w+)",
     "predicate": "similar_to",
     "family": "comparison",
@@ -6772,7 +6789,7 @@
     "examples": []
   },
   {
-    "id": "dep_0450",
+    "id": "dep_0451",
     "signature_regex": "(\\w+):↑nsubj:loved:↓(?:dobj|obj):(\\w+)",
     "predicate": "loved",
     "family": "emotional",
@@ -6786,7 +6803,7 @@
     "examples": []
   },
   {
-    "id": "dep_0451",
+    "id": "dep_0452",
     "signature_regex": "(\\w+):↑nsubj:hated:↓(?:dobj|obj):(\\w+)",
     "predicate": "hated",
     "family": "emotional",
@@ -6800,7 +6817,7 @@
     "examples": []
   },
   {
-    "id": "dep_0452",
+    "id": "dep_0453",
     "signature_regex": "(\\w+):↑nsubj:respected:↓(?:dobj|obj):(\\w+)",
     "predicate": "respected",
     "family": "other",
@@ -6814,7 +6831,7 @@
     "examples": []
   },
   {
-    "id": "dep_0453",
+    "id": "dep_0454",
     "signature_regex": "(\\w+):↑appos:lover:↓prep:by:↓pobj:(\\w+)",
     "predicate": "disliked",
     "family": "other",
@@ -6830,7 +6847,7 @@
     "examples": []
   },
   {
-    "id": "dep_0454",
+    "id": "dep_0455",
     "signature_regex": "(\\w+):↑appos:lover:↓prep:of:↓pobj:(\\w+)",
     "predicate": "admired",
     "family": "emotional",
@@ -6846,7 +6863,7 @@
     "examples": []
   },
   {
-    "id": "dep_0455",
+    "id": "dep_0456",
     "signature_regex": "(\\w+):↑appos:friend:↓prep:by:↓pobj:(\\w+)",
     "predicate": "envied",
     "family": "other",
@@ -6862,7 +6879,7 @@
     "examples": []
   },
   {
-    "id": "dep_0456",
+    "id": "dep_0457",
     "signature_regex": "(\\w+):↑appos:friend:↓prep:of:↓pobj:(\\w+)",
     "predicate": "feared",
     "family": "emotional",
@@ -6878,7 +6895,7 @@
     "examples": []
   },
   {
-    "id": "dep_0457",
+    "id": "dep_0458",
     "signature_regex": "(\\w+):↑appos:enemy:↓prep:by:↓pobj:(\\w+)",
     "predicate": "loved",
     "family": "emotional",
@@ -6894,7 +6911,7 @@
     "examples": []
   },
   {
-    "id": "dep_0458",
+    "id": "dep_0459",
     "signature_regex": "(\\w+):↑appos:enemy:↓prep:of:↓pobj:(\\w+)",
     "predicate": "hated",
     "family": "emotional",
@@ -6910,7 +6927,7 @@
     "examples": []
   },
   {
-    "id": "dep_0459",
+    "id": "dep_0460",
     "signature_regex": "(\\w+):↑nsubjpass:loved:↓agent:by:↓pobj:(\\w+)",
     "predicate": "respected",
     "family": "other",
@@ -6926,7 +6943,7 @@
     "examples": []
   },
   {
-    "id": "dep_0460",
+    "id": "dep_0461",
     "signature_regex": "(\\w+):↑nsubjpass:hated:↓agent:by:↓pobj:(\\w+)",
     "predicate": "disliked",
     "family": "other",
@@ -6942,7 +6959,7 @@
     "examples": []
   },
   {
-    "id": "dep_0461",
+    "id": "dep_0462",
     "signature_regex": "lover:↓poss:(\\w+)",
     "predicate": "admired",
     "family": "emotional",
@@ -6953,7 +6970,7 @@
     "examples": []
   },
   {
-    "id": "dep_0462",
+    "id": "dep_0463",
     "signature_regex": "friend:↓poss:(\\w+)",
     "predicate": "envied",
     "family": "other",
@@ -6964,7 +6981,7 @@
     "examples": []
   },
   {
-    "id": "dep_0463",
+    "id": "dep_0464",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:lover:↓prep:by:↓pobj:(\\w+)",
     "predicate": "feared",
     "family": "emotional",
@@ -6982,7 +6999,7 @@
     "examples": []
   },
   {
-    "id": "dep_0464",
+    "id": "dep_0465",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:lover:↓prep:of:↓pobj:(\\w+)",
     "predicate": "loved",
     "family": "emotional",
@@ -7000,7 +7017,7 @@
     "examples": []
   },
   {
-    "id": "dep_0465",
+    "id": "dep_0466",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:friend:↓prep:by:↓pobj:(\\w+)",
     "predicate": "hated",
     "family": "emotional",
@@ -7018,7 +7035,7 @@
     "examples": []
   },
   {
-    "id": "dep_0466",
+    "id": "dep_0467",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:friend:↓prep:of:↓pobj:(\\w+)",
     "predicate": "respected",
     "family": "other",
@@ -7036,7 +7053,7 @@
     "examples": []
   },
   {
-    "id": "dep_0467",
+    "id": "dep_0468",
     "signature_regex": "(\\w+):↑nsubj:denied:↓(?:dobj|obj):(\\w+)",
     "predicate": "not_related_to",
     "family": "other",
@@ -7050,7 +7067,7 @@
     "examples": []
   },
   {
-    "id": "dep_0468",
+    "id": "dep_0469",
     "signature_regex": "(\\w+):↑nsubj:disputed:↓(?:dobj|obj):(\\w+)",
     "predicate": "alleged",
     "family": "other",
@@ -7064,7 +7081,7 @@
     "examples": []
   },
   {
-    "id": "dep_0469",
+    "id": "dep_0470",
     "signature_regex": "(\\w+):↑nsubj:alleged:↓(?:dobj|obj):(\\w+)",
     "predicate": "rumored",
     "family": "other",
@@ -7078,7 +7095,7 @@
     "examples": []
   },
   {
-    "id": "dep_0470",
+    "id": "dep_0471",
     "signature_regex": "(\\w+):↑appos:allegation:↓prep:to:↓pobj:(\\w+)",
     "predicate": "denied",
     "family": "other",
@@ -7094,7 +7111,7 @@
     "examples": []
   },
   {
-    "id": "dep_0471",
+    "id": "dep_0472",
     "signature_regex": "(\\w+):↑appos:allegation:↓prep:about:↓pobj:(\\w+)",
     "predicate": "disputed",
     "family": "other",
@@ -7110,7 +7127,7 @@
     "examples": []
   },
   {
-    "id": "dep_0472",
+    "id": "dep_0473",
     "signature_regex": "(\\w+):↑appos:rumor:↓prep:to:↓pobj:(\\w+)",
     "predicate": "uncertain_link",
     "family": "other",
@@ -7126,7 +7143,7 @@
     "examples": []
   },
   {
-    "id": "dep_0473",
+    "id": "dep_0474",
     "signature_regex": "(\\w+):↑appos:rumor:↓prep:about:↓pobj:(\\w+)",
     "predicate": "not_related_to",
     "family": "other",
@@ -7142,7 +7159,7 @@
     "examples": []
   },
   {
-    "id": "dep_0474",
+    "id": "dep_0475",
     "signature_regex": "(\\w+):↑appos:denial:↓prep:to:↓pobj:(\\w+)",
     "predicate": "alleged",
     "family": "other",
@@ -7158,7 +7175,7 @@
     "examples": []
   },
   {
-    "id": "dep_0475",
+    "id": "dep_0476",
     "signature_regex": "(\\w+):↑appos:denial:↓prep:about:↓pobj:(\\w+)",
     "predicate": "rumored",
     "family": "other",
@@ -7174,7 +7191,7 @@
     "examples": []
   },
   {
-    "id": "dep_0476",
+    "id": "dep_0477",
     "signature_regex": "(\\w+):↑nsubjpass:denied:↓agent:by:↓pobj:(\\w+)",
     "predicate": "denied",
     "family": "other",
@@ -7190,7 +7207,7 @@
     "examples": []
   },
   {
-    "id": "dep_0477",
+    "id": "dep_0478",
     "signature_regex": "(\\w+):↑nsubjpass:disputed:↓agent:by:↓pobj:(\\w+)",
     "predicate": "disputed",
     "family": "other",
@@ -7206,7 +7223,7 @@
     "examples": []
   },
   {
-    "id": "dep_0478",
+    "id": "dep_0479",
     "signature_regex": "allegation:↓poss:(\\w+)",
     "predicate": "uncertain_link",
     "family": "other",
@@ -7217,7 +7234,7 @@
     "examples": []
   },
   {
-    "id": "dep_0479",
+    "id": "dep_0480",
     "signature_regex": "rumor:↓poss:(\\w+)",
     "predicate": "not_related_to",
     "family": "other",
@@ -7228,7 +7245,7 @@
     "examples": []
   },
   {
-    "id": "dep_0480",
+    "id": "dep_0481",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:allegation:↓prep:to:↓pobj:(\\w+)",
     "predicate": "alleged",
     "family": "other",
@@ -7246,7 +7263,7 @@
     "examples": []
   },
   {
-    "id": "dep_0481",
+    "id": "dep_0482",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:allegation:↓prep:about:↓pobj:(\\w+)",
     "predicate": "rumored",
     "family": "other",
@@ -7264,7 +7281,7 @@
     "examples": []
   },
   {
-    "id": "dep_0482",
+    "id": "dep_0483",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:rumor:↓prep:to:↓pobj:(\\w+)",
     "predicate": "denied",
     "family": "other",
@@ -7282,7 +7299,7 @@
     "examples": []
   },
   {
-    "id": "dep_0483",
+    "id": "dep_0484",
     "signature_regex": "(\\w+):↑nsubj:be:↓attr:rumor:↓prep:about:↓pobj:(\\w+)",
     "predicate": "disputed",
     "family": "other",
@@ -7300,7 +7317,7 @@
     "examples": []
   },
   {
-    "id": "dep_0484",
+    "id": "dep_0485",
     "signature_regex": "(\\\\w+):↑nsubj:painted:↓(?:dobj|obj):(\\\\w+)",
     "predicate": "painted",
     "family": "other",
@@ -7314,7 +7331,7 @@
     "examples": []
   },
   {
-    "id": "dep_0485",
+    "id": "dep_0486",
     "signature_regex": "(\\\\w+):↑nsubj:composed:↓(?:dobj|obj):(\\\\w+)",
     "predicate": "composed",
     "family": "other",
@@ -7328,7 +7345,7 @@
     "examples": []
   },
   {
-    "id": "dep_0486",
+    "id": "dep_0487",
     "signature_regex": "(\\\\w+):↑nsubj:designed:↓(?:dobj|obj):(\\\\w+)",
     "predicate": "designed",
     "family": "other",
@@ -7342,7 +7359,7 @@
     "examples": []
   },
   {
-    "id": "dep_0487",
+    "id": "dep_0488",
     "signature_regex": "(\\\\w+):↑nsubj:sculpted:↓(?:dobj|obj):(\\\\w+)",
     "predicate": "sculpted",
     "family": "other",
