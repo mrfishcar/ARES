@@ -145,7 +145,7 @@ npm test tests/ladder/level-1-simple.spec.ts
 
 ---
 
-### Stage 2: Component Validation ⚠️ 99% COMPLETE
+### Stage 2: Component Validation ✅ COMPLETE
 
 **Purpose**: Validate that extraction components work together and handle multi-sentence text
 
@@ -181,7 +181,9 @@ npm test tests/ladder/level-1-simple.spec.ts
 
 #### 2.3 Multi-Sentence Extraction
 - **Target**: P≥85%, R≥80%, F1≥82%
-- **Current**: P=84.4%, R=80%, F1=82% (gap: 0.6% precision)
+- **Current**: ✅ PASSED
+  - Entities: P=94.4%, R=95.6%, F1=95.0%
+  - Relations: P=91.1%, R=91.7%, F1=91.4%
 - **Command**: `npm test tests/ladder/level-2-multisentence.spec.ts`
 - **Debug**: `npx ts-node tests/ladder/run-level-2.ts`
 
@@ -193,15 +195,15 @@ npm test tests/ladder/level-1-simple.spec.ts
 - Cross-sentence relations
 - Coordination ("Harry and Ron")
 
-**Pass criteria**: All metrics above target thresholds
+**Pass criteria**: All metrics above target thresholds ✅
 
-**Current blocker**: Test 2.12 - Appositive parsing issue
+**Previous blocker**: Test 2.12 - Appositive parsing issue
 - Text: "Aragorn, son of Arathorn, traveled to Gondor"
-- Issue: Extracts "Arathorn traveled_to Gondor" instead of "Aragorn traveled_to Gondor"
+- Status: ✅ RESOLVED by appositive subject resolution fix
 
 ---
 
-**Stage 2 Status**: ⚠️ 99% COMPLETE (blocked on test 2.12)
+**Stage 2 Status**: ✅ COMPLETE
 **How to run entire stage**:
 ```bash
 # Run all Stage 2 checks
@@ -210,10 +212,12 @@ npx tsx scripts/pattern-expansion/evaluate-coverage.ts --precision_guardrails
 npm test tests/ladder/level-2-multisentence.spec.ts
 ```
 
-**If Stage 2 fails:**
-1. Check synthetic baseline - is F1 too low? → More pattern coverage needed
-2. Check guardrails - are they filtering too aggressively?
-3. Review multi-sentence test failures - coreference or pattern issues?
+**Stage 2 Summary**:
+- ✅ Multi-sentence extraction: 15/15 tests passing
+- ✅ Entities: 94.4% precision, 95.6% recall
+- ✅ Relations: 91.1% precision, 91.7% recall
+- ✅ Appositive parsing fixed and working correctly
+- Ready to advance to Stage 3
 
 ---
 
