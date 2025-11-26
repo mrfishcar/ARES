@@ -10,9 +10,9 @@
     "top_fp": [
       "Alice --[child_of]--> Robert",
       "Robert --[parent_of]--> Alice",
-      "Marcus --[parent_of]--> Elena",
-      "Elena --[child_of]--> Marcus",
-      "Marcus --[married_to]--> Elena"
+      "Marcus --[married_to]--> Elena",
+      "Elena --[married_to]--> Marcus",
+      "Sofia --[child_of]--> Marcus"
     ]
   },
   "ownership": {
@@ -27,16 +27,18 @@
   },
   "employment": {
     "top_fn": [
-      "Sarah --[works_for]--> Google",
       "Dr --[employed_by]--> Chen",
       "Marcus --[member_of]--> Board of Directors",
       "Elena --[affiliated_with]--> Chief Technology Officer",
-      "Professor Smith --[affiliated_with]--> Harvard University"
+      "Professor Smith --[affiliated_with]--> Harvard University",
+      "John --[affiliated_with]--> Sales Department"
     ],
     "top_fp": [
       "Sarah --[lives_in]--> Mountain View",
-      "Professor Smith --[teaches_at]--> Harvard University",
-      "Smith --[teaches_at]--> Harvard"
+      "Sarah --[works_at]--> Google",
+      "Sarah --[works_for]--> Google",
+      "Smith --[teaches_at]--> Harvard University",
+      "Thomas --[member_of]--> Microsoft"
     ]
   },
   "creation": {
@@ -53,16 +55,16 @@
     "top_fn": [
       "Paris --[located_in]--> France",
       "The Eiffel Tower --[located_in]--> Paris",
-      "Silicon Valley --[located_in]--> California",
       "The Pyramids --[located_in]--> Giza",
-      "Harvard University --[located_in]--> Cambridge"
+      "The Louvre --[located_in]--> Paris",
+      "Tokyo --[located_in]--> Japan"
     ],
     "top_fp": [
       "Paris --[lives_in]--> France",
+      "Silicon Valley --[located_in]--> California",
+      "Harvard University --[located_in]--> Cambridge",
       "Louvre --[lives_in]--> Paris",
-      "Tokyo --[lives_in]--> Japan",
-      "White --[lives_in]--> Washington DC",
-      "Venice --[lives_in]--> Italy"
+      "Tokyo --[lives_in]--> Japan"
     ]
   },
   "temporal": {
@@ -81,10 +83,11 @@
   },
   "part_whole": {
     "top_fn": [
-      "California --[part_of]--> United States",
-      "Manhattan --[part_of]--> New York City"
+      "California --[part_of]--> United States"
     ],
-    "top_fp": []
+    "top_fp": [
+      "Manhattan --[part_of]--> New York City"
+    ]
   },
   "identity": {
     "top_fn": [

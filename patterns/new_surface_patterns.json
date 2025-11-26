@@ -320,6 +320,30 @@
     "examples": []
   },
   {
+    "id": "new_surf_employment_017",
+    "regex": "\\b([A-Z][\\w.]+(?:\\s+[A-Z][\\w.]+)*)\\s+(?:is|was)\\s+employed by\\s+([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "employed_by",
+    "family": "employment",
+    "lemma_form": "\\b([a-z][\\w.]+(?:\\s+[a-z][\\w.]+)*)\\s+(?:is|was)\\s+employed by\\s+([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_employment_018",
+    "regex": "\\b([A-Z][\\w.]+(?:\\s+[A-Z][\\w.]+)*)\\s+(?:is|was)\\s+(?:a|an)\\s+member of\\s+(?:the\\s+)?([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "member_of",
+    "family": "employment",
+    "lemma_form": "\\b([a-z][\\w.]+(?:\\s+[a-z][\\w.]+)*)\\s+(?:is|was)\\s+(?:a|an)\\s+member of\\s+(?:the\\s+)?([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_employment_019",
+    "regex": "\\b([A-Z][\\w.]+(?:\\s+[A-Z][\\w.]+)*)\\s+works for\\s+([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)(?:\\s+in\\s+[A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)?",
+    "predicate": "works_for",
+    "family": "employment",
+    "lemma_form": "\\b([a-z][\\w.]+(?:\\s+[a-z][\\w.]+)*)\\s+works for\\s+([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)(?:\\s+in\\s+[a-z][a-z]+(?:\\s+[a-z][a-z]+)*)?",
+    "examples": []
+  },
+  {
     "id": "new_surf_creation_000",
     "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*) created ([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
     "predicate": "created_by",
@@ -437,6 +461,14 @@
     "predicate": "created_by",
     "family": "creation",
     "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:allegedly|reportedly|possibly) created ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_creation_017",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s+(?:founded|established)\\s+(?:the\\s+)?([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "founded",
+    "family": "creation",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s+(?:founded|established)\\s+(?:the\\s+)?([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
     "examples": []
   },
   {
@@ -573,6 +605,30 @@
     "predicate": "north_of",
     "family": "location",
     "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*) (?:allegedly|reportedly|possibly) located ([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_location_017",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s+(?:is\\s+)?(?:located|situated|based)\\s+in\\s+([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "located_in",
+    "family": "location",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s+(?:is\\s+)?(?:located|situated|based)\\s+in\\s+([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_location_018",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s+(?:stands|stand)\\s+in\\s+([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "located_in",
+    "family": "location",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s+(?:stands|stand)\\s+in\\s+([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
+    "examples": []
+  },
+  {
+    "id": "new_surf_location_019",
+    "regex": "\\b([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\s+(?:is\\s+)?(?:located|situated)\\s+at\\s+([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+    "predicate": "located_in",
+    "family": "location",
+    "lemma_form": "\\b([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s+(?:is\\s+)?(?:located|situated)\\s+at\\s+([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)",
     "examples": []
   },
   {
