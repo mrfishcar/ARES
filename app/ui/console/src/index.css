@@ -5,30 +5,57 @@
 }
 
 :root {
-  /* Warm & Cozy Theme Colors */
-  --bg-primary: #FFF9F0;
-  --bg-secondary: #FFF4E6;
-  --bg-tertiary: #FFEFD5;
-  --text-primary: #4A403A;
-  --text-secondary: #8B7E77;
-  --text-muted: #B8ABA4;
-  --accent-warm: #E8A87C;
-  --accent-glow: #FFB347;
-  --accent-purple: #9B8BBF;
-  --border-soft: #E8DED5;
-  --shadow-soft: 0 2px 8px rgba(139, 126, 119, 0.08);
-  --shadow-medium: 0 4px 16px rgba(139, 126, 119, 0.12);
-  --shadow-strong: 0 8px 24px rgba(139, 126, 119, 0.18);
+  /* Light Theme - Bright & Airy */
+  --bg-primary: #f7f9fc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #eef2f8;
+  --text-primary: #1f2937;
+  --text-secondary: #374151;
+  --text-muted: #6b7280;
+  --accent-warm: #2563eb;
+  --accent-glow: #93c5fd;
+  --accent-purple: #7c3aed;
+  --border-soft: #d9e2ec;
+  --border-color: #cbd5e1;
+  --shadow-soft: 0 2px 10px rgba(30, 41, 59, 0.08);
+  --shadow-medium: 0 6px 18px rgba(15, 23, 42, 0.12);
+  --shadow-strong: 0 12px 30px rgba(15, 23, 42, 0.16);
   --border-radius: 12px;
   --border-radius-small: 8px;
 
-  /* Entity Type Colors (Warm Palette) */
-  --entity-person: #C28B6B;
-  --entity-place: #8BA888;
-  --entity-org: #9B8BBF;
-  --entity-event: #E8A87C;
-  --entity-concept: #7BA8BF;
-  --entity-object: #D89BAA;
+  /* Entity Type Colors */
+  --entity-person: #3b82f6;
+  --entity-place: #10b981;
+  --entity-org: #8b5cf6;
+  --entity-event: #f59e0b;
+  --entity-concept: #6366f1;
+  --entity-object: #ec4899;
+}
+
+html[data-theme="dark"] {
+  /* Dark Theme - Moody Night */
+  --bg-primary: #0a0e27;
+  --bg-secondary: #141829;
+  --bg-tertiary: #1d2340;
+  --text-primary: #e8e6e1;
+  --text-secondary: #a8b5cc;
+  --text-muted: #6d7a99;
+  --accent-warm: #64d5ff;
+  --accent-glow: #7de6ff;
+  --accent-purple: #bb86fc;
+  --border-soft: #2a2f4a;
+  --border-color: #2f3655;
+  --shadow-soft: 0 2px 12px rgba(0, 0, 0, 0.35);
+  --shadow-medium: 0 8px 22px rgba(0, 0, 0, 0.45);
+  --shadow-strong: 0 14px 34px rgba(0, 0, 0, 0.55);
+
+  /* Entity Type Colors (Night palette) */
+  --entity-person: #8dd3ff;
+  --entity-place: #7dd3fc;
+  --entity-org: #c4b5fd;
+  --entity-event: #fdbf74;
+  --entity-concept: #a78bfa;
+  --entity-object: #f472b6;
 }
 
 body {

@@ -34,73 +34,13 @@ import { syntaxHighlighting, HighlightStyle } from '@codemirror/language';
 import { tags as t } from '@lezer/highlight';
 import type { EntitySpan, EntityType } from '../types/entities';
 import { getEntityTypeColor, isValidEntityType } from '../types/entities';
+import { DARK_MODE_ENTITY_COLORS } from '../utils/darkMode';
 import { EntityContextMenu } from './EntityContextMenu';
 import type { CodeMirrorEditorProps } from './CodeMirrorEditorProps';
 
 // ============================================================================
 // 0. UTILITY FUNCTIONS
 // ============================================================================
-
-/**
- * Lighten and saturate a hex color for better glow visibility
- * Converts hex to HSL, increases lightness, increases saturation, converts back
- * @param hex - Color in hex format (e.g., '#3b82f6')
- * @param amount - Amount to lighten (0-100)
- * @returns Lightened color in hex format
- */
-function lightenColor(hex: string, amount: number): string {
-  // Remove # if present
-  const color = hex.replace('#', '');
-
-  // Convert hex to RGB
-  const r = parseInt(color.substr(0, 2), 16) / 255;
-  const g = parseInt(color.substr(2, 2), 16) / 255;
-  const b = parseInt(color.substr(4, 2), 16) / 255;
-
-  // Convert RGB to HSL
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  let h = 0, s = 0, l = (max + min) / 2;
-
-  if (max !== min) {
-    const d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-
-    switch (max) {
-      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
-      case g: h = ((b - r) / d + 2) / 6; break;
-      case b: h = ((r - g) / d + 4) / 6; break;
-    }
-  }
-
-  // Increase lightness and saturation for glow effect
-  l = Math.min(1, l + amount / 100);
-  s = Math.min(1, s + 0.2); // Increase saturation by 20%
-
-  // Convert HSL back to RGB
-  const hue2rgb = (p: number, q: number, t: number): number => {
-    if (t < 0) t += 1;
-    if (t > 1) t -= 1;
-    if (t < 1/6) return p + (q - p) * 6 * t;
-    if (t < 1/2) return q;
-    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-    return p;
-  };
-
-  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-  const p = 2 * l - q;
-  const r2 = Math.round(hue2rgb(p, q, h + 1/3) * 255);
-  const g2 = Math.round(hue2rgb(p, q, h) * 255);
-  const b2 = Math.round(hue2rgb(p, q, h - 1/3) * 255);
-
-  // Convert back to hex
-  const toHex = (x: number): string => {
-    const hex = x.toString(16);
-    return hex.length === 1 ? '0' + hex : hex;
-  };
-
-  return `#${toHex(r2)}${toHex(g2)}${toHex(b2)}`;
-}
 
 /**
  * Convert hex color to RGBA string with specified opacity
@@ -211,45 +151,41 @@ function buildEntityDecorations(state: EditorState, entities: EntitySpan[], isDi
         continue;
       }
 
-      const color = getEntityTypeColor(entity.type);
+      const color = isDarkMode
+        ? DARK_MODE_ENTITY_COLORS[entity.type] ?? getEntityTypeColor(entity.type)
+        : getEntityTypeColor(entity.type);
       let style: string;
 
       if (isDarkMode) {
-        // Dark mode: Use text-shadow glow effect with opacity control
-        const glowColor = lightenColor(color, 15);
-        const glowColorAlpha = hexToRgba(glowColor, 0.7 * opacityMultiplier);
-        const glowColorAlpha2 = hexToRgba(glowColor, 0.5 * opacityMultiplier);
-        const glowColorAlpha3 = hexToRgba(glowColor, 0.3 * opacityMultiplier);
+        // Dark mode: Solid tinted background with crisp outline for contrast
+        const backgroundColor = hexToRgba(color, 0.32 * opacityMultiplier);
+        const borderColor = hexToRgba(color, 0.6 * opacityMultiplier);
+        const shadowColor = hexToRgba(color, 0.4 * opacityMultiplier);
         style = `
-          text-shadow:
-            0 0 4px ${glowColorAlpha},
-            0 0 8px ${glowColorAlpha2},
-            0 0 12px ${glowColorAlpha2},
-            0 0 16px ${glowColorAlpha3};
-          font-weight: 500;
+          background-color: ${backgroundColor};
+          border: 1px solid ${borderColor};
+          color: ${color};
+          box-shadow:
+            0 0 0 1px ${hexToRgba('#ffffff', 0.08)},
+            0 6px 16px ${shadowColor};
+          border-radius: 4px;
+          padding: 0 1px;
+          font-weight: 600;
           cursor: pointer;
         `;
       } else {
-        // Light mode: Use background highlight with feathering
-        // Use lighter version of the color with reduced opacity for soft appearance
-        const highlightColor = lightenColor(color, 10);
-        const softColor = hexToRgba(highlightColor, 0.55 * opacityMultiplier);
-        const featherColor1 = hexToRgba(highlightColor, 0.35 * opacityMultiplier);
-        const featherColor2 = hexToRgba(highlightColor, 0.20 * opacityMultiplier);
-        const featherColor3 = hexToRgba(highlightColor, 0.10 * opacityMultiplier);
-        const featherColor4 = hexToRgba(highlightColor, 0.04 * opacityMultiplier);
+        // Light mode: Clean tint with defined edge to avoid washed-out highlights
+        const backgroundColor = hexToRgba(color, 0.2 * opacityMultiplier);
+        const borderColor = hexToRgba(color, 0.4 * opacityMultiplier);
+        const shadowColor = hexToRgba(color, 0.28 * opacityMultiplier);
         style = `
-          background-color: ${softColor};
-          box-shadow:
-            -20px 0 16px -8px ${featherColor4},
-            -14px 0 12px -6px ${featherColor3},
-            -8px 0 10px -4px ${featherColor2},
-            -4px 0 6px -2px ${featherColor1},
-            4px 0 6px -2px ${featherColor1},
-            8px 0 10px -4px ${featherColor2},
-            14px 0 12px -6px ${featherColor3},
-            20px 0 16px -8px ${featherColor4};
-          font-weight: 500;
+          background-color: ${backgroundColor};
+          border: 1px solid ${borderColor};
+          color: ${color};
+          box-shadow: 0 1px 8px ${shadowColor};
+          border-radius: 4px;
+          padding: 0 1px;
+          font-weight: 600;
           cursor: pointer;
         `;
       }
