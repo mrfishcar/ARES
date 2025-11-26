@@ -9,7 +9,7 @@ import type { Entity, Relation } from '../engine/schema';
 import type { Conflict } from '../engine/conflicts';
 import { extractEntities } from '../engine/extract/entities';
 import { extractRelations } from '../engine/extract/relations';
-import { extractFromSegments } from '../engine/extract/orchestrator';
+import { extractFromSegments, type ExtractionOptions } from '../engine/extract/orchestrator';
 import { mergeEntitiesAcrossDocs } from '../engine/merge';
 import { detectConflicts } from '../engine/conflicts';
 import { ingestTotal, extractLatencyMs } from '../infra/metrics';
@@ -255,7 +255,25 @@ export async function appendDoc(
     // Load or create pattern library for new entity types
     const patternLibrary = await loadFantasyEntityPatterns();
 
-    ({ entities: newEntities, spans, relations: newRelations, fictionEntities, profiles: updatedProfiles } = await extractFromSegments(docId, text, graph.profiles, DEFAULT_LLM_CONFIG, patternLibrary));
+    const parseOptionalInt = (value?: string) => {
+      if (!value) return undefined;
+      const parsed = parseInt(value, 10);
+      return Number.isFinite(parsed) ? parsed : undefined;
+    };
+
+    const extractionOptions: ExtractionOptions = {};
+    const segmentWindow = parseOptionalInt(process.env.ARES_SEGMENT_CONTEXT_WINDOW);
+    const relationWindow = parseOptionalInt(process.env.ARES_RELATION_CONTEXT_WINDOW);
+    const corefRelationWindow = parseOptionalInt(process.env.ARES_COREF_RELATION_CONTEXT_WINDOW);
+
+    if (segmentWindow !== undefined) extractionOptions.segmentContextWindow = segmentWindow;
+    if (relationWindow !== undefined) extractionOptions.relationContextWindow = relationWindow;
+    if (corefRelationWindow !== undefined) extractionOptions.corefRelationContextWindow = corefRelationWindow;
+    if (['1', 'true'].includes((process.env.ARES_GLOBAL_RELATIONS || '').toLowerCase())) {
+      extractionOptions.globalRelationExtraction = true;
+    }
+
+    ({ entities: newEntities, spans, relations: newRelations, fictionEntities, profiles: updatedProfiles } = await extractFromSegments(docId, text, graph.profiles, DEFAULT_LLM_CONFIG, patternLibrary, extractionOptions));
   } finally {
     end();
   }
