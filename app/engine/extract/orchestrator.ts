@@ -4,7 +4,7 @@
  */
 
 import type { Entity, Relation } from '../schema';
-import { INVERSE } from '../schema';
+import { INVERSE, passesGuard } from '../schema';
 import { v4 as uuid } from 'uuid';
 import { segmentDocument, type Seg } from '../segmenter';
 import { extractEntities, parseWithService, normalizeName } from './entities';
@@ -32,6 +32,36 @@ const PATTERNS_MODE: PatternsMode = (process.env.RELATION_PATTERNS_MODE as Patte
 // Currently using hardcoded extraction; patterns ready for future integration
 
 /**
+ * Options that control segmentation/context handling and optional features
+ */
+export interface ExtractionOptions {
+  generateHERTs?: boolean;     // Enable HERT generation (Phase 2)
+  autoSaveHERTs?: boolean;     // Auto-save to HERT store
+  segmentContextWindow?: number; // Context window (chars) around each segment for entity + relation extraction
+  relationContextWindow?: number; // Override window for relation extraction (defaults to segmentContextWindow)
+  corefRelationContextWindow?: number; // Context window for coref-enhanced relation pass
+  globalRelationExtraction?: boolean;  // Run an additional global relation pass over full document
+}
+
+function resolveWindow(setting?: number, envKey?: string, fallback?: number): number | undefined {
+  if (typeof setting === 'number' && Number.isFinite(setting)) {
+    return setting;
+  }
+
+  if (envKey) {
+    const envVal = process.env[envKey];
+    if (envVal !== undefined) {
+      const parsed = parseInt(envVal, 10);
+      if (Number.isFinite(parsed)) {
+        return parsed;
+      }
+    }
+  }
+
+  return fallback;
+}
+
+/**
  * Extract entities and relations from segments with context windows
  * Processes segments in deterministic order (paraIndex ASC, sentIndex ASC)
  * Remaps span offsets back to absolute positions
@@ -47,10 +77,7 @@ export async function extractFromSegments(
   existingProfiles?: Map<string, EntityProfile>,
   llmConfig: LLMConfig = DEFAULT_LLM_CONFIG,
   patternLibrary?: PatternLibrary,
-  options?: {
-    generateHERTs?: boolean;     // Enable HERT generation (Phase 2)
-    autoSaveHERTs?: boolean;     // Auto-save to HERT store
-  }
+  options?: ExtractionOptions
 ): Promise<{
   entities: Entity[];
   spans: Array<{ entity_id: string; start: number; end: number }>;
@@ -68,6 +95,15 @@ export async function extractFromSegments(
     console.warn(`[ORCHESTRATOR] Falling back to spaCy-only extraction`);
     resolvedConfig.enabled = false;
   }
+
+  const segmentContextWindow = resolveWindow(options?.segmentContextWindow, 'ARES_SEGMENT_CONTEXT_WINDOW', 200) ?? 200;
+  const relationContextWindow = resolveWindow(options?.relationContextWindow, 'ARES_RELATION_CONTEXT_WINDOW', segmentContextWindow) ?? segmentContextWindow;
+  const corefRelationContextWindow =
+    resolveWindow(options?.corefRelationContextWindow, 'ARES_COREF_RELATION_CONTEXT_WINDOW', relationContextWindow) ??
+    relationContextWindow ??
+    1000;
+  const globalRelationExtraction =
+    options?.globalRelationExtraction ?? ['1', 'true'].includes((process.env.ARES_GLOBAL_RELATIONS || '').toLowerCase());
   // 1. Segment the document
   const segs = segmentDocument(docId, fullText);
 
@@ -86,9 +122,9 @@ export async function extractFromSegments(
   const entityMap = new Map<string, Entity>(); // key: type::canonical_lower -> entity
 
   for (const seg of segs) {
-    // Build context window (200 chars before/after)
-    const contextBefore = fullText.slice(Math.max(0, seg.start - 200), seg.start);
-    const contextAfter = fullText.slice(seg.end, Math.min(fullText.length, seg.end + 200));
+    // Build context window around the segment (configurable, defaults to ±200 chars)
+    const contextBefore = fullText.slice(Math.max(0, seg.start - segmentContextWindow), seg.start);
+    const contextAfter = fullText.slice(seg.end, Math.min(fullText.length, seg.end + segmentContextWindow));
     const window = contextBefore + seg.text + contextAfter;
 
     // Compute offset adjustment: where seg.text starts in the window
@@ -482,8 +518,8 @@ export async function extractFromSegments(
 
   // 6. Re-extract relations with coref-enhanced entity spans
   // This allows "He studied" to find "He" as an entity mention
-  // Use larger context window (±1000 chars) for multi-paragraph narratives
-  const contextWindowSize = 1000;  // Increased from 200 to handle Stage 3 multi-paragraph tests
+  // Use configurable larger context window for multi-paragraph narratives
+  const contextWindowSize = corefRelationContextWindow;  // Defaults to 1000 to handle Stage 3 multi-paragraph tests
   const corefRelations: Relation[] = [];
   for (const seg of segs) {
     const contextBefore = fullText.slice(Math.max(0, seg.start - contextWindowSize), seg.start);
@@ -531,6 +567,21 @@ export async function extractFromSegments(
         });
       }
     }
+  }
+
+  // Optional: run a global relation extraction pass to capture long-range links
+  // Run a conservative global relation pass only for long, multi-paragraph narratives
+  // (protects Stage 1–2 while keeping Phase 3 optional and config driven)
+  const shouldRunGlobalRelations =
+    globalRelationExtraction &&
+    (segs.length >= 5 || fullText.length >= 600 || fullText.includes('\n\n'));
+
+  let globalRelations: Relation[] = [];
+  if (shouldRunGlobalRelations) {
+    console.log(`[GLOBAL] Running global relation extraction over full document span`);
+    globalRelations = await extractRelations(fullText, { entities: allEntities, spans: allSpansWithCoref }, docId);
+  } else if (globalRelationExtraction) {
+    console.log(`[GLOBAL] Skipping global relations (document too short for meaningful cross-paragraph links)`);
   }
 
   // Filter relations to suppress parent_of/child_of when married_to is present
@@ -664,8 +715,58 @@ export async function extractFromSegments(
     return true;
   });
 
-  // Combine all relation sources
-  const allRelationSources = [...combinedRelations, ...filteredNarrativeRelations];
+  // Combine all relation sources (with conservative filtering for global pass)
+  const existingRelationKeys = new Set<string>();
+  for (const rel of [...combinedRelations, ...filteredNarrativeRelations]) {
+    existingRelationKeys.add(`${rel.subj}::${rel.pred}::${rel.obj}`);
+  }
+
+  const globalMinConfidence = Math.max(parseFloat(process.env.ARES_MIN_CONFIDENCE || '0.70'), 0.8);
+  const allowedGlobalPredicates = new Set<Relation['pred']>([
+    'child_of',
+    'parent_of',
+    'married_to',
+    'friends_with',
+    'enemy_of',
+    'member_of',
+    'lives_in',
+    'studies_at',
+    'leads',
+    'teaches_at',
+    'part_of'
+  ]);
+
+  const entityById = new Map(allEntities.map(e => [e.id, e]));
+  const existingRelationConfidence = new Map<string, number>();
+  for (const rel of [...combinedRelations, ...filteredNarrativeRelations]) {
+    const key = `${rel.subj}::${rel.pred}::${rel.obj}`;
+    const prev = existingRelationConfidence.get(key) ?? 0;
+    existingRelationConfidence.set(key, Math.max(prev, rel.confidence));
+  }
+
+  const filteredGlobalRelations = globalRelations.filter(rel => {
+    if (!allowedGlobalPredicates.has(rel.pred)) return false;
+
+    const subj = entityById.get(rel.subj);
+    const obj = entityById.get(rel.obj);
+    if (!subj || !obj) return false;
+    if (!passesGuard(rel.pred, subj, obj)) return false;
+
+    if (rel.confidence < globalMinConfidence) return false;
+
+    const key = `${rel.subj}::${rel.pred}::${rel.obj}`;
+    const existingConfidence = existingRelationConfidence.get(key);
+
+    // Only allow global relations that improve on or add to existing triples
+    if (existingConfidence !== undefined && rel.confidence <= existingConfidence + 0.01) {
+      return false;
+    }
+
+    existingRelationConfidence.set(key, rel.confidence);
+    return true;
+  });
+
+  const allRelationSources = [...combinedRelations, ...filteredNarrativeRelations, ...filteredGlobalRelations];
 
   // 7.5 Auto-create inverse relations for bidirectional predicates
   // E.g., if we have parent_of(A, B), create child_of(B, A)
