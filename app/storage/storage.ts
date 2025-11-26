@@ -251,6 +251,7 @@ export async function appendDoc(
   let newRelations: Relation[];
   let fictionEntities: FictionEntity[] = [];
   let updatedProfiles: Map<string, EntityProfile>;
+
   try {
     // Load or create pattern library for new entity types
     const patternLibrary = await loadFantasyEntityPatterns();
@@ -262,18 +263,35 @@ export async function appendDoc(
     };
 
     const extractionOptions: ExtractionOptions = {};
+
     const segmentWindow = parseOptionalInt(process.env.ARES_SEGMENT_CONTEXT_WINDOW);
     const relationWindow = parseOptionalInt(process.env.ARES_RELATION_CONTEXT_WINDOW);
     const corefRelationWindow = parseOptionalInt(process.env.ARES_COREF_RELATION_CONTEXT_WINDOW);
 
     if (segmentWindow !== undefined) extractionOptions.segmentContextWindow = segmentWindow;
     if (relationWindow !== undefined) extractionOptions.relationContextWindow = relationWindow;
-    if (corefRelationWindow !== undefined) extractionOptions.corefRelationContextWindow = corefRelationWindow;
+    if (corefRelationWindow !== undefined) {
+      extractionOptions.corefRelationContextWindow = corefRelationWindow;
+    }
+
     if (['1', 'true'].includes((process.env.ARES_GLOBAL_RELATIONS || '').toLowerCase())) {
       extractionOptions.globalRelationExtraction = true;
     }
 
-    ({ entities: newEntities, spans, relations: newRelations, fictionEntities, profiles: updatedProfiles } = await extractFromSegments(docId, text, graph.profiles, DEFAULT_LLM_CONFIG, patternLibrary, extractionOptions));
+    ({
+      entities: newEntities,
+      spans,
+      relations: newRelations,
+      fictionEntities,
+      profiles: updatedProfiles
+    } = await extractFromSegments(
+      docId,
+      text,
+      graph.profiles,
+      DEFAULT_LLM_CONFIG,
+      patternLibrary,
+      extractionOptions
+    ));
   } finally {
     end();
   }
@@ -288,7 +306,10 @@ export async function appendDoc(
   }));
 
   // DEBUG: Log entities before filtering
-  console.log(`[STORAGE] Received ${newEntities.length} entities from orchestrator:`, newEntities.map(e => `${e.type}::${e.canonical}`).join(', '));
+  console.log(
+    `[STORAGE] Received ${newEntities.length} entities from orchestrator:`,
+    newEntities.map(e => `${e.type}::${e.canonical}`).join(', ')
+  );
 
   const normalizeLocal = (entity: Entity): Entity | null => {
     const normalized = normalizeCanonical(entity.type, entity.canonical);
@@ -311,10 +332,9 @@ export async function appendDoc(
       const newScore = scoreName(entity.canonical);
       if (
         newScore.informative > existingScore.informative ||
-        (newScore.informative === existingScore.informative && (
-          newScore.total > existingScore.total ||
-          (newScore.total === existingScore.total && newScore.length > existingScore.length)
-        ))
+        (newScore.informative === existingScore.informative &&
+          (newScore.total > existingScore.total ||
+            (newScore.total === existingScore.total && newScore.length > existingScore.length)))
       ) {
         localMap.set(key, entity);
       }
@@ -325,30 +345,37 @@ export async function appendDoc(
 
   // DEBUG: Log entities after local dedup with confidence
   console.log(`[STORAGE] After local dedup: ${localEntities.length} entities:`);
-  localEntities.forEach(e => console.log(`  - ${e.type}::${e.canonical} (confidence: ${e.confidence?.toFixed(3) || 'N/A'})`));
+  localEntities.forEach(e =>
+    console.log(`  - ${e.type}::${e.canonical} (confidence: ${e.confidence?.toFixed(3) || 'N/A'})`)
+  );
 
   // Merge new entities with existing globals
   // To preserve determinism, we need to merge in a stable order
-  const allLocalEntities = [
-    ...extractLocalEntitiesFromGraph(graph),
-    ...localEntities
-  ];
+  const allLocalEntities = [...extractLocalEntitiesFromGraph(graph), ...localEntities];
 
   const mergeResult = mergeEntitiesAcrossDocs(allLocalEntities);
   const { globals, idMap, stats } = mergeResult;
 
   // DEBUG: Log what happened during merge
-  console.log(`[STORAGE] Merge result: ${allLocalEntities.length} entities → ${globals.length} globals`);
+  console.log(
+    `[STORAGE] Merge result: ${allLocalEntities.length} entities → ${globals.length} globals`
+  );
   console.log(`[STORAGE] Globals after merge:`);
-  globals.forEach(g => console.log(`  - ${g.type}::${g.canonical} (confidence: ${g.confidence?.toFixed(3) || 'N/A'})`));
+  globals.forEach(g =>
+    console.log(`  - ${g.type}::${g.canonical} (confidence: ${g.confidence?.toFixed(3) || 'N/A'})`)
+  );
 
   // Log merge statistics for debugging
   if (process.env.DEBUG_MERGE === '1') {
     console.log('[merge] stats:', stats);
-    console.log(`[merge] merged ${stats.total_entities} entities into ${stats.merged_clusters} clusters`);
+    console.log(
+      `[merge] merged ${stats.total_entities} entities into ${stats.merged_clusters} clusters`
+    );
     console.log(`[merge] avg confidence: ${stats.avg_confidence.toFixed(3)}`);
     if (stats.low_confidence_count > 0) {
-      console.log(`[merge] warning: ${stats.low_confidence_count} low-confidence merges (< 0.7)`);
+      console.log(
+        `[merge] warning: ${stats.low_confidence_count} low-confidence merges (< 0.7)`
+      );
     }
   }
 
@@ -401,8 +428,7 @@ export async function appendDoc(
   const allRelations = [...graph.relations, ...globalRelations];
 
   const hasResolvedEntities = (rel: Relation) =>
-    globals.some(e => e.id === rel.subj) &&
-    globals.some(e => e.id === rel.obj);
+    globals.some(e => e.id === rel.subj) && globals.some(e => e.id === rel.obj);
 
   const filteredRelations = allRelations.filter(hasResolvedEntities);
 
@@ -413,7 +439,13 @@ export async function appendDoc(
   const mergeCount = localEntities.length - (globals.length - graph.entities.length);
 
   // DEBUG: Log globals before storing
-  console.log(`[STORAGE] Final globals for ${docId}: ${globals.length} entities:`, globals.slice(0, 5).map(e => `${e.type}::${e.canonical}`).join(', '));
+  console.log(
+    `[STORAGE] Final globals for ${docId}: ${globals.length} entities:`,
+    globals
+      .slice(0, 5)
+      .map(e => `${e.type}::${e.canonical}`)
+      .join(', ')
+  );
 
   // Update graph
   graph.entities = globals;
@@ -468,10 +500,9 @@ function extractLocalEntitiesFromGraph(graph: KnowledgeGraph): Entity[] {
         const newScore = scoreName(candidate.canonical);
         if (
           newScore.informative > existingScore.informative ||
-          (newScore.informative === existingScore.informative && (
-            newScore.total > existingScore.total ||
-            (newScore.total === existingScore.total && newScore.length < existingScore.length)
-          ))
+          (newScore.informative === existingScore.informative &&
+            (newScore.total > existingScore.total ||
+              (newScore.total === existingScore.total && newScore.length < existingScore.length)))
         ) {
           byKey.set(key, candidate);
         }
@@ -557,62 +588,244 @@ async function loadFantasyEntityPatterns(): Promise<PatternLibrary> {
   // These patterns are designed to match the seed data from our narrative
 
   const patterns: Record<string, Pattern[]> = {
-    'RACE': [
-      { type: 'RACE', template: '[RACE] are/were...', regex: /\b(Elves?|Dwarves?|Orcs?|Humans?|Drow|Halflings?)\s+(?:are|were|live|lived|possess|ruled)/gi, confidence: 0.78, examples: ['Elves', 'Dwarves', 'Orcs'], extractionCount: 0 },
-      { type: 'RACE', template: '[RACE] adjective + noun', regex: /\b(Elven|Dwarven|Orcish|Human)\s+(?:warrior|king|culture|society|civilization)/gi, confidence: 0.80, examples: ['Elven warrior', 'Dwarven king'], extractionCount: 0 },
-      { type: 'RACE', template: '[RACE] -kind suffix', regex: /\b(Elf|Dwarf|Orc|Elf|Drow)kind\b/gi, confidence: 0.85, examples: ['Elfkind', 'Humankind'], extractionCount: 0 },
+    RACE: [
+      {
+        type: 'RACE',
+        template: '[RACE] are/were...',
+        regex: /\b(Elves?|Dwarves?|Orcs?|Humans?|Drow|Halflings?)\s+(?:are|were|live|lived|possess|ruled)/gi,
+        confidence: 0.78,
+        examples: ['Elves', 'Dwarves', 'Orcs'],
+        extractionCount: 0
+      },
+      {
+        type: 'RACE',
+        template: '[RACE] adjective + noun',
+        regex: /\b(Elven|Dwarven|Orcish|Human)\s+(?:warrior|king|culture|society|civilization)/gi,
+        confidence: 0.80,
+        examples: ['Elven warrior', 'Dwarven king'],
+        extractionCount: 0
+      },
+      {
+        type: 'RACE',
+        template: '[RACE] -kind suffix',
+        regex: /\b(Elf|Dwarf|Orc|Elf|Drow)kind\b/gi,
+        confidence: 0.85,
+        examples: ['Elfkind', 'Humankind'],
+        extractionCount: 0
+      }
     ],
-    'CREATURE': [
-      { type: 'CREATURE', template: 'dragon/creature [Name]', regex: /\b(?:dragon|creature|beast|beast)\s+(?:named\s+)?([A-Z][a-z]+)/gi, confidence: 0.80, examples: ['dragon Smaug', 'creature Basilisk'], extractionCount: 0 },
-      { type: 'CREATURE', template: '[Name]\'s hoard/lair', regex: /([A-Z][a-z]+)\'s\s+(?:hoard|lair|nest|den)/gi, confidence: 0.82, examples: ['Smaug\'s hoard'], extractionCount: 0 },
-      { type: 'CREATURE', template: 'famous creatures list', regex: /\b(Smaug|Phoenix|Basilisk|Dragon|Fawkes|Centaur)\b/gi, confidence: 0.88, examples: ['Smaug', 'Phoenix', 'Basilisk'], extractionCount: 0 },
+    CREATURE: [
+      {
+        type: 'CREATURE',
+        template: 'dragon/creature [Name]',
+        regex: /\b(?:dragon|creature|beast|beast)\s+(?:named\s+)?([A-Z][a-z]+)/gi,
+        confidence: 0.80,
+        examples: ['dragon Smaug', 'creature Basilisk'],
+        extractionCount: 0
+      },
+      {
+        type: 'CREATURE',
+        template: "[Name]'s hoard/lair",
+        regex: /([A-Z][a-z]+)'s\s+(?:hoard|lair|nest|den)/gi,
+        confidence: 0.82,
+        examples: ["Smaug's hoard"],
+        extractionCount: 0
+      },
+      {
+        type: 'CREATURE',
+        template: 'famous creatures list',
+        regex: /\b(Smaug|Phoenix|Basilisk|Dragon|Fawkes|Centaur)\b/gi,
+        confidence: 0.88,
+        examples: ['Smaug', 'Phoenix', 'Basilisk'],
+        extractionCount: 0
+      }
     ],
-    'ARTIFACT': [
-      { type: 'ARTIFACT', template: 'the [ARTIFACT]', regex: /\bthe\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(?:Ring|Sword|Wand|Crown|Amulet|Stone|Gem)/gi, confidence: 0.82, examples: ['the One Ring', 'the Philosopher\'s Stone'], extractionCount: 0 },
-      { type: 'ARTIFACT', template: '[Person]\'s [ARTIFACT]', regex: /([A-Z][a-z]+)\'s\s+(?:ring|wand|sword|staff|artifact|object)/gi, confidence: 0.81, examples: ['Harry\'s wand', 'Frodo\'s ring'], extractionCount: 0 },
-      { type: 'ARTIFACT', template: 'famous artifacts', regex: /\b(Excalibur|One Ring|Philosopher\'s Stone|Holy Grail|Trident|Mjolnir)\b/gi, confidence: 0.87, examples: ['Excalibur', 'One Ring'], extractionCount: 0 },
+    ARTIFACT: [
+      {
+        type: 'ARTIFACT',
+        template: 'the [ARTIFACT]',
+        regex: /\bthe\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(?:Ring|Sword|Wand|Crown|Amulet|Stone|Gem)/gi,
+        confidence: 0.82,
+        examples: ["the One Ring", "the Philosopher's Stone"],
+        extractionCount: 0
+      },
+      {
+        type: 'ARTIFACT',
+        template: "[Person]'s [ARTIFACT]",
+        regex: /([A-Z][a-z]+)'s\s+(?:ring|wand|sword|staff|artifact|object)/gi,
+        confidence: 0.81,
+        examples: ["Harry's wand", "Frodo's ring"],
+        extractionCount: 0
+      },
+      {
+        type: 'ARTIFACT',
+        template: 'famous artifacts',
+        regex: /\b(Excalibur|One Ring|Philosopher's Stone|Holy Grail|Trident|Mjolnir)\b/gi,
+        confidence: 0.87,
+        examples: ['Excalibur', 'One Ring'],
+        extractionCount: 0
+      }
     ],
-    'SPELL': [
-      { type: 'SPELL', template: 'cast [SPELL]', regex: /\b(?:cast|casts|casting)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b/gi, confidence: 0.83, examples: ['cast Fireball', 'casts Expelliarmus'], extractionCount: 0 },
-      { type: 'SPELL', template: '[SPELL] spell/charm', regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(?:spell|charm|curse|hex|enchantment|incantation)\b/gi, confidence: 0.85, examples: ['Healing spell', 'Protection charm'], extractionCount: 0 },
-      { type: 'SPELL', template: 'famous spells', regex: /\b(Fireball|Expelliarmus|Patronus|Shield Charm|Healing Charm|Levitation|Accio|Confundus|Stupefy|Lightning Bolt)\b/gi, confidence: 0.88, examples: ['Fireball', 'Patronus', 'Expelliarmus'], extractionCount: 0 },
+    SPELL: [
+      {
+        type: 'SPELL',
+        template: 'cast [SPELL]',
+        regex: /\b(?:cast|casts|casting)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b/gi,
+        confidence: 0.83,
+        examples: ['cast Fireball', 'casts Expelliarmus'],
+        extractionCount: 0
+      },
+      {
+        type: 'SPELL',
+        template: '[SPELL] spell/charm',
+        regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(?:spell|charm|curse|hex|enchantment|incantation)\b/gi,
+        confidence: 0.85,
+        examples: ['Healing spell', 'Protection charm'],
+        extractionCount: 0
+      },
+      {
+        type: 'SPELL',
+        template: 'famous spells',
+        regex: /\b(Fireball|Expelliarmus|Patronus|Shield Charm|Healing Charm|Levitation|Accio|Confundus|Stupefy|Lightning Bolt)\b/gi,
+        confidence: 0.88,
+        examples: ['Fireball', 'Patronus', 'Expelliarmus'],
+        extractionCount: 0
+      }
     ],
-    'ABILITY': [
-      { type: 'ABILITY', template: 'ability to [VERB]', regex: /\bability\s+to\s+([a-z]+(?:\s+[a-z]+)?)\b/gi, confidence: 0.80, examples: ['ability to speak', 'ability to fly'], extractionCount: 0 },
-      { type: 'ABILITY', template: 'can/could [VERB]', regex: /\b(?:can|could|may)\s+([a-z]+(?:\s+[a-z]+)?)\b/gi, confidence: 0.75, examples: ['can speak', 'could fly'], extractionCount: 0 },
-      { type: 'ABILITY', template: 'power of [ABILITY]', regex: /\bpower\s+of\s+([a-z]+(?:\s+[a-z]+)?)\b/gi, confidence: 0.78, examples: ['power of telepathy', 'power of flight'], extractionCount: 0 },
+    ABILITY: [
+      {
+        type: 'ABILITY',
+        template: 'ability to [VERB]',
+        regex: /\bability\s+to\s+([a-z]+(?:\s+[a-z]+)?)\b/gi,
+        confidence: 0.80,
+        examples: ['ability to speak', 'ability to fly'],
+        extractionCount: 0
+      },
+      {
+        type: 'ABILITY',
+        template: 'can/could [VERB]',
+        regex: /\b(?:can|could|may)\s+([a-z]+(?:\s+[a-z]+)?)\b/gi,
+        confidence: 0.75,
+        examples: ['can speak', 'could fly'],
+        extractionCount: 0
+      },
+      {
+        type: 'ABILITY',
+        template: 'power of [ABILITY]',
+        regex: /\bpower\s+of\s+([a-z]+(?:\s+[a-z]+)?)\b/gi,
+        confidence: 0.78,
+        examples: ['power of telepathy', 'power of flight'],
+        extractionCount: 0
+      }
     ],
-    'TECHNOLOGY': [
-      { type: 'TECHNOLOGY', template: 'technology [TYPE]', regex: /\b(?:technology|advanced technology|device|machine|engine)\s+(?:called\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/gi, confidence: 0.72, examples: ['advanced technology', 'powered ship'], extractionCount: 0 },
+    TECHNOLOGY: [
+      {
+        type: 'TECHNOLOGY',
+        template: 'technology [TYPE]',
+        regex: /\b(?:technology|advanced technology|device|machine|engine)\s+(?:called\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/gi,
+        confidence: 0.72,
+        examples: ['advanced technology', 'powered ship'],
+        extractionCount: 0
+      }
     ],
-    'MAGIC': [
-      { type: 'MAGIC', template: '[TYPE] magic', regex: /\b([A-Z][a-z]+)\s+magic\b/gi, confidence: 0.75, examples: ['Dark magic', 'Elemental magic'], extractionCount: 0 },
+    MAGIC: [
+      {
+        type: 'MAGIC',
+        template: '[TYPE] magic',
+        regex: /\b([A-Z][a-z]+)\s+magic\b/gi,
+        confidence: 0.75,
+        examples: ['Dark magic', 'Elemental magic'],
+        extractionCount: 0
+      }
     ],
-    'LANGUAGE': [
-      { type: 'LANGUAGE', template: '[Language] language', regex: /\b([A-Z][a-z]+)\s+(?:language|tongue|speech)\b/gi, confidence: 0.78, examples: ['Elvish language', 'Dwarven tongue'], extractionCount: 0 },
+    LANGUAGE: [
+      {
+        type: 'LANGUAGE',
+        template: '[Language] language',
+        regex: /\b([A-Z][a-z]+)\s+(?:language|tongue|speech)\b/gi,
+        confidence: 0.78,
+        examples: ['Elvish language', 'Dwarven tongue'],
+        extractionCount: 0
+      }
     ],
-    'CURRENCY': [
-      { type: 'CURRENCY', template: '[Currency] coins/gold', regex: /\b([A-Z][a-z]+)\s+(?:coin|coins|gold|credits?)\b/gi, confidence: 0.75, examples: ['Galleon coins', 'Mithril gold'], extractionCount: 0 },
+    CURRENCY: [
+      {
+        type: 'CURRENCY',
+        template: '[Currency] coins/gold',
+        regex: /\b([A-Z][a-z]+)\s+(?:coin|coins|gold|credits?)\b/gi,
+        confidence: 0.75,
+        examples: ['Galleon coins', 'Mithril gold'],
+        extractionCount: 0
+      }
     ],
-    'MATERIAL': [
-      { type: 'MATERIAL', template: 'made of [MATERIAL]', regex: /\bmade\s+of\s+([A-Z][a-z]+)\b/gi, confidence: 0.80, examples: ['made of Mithril', 'made of Adamantite'], extractionCount: 0 },
-      { type: 'MATERIAL', template: '[MATERIAL] ore/metal', regex: /\b([A-Z][a-z]+)\s+(?:ore|metal|material|alloy)\b/gi, confidence: 0.77, examples: ['Mithril ore', 'Adamantite metal'], extractionCount: 0 },
+    MATERIAL: [
+      {
+        type: 'MATERIAL',
+        template: 'made of [MATERIAL]',
+        regex: /\bmade\s+of\s+([A-Z][a-z]+)\b/gi,
+        confidence: 0.80,
+        examples: ['made of Mithril', 'made of Adamantite'],
+        extractionCount: 0
+      },
+      {
+        type: 'MATERIAL',
+        template: '[MATERIAL] ore/metal',
+        regex: /\b([A-Z][a-z]+)\s+(?:ore|metal|material|alloy)\b/gi,
+        confidence: 0.77,
+        examples: ['Mithril ore', 'Adamantite metal'],
+        extractionCount: 0
+      }
     ],
-    'DRUG': [
-      { type: 'DRUG', template: '[Drug] potion', regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(?:potion|elixir|concoction|brew)\b/gi, confidence: 0.80, examples: ['Felix Felicis potion', 'Love potion'], extractionCount: 0 },
+    DRUG: [
+      {
+        type: 'DRUG',
+        template: '[Drug] potion',
+        regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(?:potion|elixir|concoction|brew)\b/gi,
+        confidence: 0.80,
+        examples: ['Felix Felicis potion', 'Love potion'],
+        extractionCount: 0
+      }
     ],
-    'DEITY': [
-      { type: 'DEITY', template: '[Deity] the god/goddess', regex: /\b([A-Z][a-z]+)\s+(?:the\s+)?(?:god|goddess|deity|divine)\b/gi, confidence: 0.82, examples: ['Zeus the god', 'Hecate goddess'], extractionCount: 0 },
+    DEITY: [
+      {
+        type: 'DEITY',
+        template: '[Deity] the god/goddess',
+        regex: /\b([A-Z][a-z]+)\s+(?:the\s+)?(?:god|goddess|deity|divine)\b/gi,
+        confidence: 0.82,
+        examples: ['Zeus the god', 'Hecate goddess'],
+        extractionCount: 0
+      }
     ],
-    'SKILL': [
-      { type: 'SKILL', template: 'skill in [SKILL]', regex: /\bskill(?:ed)?\s+(?:in|at|with)\s+([a-z]+(?:\s+[a-z]+)?)\b/gi, confidence: 0.81, examples: ['skill in swordsmanship', 'skilled in archery'], extractionCount: 0 },
+    SKILL: [
+      {
+        type: 'SKILL',
+        template: 'skill in [SKILL]',
+        regex: /\bskill(?:ed)?\s+(?:in|at|with)\s+([a-z]+(?:\s+[a-z]+)?)\b/gi,
+        confidence: 0.81,
+        examples: ['skill in swordsmanship', 'skilled in archery'],
+        extractionCount: 0
+      }
     ],
-    'POWER': [
-      { type: 'POWER', template: 'power of [POWER]', regex: /\bpower\s+of\s+([a-z]+(?:\s+[a-z]+)?)\b/gi, confidence: 0.78, examples: ['power of telepathy', 'power of immortality'], extractionCount: 0 },
+    POWER: [
+      {
+        type: 'POWER',
+        template: 'power of [POWER]',
+        regex: /\bpower\s+of\s+([a-z]+(?:\s+[a-z]+)?)\b/gi,
+        confidence: 0.78,
+        examples: ['power of telepathy', 'power of immortality'],
+        extractionCount: 0
+      }
     ],
-    'TECHNIQUE': [
-      { type: 'TECHNIQUE', template: '[Person] used [TECHNIQUE]', regex: /\b([A-Z][a-z]+)\s+(?:used|performed|executed)\s+(?:the\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b/gi, confidence: 0.79, examples: ['Aragorn used Fireball', 'Legolas performed Arrow Storm'], extractionCount: 0 },
-    ],
+    TECHNIQUE: [
+      {
+        type: 'TECHNIQUE',
+        template: '[Person] used [TECHNIQUE]',
+        regex: /\b([A-Z][a-z]+)\s+(?:used|performed|executed)\s+(?:the\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b/gi,
+        confidence: 0.79,
+        examples: ['Aragorn used Fireball', 'Legolas performed Arrow Storm'],
+        extractionCount: 0
+      }
+    ]
   };
 
   // Add patterns to library
@@ -620,6 +833,8 @@ async function loadFantasyEntityPatterns(): Promise<PatternLibrary> {
     addPatterns(library, entityType, typePatterns, []);
   }
 
-  console.log(`[STORAGE] Loaded fantasy entity pattern library with ${library.metadata.total_patterns} patterns across ${library.metadata.total_types} types`);
+  console.log(
+    `[STORAGE] Loaded fantasy entity pattern library with ${library.metadata.total_patterns} patterns across ${library.metadata.total_types} types`
+  );
   return library;
 }
