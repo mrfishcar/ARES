@@ -27,10 +27,11 @@ install:
 	@echo "Installing Node dependencies..."
 	npm install
 	@echo "Setting up Python venv..."
-	python3 -m venv .venv
-	@echo "Installing Python dependencies..."
-	. .venv/bin/activate && pip install fastapi uvicorn spacy
-	. .venv/bin/activate && python -m spacy download en_core_web_sm
+	python3 -m venv .venv --system-site-packages
+	@echo "Checking Python dependencies..."
+	. .venv/bin/activate && python -c "import importlib.util, sys; required=('fastapi','uvicorn','spacy'); missing=[p for p in required if importlib.util.find_spec(p) is None]; sys.exit(1 if missing else 0)"
+	@echo "Ensuring spaCy model is available..."
+	. .venv/bin/activate && python -c "import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('en_core_web_sm') else 1)" || (. .venv/bin/activate && python -m spacy download en_core_web_sm)
 	@echo "Done! Run 'make parser' and 'make dev' to start services."
 
 parser:
