@@ -154,6 +154,22 @@ function isSubstringMatch(name1: string, name2: string): boolean {
 
   if (n1 === n2) return true;
   if (!n1.length || !n2.length) return false;
+
+  // STAGE 3 FIX: Detect coordination lists (e.g., "Gryffindor Slytherin Hufflepuff")
+  // If one entity has 3+ capitalized words and the other has fewer, don't merge
+  // This prevents distinct entities from being merged into list-style entities
+  const countCapitalizedWords = (str: string) => {
+    return str.split(/\s+/).filter(word => /^[A-Z]/.test(word)).length;
+  };
+
+  const cap1 = countCapitalizedWords(name1);
+  const cap2 = countCapitalizedWords(name2);
+
+  // If one has 3+ capitalized words and the other has 1-2, likely a coordination list
+  if ((cap1 >= 3 && cap2 <= 2) || (cap2 >= 3 && cap1 <= 2)) {
+    return false;
+  }
+
   return (
     n1.startsWith(n2 + ' ') ||
     n1.endsWith(' ' + n2) ||
