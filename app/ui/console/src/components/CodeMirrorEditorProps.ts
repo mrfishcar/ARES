@@ -18,4 +18,5 @@ export interface CodeMirrorEditorProps {
   onTagEntity?: (entity: EntitySpan, targetEntity: EntitySpan) => Promise<void>;
   onCreateNew?: (entity: EntitySpan, type: EntityType) => Promise<void>;
   onReject?: (entity: EntitySpan) => Promise<void>;
+  focusMode?: boolean;
 }

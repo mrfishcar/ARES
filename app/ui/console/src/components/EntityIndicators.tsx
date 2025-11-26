@@ -91,6 +91,8 @@ export function EntityIndicators({ entities, text, editorHeight }: EntityIndicat
         const randomDelay = Math.random() * 2;
         // Random duration (2.5 to 3.5 seconds) for varying rhythm
         const randomDuration = 2.5 + Math.random() * 1;
+        const glistenDelay = 4 + Math.random() * 8;
+        const glistenDuration = 2 + Math.random() * 2;
 
         return (
           <div
@@ -106,9 +108,10 @@ export function EntityIndicators({ entities, text, editorHeight }: EntityIndicat
               background: indicator.color,
               boxShadow: `0 0 8px ${indicator.color}99, 0 0 16px ${indicator.color}66`,
               '--animation-delay': `${randomDelay}s`,
-              '--animation-duration': `${randomDuration}s`
+              '--animation-duration': `${randomDuration}s`,
+              '--glisten-delay': `${glistenDelay}s`,
+              '--glisten-duration': `${glistenDuration}s`
             } as React.CSSProperties}
-            title={`Entity on line ${indicator.line + 1}`}
           />
         );
       })}

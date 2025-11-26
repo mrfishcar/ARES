@@ -75,7 +75,7 @@ function lightenColor(hex: string, amount: number): string {
 
   // Increase lightness and saturation for glow effect
   l = Math.min(1, l + amount / 100);
-  s = Math.min(1, s + 0.2); // Increase saturation by 20%
+  s = Math.min(1, s + 0.08); // Gentle saturation lift to keep tones organic
 
   // Convert HSL back to RGB
   const hue2rgb = (p: number, q: number, t: number): number => {
@@ -216,41 +216,39 @@ function buildEntityDecorations(state: EditorState, entities: EntitySpan[], isDi
 
       if (isDarkMode) {
         // Dark mode: Use text-shadow glow effect with opacity control
-        const glowColor = lightenColor(color, 15);
-        const glowColorAlpha = hexToRgba(glowColor, 0.7 * opacityMultiplier);
-        const glowColorAlpha2 = hexToRgba(glowColor, 0.5 * opacityMultiplier);
-        const glowColorAlpha3 = hexToRgba(glowColor, 0.3 * opacityMultiplier);
+        const glowColor = lightenColor(color, 10);
+        const glowColorAlpha = hexToRgba(glowColor, 0.52 * opacityMultiplier);
+        const glowColorAlpha2 = hexToRgba(glowColor, 0.38 * opacityMultiplier);
+        const glowColorAlpha3 = hexToRgba(glowColor, 0.22 * opacityMultiplier);
         style = `
           text-shadow:
-            0 0 4px ${glowColorAlpha},
-            0 0 8px ${glowColorAlpha2},
-            0 0 12px ${glowColorAlpha2},
-            0 0 16px ${glowColorAlpha3};
+            0 0 10px ${glowColorAlpha},
+            0 0 18px ${glowColorAlpha2},
+            0 0 26px ${glowColorAlpha3};
+          filter: drop-shadow(0 4px 18px ${glowColorAlpha2});
           font-weight: 500;
           cursor: pointer;
+          animation: entityBreathe 2.4s ease-in-out infinite;
         `;
       } else {
         // Light mode: Use background highlight with feathering
         // Use lighter version of the color with reduced opacity for soft appearance
-        const highlightColor = lightenColor(color, 10);
-        const softColor = hexToRgba(highlightColor, 0.55 * opacityMultiplier);
-        const featherColor1 = hexToRgba(highlightColor, 0.35 * opacityMultiplier);
-        const featherColor2 = hexToRgba(highlightColor, 0.20 * opacityMultiplier);
-        const featherColor3 = hexToRgba(highlightColor, 0.10 * opacityMultiplier);
-        const featherColor4 = hexToRgba(highlightColor, 0.04 * opacityMultiplier);
+        const highlightColor = lightenColor(color, 6);
+        const softColor = hexToRgba(highlightColor, 0.42 * opacityMultiplier);
+        const featherColor1 = hexToRgba(highlightColor, 0.28 * opacityMultiplier);
+        const featherColor2 = hexToRgba(highlightColor, 0.18 * opacityMultiplier);
+        const featherColor3 = hexToRgba(highlightColor, 0.08 * opacityMultiplier);
+        const featherColor4 = hexToRgba(highlightColor, 0.03 * opacityMultiplier);
         style = `
           background-color: ${softColor};
           box-shadow:
-            -20px 0 16px -8px ${featherColor4},
-            -14px 0 12px -6px ${featherColor3},
-            -8px 0 10px -4px ${featherColor2},
-            -4px 0 6px -2px ${featherColor1},
-            4px 0 6px -2px ${featherColor1},
-            8px 0 10px -4px ${featherColor2},
-            14px 0 12px -6px ${featherColor3},
-            20px 0 16px -8px ${featherColor4};
+            0 4px 16px ${featherColor3},
+            0 8px 28px ${featherColor4},
+            inset 0 -6px 12px ${featherColor2},
+            inset 0 6px 12px ${featherColor2};
           font-weight: 500;
           cursor: pointer;
+          animation: entityBreathe 2.4s ease-in-out infinite;
         `;
       }
 
@@ -828,32 +826,38 @@ const editorTheme = EditorView.theme({
     height: '100% !important',
     cursor: 'text',
     caretColor: 'var(--accent-color) !important',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif',
+    fontFamily: '"Inter", "SF Pro Text", "JetBrains Mono", monospace',
     fontSize: '15px',
-    lineHeight: '1.75',
+    lineHeight: '1.9',
     color: 'var(--text-primary)',
-    backgroundColor: 'var(--bg-primary)',
-    transition: 'background-color 0.3s ease, color 0.3s ease'
+    background: 'radial-gradient(circle at 20% 20%, rgba(90, 107, 170, 0.08), transparent 28%), radial-gradient(circle at 80% 10%, rgba(120, 140, 210, 0.06), transparent 30%), linear-gradient(135deg, #0c101f 0%, #0a0d1a 45%, #0d1124 100%)',
+    border: '1px solid rgba(255, 255, 255, 0.04)',
+    borderRadius: '14px',
+    boxShadow: '0 18px 48px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
+    transition: 'background 0.6s ease, color 0.3s ease'
   },
   '.cm-content': {
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif !important',
-    padding: '16px',
+    fontFamily: '"Inter", "SF Pro Text", "JetBrains Mono", monospace !important',
+    padding: '22px 22px 36px',
     cursor: 'text',
     caretColor: 'var(--accent-color) !important',
-    backgroundColor: 'var(--bg-primary)',
-    color: 'var(--text-primary)'
+    backgroundColor: 'transparent',
+    color: 'var(--text-primary)',
+    letterSpacing: '0.01em'
   },
   '.cm-scroller': {
     height: '100% !important',
     minHeight: '0 !important',
     scrollbarColor: 'var(--accent-color) var(--bg-tertiary) !important',
-    scrollbarWidth: 'thin !important'
+    scrollbarWidth: 'thin !important',
+    background: 'linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0))'
   },
   '.cm-line': {
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif !important',
+    fontFamily: '"Inter", "SF Pro Text", "JetBrains Mono", monospace !important',
     position: 'relative',
     color: 'var(--text-primary)',
-    caretColor: 'var(--accent-color) !important'
+    caretColor: 'var(--accent-color) !important',
+    letterSpacing: '0.01em'
   },
   '.cm-gutters': {
     backgroundColor: 'var(--bg-secondary)',
@@ -1012,7 +1016,8 @@ export function CodeMirrorEditor({
   onChangeType,
   onCreateNew,
   onReject,
-  onTagEntity
+  onTagEntity,
+  focusMode = false
 }: CodeMirrorEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
@@ -1303,19 +1308,21 @@ export function CodeMirrorEditor({
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div
+      className={`editor-shell ${focusMode ? 'focus-mode-active' : ''}`}
+      style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', minHeight }}
+    >
       <div
         ref={editorRef}
         className="cm-editor-wrapper"
         style={{
-          border: '1px solid var(--border-color)',
-          borderRadius: '0',
-          backgroundColor: 'var(--bg-primary)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: '16px',
+          background: 'radial-gradient(circle at 25% 15%, rgba(125, 150, 255, 0.06), transparent 38%), linear-gradient(155deg, rgba(16, 20, 38, 0.94), rgba(10, 12, 24, 0.98))',
           width: '100%',
           height: '100%',
-          overflow: 'auto',
-          scrollbarColor: '#E8A87C #FFEFD5',
-          scrollbarWidth: 'thin'
+          overflow: 'hidden',
+          boxShadow: '0 24px 60px rgba(5, 7, 18, 0.5), inset 0 1px 0 rgba(255,255,255,0.05)'
         } as React.CSSProperties}
       />
 

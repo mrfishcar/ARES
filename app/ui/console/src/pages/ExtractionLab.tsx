@@ -360,6 +360,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [selectedEntity, setSelectedEntity] = useState<SelectedEntityState | null>(null);
   const [showHighlighting, setShowHighlighting] = useState(true);
   const [highlightOpacity, setHighlightOpacity] = useState(1.0);
+  const [focusMode, setFocusMode] = useState(false);
   const [showAdvancedControls, setShowAdvancedControls] = useState(false);
   const [showEntityModal, setShowEntityModal] = useState(false);
   const [renderMarkdown, setRenderMarkdown] = useState(true);
@@ -657,8 +658,10 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     toast.success('Full ARES report copied! Includes entities AND relations.');
   };
 
+  const adjustedHighlightOpacity = focusMode ? Math.max(0.55, highlightOpacity * 0.85) : highlightOpacity;
+
   return (
-    <div className="extraction-lab">
+    <div className={`extraction-lab ${focusMode ? 'focus-mode' : ''}`}>
       {/* Header */}
       <div className="lab-header">
         <div className="lab-title">
@@ -667,40 +670,52 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           <span className="powered-badge">Powered by Full ARES Engine</span>
         </div>
         <div className="lab-stats">
-          {processing ? (
-            <span className="stat-badge processing">Processing...</span>
-          ) : (
-            <>
-              <span className="stat-badge">⏱️ {stats.time}ms</span>
-              <span className="stat-badge">🎯 {stats.confidence}% confidence</span>
-              <span className="stat-badge">📊 {stats.count} entities</span>
-              <span className="stat-badge">🔗 {stats.relationCount} relations</span>
-              <button
-                onClick={copyReport}
-                className="report-button"
-                disabled={entities.length === 0}
-                title="Copy extraction report to clipboard"
-              >
-                📋 Copy Report
-              </button>
-            </>
+          {!focusMode && (
+            <div className="lab-metrics">
+              {processing ? (
+                <span className="stat-badge processing">Processing...</span>
+              ) : (
+                <>
+                  <span className="stat-badge">⏱ {stats.time}ms</span>
+                  <span className="stat-badge">🎯 {stats.confidence}%</span>
+                  <span className="stat-badge">🧩 {stats.count} entities</span>
+                  <span className="stat-badge">🔗 {stats.relationCount} relations</span>
+                </>
+              )}
+            </div>
           )}
-          <button
-            onClick={() => setShowEntityModal(true)}
-            className="entities-button"
-            disabled={entities.length === 0}
-            title="View extracted entities and relations"
-          >
-            📊 {entities.length}
-          </button>
-          <button
-            onClick={handleThemeToggle}
-            className="theme-toggle"
-            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-            style={{ marginLeft: '16px' }}
-          >
-            {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
-          </button>
+          <div className="lab-actions">
+            <button
+              onClick={copyReport}
+              className="report-button"
+              disabled={entities.length === 0}
+              title="Copy extraction report to clipboard"
+            >
+              📋 Copy
+            </button>
+            <button
+              onClick={() => setShowEntityModal(true)}
+              className="entities-button"
+              disabled={entities.length === 0}
+              title="View extracted entities and relations"
+            >
+              🧾 {entities.length}
+            </button>
+            <button
+              onClick={handleThemeToggle}
+              className="theme-toggle"
+              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            >
+              {theme === 'dark' ? '☀️' : '🌙'}
+            </button>
+            <button
+              onClick={() => setFocusMode(!focusMode)}
+              className={`focus-toggle ${focusMode ? 'active' : ''}`}
+              title="Toggle focus mode"
+            >
+              🪄
+            </button>
+          </div>
         </div>
       </div>
 
@@ -787,7 +802,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                   onChange={(newText) => setText(newText)}
                   minHeight="calc(100vh - 380px)"
                   disableHighlighting={!showHighlighting}
-                  highlightOpacity={highlightOpacity}
+                  highlightOpacity={adjustedHighlightOpacity}
                   enableWYSIWYG={false}
                   renderMarkdown={renderMarkdown}
                   entities={entities}
@@ -796,6 +811,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                   onChangeType={handleChangeType}
                   onTagEntity={handleTagEntity}
                   onCreateNew={handleCreateNew}
+                  focusMode={focusMode}
                 />
               </div>
             </div>
