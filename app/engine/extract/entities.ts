@@ -597,6 +597,19 @@ function refineEntityType(type: EntityType, text: string): EntityType {
     return 'HOUSE';
   }
 
+  // School/Academy/House names should be ORG not PLACE (Stage 3 fix)
+  // Fixes: "Hogwarts" being classified as PLACE instead of ORG
+  const ORG_INDICATORS = [
+    'School', 'Academy', 'University', 'College', 'Institute',
+    'Hogwarts', 'Gryffindor', 'Slytherin', 'Ravenclaw', 'Hufflepuff',
+    'Ministry', 'Department', 'Office', 'Bureau', 'Agency', 'Council',
+    'Order of', 'Guild', 'Clan', 'Brotherhood', 'Sisterhood'
+  ];
+
+  if (type === 'PLACE' && ORG_INDICATORS.some(keyword => trimmed.includes(keyword))) {
+    return 'ORG';
+  }
+
   // Geographic markers override any other type → PLACE
   // This catches cases where spaCy misclassifies geographic features
   if (GEO_MARKERS.test(trimmed)) {
