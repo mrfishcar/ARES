@@ -2689,17 +2689,39 @@
     "family": "employment"
   },
   {
-    "hash": "9df92585ada66b00",
+    "hash": "d6dab39a9d6ccf67",
     "lemmas": [
       "attr",
+      "child",
       "daughter",
+      "nsubj",
+      "pobj",
+      "prep",
+      "son"
+    ],
+    "roles": [
+      "attr",
+      "nsubj",
+      "pobj",
+      "prep"
+    ],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-child_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "c534100a0a6a70a6",
+    "lemmas": [
+      "attr",
       "father",
       "mother",
       "nsubj",
       "parent",
       "pobj",
-      "prep",
-      "son"
+      "prep"
     ],
     "roles": [
       "attr",
@@ -9476,6 +9498,20 @@
     "family": "social"
   },
   {
+    "hash": "909ca366aee323b4",
+    "lemmas": [
+      "husband",
+      "partner",
+      "spouse",
+      "wife"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-married_to-Y",
+    "family": "kinship"
+  },
+  {
     "hash": "793bc21ad585bdbe",
     "lemmas": [
       "marry"
@@ -9497,6 +9533,80 @@
     "voice": "neutral",
     "structure": "X-married_to-Y",
     "family": "kinship"
+  },
+  {
+    "hash": "dd62fe6bccef265f",
+    "lemmas": [
+      "dead",
+      "die",
+      "husband",
+      "spouse",
+      "wife"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-married_to-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "27e2b81b1e283184",
+    "lemmas": [
+      "children",
+      "daughter",
+      "four",
+      "son",
+      "three",
+      "two"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-parent_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "afc429b589df233f",
+    "lemmas": [
+      "begat",
+      "begot",
+      "father"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-parent_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "cf0a50ca4ddca089",
+    "lemmas": [
+      "child",
+      "daughter",
+      "son"
+    ],
+    "roles": [],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-parent_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "b95513329dda657a",
+    "lemmas": [
+      "are",
+      "became",
+      "best",
+      "friend",
+      "remain"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-friends_with-Y",
+    "family": "social"
   },
   {
     "hash": "b51fa04d74bac57d",
@@ -9535,7 +9645,184 @@
     "family": "social"
   },
   {
-    "hash": "c71c85029ecf02af",
+    "hash": "cbcaa9a87265ec12",
+    "lemmas": [
+      "best",
+      "friend"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-friends_with-Y",
+    "family": "social"
+  },
+  {
+    "hash": "7f1ee04ae8fbe57f",
+    "lemmas": [
+      "became",
+      "friend",
+      "quickly",
+      "with"
+    ],
+    "roles": [],
+    "prepositions": [
+      "with"
+    ],
+    "voice": "neutral",
+    "structure": "X-friends_with-Y",
+    "family": "social"
+  },
+  {
+    "hash": "ba16727267b70d51",
+    "lemmas": [
+      "became",
+      "best",
+      "close",
+      "friend",
+      "good",
+      "with"
+    ],
+    "roles": [],
+    "prepositions": [
+      "with"
+    ],
+    "voice": "neutral",
+    "structure": "X-friends_with-Y",
+    "family": "social"
+  },
+  {
+    "hash": "b0ce9df83e69c32d",
+    "lemmas": [
+      "start",
+      "studie",
+      "study"
+    ],
+    "roles": [],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X-studies_at-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "3c194259e6bc7492",
+    "lemmas": [
+      "pupil",
+      "student"
+    ],
+    "roles": [],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X-studies_at-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "246f606200621adb",
+    "lemmas": [
+      "professor",
+      "teach",
+      "teache"
+    ],
+    "roles": [],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X-teaches_at-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "1eab5023c4b322e6",
+    "lemmas": [
+      "chancellor",
+      "dean",
+      "director",
+      "headmaster",
+      "headmistres",
+      "principal"
+    ],
+    "roles": [],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-leads-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "34e896bc2bfaf9a5",
+    "lemmas": [
+      "direct",
+      "head",
+      "lead"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-leads-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "9e14d62db7ac5be1",
+    "lemmas": [
+      "dwell",
+      "dwelt",
+      "live",
+      "resid",
+      "reside"
+    ],
+    "roles": [],
+    "prepositions": [
+      "at"
+    ],
+    "voice": "neutral",
+    "structure": "X-lives_in-Y",
+    "family": "location"
+  },
+  {
+    "hash": "8a1f26462c070971",
+    "lemmas": [
+      "dwell",
+      "dwelt",
+      "live",
+      "resid",
+      "reside",
+      "with"
+    ],
+    "roles": [],
+    "prepositions": [
+      "in",
+      "with"
+    ],
+    "voice": "neutral",
+    "structure": "X-lives_in-Y",
+    "family": "location"
+  },
+  {
+    "hash": "1780ea1c32f365f8",
+    "lemmas": [
+      "employ",
+      "for",
+      "labor",
+      "serv",
+      "serve",
+      "work"
+    ],
+    "roles": [],
+    "prepositions": [
+      "at",
+      "for",
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X-works_at-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "664345df320ff635",
     "lemmas": [
       "became",
       "enemie",
@@ -9545,8 +9832,24 @@
     ],
     "roles": [],
     "prepositions": [
-      "of"
+      "of",
+      "to"
     ],
+    "voice": "neutral",
+    "structure": "X-enemy_of-Y",
+    "family": "social"
+  },
+  {
+    "hash": "b8a95af062a2ae97",
+    "lemmas": [
+      "battl",
+      "challeng",
+      "confront",
+      "fac",
+      "fought"
+    ],
+    "roles": [],
+    "prepositions": [],
     "voice": "neutral",
     "structure": "X-enemy_of-Y",
     "family": "social"
@@ -9579,21 +9882,6 @@
     "family": "social"
   },
   {
-    "hash": "cf0a50ca4ddca089",
-    "lemmas": [
-      "child",
-      "daughter",
-      "son"
-    ],
-    "roles": [],
-    "prepositions": [
-      "of"
-    ],
-    "voice": "neutral",
-    "structure": "X-parent_of-Y",
-    "family": "kinship"
-  },
-  {
     "hash": "a54e01bbfef91e7b",
     "lemmas": [
       "child",
@@ -9607,6 +9895,35 @@
     "prepositions": [],
     "voice": "neutral",
     "structure": "X-parent_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "c4f3f6f60357a1b7",
+    "lemmas": [
+      "father",
+      "her",
+      "his",
+      "mother"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-parent_of-Y",
+    "family": "kinship"
+  },
+  {
+    "hash": "c3de6df0386ca0d3",
+    "lemmas": [
+      "children",
+      "her",
+      "his",
+      "includ",
+      "their"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-child_of-Y",
     "family": "kinship"
   },
   {
@@ -9650,6 +9967,24 @@
     "voice": "neutral",
     "structure": "X-teaches_at-Y",
     "family": "employment"
+  },
+  {
+    "hash": "6a45d45bfb630b97",
+    "lemmas": [
+      "dwell",
+      "dwelt",
+      "live",
+      "resid",
+      "reside"
+    ],
+    "roles": [],
+    "prepositions": [
+      "at",
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X-lives_in-Y",
+    "family": "location"
   },
   {
     "hash": "a199c5a881bc8463",
@@ -9725,6 +10060,334 @@
     "voice": "neutral",
     "structure": "X-rules-Y",
     "family": "power"
+  },
+  {
+    "hash": "6a14421ef5d58f65",
+    "lemmas": [
+      "bas",
+      "establish",
+      "found",
+      "locat",
+      "situat"
+    ],
+    "roles": [],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X-located_in-Y",
+    "family": "other"
+  },
+  {
+    "hash": "a84c2d46bd948e1b",
+    "lemmas": [
+      "near"
+    ],
+    "roles": [],
+    "prepositions": [
+      "near"
+    ],
+    "voice": "neutral",
+    "structure": "X-near-Y",
+    "family": "location"
+  },
+  {
+    "hash": "af9d42624ae8ea25",
+    "lemmas": [
+      "border"
+    ],
+    "roles": [],
+    "prepositions": [
+      "on"
+    ],
+    "voice": "neutral",
+    "structure": "X-borders-Y",
+    "family": "other"
+  },
+  {
+    "hash": "ba7220379dbd1364",
+    "lemmas": [
+      "within"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-within-Y",
+    "family": "location"
+  },
+  {
+    "hash": "c9efd029593107c5",
+    "lemmas": [
+      "component",
+      "division",
+      "element",
+      "have",
+      "house",
+      "member",
+      "part",
+      "section"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-part_of-Y",
+    "family": "part_whole"
+  },
+  {
+    "hash": "1e80157aac7224c8",
+    "lemmas": [
+      "part"
+    ],
+    "roles": [],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-part_of-Y",
+    "family": "part_whole"
+  },
+  {
+    "hash": "ff1e3f29ad508a27",
+    "lemmas": [
+      "consist"
+    ],
+    "roles": [],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-consists_of-Y",
+    "family": "other"
+  },
+  {
+    "hash": "2ec9012321d91926",
+    "lemmas": [
+      "contain",
+      "include"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-includes-Y",
+    "family": "other"
+  },
+  {
+    "hash": "603c9b6209eeefe6",
+    "lemmas": [
+      "compos",
+      "made"
+    ],
+    "roles": [],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-made_of-Y",
+    "family": "other"
+  },
+  {
+    "hash": "5c672193c0987fef",
+    "lemmas": [
+      "for",
+      "work"
+    ],
+    "roles": [],
+    "prepositions": [
+      "at",
+      "for"
+    ],
+    "voice": "neutral",
+    "structure": "X-works_for-Y",
+    "family": "other"
+  },
+  {
+    "hash": "42f6849323b12eda",
+    "lemmas": [
+      "for",
+      "with",
+      "work"
+    ],
+    "roles": [],
+    "prepositions": [
+      "at",
+      "for",
+      "with"
+    ],
+    "voice": "neutral",
+    "structure": "X-works_for-Y",
+    "family": "other"
+  },
+  {
+    "hash": "a0d10f91429c92ad",
+    "lemmas": [
+      "employ"
+    ],
+    "roles": [],
+    "prepositions": [
+      "by"
+    ],
+    "voice": "neutral",
+    "structure": "X-employed_by-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "d64b42e422bc0135",
+    "lemmas": [
+      "are",
+      "member",
+      "part"
+    ],
+    "roles": [],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-member_of-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "0015fe60e78ea3b7",
+    "lemmas": [
+      "member"
+    ],
+    "roles": [],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-member_of-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "28726f89800db8c9",
+    "lemmas": [
+      "into",
+      "sort"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-member_of-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "10a64352b31c38a2",
+    "lemmas": [
+      "join"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-member_of-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "d4a5bda47bf47f2a",
+    "lemmas": [
+      "also"
+    ],
+    "roles": [],
+    "prepositions": [
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X-member_of-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "bc44fa324ba7bbcd",
+    "lemmas": [
+      "ceo",
+      "director",
+      "founder",
+      "leader",
+      "manager",
+      "president"
+    ],
+    "roles": [],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-leads-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "0fc91737fb925dba",
+    "lemmas": [
+      "found"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-founded-Y",
+    "family": "creation"
+  },
+  {
+    "hash": "fd79810066ced771",
+    "lemmas": [
+      "author",
+      "penn",
+      "write"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-wrote-Y",
+    "family": "other"
+  },
+  {
+    "hash": "bb5106e401d7e407",
+    "lemmas": [
+      "compos",
+      "create",
+      "design",
+      "invent",
+      "made",
+      "produc"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-created-Y",
+    "family": "other"
+  },
+  {
+    "hash": "4012c158b88fc006",
+    "lemmas": [
+      "direct",
+      "film",
+      "shot"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-directed-Y",
+    "family": "other"
+  },
+  {
+    "hash": "ff0c5a71d42bb65b",
+    "lemmas": [
+      "author"
+    ],
+    "roles": [],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-authored-Y",
+    "family": "creation"
+  },
+  {
+    "hash": "8460d3616e5aa97a",
+    "lemmas": [
+      "paint"
+    ],
+    "roles": [],
+    "prepositions": [],
+    "voice": "neutral",
+    "structure": "X-painted-Y",
+    "family": "other"
   },
   {
     "hash": "1dc265249426aef8",

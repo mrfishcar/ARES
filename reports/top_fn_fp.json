@@ -12,18 +12,21 @@
       "Robert --[parent_of]--> Alice",
       "Marcus --[married_to]--> Elena",
       "Elena --[married_to]--> Marcus",
-      "Sofia --[child_of]--> Marcus"
+      "Edward --[child_of]--> Elizabeth"
     ]
   },
   "ownership": {
     "top_fn": [
-      "Rockefeller --[owns]--> Standard Oil Company",
       "The --[belongs_to]--> Duke of Westminster",
       "Tesla --[possesses]--> Solar",
-      "The --[property_of]--> Louvre Museum",
-      "Musk --[owns]--> Tesla and Space"
+      "The --[property_of]--> Louvre Museum"
     ],
-    "top_fp": []
+    "top_fp": [
+      "Rockefeller --[owns]--> Standard Oil Company",
+      "Standard Oil Company --[owned_by]--> Rockefeller",
+      "Musk --[owns]--> Tesla",
+      "Tesla --[owned_by]--> Musk"
+    ]
   },
   "employment": {
     "top_fn": [
@@ -34,11 +37,11 @@
       "John --[affiliated_with]--> Sales Department"
     ],
     "top_fp": [
-      "Sarah --[lives_in]--> Mountain View",
+      "Sarah --[member_of]--> Google",
       "Sarah --[works_at]--> Google",
       "Sarah --[works_for]--> Google",
-      "Smith --[teaches_at]--> Harvard University",
-      "Thomas --[member_of]--> Microsoft"
+      "Chen --[member_of]--> Stanford Hospital",
+      "Smith --[teaches_at]--> Harvard University"
     ]
   },
   "creation": {
@@ -53,18 +56,15 @@
   },
   "location": {
     "top_fn": [
-      "Paris --[located_in]--> France",
-      "The Eiffel Tower --[located_in]--> Paris",
       "The Pyramids --[located_in]--> Giza",
-      "The Louvre --[located_in]--> Paris",
-      "Tokyo --[located_in]--> Japan"
+      "Oxford --[located_in]--> London"
     ],
     "top_fp": [
-      "Paris --[lives_in]--> France",
+      "Paris --[located_in]--> France",
+      "Eiffel Tower --[located_in]--> Paris",
       "Silicon Valley --[located_in]--> California",
       "Harvard University --[located_in]--> Cambridge",
-      "Louvre --[lives_in]--> Paris",
-      "Tokyo --[lives_in]--> Japan"
+      "Louvre --[located_in]--> Paris"
     ]
   },
   "temporal": {
@@ -86,38 +86,54 @@
       "California --[part_of]--> United States"
     ],
     "top_fp": [
-      "Manhattan --[part_of]--> New York City"
+      "Manhattan --[part_of]--> New York City",
+      "Manhattan --[is]--> be part"
     ]
   },
   "identity": {
     "top_fn": [
       "Mark Twain --[is]--> Samuel Clemens",
-      "Beijing --[is]--> Peking",
       "New York --[is]--> Big Apple",
       "The U --[is]--> America",
-      "Istanbul --[is]--> Constantinople"
+      "Myanmar --[is]--> Burma"
     ],
-    "top_fp": []
+    "top_fp": [
+      "Beijing --[is]--> Peking",
+      "USA --[is]--> America",
+      "Istanbul --[is]--> Constantinople",
+      "Netherlands --[is]--> Holland",
+      "Mumbai --[is]--> Bombay"
+    ]
   },
   "event": {
     "top_fn": [
       "Churchill --[attended]--> Yalta Conference",
       "Mozart --[attended]--> Vienna Opera",
       "Armstrong --[attended]--> Apollo",
-      "Einstein --[attended]--> Solvay Conference",
-      "Shakespeare --[attended]--> Globe Theatre"
+      "Shakespeare --[attended]--> Globe Theatre",
+      "Roosevelt --[attended]--> Teheran Conference"
     ],
-    "top_fp": []
+    "top_fp": [
+      "Einstein --[attended]--> Solvay Conference",
+      "Roosevelt --[hosted]--> Teheran Conference",
+      "Armstrong --[invested_in]--> Apollo"
+    ]
   },
   "communication": {
     "top_fn": [
       "Lincoln --[wrote_to]--> Grant",
-      "Einstein --[wrote_to]--> Bohr",
       "Churchill --[wrote_to]--> Roosevelt",
-      "Jefferson --[wrote_to]--> Adams",
-      "King --[wrote_to]--> Congress"
+      "King --[wrote_to]--> Congress",
+      "Franklin --[wrote_to]--> Washington",
+      "Marx --[wrote_to]--> Engels"
     ],
-    "top_fp": []
+    "top_fp": [
+      "Einstein --[wrote_to]--> Bohr",
+      "Jefferson --[wrote_to]--> Adams",
+      "Darwin --[wrote_to]--> Wallace",
+      "Newton --[wrote_to]--> Leibniz",
+      "Einstein --[wrote_to]--> Bohr"
+    ]
   },
   "power": {
     "top_fn": [
@@ -130,28 +146,34 @@
     "top_fp": [
       "Napoleon --[rules]--> France",
       "Augustus --[rules]--> Rome",
+      "Victoria --[rules]--> British Empire",
+      "Frankish Empire --[ruled_by]--> Charlemagne",
       "Akbar --[rules]--> Mughal Empire"
     ]
   },
   "comparison": {
     "top_fn": [
-      "The Pacific Ocean --[greater_than]--> Atlantic",
-      "China --[greater_than]--> India",
-      "Jupiter --[greater_than]--> Saturn",
-      "The Nile --[greater_than]--> Amazon",
-      "Antarctica --[greater_than]--> Arctic"
+      "China --[greater_than]--> India"
     ],
-    "top_fp": []
+    "top_fp": [
+      "Pacific Ocean --[greater_than]--> Atlantic",
+      "Jupiter --[greater_than]--> Saturn",
+      "Nile --[greater_than]--> Amazon",
+      "Arctic --[greater_than]--> Arctic"
+    ]
   },
   "emotional": {
     "top_fn": [
+      "Iago --[loved]--> Othello",
+      "Jane Eyre --[loved]--> Rochester"
+    ],
+    "top_fp": [
       "Romeo --[loved]--> Juliet",
       "Brutus --[loved]--> Caesar",
       "Othello --[loved]--> Cassio",
       "Achilles --[loved]--> Patroclus",
-      "Iago --[loved]--> Othello"
-    ],
-    "top_fp": []
+      "Elizabeth --[loved]--> Darcy"
+    ]
   },
   "negation": {
     "top_fn": [],
