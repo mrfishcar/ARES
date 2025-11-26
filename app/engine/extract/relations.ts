@@ -490,7 +490,12 @@ function buildOrgSpan(token: Token, tokens: Token[]): { start: number; end: numb
 function resolveSubjectToken(verb: Token, tokens: Token[]): Token | undefined {
   const direct = tokens.find(t => t.dep === 'nsubj' && t.head === verb.i);
   if (direct) {
-    const semantic = resolveAppositiveSubject(chooseSemanticHead(direct, tokens), tokens);
+    // If the subject has an appositive child (e.g., "son" with an appositive name),
+    // keep the parent head as the subject rather than the appositive child to avoid
+    // drifting to the descriptive noun instead of the actual entity anchor.
+    const chosen = chooseSemanticHead(direct, tokens);
+    const semanticHead = chosen.dep === 'appos' && chosen.head === direct.i ? direct : chosen;
+    const semantic = resolveAppositiveSubject(semanticHead, tokens);
     const siblings = tokens
       .filter(t => t.head === verb.i && isNameToken(t))
       .sort((a, b) => a.start - b.start);
