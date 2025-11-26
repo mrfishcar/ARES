@@ -365,9 +365,21 @@ function resolveAppositiveSubject(tok: Token, tokens: Token[]): Token {
     // Handle "X, son of Y" where the parser may return the inner pobj (Y) instead of the appositive head (X/son)
     if (current.dep === 'pobj' && parent.dep === 'prep') {
       const grand = tokens.find(t => t.i === parent.head);
-      if (grand && grand.dep === 'appos' && isNameToken(grand)) {
-        current = grand;
-        continue;
+      if (grand && grand.dep === 'appos') {
+        if (isNameToken(grand)) {
+          current = grand;
+          continue;
+        }
+
+        // spaCy sometimes makes the appositive head a common noun ("son") and the
+        // actual name the head of that appositive. Walk one level higher to the
+        // proper-noun head so subjects like "Aragorn, son of Arathorn" resolve to
+        // Aragorn instead of Arathorn.
+        const greatGrand = tokens.find(t => t.i === grand.head);
+        if (greatGrand && isNameToken(greatGrand)) {
+          current = greatGrand;
+          continue;
+        }
       }
     }
 

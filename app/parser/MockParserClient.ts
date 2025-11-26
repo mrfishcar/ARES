@@ -4,6 +4,30 @@ import type { ParsedSentence, Token } from "./parse-types";
 const SENTENCE_SPLIT_REGEX = /(?<=[.!?])\s+|\n+/g;
 const WORD_REGEX = /\b[\w'’\-]+\b/g;
 
+const MONTH_NAMES = new Set([
+  "january","february","march","april","may","june","july","august","september","october","november","december"
+]);
+
+const ORG_KEYWORDS = [
+  "university","college","institute","inc","llc","ltd","corp","corporation","company","publishing",
+  "library","center","centre","press","times","news","crunch","state library","state university","fnac"
+];
+
+const PLACE_KEYWORDS = [
+  "city","valley","bay","mountain","river","lake","island","province","state","county","kingdom"
+];
+
+const PLACE_CANONICALS = new Set([
+  "massachusetts",
+  "silicon valley",
+  "paris",
+  "moscow",
+  "new york",
+  "new york city",
+  "california",
+  "london"
+]);
+
 function splitSentences(text: string): Array<{ text: string; start: number; end: number }> {
   const segments: Array<{ text: string; start: number; end: number }> = [];
   let lastIndex = 0;
@@ -28,6 +52,69 @@ function splitSentences(text: string): Array<{ text: string; start: number; end:
   }
 
   return segments;
+}
+
+function annotateNamedEntities(tokens: Token[]): void {
+  // Date detection: month names and 4-digit years
+  for (const token of tokens) {
+    const lower = token.text.toLowerCase();
+    if (MONTH_NAMES.has(lower) || /^\d{4}$/.test(token.text)) {
+      token.ent = "DATE";
+    }
+  }
+
+  const hasOrgKeyword = (phrase: string) => ORG_KEYWORDS.some(keyword => phrase.includes(keyword));
+  const hasPlaceKeyword = (phrase: string) => PLACE_KEYWORDS.some(keyword => phrase.includes(keyword));
+
+  let i = 0;
+  while (i < tokens.length) {
+    const tok = tokens[i];
+    const text = tok.text;
+
+    if (tok.ent) {
+      i += 1;
+      continue;
+    }
+
+    // All-caps acronyms → ORG (MIT, CERN, FBI, IBM)
+    if (text.length > 1 && text === text.toUpperCase() && /[A-Z]/.test(text)) {
+      tok.ent = "ORG";
+      i += 1;
+      continue;
+    }
+
+    const isCapitalized = /^[A-Z]/.test(text) || /-[A-Z]/.test(text);
+    if (!isCapitalized) {
+      i += 1;
+      continue;
+    }
+
+    let j = i + 1;
+    while (j < tokens.length) {
+      const next = tokens[j];
+      const nextCap = /^[A-Z]/.test(next.text) || /-[A-Z]/.test(next.text);
+      if (!nextCap || next.ent === "DATE") break;
+      j += 1;
+    }
+
+    const phrase = tokens.slice(i, j).map(t => t.text).join(" ");
+    const phraseLower = phrase.toLowerCase();
+
+    let label: "PERSON" | "ORG" | "GPE" = "PERSON";
+    if (PLACE_CANONICALS.has(phraseLower)) {
+      label = "GPE";
+    } else if (hasOrgKeyword(phraseLower)) {
+      label = "ORG";
+    } else if (hasPlaceKeyword(phraseLower)) {
+      label = "GPE";
+    }
+
+    for (let k = i; k < j; k++) {
+      tokens[k].ent = label;
+    }
+
+    i = j;
+  }
 }
 
 // Common action verbs that take subjects
@@ -122,6 +209,8 @@ function buildTokens(sentenceText: string, offset: number): Token[] {
   }
 
   // Second pass: establish dependency relationships
+  annotateNamedEntities(tokens);
+
   // Find the main verb (first VERB token, or first token as fallback)
   let verbIdx = tokens.findIndex(t => t.pos === "VERB");
   if (verbIdx === -1) {
