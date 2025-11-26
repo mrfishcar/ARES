@@ -830,10 +830,10 @@ const editorTheme = EditorView.theme({
     fontSize: '15px',
     lineHeight: '1.9',
     color: 'var(--text-primary)',
-    background: 'radial-gradient(circle at 20% 20%, rgba(90, 107, 170, 0.08), transparent 28%), radial-gradient(circle at 80% 10%, rgba(120, 140, 210, 0.06), transparent 30%), linear-gradient(135deg, #0c101f 0%, #0a0d1a 45%, #0d1124 100%)',
-    border: '1px solid rgba(255, 255, 255, 0.04)',
+    background: 'var(--cm-editor-surface, var(--bg-primary))',
+    border: '1px solid var(--cm-editor-border, rgba(255, 255, 255, 0.04))',
     borderRadius: '14px',
-    boxShadow: '0 18px 48px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
+    boxShadow: 'var(--cm-editor-shadow, 0 18px 48px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.04))',
     transition: 'background 0.6s ease, color 0.3s ease'
   },
   '.cm-content': {
