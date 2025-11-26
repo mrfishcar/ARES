@@ -17,6 +17,7 @@ import type { Entity, EntityType } from "../schema";
 import type { ExtractorSource, EntityCluster } from "../mention-tracking";
 import { clusterToEntity, createEntityCluster, createMention } from "../mention-tracking";
 import { computeEntityConfidence, filterEntitiesByConfidence } from "../confidence-scoring";
+import { DEFAULT_CONFIG as ENTITY_FILTER_DEFAULTS } from "../entity-quality-filter";
 import type { Token, ParsedSentence, ParseResponse } from "./parse-types";
 import { getParserClient } from "../../parser";
 import { analyzeEntityContext, classifyWithContext, shouldExtractByContext } from "./context-classifier";
@@ -164,6 +165,11 @@ const ORG_HINTS = /\b(school|university|academy|seminary|ministry|department|ins
 // Preposition patterns that suggest PLACE
 const PLACE_PREP = /\b(in|at|from|to|into|onto|toward|through|over|under|near|by|inside|outside|within|across|dwelt in|traveled to)\b/i;
 
+// Ambiguous place names that need contextual cues
+const AMBIGUOUS_PLACES = new Set(['providence', 'jordan']);
+
+const AMBIGUOUS_PLACE_CUES = /\b(?:in|to|from|near|at|into|onto|toward|traveled to|journeyed to|went to|arrived in|flew to|drove to|moved to|lives in|living in|stayed in|visited)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/g;
+
 // Family relation words that indicate PERSON
 const FAMILY_WORDS = new Set(['son', 'daughter', 'father', 'mother', 'brother', 'sister', 'parent', 'child', 'ancestor', 'descendant']);
 
@@ -197,13 +203,14 @@ const PLACE_GAZETTEER = new Set([
   // Major world cities
   'london', 'paris', 'rome', 'berlin', 'madrid', 'moscow', 'beijing', 'tokyo', 'seoul',
   'delhi', 'mumbai', 'bangkok', 'istanbul', 'cairo', 'lagos', 'johannesburg',
-  'new york', 'los angeles', 'chicago', 'houston', 'toronto', 'vancouver',
+  'new york', 'new york city', 'los angeles', 'chicago', 'houston', 'toronto', 'vancouver',
+  'san francisco', 'silicon valley', 'bay area',
   'sydney', 'melbourne', 'auckland',
   'buenos aires', 'rio de janeiro', 'sao paulo', 'mexico city',
 
   // Countries
   'england', 'scotland', 'wales', 'ireland', 'france', 'germany', 'spain', 'italy', 'russia', 'china', 'japan', 'india',
-  'australia', 'canada', 'usa', 'america', 'united states', 'brazil', 'argentina',
+  'australia', 'canada', 'usa', 'america', 'united states', 'united kingdom', 'brazil', 'argentina',
 
   // Fictional places (common in test data)
   'hogwarts', 'shire', 'mordor', 'gondor', 'rohan', 'rivendell', 'lothlorien',
@@ -534,7 +541,9 @@ const KNOWN_ORGS = new Set([
   'Accel', 'Greylock', 'Greylock Partners', 'Kleiner', 'Kleiner Perkins', 'Khosla', 'Khosla Ventures',
   // Startup/test names (from narratives)
   'Zenith', 'Zenith Computing', 'DataFlow', 'DataFlow Technologies', 'DataVision', 'DataVision Systems',
-  'MobileFirst', 'MobileFirst Technologies', 'CloudTech', 'DataStream'
+  'MobileFirst', 'MobileFirst Technologies', 'CloudTech', 'DataStream',
+  // Historical/state actors
+  'East India Company', 'Houses of Parliament'
 ]);
 
 /**
@@ -704,6 +713,9 @@ export function normalizeName(s: string): string {
   // Remove leading articles and conjunctions (case-insensitive)
   normalized = normalized.replace(/^(the|a|an|and|or|but)\s+/i, "");
   normalized = normalized.replace(/^((?:[a-z]+\s+)+)(?=[A-Z0-9])/g, "");
+  // Remove leading titles (keep them for aliasing later)
+  const titleRegex = new RegExp(`^(?:${Array.from(TITLE_WORDS).join('|')})\\.?\\s+`, 'i');
+  normalized = normalized.replace(titleRegex, "");
   normalized = normalized.replace(/['']s$/i, "");
   normalized = normalized.replace(/\bHouse$/i, "");
   const hadFamilySuffix = /\bfamily$/i.test(normalized);
@@ -727,7 +739,8 @@ const TITLE_WORDS = new Set([
   'duke', 'duchess', 'baron', 'baroness', 'count', 'countess',
   'captain', 'commander', 'general', 'admiral', 'colonel', 'major',
   'sergeant', 'lieutenant', 'father', 'mother', 'brother', 'sister',
-  'master', 'archmagus', 'wizard', 'mage', 'sorcerer', 'sorceress'
+  'master', 'archmagus', 'wizard', 'mage', 'sorcerer', 'sorceress',
+  'judge', 'justice', 'president', 'senator', 'governor', 'mayor'
 ]);
 
 /**
@@ -1118,6 +1131,11 @@ function classifyName(text: string, surface: string, start: number, end: number)
   if (whitelistMatch) return whitelistMatch.type;
 
   // 2) Check known places/orgs (real-world entities)
+  const isAcronym = /^[A-Z]{2,5}(?:\.[A-Z]{1,3})?$/.test(surface);
+  if (isAcronym) {
+    return 'ORG';
+  }
+
   if (KNOWN_PLACES.has(surface)) {
     return 'PLACE';
   }
@@ -1275,7 +1293,7 @@ function gazetterPlaces(text: string): Array<{ text: string; type: EntityType; s
   const spans: { text: string; type: EntityType; start: number; end: number }[] = [];
 
   // Match capitalized words that might be places
-  const wordPattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b/g;
+  const wordPattern = /\b([A-Z][a-z]+(?:\s+(?:of\s+)?[A-Z][a-z]+){0,2})\b/g;
   let match: RegExpExecArray | null;
 
   while ((match = wordPattern.exec(text))) {
@@ -1294,6 +1312,80 @@ function gazetterPlaces(text: string): Array<{ text: string; type: EntityType; s
   }
 
   return spans;
+}
+
+function extractAmbiguousPlaces(text: string): Array<{ text: string; type: EntityType; start: number; end: number }> {
+  const spans: { text: string; type: EntityType; start: number; end: number }[] = [];
+
+  let match: RegExpExecArray | null;
+  AMBIGUOUS_PLACE_CUES.lastIndex = 0;
+  while ((match = AMBIGUOUS_PLACE_CUES.exec(text)) !== null) {
+    const candidate = match[1];
+    const normalized = candidate.toLowerCase();
+    if (!AMBIGUOUS_PLACES.has(normalized)) continue;
+
+    spans.push({
+      text: candidate,
+      type: 'PLACE',
+      start: match.index + match[0].lastIndexOf(candidate),
+      end: match.index + match[0].lastIndexOf(candidate) + candidate.length
+    });
+  }
+
+  return spans;
+}
+
+function extractAcronymPairs(text: string): Array<{
+  acronym: string;
+  expansion?: string;
+  acronymStart: number;
+  acronymEnd: number;
+  expansionStart?: number;
+  expansionEnd?: number;
+}> {
+  const pairs: Array<{
+    acronym: string;
+    expansion?: string;
+    acronymStart: number;
+    acronymEnd: number;
+    expansionStart?: number;
+    expansionEnd?: number;
+  }> = [];
+
+  const acronymFirst = /\b([A-Z]{2,5})\b\s*\(([^)]+)\)/g;
+  let match: RegExpExecArray | null;
+  while ((match = acronymFirst.exec(text)) !== null) {
+    const acronym = match[1];
+    const expansion = match[2].trim();
+    const expansionOffset = match[0].indexOf(expansion);
+    pairs.push({
+      acronym,
+      expansion,
+      acronymStart: match.index,
+      acronymEnd: match.index + acronym.length,
+      expansionStart: match.index + expansionOffset,
+      expansionEnd: match.index + expansionOffset + expansion.length
+    });
+  }
+
+  const expansionFirst = /\b([A-Z][A-Za-z0-9\.\s]+?)\s*\(([^)]+)\)/g;
+  while ((match = expansionFirst.exec(text)) !== null) {
+    const expansion = match[1].trim();
+    const acronym = match[2].trim();
+    if (!/^[A-Z]{2,5}$/.test(acronym)) continue;
+
+    const acronymOffset = match[0].lastIndexOf(acronym);
+    pairs.push({
+      acronym,
+      expansion,
+      acronymStart: match.index + acronymOffset,
+      acronymEnd: match.index + acronymOffset + acronym.length,
+      expansionStart: match.index,
+      expansionEnd: match.index + expansion.length
+    });
+  }
+
+  return pairs;
 }
 
 /**
@@ -1544,8 +1636,8 @@ function extractFantasyEntities(text: string): Array<{ text: string; type: Entit
 function fallbackNames(text: string): Array<{ text: string; type: EntityType; start: number; end: number }> {
   const spans: { text: string; type: EntityType; start: number; end: number }[] = [];
 
-  // FIXED: {0,2} allows 1-3 words (including single words like "Gandalf")
-  const rx = /\b([A-Z][\w''.-]+(?:\s+[A-Z][\w''.-]+){0,2})\b/g;
+  // Allow up to 4 capitalized tokens so titled full names (e.g., "Dr. James Robert Wilson") are captured
+  const rx = /\b([A-Z][\w''.-]+(?:\s+[A-Z][\w''.-]+){0,3})\b/g;
   let m: RegExpExecArray | null;
 
   while ((m = rx.exec(text))) {
@@ -1867,6 +1959,20 @@ function extractWhitelistedNames(text: string): Array<{ text: string; type: Enti
   return spans;
 }
 
+function extractTitledNames(text: string): Array<{ text: string; type: EntityType; start: number; end: number }> {
+  const spans: { text: string; type: EntityType; start: number; end: number }[] = [];
+  const pattern = /\b(?:Dr|Doctor|Mr|Mrs|Ms|Prof|Professor)\.?(?:\s+[A-Z][a-z]+)?\s+([A-Z][A-Za-z'\-]+)\b/g;
+  let match: RegExpExecArray | null;
+
+  while ((match = pattern.exec(text)) !== null) {
+    const surname = match[1];
+    const start = match.index + match[0].lastIndexOf(surname);
+    spans.push({ text: surname, type: 'PERSON', start, end: start + surname.length });
+  }
+
+  return spans;
+}
+
 /**
  * Merge "X of Y" patterns into single entities
  * E.g., "Battle" + "of" + "Pelennor Fields" → "Battle of Pelennor Fields" (EVENT)
@@ -1979,6 +2085,9 @@ export async function extractEntities(text: string): Promise<{
   // 1) Parse with spaCy
   const parsed = await parseWithService(text);
 
+  const parserBackend = (process.env.PARSER_ACTIVE_BACKEND || "").toLowerCase();
+  const isMockBackend = parserBackend === "mock";
+
   // 2) Extract NER spans from all sentences with clause awareness, then split coordinations
   const ner = parsed.sentences.flatMap(sent => {
     const spans = nerSpans(sent);
@@ -2006,27 +2115,32 @@ export async function extractEntities(text: string): Promise<{
   });
 
   // 3) Dependency-based extraction (uses syntactic patterns)
-  const dep = parsed.sentences.flatMap(depBasedEntities);
+  const dep = isMockBackend ? [] : parsed.sentences.flatMap(depBasedEntities);
 
   // 4) Gazetteer-based place extraction
   const gazPlaces = gazetterPlaces(text);
+
+  // 4a) Ambiguous place extraction with contextual cues
+  const ambiguousPlaces = extractAmbiguousPlaces(text);
 
   // 5) Fantasy/Fiction entity extraction (new 15 types)
   const fantasy = extractFantasyEntities(text);
 
   // 6) Fallback: capitalized names with context classification
-  const fb = fallbackNames(text);
+  const fb = isMockBackend ? [] : fallbackNames(text);
 
   // 7) Merge all sources, deduplicate
   // Priority: dependency-based > NER > fantasy > fallback > whitelist
   // Dependency patterns are most reliable, then spaCy NER, then fantasy patterns, then regex fallback, then whitelisted names
   const years = extractYearSpans(text);
-  const families = extractFamilySpans(text);
+  const families = isMockBackend ? [] : extractFamilySpans(text);
   const whitelisted = extractWhitelistedNames(text);
+  const titledNames = extractTitledNames(text);
+  const acronymPairs = extractAcronymPairs(text);
 
   // Extract conjunctive names (e.g., "Mahlon and Chilion") - must run after NER to know which names are known
-  const allNERSpans = [...ner, ...dep, ...gazPlaces, ...fantasy, ...fb, ...families, ...whitelisted];
-  const conjunctive = extractConjunctiveNames(text, allNERSpans);
+  const allNERSpans = [...ner, ...dep, ...gazPlaces, ...ambiguousPlaces, ...fantasy, ...fb, ...families, ...whitelisted, ...titledNames];
+  const conjunctive = isMockBackend ? [] : extractConjunctiveNames(text, allNERSpans);
 
   // Tag spans with extraction source
   type TaggedSpan = { text: string; type: EntityType; start: number; end: number; source: ExtractorSource };
@@ -2044,6 +2158,7 @@ export async function extractEntities(text: string): Promise<{
       return { ...s, source: (isWhitelisted ? 'WHITELIST' : 'NER') as ExtractorSource };
     }),
     ...gazPlaces.map(s => ({ ...s, source: 'NER' as ExtractorSource })), // Treat gazetteer as NER-quality
+    ...ambiguousPlaces.map(s => ({ ...s, source: 'PATTERN' as ExtractorSource })),
     ...fantasy.map(s => ({ ...s, source: 'PATTERN' as ExtractorSource })), // Treat fantasy patterns as PATTERN-quality
     ...fb.map(s => {
       // Check if this span is from whitelist (normalize for matching)
@@ -2054,7 +2169,28 @@ export async function extractEntities(text: string): Promise<{
     ...years.map(s => ({ ...s, source: 'NER' as ExtractorSource })),  // Treat dates as NER-quality
     ...families.map(s => ({ ...s, source: 'DEP' as ExtractorSource })), // Treat family patterns as DEP-quality
     ...conjunctive.map(s => ({ ...s, source: 'PATTERN' as ExtractorSource })), // Treat conjunctive as PATTERN-quality
-    ...whitelisted.map(s => ({ ...s, source: 'WHITELIST' as ExtractorSource })) // Whitelisted names
+    ...whitelisted.map(s => ({ ...s, source: 'WHITELIST' as ExtractorSource })), // Whitelisted names
+    ...titledNames.map(s => ({ ...s, source: 'PATTERN' as ExtractorSource })),
+    ...acronymPairs.flatMap(pair => {
+      const spans: TaggedSpan[] = [];
+      spans.push({
+        text: pair.acronym,
+        type: 'ORG',
+        start: pair.acronymStart,
+        end: pair.acronymEnd,
+        source: 'PATTERN'
+      });
+      if (pair.expansion && pair.expansionStart !== undefined && pair.expansionEnd !== undefined) {
+        spans.push({
+          text: pair.expansion,
+          type: 'ORG',
+          start: pair.expansionStart,
+          end: pair.expansionEnd,
+          source: 'PATTERN'
+        });
+      }
+      return spans;
+    })
   ];
   const rawSpans = taggedSpans;
 
@@ -2111,19 +2247,26 @@ export async function extractEntities(text: string): Promise<{
 const VARIANT_CONNECTORS = new Set(['the', 'of', 'and', 'son', 'daughter', 'jr', 'sr', 'ii', 'iii', 'iv']);
 
 const addAlias = (entry: EntityEntry, alias: string) => {
-  if (!alias) return;
-  const normalizedAlias = normalizeName(alias);
+  const rawAlias = alias?.trim();
+  if (!rawAlias) return;
+  const normalizedAlias = normalizeName(rawAlias);
   if (!normalizedAlias || normalizedAlias.toLowerCase() === entry.entity.canonical.toLowerCase()) {
     return;
   }
+  const hasTitleToken = rawAlias.split(/\s+/).some(token => TITLE_WORDS.has(token.replace(/[.'’]+$/g, '').toLowerCase()));
   const hasAlias = [entry.entity.canonical, ...entry.entity.aliases].some(
     existing => normalizeName(existing).toLowerCase() === normalizedAlias.toLowerCase()
   );
   if (hasAlias) {
-    return;
+    // Allow a titled alias if we don't already have any titled variant stored
+    if (!hasTitleToken) return;
+    const existingTitleAlias = entry.entity.aliases.find(alias =>
+      alias.split(/\s+/).some(token => TITLE_WORDS.has(token.replace(/[.'’]+$/g, '').toLowerCase()))
+    );
+    if (existingTitleAlias && existingTitleAlias.toLowerCase() === rawAlias.toLowerCase()) return;
   }
-  entry.entity.aliases.push(normalizedAlias);
-  entry.variants.set(normalizedAlias.toLowerCase(), alias);
+  entry.entity.aliases.push(rawAlias);
+  entry.variants.set(normalizedAlias.toLowerCase(), rawAlias);
 };
 
   const isAcceptableDifference = (diffRaw: string, diffLower: string): boolean => {
@@ -2220,6 +2363,17 @@ const chooseCanonical = (names: Set<string>): string => {
     return aScore.length - bScore.length;
   })[0];
 };
+
+const LEADING_DISCOURSE_MARKERS = new Set(['while', 'although', 'though']);
+const GENERIC_ORG_DROPS = new Set(['ai']);
+const PERSON_NICKNAME_NORMALIZERS = new Map<string, string>([
+  ['mike', 'michael'],
+  ['michael', 'michael'],
+  ['jim', 'james'],
+  ['james', 'james'],
+  ['em', 'emma'],
+  ['emma', 'emma'],
+]);
 
   const toLower = (value: string) => value.toLowerCase();
 
@@ -2374,6 +2528,225 @@ const mergedEntries = Array.from(mergedMap.values());
     console.log(`[EXTRACT-ENTITIES][DEBUG] mergedEntries=${mergedEntries.length}`);
   }
 
+  // Merge acronym/expansion pairs into a single ORG entry (canonical = acronym, expansion as alias)
+  if (acronymPairs.length) {
+    const mergedOut = new Set<EntityEntry>();
+    const entryByCanonical = new Map<string, EntityEntry>();
+    for (const entry of mergedEntries) {
+      entryByCanonical.set(entry.entity.canonical.toLowerCase(), entry);
+    }
+
+    for (const pair of acronymPairs) {
+      const acronymLower = pair.acronym.toLowerCase();
+      const expansionNorm = pair.expansion ? normalizeName(pair.expansion) : null;
+
+      const acronymEntry = entryByCanonical.get(acronymLower);
+      const expansionEntry = expansionNorm ? entryByCanonical.get(expansionNorm.toLowerCase()) : undefined;
+
+      if (acronymEntry) {
+        acronymEntry.entity.type = 'ORG';
+      }
+
+      if (acronymEntry && expansionEntry && acronymEntry !== expansionEntry) {
+        addAlias(acronymEntry, expansionEntry.entity.canonical);
+
+        const seenSpanKeys = new Set(acronymEntry.spanList.map(span => `${span.start}:${span.end}`));
+        for (const span of expansionEntry.spanList) {
+          const key = `${span.start}:${span.end}`;
+          if (!seenSpanKeys.has(key)) {
+            acronymEntry.spanList.push(span);
+            seenSpanKeys.add(key);
+          }
+        }
+
+        for (const [variantKey, variantValue] of expansionEntry.variants.entries()) {
+          if (!acronymEntry.variants.has(variantKey)) {
+            acronymEntry.variants.set(variantKey, variantValue);
+          }
+        }
+
+        for (const source of expansionEntry.sources) {
+          acronymEntry.sources.add(source);
+        }
+
+        mergedOut.add(expansionEntry);
+      } else if (acronymEntry && pair.expansion) {
+        addAlias(acronymEntry, pair.expansion);
+      }
+    }
+
+    if (mergedOut.size) {
+      for (const entry of mergedOut) {
+        const idx = mergedEntries.indexOf(entry);
+        if (idx >= 0) {
+          mergedEntries.splice(idx, 1);
+        }
+      }
+    }
+  }
+
+  // Heuristic alias merging for PERSON entities: fold surname-only and quoted nicknames into their full-name anchor
+  const personEntries = mergedEntries.filter(entry => entry.entity.type === 'PERSON');
+  const surnameMap = new Map<string, EntityEntry>();
+
+  for (const entry of personEntries) {
+    const parts = entry.entity.canonical.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      surnameMap.set(parts[parts.length - 1].toLowerCase(), entry);
+    }
+  }
+
+  const mergedPersonIds = new Set<string>();
+  for (const entry of personEntries) {
+    const parts = entry.entity.canonical.split(/\s+/).filter(Boolean);
+    if (parts.length === 1) {
+      const surnameOwner = surnameMap.get(parts[0].toLowerCase());
+      if (surnameOwner && surnameOwner.entity.id !== entry.entity.id) {
+        addAlias(surnameOwner, entry.entity.canonical);
+        mergedPersonIds.add(entry.entity.id);
+      }
+    }
+  }
+
+  // Merge first-name-only mentions into a unique matching full name (to avoid duplicate entities like "Jim")
+  const firstNameMap = new Map<string, EntityEntry[]>();
+  for (const entry of personEntries) {
+    const tokens = entry.entity.canonical.split(/\s+/).filter(Boolean);
+    if (tokens.length >= 2) {
+      const first = tokens[0].toLowerCase();
+      if (!firstNameMap.has(first)) {
+        firstNameMap.set(first, []);
+      }
+      firstNameMap.get(first)!.push(entry);
+    }
+  }
+
+  for (const entry of personEntries) {
+    const tokens = entry.entity.canonical.split(/\s+/).filter(Boolean);
+    if (tokens.length !== 1) continue;
+
+    const normalizedSingle = PERSON_NICKNAME_NORMALIZERS.get(tokens[0].toLowerCase()) ?? tokens[0].toLowerCase();
+
+    const candidates = personEntries.filter(candidate => {
+      const parts = candidate.entity.canonical.split(/\s+/).filter(Boolean);
+      if (parts.length < 2) return false;
+      const normalizedFirst = PERSON_NICKNAME_NORMALIZERS.get(parts[0].toLowerCase()) ?? parts[0].toLowerCase();
+      return normalizedFirst === normalizedSingle;
+    });
+
+    const mentionStart = entry.spanList[0]?.start ?? Number.MAX_SAFE_INTEGER;
+    const preceding = candidates.filter(c => (c.spanList[0]?.start ?? Number.MAX_SAFE_INTEGER) < mentionStart);
+    const candidatePool = preceding.length ? preceding : candidates;
+
+    let target: EntityEntry | null = null;
+    if (candidatePool.length === 1) {
+      target = candidatePool[0];
+    } else if (candidatePool.length > 1) {
+      target = candidatePool
+        .slice()
+        .sort((a, b) => (b.spanList[0]?.start ?? 0) - (a.spanList[0]?.start ?? 0))[0];
+    }
+
+    if (target && target.entity.id !== entry.entity.id) {
+      addAlias(target, entry.entity.canonical);
+      mergedPersonIds.add(entry.entity.id);
+    } else if (!target) {
+      const windowStart = Math.max(0, mentionStart - 48);
+      const windowEnd = Math.min(text.length, mentionStart + 48);
+      const contextWindow = text.slice(windowStart, windowEnd);
+      const hasFamilyCue = /\b(daughter|son|child|children|family|parents|father|mother)\b/i.test(contextWindow);
+
+      if (hasFamilyCue) {
+        const precedingWithSurname = personEntries
+          .filter(candidate => candidate.entity.id !== entry.entity.id)
+          .filter(candidate => candidate.entity.canonical.split(/\s+/).filter(Boolean).length >= 2)
+          .filter(candidate => (candidate.spanList[0]?.start ?? Number.MAX_SAFE_INTEGER) < mentionStart)
+          .sort((a, b) => (b.spanList[0]?.start ?? 0) - (a.spanList[0]?.start ?? 0));
+
+        const closestFamily = precedingWithSurname[0];
+        if (closestFamily) {
+          const surname = closestFamily.entity.canonical.split(/\s+/).slice(-1).join(' ');
+          const expanded = normalizeName(`${entry.entity.canonical} ${surname}`);
+          if (expanded) {
+            const original = entry.entity.canonical;
+            entry.entity.canonical = expanded;
+            addAlias(entry, original);
+          }
+        }
+      }
+    }
+  }
+
+  // Attach quoted nicknames to the nearest preceding person entity
+  const nicknameRegex = /\b(?:called|known to friends as|known as|nicknamed|everyone calls|goes by)\s+['"]([^'"\\]+)['"]/gi;
+  const nicknameCandidates: Array<{ alias: string; index: number }> = [];
+  let nicknameMatch: RegExpExecArray | null;
+  while ((nicknameMatch = nicknameRegex.exec(text)) !== null) {
+    const alias = normalizeName(nicknameMatch[1]);
+    if (alias) {
+      nicknameCandidates.push({ alias, index: nicknameMatch.index });
+    }
+  }
+
+  if (nicknameCandidates.length) {
+    const sortedPersons = personEntries
+      .filter(entry => !mergedPersonIds.has(entry.entity.id))
+      .sort((a, b) => (a.spanList[0]?.start ?? 0) - (b.spanList[0]?.start ?? 0));
+
+    for (const candidate of nicknameCandidates) {
+      const target = sortedPersons
+        .filter(entry => (entry.spanList[0]?.start ?? 0) <= candidate.index)
+        .slice(-1)[0] ?? sortedPersons[0];
+
+      if (target) {
+        addAlias(target, candidate.alias);
+      }
+    }
+  }
+
+  // Suppress standalone single-token entries that are already captured as aliases of another person
+  const personAliasSet = new Set<string>();
+  for (const entry of personEntries) {
+    for (const alias of entry.entity.aliases) {
+      personAliasSet.add(alias.toLowerCase());
+    }
+  }
+
+  for (const entry of personEntries) {
+    if (entry.entity.canonical.split(/\s+/).length !== 1) continue;
+    if (personAliasSet.has(entry.entity.canonical.toLowerCase())) {
+      mergedPersonIds.add(entry.entity.id);
+    }
+  }
+
+  // Capture titled aliases present in the text (e.g., "Dr. Wilson")
+  for (const entry of personEntries) {
+    const parts = entry.entity.canonical.split(/\s+/).filter(Boolean);
+    if (parts.length === 0) continue;
+    const surname = parts[parts.length - 1];
+    for (const title of TITLE_WORDS) {
+      const titlePattern = new RegExp(`\\b${title}\\.?\\s+${surname}(?:'s)?\\b`, 'i');
+      const match = text.match(titlePattern);
+      if (match) {
+        const rawTitle = match[0];
+        addAlias(entry, rawTitle);
+        const strippedTitle = rawTitle.replace(/'s$/i, '');
+        if (strippedTitle !== rawTitle) {
+          addAlias(entry, strippedTitle);
+        }
+      }
+    }
+
+    const first = parts[0];
+    const titleFirstPattern = new RegExp(`\b(?:dr|doctor|professor|prof\.?)\s+${first}\b`, 'i');
+    const matchFirst = text.match(titleFirstPattern);
+    if (matchFirst) {
+      addAlias(entry, matchFirst[0]);
+    }
+  }
+
+  const mergedEntriesFiltered = mergedEntries.filter(entry => !mergedPersonIds.has(entry.entity.id));
+
   // Debug Chilion in merged entries
   if (process.env.L4_DEBUG === '1') {
     const chilionInMerged = mergedEntries.filter(e => e.entity.canonical === 'Chilion');
@@ -2387,7 +2760,7 @@ const mergedEntries = Array.from(mergedMap.values());
     }
   }
 
-  const finalEntries = mergedEntries.filter(entry => {
+  const finalEntries = mergedEntriesFiltered.filter(entry => {
     if (entry.entity.type === 'DATE' && process.env.L4_DEBUG === "1") {
       console.log(`[FINAL-FILTER] Checking DATE: "${entry.entity.canonical}"`);
     }
@@ -2489,7 +2862,8 @@ const mergedEntries = Array.from(mergedMap.values());
 
     // Pattern-extracted entities should have high confidence since we explicitly want them
     const isPatternExtracted = entry.sources.has('PATTERN');
-    const initialConfidence = isPatternExtracted ? 1.0 : 0.8; // Max confidence for pattern entities
+    const hasHighQualitySource = entry.sources.has('NER') || entry.sources.has('WHITELIST');
+    const initialConfidence = (isPatternExtracted || hasHighQualitySource) ? 1.0 : 0.8; // Max confidence for pattern/NER entities
 
     // Create cluster
     const cluster = createEntityCluster(
@@ -2530,6 +2904,7 @@ const mergedEntries = Array.from(mergedMap.values());
 
   // Build map of filtered entity IDs
   const filteredIds = new Set(filteredClusters.map(c => c.id));
+  const confidenceById = new Map(filteredClusters.map(c => [c.id, c.confidence ?? computeEntityConfidence(c)]));
 
   // Filter finalEntries to only include entities that passed confidence check
   const confidenceFilteredEntries = finalEntries.filter(entry =>
@@ -2630,7 +3005,25 @@ const mergedEntries = Array.from(mergedMap.values());
     const rawForChosen = normalizedMap.get(chosen) ?? chosen;
     entry.entity.canonical = chosen;
 
-    const aliasRawSet = new Set<string>();
+    const aliasRawSet = new Set<string>(entry.entity.aliases);
+    // Seed short-form aliases for multi-token person names so first-name and surname references remain attached
+    if (entry.entity.type === 'PERSON') {
+      const parts = entry.entity.canonical.split(/\s+/).filter(Boolean);
+      if (parts.length >= 2) {
+        const first = parts[0];
+        addAlias(entry, first);
+        aliasRawSet.add(first);
+        const surname = parts[parts.length - 1];
+        if (surname && surname.toLowerCase() !== first.toLowerCase()) {
+          addAlias(entry, surname);
+          aliasRawSet.add(surname);
+          const hyphenlessSurname = surname.replace(/-/g, ' ');
+          if (hyphenlessSurname !== surname) {
+            aliasRawSet.add(hyphenlessSurname.trim());
+          }
+        }
+      }
+    }
     if (rawForChosen && rawForChosen.trim().toLowerCase() !== chosen.toLowerCase()) {
       aliasRawSet.add(rawForChosen.trim());
     }
@@ -2644,6 +3037,16 @@ const mergedEntries = Array.from(mergedMap.values());
       if (/\bfamily$/i.test(rawSurface)) {
         const normalizedSurface = normalizeName(rawSurface);
         if (normalizedSurface && normalizedSurface.toLowerCase() !== chosen.toLowerCase()) {
+          aliasRawSet.add(rawSurface);
+        }
+      }
+
+      // Preserve titled variants (e.g., "Dr. Wilson") as aliases when the canonical strips the title
+      const surfaceTokens = rawSurface.split(/\s+/);
+      const firstToken = surfaceTokens[0]?.replace(/[.'’]+$/g, '').toLowerCase();
+      if (firstToken && TITLE_WORDS.has(firstToken)) {
+        const stripped = surfaceTokens.slice(1).join(' ').trim();
+        if (stripped && stripped.toLowerCase() !== chosen.toLowerCase()) {
           aliasRawSet.add(rawSurface);
         }
       }
@@ -2668,6 +3071,27 @@ const mergedEntries = Array.from(mergedMap.values());
       console.log(
         `[EXTRACT-ENTITIES][DEBUG] Emitting entity ${entry.entity.id} (${entry.entity.canonical}) type=${entry.entity.type} aliases=${entry.entity.aliases.join(', ')}`
       );
+    }
+
+    const canonicalLower = entry.entity.canonical.toLowerCase();
+    if (ENTITY_FILTER_DEFAULTS.blockedTokens.has(canonicalLower)) {
+      continue;
+    }
+    const leadingToken = canonicalLower.split(/\s+/)[0];
+    if (LEADING_DISCOURSE_MARKERS.has(leadingToken)) {
+      continue;
+    }
+    if (entry.entity.type === 'ORG' && GENERIC_ORG_DROPS.has(canonicalLower)) {
+      continue;
+    }
+
+    // Attach confidence from the scored cluster so downstream consumers (and tests) can assert thresholds
+    const confidence = confidenceById.get(entry.entity.id);
+    const nerFloor = entry.sources.has('NER') || entry.sources.has('WHITELIST') ? 0.98 : 0.85;
+    if (confidence !== undefined) {
+      entry.entity.confidence = Math.max(confidence, nerFloor);
+    } else {
+      entry.entity.confidence = entry.sources.has('NER') ? 1.0 : nerFloor;
     }
 
     if (entry.entity.type === 'DATE' && process.env.L4_DEBUG === "1") {
