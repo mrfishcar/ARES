@@ -1,14 +1,14 @@
 {
   "kinship": {
     "family": "kinship",
-    "precision": 0.10344827586206896,
+    "precision": 0.17647058823529413,
     "recall": 0.375,
-    "f1": 0.16216216216216217,
+    "f1": 0.24,
     "tp": 3,
-    "fp": 26,
+    "fp": 14,
     "fn": 5,
     "total_gold": 8,
-    "total_extracted": 29,
+    "total_extracted": 17,
     "support": 8,
     "uncovered_phrases": [
       "Prince Edward, heir of Queen Elizabeth, attended the ceremony.",
@@ -27,9 +27,9 @@
     "top_fp": [
       "Alice --[child_of]--> Robert",
       "Robert --[parent_of]--> Alice",
-      "Marcus --[parent_of]--> Elena",
-      "Elena --[child_of]--> Marcus",
-      "Marcus --[married_to]--> Elena"
+      "Marcus --[married_to]--> Elena",
+      "Elena --[married_to]--> Marcus",
+      "Sofia --[child_of]--> Marcus"
     ]
   },
   "ownership": {
@@ -61,17 +61,16 @@
   },
   "employment": {
     "family": "employment",
-    "precision": 0,
-    "recall": 0,
-    "f1": 0,
-    "tp": 0,
-    "fp": 3,
-    "fn": 8,
+    "precision": 0.125,
+    "recall": 0.125,
+    "f1": 0.125,
+    "tp": 1,
+    "fp": 7,
+    "fn": 7,
     "total_gold": 8,
-    "total_extracted": 3,
+    "total_extracted": 8,
     "support": 8,
     "uncovered_phrases": [
-      "Sarah works for Google in Mountain View.",
       "Dr. Chen is employed by Stanford Hospital.",
       "Marcus is a member of the Board of Directors.",
       "Elena serves as Chief Technology Officer.",
@@ -81,16 +80,18 @@
       "Thomas joined Microsoft in 2020."
     ],
     "top_fn": [
-      "Sarah --[works_for]--> Google",
       "Dr --[employed_by]--> Chen",
       "Marcus --[member_of]--> Board of Directors",
       "Elena --[affiliated_with]--> Chief Technology Officer",
-      "Professor Smith --[affiliated_with]--> Harvard University"
+      "Professor Smith --[affiliated_with]--> Harvard University",
+      "John --[affiliated_with]--> Sales Department"
     ],
     "top_fp": [
       "Sarah --[lives_in]--> Mountain View",
-      "Professor Smith --[teaches_at]--> Harvard University",
-      "Smith --[teaches_at]--> Harvard"
+      "Sarah --[works_at]--> Google",
+      "Sarah --[works_for]--> Google",
+      "Smith --[teaches_at]--> Harvard University",
+      "Thomas --[member_of]--> Microsoft"
     ]
   },
   "creation": {
@@ -124,21 +125,19 @@
   },
   "location": {
     "family": "location",
-    "precision": 0,
-    "recall": 0,
-    "f1": 0,
-    "tp": 0,
-    "fp": 7,
-    "fn": 10,
+    "precision": 0.18181818181818182,
+    "recall": 0.2,
+    "f1": 0.1904761904761905,
+    "tp": 2,
+    "fp": 9,
+    "fn": 8,
     "total_gold": 10,
-    "total_extracted": 7,
+    "total_extracted": 11,
     "support": 10,
     "uncovered_phrases": [
       "Paris is located in France.",
       "The Eiffel Tower stands in Paris.",
-      "Silicon Valley is situated in California.",
       "The Pyramids are located at Giza.",
-      "Harvard University is based in Cambridge.",
       "The Louvre is located in Paris.",
       "Tokyo is situated in Japan.",
       "The White House stands in Washington DC.",
@@ -148,16 +147,16 @@
     "top_fn": [
       "Paris --[located_in]--> France",
       "The Eiffel Tower --[located_in]--> Paris",
-      "Silicon Valley --[located_in]--> California",
       "The Pyramids --[located_in]--> Giza",
-      "Harvard University --[located_in]--> Cambridge"
+      "The Louvre --[located_in]--> Paris",
+      "Tokyo --[located_in]--> Japan"
     ],
     "top_fp": [
       "Paris --[lives_in]--> France",
+      "Silicon Valley --[located_in]--> California",
+      "Harvard University --[located_in]--> Cambridge",
       "Louvre --[lives_in]--> Paris",
-      "Tokyo --[lives_in]--> Japan",
-      "White --[lives_in]--> Washington DC",
-      "Venice --[lives_in]--> Italy"
+      "Tokyo --[lives_in]--> Japan"
     ]
   },
   "temporal": {
@@ -206,24 +205,24 @@
   },
   "part_whole": {
     "family": "part_whole",
-    "precision": 0,
-    "recall": 0,
-    "f1": 0,
-    "tp": 0,
-    "fp": 0,
-    "fn": 2,
+    "precision": 0.5,
+    "recall": 0.5,
+    "f1": 0.5,
+    "tp": 1,
+    "fp": 1,
+    "fn": 1,
     "total_gold": 2,
-    "total_extracted": 0,
+    "total_extracted": 2,
     "support": 2,
     "uncovered_phrases": [
-      "California is part of the United States.",
-      "Manhattan is part of New York City."
+      "California is part of the United States."
     ],
     "top_fn": [
-      "California --[part_of]--> United States",
-      "Manhattan --[part_of]--> New York City"
+      "California --[part_of]--> United States"
     ],
-    "top_fp": []
+    "top_fp": [
+      "Manhattan --[part_of]--> New York City"
+    ]
   },
   "identity": {
     "family": "identity",
