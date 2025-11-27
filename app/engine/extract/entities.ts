@@ -2224,6 +2224,9 @@ export async function extractEntities(text: string): Promise<{
   const deduped = dedupe(rawSpans);
   if (DEBUG_ENTITIES) {
     console.log(
+      `[EXTRACT-ENTITIES][DEBUG] rawSpans=${rawSpans.map(span => `${span.source}:${span.type}:${span.text}@${span.start}-${span.end}`).slice(0, 20).join(', ')}`
+    );
+    console.log(
       `[EXTRACT-ENTITIES][DEBUG] deduped=${deduped.map(span => `${span.type}:${span.text}@${span.start}-${span.end}`).join(', ')}`
     );
   }
