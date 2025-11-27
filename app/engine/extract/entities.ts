@@ -777,6 +777,14 @@ function nerSpans(sent: ParsedSentence): Array<{ text: string; type: EntityType;
 
     let j = i + 1;
     while (j < sent.tokens.length && sent.tokens[j].ent === t.ent) {
+      // COORDINATION FIX: Don't group entities across punctuation (coordination lists)
+      // E.g., "Gryffindor, Slytherin, Hufflepuff" should be 3 entities, not 1
+      // If there's a gap > 1 char between tokens (comma, semicolon, etc.), break
+      const prevToken = sent.tokens[j - 1];
+      const currToken = sent.tokens[j];
+      if (currToken.start - prevToken.end > 1) {
+        break; // Punctuation between tokens, don't group
+      }
       j++;
     }
 
