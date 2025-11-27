@@ -2105,10 +2105,10 @@ export async function extractEntities(text: string): Promise<{
   // This is used to determine if an entity appears only at sentence beginnings
   const sentenceStarts = new Set(parsed.sentences.map(sent => sent.start));
   const isSentenceInitialPosition = (charPos: number): boolean => {
-    // Check if this position is within ~10 characters of any sentence start
-    // This accounts for whitespace and minor punctuation at sentence beginnings
+    // Check if this position is at or very close to any sentence start
+    // Allow up to 2 characters offset for potential leading whitespace
     for (const start of sentenceStarts) {
-      if (Math.abs(charPos - start) <= 10) {
+      if (Math.abs(charPos - start) <= 2) {
         return true;
       }
     }
@@ -2247,6 +2247,40 @@ export async function extractEntities(text: string): Promise<{
     );
   }
 
+  // Build sentence-position features from RAW spans (before deduplication)
+  // This allows us to track ALL occurrences of each entity to detect sentence-initial patterns
+  type PositionFeatures = {
+    isSentenceInitial: boolean;   // Has at least one occurrence at sentence start
+    occursNonInitial: boolean;    // Has at least one occurrence NOT at sentence start
+  };
+  const positionFeaturesByKey = new Map<string, PositionFeatures>();
+  for (const span of rawSpans) {
+    const key = `${span.type}:${span.text.toLowerCase()}`;
+    const existing = positionFeaturesByKey.get(key) || {
+      isSentenceInitial: false,
+      occursNonInitial: false
+    };
+
+    // Check if this specific span occurrence is sentence-initial
+    const isInitial = isSentenceInitialPosition(span.start);
+
+    if (DEBUG_ENTITIES && span.text.toLowerCase() === 'song') {
+      console.log(`[POSITION-DEBUG] "${span.text}" at ${span.start}: isInitial=${isInitial}`);
+    }
+
+    if (isInitial) {
+      existing.isSentenceInitial = true;
+    } else {
+      existing.occursNonInitial = true;
+    }
+
+    positionFeaturesByKey.set(key, existing);
+
+    if (DEBUG_ENTITIES && span.text.toLowerCase() === 'song') {
+      console.log(`[POSITION-DEBUG] "${span.text}" features: ${JSON.stringify(existing)}`);
+    }
+  }
+
   // Build positionsByKey from VALIDATED spans only (not raw spans)
   // This ensures we don't carry forward corrupted span positions
   const positionsByKey = new Map<string, Array<{ start: number; end: number }>>();
@@ -2259,32 +2293,6 @@ export async function extractEntities(text: string): Promise<{
     if (!list.some(pos => pos.start === span.start && pos.end === span.end)) {
       list.push({ start: span.start, end: span.end });
     }
-  }
-
-  // Track sentence-position features for each entity key
-  // This is used by entity-quality-filter.ts to reject sentence-initial-only junk
-  type PositionFeatures = {
-    isSentenceInitial: boolean;   // Has at least one occurrence at sentence start
-    occursNonInitial: boolean;    // Has at least one occurrence NOT at sentence start
-  };
-  const positionFeaturesByKey = new Map<string, PositionFeatures>();
-  for (const span of validated) {
-    const key = `${span.type}:${span.text.toLowerCase()}`;
-    const existing = positionFeaturesByKey.get(key) || {
-      isSentenceInitial: false,
-      occursNonInitial: false
-    };
-
-    // Check if this specific span occurrence is sentence-initial
-    const isInitial = isSentenceInitialPosition(span.start);
-
-    if (isInitial) {
-      existing.isSentenceInitial = true;
-    } else {
-      existing.occursNonInitial = true;
-    }
-
-    positionFeaturesByKey.set(key, existing);
   }
 
   // 6) Build Entity objects, merging short/long variants (e.g., "Gandalf" vs "Gandalf the Grey")
