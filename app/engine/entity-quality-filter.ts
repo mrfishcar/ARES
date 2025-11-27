@@ -28,6 +28,176 @@ const TITLE_PREFIXES = new Set([
   'chief', 'general'
 ]);
 
+/**
+ * LEXICAL SANITY FILTER (Phase 2)
+ *
+ * Global stopwords for entity filtering - catches common function words,
+ * discourse markers, and high-frequency verbs/abstracts that should never
+ * be entities.
+ *
+ * This is broader than the blockedTokens in DEFAULT_CONFIG, covering
+ * sentence-initial capitalized words that are still invalid entities.
+ */
+const GLOBAL_ENTITY_STOPWORDS = new Set([
+  // Pronouns (comprehensive list)
+  'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them',
+  'my', 'your', 'his', 'her', 'its', 'our', 'their',
+  'mine', 'yours', 'hers', 'ours', 'theirs',
+  'myself', 'yourself', 'himself', 'herself', 'itself', 'ourselves', 'themselves',
+
+  // Determiners and particles
+  'the', 'a', 'an', 'this', 'that', 'these', 'those',
+  'some', 'any', 'all', 'each', 'every', 'both', 'few', 'many', 'much',
+
+  // High-frequency verbs that shouldn't be entities (even when capitalized at sentence start)
+  'like', 'just', 'really', 'actually', 'maybe', 'must', 'should', 'could',
+  'would', 'might', 'will', 'shall', 'can', 'may',
+  'be', 'am', 'is', 'are', 'was', 'were', 'been', 'being',
+  'have', 'has', 'had', 'having',
+  'do', 'does', 'did', 'doing', 'done',
+  'go', 'goes', 'went', 'going', 'gone',
+  'get', 'gets', 'got', 'getting', 'gotten',
+  'make', 'makes', 'made', 'making',
+  'take', 'takes', 'took', 'taking', 'taken',
+  'come', 'comes', 'came', 'coming',
+  'see', 'sees', 'saw', 'seeing', 'seen',
+  'know', 'knows', 'knew', 'knowing', 'known',
+  'think', 'thinks', 'thought', 'thinking',
+  'say', 'says', 'said', 'saying',
+  'tell', 'tells', 'told', 'telling',
+  'ask', 'asks', 'asked', 'asking',
+  'give', 'gives', 'gave', 'giving', 'given',
+  'find', 'finds', 'found', 'finding',
+  'want', 'wants', 'wanted', 'wanting',
+  'try', 'tries', 'tried', 'trying',
+  'use', 'uses', 'used', 'using',
+  'work', 'works', 'worked', 'working',
+  'call', 'calls', 'called', 'calling',
+  'feel', 'feels', 'felt', 'feeling',
+  'seem', 'seems', 'seemed', 'seeming',
+  'leave', 'leaves', 'left', 'leaving',
+  'keep', 'keeps', 'kept', 'keeping',
+  'let', 'lets', 'letting',
+  'begin', 'begins', 'began', 'beginning', 'begun',
+  'help', 'helps', 'helped', 'helping',
+  'show', 'shows', 'showed', 'showing', 'shown',
+  'hear', 'hears', 'heard', 'hearing',
+  'play', 'plays', 'played', 'playing',
+  'run', 'runs', 'ran', 'running',
+  'move', 'moves', 'moved', 'moving',
+  'live', 'lives', 'lived', 'living',
+  'believe', 'believes', 'believed', 'believing',
+  'bring', 'brings', 'brought', 'bringing',
+  'happen', 'happens', 'happened', 'happening',
+  'write', 'writes', 'wrote', 'writing', 'written',
+  'sit', 'sits', 'sat', 'sitting',
+  'stand', 'stands', 'stood', 'standing',
+  'lose', 'loses', 'lost', 'losing',
+  'pay', 'pays', 'paid', 'paying',
+  'meet', 'meets', 'met', 'meeting',
+  'include', 'includes', 'included', 'including',
+  'continue', 'continues', 'continued', 'continuing',
+  'set', 'sets', 'setting',
+  'learn', 'learns', 'learned', 'learning',
+  'change', 'changes', 'changed', 'changing',
+  'lead', 'leads', 'led', 'leading',
+  'understand', 'understands', 'understood', 'understanding',
+  'watch', 'watches', 'watched', 'watching',
+  'follow', 'follows', 'followed', 'following',
+  'stop', 'stops', 'stopped', 'stopping',
+  'create', 'creates', 'created', 'creating',
+  'speak', 'speaks', 'spoke', 'speaking', 'spoken',
+  'read', 'reads', 'reading',
+  'allow', 'allows', 'allowed', 'allowing',
+  'add', 'adds', 'added', 'adding',
+  'spend', 'spends', 'spent', 'spending',
+  'grow', 'grows', 'grew', 'growing', 'grown',
+  'open', 'opens', 'opened', 'opening',
+  'walk', 'walks', 'walked', 'walking',
+  'win', 'wins', 'won', 'winning',
+  'offer', 'offers', 'offered', 'offering',
+  'remember', 'remembers', 'remembered', 'remembering',
+  'love', 'loves', 'loved', 'loving',
+  'consider', 'considers', 'considered', 'considering',
+  'appear', 'appears', 'appeared', 'appearing',
+  'buy', 'buys', 'bought', 'buying',
+  'wait', 'waits', 'waited', 'waiting',
+  'serve', 'serves', 'served', 'serving',
+  'die', 'dies', 'died', 'dying',
+  'send', 'sends', 'sent', 'sending',
+  'expect', 'expects', 'expected', 'expecting',
+  'build', 'builds', 'built', 'building',
+  'stay', 'stays', 'stayed', 'staying',
+  'fall', 'falls', 'fell', 'falling', 'fallen',
+  'cut', 'cuts', 'cutting',
+  'reach', 'reaches', 'reached', 'reaching',
+  'kill', 'kills', 'killed', 'killing',
+  'remain', 'remains', 'remained', 'remaining',
+  'suggest', 'suggests', 'suggested', 'suggesting',
+  'raise', 'raises', 'raised', 'raising',
+  'pass', 'passes', 'passed', 'passing',
+  'sell', 'sells', 'sold', 'selling',
+  'require', 'requires', 'required', 'requiring',
+  'report', 'reports', 'reported', 'reporting',
+  'decide', 'decides', 'decided', 'deciding',
+  'pull', 'pulls', 'pulled', 'pulling',
+
+  // Abstract nouns that appear capitalized at sentence start
+  // NOTE: Removed potentially ambiguous terms (song, justice, etc.) from here
+  // as they can be valid names (e.g., "Song" is a Chinese surname, "Justice" could be a name)
+  // These are now checked in type-specific functions with context
+  'hello',
+  'goodbye',
+  'thanks',
+  'yes', 'no',
+
+  // Discourse markers
+  'however', 'therefore', 'moreover', 'furthermore', 'nevertheless',
+  'thus', 'hence', 'consequently', 'accordingly',
+  'indeed', 'certainly', 'surely', 'obviously', 'clearly',
+  'perhaps', 'possibly', 'probably', 'likely',
+  'meanwhile', 'otherwise', 'instead', 'besides',
+
+  // Question words
+  'who', 'what', 'where', 'when', 'why', 'how', 'which',
+
+  // Common conjunctions
+  'and', 'or', 'but', 'nor', 'yet', 'so', 'for',
+  'because', 'since', 'unless', 'until', 'while', 'although', 'though',
+  'if', 'then', 'else', 'whether',
+
+  // Prepositions
+  'in', 'on', 'at', 'by', 'with', 'from', 'to', 'of', 'for', 'about',
+  'through', 'during', 'before', 'after', 'above', 'below', 'between',
+  'among', 'under', 'over', 'into', 'onto', 'upon', 'within', 'without',
+
+  // Adverbs
+  'very', 'too', 'also', 'only', 'even', 'still', 'never', 'always',
+  'often', 'sometimes', 'usually', 'rarely', 'seldom',
+  'here', 'there', 'everywhere', 'nowhere', 'somewhere', 'anywhere',
+  'now', 'then', 'later', 'soon', 'today', 'yesterday', 'tomorrow',
+
+  // Common adjectives that shouldn't be entities
+  'good', 'bad', 'new', 'old', 'first', 'last', 'long', 'short',
+  'big', 'small', 'great', 'little', 'own', 'other', 'different', 'same',
+  'high', 'low', 'next', 'early', 'young', 'important', 'large', 'small',
+  'able', 'ready', 'sure', 'certain', 'clear', 'full', 'free',
+
+  // Generic nouns that are too vague
+  'thing', 'things', 'stuff',
+  'person', 'people', 'somebody', 'someone', 'anybody', 'anyone', 'nobody', 'everyone',
+  'place', 'places', 'somewhere', 'anywhere', 'nowhere', 'everywhere',
+  'time', 'times', 'day', 'days', 'year', 'years', 'moment', 'moments',
+  'way', 'ways', 'kind', 'sort', 'type',
+  'case', 'cases', 'point', 'points', 'part', 'parts',
+  'number', 'numbers', 'group', 'groups',
+  'example', 'examples', 'instance', 'instances',
+  'fact', 'facts', 'idea', 'ideas',
+  'problem', 'problems', 'issue', 'issues',
+  'situation', 'situations', 'condition', 'conditions',
+  'reason', 'reasons', 'result', 'results',
+]);
+
 function hasTitlePrefix(name: string): boolean {
   const tokens = name
     .split(/\s+/)
@@ -278,6 +448,371 @@ function splitTwoFirstNamesEntity(entity: Entity): Entity[] {
 }
 
 /**
+ * PHASE 3: TYPE-SPECIFIC VALIDATION
+ *
+ * Type-aware sanity checks for PERSON, RACE, SPECIES, ITEM entities.
+ * These rules are broadly correct across corpora, not tuned for specific texts.
+ */
+
+/**
+ * Check if a name looks like a valid PERSON entity
+ *
+ * Allows:
+ * - Multi-token proper names with >1 capitalized word (e.g., "Charles Garrison")
+ * - Names with title prefixes (Mr/Mrs/Dr/Professor/King/etc.)
+ * - spaCy NER-backed PERSON labels
+ *
+ * Rejects:
+ * - Single-token names that only appear sentence-initial without NER support
+ * - Common abstract nouns or verbs (song, justice, darkness, learning, listen, etc.)
+ *
+ * @param tokens - Array of words in the name
+ * @param normalized - Lowercase normalized name
+ * @param hasNERSupport - Whether spaCy NER labeled this as PERSON
+ * @param isSentenceInitialOnly - Whether name only appears at sentence starts
+ */
+function isPersonLikeName(
+  tokens: string[],
+  normalized: string,
+  hasNERSupport: boolean,
+  isSentenceInitialOnly: boolean
+): boolean {
+  // Allow if has title prefix
+  if (hasTitlePrefix(tokens.join(' '))) {
+    return true;
+  }
+
+  // Allow if multi-token proper name (>1 capitalized word)
+  const capitalizedWords = tokens.filter(t => /^[A-Z]/.test(t));
+  if (capitalizedWords.length > 1) {
+    return true;
+  }
+
+  // Allow if spaCy NER strongly labels as PERSON
+  // NER evidence overrides abstract noun checks
+  if (hasNERSupport) {
+    return true;
+  }
+
+  // Reject common abstract/verbish terms (even if capitalized)
+  // But only if they're sentence-initial-only (no NER, no other occurrences)
+  const COMMON_ABSTRACT_OR_VERBISH = new Set([
+    'song', 'songs', 'justice', 'darkness', 'light', 'learning',
+    'questions', 'question', 'answers', 'answer',
+    'listen', 'listening', 'familiar', 'hello', 'goodbye',
+    'perched', 'perching', 'stabbing', 'breaking',
+  ]);
+
+  if (COMMON_ABSTRACT_OR_VERBISH.has(normalized) && isSentenceInitialOnly) {
+    // Abstract noun that only appears sentence-initial → reject
+    return false;
+  }
+
+  // Reject single-token names that only appear sentence-initial (and aren't NER-backed)
+  if (tokens.length === 1 && isSentenceInitialOnly) {
+    // These are likely capitalized function words, not names
+    return false;
+  }
+
+  // Default: allow (benefit of the doubt for single proper nouns)
+  return true;
+}
+
+/**
+ * Check if a name looks like a valid RACE/ethnicity entity
+ *
+ * Allows:
+ * - Demonym-like suffixes: -an, -ian, -ese, -ish, -i (e.g., American, Egyptian, Martian)
+ * - Curated race/species list (can be extended)
+ *
+ * Rejects:
+ * - Gerunds ending in -ing (stabbing, learning)
+ * - Generic group nouns (people, citizens, folks, crowd)
+ * - Verbs
+ */
+function isRaceName(tokens: string[], normalized: string): boolean {
+  // Allow known races/demonyms
+  const KNOWN_RACES = new Set([
+    'human', 'humans', 'elf', 'elves', 'elven', 'dwarf', 'dwarves', 'dwarven',
+    'orc', 'orcs', 'goblin', 'goblins', 'troll', 'trolls',
+    'hobbit', 'hobbits', 'wizard', 'wizards', 'witch', 'witches',
+    'vampire', 'vampires', 'werewolf', 'werewolves', 'zombie', 'zombies',
+    'demon', 'demons', 'angel', 'angels', 'dragon', 'dragons',
+    'giant', 'giants', 'fairy', 'fairies', 'sprite', 'sprites',
+    // Real-world demonyms
+    'american', 'americans', 'british', 'french', 'german', 'italian', 'spanish',
+    'chinese', 'japanese', 'korean', 'indian', 'russian', 'arab', 'african',
+    'european', 'asian', 'martian', 'martians', 'venusian', 'venusians',
+  ]);
+
+  if (KNOWN_RACES.has(normalized)) {
+    return true;
+  }
+
+  // Allow demonym-like suffixes
+  const DEMONYM_SUFFIXES = ['-an', '-ian', '-ese', '-ish', '-i'];
+  for (const suffix of DEMONYM_SUFFIXES) {
+    if (normalized.endsWith(suffix)) {
+      // But not if it's clearly a verb (-ing forms, etc.)
+      if (normalized.endsWith('ing') || normalized.endsWith('ising') || normalized.endsWith('izing')) {
+        return false;
+      }
+      return true;
+    }
+  }
+
+  // Reject gerunds (-ing verbs)
+  if (normalized.endsWith('ing')) {
+    return false;
+  }
+
+  // Reject generic group nouns
+  const GENERIC_GROUP_NOUNS = new Set([
+    'people', 'citizens', 'folks', 'crowd', 'crowds',
+    'men', 'women', 'children', 'boys', 'girls',
+    'population', 'populations', 'group', 'groups',
+  ]);
+
+  if (GENERIC_GROUP_NOUNS.has(normalized)) {
+    return false;
+  }
+
+  // Default: allow (benefit of the doubt)
+  return true;
+}
+
+/**
+ * Check if a name looks like a valid SPECIES/creature entity
+ *
+ * Allows:
+ * - Curated list of known species/creatures (extensible)
+ *
+ * Rejects:
+ * - Verbs (break, run, etc.)
+ * - Abstract nouns that aren't creatures
+ */
+function isSpeciesName(tokens: string[], normalized: string): boolean {
+  // Allow known species/creatures
+  const KNOWN_SPECIES = new Set([
+    'cat', 'cats', 'dog', 'dogs', 'horse', 'horses', 'wolf', 'wolves',
+    'bear', 'bears', 'lion', 'lions', 'tiger', 'tigers', 'eagle', 'eagles',
+    'snake', 'snakes', 'spider', 'spiders', 'rat', 'rats', 'mouse', 'mice',
+    'dragon', 'dragons', 'phoenix', 'phoenixes', 'griffin', 'griffins',
+    'unicorn', 'unicorns', 'pegasus', 'chimera', 'hydra', 'basilisk',
+    'demon', 'demons', 'devil', 'devils', 'imp', 'imps',
+    'goblin', 'goblins', 'troll', 'trolls', 'ogre', 'ogres',
+    'vampire', 'vampires', 'werewolf', 'werewolves', 'zombie', 'zombies',
+    'ghost', 'ghosts', 'specter', 'specters', 'wraith', 'wraiths',
+    'bird', 'birds', 'fish', 'fishes', 'beast', 'beasts', 'creature', 'creatures',
+    'monster', 'monsters', 'animal', 'animals',
+  ]);
+
+  if (KNOWN_SPECIES.has(normalized)) {
+    return true;
+  }
+
+  // Reject common verbs that might be mislabeled
+  const COMMON_VERBS = new Set([
+    'break', 'breaks', 'run', 'runs', 'walk', 'walks',
+    'fight', 'fights', 'attack', 'attacks', 'defend', 'defends',
+  ]);
+
+  if (COMMON_VERBS.has(normalized)) {
+    return false;
+  }
+
+  // Default: allow (benefit of the doubt)
+  return true;
+}
+
+/**
+ * Check if a name looks like a valid ITEM/object entity
+ *
+ * Allows:
+ * - Concrete noun phrases (record player, front gate, Pool of Souls)
+ * - Phrases with at least one NOUN or PROPN that isn't a stopword
+ *
+ * Rejects:
+ * - Verb-headed phrases (walk past, do it, kill him)
+ * - Pronoun-heavy phrases (it, him, her, them, etc.)
+ * - Short function-word phrases (the, to, not, or, etc.)
+ *
+ * @param tokens - Array of words in the name
+ * @param normalized - Lowercase normalized name
+ */
+function isItemName(tokens: string[], normalized: string): boolean {
+  // Reject if contains personal pronouns
+  const PERSONAL_PRONOUNS = new Set([
+    'i', 'you', 'he', 'she', 'we', 'they',
+    'me', 'him', 'her', 'us', 'them',
+    'my', 'your', 'his', 'her', 'our', 'their',
+  ]);
+
+  for (const token of tokens) {
+    if (PERSONAL_PRONOUNS.has(token.toLowerCase())) {
+      return false;
+    }
+  }
+
+  // Reject short phrases that start or end with function words
+  const FUNCTION_WORDS = new Set([
+    'the', 'a', 'an', 'to', 'do', 'get', 'not', 'or', 'and', 'but',
+    'is', 'are', 'was', 'were', 'be', 'been', 'being',
+    'have', 'has', 'had', 'will', 'would', 'should', 'could',
+  ]);
+
+  if (tokens.length <= 2) {
+    const firstToken = tokens[0].toLowerCase();
+    const lastToken = tokens[tokens.length - 1].toLowerCase();
+
+    if (FUNCTION_WORDS.has(firstToken) || FUNCTION_WORDS.has(lastToken)) {
+      return false;
+    }
+  }
+
+  // Reject obvious verb phrases (simple heuristic: starts with common verb)
+  const COMMON_ACTION_VERBS = new Set([
+    'walk', 'run', 'do', 'get', 'make', 'take', 'go', 'come',
+    'kill', 'help', 'access', 'slowed', 'decided', 'wanted',
+    'break', 'fight', 'attack', 'defend', 'use', 'give',
+  ]);
+
+  const firstWord = tokens[0].toLowerCase();
+  if (COMMON_ACTION_VERBS.has(firstWord)) {
+    // Exception: if it's part of a compound noun (e.g., "walking stick", "running shoes")
+    // For now, reject to be safe
+    return false;
+  }
+
+  // Require at least one capitalized word or a known concrete noun
+  const hasCapitalizedWord = tokens.some(t => /^[A-Z]/.test(t));
+  if (!hasCapitalizedWord && tokens.length === 1) {
+    // Single lowercase word is unlikely to be a proper item
+    // Unless it's a common concrete noun like "sword", "shield", "book"
+    const COMMON_CONCRETE_NOUNS = new Set([
+      'sword', 'shield', 'armor', 'helmet', 'bow', 'arrow',
+      'book', 'scroll', 'potion', 'ring', 'amulet', 'staff',
+      'key', 'door', 'gate', 'window', 'table', 'chair',
+      'house', 'castle', 'tower', 'bridge', 'road', 'path',
+    ]);
+
+    if (!COMMON_CONCRETE_NOUNS.has(normalized)) {
+      return false;
+    }
+  }
+
+  // Default: allow
+  return true;
+}
+
+/**
+ * PHASE 2: Central Lexical Sanity Function
+ *
+ * Check if an entity name passes basic lexical sanity tests.
+ * This is the main entry point for all entity validation.
+ *
+ * @param name - Entity canonical name
+ * @param type - Entity type (PERSON, ORG, PLACE, RACE, SPECIES, ITEM, etc.)
+ * @param source - Where this entity came from (NER, heuristic, pattern, etc.)
+ * @param features - Optional context features for more informed decisions
+ * @returns true if entity is lexically valid, false otherwise
+ */
+export function isLexicallyValidEntityName(
+  name: string,
+  type: EntityType,
+  source?: string,
+  features?: {
+    isSentenceInitial?: boolean;
+    occurrenceCount?: number;
+    occursNonInitial?: boolean;
+    hasNERSupport?: boolean;
+  }
+): boolean {
+  // 1. GLOBAL RULES (all types)
+
+  // Reject empty names
+  if (!name || name.trim().length === 0) {
+    return false;
+  }
+
+  // Reject all-digit strings (except for dates)
+  if (type !== 'DATE' && /^\d+$/.test(name.trim())) {
+    return false;
+  }
+
+  // Reject names shorter than 3 characters (except whitelisted)
+  // Allow 2-char names if they're proper nouns (capitalized) or dates
+  if (name.trim().length < 2) {
+    return false;
+  }
+
+  if (name.trim().length === 2) {
+    // Allow if all caps (acronyms like "US", "UK")
+    if (!/^[A-Z]{2}$/.test(name.trim()) && type !== 'DATE') {
+      return false;
+    }
+  }
+
+  // Normalize for stopword check
+  const normalized = name.toLowerCase().trim();
+
+  // Reject if in global stopwords
+  if (GLOBAL_ENTITY_STOPWORDS.has(normalized)) {
+    return false;
+  }
+
+  // 2. SENTENCE-INITIAL SINGLE-TOKEN RULE
+  // If the name:
+  // - Appears only as the first token in sentences (isSentenceInitial=true, occursNonInitial=false)
+  // - Is a single word
+  // - Is NOT backed by spaCy NER for that type
+  // Then reject it (likely capitalized function word)
+
+  const tokens = name.split(/\s+/).filter(Boolean);
+  const isSingleToken = tokens.length === 1;
+
+  if (
+    isSingleToken &&
+    features?.isSentenceInitial &&
+    !features?.occursNonInitial &&
+    !features?.hasNERSupport
+  ) {
+    // Single-token, sentence-initial-only, no NER → reject
+    // This catches "Song", "Perched", "Like", "Familiar", etc.
+    return false;
+  }
+
+  // 3. TYPE-SPECIFIC RULES
+
+  switch (type) {
+    case 'PERSON':
+      return isPersonLikeName(
+        tokens,
+        normalized,
+        features?.hasNERSupport ?? false,
+        features?.isSentenceInitial && !features?.occursNonInitial ? true : false
+      );
+
+    case 'RACE':
+    case 'SPECIES':
+      if (type === 'RACE') {
+        return isRaceName(tokens, normalized);
+      } else {
+        return isSpeciesName(tokens, normalized);
+      }
+
+    case 'ITEM':
+    case 'OBJECT':
+      return isItemName(tokens, normalized);
+
+    default:
+      // For other types (ORG, PLACE, DATE, TIME, WORK, etc.),
+      // rely on global rules only
+      return true;
+  }
+}
+
+/**
  * Main entity quality filter
  */
 export function filterLowQualityEntities(
@@ -321,6 +856,18 @@ export function filterLowQualityEntities(
 
     // 5. Valid characters check
     if (entity.type !== 'DATE' && !hasValidCharacters(name)) {
+      continue;
+    }
+
+    // 5.5. LEXICAL SANITY CHECK (Phase 2 - new comprehensive filter)
+    // Check global stopwords and type-specific rules
+    // Note: We don't have full sentence-position features yet, so we use minimal features
+    // Future enhancement: pass sentence position and NER support from extraction phase
+    const hasNERSupport = Boolean(entity.attrs?.nerLabel); // Approximate: check if NER was involved
+    if (!isLexicallyValidEntityName(name, entity.type, undefined, { hasNERSupport })) {
+      if (process.env.L4_DEBUG === '1') {
+        console.log(`[LEXICAL-SANITY] Rejecting "${name}" (${entity.type}) - failed lexical sanity checks`);
+      }
       continue;
     }
 

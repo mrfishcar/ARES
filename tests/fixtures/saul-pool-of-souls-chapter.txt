@@ -1,0 +1,39 @@
+TODO: REPLACE WITH ACTUAL CHAPTER TEXT
+
+This is a placeholder file for the Saul / Pool of Souls chapter from
+a long fantasy narrative (possibly from Barty Beauregard and the Fabulous Fraud
+or similar work).
+
+This fixture should contain:
+- Long narrative prose (~1000-3000 words)
+- Multiple characters, locations, items, events
+- Complex sentence structures
+- Sentence-initial capitalized words that are NOT names
+- Action sequences, descriptions, dialogue
+
+The actual text should be pasted here by the user or extracted from the
+source document.
+
+Example structure (to be replaced):
+
+Saul walked through the darkened halls of Mount Lola Chapel. The old building
+had stood for centuries, weathering storms and sieges alike. Song echoed through
+the corridors - an ancient melody that few remembered.
+
+Perched on the ledge above, a raven watched his progress. Like many visitors
+before him, Saul sought the Pool of Souls, a mystical artifact said to grant
+visions of the past.
+
+Citizens of the nearby town whispered stories about the pool. Learning its
+secrets required patience and courage. Questions filled his mind as he descended
+the stone staircase.
+
+At the chamber's heart lay the pool, its surface mirror-smooth. Darkness
+surrounded it, broken only by flickering torchlight. Familiar symbols covered
+the walls - runes he'd seen in old manuscripts.
+
+As Saul knelt beside the pool, he heard footsteps. Someone else had come seeking
+answers. The stabbing pain in his chest reminded him of the price knowledge
+demanded.
+
+"Hello," said a voice from the shadows. Justice, he realized, would have its day.
