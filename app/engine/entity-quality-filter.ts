@@ -859,14 +859,21 @@ export function filterLowQualityEntities(
       continue;
     }
 
-    // 5.5. LEXICAL SANITY CHECK (Phase 2 - new comprehensive filter)
+    // 5.5. LEXICAL SANITY CHECK (Phase 2 - comprehensive filter with sentence-position features)
     // Check global stopwords and type-specific rules
-    // Note: We don't have full sentence-position features yet, so we use minimal features
-    // Future enhancement: pass sentence position and NER support from extraction phase
-    const hasNERSupport = Boolean(entity.attrs?.nerLabel); // Approximate: check if NER was involved
-    if (!isLexicallyValidEntityName(name, entity.type, undefined, { hasNERSupport })) {
+    // Extract sentence-position features from entity.attrs (populated during extraction)
+    const hasNERSupport = Boolean(entity.attrs?.nerLabel);
+    const isSentenceInitial = Boolean(entity.attrs?.isSentenceInitial);
+    const occursNonInitial = Boolean(entity.attrs?.occursNonInitial);
+
+    if (!isLexicallyValidEntityName(name, entity.type, undefined, {
+      hasNERSupport,
+      isSentenceInitial,
+      occursNonInitial
+    })) {
       if (process.env.L4_DEBUG === '1') {
-        console.log(`[LEXICAL-SANITY] Rejecting "${name}" (${entity.type}) - failed lexical sanity checks`);
+        const isSentenceInitialOnly = isSentenceInitial && !occursNonInitial;
+        console.log(`[LEXICAL-SANITY] Rejecting "${name}" (${entity.type}) - failed lexical sanity checks (sentenceInitialOnly=${isSentenceInitialOnly}, NER=${hasNERSupport})`);
       }
       continue;
     }

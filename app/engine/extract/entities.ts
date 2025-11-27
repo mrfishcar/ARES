@@ -2101,6 +2101,20 @@ export async function extractEntities(text: string): Promise<{
   const parserBackend = (process.env.PARSER_ACTIVE_BACKEND || "").toLowerCase();
   const isMockBackend = parserBackend === "mock";
 
+  // 1a) Build sentence start position map for sentence-initial detection
+  // This is used to determine if an entity appears only at sentence beginnings
+  const sentenceStarts = new Set(parsed.sentences.map(sent => sent.start));
+  const isSentenceInitialPosition = (charPos: number): boolean => {
+    // Check if this position is within ~10 characters of any sentence start
+    // This accounts for whitespace and minor punctuation at sentence beginnings
+    for (const start of sentenceStarts) {
+      if (Math.abs(charPos - start) <= 10) {
+        return true;
+      }
+    }
+    return false;
+  };
+
   // 2) Extract NER spans from all sentences with clause awareness, then split coordinations
   const ner = parsed.sentences.flatMap(sent => {
     const spans = nerSpans(sent);
@@ -2245,6 +2259,32 @@ export async function extractEntities(text: string): Promise<{
     if (!list.some(pos => pos.start === span.start && pos.end === span.end)) {
       list.push({ start: span.start, end: span.end });
     }
+  }
+
+  // Track sentence-position features for each entity key
+  // This is used by entity-quality-filter.ts to reject sentence-initial-only junk
+  type PositionFeatures = {
+    isSentenceInitial: boolean;   // Has at least one occurrence at sentence start
+    occursNonInitial: boolean;    // Has at least one occurrence NOT at sentence start
+  };
+  const positionFeaturesByKey = new Map<string, PositionFeatures>();
+  for (const span of validated) {
+    const key = `${span.type}:${span.text.toLowerCase()}`;
+    const existing = positionFeaturesByKey.get(key) || {
+      isSentenceInitial: false,
+      occursNonInitial: false
+    };
+
+    // Check if this specific span occurrence is sentence-initial
+    const isInitial = isSentenceInitialPosition(span.start);
+
+    if (isInitial) {
+      existing.isSentenceInitial = true;
+    } else {
+      existing.occursNonInitial = true;
+    }
+
+    positionFeaturesByKey.set(key, existing);
   }
 
   // 6) Build Entity objects, merging short/long variants (e.g., "Gandalf" vs "Gandalf the Grey")
@@ -2461,13 +2501,27 @@ const PERSON_NICKNAME_NORMALIZERS = new Map<string, string>([
         }
       }
 
+      // Get position features for this entity
+      const posFeatures = positionFeaturesByKey.get(key);
+
+      // Determine if this entity has NER support (for quality filtering)
+      const hasNERSupport = span.source === 'NER' || span.source === 'WHITELIST' || span.source === 'DEP';
+
       const entry: EntityEntry = {
         entity: {
           id,
           type: span.type,
           canonical: canonicalName,
           aliases: [],
-          created_at: now
+          created_at: now,
+          // Store features in attrs for quality filtering
+          attrs: {
+            ...(posFeatures ? {
+              isSentenceInitial: posFeatures.isSentenceInitial,
+              occursNonInitial: posFeatures.occursNonInitial
+            } : {}),
+            ...(hasNERSupport ? { nerLabel: span.type } : {})
+          }
         },
         spanList: [...positions],
         variants: new Map([[textLower, span.text]]),
@@ -2527,6 +2581,26 @@ const PERSON_NICKNAME_NORMALIZERS = new Map<string, string>([
     // Merge sources
     for (const source of secondary.sources) {
       primary.sources.add(source);
+    }
+
+    // Merge attrs (OR boolean flags, prefer truthy values)
+    if (secondary.entity.attrs) {
+      if (!primary.entity.attrs) {
+        primary.entity.attrs = {};
+      }
+
+      // Merge sentence-position features (OR logic: if either has it, merged entity has it)
+      if (secondary.entity.attrs.isSentenceInitial) {
+        primary.entity.attrs.isSentenceInitial = true;
+      }
+      if (secondary.entity.attrs.occursNonInitial) {
+        primary.entity.attrs.occursNonInitial = true;
+      }
+
+      // Merge NER label (keep if either has it)
+      if (secondary.entity.attrs.nerLabel && !primary.entity.attrs.nerLabel) {
+        primary.entity.attrs.nerLabel = secondary.entity.attrs.nerLabel;
+      }
     }
 
     mergedMap.set(key, primary);
