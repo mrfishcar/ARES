@@ -46,6 +46,13 @@ export interface EntityCluster {
   sources: ExtractorSource[];  // How was this entity discovered
 }
 
+export type AliasStrength = 'strong' | 'ambiguous';
+
+export interface AliasCandidate {
+  eid: string;
+  strength: AliasStrength;
+}
+
 export type ExtractorSource = 'NER' | 'DEP' | 'WHITELIST' | 'FALLBACK' | 'PATTERN';
 
 /**
@@ -149,6 +156,33 @@ export function findClusterById(
   entityId: string
 ): EntityCluster | undefined {
   return clusters.find(c => c.id === entityId);
+}
+
+export function resolveAliasWithContext(
+  alias: string,
+  candidates: AliasCandidate[],
+  currentMentionIndex: number,
+  lastMentionIndexByEid: Map<string, number>
+): string | null {
+  if (!candidates.length) return null;
+
+  const strong = candidates.filter(c => c.strength === 'strong');
+  const pool = strong.length > 0 ? strong : candidates;
+
+  let bestEid: string | null = null;
+  let bestDistance = Infinity;
+
+  for (const candidate of pool) {
+    const lastMention = lastMentionIndexByEid.get(candidate.eid);
+    if (lastMention === undefined) continue;
+    const distance = currentMentionIndex - lastMention;
+    if (distance >= 0 && distance < bestDistance) {
+      bestDistance = distance;
+      bestEid = candidate.eid;
+    }
+  }
+
+  return bestEid;
 }
 
 /**

@@ -14,8 +14,8 @@
 import { v4 as uuid } from "uuid";
 import * as fs from "fs";
 import type { Entity, EntityType } from "../schema";
-import type { ExtractorSource, EntityCluster } from "../mention-tracking";
-import { clusterToEntity, createEntityCluster, createMention } from "../mention-tracking";
+import type { AliasCandidate, AliasStrength, EntityCluster, ExtractorSource } from "../mention-tracking";
+import { clusterToEntity, createEntityCluster, createMention, resolveAliasWithContext } from "../mention-tracking";
 import { computeEntityConfidence, filterEntitiesByConfidence } from "../confidence-scoring";
 import { DEFAULT_CONFIG as ENTITY_FILTER_DEFAULTS } from "../entity-quality-filter";
 import type { Token, ParsedSentence, ParseResponse } from "./parse-types";
@@ -2316,30 +2316,64 @@ export async function extractEntities(text: string): Promise<{
   const entries: EntityEntry[] = [];
 
   const now = new Date().toISOString();
-const VARIANT_CONNECTORS = new Set(['the', 'of', 'and', 'son', 'daughter', 'jr', 'sr', 'ii', 'iii', 'iv']);
+  const VARIANT_CONNECTORS = new Set(['the', 'of', 'and', 'son', 'daughter', 'jr', 'sr', 'ii', 'iii', 'iv']);
+  const aliasRegistry = new Map<string, AliasCandidate[]>();
 
-const addAlias = (entry: EntityEntry, alias: string) => {
-  const rawAlias = alias?.trim();
-  if (!rawAlias) return;
-  const normalizedAlias = normalizeName(rawAlias);
-  if (!normalizedAlias || normalizedAlias.toLowerCase() === entry.entity.canonical.toLowerCase()) {
-    return;
-  }
-  const hasTitleToken = rawAlias.split(/\s+/).some(token => TITLE_WORDS.has(token.replace(/[.'’]+$/g, '').toLowerCase()));
-  const hasAlias = [entry.entity.canonical, ...entry.entity.aliases].some(
-    existing => normalizeName(existing).toLowerCase() === normalizedAlias.toLowerCase()
-  );
-  if (hasAlias) {
-    // Allow a titled alias if we don't already have any titled variant stored
-    if (!hasTitleToken) return;
-    const existingTitleAlias = entry.entity.aliases.find(alias =>
-      alias.split(/\s+/).some(token => TITLE_WORDS.has(token.replace(/[.'’]+$/g, '').toLowerCase()))
+  const classifyAliasStrength = (surface: string, canonical: string): AliasStrength | null => {
+    const surfaceTokens = surface.trim().split(/\s+/).filter(Boolean);
+    const canonicalTokens = canonical.trim().split(/\s+/).filter(Boolean);
+
+    if (!surfaceTokens.length || !canonicalTokens.length) return null;
+
+    if (surfaceTokens.length >= 2) return 'strong';
+
+    const canonicalFirst = canonicalTokens[0]?.toLowerCase();
+    const canonicalLast = canonicalTokens[canonicalTokens.length - 1]?.toLowerCase();
+    const token = surfaceTokens[0].toLowerCase();
+
+    const isFirstNameOnly = token === canonicalFirst;
+    const isSurnameOnly = token === canonicalLast;
+
+    if (isFirstNameOnly) return 'strong';
+    if (isSurnameOnly) return 'ambiguous';
+
+    return null;
+  };
+
+  const registerAliasStrength = (entry: EntityEntry, alias: string, strength: AliasStrength) => {
+    const normalized = normalizeName(alias)?.toLowerCase();
+    if (!normalized) return;
+    const existing = aliasRegistry.get(normalized) ?? [];
+    if (!existing.some(candidate => candidate.eid === entry.entity.id && candidate.strength === strength)) {
+      existing.push({ eid: entry.entity.id, strength });
+      aliasRegistry.set(normalized, existing);
+    }
+  };
+
+  const addAlias = (entry: EntityEntry, alias: string) => {
+    const rawAlias = alias?.trim();
+    if (!rawAlias) return;
+    const strength = classifyAliasStrength(rawAlias, entry.entity.canonical);
+    if (!strength) return;
+    const normalizedAlias = normalizeName(rawAlias);
+    if (!normalizedAlias || normalizedAlias.toLowerCase() === entry.entity.canonical.toLowerCase()) {
+      return;
+    }
+    const hasTitleToken = rawAlias.split(/\s+/).some(token => TITLE_WORDS.has(token.replace(/[.'’]+$/g, '').toLowerCase()));
+    const hasAlias = [entry.entity.canonical, ...entry.entity.aliases].some(
+      existing => normalizeName(existing).toLowerCase() === normalizedAlias.toLowerCase()
     );
-    if (existingTitleAlias && existingTitleAlias.toLowerCase() === rawAlias.toLowerCase()) return;
-  }
-  entry.entity.aliases.push(rawAlias);
-  entry.variants.set(normalizedAlias.toLowerCase(), rawAlias);
-};
+    if (hasAlias) {
+      if (!hasTitleToken) return;
+      const existingTitleAlias = entry.entity.aliases.find(alias =>
+        alias.split(/\s+/).some(token => TITLE_WORDS.has(token.replace(/[.'’]+$/g, '').toLowerCase()))
+      );
+      if (existingTitleAlias && existingTitleAlias.toLowerCase() === rawAlias.toLowerCase()) return;
+    }
+    entry.entity.aliases.push(rawAlias);
+    entry.variants.set(normalizedAlias.toLowerCase(), rawAlias);
+    registerAliasStrength(entry, rawAlias, strength);
+  };
 
   const isAcceptableDifference = (diffRaw: string, diffLower: string): boolean => {
     const rawParts = diffRaw.trim().split(/\s+/).filter(Boolean);
@@ -2693,93 +2727,58 @@ const mergedEntries = Array.from(mergedMap.values());
 
   // Heuristic alias merging for PERSON entities: fold surname-only and quoted nicknames into their full-name anchor
   const personEntries = mergedEntries.filter(entry => entry.entity.type === 'PERSON');
-  const surnameMap = new Map<string, EntityEntry>();
-
-  for (const entry of personEntries) {
-    const parts = entry.entity.canonical.split(/\s+/).filter(Boolean);
-    if (parts.length >= 2) {
-      surnameMap.set(parts[parts.length - 1].toLowerCase(), entry);
-    }
-  }
-
   const mergedPersonIds = new Set<string>();
-  for (const entry of personEntries) {
-    const parts = entry.entity.canonical.split(/\s+/).filter(Boolean);
-    if (parts.length === 1) {
-      const surnameOwner = surnameMap.get(parts[0].toLowerCase());
-      if (surnameOwner && surnameOwner.entity.id !== entry.entity.id) {
-        addAlias(surnameOwner, entry.entity.canonical);
-        mergedPersonIds.add(entry.entity.id);
+  const mentionTimeline = mergedEntries.flatMap(entry =>
+    entry.spanList.map(span => ({ entry, start: span.start }))
+  );
+  mentionTimeline.sort((a, b) => a.start - b.start || a.entry.entity.id.localeCompare(b.entry.entity.id));
+
+  const firstMentionIndexByEid = new Map<string, number>();
+  const lastMentionIndexByEid = new Map<string, number>();
+  mentionTimeline.forEach((mention, idx) => {
+    const eid = mention.entry.entity.id;
+    if (!firstMentionIndexByEid.has(eid)) {
+      firstMentionIndexByEid.set(eid, idx);
+    }
+    lastMentionIndexByEid.set(eid, idx);
+  });
+
+  const mergeAliasMentions = (entry: EntityEntry) => {
+    const aliasKey = normalizeName(entry.entity.canonical)?.toLowerCase();
+    if (!aliasKey) return;
+    const candidates = aliasRegistry.get(aliasKey) ?? [];
+    if (!candidates.length) return;
+
+    const mentionIndex = firstMentionIndexByEid.get(entry.entity.id);
+    if (mentionIndex === undefined) return;
+
+    const resolvedEid = resolveAliasWithContext(aliasKey, candidates, mentionIndex, lastMentionIndexByEid);
+    if (!resolvedEid || resolvedEid === entry.entity.id) return;
+
+    const target = mergedEntries.find(candidate => candidate.entity.id === resolvedEid);
+    if (!target) return;
+
+    const seenSpanKeys = new Set(target.spanList.map(span => `${span.start}:${span.end}`));
+    for (const span of entry.spanList) {
+      const key = `${span.start}:${span.end}`;
+      if (!seenSpanKeys.has(key)) {
+        target.spanList.push(span);
+        seenSpanKeys.add(key);
       }
     }
-  }
 
-  // Merge first-name-only mentions into a unique matching full name (to avoid duplicate entities like "Jim")
-  const firstNameMap = new Map<string, EntityEntry[]>();
+    addAlias(target, entry.entity.canonical);
+    mergedPersonIds.add(entry.entity.id);
+
+    const entryLast = lastMentionIndexByEid.get(entry.entity.id) ?? mentionIndex;
+    const targetLast = lastMentionIndexByEid.get(target.entity.id) ?? -Infinity;
+    lastMentionIndexByEid.set(target.entity.id, Math.max(entryLast, targetLast));
+  };
+
   for (const entry of personEntries) {
     const tokens = entry.entity.canonical.split(/\s+/).filter(Boolean);
-    if (tokens.length >= 2) {
-      const first = tokens[0].toLowerCase();
-      if (!firstNameMap.has(first)) {
-        firstNameMap.set(first, []);
-      }
-      firstNameMap.get(first)!.push(entry);
-    }
-  }
-
-  for (const entry of personEntries) {
-    const tokens = entry.entity.canonical.split(/\s+/).filter(Boolean);
-    if (tokens.length !== 1) continue;
-
-    const normalizedSingle = PERSON_NICKNAME_NORMALIZERS.get(tokens[0].toLowerCase()) ?? tokens[0].toLowerCase();
-
-    const candidates = personEntries.filter(candidate => {
-      const parts = candidate.entity.canonical.split(/\s+/).filter(Boolean);
-      if (parts.length < 2) return false;
-      const normalizedFirst = PERSON_NICKNAME_NORMALIZERS.get(parts[0].toLowerCase()) ?? parts[0].toLowerCase();
-      return normalizedFirst === normalizedSingle;
-    });
-
-    const mentionStart = entry.spanList[0]?.start ?? Number.MAX_SAFE_INTEGER;
-    const preceding = candidates.filter(c => (c.spanList[0]?.start ?? Number.MAX_SAFE_INTEGER) < mentionStart);
-    const candidatePool = preceding.length ? preceding : candidates;
-
-    let target: EntityEntry | null = null;
-    if (candidatePool.length === 1) {
-      target = candidatePool[0];
-    } else if (candidatePool.length > 1) {
-      target = candidatePool
-        .slice()
-        .sort((a, b) => (b.spanList[0]?.start ?? 0) - (a.spanList[0]?.start ?? 0))[0];
-    }
-
-    if (target && target.entity.id !== entry.entity.id) {
-      addAlias(target, entry.entity.canonical);
-      mergedPersonIds.add(entry.entity.id);
-    } else if (!target) {
-      const windowStart = Math.max(0, mentionStart - 48);
-      const windowEnd = Math.min(text.length, mentionStart + 48);
-      const contextWindow = text.slice(windowStart, windowEnd);
-      const hasFamilyCue = /\b(daughter|son|child|children|family|parents|father|mother)\b/i.test(contextWindow);
-
-      if (hasFamilyCue) {
-        const precedingWithSurname = personEntries
-          .filter(candidate => candidate.entity.id !== entry.entity.id)
-          .filter(candidate => candidate.entity.canonical.split(/\s+/).filter(Boolean).length >= 2)
-          .filter(candidate => (candidate.spanList[0]?.start ?? Number.MAX_SAFE_INTEGER) < mentionStart)
-          .sort((a, b) => (b.spanList[0]?.start ?? 0) - (a.spanList[0]?.start ?? 0));
-
-        const closestFamily = precedingWithSurname[0];
-        if (closestFamily) {
-          const surname = closestFamily.entity.canonical.split(/\s+/).slice(-1).join(' ');
-          const expanded = normalizeName(`${entry.entity.canonical} ${surname}`);
-          if (expanded) {
-            const original = entry.entity.canonical;
-            entry.entity.canonical = expanded;
-            addAlias(entry, original);
-          }
-        }
-      }
+    if (tokens.length === 1) {
+      mergeAliasMentions(entry);
     }
   }
 
@@ -3112,30 +3111,16 @@ const mergedEntries = Array.from(mergedMap.values());
     entry.entity.canonical = chosen;
 
     const aliasRawSet = new Set<string>(entry.entity.aliases);
-    // Seed short-form aliases for multi-token person names so first-name and surname references remain attached
-    if (entry.entity.type === 'PERSON') {
-      const parts = entry.entity.canonical.split(/\s+/).filter(Boolean);
-      if (parts.length >= 2) {
-        const first = parts[0];
-        addAlias(entry, first);
-        aliasRawSet.add(first);
-        const surname = parts[parts.length - 1];
-        if (surname && surname.toLowerCase() !== first.toLowerCase()) {
-          addAlias(entry, surname);
-          aliasRawSet.add(surname);
-          const hyphenlessSurname = surname.replace(/-/g, ' ');
-          if (hyphenlessSurname !== surname) {
-            aliasRawSet.add(hyphenlessSurname.trim());
-          }
-        }
-      }
-    }
-    if (rawForChosen && rawForChosen.trim().toLowerCase() !== chosen.toLowerCase()) {
+    if (rawForChosen &&
+        rawForChosen.trim().toLowerCase() !== chosen.toLowerCase() &&
+        classifyAliasStrength(rawForChosen, entry.entity.canonical)) {
       aliasRawSet.add(rawForChosen.trim());
     }
     for (const [normalized, rawValue] of normalizedMap.entries()) {
       if (normalized === chosen) continue;
-      aliasRawSet.add(rawValue.trim());
+      if (classifyAliasStrength(rawValue, entry.entity.canonical)) {
+        aliasRawSet.add(rawValue.trim());
+      }
     }
 
     for (const span of entry.spanList) {
@@ -3143,7 +3128,9 @@ const mergedEntries = Array.from(mergedMap.values());
       if (/\bfamily$/i.test(rawSurface)) {
         const normalizedSurface = normalizeName(rawSurface);
         if (normalizedSurface && normalizedSurface.toLowerCase() !== chosen.toLowerCase()) {
-          aliasRawSet.add(rawSurface);
+          if (classifyAliasStrength(rawSurface, entry.entity.canonical)) {
+            aliasRawSet.add(rawSurface);
+          }
         }
       }
 
@@ -3153,7 +3140,19 @@ const mergedEntries = Array.from(mergedMap.values());
       if (firstToken && TITLE_WORDS.has(firstToken)) {
         const stripped = surfaceTokens.slice(1).join(' ').trim();
         if (stripped && stripped.toLowerCase() !== chosen.toLowerCase()) {
-          aliasRawSet.add(rawSurface);
+          if (classifyAliasStrength(rawSurface, entry.entity.canonical)) {
+            aliasRawSet.add(rawSurface);
+          }
+        }
+      }
+    }
+
+    if (entry.entity.type === 'PERSON') {
+      const parts = chosen.split(/\s+/).filter(Boolean);
+      if (parts.length >= 2) {
+        const surname = parts[parts.length - 1];
+        if (classifyAliasStrength(surname, entry.entity.canonical)) {
+          aliasRawSet.add(surname);
         }
       }
     }
@@ -3161,6 +3160,13 @@ const mergedEntries = Array.from(mergedMap.values());
     // CRITICAL: Filter pronouns from aliases before storing
     // Pronouns are context-dependent and should never be permanent aliases
     entry.entity.aliases = filterPronouns(Array.from(aliasRawSet));
+    registerAliasStrength(entry, entry.entity.canonical, 'strong');
+    for (const alias of entry.entity.aliases) {
+      const strength = classifyAliasStrength(alias, entry.entity.canonical);
+      if (strength) {
+        registerAliasStrength(entry, alias, strength);
+      }
+    }
 
     const dedupeKey = `${entry.entity.type}:${chosen.toLowerCase()}`;
     if (emittedKeys.has(dedupeKey)) {
@@ -3285,8 +3291,15 @@ const mergedEntries = Array.from(mergedMap.values());
 
       if (fullEntity && nickEntity && fullEntity.id !== nickEntity.id) {
         // Merge: add nickname's canonical to fullEntity's aliases
-        if (!fullEntity.aliases.includes(nickEntity.canonical)) {
+        const nickStrength = classifyAliasStrength(nickEntity.canonical, fullEntity.canonical);
+        if (!fullEntity.aliases.includes(nickEntity.canonical) && nickStrength) {
           fullEntity.aliases.push(nickEntity.canonical);
+          registerAliasStrength({
+            entity: fullEntity as unknown as Entity,
+            spanList: [],
+            variants: new Map(),
+            sources: new Set()
+          }, nickEntity.canonical, nickStrength);
         }
 
         // Merge: add nickname entity's spans to full entity
@@ -3308,8 +3321,15 @@ const mergedEntries = Array.from(mergedMap.values());
         console.log(`[EXTRACT-ENTITIES] Merged "${nickname}" into "${fullName}" as alias`);
       } else if (fullEntity && !nickEntity) {
         // Nickname not extracted as separate entity, just add as alias
-        if (!fullEntity.aliases.includes(nickname)) {
+        const nickStrength = classifyAliasStrength(nickname, fullEntity.canonical);
+        if (!fullEntity.aliases.includes(nickname) && nickStrength) {
           fullEntity.aliases.push(nickname);
+          registerAliasStrength({
+            entity: fullEntity as unknown as Entity,
+            spanList: [],
+            variants: new Map(),
+            sources: new Set()
+          }, nickname, nickStrength);
           aliasLinksFound++;
           console.log(`[EXTRACT-ENTITIES] Added "${nickname}" as alias to "${fullName}"`);
         }
@@ -3343,7 +3363,16 @@ const mergedEntries = Array.from(mergedMap.values());
               mentionText !== entity.canonical &&
               mentionText.toLowerCase() !== entity.canonical.toLowerCase() &&
               !isContextDependent(mentionText)) {
-            aliasSet.add(mentionText);
+            const strength = classifyAliasStrength(mentionText, entity.canonical);
+            if (strength) {
+              aliasSet.add(mentionText);
+              registerAliasStrength({
+                entity: entity as Entity,
+                spanList: [],
+                variants: new Map(),
+                sources: new Set()
+              }, mentionText, strength);
+            }
           }
         }
       }
