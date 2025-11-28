@@ -1,4 +1,4 @@
-# ARES Linguistic Reference (v0.5)
+# ARES Linguistic Reference (v0.6)
 
 ## Purpose
 A practical, pattern-based English handbook for ARES and its AI debuggers, focused on
@@ -238,6 +238,30 @@ Prioritize candidates from the same sentence or immediately previous sentence; o
 - Mark as EXPLETIVE_IT (non-entity).
 - Template: "It + be/seem/appear + adjective/clause/weather/time".
 
+### 2.3 Possessive Pronouns ("his", "her", "their")
+
+#### Pattern PR-P7 – Possessive Pronouns as Full Anaphors
+
+```
+"Harry's best friend was Ron Weasley. Ron came from a large wizarding family. His father Arthur worked at the Ministry of Magic."
+```
+
+- "His" must be resolved using the **same pipeline** as subject/object pronouns:
+  - Candidate set: PERSON entities compatible in gender/number.
+  - Salience: prefer **most recent subject** (`Ron` in this example), with recency penalty applied as in §11.
+- Once the owner is resolved:
+  - attach possessive NP as a relation if a kinship pattern is recognized (e.g. "his father", "their children"),
+  - or treat it as a descriptor NP over that owner.
+
+**Rule:**
+
+1. When encountering a possessive pronoun (`his/her/their/its`) as determiner of a noun:
+   - Run full pronoun-resolution algorithm (agreement + salience).
+   - Do **not** default to the earlier subject if a more recent subject exists.
+
+2. For "His/Her father/mother/son/daughter/child/niece/nephew…":
+   - Trigger kinship relation patterns (see §7 Kinship below).
+
 ---
 
 ## 3. Demonstratives (this, that, these, those)
@@ -370,6 +394,35 @@ Prioritize candidates from the same sentence or immediately previous sentence; o
 
 - Once the text links epithet to a PERSON, treat as strong alias for that entity.
 
+####Pattern NM-6 – Canonical Names with Titles
+
+```
+"Professor McGonagall taught Transfiguration at Hogwarts."
+"Professor Snape taught Potions."
+"Doctor Smith arrived." (if consistently used)
+```
+
+**Rule:**
+
+1. If a PERSON is **first introduced** with a professional or honorific title + surname:
+   - e.g. "Professor McGonagall", "Professor Snape", "Doctor Watson"
+2. And that exact form is used consistently in the narrative as the character's main handle:
+   - then the **canonical name** should preserve the title:
+     - canonical: "Professor McGonagall", not just "McGonagall".
+
+3. Shorter aliases (e.g. "McGonagall", "Snape") should be stored as **aliases**, not canonical replacements:
+   - `aliases = ["McGonagall"]`, `canonical = "Professor McGonagall"`.
+
+4. Exceptions:
+   - If later the text clearly prefers a different full name (e.g. "Minerva McGonagall") and uses it consistently, the system may promote that to canonical while retaining the titled form as an alias.
+
+**Implementation Guidance:**
+
+- In canonical-name selection logic:
+  - When multiple surface forms exist:
+    - prefer the earliest **longest** form that includes a stable title (Professor/Doctor/etc.) over bare surnames,
+    - unless an even more complete name (with given name) appears and is used frequently.
+
 ---
 
 ## 7. Groups, Families, and Collectives
@@ -400,6 +453,128 @@ Prioritize candidates from the same sentence or immediately previous sentence; o
 
 - Treat as GROUP entities.
 - "they" → group.
+
+### 7.1 Sibling Indicators vs Parent Roles
+
+#### Pattern FM-1 – Sibling Indicators (NOT Parents)
+
+```
+"Bill Weasley, the eldest son, worked for Gringotts Bank."
+"She was the youngest daughter."
+"Their twin sons, Fred and George, were troublemakers."
+```
+
+**SIBLING_INDICATORS** (non-exhaustive):
+
+- eldest / oldest son / daughter / child / brother / sister
+- younger / youngest son / daughter / brother / sister / child
+- twin / twin brother / twin sister / twins
+
+**Rule:**
+
+- If an NP describing a PERSON X includes a **sibling indicator** and appears in the context of a known **parental couple** and **their children**, then:
+  - X should be treated as a **sibling** of the other children, **not** as a parent.
+- Explicitly:
+  - Never infer `parent_of` or `child_of` from phrases like "the eldest son/daughter/child" alone.
+  - Instead, allow `sibling_of` to be inferred between X and other children **if needed**, but default is just a descriptor.
+
+**Example (Weasley family):**
+
+```
+"Their children included Ron, Ginny, Fred, and George.
+Bill Weasley, the eldest son, worked for Gringotts Bank."
+```
+
+- Parents: Molly Weasley, Arthur Weasley (from context).
+- "Their children" → {Ron, Ginny, Fred, George}.
+- "Bill … the eldest son":
+  - X = Bill; descriptor "eldest son" ⇒ Bill is **also** a child of Molly & Arthur.
+  - DO NOT emit `Bill parent_of Ron/Ginny/Fred/George`.
+
+### 7.2 "Their children included X, Y, Z"
+
+#### Pattern FM-2 – Children Enumeration
+
+```
+"Their children included Ron, Ginny, Fred, and George."
+"Their sons were Bill and Charlie."
+```
+
+**Rule:**
+
+1. Resolve "Their":
+   - use pronoun resolution to find the **owning couple**:
+     - Most often the most recent `married_to` pair or explicit parents mentioned (e.g. Molly + Arthur).
+
+2. Identify child list:
+   - Coordination of names following "children included", "sons were", "daughters were", etc.
+     - "children included X, Y, Z"
+     - "children were X, Y, Z"
+     - "sons/daughters were X, Y, Z"
+
+3. For each child `C` in that list:
+   - Emit:
+     - `C child_of Parent1`
+     - `C child_of Parent2` (if pair known)
+   - And corresponding inverses:
+     - `Parent1 parent_of C`
+     - `Parent2 parent_of C`
+
+4. **Do not** infer any child's children from these lines (no grandchildren).
+
+### 7.3 Family Group Lives-In Distribution
+
+#### Pattern GR-4 – Family Group Residence Distribution
+
+```
+"The Weasley family lived at the Burrow."
+```
+
+- There is a FAMILY GROUP entity ("Weasley family").
+- Parents (e.g. Molly & Arthur) are known by name from nearby context.
+
+**Rule:**
+
+1. When a FAMILY GROUP ("The [Surname] family") is said to `live at` PLACE:
+   - always emit `lives_in(FAMILY_GROUP, PLACE)`.
+
+2. Additionally, if named **adult family members** (parents) are known:
+   - emit `lives_in(parent, PLACE)` for each adult parent:
+     - `Molly Weasley lives_in Burrow`
+     - `Arthur Weasley lives_in Burrow`
+
+3. **Do not automatically emit** `lives_in` for **unnamed** children:
+   - only propagate to named adults and/or children mentioned explicitly elsewhere.
+
+### 7.4 Group Nouns & Couple References
+
+#### Pattern GN-1 – "the couple / the pair / the two / the duo"
+
+```
+"Harry Potter married Ginny Weasley. They had three children together.
+Ron Weasley married Hermione Granger. The couple had two children."
+```
+
+- "the couple" should refer to the **most recent couple** introduced (Ron + Hermione), not the earlier one.
+
+**GROUP_NOUNS**:
+
+- the couple, the pair, the two, the duo
+- (optionally) the newlyweds, the two friends (later)
+
+**Rule:**
+
+1. Maintain a stack/list of **recently formed groups**, especially:
+   - couples from `married_to` relations,
+   - ad-hoc groups from "X and Y" with relationship verbs ("married", "friends with", "formed a trio").
+
+2. When encountering "the couple / the pair / the two / the duo":
+   - Resolve to the **most recent 2-person group** in the current paragraph or immediately preceding paragraph.
+
+3. If multiple couples are equally recent and compatible:
+   - treat as ambiguous; in interactive mode, issue `HUMAN_QUESTION`.
+
+4. Do not create a new group; this phrase is a *reference* to an existing group.
 
 ---
 
@@ -1781,7 +1956,84 @@ State (no relation):
 
 ---
 
-## End of ARES Linguistic Reference v0.5
+## 34. Organizational & Membership Relations
+
+### 34.1 Membership: "joined X"
+
+#### Pattern ORG-1 – Joining an Organization
+
+```
+"Draco Malfoy, on the other hand, joined Slytherin."
+"She joined the Order of the Phoenix."
+```
+
+- Subject: PERSON
+- Object: ORG/HOUSE/GROUP
+
+**Rule:**
+
+- For patterns of the form `X joined ORG`:
+  - emit:
+    - `X member_of ORG`
+
+- This is parallel to existing "sorted into X" → `member_of` patterns.
+
+---
+
+## 35. Adversarial Relations
+
+### 35.1 Adversarial Relations: "rival / enemy / foe"
+
+#### Pattern ADV-1 – Rivalry / Enmity
+
+```
+"He became a rival to Harry."
+"Draco was an enemy of Harry Potter."
+"She became a foe of Voldemort."
+```
+
+- `rival`, `enemy`, `foe`, `adversary` all imply symmetric adversarial relation.
+
+**Rule:**
+
+- For patterns:
+  - `X became (a) rival/enemy/foe/adversary to Y`
+  - `X was (a) rival/enemy/foe/adversary of Y`
+- Emit:
+  - `X enemy_of Y`
+  - `Y enemy_of X` (symmetric relation)
+
+- Only apply when X and Y are PERSON (or PERSON-like) entities; avoid linking to places/orgs unless explicitly required.
+
+---
+
+## 36. Teaching & Educational Roles
+
+### 36.1 Teaching at an Institution
+
+#### Pattern EDU-1 – "taught X at Y" → teaches_at
+
+```
+"Professor McGonagall taught Transfiguration at Hogwarts."
+"Professor Snape taught Potions at Hogwarts."
+```
+
+- SUBJECT: PERSON (teacher)
+- OBJECT: ORG/PLACE (school/house/etc.)
+
+**Rule:**
+
+- For patterns of the form:
+  - `X taught [SUBJECT] at ORG`
+  - `X taught at ORG` (subject omitted)
+- Emit:
+  - `X teaches_at ORG`
+
+- The subject/curriculum (e.g. "Transfiguration") may be captured as a separate ENTITY if needed, but is optional for the `teaches_at` relation.
+
+---
+
+## End of ARES Linguistic Reference v0.6
 
 **Last Updated**: 2025-11-28
 **Maintainers**: ARES Team
