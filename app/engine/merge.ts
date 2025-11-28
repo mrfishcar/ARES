@@ -119,6 +119,24 @@ function getSurname(name: string): string | null {
   return tokens[tokens.length - 1];
 }
 
+function samePersonByName(nameA: string, nameB: string): boolean {
+  const normalizeParts = (name: string) =>
+    name
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(Boolean);
+
+  const partsA = normalizeParts(nameA);
+  const partsB = normalizeParts(nameB);
+
+  if (partsA.length < 2 || partsB.length < 2) return false;
+
+  const firstMatch = partsA[0] === partsB[0];
+  const lastMatch = partsA[partsA.length - 1] === partsB[partsB.length - 1];
+
+  return firstMatch && lastMatch;
+}
+
 /**
  * Pronouns and non-discriminative terms that should NEVER be used for entity matching
  * These are temporary references, not permanent entity identifiers
@@ -295,6 +313,10 @@ export function mergeEntitiesAcrossDocs(
 
               // Check for substring match (e.g., "Harry" in "Harry Potter")
               if (isSubstringMatch(mName, eName)) {
+                const tokenCount = (name: string) => name.trim().split(/\s+/).filter(Boolean).length;
+                if (tokenCount(mName) === 1 || tokenCount(eName) === 1) {
+                  continue; // Don't merge based on single-token alias overlap
+                }
                 hasSubstringMatch = true;
                 bestScore = 1.0;  // Force merge for substring matches
                 bestClusterIdx = i;
@@ -321,6 +343,13 @@ export function mergeEntitiesAcrossDocs(
       }
 
       // Add to cluster if strong match or substring match, or create new cluster
+      if (entity.type === 'PERSON' && hasSubstringMatch && bestClusterIdx >= 0) {
+        if (!samePersonByName(bestMatchedNames.local, bestMatchedNames.cluster)) {
+          hasSubstringMatch = false;
+          bestClusterIdx = -1;
+        }
+      }
+
       if (entity.type === 'PERSON' && bestClusterIdx >= 0) {
         const entitySurname = getSurname(entity.canonical);
         const cluster = clusters[bestClusterIdx];
