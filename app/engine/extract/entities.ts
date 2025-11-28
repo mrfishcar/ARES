@@ -777,6 +777,14 @@ function nerSpans(sent: ParsedSentence): Array<{ text: string; type: EntityType;
 
     let j = i + 1;
     while (j < sent.tokens.length && sent.tokens[j].ent === t.ent) {
+      // COORDINATION FIX: Don't group entities across punctuation (coordination lists)
+      // E.g., "Gryffindor, Slytherin, Hufflepuff" should be 3 entities, not 1
+      // If there's a gap > 1 char between tokens (comma, semicolon, etc.), break
+      const prevToken = sent.tokens[j - 1];
+      const currToken = sent.tokens[j];
+      if (currToken.start - prevToken.end > 1) {
+        break; // Punctuation between tokens, don't group
+      }
       j++;
     }
 
@@ -2101,6 +2109,20 @@ export async function extractEntities(text: string): Promise<{
   const parserBackend = (process.env.PARSER_ACTIVE_BACKEND || "").toLowerCase();
   const isMockBackend = parserBackend === "mock";
 
+  // 1a) Build sentence start position map for sentence-initial detection
+  // This is used to determine if an entity appears only at sentence beginnings
+  const sentenceStarts = new Set(parsed.sentences.map(sent => sent.start));
+  const isSentenceInitialPosition = (charPos: number): boolean => {
+    // Check if this position is at or very close to any sentence start
+    // Allow up to 2 characters offset for potential leading whitespace
+    for (const start of sentenceStarts) {
+      if (Math.abs(charPos - start) <= 2) {
+        return true;
+      }
+    }
+    return false;
+  };
+
   // 2) Extract NER spans from all sentences with clause awareness, then split coordinations
   const ner = parsed.sentences.flatMap(sent => {
     const spans = nerSpans(sent);
@@ -2210,6 +2232,9 @@ export async function extractEntities(text: string): Promise<{
   const deduped = dedupe(rawSpans);
   if (DEBUG_ENTITIES) {
     console.log(
+      `[EXTRACT-ENTITIES][DEBUG] rawSpans=${rawSpans.map(span => `${span.source}:${span.type}:${span.text}@${span.start}-${span.end}`).slice(0, 20).join(', ')}`
+    );
+    console.log(
       `[EXTRACT-ENTITIES][DEBUG] deduped=${deduped.map(span => `${span.type}:${span.text}@${span.start}-${span.end}`).join(', ')}`
     );
   }
@@ -2231,6 +2256,40 @@ export async function extractEntities(text: string): Promise<{
     console.log(
       `[EXTRACT-ENTITIES][DEBUG] validated=${validated.map(span => `${span.type}:${span.text}@${span.start}-${span.end}`).join(', ')}`
     );
+  }
+
+  // Build sentence-position features from RAW spans (before deduplication)
+  // This allows us to track ALL occurrences of each entity to detect sentence-initial patterns
+  type PositionFeatures = {
+    isSentenceInitial: boolean;   // Has at least one occurrence at sentence start
+    occursNonInitial: boolean;    // Has at least one occurrence NOT at sentence start
+  };
+  const positionFeaturesByKey = new Map<string, PositionFeatures>();
+  for (const span of rawSpans) {
+    const key = `${span.type}:${span.text.toLowerCase()}`;
+    const existing = positionFeaturesByKey.get(key) || {
+      isSentenceInitial: false,
+      occursNonInitial: false
+    };
+
+    // Check if this specific span occurrence is sentence-initial
+    const isInitial = isSentenceInitialPosition(span.start);
+
+    if (DEBUG_ENTITIES && span.text.toLowerCase() === 'song') {
+      console.log(`[POSITION-DEBUG] "${span.text}" at ${span.start}: isInitial=${isInitial}`);
+    }
+
+    if (isInitial) {
+      existing.isSentenceInitial = true;
+    } else {
+      existing.occursNonInitial = true;
+    }
+
+    positionFeaturesByKey.set(key, existing);
+
+    if (DEBUG_ENTITIES && span.text.toLowerCase() === 'song') {
+      console.log(`[POSITION-DEBUG] "${span.text}" features: ${JSON.stringify(existing)}`);
+    }
   }
 
   // Build positionsByKey from VALIDATED spans only (not raw spans)
@@ -2461,13 +2520,27 @@ const PERSON_NICKNAME_NORMALIZERS = new Map<string, string>([
         }
       }
 
+      // Get position features for this entity
+      const posFeatures = positionFeaturesByKey.get(key);
+
+      // Determine if this entity has NER support (for quality filtering)
+      const hasNERSupport = span.source === 'NER' || span.source === 'WHITELIST' || span.source === 'DEP';
+
       const entry: EntityEntry = {
         entity: {
           id,
           type: span.type,
           canonical: canonicalName,
           aliases: [],
-          created_at: now
+          created_at: now,
+          // Store features in attrs for quality filtering
+          attrs: {
+            ...(posFeatures ? {
+              isSentenceInitial: posFeatures.isSentenceInitial,
+              occursNonInitial: posFeatures.occursNonInitial
+            } : {}),
+            ...(hasNERSupport ? { nerLabel: span.type } : {})
+          }
         },
         spanList: [...positions],
         variants: new Map([[textLower, span.text]]),
@@ -2527,6 +2600,26 @@ const PERSON_NICKNAME_NORMALIZERS = new Map<string, string>([
     // Merge sources
     for (const source of secondary.sources) {
       primary.sources.add(source);
+    }
+
+    // Merge attrs (OR boolean flags, prefer truthy values)
+    if (secondary.entity.attrs) {
+      if (!primary.entity.attrs) {
+        primary.entity.attrs = {};
+      }
+
+      // Merge sentence-position features (OR logic: if either has it, merged entity has it)
+      if (secondary.entity.attrs.isSentenceInitial) {
+        primary.entity.attrs.isSentenceInitial = true;
+      }
+      if (secondary.entity.attrs.occursNonInitial) {
+        primary.entity.attrs.occursNonInitial = true;
+      }
+
+      // Merge NER label (keep if either has it)
+      if (secondary.entity.attrs.nerLabel && !primary.entity.attrs.nerLabel) {
+        primary.entity.attrs.nerLabel = secondary.entity.attrs.nerLabel;
+      }
     }
 
     mergedMap.set(key, primary);

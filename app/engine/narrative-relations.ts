@@ -253,6 +253,12 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     predicate: 'leads',
     typeGuard: { subj: ['PERSON'], obj: ['ORG', 'HOUSE'] }
   },
+  // "X was/is the head of Y"
+  {
+    regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:was|is)\s+(?:also\s+)?the\s+head\s+of\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)/g,
+    predicate: 'leads',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG', 'HOUSE'] }
+  },
 
   // === LOCATION/RESIDENCE PATTERNS ===
   // "X lived at Y" (handles "lived at the Burrow")

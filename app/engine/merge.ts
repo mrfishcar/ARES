@@ -170,6 +170,43 @@ function isSubstringMatch(name1: string, name2: string): boolean {
     return false;
   }
 
+  // CRITICAL FIX: Don't merge on surname-only matches
+  // E.g., "Harry Potter" and "Lily Potter" both match "Potter" but shouldn't merge
+  // Only allow substring match if the shorter string has 2+ words (includes first name)
+  const words1 = n1.split(/\s+/).filter(w => w.length > 0);
+  const words2 = n2.split(/\s+/).filter(w => w.length > 0);
+  const shorterWordCount = Math.min(words1.length, words2.length);
+
+  // If the shorter name is only 1 word, it might be a surname-only reference
+  // Only allow this if both names have the same word count (e.g., "Harry" vs "Harry Potter" is OK)
+  // But block "Potter" matching both "Harry Potter" and "Lily Potter"
+  if (shorterWordCount === 1 && words1.length !== words2.length) {
+    // Additional check: if the 1-word name appears in multiple positions
+    // in the longer name, it's ambiguous (could be first or last name)
+    const shorter = words1.length === 1 ? n1 : n2;
+    const longer = words1.length === 1 ? n2 : n1;
+    const longerWords = longer.split(/\s+/);
+
+    // If the shorter word matches the LAST word of the longer name,
+    // it's likely a surname - don't allow this match for multi-word names
+    if (longerWords.length >= 2 && longer.endsWith(' ' + shorter)) {
+      if (process.env.L3_DEBUG === '1' && (name1.toLowerCase().includes('potter') || name2.toLowerCase().includes('potter'))) {
+        console.log(`[MERGE-DEBUG] Blocking surname-only match: "${name1}" vs "${name2}"`);
+      }
+      return false;  // Block surname-only matching
+    }
+  }
+
+  if (process.env.L3_DEBUG === '1' && (name1.toLowerCase().includes('potter') || name2.toLowerCase().includes('potter'))) {
+    const result = (
+      n1.startsWith(n2 + ' ') ||
+      n1.endsWith(' ' + n2) ||
+      n2.startsWith(n1 + ' ') ||
+      n2.endsWith(' ' + n1)
+    );
+    console.log(`[MERGE-DEBUG] isSubstringMatch("${name1}", "${name2}") = ${result}`);
+  }
+
   return (
     n1.startsWith(n2 + ' ') ||
     n1.endsWith(' ' + n2) ||

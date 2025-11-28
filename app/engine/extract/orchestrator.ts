@@ -895,10 +895,10 @@ export async function extractFromSegments(
           console.log(`[APPOS-FILTER]   ${currCanonical} substring of ${prevCanonical} - APPOSITIVE`);
           return false;
         }
-        // If they're very close (within 50 chars), likely coordination
+        // If they're very close (within 100 chars), likely coordination
         const distance = Math.abs(currPosition - prevPosition);
         console.log(`[APPOS-FILTER]   Distance between ${prevCanonical} and ${currCanonical}: ${distance}`);
-        return distance < 50;
+        return distance < 100;
       });
 
       console.log(`[APPOS-FILTER]   isCoordination: ${isCoordination}`);

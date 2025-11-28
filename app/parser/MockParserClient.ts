@@ -54,7 +54,7 @@ function splitSentences(text: string): Array<{ text: string; start: number; end:
   return segments;
 }
 
-function annotateNamedEntities(tokens: Token[]): void {
+function annotateNamedEntities(tokens: Token[], fullText: string): void {
   // Date detection: month names and 4-digit years
   for (const token of tokens) {
     const lower = token.text.toLowerCase();
@@ -65,6 +65,12 @@ function annotateNamedEntities(tokens: Token[]): void {
 
   const hasOrgKeyword = (phrase: string) => ORG_KEYWORDS.some(keyword => phrase.includes(keyword));
   const hasPlaceKeyword = (phrase: string) => PLACE_KEYWORDS.some(keyword => phrase.includes(keyword));
+
+  // Helper to check if there's a comma between two tokens
+  const hasCommaBetween = (token1: Token, token2: Token): boolean => {
+    const between = fullText.slice(token1.end, token2.start);
+    return between.includes(',');
+  };
 
   let i = 0;
   while (i < tokens.length) {
@@ -94,6 +100,11 @@ function annotateNamedEntities(tokens: Token[]): void {
       const next = tokens[j];
       const nextCap = /^[A-Z]/.test(next.text) || /-[A-Z]/.test(next.text);
       if (!nextCap || next.ent === "DATE") break;
+
+      // COORDINATION FIX: Don't group across commas (coordination lists)
+      // E.g., "Gryffindor, Slytherin, Hufflepuff" should be 3 entities, not 1
+      if (hasCommaBetween(tokens[j - 1], next)) break;
+
       j += 1;
     }
 
@@ -135,7 +146,7 @@ const ACTION_VERBS = new Set([
   'studied', 'attended', 'teaches', 'learned'
 ]);
 
-function buildTokens(sentenceText: string, offset: number): Token[] {
+function buildTokens(sentenceText: string, offset: number, fullText: string): Token[] {
   const tokens: Token[] = [];
   let match: RegExpExecArray | null;
   let index = 0;
@@ -209,7 +220,7 @@ function buildTokens(sentenceText: string, offset: number): Token[] {
   }
 
   // Second pass: establish dependency relationships
-  annotateNamedEntities(tokens);
+  annotateNamedEntities(tokens, fullText);
 
   // Find the main verb (first VERB token, or first token as fallback)
   let verbIdx = tokens.findIndex(t => t.pos === "VERB");
@@ -324,7 +335,7 @@ export class MockParserClient implements ParserClient {
       sentence_index: idx,
       start: sentence.start,
       end: sentence.end,
-      tokens: buildTokens(sentence.text, sentence.start)
+      tokens: buildTokens(sentence.text, sentence.start, input.text)
     }));
 
     return { sentences: parsed };
