@@ -1161,17 +1161,18 @@ export async function extractFromSegments(
       aliasSet.add(alias);
     }
 
-    // 1. Add aliases from coreference links (descriptive mentions ONLY - filter pronouns)
-    // Pronouns (he, she, it, etc.) are context-dependent and should NOT be permanent aliases
+    // 1. Add aliases from coreference links (descriptive mentions ONLY - filter pronouns and coordinations)
+    // - Pronouns (he, she, it, etc.) are context-dependent and should NOT be permanent aliases
+    // - Coordinations ("X and Y") should not be aliases for individual entities
     for (const link of corefLinks.links) {
       if (link.entity_id === entity.id) {
         const mentionText = link.mention.text.trim();
 
-        // CRITICAL: Filter out pronouns and other context-dependent terms
-        // Pronouns must be resolved at extraction time, not stored as aliases
+        // CRITICAL: Filter out pronouns, coordinations, and other context-dependent terms
         if (mentionText &&
             mentionText !== entity.canonical &&
-            !isContextDependent(mentionText)) {
+            !isContextDependent(mentionText) &&
+            link.method !== 'coordination') {
           aliasSet.add(mentionText);
         }
       }

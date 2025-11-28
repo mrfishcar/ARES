@@ -454,11 +454,18 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     predicate: 'rules',
     typeGuard: { subj: ['PERSON'], obj: ['PLACE', 'ORG'] }
   },
-  // "Aragorn became king of Gondor", "became king there"
+  // "Aragorn became king of Gondor" or "He became king in Gondor"
   {
-    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+became\s+(?:king|queen|ruler|leader)\s+(?:of\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*|[Hh]e|[Ss]he)\s+became\s+(?:king|queen|ruler|leader|monarch|emperor|empress|sultan|pharaoh)\s+(?:of|in|over)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
     predicate: 'rules',
     typeGuard: { subj: ['PERSON'], obj: ['PLACE', 'ORG'] }
+  },
+  // "He became king there" - requires deictic resolution for "there"
+  {
+    regex: /\b([A-Z][a-z]+|[Hh]e|[Ss]he)\s+became\s+(king|queen|ruler|leader|monarch|emperor|empress|sultan|pharaoh)\s+there\b/g,
+    predicate: 'rules',
+    typeGuard: { subj: ['PERSON'], obj: ['PLACE', 'ORG'] },
+    deicticObj: true  // Special flag: object needs deictic resolution
   },
 
   // === LOCATION PATTERNS - EXPANDED ===
@@ -1062,6 +1069,60 @@ export function extractNarrativeRelations(
           console.log(`[LIST-EXTRACT] No entity match for container "${container}"`);
         }
         continue; // Skip normal processing for list patterns
+      }
+
+      // Handle deictic object patterns (e.g., "became king there")
+      if ((pattern as any).deicticObj) {
+        const subjSurface = match[1];  // "He" or proper name
+
+        // Resolve subject (may be pronoun "He"/"She")
+        let subjEntity = matchEntity(subjSurface, entities);
+        if (!subjEntity && corefLinks) {
+          const subjPosition = match.index;
+          const subjLinks = corefLinks.links.filter(link =>
+            link.mention.start <= subjPosition &&
+            subjPosition < link.mention.end &&
+            link.mention.text.toLowerCase() === subjSurface.toLowerCase()
+          );
+          if (subjLinks.length > 0) {
+            const bestLink = subjLinks.sort((a, b) => b.confidence - a.confidence)[0];
+            subjEntity = entities.find(e => e.id === bestLink.entity_id) || null;
+          }
+        }
+
+        // Resolve "there" to most recent PLACE entity before the match
+        let objEntity: EntityLookup | null = null;
+        const matchPosition = match.index;
+        for (let i = entities.length - 1; i >= 0; i--) {
+          const e = entities[i];
+          if (e.type === 'PLACE' || e.type === 'ORG') {
+            // Check if this entity appears before the match in the text
+            // For simplicity, we'll use the most recent PLACE entity
+            objEntity = e;
+            break;
+          }
+        }
+
+        if (subjEntity && objEntity && passesTypeGuard(pattern, subjEntity, objEntity)) {
+          const matchStart = match.index;
+          const matchEnd = matchStart + match[0].length;
+
+          relations.push({
+            id: uuid(),
+            subj: subjEntity.id,
+            pred: pattern.predicate as any,
+            obj: objEntity.id,
+            evidence: [{
+              doc_id: docId,
+              span: { start: matchStart, end: matchEnd, text: match[0] },
+              sentence_index: 0,
+              source: 'RULE'
+            }],
+            confidence: 0.85,
+            extractor: 'regex'
+          });
+        }
+        continue; // Skip normal processing for deictic patterns
       }
 
       const subjGroup = pattern.extractSubj ?? 1;
