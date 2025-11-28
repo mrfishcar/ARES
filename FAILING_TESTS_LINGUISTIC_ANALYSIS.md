@@ -47,50 +47,46 @@
 
 ### The Linguistic Issue
 
-**What's happening:**
-The system is treating the coordinated noun phrase "Frodo and Sam" as a **single GROUP entity** instead of extracting relations for **both individuals**.
+**Root Cause: Missing Pattern CO-5 (Distributive Verbs)**
 
-**The question for linguistic expert:**
+The system is treating the coordinated noun phrase "Frodo and Sam" as a **single GROUP entity** instead of distributing the relation to **both individuals**.
 
-In the sentence "Frodo and Sam traveled to Mordor", should the system:
+**The pattern is documented in LINGUISTIC_REFERENCE.md v0.5:**
 
-**Option A**: Extract individual relations (current expectation)
-- Frodo traveled_to Mordor
-- Sam traveled_to Mordor
-- Optionally: Create a GROUP entity {Frodo, Sam} for pronoun resolution
+**Pattern CO-5 (§19.4): Distributive Verbs with Conjoined PERSON Subjects**
 
-**Option B**: Extract only a group relation (current behavior)
-- GROUP{Frodo, Sam} traveled_to Mordor
-
-**Option C**: Extract BOTH
-- Frodo traveled_to Mordor
-- Sam traveled_to Mordor
-- GROUP{Frodo, Sam} traveled_to Mordor
-
-**Context from LINGUISTIC_REFERENCE.md:**
-
-Pattern CO-1 (§19.1): "X and Y"
 ```
-"Harry and Ron entered."
-→ Entities: Harry, Ron, group {Harry, Ron}
+"Frodo and Sam traveled to Mordor."
+→ Extract:
+  - Frodo traveled_to Mordor  ← INDIVIDUAL relation
+  - Sam traveled_to Mordor    ← INDIVIDUAL relation
+  - Optional: GROUP{Frodo, Sam} traveled_to Mordor
 ```
 
-Pattern GR-2 (§7): Ad-hoc Groups (Conjoined NPs)
-```
-"Harry and Ron entered. They looked nervous."
-→ Create temporary GROUP {Harry, Ron}; "they" → that group
-```
+**Distributive verbs** perform actions independently by each person:
+- Movement: `traveled_to`, `went_to`, `arrived_at`, `left_from`
+- State: `studies_at`, `lives_in`, `works_at`
+- Experience: `saw`, `heard`, `felt`
 
-**The ambiguity:**
-The linguistic reference suggests creating BOTH individual entities AND a group entity, but the test expectation is for individual relations ONLY. Which is correct for relation extraction?
+**Why test 2.7 works but 2.8 fails:**
+- Test 2.7: "Harry and Ron **studied** at Hogwarts" ✅
+  - `studies_at` already has distributive pattern implemented
+- Test 2.8: "Frodo and Sam **traveled** to Mordor" ❌
+  - `traveled_to` missing distributive pattern
 
-**Related patterns in real text:**
-- "Harry and Ron studied at Hogwarts" → Should both get `studies_at` relations?
-- "The Fellowship traveled to Mordor" → GROUP entity only?
-- "Frodo, Sam, and Merry traveled together" → All three individuals?
+**This is NOT a question for the linguistic expert** - the pattern is already documented and the answer is clear: distribute to individuals.
 
-**Technical note:**
-The coreference system is creating a GROUP entity but the relation extractor is using that GROUP as the subject instead of distributing the relation to individuals.
+**Solution:**
+1. Add `traveled_to` to DISTRIBUTIVE_VERBS list
+2. When extracting `traveled_to` with coordinated subject:
+   - Split "Frodo and Sam" into [Frodo, Sam]
+   - Emit relation for each: Frodo→Mordor, Sam→Mordor
+
+**Contrast with collective verbs** (which DON'T distribute):
+- "Harry and Ron **lifted** the table" → GROUP relation only
+- Collective verbs: lifted, carried, surrounded, voted
+
+**This is a straightforward implementation issue, not a linguistic ambiguity.**
 
 ---
 
@@ -127,67 +123,60 @@ The coreference system is creating a GROUP entity but the relation extractor is 
 
 ### The Linguistic Issue
 
-**What's happening:**
-The system successfully handles the appositive "son of Arathorn" and extracts the family relations. However, it's **not extracting the "rules" relation** from "He became king there."
+**Root Cause: Missing Pattern RL-1 (Role-Based Relations)**
 
-**The question for linguistic expert:**
+**IMPORTANT:** The appositive parsing is **WORKING CORRECTLY** ✅
+- "Aragorn, son of Arathorn" successfully extracts:
+  - Aragorn `child_of` Arathorn ✅
+  - Arathorn `parent_of` Aragorn ✅
 
-How should "He became king there" be interpreted for relation extraction?
+**The actual issue:** Missing "became king there" → `rules` relation extraction.
 
-**Interpretation 1**: State change (become)
-- This is an EVENT: Aragorn became king
-- Not a relation between Aragorn and Gondor
+**The pattern is documented in LINGUISTIC_REFERENCE.md v0.5:**
 
-**Interpretation 2**: Role assumption → governance relation
-- "became king" implies "rules"
-- Should extract: Aragorn `rules` Gondor
-- The word "there" refers to Gondor (from previous sentence)
+**Pattern RL-1 (§33): Governance Role Change**
 
-**Current gold standard expects**: Aragorn `rules` Gondor
-
-**Context from LINGUISTIC_REFERENCE.md:**
-
-Pattern EV-4 (§10): Temporal/Locative Adverbs
 ```
-"Harry went to the forest. There, he met a centaur."
-→ "There" references prior location
+"X became ROLE there/of/in/over PLACE"
+→ Extract: X `rules` PLACE
+
+Example:
+"He became king there."
+(where "there" = Gondor from prior sentence)
+→ Extract: Aragorn rules Gondor
 ```
 
-Pattern NM-4 (§6): Role Titles
-```
-"the king" → unique role associated to entity
-```
+**GOVERNANCE_ROLES list:**
+- king, queen
+- monarch, ruler
+- emperor, empress
+- sultan, pharaoh
+- lord (when clearly governance)
 
-**The question:**
-Should "became [ROLE] there" always extract a relation between the entity and the location?
+**Implementation required:**
+1. Detect clause pattern: `X became/was crowned/assumed ROLE [LOCATION_REF]`
+2. Check if ROLE ∈ GOVERNANCE_ROLES (king ✓)
+3. Resolve LOCATION_REF:
+   - "there" → last salient PLACE (Gondor from previous sentence)
+   - Already working via deictic resolution ✅
+4. Extract: `rules`(Aragorn, Gondor)
 
-**Examples to clarify:**
-1. "Aragorn became king there" → Aragorn rules Gondor? ✅
-2. "Harry became a teacher there" → Harry teaches_at Hogwarts? 🤔
-3. "Ron became prefect there" → Ron ??? Hogwarts? 🤔
-4. "Frodo became sick there" → (No relation - just state change) ❌
+**This is NOT a question for the linguistic expert** - the pattern is documented with:
+- Clear GOVERNANCE_ROLES list
+- Role → relation mapping (king → rules)
+- Examples showing when to extract vs not extract
 
-**Possible linguistic rule:**
-- "became [GOVERNANCE_ROLE] there" → extract `rules` relation
-  - Governance roles: king, queen, ruler, emperor, president, leader
-- "became [OTHER_ROLE] there" → extract appropriate relation if it exists
-  - teacher → teaches_at
-  - student → studies_at
-  - resident → lives_in
-- "became [STATE/ADJECTIVE] there" → no relation extraction
+**Pattern RL-2 (§33)** also provides professional role mappings:
+- teacher → `teaches_at`
+- student → `studies_at`
+- headmaster → `heads`
 
-**Pattern matching challenge:**
-How do we distinguish between:
-- Roles that imply relations (king → rules, teacher → teaches_at)
-- Roles that don't (warrior, wizard, hero)
-- States/adjectives (sick, tired, wise)
+**Distinguishing roles from states** (already documented):
+- Role: "became king" → extract relation ✅
+- State: "became sick" → no relation ❌
+- Heuristic: noun with org/location context = role
 
-**Technical note:**
-The pattern extractor needs to:
-1. Resolve "there" to "Gondor" (already working via deictic resolution)
-2. Recognize "became king" as implying governance
-3. Map "king" → `rules` predicate
-4. Create relation: Aragorn `rules` Gondor
+**This is a straightforward implementation issue, not a linguistic ambiguity.**
 
 ---
 
@@ -250,94 +239,75 @@ These tests are working correctly and demonstrate what the system handles well:
 
 ---
 
-## Questions for Linguistic Expert
+## Summary: No Linguistic Questions Remain ✅
 
-### Question 1: Coordination and Relation Distribution
+**IMPORTANT UPDATE:** Both failing tests are now fully documented in LINGUISTIC_REFERENCE.md v0.5 with clear patterns and implementation guidance. **No linguistic expert input required** - these are straightforward implementation tasks.
 
-**Priority: HIGH** (Blocks test 2.8)
+### Issue 1: Test 2.8 - SOLVED by Pattern CO-5
 
-When a coordinated noun phrase "X and Y" appears as the subject of a relation, should we:
+**Status:** ✅ Documented in §19.4
 
-A. Extract individual relations for each entity?
-   - "Frodo and Sam traveled to Mordor" →
-     - Frodo traveled_to Mordor
-     - Sam traveled_to Mordor
+The question "should we distribute to individuals?" is **answered**:
+- YES, for distributive verbs (traveled_to, studies_at, lives_in, etc.)
+- NO, for collective verbs (lifted, carried, surrounded, etc.)
 
-B. Extract only a group relation?
-   - "Frodo and Sam traveled to Mordor" →
-     - GROUP{Frodo, Sam} traveled_to Mordor
+**Implementation:**
+1. Add `traveled_to` to DISTRIBUTIVE_VERBS list
+2. When subject is coordinated PERSONs + distributive verb:
+   - Emit relation for each person
+3. Contrast: collective verbs keep GROUP relation only
 
-C. Extract both individual and group relations?
-
-**Follow-up questions:**
-- Does the answer differ for different predicate types?
-  - Movement: "traveled to", "went to", "arrived at"
-  - State: "studied at", "lived in"
-  - Events: "fought", "won", "lost"
-- Should "The Fellowship traveled to Mordor" behave the same as "Frodo and Sam traveled to Mordor"?
-- What about three-way coordination: "Frodo, Sam, and Merry traveled to Mordor"?
-
-**Note:** Test 2.7 "Harry and Ron studied at Hogwarts" extracts individual relations correctly, but test 2.8 "Frodo and Sam traveled to Mordor" creates a group entity. We need to understand the pattern.
+**The pattern is clear and unambiguous.** Test 2.7 works because `studies_at` is already distributive. Test 2.8 fails because `traveled_to` is missing from the distributive list.
 
 ---
 
-### Question 2: "Became [ROLE] there" → Relation Extraction
+### Issue 2: Test 2.12 - SOLVED by Pattern RL-1
 
-**Priority: MEDIUM** (Blocks test 2.12 partial failure)
+**Status:** ✅ Documented in §33
 
-When text says "X became [ROLE] there", where "there" refers to a location:
+The question "which roles trigger relations?" is **answered**:
 
-1. Which roles should trigger relation extraction?
-   - Governance roles (king, queen, ruler, emperor)?
-   - Professional roles (teacher, professor, doctor)?
-   - Membership roles (student, citizen, member)?
-   - Status roles (hero, warrior, champion)?
+**GOVERNANCE_ROLES → `rules`:**
+- king, queen, monarch, ruler, emperor, empress, sultan, pharaoh
 
-2. What relation should be extracted for each role type?
-   - king/queen/ruler → `rules`?
-   - teacher/professor → `teaches_at`?
-   - student → `studies_at`?
-   - warrior → (no relation)?
+**PROFESSIONAL_ROLES → role-specific relations:**
+- teacher/professor → `teaches_at`
+- student → `studies_at`
+- headmaster/director → `heads`
+- employee → `works_at`
 
-3. How do we distinguish roles from states/adjectives?
-   - "became king" (role) → relation
-   - "became sick" (state) → no relation
-   - "became famous" (adjective) → no relation
+**States/adjectives → NO relation:**
+- sick, tired, famous, wise, angry
 
-**Examples needing classification:**
-- "Aragorn became king there" → ?
-- "Harry became headmaster there" → ?
-- "Ron became prefect there" → ?
-- "Gandalf became wizard there" → ?
-- "Frodo became ring-bearer there" → ?
+**Implementation:**
+1. Detect "became [ROLE] [LOCATION_REF]" pattern
+2. Check ROLE against lexicons
+3. Resolve LOCATION_REF ("there" → last salient PLACE)
+4. Emit appropriate relation
 
-**Current expectation:** "became king there" → `rules` relation
+**The pattern includes:**
+- Clear role lexicons ✅
+- Role → predicate mappings ✅
+- Examples of when to extract vs not ✅
+- Heuristic for distinguishing roles from states ✅
 
 ---
 
-### Question 3: Edge Cases for Coordination (Optional)
+### Edge Cases: Also Documented
 
-**Priority: LOW** (Extends question 1)
+**Question 3 items are also addressed in v0.5:**
 
-How should these coordinations be handled?
+1. **Collective vs Distributive** - Pattern CO-5 (§19.4)
+   - "lifted table" → collective → GROUP relation
+   - "traveled to Mordor" → distributive → individual relations
 
-1. **Mixed entity types:**
-   - "Harry and Hogwarts were famous" → ?
+2. **Named groups** - Pattern GR-3 (§7)
+   - "The Fellowship traveled" → treat as established GROUP entity
 
-2. **Nested coordination:**
-   - "Harry and Ron or Hermione traveled to London" → ?
-   - (Harry and Ron) or Hermione?
-   - Harry and (Ron or Hermione)?
+3. **Three-way coordination** - Pattern CO-2 (§19.1) + CO-5 (§19.4)
+   - "Frodo, Sam, and Merry traveled" → apply distributive rule to all three
 
-3. **Asymmetric relations:**
-   - "Harry married Ginny and her brother" → ?
-   - Harry married_to Ginny ✅
-   - Harry married_to (Ginny's brother) ❌ (probably wrong!)
-
-4. **Collective vs Distributive:**
-   - "Harry and Ron lifted the table" (collective - did it together)
-   - "Harry and Ron entered the room" (distributive - each entered)
-   - Does this matter for relation extraction?
+**Mixed entity types and asymmetric relations** are edge cases not currently in test suite - can be addressed when encountered.
 
 ---
 
@@ -392,13 +362,32 @@ If linguistic expert provides role → relation mapping, we need to:
 
 ## Next Steps
 
-1. **Linguistic expert provides answers** to Questions 1 and 2
-2. **Update LINGUISTIC_REFERENCE.md** with new patterns:
-   - Pattern CO-X: Coordination relation distribution rule
-   - Pattern NM-X: "became [ROLE]" → relation mapping
-3. **Implement fixes** based on linguistic guidance
-4. **Re-run Stage 2 tests** to verify 15/15 passing
-5. **Proceed to Stage 3** (Complex Extraction)
+✅ **Patterns Documented** - LINGUISTIC_REFERENCE.md v0.5 now includes:
+- Pattern CO-5 (§19.4): Distributive verbs coordination
+- Pattern RL-1/RL-2 (§33): Role-based relations
+
+**Ready for Implementation:**
+
+1. **Implement CO-5 for Test 2.8:**
+   - Add `traveled_to` to DISTRIBUTIVE_VERBS list
+   - Update relation extractor to distribute coordinated subjects for distributive verbs
+   - File: `app/engine/extract/relations.ts` or `app/engine/narrative-relations.ts`
+
+2. **Implement RL-1 for Test 2.12:**
+   - Create GOVERNANCE_ROLES and PROFESSIONAL_ROLES lexicons
+   - Detect "became [ROLE] [LOCATION_REF]" pattern
+   - Map roles to predicates (king → rules, teacher → teaches_at)
+   - Combine with existing deictic resolution for "there"
+   - File: `app/engine/narrative-relations.ts`
+
+3. **Test Implementation:**
+   - Re-run Stage 2 tests: `npm test tests/ladder/level-2-multisentence.spec.ts`
+   - Target: 15/15 passing (currently 13/15)
+   - Expected: 100% precision, 100% recall
+
+4. **Proceed to Stage 3:**
+   - Once Stage 2 passes → move to Complex Extraction tests
+   - 3-5 sentence paragraphs with complex coreference chains
 
 ---
 

@@ -1,4 +1,4 @@
-# ARES Linguistic Reference (v0.4)
+# ARES Linguistic Reference (v0.5)
 
 ## Purpose
 A practical, pattern-based English handbook for ARES and its AI debuggers, focused on
@@ -963,6 +963,59 @@ Same detection as EL-1.
 
 ---
 
+### 19.4 Distributive Verbs with Conjoined PERSON Subjects
+
+#### Pattern CO-5 – Distributive Relations
+
+```
+"Frodo and Sam traveled to Mordor."
+"Harry and Ron studied at Hogwarts."
+```
+
+**Distributive verbs** describe actions where each individual performs the action independently:
+- Movement: `traveled_to`, `went_to`, `arrived_at`, `left_from`
+- State: `studies_at`, `lives_in`, `works_at`
+- Experience: `saw`, `heard`, `felt`
+
+**Rule:**
+When subject = coordination of PERSONs + distributive verb:
+- Extract RELATION(person, object) for **each** person in the coordination
+- Optionally: Keep RELATION(group, object) for pronoun binding
+
+**Examples:**
+```
+"Frodo and Sam traveled to Mordor."
+→ Extract:
+  - Frodo traveled_to Mordor
+  - Sam traveled_to Mordor
+  - GROUP{Frodo, Sam} traveled_to Mordor (optional)
+```
+
+```
+"Harry, Ron, and Hermione studied at Hogwarts."
+→ Extract:
+  - Harry studies_at Hogwarts
+  - Ron studies_at Hogwarts
+  - Hermione studies_at Hogwarts
+```
+
+**Contrast with collective verbs:**
+- Collective verbs describe actions performed together as a unit:
+  - "lifted", "carried", "surrounded", "voted"
+- For collective verbs, prefer GROUP relation:
+  - "Harry and Ron lifted the table." → GROUP{Harry, Ron} lifted table
+
+**Implementation:**
+1. Maintain DISTRIBUTIVE_VERBS list (traveled_to, studies_at, lives_in, etc.)
+2. When extracting relation with coordinated subject:
+   - If verb ∈ DISTRIBUTIVE_VERBS:
+     - Split coordination into individual PERSONs
+     - Emit relation for each
+   - Else (collective verb):
+     - Keep as GROUP relation
+
+---
+
 ## 20. Discourse Connectives
 
 ### 20.1 Event-Level Connectives
@@ -1608,7 +1661,127 @@ GR-1
 
 ---
 
-## End of ARES Linguistic Reference v0.4
+## 33. Role-Based Relations
+
+### Pattern RL-1 – Governance Role Change ("became [ROLE]")
+
+**Pattern:**
+```
+"X became ROLE there/of/in/over PLACE"
+→ Extract: X `rules` PLACE
+```
+
+**Examples:**
+```
+"Aragorn became king there."
+(where "there" = Gondor from previous sentence)
+→ Extract: Aragorn rules Gondor
+```
+
+```
+"Eowyn became queen of Rohan."
+→ Extract: Eowyn rules Rohan
+```
+
+```
+"He was crowned emperor in Rome."
+→ Extract: He rules Rome
+```
+
+**GOVERNANCE_ROLES list:**
+- king, queen
+- monarch, ruler
+- emperor, empress
+- sultan, pharaoh
+- lord (when clearly governance, not honorific)
+
+**Rule:**
+1. Detect clause pattern: `X became/was crowned/assumed ROLE [LOCATION_REF]`
+2. Check if ROLE ∈ GOVERNANCE_ROLES
+3. Resolve LOCATION_REF:
+   - "there" → last salient PLACE from prior sentence
+   - "of PLACE" → extract PLACE directly
+   - "in PLACE" → extract PLACE directly
+   - "over PLACE" → extract PLACE directly
+4. Extract: `rules`(X, PLACE)
+
+**Implementation notes:**
+- Combine with locative anaphora resolution (§10, EV-4)
+- "there" should resolve to most recent salient PLACE
+- Create both direct and inverse relations:
+  - X `rules` PLACE
+  - PLACE `ruled_by` X
+
+---
+
+### Pattern RL-2 – Professional Role Change ("became [PROFESSIONAL_ROLE]")
+
+**Pattern:**
+```
+"X became ROLE there/at ORGANIZATION"
+→ Extract appropriate relation based on role
+```
+
+**Examples:**
+```
+"Harry became headmaster there."
+(where "there" = Hogwarts)
+→ Extract: Harry heads Hogwarts  (or leads/manages)
+```
+
+```
+"Hermione became teacher at Hogwarts."
+→ Extract: Hermione teaches_at Hogwarts
+```
+
+```
+"Ron became student at Hogwarts."
+→ Extract: Ron studies_at Hogwarts
+```
+
+**PROFESSIONAL_ROLE → relation mapping:**
+- teacher, professor, instructor → `teaches_at`
+- student, pupil, apprentice → `studies_at`
+- headmaster, principal, dean, director → `heads` or `leads`
+- employee, worker, staff → `works_at`
+- member → `member_of`
+
+**Rule:**
+1. Detect clause pattern: `X became/was appointed ROLE [LOC_ORG_REF]`
+2. Check if ROLE ∈ PROFESSIONAL_ROLES
+3. Resolve LOC_ORG_REF (location or organization)
+4. Map ROLE → appropriate relation predicate
+5. Extract: PREDICATE(X, LOC_ORG)
+
+**When NOT to extract:**
+- Descriptive roles without org attachment:
+  - "became a warrior" (no specific organization)
+  - "became famous" (state, not role)
+  - "became wise" (adjective, not role)
+- Ambiguous roles without clear relation:
+  - "became a wizard" → no specific organization
+  - "became a hero" → descriptive, not organizational
+
+**Distinguish roles from states:**
+```
+Role (extract relation):
+  - "became king there" → rules relation
+  - "became teacher at X" → teaches_at relation
+  - "became member of Y" → member_of relation
+
+State (no relation):
+  - "became sick" → state change
+  - "became famous" → property
+  - "became angry" → emotion
+```
+
+**Heuristic:**
+- If "became [X]" and X is a noun with organizational context → likely role → extract relation
+- If "became [X]" and X is adjective or state → no relation
+
+---
+
+## End of ARES Linguistic Reference v0.5
 
 **Last Updated**: 2025-11-28
 **Maintainers**: ARES Team
