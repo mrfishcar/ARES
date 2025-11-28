@@ -14,6 +14,33 @@ Testing is a **single progressive ladder** where each stage validates both **com
 
 ---
 
+## ⚠️ CRITICAL Debugging Protocol
+
+**When tests fail due to linguistic issues (entity extraction, pronoun resolution, relation patterns), ASK THE USER FOR HELP IMMEDIATELY instead of spending >30 minutes on technical debugging.**
+
+**The user is an English language expert.** They can provide linguistic rules that solve bugs in minutes instead of hours of technical debugging.
+
+**Examples of when to ask:**
+- Entities merging incorrectly (e.g., "Harry Potter" and "Lily Potter" becoming one entity)
+- Pronouns resolving to wrong entities (e.g., "His father" referring to wrong person)
+- Relation patterns not matching expected sentence structures
+- Any ambiguous linguistic situation where multiple interpretations are possible
+
+**How to ask:**
+```markdown
+I'm stuck on [test X.Y]. Here's the specific issue:
+
+Text: "[exact failing sentence]"
+Expected: [what gold standard expects]
+Actual: [what system extracted]
+
+Question: What's the linguistic rule for [the ambiguous situation]?
+```
+
+**Example:** Instead of debugging merge.ts for hours, ask: "When 'Harry Potter' and 'Lily Potter' both appear and then 'Potter' appears alone, which should it refer to?" → Answer: "Most recently mentioned" (recency rule).
+
+---
+
 ## The Five-Stage Testing Ladder
 
 ```

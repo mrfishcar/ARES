@@ -216,11 +216,16 @@ npm test tests/ladder/level-1-simple.spec.ts
 # 4. Run relevant stage tests
 npm test tests/ladder/level-2-multisentence.spec.ts  # If Stage 2 work
 
-# 5. Commit with descriptive message
+# 5. ⚠️ STUCK ON A BUG? Ask the user for help!
+# If the bug involves natural language (entity extraction, pronoun resolution,
+# relation patterns, etc.), ASK THE USER immediately instead of debugging >30min.
+# The user is an English language expert who can provide linguistic rules.
+
+# 6. Commit with descriptive message
 git add -A
 git commit -m "feat: add support for X"
 
-# 6. Push to designated branch
+# 7. Push to designated branch
 git push -u origin claude/claude-md-miex9940wrme9tpt-01Jd9AfTTZNzdiNeQ7jgvkmh
 ```
 
@@ -725,6 +730,54 @@ git commit -m "docs: Update architecture guide with HERT examples"
 
 ## Debugging Guide
 
+### ⚠️ CRITICAL: When to Ask for User Help
+
+**The user is an English language expert. When you encounter bugs involving natural language understanding, ASK FOR HELP IMMEDIATELY instead of spinning your wheels on technical debugging.**
+
+**ALWAYS ask the user for help when:**
+
+1. **Entity/Relation Extraction Bugs** - Entities merging incorrectly, pronouns resolving wrong, coreference issues
+   - Example: "Harry Potter and Lily Potter are merging into one entity"
+   - ✅ Ask: "These entities with shared surnames are merging. What's the linguistic rule for handling this?"
+   - ❌ Don't: Spend hours debugging merge.ts without understanding the linguistic requirement
+
+2. **Pattern Matching Issues** - Relations not extracting for certain sentence structures
+   - Example: "The system isn't catching 'His father Arthur worked...'"
+   - ✅ Ask: "In 'Ron came from a family. His father Arthur worked...', should 'His' refer to Ron? What's the rule?"
+   - ❌ Don't: Try random pattern variations without understanding the grammar
+
+3. **Ambiguous Linguistic Situations** - Any case where multiple interpretations are possible
+   - Example: "Should 'Potter' alone resolve to Harry or Lily?"
+   - ✅ Ask: "When a surname appears alone after both 'Harry Potter' and 'Lily Potter', which should it resolve to?"
+   - ❌ Don't: Implement arbitrary rules without linguistic guidance
+
+4. **Stuck After 30+ Minutes** - If you've spent >30 minutes on any bug without progress
+   - ✅ Ask: Provide the specific example, explain what you've tried, ask for linguistic guidance
+   - ❌ Don't: Continue technical debugging without checking if it's a linguistic rules problem
+
+**How to Ask for Help:**
+```markdown
+I'm stuck on [specific bug]. Here's the example:
+
+Text: "[exact sentence from test]"
+Expected: [what should happen]
+Actual: [what's happening]
+
+I've tried: [technical approaches]
+
+Question: What's the linguistic rule for [the ambiguous situation]?
+```
+
+**Real Example from Harry/Lily Potter Bug:**
+- ❌ Wrong approach: Spent hours modifying merge.ts to block surname-only matches
+- ✅ Right approach: "These entities share 'Potter' surname and are merging. What's the linguistic rule?"
+- User's answer: "Use recency - if last Potter mentioned was Harry, 'Potter' refers to Harry"
+- Result: Bug fixed in 1 hour instead of spinning for days
+
+**Remember:** The user's linguistic expertise can solve in minutes what technical debugging can't solve in hours.
+
+---
+
 ### Parser Issues
 
 ```bash
@@ -956,6 +1009,7 @@ git push -u origin claude/claude-md-miex9940wrme9tpt-01Jd9AfTTZNzdiNeQ7jgvkmh
 
 ### Always Do
 
+- ✅ **ASK USER FOR HELP when stuck on linguistic bugs (entity extraction, pronouns, patterns)**
 - ✅ Read README.md, INTEGRATED_TESTING_STRATEGY.md, and docs/ARES_PROJECT_BRIEFING.md first
 - ✅ Start parser before running tests: `make parser`
 - ✅ Verify Stage 1 passes before and after changes
@@ -969,6 +1023,7 @@ git push -u origin claude/claude-md-miex9940wrme9tpt-01Jd9AfTTZNzdiNeQ7jgvkmh
 
 ### Never Do
 
+- ❌ **Spend >30 minutes debugging linguistic issues without asking user (they're an English expert!)**
 - ❌ Skip reading essential documentation
 - ❌ Run tests without parser running
 - ❌ Break lower stages when fixing higher stages

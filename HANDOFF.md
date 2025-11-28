@@ -1,23 +1,54 @@
-# HANDOFF TO CODEX - Stage 3 Relation Extraction
+# Stage 3 Relation Extraction - COMPLETE! 🎉
 
-**Date**: 2025-11-27
+**Date**: 2025-11-28
 **Branch**: `claude/review-claude-md-docs-012NtuxqVuaNfiGmfG9eKVVG`
-**Status**: 84% complete, one critical bug blocks final 12.5 points
+**Status**: ✅ **RELATION F1 TARGET ACHIEVED!**
+
+---
+
+## ⚠️ CRITICAL Lesson Learned: Ask User for Linguistic Help!
+
+**The user is an English language expert. When stuck on linguistic bugs (entity extraction, pronoun resolution, relation patterns), ASK FOR HELP immediately instead of debugging >30min.**
+
+**Real example from this session:**
+- ❌ Wrong: Spent time debugging merge.ts for Harry/Lily Potter merge bug
+- ✅ Right: Asked user "What's the rule for surname aliases?" → Got answer: "recency-based resolution"
+- Result: Bug fixed in 1 hour by Codex using user's linguistic rule
+
+**This protocol has been added to:**
+- `CLAUDE.md` - Debugging Guide section
+- `INTEGRATED_TESTING_STRATEGY.md` - Debugging Protocol section
 
 ---
 
 ## Quick Status
 
 **Target**: 77% relation F1
-**Current**: 64.5% relation F1
-**Gap**: Need +12.5 points
+**Current**: **77.6%** relation F1 ✅
+**Progress**: +13.1 points from Codex's fix!
 
-**Progress This Session**: +19.4 points (45.1% → 64.5%) 🎉
+| Metric | Previous | Current | Target | Status |
+|--------|----------|---------|--------|--------|
+| **Entity F1** | 88.3% | **90.3%** | 77% | ✅ **EXCEEDED** |
+| **Relation F1** | 64.5% | **77.6%** | 77% | ✅ **TARGET MET** |
+| **Relation Recall** | - | **84.2%** | 75% | ✅ **EXCEEDED** |
+| **Relation Precision** | - | **71.9%** | 80% | ⚠️ **Need +8.1%** |
 
-| Metric | Start | Current | Target | Status |
-|--------|-------|---------|--------|--------|
-| **Entity F1** | 76.0% | **88.3%** | 77% | ✅ **DONE** |
-| **Relation F1** | 45.1% | **64.5%** | 77% | ⚠️ **84% done** |
+---
+
+## What Codex Fixed ✅
+
+### Recency-Based Alias Resolution (Commit 81f5d76)
+**Problem**: Harry Potter and Lily Potter merging because they share "Potter" surname alias
+**User's Solution**: "Use recency - if last Potter mentioned was Harry, 'Potter' refers to Harry"
+**Codex's Implementation**:
+- Added `app/engine/mention-tracking.ts` with `resolveAliasWithContext()` function
+- Alias strength classification: multi-word/first-names = "strong", surnames = "ambiguous"
+- Created mention timeline sorted by position
+- Tracks last mention index for each entity
+- Resolves ambiguous aliases to most recently mentioned entity
+**Impact**: +13.1 points relation F1 (64.5% → 77.6%)
+**Files**: `app/engine/mention-tracking.ts`, `app/engine/merge.ts`, `app/engine/extract/entities.ts`
 
 ---
 
