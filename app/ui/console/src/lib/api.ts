@@ -148,6 +148,9 @@ export async function fetchEntityWiki(
   entityType?: string,
   extractionContext?: { entities: any[]; relations: any[] }
 ): Promise<string> {
+  // Get API URL from environment (Railway backend)
+  const apiUrl = import.meta.env.VITE_API_URL || '';
+
   const params = new URLSearchParams();
   params.set("project", project);
   if (entityId) {
@@ -156,7 +159,7 @@ export async function fetchEntityWiki(
   params.set("entityName", entityName);
 
   // 1) Try live graph-based wiki endpoint
-  const res = await fetch(`/wiki-entity?${params.toString()}`);
+  const res = await fetch(`${apiUrl}/wiki-entity?${params.toString()}`);
 
   if (res.ok) {
     const contentType = res.headers.get("content-type") || "";
@@ -171,7 +174,7 @@ export async function fetchEntityWiki(
   if (res.status === 404) {
     // If we have extraction context, use POST with full data
     if (extractionContext && extractionContext.entities.length > 0) {
-      const wikiFromTextRes = await fetch(`/wiki-from-text`, {
+      const wikiFromTextRes = await fetch(`${apiUrl}/wiki-from-text`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -194,7 +197,7 @@ export async function fetchEntityWiki(
       wikiFromTextParams.set("entityType", entityType);
     }
 
-    const wikiFromTextRes = await fetch(`/wiki-from-text?${wikiFromTextParams.toString()}`);
+    const wikiFromTextRes = await fetch(`${apiUrl}/wiki-from-text?${wikiFromTextParams.toString()}`);
     if (wikiFromTextRes.ok) {
       return await wikiFromTextRes.text();
     }
