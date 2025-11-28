@@ -778,6 +778,54 @@ Question: What's the linguistic rule for [the ambiguous situation]?
 
 ---
 
+### 🔍 First Step: Check the Linguistic Reference
+
+**Before asking the user or debugging code, consult the ARES Linguistic Reference:**
+
+```bash
+# Open the linguistic reference
+cat docs/LINGUISTIC_REFERENCE.md
+```
+
+**This document contains:**
+- **30+ linguistic patterns** for pronoun resolution, coreference, apposition, bridging, etc.
+- **Bug patterns (§30)** - Common mistakes and their fixes
+- **Test templates (§32)** - Patterns mapped to test cases
+- **Resolution pipeline (§1)** - Step-by-step reference resolution algorithm
+
+**When to use it:**
+1. **Test failures** - Look up the failing pattern (e.g., test 2.12 → appositive parsing → see §9 Pattern AP-3)
+2. **Entity merging issues** - Check §30.3 (Surname Merging) or §6 (Names and Surnames)
+3. **Pronoun resolution bugs** - See §2 (Personal Pronouns) and §11 (Salience)
+4. **Dialogue attribution** - Check §16 (Dialogue and Quotation Handling)
+5. **Group vs individual confusion** - See §7 (Groups, Families, Collectives) and §30.4
+
+**Example workflow:**
+```bash
+# Test 2.12 fails (appositive: "Aragorn, son of Arathorn")
+# 1. Search linguistic reference
+grep -A 10 "appositive\|AP-" docs/LINGUISTIC_REFERENCE.md
+
+# 2. Find Pattern AP-3: "Name + Role Apposition"
+# "Severus Snape, the Potions Master" → same PERSON + role relation
+
+# 3. Apply pattern to "Aragorn, son of Arathorn"
+# → "son of" indicates child_of relation
+# → Extract: Aragorn child_of Arathorn
+
+# 4. If pattern exists but code doesn't implement it → fix code
+# 5. If pattern is missing → add to linguistic reference first, then code
+```
+
+**The debugging pipeline:**
+1. ✅ **Check linguistic reference** for known patterns (§1-§32)
+2. ✅ **Check bug patterns** (§30) for common mistakes
+3. ✅ Try implementing the documented pattern
+4. ❌ If stuck after 30min → **Ask user for linguistic guidance**
+5. ✅ Once resolved → **Update linguistic reference** if pattern was missing
+
+---
+
 ### Parser Issues
 
 ```bash
@@ -909,6 +957,7 @@ git log -1 --format='%an %ae'
 
 ### Development Guides
 
+- **docs/LINGUISTIC_REFERENCE.md** - ⭐ **Linguistic patterns reference for debugging** (v0.4, 32 sections)
 - **docs/FOR_AGENTS.md** - Quick onboarding for AI agents (10 min read)
 - **CONTRIBUTING.md** - Architecture patterns, common pitfalls
 - **docs/guides/QUICK_START.md** - Installation and setup

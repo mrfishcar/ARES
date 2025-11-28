@@ -734,9 +734,39 @@ export async function extractFromSegments(
     return false; // No nearby conflict
   };
 
-  // Step 2: Filter main allRelations with PROXIMITY-BASED + confidence check
-  // Only suppress if married_to is BOTH high confidence AND in proximity
+  // SIBLING DETECTION (Pattern FM-1 from LINGUISTIC_REFERENCE.md v0.6 §7.1)
+  // Detect siblings ONCE and use for both allRelations and corefRelations filtering
+  const SIBLING_APPOSITIVE_PATTERN = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*,\s*(?:the\s+)?(?:eldest|oldest|younger|youngest|twin|middle)\s+(?:son|daughter|child|brother|sister|sibling)\b/gi;
+  const siblingsWithIndicators = new Set<string>();
+  const siblingMatches = fullText.matchAll(SIBLING_APPOSITIVE_PATTERN);
+  for (const match of siblingMatches) {
+    siblingsWithIndicators.add(match[1].toLowerCase());
+  }
+
+  console.log(`[SIBLING-FILTER] Detected siblings: ${Array.from(siblingsWithIndicators).join(', ') || 'none'}`);
+
+  // Step 2: Filter main allRelations with PROXIMITY-BASED + SIBLING DETECTION
+  // Suppress parent_of/child_of if:
+  // 1. Subject/object has sibling indicator (Pattern FM-1)
+  // 2. married_to exists in proximity with high confidence
   const filteredAllRelations = allRelations.filter(rel => {
+    // Filter 1: Sibling detection - block parent_of/child_of involving siblings
+    if (rel.pred === 'parent_of') {
+      const subj = allEntities.find(e => e.id === rel.subj);
+      if (subj && siblingsWithIndicators.has(subj.canonical.toLowerCase())) {
+        console.log(`[MAIN-SIBLING-FILTER] ✓ Blocking parent_of: ${subj?.canonical} -> ${allEntities.find(e => e.id === rel.obj)?.canonical} (${subj.canonical} has sibling indicator)`);
+        return false;
+      }
+    }
+    if (rel.pred === 'child_of') {
+      const obj = allEntities.find(e => e.id === rel.obj);
+      if (obj && siblingsWithIndicators.has(obj.canonical.toLowerCase())) {
+        console.log(`[MAIN-SIBLING-FILTER] ✓ Blocking child_of: ${allEntities.find(e => e.id === rel.subj)?.canonical} -> ${obj?.canonical} (${obj.canonical} has sibling indicator)`);
+        return false;
+      }
+    }
+
+    // Filter 2: Married pairs proximity check
     if ((rel.pred === 'parent_of' || rel.pred === 'child_of') &&
         hasMarriedToInProximity(rel, 2)) {
 
@@ -757,9 +787,27 @@ export async function extractFromSegments(
     return true;
   });
 
-  // Step 3: Filter coref-enhanced relations with PROXIMITY-BASED matching
-  // Only suppress parent_of/child_of if married_to within ±2 sentences
+  // Step 3: Filter coref-enhanced relations with PROXIMITY-BASED matching + SIBLING DETECTION
+  // Only suppress parent_of/child_of if married_to within ±2 sentences OR if subject has sibling indicator
+
   const filteredCorefRelations = corefRelations.filter(rel => {
+    // Filter 1: Sibling detection - block parent_of/child_of involving siblings
+    if (rel.pred === 'parent_of') {
+      const subj = allEntities.find(e => e.id === rel.subj);
+      if (subj && siblingsWithIndicators.has(subj.canonical.toLowerCase())) {
+        console.log(`[COREF-SIBLING-FILTER] ✓ Blocking parent_of: ${subj?.canonical} -> ${allEntities.find(e => e.id === rel.obj)?.canonical} (${subj.canonical} has sibling indicator)`);
+        return false;
+      }
+    }
+    if (rel.pred === 'child_of') {
+      const obj = allEntities.find(e => e.id === rel.obj);
+      if (obj && siblingsWithIndicators.has(obj.canonical.toLowerCase())) {
+        console.log(`[COREF-SIBLING-FILTER] ✓ Blocking child_of: ${allEntities.find(e => e.id === rel.subj)?.canonical} -> ${obj?.canonical} (${obj.canonical} has sibling indicator)`);
+        return false;
+      }
+    }
+
+    // Filter 2: Married pairs proximity check
     if ((rel.pred === 'parent_of' || rel.pred === 'child_of') &&
         hasMarriedToInProximity(rel, 2)) {
 
@@ -814,6 +862,13 @@ export async function extractFromSegments(
   // E.g., if we have parent_of(A, B), create child_of(B, A)
   const inversesToAdd: Relation[] = [];
   for (const rel of allRelationSources) {
+    // DEBUG: Log child_of relations to track Bill Weasley issue
+    if (rel.pred === 'child_of' || rel.pred === 'parent_of') {
+      const subjEntity = allEntities.find(e => e.id === rel.subj);
+      const objEntity = allEntities.find(e => e.id === rel.obj);
+      console.log(`[INVERSE-DEBUG] Found ${rel.pred}(${subjEntity?.canonical}, ${objEntity?.canonical}) from extractor: ${rel.extractor}`);
+    }
+
     const inversePred = INVERSE[rel.pred];
     if (inversePred) {
       // Create inverse relation
@@ -1161,17 +1216,18 @@ export async function extractFromSegments(
       aliasSet.add(alias);
     }
 
-    // 1. Add aliases from coreference links (descriptive mentions ONLY - filter pronouns)
-    // Pronouns (he, she, it, etc.) are context-dependent and should NOT be permanent aliases
+    // 1. Add aliases from coreference links (descriptive mentions ONLY - filter pronouns and coordinations)
+    // - Pronouns (he, she, it, etc.) are context-dependent and should NOT be permanent aliases
+    // - Coordinations ("X and Y") should not be aliases for individual entities
     for (const link of corefLinks.links) {
       if (link.entity_id === entity.id) {
         const mentionText = link.mention.text.trim();
 
-        // CRITICAL: Filter out pronouns and other context-dependent terms
-        // Pronouns must be resolved at extraction time, not stored as aliases
+        // CRITICAL: Filter out pronouns, coordinations, and other context-dependent terms
         if (mentionText &&
             mentionText !== entity.canonical &&
-            !isContextDependent(mentionText)) {
+            !isContextDependent(mentionText) &&
+            link.method !== 'coordination') {
           aliasSet.add(mentionText);
         }
       }

@@ -235,9 +235,9 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
   },
 
   // === TEACHING/LEADERSHIP PATTERNS ===
-  // "X teaches at Y", "Professor X teaches at Y"
+  // "X teaches at Y", "Professor X teaches at Y", "X taught [SUBJECT] at Y"
   {
-    regex: /\b(?:Professor\s+)?([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:teaches|taught)\s+at\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
+    regex: /\b(?:Professor\s+)?([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:teaches|taught)\s+(?:[A-Z][a-z]+\s+)?at\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
     predicate: 'teaches_at',
     typeGuard: { subj: ['PERSON'], obj: ['ORG'] }
   },
@@ -454,11 +454,18 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     predicate: 'rules',
     typeGuard: { subj: ['PERSON'], obj: ['PLACE', 'ORG'] }
   },
-  // "Aragorn became king of Gondor", "became king there"
+  // "Aragorn became king of Gondor" or "He became king in Gondor"
   {
-    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+became\s+(?:king|queen|ruler|leader)\s+(?:of\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*|[Hh]e|[Ss]he)\s+became\s+(?:king|queen|ruler|leader|monarch|emperor|empress|sultan|pharaoh)\s+(?:of|in|over)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
     predicate: 'rules',
     typeGuard: { subj: ['PERSON'], obj: ['PLACE', 'ORG'] }
+  },
+  // "He became king there" - requires deictic resolution for "there"
+  {
+    regex: /\b([A-Z][a-z]+|[Hh]e|[Ss]he)\s+became\s+(king|queen|ruler|leader|monarch|emperor|empress|sultan|pharaoh)\s+there\b/g,
+    predicate: 'rules',
+    typeGuard: { subj: ['PERSON'], obj: ['PLACE', 'ORG'] },
+    deicticObj: true  // Special flag: object needs deictic resolution
   },
 
   // === LOCATION PATTERNS - EXPANDED ===
@@ -568,9 +575,9 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     predicate: 'member_of',
     typeGuard: { subj: ['PERSON'], obj: ['ORG', 'HOUSE'] }
   },
-  // "X joined Y"
+  // "X joined Y", "X, ..., joined Y" (handles intervening phrases)
   {
-    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+joined\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)(?:,[\s\w]+,)?\s+joined\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
     predicate: 'member_of',
     typeGuard: { subj: ['PERSON'], obj: ['ORG', 'HOUSE'] }
   },
@@ -1064,6 +1071,60 @@ export function extractNarrativeRelations(
         continue; // Skip normal processing for list patterns
       }
 
+      // Handle deictic object patterns (e.g., "became king there")
+      if ((pattern as any).deicticObj) {
+        const subjSurface = match[1];  // "He" or proper name
+
+        // Resolve subject (may be pronoun "He"/"She")
+        let subjEntity = matchEntity(subjSurface, entities);
+        if (!subjEntity && corefLinks) {
+          const subjPosition = match.index;
+          const subjLinks = corefLinks.links.filter(link =>
+            link.mention.start <= subjPosition &&
+            subjPosition < link.mention.end &&
+            link.mention.text.toLowerCase() === subjSurface.toLowerCase()
+          );
+          if (subjLinks.length > 0) {
+            const bestLink = subjLinks.sort((a, b) => b.confidence - a.confidence)[0];
+            subjEntity = entities.find(e => e.id === bestLink.entity_id) || null;
+          }
+        }
+
+        // Resolve "there" to most recent PLACE entity before the match
+        let objEntity: EntityLookup | null = null;
+        const matchPosition = match.index;
+        for (let i = entities.length - 1; i >= 0; i--) {
+          const e = entities[i];
+          if (e.type === 'PLACE' || e.type === 'ORG') {
+            // Check if this entity appears before the match in the text
+            // For simplicity, we'll use the most recent PLACE entity
+            objEntity = e;
+            break;
+          }
+        }
+
+        if (subjEntity && objEntity && passesTypeGuard(pattern, subjEntity, objEntity)) {
+          const matchStart = match.index;
+          const matchEnd = matchStart + match[0].length;
+
+          relations.push({
+            id: uuid(),
+            subj: subjEntity.id,
+            pred: pattern.predicate as any,
+            obj: objEntity.id,
+            evidence: [{
+              doc_id: docId,
+              span: { start: matchStart, end: matchEnd, text: match[0] },
+              sentence_index: 0,
+              source: 'RULE'
+            }],
+            confidence: 0.85,
+            extractor: 'regex'
+          });
+        }
+        continue; // Skip normal processing for deictic patterns
+      }
+
       const subjGroup = pattern.extractSubj ?? 1;
       const objGroup = pattern.extractObj ?? 2;
 
@@ -1276,6 +1337,30 @@ export function extractNarrativeRelations(
   // ============================================================
   // OPTION C: IMPROVE PATTERN SPECIFICITY WITH CONTEXT AWARENESS
   // ============================================================
+
+  // SIBLING DETECTION: Detect entities with sibling indicators
+  // Pattern FM-1 from LINGUISTIC_REFERENCE.md v0.6 §7.1
+  // Look for pattern: "NAME, the eldest/youngest/etc son/daughter"
+  const SIBLING_APPOSITIVE_PATTERN = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*,\s*(?:the\s+)?(?:eldest|oldest|younger|youngest|twin|middle)\s+(?:son|daughter|child|brother|sister|sibling)\b/gi;
+  const siblingsWithIndicators = new Set<string>();
+
+  const siblingMatches = text.matchAll(SIBLING_APPOSITIVE_PATTERN);
+  for (const match of siblingMatches) {
+    // match[1] is the NAME before the comma
+    const siblingName = match[1].toLowerCase();
+    siblingsWithIndicators.add(siblingName);
+    console.log(`[SIBLING-FILTER] Detected sibling indicator for: ${siblingName}`);
+  }
+
+  // Create mapping from entity ID to canonical name (lowercase)
+  const entityIdToName = new Map<string, string>();
+  for (const entity of entities) {
+    entityIdToName.set(entity.id, entity.canonical.toLowerCase());
+  }
+  console.log(`[SIBLING-FILTER] Entity mapping created for ${entityIdToName.size} entities: ${Array.from(entityIdToName.values()).join(', ')}`);
+  console.log(`[SIBLING-FILTER] Siblings with indicators: ${Array.from(siblingsWithIndicators).join(', ')}`);
+
+
   // When married_to(A, B) exists, remove conflicting parent_of/child_of
   // relations because married_to has higher confidence in romantic contexts
   const marriedPairs = new Set<string>();
@@ -1289,8 +1374,20 @@ export function extractNarrativeRelations(
     }
   }
 
-  // Filter out parent_of/child_of relations that conflict with married_to
+  // Filter out parent_of/child_of relations that conflict with siblings or married_to
   const filteredRelations = relations.filter(rel => {
+    // Filter 1: Sibling detection - block parent_of if subject has sibling indicator
+    if (rel.pred === 'parent_of') {
+      const subjName = entityIdToName.get(rel.subj) || '';
+      const hasSiblingIndicator = subjName && siblingsWithIndicators.has(subjName);
+      console.log(`[SIBLING-FILTER] Checking parent_of: rel.subj="${rel.subj}", subjName="${subjName}", hasSiblingIndicator=${hasSiblingIndicator}`);
+      if (hasSiblingIndicator) {
+        console.log(`[SIBLING-FILTER] ✓ Removing parent_of(${subjName}, ${rel.obj}) because ${subjName} has sibling indicator`);
+        return false;
+      }
+    }
+
+    // Filter 2: Married pairs - block parent_of/child_of between married entities
     if (rel.pred === 'parent_of' || rel.pred === 'child_of') {
       const pairKey = `${rel.subj}:${rel.obj}`;
       if (marriedPairs.has(pairKey)) {
@@ -1670,7 +1767,38 @@ export function extractPossessiveFamilyRelations(
     }
   }
 
-  return relations;
+  // SIBLING DETECTION FILTER (Pattern FM-1 from LINGUISTIC_REFERENCE.md v0.6 §7.1)
+  // Block parent_of relations where the "parent" has a sibling indicator
+  console.log(`[POSSESSIVE-SIBLING-FILTER] Starting filter on ${relations.length} relations`);
+  const SIBLING_APPOSITIVE_PATTERN = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*,\s*(?:the\s+)?(?:eldest|oldest|younger|youngest|twin|middle)\s+(?:son|daughter|child|brother|sister|sibling)\b/gi;
+  const siblingsWithIndicators = new Set<string>();
+
+  const siblingMatches = text.matchAll(SIBLING_APPOSITIVE_PATTERN);
+  for (const match of siblingMatches) {
+    const siblingName = match[1].toLowerCase();
+    siblingsWithIndicators.add(siblingName);
+    console.log(`[POSSESSIVE-SIBLING-FILTER] Detected sibling: ${siblingName}`);
+  }
+
+  // Create entity ID to name mapping
+  const entityIdToName = new Map<string, string>();
+  for (const entity of entities) {
+    entityIdToName.set(entity.id, entity.canonical.toLowerCase());
+  }
+
+  // Filter out parent_of relations where subject has sibling indicator
+  const filteredRelations = relations.filter(rel => {
+    if (rel.pred === 'parent_of') {
+      const subjName = entityIdToName.get(rel.subj) || '';
+      if (subjName && siblingsWithIndicators.has(subjName)) {
+        console.log(`[POSSESSIVE-SIBLING-FILTER] Removing parent_of(${subjName}, ${rel.obj}) - ${subjName} has sibling indicator`);
+        return false;
+      }
+    }
+    return true;
+  });
+
+  return filteredRelations;
 }
 
 /**
