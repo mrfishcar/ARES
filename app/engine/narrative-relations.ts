@@ -1767,7 +1767,38 @@ export function extractPossessiveFamilyRelations(
     }
   }
 
-  return relations;
+  // SIBLING DETECTION FILTER (Pattern FM-1 from LINGUISTIC_REFERENCE.md v0.6 §7.1)
+  // Block parent_of relations where the "parent" has a sibling indicator
+  console.log(`[POSSESSIVE-SIBLING-FILTER] Starting filter on ${relations.length} relations`);
+  const SIBLING_APPOSITIVE_PATTERN = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*,\s*(?:the\s+)?(?:eldest|oldest|younger|youngest|twin|middle)\s+(?:son|daughter|child|brother|sister|sibling)\b/gi;
+  const siblingsWithIndicators = new Set<string>();
+
+  const siblingMatches = text.matchAll(SIBLING_APPOSITIVE_PATTERN);
+  for (const match of siblingMatches) {
+    const siblingName = match[1].toLowerCase();
+    siblingsWithIndicators.add(siblingName);
+    console.log(`[POSSESSIVE-SIBLING-FILTER] Detected sibling: ${siblingName}`);
+  }
+
+  // Create entity ID to name mapping
+  const entityIdToName = new Map<string, string>();
+  for (const entity of entities) {
+    entityIdToName.set(entity.id, entity.canonical.toLowerCase());
+  }
+
+  // Filter out parent_of relations where subject has sibling indicator
+  const filteredRelations = relations.filter(rel => {
+    if (rel.pred === 'parent_of') {
+      const subjName = entityIdToName.get(rel.subj) || '';
+      if (subjName && siblingsWithIndicators.has(subjName)) {
+        console.log(`[POSSESSIVE-SIBLING-FILTER] Removing parent_of(${subjName}, ${rel.obj}) - ${subjName} has sibling indicator`);
+        return false;
+      }
+    }
+    return true;
+  });
+
+  return filteredRelations;
 }
 
 /**
