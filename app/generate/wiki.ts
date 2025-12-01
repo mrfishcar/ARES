@@ -6,10 +6,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type { KnowledgeGraph } from '../storage/storage';
-import type { Entity, Relation } from '../engine/schema';
+import type { Entity, EntityType, Relation } from '../engine/schema';
 import { recordWikiRebuild } from '../monitor/metrics';
 import { logger } from '../infra/logger';
 import { generateMarkdownPage } from './markdown';
+import { HERTQuery } from '../api/hert-query';
+import { buildEntityFactProfile } from './entity-fact-profile';
+import { buildOrgSummary, buildPersonSummary, buildPlaceSummary } from './wiki-templates';
+import { getParagraphText } from './evidence';
 
 export interface WikiOptions {
   outputDir: string;
@@ -88,6 +92,122 @@ export function buildEntityWikiFromGraph(
     graph.relations,
     conflicts
   );
+}
+
+function renderTemplateSummary(profileType: EntityType | string, profile: ReturnType<typeof buildEntityFactProfile>): string {
+  const normalized = profileType.toString().toUpperCase();
+  if (normalized === 'PERSON') {
+    return buildPersonSummary(profile);
+  }
+  if (normalized === 'PLACE') {
+    return buildPlaceSummary(profile);
+  }
+  if (normalized === 'ORG' || normalized === 'ORGANIZATION') {
+    return buildOrgSummary(profile);
+  }
+  return `${profile.core.canonical} — summary templates not implemented.`;
+}
+
+export function renderEntityMarkdown(
+  entityId: string,
+  graph: KnowledgeGraph
+): string {
+  const entity = graph.entities.find((e) => e.id === entityId);
+  if (!entity) {
+    return '# Entity not found\n';
+  }
+
+  const queryAPI = new HERTQuery();
+  queryAPI.loadRelations(graph.relations, graph.entities);
+
+  const fallbackResult = queryAPI
+    .findEntityByName(entity.canonical, { fuzzy: true, type: entity.type as EntityType })
+    .sort((a, b) => a.canonical.localeCompare(b.canonical))[0];
+
+  const eid = entity.eid ?? fallbackResult?.eid;
+
+  if (eid === undefined) {
+    return [
+      `# ${entity.canonical}`,
+      '',
+      '| Field | Value |',
+      '|-------|-------|',
+      `| Type | ${entity.type} |`,
+      `| Aliases | ${(entity.aliases || []).join(', ') || '—'} |`,
+      ''
+    ].join('\\n');
+  }
+
+  const profile = buildEntityFactProfile(eid, queryAPI);
+  const lines: string[] = [];
+
+  lines.push(`# ${profile.core.canonical}`);
+  lines.push('');
+  lines.push('| Field | Value |');
+  lines.push('|-------|-------|');
+  lines.push(`| Type | ${profile.core.type} |`);
+  lines.push(`| Aliases | ${(profile.core.aliases.length ? profile.core.aliases.join(', ') : '—')} |`);
+  lines.push(`| Mentions | ${profile.stats.mentionCount} |`);
+  lines.push(`| Documents | ${profile.stats.documentCount} |`);
+  lines.push(`| Relationships | ${profile.stats.relationshipCount} |`);
+  lines.push('');
+
+  const summary = renderTemplateSummary(profile.core.type, profile);
+  if (summary) {
+    lines.push(summary);
+    lines.push('');
+  }
+
+  lines.push('## Key Mentions');
+  lines.push('');
+  if (profile.keyMentions.length === 0) {
+    lines.push('_No key mentions available._');
+  } else {
+    for (const mention of profile.keyMentions) {
+      const paragraph = getParagraphText(mention.document_id, mention.location.paragraph);
+      const label = `Document ${mention.document_id}, paragraph ${mention.location.paragraph}`;
+      if (paragraph) {
+        lines.push(`- ${label}: ${paragraph}`);
+      } else {
+        lines.push(`- ${label}`);
+      }
+    }
+  }
+  lines.push('');
+
+  lines.push('## Relations');
+  lines.push('');
+  const relationPredicates = Object.keys(profile.relations).sort();
+  if (relationPredicates.length === 0) {
+    lines.push('_No relations available._');
+  } else {
+    for (const predicate of relationPredicates) {
+      lines.push(`### ${predicate}`);
+      const rels = profile.relations[predicate];
+      for (const rel of rels) {
+        const confidence = rel.confidence !== undefined ? rel.confidence.toFixed(2) : 'N/A';
+        lines.push(
+          `- ${rel.subj_canonical} —${rel.pred}→ ${rel.obj_canonical} (confidence: ${confidence}, evidence: ${rel.evidence_count})`
+        );
+      }
+      lines.push('');
+    }
+  }
+
+  lines.push('## Co-occurrences');
+  lines.push('');
+  if (profile.cooccurrences.length === 0) {
+    lines.push('_No co-occurrences available._');
+  } else {
+    for (const co of profile.cooccurrences) {
+      lines.push(
+        `- ${co.entity2_canonical} (together ${co.cooccurrence_count} times across ${co.documents.length} documents)`
+      );
+    }
+  }
+  lines.push('');
+
+  return lines.join('\\n');
 }
 
 /**
