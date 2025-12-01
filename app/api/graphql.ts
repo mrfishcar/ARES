@@ -40,6 +40,7 @@ import { entityHighlightingResolvers } from './resolvers/entity-highlighting';
 import { globalRateLimiter, extractClientId } from './rate-limit';
 import { invalidateProjectCache } from './cache-layer';
 import { handleUpload, handleMediaServe } from './upload';
+import { handleWikiEntity } from './wiki-entity';
 import { buildEntityWikiFromGraph } from '../generate/wiki';
 
 // Load schema
@@ -884,6 +885,11 @@ No additional information is available at this time.
     // Upload endpoint (Sprint R7)
     if (req.url === '/upload') {
       await handleUpload(req, res);
+      return;
+    }
+
+    if (req.url?.startsWith('/wiki-entity')) {
+      await handleWikiEntity(req, res);
       return;
     }
 
