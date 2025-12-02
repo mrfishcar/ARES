@@ -103,6 +103,10 @@ export class GlobalKnowledgeGraph {
   }
 
   private mergeEntity(newEntity: Entity, docId: string): string {
+    // 🛡️ MERGE THRESHOLDS: Tightened to prevent over-aggressive merging
+    const HARD_MIN_CONFIDENCE = 0.93;  // Auto-merge only if very confident
+    const SOFT_MIN_CONFIDENCE = 0.88;  // Consider candidates above this
+
     // 🚀 OPTIMIZATION 1: Quick exact match via canonical index
     const exactKey = `${newEntity.type}::${newEntity.canonical.toLowerCase()}`;
     const exactMatch = this.canonicalToGlobalId.get(exactKey);
@@ -141,14 +145,44 @@ export class GlobalKnowledgeGraph {
 
     for (const existingEntity of candidates) {
       const match = calculateMatchConfidence(existingEntity, newEntity);
-      if (match.confidence >= 0.80) {
-        matches.push({ ...match, entity1: existingEntity, entity2: newEntity });
+
+      // 🛡️ DEBUG LOGGING: Track merge decisions
+      if (match.confidence >= 0.7 && process.env.DEBUG_ENTITY_MERGE === 'true') {
+        console.log('[ENTITY MERGE CANDIDATE]', {
+          existingId: existingEntity.id,
+          existingName: existingEntity.canonical,
+          existingType: existingEntity.type,
+          newId: newEntity.id,
+          newName: newEntity.canonical,
+          newType: newEntity.type,
+          confidence: match.confidence.toFixed(3),
+          matchType: match.matchType,
+          reason: match.evidence.join('; ')
+        });
       }
+
+      // 🛡️ SOFT FILTER: Ignore low-confidence matches
+      if (match.confidence < SOFT_MIN_CONFIDENCE) {
+        continue;
+      }
+
+      // 🛡️ TYPE COMPATIBILITY CHECK: Prevent person/org/place cross-merging
+      if (!areEntityTypesCompatible(existingEntity, newEntity, match)) {
+        if (process.env.DEBUG_ENTITY_MERGE === 'true') {
+          console.log('[ENTITY MERGE REJECTED] Type incompatibility:', {
+            existing: `${existingEntity.canonical} (${existingEntity.type})`,
+            new: `${newEntity.canonical} (${newEntity.type})`,
+            confidence: match.confidence.toFixed(3)
+          });
+        }
+        continue;
+      }
+
+      matches.push({ ...match, entity1: existingEntity, entity2: newEntity });
     }
 
     if (matches.length === 0) {
-      // No match found - just return the new entity ID
-      // (Already created above in getCandidateMatches branch)
+      // No match found - create new entity
       const globalEntity: GlobalEntity = {
         id: newEntity.id,
         type: newEntity.type,
@@ -165,9 +199,47 @@ export class GlobalKnowledgeGraph {
       return newEntity.id;
     }
 
-    // Match found - merge with existing entity
+    // Pick best match
     const bestMatch = matches.sort((a, b) => b.confidence - a.confidence)[0];
+
+    // 🛡️ HARD THRESHOLD: Only merge if confidence is very high
+    if (bestMatch.confidence < HARD_MIN_CONFIDENCE) {
+      if (process.env.DEBUG_ENTITY_MERGE === 'true') {
+        console.log('[ENTITY MERGE REJECTED] Below hard threshold:', {
+          existing: `${bestMatch.entity1.canonical} (${bestMatch.entity1.type})`,
+          new: `${newEntity.canonical} (${newEntity.type})`,
+          confidence: bestMatch.confidence.toFixed(3),
+          threshold: HARD_MIN_CONFIDENCE
+        });
+      }
+
+      // Create new entity instead of merging
+      const globalEntity: GlobalEntity = {
+        id: newEntity.id,
+        type: newEntity.type,
+        canonical: newEntity.canonical,
+        aliases: [newEntity.canonical],
+        mentionCount: 1,
+        documents: [docId],
+        attributes: newEntity.attrs || {},
+        confidence: 0.85,
+        firstSeen: docId
+      };
+      this.entities.set(newEntity.id, globalEntity);
+      this.addIndexes(globalEntity);
+      return newEntity.id;
+    }
+
+    // Match found with high confidence - merge with existing entity
     const existing = bestMatch.entity1 as GlobalEntity;
+
+    if (process.env.DEBUG_ENTITY_MERGE === 'true') {
+      console.log('[ENTITY MERGE SUCCESS]', {
+        existing: `${existing.canonical} (${existing.type})`,
+        new: `${newEntity.canonical} (${newEntity.type})`,
+        confidence: bestMatch.confidence.toFixed(3)
+      });
+    }
 
     // Merge data
     existing.aliases.push(newEntity.canonical);
@@ -366,7 +438,108 @@ export class GlobalKnowledgeGraph {
 }
 
 /**
+ * 🛡️ Check if two entities are compatible for merging based on their types and names
+ * Prevents PERSON entities from merging with ORG/PLACE entities
+ */
+function areEntityTypesCompatible(
+  existing: GlobalEntity | Entity,
+  candidate: Entity,
+  match: EntityMatch
+): boolean {
+  // Helper: Check if name contains org keywords
+  const hasOrgKeyword = (name: string): boolean => {
+    const lower = name.toLowerCase();
+    const orgKeywords = [
+      'school', 'junior', 'high', 'academy', 'university', 'college', 'institute',
+      'church', 'foundation', 'company', 'inc', 'ltd', 'corp', 'co',
+      'city', 'valley', 'mount', 'mont', 'river', 'lake', 'county'
+    ];
+    return orgKeywords.some(kw => lower.includes(kw));
+  };
+
+  // Helper: Check if name looks like a person (1-3 capitalized tokens, no org keywords)
+  const looksLikePerson = (entity: GlobalEntity | Entity): boolean => {
+    const tokens = entity.canonical.split(/\s+/).filter(Boolean);
+    if (tokens.length < 1 || tokens.length > 3) return false;
+    if (hasOrgKeyword(entity.canonical)) return false;
+    // All tokens should start with capital letter
+    return tokens.every(t => /^[A-Z]/.test(t));
+  };
+
+  // RULE 1: If one looks like PERSON and other has org keywords → reject
+  if (looksLikePerson(existing) && hasOrgKeyword(candidate.canonical)) {
+    return false;
+  }
+  if (looksLikePerson(candidate) && hasOrgKeyword(existing.canonical)) {
+    return false;
+  }
+
+  // RULE 2: Strong type mismatch → reject (unless one is UNKNOWN)
+  const strongTypes = new Set(['PERSON', 'ORG', 'PLACE', 'GPE', 'EVENT']);
+  const existingStrong = strongTypes.has(existing.type);
+  const candidateStrong = strongTypes.has(candidate.type);
+
+  if (existingStrong && candidateStrong && existing.type !== candidate.type) {
+    // Allow PERSON <-> UNKNOWN, ORG <-> UNKNOWN, but not PERSON <-> ORG
+    const compatiblePairs = [
+      ['PERSON', 'UNKNOWN'], ['UNKNOWN', 'PERSON'],
+      ['ORG', 'UNKNOWN'], ['UNKNOWN', 'ORG'],
+      ['PLACE', 'GPE'], ['GPE', 'PLACE'],  // These are similar
+      ['PLACE', 'UNKNOWN'], ['UNKNOWN', 'PLACE'],
+      ['GPE', 'UNKNOWN'], ['UNKNOWN', 'GPE']
+    ];
+
+    const pair = [existing.type, candidate.type];
+    const isCompatible = compatiblePairs.some(
+      ([a, b]) => (pair[0] === a && pair[1] === b) || (pair[0] === b && pair[1] === a)
+    );
+
+    if (!isCompatible) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Helper: Normalize entity name for comparison
+ */
+interface NormalizedName {
+  raw: string;
+  tokens: string[];
+  hasOrgKeyword: boolean;
+  looksLikePerson: boolean;
+}
+
+function normalizeName(entity: GlobalEntity | Entity): NormalizedName {
+  const raw = entity.canonical.toLowerCase();
+
+  // Remove punctuation and split into tokens
+  const allTokens = raw.replace(/[.,;:!?()]/g, '').split(/\s+/).filter(Boolean);
+
+  // Remove stopwords
+  const stopwords = new Set(['the', 'of', 'at', 'and', 'a', 'an', 'in', 'on']);
+  const tokens = allTokens.filter(t => !stopwords.has(t));
+
+  // Check for org keywords
+  const orgKeywords = [
+    'school', 'junior', 'high', 'academy', 'university', 'college', 'institute',
+    'church', 'foundation', 'company', 'inc', 'llc', 'ltd', 'corp', 'co',
+    'city', 'valley', 'mount', 'mont', 'river', 'lake', 'county', 'state'
+  ];
+  const hasOrgKeyword = orgKeywords.some(kw => raw.includes(kw));
+
+  // Check if looks like person: 1-3 tokens, all capitalized, no org keywords
+  const looksLikePerson = !hasOrgKeyword && tokens.length >= 1 && tokens.length <= 3 &&
+    entity.canonical.split(/\s+/).every(t => /^[A-Z]/.test(t));
+
+  return { raw, tokens, hasOrgKeyword, looksLikePerson };
+}
+
+/**
  * Calculate confidence that two entities refer to the same real-world entity
+ * Enhanced with strict matching rules to prevent over-merging
  */
 function calculateMatchConfidence(
   e1: GlobalEntity | Entity,
@@ -385,18 +558,28 @@ function calculateMatchConfidence(
     return result;
   }
 
-  const canon1 = e1.canonical.toLowerCase();
-  const canon2 = e2.canonical.toLowerCase();
+  // Normalize names for comparison
+  const norm1 = normalizeName(e1);
+  const norm2 = normalizeName(e2);
 
-  const tokens1 = canon1.split(/\s+/).filter(Boolean);
-  const tokens2 = canon2.split(/\s+/).filter(Boolean);
-
-  // If both are single-token names and the tokens differ, treat as different people
-  if (tokens1.length === 1 && tokens2.length === 1 && tokens1[0] !== tokens2[0]) {
+  // 🛡️ GUARD: Person vs Org name clash
+  if (norm1.looksLikePerson && norm2.hasOrgKeyword) {
+    result.confidence = 0.1;
+    result.evidence.push('person-vs-org-name-clash');
+    return result;
+  }
+  if (norm2.looksLikePerson && norm1.hasOrgKeyword) {
+    result.confidence = 0.1;
+    result.evidence.push('person-vs-org-name-clash');
     return result;
   }
 
-  // EXACT MATCH: Same canonical name
+  const canon1 = norm1.raw;
+  const canon2 = norm2.raw;
+  const tokens1 = norm1.tokens;
+  const tokens2 = norm2.tokens;
+
+  // 🛡️ EXACT MATCH: Same canonical name
   if (canon1 === canon2) {
     result.confidence = 1.0;
     result.matchType = 'exact';
@@ -404,87 +587,115 @@ function calculateMatchConfidence(
     return result;
   }
 
-  // ALIAS MATCH: One is substring of other (only if they share tokens)
-  // But check for disambiguation signals first
-  const sharedTokens = tokens1.filter((t) => tokens2.includes(t));
+  // 🛡️ JACCARD SIMILARITY: Token overlap
+  const tokensSet1 = new Set(tokens1);
+  const tokensSet2 = new Set(tokens2);
+  const intersection = tokens1.filter(t => tokensSet2.has(t));
+  const union = new Set([...tokens1, ...tokens2]);
+  const jaccard = union.size > 0 ? intersection.length / union.size : 0;
 
-  if ((canon1.includes(canon2) || canon2.includes(canon1)) && sharedTokens.length > 0) {
-    // Check if both have names with multiple words (first + last)
-    const words1 = canon1.split(/\s+/);
-    const words2 = canon2.split(/\s+/);
+  if (jaccard < 0.4) {
+    // Very little overlap - cap confidence at 0.6
+    result.confidence = Math.min(0.6, jaccard * 1.5);
+    result.evidence.push(`low token overlap (${jaccard.toFixed(2)})`);
+    return result;
+  }
 
-    // DISAMBIGUATION: Different first names = different people
-    // Example: "James Potter" vs "Harry Potter"
+  // 🛡️ GUARD: Long name absorbs short name
+  if ((tokens1.length >= 3 && tokens2.length <= 2) || (tokens2.length >= 3 && tokens1.length <= 2)) {
+    const longName = tokens1.length > tokens2.length ? norm1 : norm2;
+    const shortName = tokens1.length > tokens2.length ? norm2 : norm1;
+
+    // If long name is org and short name looks like person → reject
+    if (longName.hasOrgKeyword && shortName.looksLikePerson) {
+      result.confidence = 0.3;
+      result.evidence.push('long-org-absorbing-short-person');
+      return result;
+    }
+
+    // Even if both look like person, be cautious with length mismatch
+    if (shortName.looksLikePerson && longName.looksLikePerson) {
+      // Only allow if they share a surname-like token (last token)
+      const surname1 = tokens1[tokens1.length - 1];
+      const surname2 = tokens2[tokens2.length - 1];
+      if (surname1 !== surname2) {
+        result.confidence = 0.5;
+        result.evidence.push('length-mismatch-no-shared-surname');
+        return result;
+      }
+    }
+  }
+
+  // 🛡️ PERSON-SPECIFIC RULES
+  if (e1.type === 'PERSON' && e2.type === 'PERSON') {
+    const words1 = e1.canonical.split(/\s+/);
+    const words2 = e2.canonical.split(/\s+/);
+
+    // If both have 2+ words, check first name match
     if (words1.length >= 2 && words2.length >= 2) {
-      const firstName1 = words1[0];
-      const firstName2 = words2[0];
+      const firstName1 = words1[0].toLowerCase();
+      const firstName2 = words2[0].toLowerCase();
 
-      if (
-        firstName1 !== firstName2 &&
-        firstName1.length > 1 &&
-        firstName2.length > 1
-      ) {
-        // Different first names - likely different people
+      // Different first names = different people
+      if (firstName1 !== firstName2 && firstName1.length > 1 && firstName2.length > 1) {
         result.confidence = 0.0;
-        result.evidence.push('different first names');
+        result.evidence.push('different-first-names');
+        return result;
+      }
+
+      // Same surname check
+      const surname1 = words1[words1.length - 1].toLowerCase();
+      const surname2 = words2[words2.length - 1].toLowerCase();
+
+      if (firstName1 === firstName2 && surname1 === surname2) {
+        // Strong match: same first and last name
+        result.confidence = 0.95;
+        result.matchType = 'alias';
+        result.evidence.push('same-first-and-surname');
         return result;
       }
     }
 
-    // Substring match without disambiguation signals
-    result.confidence = 0.90;
-    result.matchType = 'alias';
-    result.evidence.push('substring match');
-    return result;
-  }
-
-  // DISAMBIGUATION: Check for conflicting titles
-  // Example: "Professor McGonagall" vs "Dr. McGonagall"
-  const titles = [
-    'professor',
-    'prof',
-    'dr',
-    'doctor',
-    'mr',
-    'mrs',
-    'ms',
-    'sir',
-    'lady',
-    'lord',
-    'king',
-    'queen',
-    'prince',
-    'princess'
-  ];
-
-  const words1 = canon1.split(/\s+/);
-  const words2 = canon2.split(/\s+/);
-
-  const title1 = words1[0];
-  const title2 = words2[0];
-
-  if (titles.includes(title1) && titles.includes(title2) && title1 !== title2) {
-    // Different titles - likely different people
-    result.confidence = 0.0;
-    result.evidence.push('conflicting titles');
-    return result;
-  }
-
-  // CONTEXTUAL MATCH: Shared attributes
-  if ('documents' in e1 && e1.attributes && e2.attrs) {
-    const sharedAttributes = Object.keys(e1.attributes).filter(
-      (k) => e2.attrs && e2.attrs[k] === e1.attributes[k]
-    );
-
-    if (sharedAttributes.length >= 2) {
-      result.confidence = 0.80;
-      result.matchType = 'contextual';
-      result.evidence.push(`shared attributes: ${sharedAttributes.join(', ')}`);
-      return result;
+    // Single token vs multi-token person names
+    if (tokens1.length === 1 && tokens2.length > 1) {
+      // e.g., "Potter" vs "Harry Potter" - only match if single token is the surname
+      const surname2 = words2[words2.length - 1].toLowerCase();
+      if (tokens1[0] === surname2) {
+        result.confidence = 0.90;
+        result.matchType = 'alias';
+        result.evidence.push('surname-match');
+        return result;
+      }
+    }
+    if (tokens2.length === 1 && tokens1.length > 1) {
+      const surname1 = words1[words1.length - 1].toLowerCase();
+      if (tokens2[0] === surname1) {
+        result.confidence = 0.90;
+        result.matchType = 'alias';
+        result.evidence.push('surname-match');
+        return result;
+      }
     }
   }
 
-  // NO MATCH
+  // SUBSTRING MATCH with high jaccard
+  if ((canon1.includes(canon2) || canon2.includes(canon1)) && jaccard >= 0.7) {
+    result.confidence = 0.85;
+    result.matchType = 'alias';
+    result.evidence.push('substring-with-high-overlap');
+    return result;
+  }
+
+  // Moderate jaccard but no other strong signals
+  if (jaccard >= 0.7) {
+    result.confidence = 0.80;
+    result.evidence.push(`high-token-overlap (${jaccard.toFixed(2)})`);
+    return result;
+  }
+
+  // NO STRONG MATCH
+  result.confidence = Math.min(0.7, jaccard);
+  result.evidence.push(`weak-match (jaccard=${jaccard.toFixed(2)})`);
   return result;
 }
 

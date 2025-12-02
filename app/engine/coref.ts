@@ -186,6 +186,27 @@ function inferGender(entity: Entity): Gender {
 function matchesGenderNumber(entity: Entity, gender: Gender, number: Number): boolean {
   const entityGender = inferGender(entity);
 
+  // 🛡️ DEFENSIVE CHECK: Personal pronouns should NEVER resolve to organization/place names
+  // even if they're misclassified as PERSON. Check canonical name for org/place keywords.
+  if (gender === 'male' || gender === 'female') {
+    const canonicalLower = entity.canonical.toLowerCase();
+    const ORG_INDICATORS = ['school', 'high school', 'junior high', 'jr high', 'jr.', 'university', 'college',
+                            'company', 'corporation', 'inc', 'llc', 'ltd', 'academy',
+                            'institute', 'library', 'center', 'centre'];
+    const PLACE_INDICATORS = ['city', 'valley', 'mountain', 'mont ', 'mount ', 'river', 'lake', 'county', 'state'];
+
+    for (const indicator of ORG_INDICATORS) {
+      if (canonicalLower.includes(indicator)) {
+        return false; // Reject: this looks like an org, not a person
+      }
+    }
+    for (const indicator of PLACE_INDICATORS) {
+      if (canonicalLower.includes(indicator)) {
+        return false; // Reject: this looks like a place, not a person
+      }
+    }
+  }
+
   // Number check: only PERSON entities can be singular, ORGs are often plural
   if (number === 'singular' && entity.type === 'ORG') {
     return false;

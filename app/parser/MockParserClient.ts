@@ -10,7 +10,9 @@ const MONTH_NAMES = new Set([
 
 const ORG_KEYWORDS = [
   "university","college","institute","inc","llc","ltd","corp","corporation","company","publishing",
-  "library","center","centre","press","times","news","crunch","state library","state university","fnac"
+  "library","center","centre","press","times","news","crunch","state library","state university","fnac",
+  // Educational institutions
+  "school","high school","junior high","middle school","elementary","academy","highschool","kindergarten"
 ];
 
 const PLACE_KEYWORDS = [
