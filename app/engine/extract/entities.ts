@@ -23,6 +23,10 @@ import { getParserClient } from "../../parser";
 import { analyzeEntityContext, classifyWithContext, shouldExtractByContext } from "./context-classifier";
 import { filterPronouns, isContextDependent } from "../pronoun-utils";
 import { detectClauses } from "./clause-detector";
+import { buildTokenStatsFromParse } from "../linguistics/token-stats-builder";
+import { isAttachedOnlyFragment, hasLowercaseEcho } from "../linguistics/token-stats";
+import { looksLikePersonName, isBlocklistedPersonHead, type NounPhraseContext } from "../linguistics/common-noun-filters";
+import { logEntityDecision } from "../linguistics/feature-logging";
 
 const TRACE_SPANS = process.env.L3_TRACE === "1";
 const CAMELCASE_ALLOWED_PREFIXES = [
@@ -2095,6 +2099,112 @@ export async function parseWithService(text: string): Promise<ParseResponse> {
 /**
  * Main entity extraction function
  */
+/**
+ * Apply linguistic filters to remove problematic entities
+ * Implements rules: NF-1, NF-2, CN-1, CN-2, CN-3, CN-4
+ */
+function applyLinguisticFilters(
+  entities: Entity[],
+  spans: Array<{entity_id: string; start: number; end: number}>,
+  text: string,
+  tokenStats: ReturnType<typeof buildTokenStatsFromParse>,
+  parsed: ParseResponse
+): Entity[] {
+  const DEBUG = process.env.DEBUG_ENTITY_DECISIONS === 'true';
+  const filtered: Entity[] = [];
+
+  for (const entity of entities) {
+    let shouldKeep = true;
+    const tokens = entity.canonical.split(/\s+/).filter(Boolean);
+    const headToken = tokens[tokens.length - 1]; // Last token is usually the head
+
+    // Rule NF-1: Filter attached-only fragments
+    // If this is a single-token entity that only appears embedded in longer proper names
+    if (tokens.length === 1 && isAttachedOnlyFragment(tokenStats, tokens[0])) {
+      shouldKeep = false;
+      logEntityDecision({
+        entityId: entity.id,
+        text: entity.canonical,
+        candidateType: entity.type,
+        finalType: 'FILTERED',
+        features: {
+          rule: 'NF-1',
+          isAttachedOnlyFragment: true,
+        },
+        reason: 'Name fragment - only appears embedded in longer proper names',
+      });
+    }
+
+    // Rule CN-1, CN-2, CN-3, CN-4: Filter common nouns mis-tagged as PERSON
+    if (shouldKeep && entity.type === 'PERSON') {
+      // Build NounPhraseContext for this entity
+      // Find entity spans in text to detect determiners and sentence position
+      const entitySpans = spans.filter(s => s.entity_id === entity.id);
+      let hasDeterminer = false;
+      let isSentenceInitial = false;
+      let followedByComma = false;
+
+      // Check first occurrence for context
+      if (entitySpans.length > 0) {
+        const firstSpan = entitySpans[0];
+        const beforeText = text.slice(Math.max(0, firstSpan.start - 10), firstSpan.start);
+        const afterText = text.slice(firstSpan.end, Math.min(text.length, firstSpan.end + 5));
+
+        // Check for determiner
+        const determiners = ['the ', 'a ', 'an ', 'my ', 'your ', 'his ', 'her ', 'their ', 'our '];
+        hasDeterminer = determiners.some(det => beforeText.toLowerCase().endsWith(det));
+
+        // Check if sentence-initial (text before is empty or ends with sentence boundary)
+        isSentenceInitial = beforeText.trim() === '' || /[.!?]\s*$/.test(beforeText);
+
+        // Check if followed by comma
+        followedByComma = afterText.trimStart().startsWith(',');
+      }
+
+      const npContext: NounPhraseContext = {
+        headToken,
+        tokens,
+        hasDeterminer,
+        isSentenceInitial,
+        followedByComma,
+      };
+
+      const allowedPerson = looksLikePersonName(npContext, tokenStats);
+
+      if (!allowedPerson) {
+        shouldKeep = false;
+        logEntityDecision({
+          entityId: entity.id,
+          text: entity.canonical,
+          candidateType: 'PERSON',
+          finalType: 'FILTERED',
+          features: {
+            rule: 'CN-1/CN-2/CN-3/CN-4',
+            hasDeterminer,
+            isSentenceInitial,
+            followedByComma,
+            headToken,
+            lowercaseEcho: hasLowercaseEcho(tokenStats, headToken),
+            blocklistedHead: isBlocklistedPersonHead(headToken),
+          },
+          reason: 'Common noun or discourse marker mis-tagged as PERSON',
+        });
+      }
+    }
+
+    if (shouldKeep) {
+      filtered.push(entity);
+    }
+  }
+
+  const removedCount = entities.length - filtered.length;
+  if (removedCount > 0 && DEBUG) {
+    console.log(`[LINGUISTIC-FILTERS] Removed ${removedCount} entities`);
+  }
+
+  return filtered;
+}
+
 export async function extractEntities(text: string): Promise<{
   entities: Entity[];
   spans: Array<{entity_id: string; start: number; end: number}>;
@@ -2109,7 +2219,14 @@ export async function extractEntities(text: string): Promise<{
   const parserBackend = (process.env.PARSER_ACTIVE_BACKEND || "").toLowerCase();
   const isMockBackend = parserBackend === "mock";
 
-  // 1a) Build sentence start position map for sentence-initial detection
+  // 1a) Build TokenStats for linguistic filtering (NF-1, CN-1, etc.)
+  // This analyzes token usage patterns across the full document
+  const tokenStats = buildTokenStatsFromParse(text, parsed);
+  if (DEBUG_ENTITIES) {
+    console.log(`[EXTRACT-ENTITIES][DEBUG] Built token stats for ${tokenStats.byToken.size} unique tokens`);
+  }
+
+  // 1b) Build sentence start position map for sentence-initial detection
   // This is used to determine if an entity appears only at sentence beginnings
   const sentenceStarts = new Set(parsed.sentences.map(sent => sent.start));
   const isSentenceInitialPosition = (charPos: number): boolean => {
@@ -3390,9 +3507,17 @@ const mergedEntries = Array.from(mergedMap.values());
     console.warn(`[EXTRACT-ENTITIES] Coreference resolution failed:`, error);
   }
 
+  // Apply linguistic filters to remove problematic entities
+  const filteredEntities = applyLinguisticFilters(entities, spans, text, tokenStats, parsed);
+
+  // Update spans to remove references to filtered entities
+  const filteredEntityIds = new Set(filteredEntities.map(e => e.id));
+  const filteredSpans = spans.filter(span => filteredEntityIds.has(span.entity_id));
+
   if (process.env.L3_DEBUG === '1' || process.env.L4_DEBUG === '1') {
-    const dateCount = entities.filter(e => e.type === 'DATE').length;
-    console.log(`[EXTRACT-ENTITIES][DEBUG] returning ${entities.length} entities (${dateCount} DATEs): ${entities.map(e => `${e.type}:${e.canonical}`).slice(0, 20).join(', ')}`);
+    const dateCount = filteredEntities.filter(e => e.type === 'DATE').length;
+    const removedCount = entities.length - filteredEntities.length;
+    console.log(`[EXTRACT-ENTITIES][DEBUG] returning ${filteredEntities.length} entities (${dateCount} DATEs, ${removedCount} filtered): ${filteredEntities.map(e => `${e.type}:${e.canonical}`).slice(0, 20).join(', ')}`);
   }
-  return { entities, spans };
+  return { entities: filteredEntities, spans: filteredSpans };
 }

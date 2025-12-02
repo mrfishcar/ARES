@@ -14,6 +14,7 @@
 import type { Sentence } from './segment';
 import type { Entity, EntityType } from './schema';
 import { findByDescriptor, type EntityProfile } from './entity-profiler';
+import { isEntityPronounCompatible } from './linguistics/context-signals';
 
 /**
  * Mention represents a text span that might refer to an entity
@@ -186,25 +187,19 @@ function inferGender(entity: Entity): Gender {
 function matchesGenderNumber(entity: Entity, gender: Gender, number: Number): boolean {
   const entityGender = inferGender(entity);
 
-  // 🛡️ DEFENSIVE CHECK: Personal pronouns should NEVER resolve to organization/place names
-  // even if they're misclassified as PERSON. Check canonical name for org/place keywords.
-  if (gender === 'male' || gender === 'female') {
-    const canonicalLower = entity.canonical.toLowerCase();
-    const ORG_INDICATORS = ['school', 'high school', 'junior high', 'jr high', 'jr.', 'university', 'college',
-                            'company', 'corporation', 'inc', 'llc', 'ltd', 'academy',
-                            'institute', 'library', 'center', 'centre'];
-    const PLACE_INDICATORS = ['city', 'valley', 'mountain', 'mont ', 'mount ', 'river', 'lake', 'county', 'state'];
+  // 🛡️ PR-1: Use centralized pronoun compatibility check
+  // Map gender to pronoun for compatibility check
+  const pronounMap: Record<string, string> = {
+    'male-singular': 'he',
+    'female-singular': 'she',
+    'neutral-singular': 'it',
+    'neutral-plural': 'they',
+  };
+  const pronounKey = `${gender}-${number}`;
+  const pronoun = pronounMap[pronounKey];
 
-    for (const indicator of ORG_INDICATORS) {
-      if (canonicalLower.includes(indicator)) {
-        return false; // Reject: this looks like an org, not a person
-      }
-    }
-    for (const indicator of PLACE_INDICATORS) {
-      if (canonicalLower.includes(indicator)) {
-        return false; // Reject: this looks like a place, not a person
-      }
-    }
+  if (pronoun && !isEntityPronounCompatible(pronoun, entity.canonical)) {
+    return false; // Pronoun not compatible with entity (e.g., "he" → school)
   }
 
   // Number check: only PERSON entities can be singular, ORGs are often plural
