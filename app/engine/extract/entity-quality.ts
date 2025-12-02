@@ -9,6 +9,7 @@
  */
 
 import type { Entity, EntityType } from '../schema';
+import { guessTypeForJrName } from '../linguistics/jr-disambiguation';
 
 // Common suffixes that should be preserved
 const NAME_SUFFIXES = new Set([
@@ -174,13 +175,45 @@ export function extractSuffix(name: string): { baseName: string; suffix: string 
 
 /**
  * Classify entity type using heuristics
- * Priority: gazetteer > title/keywords > capitalization patterns > default
+ * Priority: Jr disambiguation > gazetteer > title/keywords > capitalization patterns > default
  */
 export function classifyEntityType(name: string, context?: string): EntityType {
   const normalized = normalizeEntityName(name);
   const words = normalized.split(/\s+/);
   const firstWord = words[0] || '';
   const lastWord = words[words.length - 1] || '';
+
+  // 0. Jr/Junior disambiguation (JR-1, JR-2)
+  // Handle ambiguous "X Y Jr" patterns before other heuristics
+  const looksLikeJr = /^(jr\.?|junior)$/i.test(lastWord);
+  if (looksLikeJr && words.length >= 2) {
+    const rootTokens = words.slice(0, -1);
+    const rootName = rootTokens.join(' ');
+
+    // Extract surrounding context for school/place indicators
+    const surroundingTokens = context ? context.split(/\s+/).filter(Boolean) : [];
+
+    // Simple place evidence: check if context has location prepositions
+    const hasLocationPrep = context ? /\b(in|from|at|to|near)\s+/i.test(context) : false;
+
+    const jrGuess = guessTypeForJrName({
+      fullName: name,
+      tokens: words,
+      surroundingTokens,
+      placeEvidenceForRoot: hasLocationPrep ? {
+        usedWithLocationPreposition: true,
+        standAlonePlaceCount: hasLocationPrep ? 1 : 0
+      } : undefined,
+      rootIsKnownPlace: KNOWN_LOCATIONS.has(rootName.toLowerCase()),
+    });
+
+    if (jrGuess === 'PERSON') {
+      return 'PERSON';
+    } else if (jrGuess === 'ORG') {
+      return 'ORG';
+    }
+    // If UNKNOWN, fall through to other heuristics
+  }
 
   // 1. Check gazetteer (known entities)
   if (KNOWN_LOCATIONS.has(normalized)) {
