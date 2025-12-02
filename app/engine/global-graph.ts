@@ -388,6 +388,14 @@ function calculateMatchConfidence(
   const canon1 = e1.canonical.toLowerCase();
   const canon2 = e2.canonical.toLowerCase();
 
+  const tokens1 = canon1.split(/\s+/).filter(Boolean);
+  const tokens2 = canon2.split(/\s+/).filter(Boolean);
+
+  // If both are single-token names and the tokens differ, treat as different people
+  if (tokens1.length === 1 && tokens2.length === 1 && tokens1[0] !== tokens2[0]) {
+    return result;
+  }
+
   // EXACT MATCH: Same canonical name
   if (canon1 === canon2) {
     result.confidence = 1.0;
@@ -396,9 +404,11 @@ function calculateMatchConfidence(
     return result;
   }
 
-  // ALIAS MATCH: One is substring of other
+  // ALIAS MATCH: One is substring of other (only if they share tokens)
   // But check for disambiguation signals first
-  if (canon1.includes(canon2) || canon2.includes(canon1)) {
+  const sharedTokens = tokens1.filter((t) => tokens2.includes(t));
+
+  if ((canon1.includes(canon2) || canon2.includes(canon1)) && sharedTokens.length > 0) {
     // Check if both have names with multiple words (first + last)
     const words1 = canon1.split(/\s+/);
     const words2 = canon2.split(/\s+/);

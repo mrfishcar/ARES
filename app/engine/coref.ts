@@ -390,7 +390,42 @@ function resolvePronounStacks(
     if (!pronounInfo) continue;
 
     const parIndex = getParagraphIndex(sentences, mention.sentence_index, text);
+    const currentSentence = sentences[mention.sentence_index];
+    let foundLocal = false;
 
+    // If the pronoun appears at the very start of a sentence, bias toward the
+    // subject of the previous sentence in the same paragraph. This helps cases
+    // like "His father Arthur..." where the most recent male subject (Ron) is
+    // in the prior sentence, not earlier mentions with higher salience (Harry).
+    const positionInSentence = mention.start - currentSentence.start;
+    if (positionInSentence <= 5 && mention.sentence_index > 0) {
+      const prevSentenceIndex = mention.sentence_index - 1;
+      const prevSentence = sentences[prevSentenceIndex];
+
+      if (getParagraphIndex(sentences, prevSentenceIndex, text) === parIndex) {
+        const prevSpans = entitySpans
+          .filter(span => span.start >= prevSentence.start && span.start < prevSentence.end)
+          .sort((a, b) => a.start - b.start);
+
+        for (let i = prevSpans.length - 1; i >= 0; i--) {
+          const span = prevSpans[i];
+          const entity = entities.find(e => e.id === span.entity_id);
+
+          if (entity && matchesGenderNumber(entity, pronounInfo.gender, pronounInfo.number)) {
+            links.push({
+              mention,
+              entity_id: entity.id,
+              confidence: 0.75,
+              method: 'pronoun_stack',
+            });
+            foundLocal = true;
+            break;
+          }
+        }
+      }
+    }
+
+    if (foundLocal) continue;
     // STEP 1: Try within-paragraph resolution (high confidence)
     const localCandidateSpans = entitySpans.filter(span => {
       const sentIndex = sentences.findIndex(s => span.start >= s.start && span.start < s.end);
@@ -403,10 +438,35 @@ function resolvePronounStacks(
     // Sort by position (most recent = last in text before pronoun)
     localCandidateSpans.sort((a, b) => a.start - b.start);
 
+    // Possessive pronouns often refer to the most recent PERSON mention before
+    // the sentence starts (e.g., "His father Arthur..." → Ron). Give a direct
+    // recency-based pass before broader subject/other heuristics.
+    const possessivePronouns = new Set(['his', 'her', 'their']);
+    if (!foundLocal && possessivePronouns.has(pronoun)) {
+      for (let i = localCandidateSpans.length - 1; i >= 0; i--) {
+        const span = localCandidateSpans[i];
+        const entity = entities.find(e => e.id === span.entity_id);
+
+        if (entity && entity.type === 'PERSON' && matchesGenderNumber(entity, pronounInfo.gender, pronounInfo.number)) {
+          links.push({
+            mention,
+            entity_id: entity.id,
+            confidence: 0.72,
+            method: 'pronoun_stack',
+          });
+          foundLocal = true;
+          break;
+        }
+      }
+    }
+
+    if (foundLocal) {
+      continue;
+    }
+
     // Find last compatible entity, preferring sentence subjects
     // Heuristic: Entities near the start of their sentence (first 30% of sentence length)
     // are more likely to be subjects, so prioritize them over entities in appositives
-    let foundLocal = false;
 
     // Separate candidates into "likely subjects" and "others"
     const subjectCandidates: typeof localCandidateSpans = [];
