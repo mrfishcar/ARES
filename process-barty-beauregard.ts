@@ -25,27 +25,34 @@ interface Chunk {
 }
 
 /**
- * Chunk text into 400-600 word segments on paragraph boundaries
+ * Simple sentence splitter (regex-based)
+ * Splits on: period, exclamation, question mark followed by whitespace
+ */
+function splitSentences(text: string): string[] {
+  // Split on sentence boundaries, but keep the punctuation
+  const sentences = text.split(/(?<=[.!?])\s+(?=[A-Z])/);
+  return sentences.filter(s => s.trim().length > 0);
+}
+
+/**
+ * Chunk text into 400-600 word segments on sentence boundaries
+ * Uses sentence-based splitting instead of paragraph-based to avoid huge chunks
  */
 function chunkText(fullText: string): Chunk[] {
-  // Split on paragraph boundaries (double newlines or single newlines for this text)
-  const paragraphs = fullText
-    .split(/\n+/)
-    .map(p => p.trim())
-    .filter(p => p.length > 0);
+  const sentences = splitSentences(fullText);
 
   const chunks: Chunk[] = [];
-  let currentChunk: string[] = [];
+  let currentSentences: string[] = [];
   let currentWordCount = 0;
   let chunkIndex = 0;
   let charIndex = 0;
 
-  for (const para of paragraphs) {
-    const paraWordCount = para.split(/\s+/).length;
+  for (const sentence of sentences) {
+    const sentenceWords = sentence.trim().split(/\s+/).length;
 
-    // If adding this paragraph would exceed max, and we have something, finalize chunk
-    if (currentWordCount + paraWordCount > TARGET_MAX_WORDS && currentWordCount >= TARGET_MIN_WORDS) {
-      const chunkText = currentChunk.join('\n\n');
+    // If adding this sentence would exceed MAX and we're above MIN, finalize chunk
+    if (currentWordCount + sentenceWords > TARGET_MAX_WORDS && currentWordCount >= TARGET_MIN_WORDS) {
+      const chunkText = currentSentences.join(' ');
       chunks.push({
         id: `barty-chunk-${chunkIndex}`,
         text: chunkText,
@@ -54,19 +61,34 @@ function chunkText(fullText: string): Chunk[] {
         endIndex: charIndex
       });
       chunkIndex++;
-      currentChunk = [];
+      currentSentences = [];
       currentWordCount = 0;
     }
 
-    // Add paragraph to current chunk
-    currentChunk.push(para);
-    currentWordCount += paraWordCount;
-    charIndex += para.length + 2; // +2 for newline
+    // Add sentence to current chunk
+    currentSentences.push(sentence);
+    currentWordCount += sentenceWords;
+    charIndex += sentence.length + 1; // +1 for space
+
+    // If we've hit the target and next addition would exceed max, finalize
+    if (currentWordCount >= TARGET_MIN_WORDS && currentWordCount + 50 > TARGET_MAX_WORDS) {
+      const chunkText = currentSentences.join(' ');
+      chunks.push({
+        id: `barty-chunk-${chunkIndex}`,
+        text: chunkText,
+        wordCount: currentWordCount,
+        startIndex: charIndex - chunkText.length,
+        endIndex: charIndex
+      });
+      chunkIndex++;
+      currentSentences = [];
+      currentWordCount = 0;
+    }
   }
 
   // Add final chunk if any content remains
-  if (currentChunk.length > 0) {
-    const chunkText = currentChunk.join('\n\n');
+  if (currentSentences.length > 0) {
+    const chunkText = currentSentences.join(' ');
     chunks.push({
       id: `barty-chunk-${chunkIndex}`,
       text: chunkText,
