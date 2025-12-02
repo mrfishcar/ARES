@@ -678,6 +678,25 @@ function calculateMatchConfidence(
     }
   }
 
+  // 🛡️ ORG-SPECIFIC RULES: School name variant consolidation (NV-1, NV-2)
+  if (e1.type === 'ORG' && e2.type === 'ORG') {
+    // Import school name utilities
+    const { schoolRootKey, splitSchoolName } = require('./linguistics/school-names');
+
+    const rootKey1 = schoolRootKey(e1.canonical);
+    const rootKey2 = schoolRootKey(e2.canonical);
+
+    // If both orgs have the same root (ignoring school suffix variations)
+    if (rootKey1 && rootKey2 && rootKey1 === rootKey2) {
+      // These are likely the same school with different suffix forms
+      // e.g., "Mont Linola Junior High School" vs "Mont Linola Junior High" vs "Mont Linola Jr"
+      result.confidence = 0.95;
+      result.matchType = 'alias';
+      result.evidence.push(`school-name-variant (root: "${rootKey1}")`);
+      return result;
+    }
+  }
+
   // SUBSTRING MATCH with high jaccard
   if ((canon1.includes(canon2) || canon2.includes(canon1)) && jaccard >= 0.7) {
     result.confidence = 0.85;

@@ -12,6 +12,7 @@
 import * as fs from 'fs';
 import { extractFromSegments } from './app/engine/extract/orchestrator';
 import { GlobalKnowledgeGraph } from './app/engine/global-graph';
+import { filterGlobalEntities } from './app/engine/linguistics/global-graph-filters';
 
 const TARGET_MIN_WORDS = 400;
 const TARGET_MAX_WORDS = 600;
@@ -162,7 +163,11 @@ async function processBartyBeauregard() {
 
   // Export global graph
   console.log(`\n📦 Exporting global graph...`);
-  const exported = graph.export();
+  let exported = graph.export();
+
+  // Apply global filters to remove problematic entities
+  console.log(`\n🧹 Applying global linguistic filters...`);
+  exported.entities = filterGlobalEntities(exported.entities);
 
   // Statistics
   console.log(`\n=`.repeat(80));
