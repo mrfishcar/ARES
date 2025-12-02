@@ -45,9 +45,14 @@ export function looksLikePersonName(
 
   // 1) Hard blocklist
   if (isBlocklistedPersonHead(ctx.headToken)) {
-    // Allow exceptions: multi-token explicit names like "Aunt May"
-    const multiToken = ctx.tokens.length >= 2;
-    const hasExplicitName = multiToken && ctx.tokens.some(t => /^[A-Z][a-z]+$/.test(t));
+    // For single-token names, ALWAYS reject if blocklisted
+    if (ctx.tokens.length === 1) {
+      return false;
+    }
+    // For multi-token names, allow exceptions like "Aunt May"
+    const hasExplicitName = ctx.tokens.some(t =>
+      /^[A-Z][a-z]+$/.test(t) && !PERSON_HEAD_BLOCKLIST.has(t.toLowerCase())
+    );
     if (!hasExplicitName) {
       return false;
     }
