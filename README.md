@@ -1,68 +1,63 @@
-# ARES - Advanced Relation Extraction System
+# ARES (Advanced Relation Extraction System)
 
-Local-first entity and relation extraction to turn unstructured text into knowledge graphs with provenance.
+ARES is a local-first engine that turns unstructured text into a knowledge graph with entities, relations, and provenance. It prioritizes determinism, precision/recall tracking, and clear debugging over ML black boxes.
 
-## Features
-- Entity extraction for people, places, organizations, dates, etc.
-- Browser "Extraction Lab" for live testing and JSON exports.
-- Relation extraction with inverse generation and pronoun resolution.
-- HERT system for compact, stable entity references.
-- Alias resolution and cross-document identity.
-- Provenance on every fact.
-- Offline-first operation with GraphQL API, caching, and rate limiting.
+## Project Goals
+- Extract people, places, orgs, dates, events, and narrative relations with provenance.
+- Support alias, pronoun, and cross-document identity resolution.
+- Maintain a fast feedback loop through the Test Ladder and focused diagnostics.
+- Keep documentation single-sourced in this README so future agents can ramp quickly.
 
-## Quick Start
-```bash
-make install       # Install
-make parser        # Start parser (Terminal 1)
-make test          # Expect 119/119 passing
-make smoke         # Fast smoke test
-```
-More detail: [docs/guides/QUICK_START.md](docs/guides/QUICK_START.md).
+## Current Architecture (high level)
+1. **Parsing**: spaCy-based dependency parse to drive rule evaluation.
+2. **Entity extraction**: NER + dependency patterns; alias normalization (surface + canonical); cross-document matching for exact names and known aliases; possessive pronoun handling with recency bias for sentence-openers.
+3. **Relation extraction**: Dependency + narrative patterns; inverse generation; sibling/alias/coordination filters to avoid false parentage; provenance stored alongside each relation.
+4. **Coreference + alias resolution**: Recency-weighted pronoun resolution, possessive pronoun bias toward prior sentence subjects, entity merging across documents by canonical/alias matches.
+5. **Outputs**: Knowledge graph with HERT IDs, GraphQL/API helpers, and export utilities.
 
-## Extraction Lab (/lab)
-- Live pattern tests and highlighting via CodeMirror.
-- Export JSON reports.
-- Iterate on rules with instant feedback.
+## Test Ladder (levels 1–5)
+Purpose: progressive gates for extraction quality. Use the commands below; avoid the dot reporter (`--reporter=dot --silent`) due to a Vitest RangeError.
 
-Full extraction docs: [ENTITY_EXTRACTION_STATUS.md](ENTITY_EXTRACTION_STATUS.md).
+| Level | Focus | Command |
+| --- | --- | --- |
+| 1 | Simple sentences / core entity+relation patterns | `npm run test:ladder:1` or `npm test tests/ladder/level-1-simple.spec.ts` |
+| 2 | Multi-sentence + multi-hop reasoning | `npm run test:ladder:2` or `npm test tests/ladder/level-2-multisentence.spec.ts` |
+| 3 | Coreference-heavy narratives | `npm test tests/ladder/level-3-complex.spec.ts` |
+| 5A | Cross-document identity/merging | `npm test tests/ladder/level-5-cross-document.spec.ts` |
+| 5B | Performance + query helpers | `npm test tests/ladder/level-5b-performance.spec.ts` |
+| 5C | Extended entity type coverage | `npm test tests/ladder/level-5c-new-entities.spec.ts` |
 
-## Example
-Input: `Aragorn, son of Arathorn, married Arwen in 3019. Gandalf the Grey traveled to Minas Tirith.`
-- Entities: Aragorn (PERSON), Arathorn (PERSON), Arwen (PERSON), 3019 (DATE), Gandalf (PERSON), Minas Tirith (PLACE)
-- Relations: parent_of/child_of (Arathorn ↔ Aragorn), married_to (Aragorn ↔ Arwen), traveled_to (Gandalf → Minas Tirith)
+**Status snapshot (latest checks):**
+- Levels 1–3 passing locally (Level 3 passes when run without the dot reporter).
+- Level 5: all current 5A/5B/5C tests passing; keep an eye on coordination merges in "Harry, Ron, and Hermione" style sentences, but nothing is failing now.
+- Stage 3 precision/recall targets exceeded (≈80.8% precision, 75.8% recall, 78.3% F1). Stage 4 not started.
 
-## Current Status
-- HERT: Phases 1–5 complete (IDs, binary format, aliases, senses, query API).
-- Tests: 119/119 passing; entity recall 87.5% (target ≥75%); relations validated on narrative/biographical text.
-- Performance: ~190 wps; ~3–5 relations per 100 words (bio), 1–2 (narrative).
+## Phase 3 & Next Tasks
+- Phase 3 goals met; keep sibling filters and possessive pronoun recency bias intact.
+- Known testing quirk: Vitest dot reporter triggers `RangeError: Invalid count value: Infinity`; use default reporter instead.
+- Next ladder focus after docs cleanup: re-verify Level 5 coordination/merging edge case and confirm full suite health.
 
-## Architecture (high level)
-spaCy parser → Entity extract (NER + deps + patterns, confidence filtering) → Relation extract (deps, patterns, coref, inverses) → Knowledge graph + GraphQL API. See [docs/architecture](docs/architecture/) for diagrams.
+## Current Behaviors to Preserve
+- **Entity extraction**: NER + pattern blend, alias normalization, cross-doc matching by canonical/alias text, and provenance per mention.
+- **Pronoun/alias resolution**: Recency-weighted pronouns; sentence-initial possessive pronouns bias to prior sentence subject; avoid overwriting higher-salience entities unless compatibility holds.
+- **Relation extraction**: Inverse generation, sibling filters preventing false parent_of/child_of from appositives (e.g., "eldest son"), narrative patterns for teaching/joined/rivalry, and coordination guards.
 
-## Documentation
-Key entries:
-- [Entity Extraction Status](ENTITY_EXTRACTION_STATUS.md)
-- [Session Handoff](HANDOFF.md)
-- [Quick Start](docs/guides/QUICK_START.md)
-- [Desktop Tester](docs/guides/DESKTOP_TESTER_QUICKSTART.md)
-- [HERT Integration](docs/architecture/HERT_INTEGRATION_GUIDE.md)
-- [Engine Evolution](docs/architecture/ENGINE_EVOLUTION_STRATEGY.md)
-- [Wiki Quickstart](docs/reference/WIKI_QUICKSTART.md)
-- [Changelog](CHANGELOG.md)
+## Workflow: Start Here
+1. **Load context**: Read this README and the latest `HANDOFF.md` (kept lean and current).
+2. **Run targeted tests**: Start with the relevant ladder level (see commands above). Avoid the dot reporter.
+3. **Find the next task**: Check the "Phase 3 & Next Tasks" notes and `HANDOFF.md` for any remaining blockers (Level 5 coordination merging is the main watch item) before coding.
+4. **Implement safely**: Make minimal, well-reasoned changes that preserve existing passing behavior; follow existing patterns.
+5. **Update docs**: Any behavioral change must update this README (the single source of truth) and, if ongoing, `HANDOFF.md`.
 
-## Key Concepts
-### HERT (Hierarchical Entity Reference Tag)
-Compact entity reference with exact location. Example `HERTv1:1J8trXOyn4HRaWXrdh9TUE` decodes to EID 43, AID 230, document fingerprint, paragraph 0, tokens 0–14.
-- Stable IDs unaffected by surface changes.
-- ~20–30 chars; URL-safe.
-- Precise paragraph/token pointers.
+## Documentation Rules
+- **README.md is canonical**: All project status, workflow, and testing guidance lives here.
+- **Update README.md with every change**: No feature or workflow update is complete until reflected here.
+- **HANDOFF.md is for active tasks only**: Keep it concise; defer to this README for global context.
+- **No redundant docs**: Obsolete or duplicative files should be removed immediately.
+- **If in doubt, trust this README**: Treat any other file as outdated unless it explicitly points back here.
 
-Details: [docs/architecture/HERT_IMPLEMENTATION.md](docs/architecture/HERT_IMPLEMENTATION.md).
+## File Pointers
+- `HANDOFF.md`: Latest session status and remaining Level 5 issues.
+- `tests/ladder/*.spec.ts`: Ladder tests and fixtures.
+- `app/engine/*`: Core extraction, relation logic, and coreference handling.
 
-### Multi-Pass Extraction
-- Dependency parsing
-- Pattern-based detection
-- Co-reference resolution
-- Alias normalization
-- Human-in-the-loop corrections

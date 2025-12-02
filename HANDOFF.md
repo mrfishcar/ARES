@@ -6,6 +6,22 @@
 
 ---
 
+
+## Running Log (2025-12-01)
+
+- **Completed fixes**: Added npm scripts (`test:ladder`, `test:ladder:1/2/3/5a/5b/5c`) so the README commands now run directly without manual vitest arguments.
+- **Pending tasks**: Run the long-form evaluation on "Barty Beauregard and the Fabulous Fraud" using the plan below; keep an eye on coordination merging if any regressions appear during that pass.
+- **Blockers requiring human review**: None as of 2025-12-01.
+- **Next recommended steps**: Use `npm run test:ladder` before/after major changes, then follow the Barty plan.
+
+### Plan: Barty Beauregard and the Fabulous Fraud (long document)
+1. **Chunk the text for stability**: Split `Barty Beauregard and the Fabulous Fraud PLAIN TEXT.txt` into ~400–600 word segments on paragraph boundaries so vitest and the orchestrator don’t choke on extremely long inputs.
+2. **Run extraction per segment**: Feed each chunk through `extractFromSegments` (see `diagnose-full-text.ts` for usage) with unique segment IDs so the global graph merges cross-chunk entities and relations.
+3. **Aggregate and inspect**: Merge outputs into a single graph via `global-graph` helpers, then review merged entities/relations for alias collisions, especially coordination cases.
+4. **Add a regression test**: If issues surface, capture the failing snippet as a focused ladder-style spec to keep runtime manageable while guarding against the large-doc regressions.
+5. **Performance watch**: Record timing/memory per chunk; if limits creep up, trim chunk size or disable expensive diagnostics during the run.
+
+
 ## Quick Status - Level 5 Tests
 
 **Level 5 Results**: **52/54 tests passing (96.3%)** ✅
