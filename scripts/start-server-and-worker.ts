@@ -2,54 +2,70 @@
  * Railway startup script - runs GraphQL server + background job worker
  */
 
-import { spawn } from 'child_process';
 import { startGraphQLServer } from '../app/api/graphql';
+import { listQueuedJobs, updateJobStatus, getJob } from '../app/jobs/job-store';
+import { runExtractionJob } from '../app/jobs/extraction-runner';
 
 const PORT = parseInt(process.env.PORT || '4000', 10);
+const POLL_INTERVAL_MS = parseInt(process.env.JOB_WORKER_INTERVAL_MS || '3000', 10);
+const MAX_BATCH = parseInt(process.env.JOB_WORKER_BATCH || '1', 10);
+
+async function processQueuedJobs() {
+  const queued = await listQueuedJobs(MAX_BATCH);
+  if (!queued.length) {
+    return;
+  }
+
+  for (const job of queued) {
+    console.log(`[worker] starting job ${job.id}`);
+    await updateJobStatus(job.id, 'running');
+
+    try {
+      const latest = await getJob(job.id);
+      if (!latest) {
+        console.warn(`[worker] job ${job.id} disappeared`);
+        continue;
+      }
+
+      if (latest.inputType !== 'rawText') {
+        throw new Error(`Unsupported inputType ${latest.inputType}`);
+      }
+
+      const result = await runExtractionJob(job.id, latest.inputRef);
+      await updateJobStatus(job.id, 'done', { resultJson: JSON.stringify(result) });
+      console.log(`[worker] finished job ${job.id}`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`[worker] job ${job.id} failed: ${message}`);
+      await updateJobStatus(job.id, 'failed', { errorMessage: message });
+    }
+  }
+}
+
+async function startWorker() {
+  console.log(`[worker] polling every ${POLL_INTERVAL_MS}ms`);
+
+  // Run worker loop in background
+  setInterval(async () => {
+    try {
+      await processQueuedJobs();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`[worker] unexpected error: ${message}`);
+    }
+  }, POLL_INTERVAL_MS);
+}
 
 async function main() {
   console.log('[startup] Starting ARES backend...');
 
   // Start GraphQL server
   console.log(`[startup] Starting GraphQL server on port ${PORT}...`);
-  startGraphQLServer(PORT).catch((err) => {
-    console.error('[startup] GraphQL server failed:', err);
-    process.exit(1);
-  });
+  await startGraphQLServer(PORT);
 
-  // Give server a moment to initialize
-  await new Promise((resolve) => setTimeout(resolve, 2000));
-
-  // Start background job worker
+  // Start background job worker in the same process
   console.log('[startup] Starting background job worker...');
-  const worker = spawn('npx', ['ts-node', 'scripts/job-worker.ts'], {
-    stdio: 'inherit',
-    env: process.env,
-  });
-
-  worker.on('error', (err) => {
-    console.error('[startup] Worker process failed to start:', err);
-  });
-
-  worker.on('exit', (code) => {
-    console.error(`[startup] Worker exited with code ${code}`);
-    // Don't exit the main process - server can continue without worker
-    // but log prominently
-    console.error('[startup] ⚠️  WARNING: Background job worker is not running!');
-  });
-
-  // Handle graceful shutdown
-  process.on('SIGTERM', () => {
-    console.log('[startup] Received SIGTERM, shutting down...');
-    worker.kill('SIGTERM');
-    process.exit(0);
-  });
-
-  process.on('SIGINT', () => {
-    console.log('[startup] Received SIGINT, shutting down...');
-    worker.kill('SIGINT');
-    process.exit(0);
-  });
+  await startWorker();
 
   console.log('[startup] ✅ Server and worker started successfully');
 }
