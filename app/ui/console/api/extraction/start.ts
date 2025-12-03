@@ -1,7 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createJob } from '../../../../jobs/job-store';
 
-const MAX_TEXT_LENGTH = parseInt(process.env.MAX_TEXT_LENGTH || `${2 * 1024 * 1024}`, 10);
+const MAX_TEXT_LENGTH = parseInt(
+  process.env.MAX_TEXT_LENGTH || `${2 * 1024 * 1024}`,
+  10
+);
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -14,12 +17,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (text.length > MAX_TEXT_LENGTH) {
-    return res.status(413).json({ error: `Text too large (max ${MAX_TEXT_LENGTH} chars)` });
+    return res
+      .status(413)
+      .json({ error: `Text too large (max ${MAX_TEXT_LENGTH} chars)` });
   }
 
   try {
     const job = await createJob({ inputType: 'rawText', inputRef: text });
     console.log(`[api] created job ${job.id} (length=${text.length})`);
+
+    // Optional: fire-and-forget worker trigger hook if configured
+    const triggerUrl = process.env.JOB_WORKER_TRIGGER_URL;
+    if (triggerUrl) {
+      // We don't await this so the API stays fast.
+      fetch(triggerUrl, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ jobId: job.id })
+      }).catch(err => {
+        console.error(`[api] worker trigger failed for job ${job.id}`, err);
+      });
+    }
+
     return res.status(200).json({ jobId: job.id });
   } catch (error) {
     console.error('[api] failed to create job', error);
