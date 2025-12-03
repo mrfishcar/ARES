@@ -9,8 +9,11 @@ import { extractFromSegments } from '../../app/engine/extract/orchestrator';
 /**
  * Helper: extract entities and return simplified format
  */
+let docCounter = 0;
+
 async function runExtractionOnText(text: string) {
-  const result = await extractFromSegments(text, 'test-doc');
+  docCounter += 1;
+  const result = await extractFromSegments(`test-doc-${docCounter}`, text);
   return {
     entities: result.entities.map(e => ({
       canonical: e.canonical,
@@ -26,7 +29,7 @@ describe('Linguistic Filters - Regression Tests', () => {
     it('does not emit attached-only fragments as PERSON entities', async () => {
       const text = 'Students at Mont Linola Junior High gathered.';
 
-      const result = await runExtractionOnText(text);
+        const result = await runExtractionOnText(text);
 
       const entityNames = result.entities.map(e => ({
         name: e.canonical,
@@ -54,7 +57,7 @@ describe('Linguistic Filters - Regression Tests', () => {
         "Well, I heard she's odd," he said.
       `;
 
-      const result = await runExtractionOnText(text);
+        const result = await runExtractionOnText(text);
 
       const people = result.entities.filter(e => e.type === 'PERSON');
       const personNames = people.map(e => e.canonical.toLowerCase());
@@ -87,7 +90,7 @@ describe('Linguistic Filters - Regression Tests', () => {
         Mont Linola Jr was founded in 1950.
       `;
 
-      const result = await runExtractionOnText(text);
+        const result = await runExtractionOnText(text);
 
       const orgs = result.entities.filter(e => e.type === 'ORG');
       const schoolOrgs = orgs.filter(e =>
@@ -111,7 +114,7 @@ describe('Linguistic Filters - Regression Tests', () => {
     it('classifies "John Smith Jr." as PERSON', async () => {
       const text = 'John Smith Jr. attended the meeting.';
 
-      const result = await runExtractionOnText(text);
+        const result = await runExtractionOnText(text);
 
       const johnSmithJr = result.entities.find(
         e =>

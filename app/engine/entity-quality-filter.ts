@@ -11,6 +11,7 @@
  */
 
 import type { Entity, EntityType } from './schema';
+import { splitSchoolName } from './linguistics/school-names';
 
 export interface EntityQualityConfig {
   minConfidence: number;
@@ -257,6 +258,13 @@ function isValidProperNoun(name: string, type: EntityType): boolean {
     const trimmed = name.trim();
     const firstChar = trimmed[0];
     if (!firstChar || firstChar !== firstChar.toUpperCase()) {
+      const { suffixTokens } = splitSchoolName(trimmed);
+      if (
+        suffixTokens.length > 0 &&
+        ['ORG', 'UNKNOWN', 'PLACE', 'GPE', 'PERSON'].includes(type)
+      ) {
+        return true;
+      }
       return false;
     }
   }

@@ -10,6 +10,16 @@ inventing new heuristics.
 
 ---
 
+## ARES Linguistic Rules – Fiction Entity Extraction
+
+- **Name fragments:** single-token attached-only fragments are suppressed; school/org mentions prefer full spans; school roots can optionally surface as PLACE when independent location evidence exists.
+- **Common noun filtering:** lowercase echoes are blocked; PERSON heads have a blocklist (hall, friend, hell, etc.); determiners like "the friend" are filtered; sentence-initial "Well," is treated as an interjection; vocative "Name," boosts PERSON readings.
+- **School name variants:** school suffixes (high school, junior high, academy, university, etc.) are recognized; roots split from suffixes to merge variants by root; PLACE vs ORG remain separate when they share a root, linked by a located_in-style relation.
+- **Jr disambiguation:** patterns like `Firstname Surname Jr` resolve to PERSON when not in a school context; `PlaceName Jr` in a school-ish context resolves to ORG.
+- **Pronoun guards:** personal pronouns never resolve to org/place-ish names; "its" is allowed for org/place; "they" prefers human groups (students) over buildings.
+
+---
+
 ## Table of Contents
 
 0. [Core Concepts](#0-core-concepts)

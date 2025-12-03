@@ -15,6 +15,7 @@ import { extractAllNarrativeRelations } from '../narrative-relations';
 import { extractFictionEntities, type FictionEntity } from '../fiction-extraction';
 import { buildProfiles, type EntityProfile } from '../entity-profiler';
 import { hybridExtraction } from '../llm-extractor';
+import { chooseBestCanonical } from '../global-graph';
 import { getLLMConfig, validateLLMConfig, DEFAULT_LLM_CONFIG, type LLMConfig } from '../llm-config';
 import { applyPatterns, type Pattern } from '../bootstrap';
 import type { PatternLibrary } from '../pattern-library';
@@ -1249,6 +1250,13 @@ export async function extractFromSegments(
 
     // Update entity.aliases with unique values
     entity.aliases = Array.from(aliasSet);
+
+    if (aliasSet.size > 0) {
+      entity.canonical = chooseBestCanonical([
+        entity.canonical,
+        ...aliasSet
+      ]);
+    }
 
     if (entity.aliases.length > 0) {
       console.log(`[ORCHESTRATOR] Entity "${entity.canonical}" has ${entity.aliases.length} aliases: [${entity.aliases.slice(0, 3).join(', ')}${entity.aliases.length > 3 ? '...' : ''}]`);

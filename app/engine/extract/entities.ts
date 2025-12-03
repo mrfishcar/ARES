@@ -27,6 +27,7 @@ import { buildTokenStatsFromParse } from "../linguistics/token-stats-builder";
 import { isAttachedOnlyFragment, hasLowercaseEcho } from "../linguistics/token-stats";
 import { looksLikePersonName, isBlocklistedPersonHead, type NounPhraseContext } from "../linguistics/common-noun-filters";
 import { logEntityDecision } from "../linguistics/feature-logging";
+import { splitSchoolName } from "../linguistics/school-names";
 
 const TRACE_SPANS = process.env.L3_TRACE === "1";
 const CAMELCASE_ALLOWED_PREFIXES = [
@@ -1206,6 +1207,11 @@ function classifyName(text: string, surface: string, start: number, end: number)
     return 'ORG';
   }
 
+  const { suffixTokens } = splitSchoolName(surface);
+  if (suffixTokens.length > 0 && suffixTokens.length !== surface.split(/\s+/).length) {
+    return 'ORG';
+  }
+
   // 4) Context-based classification using verb patterns
   const before = text.slice(Math.max(0, start - 50), start);
   const after = text.slice(end, Math.min(text.length, end + 50));
@@ -2290,6 +2296,32 @@ export async function extractEntities(text: string): Promise<{
   const titledNames = extractTitledNames(text);
   const acronymPairs = extractAcronymPairs(text);
 
+  const fallbackSchoolSpans: TaggedSpan[] = [];
+  const schoolPattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\s+(?:Jr\.?|Jr|Junior High School|Junior High|High School|School|Academy|University|College|Institute))\b/g;
+  let schoolMatch: RegExpExecArray | null;
+  while ((schoolMatch = schoolPattern.exec(text)) !== null) {
+    const full = schoolMatch[1];
+    const prefixMatch = full.match(/^(At|In|On|From)\s+/i);
+    let spanText = full.trim();
+    let adjustedStart = schoolMatch.index ?? 0;
+    if (prefixMatch) {
+      adjustedStart += prefixMatch[0].length;
+      spanText = spanText.slice(prefixMatch[0].length);
+    }
+
+    const { suffixTokens } = splitSchoolName(spanText);
+    if (suffixTokens.length === 0) continue;
+    const start = adjustedStart;
+    const end = start + spanText.length;
+    fallbackSchoolSpans.push({
+      text: spanText,
+      type: 'ORG',
+      start,
+      end,
+      source: 'PATTERN'
+    });
+  }
+
   // Extract conjunctive names (e.g., "Mahlon and Chilion") - must run after NER to know which names are known
   const allNERSpans = [...ner, ...dep, ...gazPlaces, ...ambiguousPlaces, ...fantasy, ...fb, ...families, ...whitelisted, ...titledNames];
   const conjunctive = isMockBackend ? [] : extractConjunctiveNames(text, allNERSpans);
@@ -2323,6 +2355,7 @@ export async function extractEntities(text: string): Promise<{
     ...conjunctive.map(s => ({ ...s, source: 'PATTERN' as ExtractorSource })), // Treat conjunctive as PATTERN-quality
     ...whitelisted.map(s => ({ ...s, source: 'WHITELIST' as ExtractorSource })), // Whitelisted names
     ...titledNames.map(s => ({ ...s, source: 'PATTERN' as ExtractorSource })),
+    ...fallbackSchoolSpans,
     ...acronymPairs.flatMap(pair => {
       const spans: TaggedSpan[] = [];
       spans.push({

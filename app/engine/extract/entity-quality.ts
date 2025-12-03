@@ -9,7 +9,14 @@
  */
 
 import type { Entity, EntityType } from '../schema';
-import { guessTypeForJrName } from '../linguistics/jr-disambiguation';
+import { guessTypeForJrName, type EntityTypeGuess } from '../linguistics/jr-disambiguation';
+import { nameContainsOrgOrPlaceKeyword } from '../linguistics/context-signals';
+import {
+  looksLikePersonName,
+  type NounPhraseContext
+} from '../linguistics/common-noun-filters';
+import { isAttachedOnlyFragment, type TokenStats } from '../linguistics/token-stats';
+import type { PlaceEvidence } from '../linguistics/school-names';
 
 // Common suffixes that should be preserved
 const NAME_SUFFIXES = new Set([
@@ -173,131 +180,101 @@ export function extractSuffix(name: string): { baseName: string; suffix: string 
   return { baseName: name, suffix: null };
 }
 
+const JR_SUFFIX_RE = /^(jr\.?|junior)$/i;
+
+export type EntityTypeDecision = EntityType | 'UNKNOWN' | 'GPE';
+
+export interface EntityClassificationInput {
+  canonicalName: string;
+  nerLabel?: EntityTypeDecision | 'LOC';
+  tokenStats?: TokenStats;
+  npContext?: NounPhraseContext;
+  surroundingTokens?: string[];
+  placeEvidenceByName?: Map<string, PlaceEvidence>;
+}
+
+function normalizeNerLabel(label?: EntityClassificationInput['nerLabel']): EntityTypeDecision {
+  if (!label) return 'UNKNOWN';
+  if (label === 'LOC') return 'PLACE';
+  return label;
+}
+
 /**
- * Classify entity type using heuristics
- * Priority: Jr disambiguation > gazetteer > title/keywords > capitalization patterns > default
+ * Classify entity type using a simple decision tree.
  */
-export function classifyEntityType(name: string, context?: string): EntityType {
-  const normalized = normalizeEntityName(name);
-  const words = normalized.split(/\s+/);
-  const firstWord = words[0] || '';
-  const lastWord = words[words.length - 1] || '';
+export function classifyEntityType({
+  canonicalName,
+  nerLabel,
+  tokenStats,
+  npContext,
+  surroundingTokens = [],
+  placeEvidenceByName,
+}: EntityClassificationInput): EntityTypeDecision {
+  const tokens = canonicalName.split(/\s+/).filter(Boolean);
+  const lastToken = tokens[tokens.length - 1]?.toLowerCase();
+  const nerType = normalizeNerLabel(nerLabel);
 
-  // 0. Jr/Junior disambiguation (JR-1, JR-2)
-  // Handle ambiguous "X Y Jr" patterns before other heuristics
-  const looksLikeJr = /^(jr\.?|junior)$/i.test(lastWord);
-  if (looksLikeJr && words.length >= 2) {
-    const rootTokens = words.slice(0, -1);
-    const rootName = rootTokens.join(' ');
+  // 1) Jr / Junior disambiguation
+  if (lastToken && JR_SUFFIX_RE.test(lastToken) && tokens.length >= 2) {
+    const rootName = tokens.slice(0, -1).join(' ').toLowerCase();
+    const placeEvidenceForRoot = placeEvidenceByName?.get(rootName);
 
-    // Extract surrounding context for school/place indicators
-    const surroundingTokens = context ? context.split(/\s+/).filter(Boolean) : [];
-
-    // Simple place evidence: check if context has location prepositions
-    const hasLocationPrep = context ? /\b(in|from|at|to|near)\s+/i.test(context) : false;
-
-    const jrGuess = guessTypeForJrName({
-      fullName: name,
-      tokens: words,
+    const jrGuess: EntityTypeGuess = guessTypeForJrName({
+      fullName: canonicalName,
+      tokens,
       surroundingTokens,
-      placeEvidenceForRoot: hasLocationPrep ? {
-        usedWithLocationPreposition: true,
-        standAlonePlaceCount: hasLocationPrep ? 1 : 0
-      } : undefined,
-      rootIsKnownPlace: KNOWN_LOCATIONS.has(rootName.toLowerCase()),
+      placeEvidenceForRoot,
     });
 
-    if (jrGuess === 'PERSON') {
-      return 'PERSON';
-    } else if (jrGuess === 'ORG') {
-      return 'ORG';
+    if (jrGuess === 'PERSON' || jrGuess === 'ORG') {
+      return jrGuess;
     }
-    // If UNKNOWN, fall through to other heuristics
   }
 
-  // 1. Check gazetteer (known entities)
-  if (KNOWN_LOCATIONS.has(normalized)) {
-    return 'PLACE';
+  // 2) Org/place keyword cues
+  const { hasOrg, hasPlace } = nameContainsOrgOrPlaceKeyword(canonicalName);
+  let type: EntityTypeDecision = 'UNKNOWN';
+  if (hasOrg) {
+    type = 'ORG';
+  } else if (hasPlace) {
+    type = 'PLACE';
   }
 
-  if (KNOWN_ORGS.has(normalized)) {
-    return 'ORG';
+  // 3) NER label as a soft prior
+  if (type === 'UNKNOWN' && nerType !== 'UNKNOWN') {
+    type = nerType;
   }
 
-  // 2. Check for title/honorific indicators
-  if (PERSON_TITLES.has(firstWord)) {
+  // 4) Attached-only fragment suppression
+  if (tokens.length === 1 && tokenStats && isAttachedOnlyFragment(tokenStats, tokens[0])) {
+    return 'UNKNOWN';
+  }
+
+  // 5) PERSON heuristics
+  const shouldCheckPerson =
+    type === 'PERSON' || (type === 'UNKNOWN' && nerType === 'PERSON');
+  if (shouldCheckPerson) {
+    const personLike =
+      npContext && tokenStats ? looksLikePersonName(npContext, tokenStats) : true;
+    if (!personLike) {
+      return 'UNKNOWN';
+    }
     return 'PERSON';
   }
 
-  // 3. Check for organization keywords
-  if (words.some(w => ORG_KEYWORDS.has(w))) {
-    return 'ORG';
-  }
+  // 6) Finalize ORG / PLACE / GPE
+  if (type === 'ORG') return 'ORG';
+  if (type === 'PLACE' || type === 'GPE') return type;
 
-  // 4. Check for location keywords
-  if (words.some(w => LOCATION_KEYWORDS.has(w))) {
-    return 'PLACE';
-  }
-
-  // 5. Check for name suffixes (strong person indicator)
-  if (NAME_SUFFIXES.has(lastWord) || NAME_SUFFIXES.has(lastWord.replace('.', ''))) {
+  // 7) Fallback
+  if (type === 'UNKNOWN' && nerType === 'PERSON') {
     return 'PERSON';
   }
-
-  // 6. Capitalization patterns
-  const allWordsCapitalized = words.every(w => /^[A-Z]/.test(w));
-
-  if (allWordsCapitalized) {
-    // All caps could be PERSON or PLACE
-    // Use length as heuristic: single word more likely PLACE, multi-word more likely PERSON
-    if (words.length === 1) {
-      // Single capitalized word - could be city/country or last name
-      // Check if it ends with common location suffixes
-      if (/(?:ville|town|city|land|burg|shire|ford|port|field)$/i.test(normalized)) {
-        return 'PLACE';
-      }
-      // Default to PERSON for single capitalized words (more common)
-      return 'PERSON';
-    } else if (words.length === 2) {
-      // Two words - likely person name (first + last)
-      return 'PERSON';
-    } else if (words.length >= 3) {
-      // Three+ words - could be person (with middle name) or place (like "New York City")
-      // Check for "of" which suggests place or org
-      if (words.includes('of')) {
-        return 'PLACE';
-      }
-      return 'PERSON';
-    }
+  if (type === 'UNKNOWN' && (nerType === 'ORG' || nerType === 'GPE' || nerType === 'PLACE')) {
+    return nerType;
   }
 
-  // 7. Context-based hints (if context provided)
-  if (context) {
-    const lowerContext = context.toLowerCase();
-
-    // Person indicators
-    if (/\b(he|she|his|her|him|who|born|died|married|father|mother|son|daughter|brother|sister)\b/.test(lowerContext)) {
-      return 'PERSON';
-    }
-
-    // Location indicators
-    if (/\b(in|at|from|to|near|located|situated|city|town|country|capital)\b/.test(lowerContext)) {
-      return 'PLACE';
-    }
-
-    // Organization indicators
-    if (/\b(company|corporation|founded|headquarters|employees|works for|employed by)\b/.test(lowerContext)) {
-      return 'ORG';
-    }
-  }
-
-  // 8. Default fallback: if starts with capital, assume PERSON
-  if (/^[A-Z]/.test(normalized)) {
-    return 'PERSON';
-  }
-
-  // Last resort: return PERSON as most conservative default
-  return 'PERSON';
+  return 'UNKNOWN';
 }
 
 /**
@@ -314,7 +291,12 @@ export function improveEntityQuality(entity: Entity, context?: string): Entity {
   let improvedType = entity.type;
 
   // If entity type is uncertain or clearly wrong, reclassify
-  const classifiedType = classifyEntityType(normalizedCanonical, context);
+  const surroundingTokens = context ? context.split(/\s+/).filter(Boolean) : [];
+  const classifiedType = classifyEntityType({
+    canonicalName: normalizedCanonical,
+    nerLabel: entity.attrs?.nerLabel as EntityTypeDecision | 'LOC' | undefined,
+    surroundingTokens,
+  });
 
   // Use the classified type if:
   // - Current type is generic/uncertain
@@ -327,7 +309,9 @@ export function improveEntityQuality(entity: Entity, context?: string): Entity {
     );
 
   if (hasStrongTypeSignal || !entity.type) {
-    improvedType = classifiedType;
+    if (classifiedType !== 'UNKNOWN') {
+      improvedType = classifiedType === 'GPE' ? 'PLACE' : classifiedType;
+    }
   }
 
   // 4. Normalize aliases
