@@ -30,6 +30,38 @@ interface Relation {
   objCanonical: string;
 }
 
+type JobStatus = 'queued' | 'running' | 'done' | 'failed';
+
+interface ExtractionResponse {
+  success: boolean;
+  entities: Array<{
+    id: string;
+    text: string;
+    type: string;
+    confidence: number;
+    spans: Array<{ start: number; end: number }>;
+    aliases?: string[];
+  }>;
+  relations: Array<{
+    id: string;
+    subj: string;
+    obj: string;
+    pred: string;
+    confidence: number;
+    subjCanonical: string;
+    objCanonical: string;
+  }>;
+  stats?: {
+    extractionTime?: number;
+    entityCount?: number;
+    relationCount?: number;
+  };
+  fictionEntities?: any[];
+}
+
+const JOB_POLL_INTERVAL_MS = 1500;
+const SYNC_EXTRACTION_CHAR_LIMIT = 20000;
+
 // Debounce helper
 function debounce<T extends (...args: any[]) => any>(
   func: T,
@@ -363,6 +395,11 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [showAdvancedControls, setShowAdvancedControls] = useState(false);
   const [showEntityModal, setShowEntityModal] = useState(false);
   const [renderMarkdown, setRenderMarkdown] = useState(true);
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [jobStatus, setJobStatus] = useState<JobStatus | null>(null);
+  const [jobError, setJobError] = useState<string | null>(null);
+  const [jobResult, setJobResult] = useState<ExtractionResponse | null>(null);
+  const [backgroundProcessing, setBackgroundProcessing] = useState(false);
   const [theme, setTheme] = useState(loadThemePreference());
 
   // Initialize theme on mount
@@ -375,6 +412,55 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     const newTheme = toggleTheme();
     setTheme(newTheme);
   };
+
+  const requiresBackground = text.length > SYNC_EXTRACTION_CHAR_LIMIT;
+  const hasActiveJob = jobStatus === 'queued' || jobStatus === 'running';
+
+  const applyExtractionResults = useCallback(
+    (data: ExtractionResponse, rawText: string, elapsedMs?: number) => {
+      const extractedEntities: EntitySpan[] = data.entities.flatMap((entity: any) => {
+        try {
+          if (!isValidEntityType(entity.type)) {
+            console.warn(`[ExtractionLab] Skipping entity with invalid type: ${entity.type}, text: ${entity.text}`);
+            return [];
+          }
+
+          return entity.spans.map((span: any) => ({
+            start: span.start,
+            end: span.end,
+            text: entity.text,
+            displayText: entity.text,
+            type: entity.type as EntityType,
+            confidence: entity.confidence,
+            source: 'natural' as const,
+          }));
+        } catch (entityError) {
+          console.error('[ExtractionLab] Error processing entity:', { entity, error: entityError });
+          return [];
+        }
+      });
+
+      const deduplicated = deduplicateEntities(extractedEntities);
+      const { entities: manualTags, rejections } = parseManualTags(rawText);
+      const mergedEntities = mergeManualAndAutoEntities(deduplicated, manualTags, rejections, rawText);
+
+      const time = elapsedMs ?? data.stats?.extractionTime ?? 0;
+      const avgConfidence =
+        mergedEntities.length > 0
+          ? mergedEntities.reduce((sum, e) => sum + e.confidence, 0) / mergedEntities.length
+          : 0;
+
+      setEntities(mergedEntities);
+      setRelations(data.relations || []);
+      setStats({
+        time: Math.round(time),
+        confidence: Math.round(avgConfidence * 100),
+        count: mergedEntities.length,
+        relationCount: data.relations?.length || 0,
+      });
+    },
+    []
+  );
 
   // Real-time extraction using FULL ARES ENGINE (debounced 1000ms for heavier processing)
   const extractEntities = useCallback(
@@ -428,60 +514,10 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           throw new Error(data.error || 'Extraction failed');
         }
 
-        // Transform ARES engine output to EntitySpan format with validation
-        const extractedEntities: EntitySpan[] = data.entities.flatMap((entity: any) => {
-          try {
-            // Validate entity type
-            if (!isValidEntityType(entity.type)) {
-              console.warn(`[ExtractionLab] Skipping entity with invalid type: ${entity.type}, text: ${entity.text}`);
-              return [];
-            }
-            // Create a span for each occurrence of the entity
-            return entity.spans.map((span: any) => ({
-              start: span.start,
-              end: span.end,
-              text: entity.text,
-              displayText: entity.text,
-              type: entity.type as EntityType,
-              confidence: entity.confidence,
-              source: 'natural' as const,
-            }));
-          } catch (entityError) {
-            console.error('[ExtractionLab] Error processing entity:', { entity, error: entityError });
-            return [];
-          }
-        });
+        const elapsed = performance.now() - start;
+        applyExtractionResults(data, text, elapsed);
 
-        // Deduplicate: merge overlapping spans
-        const deduplicated = deduplicateEntities(extractedEntities);
-
-        // Parse manual tags from the RAW text (not stripped text)
-        // This ensures positions match what CodeMirror has
-        // mergeManualAndAutoEntities will filter out incomplete tags that are still being typed
-        const { entities: manualTags, rejections } = parseManualTags(text);
-
-        // Merge manual tags with auto-detected entities
-        // Manual overrides always win over auto-detection
-        // Rejections filter out entities by word
-        // Note: We pass the raw text for finding incomplete regions
-        const mergedEntities = mergeManualAndAutoEntities(deduplicated, manualTags, rejections, text);
-
-        const time = performance.now() - start;
-        const avgConfidence =
-          mergedEntities.length > 0
-            ? mergedEntities.reduce((sum, e) => sum + e.confidence, 0) / mergedEntities.length
-            : 0;
-
-        setEntities(mergedEntities);
-        setRelations(data.relations || []);
-        setStats({
-          time: Math.round(time),
-          confidence: Math.round(avgConfidence * 100),
-          count: mergedEntities.length,
-          relationCount: data.relations?.length || 0,
-        });
-
-        console.log(`[ARES ENGINE] Extracted ${mergedEntities.length} entities (${deduplicated.length} auto + ${manualTags.length} manual, ${rejections.size} rejected), ${data.relations?.length || 0} relations`);
+        console.log(`[ARES ENGINE] Extracted ${data.entities.length} entities, ${data.relations?.length || 0} relations`);
       } catch (error) {
         console.error('Extraction failed:', error);
         toast.error(`Extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -491,12 +527,102 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         setProcessing(false);
       }
     }, 1000), // Increased debounce for heavier ARES processing
-    [toast]
+    [toast, applyExtractionResults]
   );
 
   useEffect(() => {
+    if (requiresBackground || hasActiveJob) {
+      setProcessing(false);
+      if (requiresBackground && !hasActiveJob) {
+        setEntities([]);
+        setRelations([]);
+        setStats({ time: 0, confidence: 0, count: 0, relationCount: 0 });
+      }
+      return;
+    }
+
     extractEntities(text);
-  }, [text, extractEntities]);
+  }, [text, extractEntities, requiresBackground, hasActiveJob]);
+
+  const startBackgroundJob = async () => {
+    if (!text.trim()) {
+      toast.error('Please paste text before starting extraction.');
+      return;
+    }
+
+    setBackgroundProcessing(true);
+    setJobError(null);
+    setJobResult(null);
+
+    try {
+      const payload = { text: stripIncompleteTagsForExtraction(text) };
+      const response = await fetch('/api/extraction/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to start job');
+      }
+
+      setJobId(data.jobId);
+      setJobStatus('queued');
+      setEntities([]);
+      setRelations([]);
+      setStats({ time: 0, confidence: 0, count: 0, relationCount: 0 });
+      toast.success('Background extraction started.');
+    } catch (error) {
+      toast.error(`Failed to start job: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setJobId(null);
+      setJobStatus(null);
+    } finally {
+      setBackgroundProcessing(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!jobId || !jobStatus || (jobStatus !== 'queued' && jobStatus !== 'running')) {
+      return;
+    }
+
+    const interval = setInterval(async () => {
+      try {
+        const statusRes = await fetch(`/api/extraction/status?jobId=${jobId}`);
+        const statusData = await statusRes.json();
+
+        if (!statusRes.ok) {
+          throw new Error(statusData?.error || 'Failed to read job status');
+        }
+
+        setJobStatus(statusData.status);
+
+        if (statusData.status === 'failed') {
+          setJobError(statusData.errorMessage || 'Job failed');
+          clearInterval(interval);
+          return;
+        }
+
+        if (statusData.status === 'done') {
+          const resultRes = await fetch(`/api/extraction/result?jobId=${jobId}`);
+          const resultJson = await resultRes.json();
+
+          if (!resultRes.ok) {
+            throw new Error(resultJson?.error || 'Failed to load job result');
+          }
+
+          setJobResult(resultJson as ExtractionResponse);
+          applyExtractionResults(resultJson as ExtractionResponse, text, resultJson?.stats?.extractionTime);
+          clearInterval(interval);
+        }
+      } catch (error) {
+        console.error('[ExtractionLab] job poll failed', error);
+      }
+    }, JOB_POLL_INTERVAL_MS);
+
+    return () => clearInterval(interval);
+  }, [jobId, jobStatus, applyExtractionResults, text]);
 
   // Entity handler: Change Type
   // Inserts tag: #Entity:TYPE or #[Multi Word]:TYPE
@@ -675,6 +801,13 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
               <span className="stat-badge">🎯 {stats.confidence}% confidence</span>
               <span className="stat-badge">📊 {stats.count} entities</span>
               <span className="stat-badge">🔗 {stats.relationCount} relations</span>
+              {hasActiveJob && <span className="stat-badge processing">Job {jobStatus}</span>}
+              {jobStatus === 'done' && <span className="stat-badge">✅ Job done</span>}
+              {jobStatus === 'failed' && jobError && (
+                <span className="stat-badge" style={{ background: '#fee2e2', color: '#991b1b' }}>
+                  ❌ {jobError}
+                </span>
+              )}
               <button
                 onClick={copyReport}
                 className="report-button"
@@ -713,7 +846,41 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '16px', flexWrap: 'wrap' }}>
                 <div>
                   <h2>Write or paste text...</h2>
-                  <p className="panel-subtitle">Full ARES engine extracts entities AND relations (updates after typing)</p>
+                  <p className="panel-subtitle">Full ARES engine extracts entities AND relations (updates after typing; long texts run as background jobs)</p>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginTop: '8px' }}>
+                    <button
+                      onClick={startBackgroundJob}
+                      disabled={backgroundProcessing || hasActiveJob || !text.trim()}
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: '8px',
+                        border: '1px solid var(--border-color)',
+                        background: hasActiveJob ? 'var(--bg-tertiary)' : '#1d4ed8',
+                        color: '#ffffff',
+                        cursor: backgroundProcessing || hasActiveJob || !text.trim() ? 'not-allowed' : 'pointer',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {hasActiveJob
+                        ? `Job ${jobStatus || ''}`
+                        : backgroundProcessing
+                          ? 'Starting...'
+                          : 'Start background extraction'}
+                    </button>
+                    <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                      Recommended for long texts (&gt;{SYNC_EXTRACTION_CHAR_LIMIT.toLocaleString()} chars). Polls every {(JOB_POLL_INTERVAL_MS / 1000).toFixed(1)}s.
+                    </span>
+                    {jobId && (
+                      <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                        Job ID: {jobId}
+                      </span>
+                    )}
+                    {jobStatus === 'done' && jobResult?.stats?.extractionTime != null && (
+                      <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                        Completed in {Math.round(jobResult.stats.extractionTime)}ms
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px' }}>
@@ -772,6 +939,22 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                 </div>
               )}
             </div>
+            {requiresBackground && (
+              <div
+                style={{
+                  marginTop: '12px',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: '1px solid #fed7aa',
+                  background: '#fff7ed',
+                  color: '#9a3412',
+                  fontSize: '14px',
+                }}
+              >
+                Live extraction is paused for long text. Use the background extraction button above and keep this tab open while
+                the worker processes your job.
+              </div>
+            )}
             {/* Entity indicators on left + Editor on right */}
             <div className="editor-with-indicators-wrapper">
               {/* Entity indicators on left side */}
