@@ -45,6 +45,9 @@ async function processQueuedJobs() {
 async function startWorker() {
   console.log(`[worker] polling every ${POLL_INTERVAL_MS}ms`);
 
+  // Set global flag for health check
+  (global as any).workerRunning = true;
+
   // Run worker loop in background
   setInterval(async () => {
     try {
