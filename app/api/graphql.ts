@@ -1450,6 +1450,9 @@ export function createGraphQLServer(storagePath?: string) {
 }
 
 // Start server if this file is run directly
+// DISABLED: Railway uses start-server-and-worker.ts which explicitly calls startGraphQLServer()
+// Leaving this enabled causes EADDRINUSE errors when bundled by esbuild
+/*
 if (require.main === module) {
   // Use Railway's PORT environment variable, fallback to 4000 for local dev
   const port = parseInt(process.env.PORT || '4000', 10);
@@ -1458,3 +1461,4 @@ if (require.main === module) {
     process.exit(1);
   });
 }
+*/
