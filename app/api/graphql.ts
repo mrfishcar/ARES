@@ -1149,13 +1149,17 @@ No additional information is available at this time.
 
       req.on('end', async () => {
         try {
+          console.log('[jobs/start] 📥 Received job creation request');
           const { text } = JSON.parse(body);
 
           if (!text || typeof text !== 'string') {
+            console.log('[jobs/start] ❌ Invalid request: text is missing or not a string');
             res.writeHead(400, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ error: 'Text is required' }));
             return;
           }
+
+          console.log(`[jobs/start] 📝 Text length: ${text.length} chars`);
 
           const MAX_TEXT_LENGTH = parseInt(
             process.env.MAX_TEXT_LENGTH || `${2 * 1024 * 1024}`,
@@ -1163,21 +1167,25 @@ No additional information is available at this time.
           );
 
           if (text.length > MAX_TEXT_LENGTH) {
+            console.log(`[jobs/start] ❌ Text too large: ${text.length} > ${MAX_TEXT_LENGTH}`);
             res.writeHead(413, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ error: `Text too large (max ${MAX_TEXT_LENGTH} chars)` }));
             return;
           }
 
           // Create job in Railway SQLite
+          console.log('[jobs/start] 💾 Creating job in SQLite...');
           const { createJob } = await import('../jobs/job-store');
           const job = await createJob({ inputType: 'rawText', inputRef: text });
 
+          console.log(`[jobs/start] ✅ Job created successfully: ${job.id}, status=${job.status}`);
           logger.info({ msg: 'job_created', jobId: job.id, length: text.length });
 
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ jobId: job.id }));
 
         } catch (error) {
+          console.error('[jobs/start] ❌ Error creating job:', error);
           logger.error({ msg: 'job_start_error', err: String(error) });
           res.writeHead(500, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Failed to start job' }));
