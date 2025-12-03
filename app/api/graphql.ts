@@ -1117,6 +1117,16 @@ No additional information is available at this time.
       return;
     }
 
+    // Startup logs endpoint for debugging when Railway logs won't load
+    if (req.url === '/startup-logs') {
+      const logs = typeof global.getStartupLogs === 'function'
+        ? global.getStartupLogs()
+        : ['No startup logs available'];
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ logs }));
+      return;
+    }
+
     // Background job endpoints (moved from Vercel to Railway)
     // POST /jobs/start - create background extraction job
     if (req.url === '/jobs/start') {

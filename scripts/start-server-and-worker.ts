@@ -10,6 +10,15 @@ const PORT = parseInt(process.env.PORT || '4000', 10);
 const POLL_INTERVAL_MS = parseInt(process.env.JOB_WORKER_INTERVAL_MS || '3000', 10);
 const MAX_BATCH = parseInt(process.env.JOB_WORKER_BATCH || '1', 10);
 
+// Store startup logs for debugging via HTTP endpoint
+const startupLogs: string[] = [];
+function logStartup(message: string) {
+  const timestamped = `[${new Date().toISOString()}] ${message}`;
+  console.log(timestamped);
+  startupLogs.push(timestamped);
+}
+(global as any).getStartupLogs = () => startupLogs;
+
 async function processQueuedJobs() {
   console.log('[worker] Checking for queued jobs...');
   const queued = await listQueuedJobs(MAX_BATCH);
@@ -78,17 +87,35 @@ async function startWorker() {
 }
 
 async function main() {
-  console.log('[startup] Starting ARES backend...');
+  logStartup('[startup] 🚀 Starting ARES backend...');
+  logStartup(`[startup] PORT=${PORT}, POLL_INTERVAL=${POLL_INTERVAL_MS}ms`);
 
   // Start GraphQL server
-  console.log(`[startup] Starting GraphQL server on port ${PORT}...`);
-  await startGraphQLServer(PORT);
+  logStartup(`[startup] 📡 Starting GraphQL server on port ${PORT}...`);
+  try {
+    await startGraphQLServer(PORT);
+    logStartup('[startup] ✅ GraphQL server started successfully');
+  } catch (error) {
+    const msg = `[startup] ❌ Failed to start GraphQL server: ${error}`;
+    logStartup(msg);
+    console.error(error);
+    throw error;
+  }
 
   // Start background job worker in the same process
-  console.log('[startup] Starting background job worker...');
-  await startWorker();
+  logStartup('[startup] 🔧 Starting background job worker...');
+  try {
+    await startWorker();
+    logStartup('[startup] ✅ Worker started successfully');
+  } catch (error) {
+    const msg = `[startup] ❌ Failed to start worker: ${error}`;
+    logStartup(msg);
+    console.error(error);
+    throw error;
+  }
 
-  console.log('[startup] ✅ Server and worker started successfully');
+  logStartup('[startup] ✅ Server and worker both started successfully');
+  logStartup('[startup] 🎉 ARES backend is ready!');
 }
 
 main().catch((err) => {
