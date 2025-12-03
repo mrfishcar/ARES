@@ -1105,6 +1105,203 @@ No additional information is available at this time.
       return;
     }
 
+    // Background job endpoints (moved from Vercel to Railway)
+    // POST /jobs/start - create background extraction job
+    if (req.url === '/jobs/start') {
+      // Handle CORS preflight
+      if (req.method === 'OPTIONS') {
+        res.writeHead(200, {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        });
+        res.end();
+        return;
+      }
+
+      if (req.method !== 'POST') {
+        res.writeHead(405, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Method not allowed' }));
+        return;
+      }
+
+      // Set CORS headers
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+      let body = '';
+      req.on('data', (chunk) => {
+        body += chunk.toString();
+      });
+
+      req.on('end', async () => {
+        try {
+          const { text } = JSON.parse(body);
+
+          if (!text || typeof text !== 'string') {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Text is required' }));
+            return;
+          }
+
+          const MAX_TEXT_LENGTH = parseInt(
+            process.env.MAX_TEXT_LENGTH || `${2 * 1024 * 1024}`,
+            10
+          );
+
+          if (text.length > MAX_TEXT_LENGTH) {
+            res.writeHead(413, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: `Text too large (max ${MAX_TEXT_LENGTH} chars)` }));
+            return;
+          }
+
+          // Create job in Railway SQLite
+          const { createJob } = await import('../jobs/job-store');
+          const job = await createJob({ inputType: 'rawText', inputRef: text });
+
+          logger.info({ msg: 'job_created', jobId: job.id, length: text.length });
+
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ jobId: job.id }));
+
+        } catch (error) {
+          logger.error({ msg: 'job_start_error', err: String(error) });
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Failed to start job' }));
+        }
+      });
+
+      return;
+    }
+
+    // GET /jobs/status?jobId=... - poll job status
+    if (req.url?.startsWith('/jobs/status')) {
+      // Handle CORS preflight
+      if (req.method === 'OPTIONS') {
+        res.writeHead(200, {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        });
+        res.end();
+        return;
+      }
+
+      if (req.method !== 'GET') {
+        res.writeHead(405, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Method not allowed' }));
+        return;
+      }
+
+      // Set CORS headers
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+      const url = new URL(req.url, `http://${req.headers.host}`);
+      const jobId = url.searchParams.get('jobId');
+
+      if (!jobId) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'jobId is required' }));
+        return;
+      }
+
+      try {
+        const { getJob } = await import('../jobs/job-store');
+        const job = await getJob(jobId);
+
+        if (!job) {
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Job not found' }));
+          return;
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          jobId: job.id,
+          status: job.status,
+          errorMessage: job.errorMessage,
+        }));
+
+      } catch (error) {
+        logger.error({ msg: 'job_status_error', err: String(error) });
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Failed to read job status' }));
+      }
+
+      return;
+    }
+
+    // GET /jobs/result?jobId=... - get job result
+    if (req.url?.startsWith('/jobs/result')) {
+      // Handle CORS preflight
+      if (req.method === 'OPTIONS') {
+        res.writeHead(200, {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        });
+        res.end();
+        return;
+      }
+
+      if (req.method !== 'GET') {
+        res.writeHead(405, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Method not allowed' }));
+        return;
+      }
+
+      // Set CORS headers
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+      const url = new URL(req.url, `http://${req.headers.host}`);
+      const jobId = url.searchParams.get('jobId');
+
+      if (!jobId) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'jobId is required' }));
+        return;
+      }
+
+      try {
+        const { getJob } = await import('../jobs/job-store');
+        const job = await getJob(jobId);
+
+        if (!job) {
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Job not found' }));
+          return;
+        }
+
+        if (job.status === 'failed') {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ status: 'failed', errorMessage: job.errorMessage }));
+          return;
+        }
+
+        if (job.status !== 'done' || !job.resultJson) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ status: job.status }));
+          return;
+        }
+
+        const parsed = JSON.parse(job.resultJson);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(parsed));
+
+      } catch (error) {
+        logger.error({ msg: 'job_result_error', err: String(error) });
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Failed to read job result' }));
+      }
+
+      return;
+    }
+
     // Handle GraphQL requests
     if (req.url === '/graphql') {
       // Handle CORS preflight

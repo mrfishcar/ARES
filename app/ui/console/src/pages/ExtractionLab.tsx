@@ -555,8 +555,19 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     setJobResult(null);
 
     try {
+      // Use Railway backend for background jobs (same as extract-entities)
+      let apiUrl = import.meta.env.VITE_API_URL;
+      if (!apiUrl) {
+        const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+        if (hostname.includes('vercel.app')) {
+          apiUrl = 'https://ares-production-72ea.up.railway.app';
+        } else {
+          apiUrl = 'http://localhost:4000';
+        }
+      }
+
       const payload = { text: stripIncompleteTagsForExtraction(text) };
-      const response = await fetch('/api/extraction/start', {
+      const response = await fetch(`${apiUrl}/jobs/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -589,7 +600,18 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
     const interval = setInterval(async () => {
       try {
-        const statusRes = await fetch(`/api/extraction/status?jobId=${jobId}`);
+        // Use Railway backend for job polling (same as extract-entities)
+        let apiUrl = import.meta.env.VITE_API_URL;
+        if (!apiUrl) {
+          const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+          if (hostname.includes('vercel.app')) {
+            apiUrl = 'https://ares-production-72ea.up.railway.app';
+          } else {
+            apiUrl = 'http://localhost:4000';
+          }
+        }
+
+        const statusRes = await fetch(`${apiUrl}/jobs/status?jobId=${jobId}`);
         const statusData = await statusRes.json();
 
         if (!statusRes.ok) {
@@ -605,7 +627,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         }
 
         if (statusData.status === 'done') {
-          const resultRes = await fetch(`/api/extraction/result?jobId=${jobId}`);
+          const resultRes = await fetch(`${apiUrl}/jobs/result?jobId=${jobId}`);
           const resultJson = await resultRes.json();
 
           if (!resultRes.ok) {
