@@ -17,37 +17,63 @@ export interface Job {
   updatedAt: string;
 }
 
-const DEFAULT_DB_PATH = path.join(process.cwd(), 'data', 'jobs.db');
+// Default local path (for dev / worker environments)
+const LOCAL_DEFAULT_DB_PATH = path.join(process.cwd(), 'data', 'jobs.db');
+
 let db: Database.Database | null = null;
+
+function resolveDbPath(): string {
+  // Prefer explicit override if it's non-empty and non-whitespace
+  const rawEnvPath = process.env.ARES_DB_PATH;
+  if (rawEnvPath && rawEnvPath.trim().length > 0) {
+    return rawEnvPath.trim();
+  }
+
+  // On Vercel / serverless, use /tmp (writable, ephemeral)
+  if (process.env.VERCEL) {
+    return path.join('/tmp', 'ares-jobs.db');
+  }
+
+  // Fallback: local data directory in the repo
+  return LOCAL_DEFAULT_DB_PATH;
+}
 
 function ensureDatabase(): Database.Database {
   if (db) return db;
 
-  const dbPath = process.env.ARES_DB_PATH || DEFAULT_DB_PATH;
-  const dir = path.dirname(dbPath);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+  const dbPath = resolveDbPath();
+
+  try {
+    const dir = path.dirname(dbPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    db = new Database(dbPath);
+    db.pragma('journal_mode = WAL');
+
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS jobs (
+        id TEXT PRIMARY KEY,
+        status TEXT NOT NULL,
+        inputType TEXT NOT NULL,
+        inputRef TEXT NOT NULL,
+        resultJson TEXT,
+        errorMessage TEXT,
+        createdAt TEXT NOT NULL,
+        updatedAt TEXT NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_jobs_status_created ON jobs(status, createdAt);
+    `);
+
+    console.log(`[jobs] SQLite job store initialized at ${dbPath}`);
+    return db;
+  } catch (err) {
+    console.error('[jobs] Failed to initialize SQLite job store at path:', dbPath, err);
+    // Re-throw so callers can surface a generic "Failed to start job" to the client
+    throw err;
   }
-
-  db = new Database(dbPath);
-  db.pragma('journal_mode = WAL');
-
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS jobs (
-      id TEXT PRIMARY KEY,
-      status TEXT NOT NULL,
-      inputType TEXT NOT NULL,
-      inputRef TEXT NOT NULL,
-      resultJson TEXT,
-      errorMessage TEXT,
-      createdAt TEXT NOT NULL,
-      updatedAt TEXT NOT NULL
-    );
-
-    CREATE INDEX IF NOT EXISTS idx_jobs_status_created ON jobs(status, createdAt);
-  `);
-
-  return db;
 }
 
 function mapRow(row: any): Job {
@@ -81,6 +107,8 @@ export async function createJob(input: { inputType: JobInputType; inputRef: stri
     createdAt: now,
     updatedAt: now,
   });
+
+  console.log(`[jobs] Created job ${id} (type=${input.inputType}, inputRefLength=${input.inputRef.length})`);
 
   return {
     id,
@@ -127,6 +155,8 @@ export async function updateJobStatus(
     inputRef: extraFields.inputRef ?? null,
     updatedAt: now,
   });
+
+  console.log(`[jobs] Updated job ${id} → ${status}`);
 }
 
 export async function listQueuedJobs(limit: number): Promise<Job[]> {
