@@ -11,34 +11,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const text = (req.body as any)?.text;
-  if (!text || typeof text !== 'string') {
-    return res.status(400).json({ error: 'Text is required' });
-  }
-
-  if (text.length > MAX_TEXT_LENGTH) {
-    return res
-      .status(413)
-      .json({ error: `Text too large (max ${MAX_TEXT_LENGTH} chars)` });
-  }
-
   try {
+    const text = (req.body as any)?.text;
+
+    if (!text || typeof text !== 'string') {
+      return res.status(400).json({ error: 'Text is required' });
+    }
+
+    if (text.length > MAX_TEXT_LENGTH) {
+      return res
+        .status(413)
+        .json({ error: `Text too large (max ${MAX_TEXT_LENGTH} chars)` });
+    }
+
     const job = await createJob({ inputType: 'rawText', inputRef: text });
     console.log(`[api] created job ${job.id} (length=${text.length})`);
 
-    // Optional: fire-and-forget worker trigger hook if configured
-    const triggerUrl = process.env.JOB_WORKER_TRIGGER_URL;
-    if (triggerUrl) {
-      // We don't await this so the API stays fast.
-      fetch(triggerUrl, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ jobId: job.id })
-      }).catch(err => {
-        console.error(`[api] worker trigger failed for job ${job.id}`, err);
-      });
-    }
-
+    // For now we DO NOT call any worker trigger URL here.
+    // Railway worker should poll the DB for queued jobs and process them.
+    // This keeps /api/extraction/start completely safe and fast.
     return res.status(200).json({ jobId: job.id });
   } catch (error) {
     console.error('[api] failed to create job', error);
