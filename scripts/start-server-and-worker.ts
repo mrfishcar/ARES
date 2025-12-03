@@ -1,5 +1,6 @@
 /**
  * Railway startup script - runs GraphQL server + background job worker
+ * Version: 2025-12-03-v4 - Force fresh deployment
  */
 
 import { startGraphQLServer } from '../app/api/graphql';
