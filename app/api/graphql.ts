@@ -1105,6 +1105,18 @@ No additional information is available at this time.
       return;
     }
 
+    // Health check for worker status
+    if (req.url === '/health') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        status: 'ok',
+        server: 'running',
+        worker: global.workerRunning ? 'running' : 'not started',
+        timestamp: new Date().toISOString()
+      }));
+      return;
+    }
+
     // Background job endpoints (moved from Vercel to Railway)
     // POST /jobs/start - create background extraction job
     if (req.url === '/jobs/start') {
