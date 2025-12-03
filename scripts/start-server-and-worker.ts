@@ -11,19 +11,22 @@ const POLL_INTERVAL_MS = parseInt(process.env.JOB_WORKER_INTERVAL_MS || '3000', 
 const MAX_BATCH = parseInt(process.env.JOB_WORKER_BATCH || '1', 10);
 
 async function processQueuedJobs() {
+  console.log('[worker] Checking for queued jobs...');
   const queued = await listQueuedJobs(MAX_BATCH);
+  console.log(`[worker] Found ${queued.length} queued job(s)`);
+
   if (!queued.length) {
     return;
   }
 
   for (const job of queued) {
-    console.log(`[worker] starting job ${job.id}`);
+    console.log(`[worker] ⚡ Starting job ${job.id}, inputType=${job.inputType}, textLength=${job.inputRef?.length || 0}`);
     await updateJobStatus(job.id, 'running');
 
     try {
       const latest = await getJob(job.id);
       if (!latest) {
-        console.warn(`[worker] job ${job.id} disappeared`);
+        console.warn(`[worker] ⚠️  Job ${job.id} disappeared`);
         continue;
       }
 
@@ -31,22 +34,34 @@ async function processQueuedJobs() {
         throw new Error(`Unsupported inputType ${latest.inputType}`);
       }
 
+      console.log(`[worker] 🔄 Processing extraction for job ${job.id}...`);
       const result = await runExtractionJob(job.id, latest.inputRef);
+      console.log(`[worker] ✅ Extraction complete for job ${job.id}: ${result.entities.length} entities, ${result.relations.length} relations`);
+
       await updateJobStatus(job.id, 'done', { resultJson: JSON.stringify(result) });
-      console.log(`[worker] finished job ${job.id}`);
+      console.log(`[worker] ✅ Job ${job.id} marked as DONE`);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error(`[worker] job ${job.id} failed: ${message}`);
+      console.error(`[worker] ❌ Job ${job.id} failed: ${message}`);
+      console.error(`[worker] Error stack:`, error);
       await updateJobStatus(job.id, 'failed', { errorMessage: message });
     }
   }
 }
 
 async function startWorker() {
-  console.log(`[worker] polling every ${POLL_INTERVAL_MS}ms`);
+  console.log(`[worker] 🚀 Worker starting - will poll every ${POLL_INTERVAL_MS}ms`);
 
   // Set global flag for health check
   (global as any).workerRunning = true;
+
+  // Initial poll immediately
+  console.log('[worker] Running initial job check...');
+  try {
+    await processQueuedJobs();
+  } catch (error) {
+    console.error('[worker] Error in initial poll:', error);
+  }
 
   // Run worker loop in background
   setInterval(async () => {
@@ -54,9 +69,12 @@ async function startWorker() {
       await processQueuedJobs();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error(`[worker] unexpected error: ${message}`);
+      console.error(`[worker] ⚠️  Unexpected error in poll cycle: ${message}`);
+      console.error('[worker] Error details:', error);
     }
   }, POLL_INTERVAL_MS);
+
+  console.log(`[worker] ✅ Worker polling loop established`);
 }
 
 async function main() {
