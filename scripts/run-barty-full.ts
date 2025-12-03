@@ -6,6 +6,10 @@ import { extractFromSegments } from '../app/engine/extract/orchestrator';
 import { segmentDocument } from '../app/engine/segmenter';
 import type { EntityType, Relation } from '../app/engine/schema';
 
+/* ---------------------------
+   Summary Types
+---------------------------- */
+
 interface EntitySummary {
   id: string;
   canonicalName: string;
@@ -21,6 +25,10 @@ interface RelationSummary {
   obj: string;
 }
 
+/* ---------------------------
+   Helpers
+---------------------------- */
+
 function countWords(text: string): number {
   return text.trim().split(/\s+/).filter(Boolean).length;
 }
@@ -33,131 +41,122 @@ function countBy<T extends string>(items: T[]): Record<T, number> {
 }
 
 function sortEntitiesForDisplay(a: EntitySummary, b: EntitySummary): number {
-  if (b.mentionCount !== a.mentionCount) return b.mentionCount - a.mentionCount;
+  // 1. Primary: Mention count
+  if (b.mentionCount !== a.mentionCount) {
+    return b.mentionCount - a.mentionCount;
+  }
 
+  // 2. Secondary: type priority
   const typeOrder: Record<EntityType, number> = {
     PERSON: 0,
     ORG: 1,
     GPE: 2,
     PLACE: 2,
     EVENT: 3,
-    WORK_OF_ART: 4,
-    PRODUCT: 5,
-    LAW: 6,
-    LANGUAGE: 7,
-    DATE: 8,
-    TIME: 9,
-    PERCENT: 10,
-    MONEY: 11,
-    QUANTITY: 12,
-    ORDINAL: 13,
-    CARDINAL: 14,
-    FAC: 15,
-    NORP: 16,
-    LOC: 17,
-    UNKNOWN: 99
-  } as Record<EntityType, number>;
+    RACE: 4,
+    ARTIFACT: 5,
+    MAGIC: 6,
+    SPELL: 7,
+    MATERIAL: 8,
+    DEITY: 9,
+    DATE: 10
+  };
 
-  const typeRankDiff = (typeOrder[a.type] ?? 98) - (typeOrder[b.type] ?? 98);
-  if (typeRankDiff !== 0) return typeRankDiff;
+  const aOrder = typeOrder[a.type] ?? 99;
+  const bOrder = typeOrder[b.type] ?? 99;
 
+  if (aOrder !== bOrder) {
+    return aOrder - bOrder;
+  }
+
+  // 3. Final: alphabetical by name
   return a.canonicalName.localeCompare(b.canonicalName);
 }
 
-async function main() {
-  const manuscriptPath = path.resolve(
-    __dirname,
-    '..',
-    "Barty Beauregard and the Fabulous Fraud PLAIN TEXT.txt"
-  );
+/* ---------------------------
+   Main Runner
+---------------------------- */
 
-  const fullText = fs.readFileSync(manuscriptPath, 'utf8');
-  const totalWords = countWords(fullText);
-  const chunks = segmentDocument('barty-full-v1', fullText);
-  const chunkCount = chunks.length;
-
+async function run() {
   const start = performance.now();
-  const result = await extractFromSegments('barty-full-v1', fullText);
-  const processingTimeMs = Math.round(performance.now() - start);
 
-  const profiles = result.profiles || new Map();
-  const entitySummaries: EntitySummary[] = result.entities.map(e => {
-    const profile = profiles.get(e.id);
-    return {
-      id: e.id,
-      canonicalName: e.canonical,
-      type: e.type,
-      mentionCount: profile?.mention_count ?? 0,
-      aliases: e.aliases || []
-    };
+  // Load Barty text
+  const manuscriptPath = path.join(process.cwd(), 'barty.txt');
+  const text = fs.readFileSync(manuscriptPath, 'utf-8');
+  const totalWords = countWords(text);
+
+  console.log(`[run-barty-full] Loaded manuscript: ${totalWords} words`);
+
+  // Segment into chunks
+  const segments = segmentDocument(text);
+  console.log(`[run-barty-full] Segmented into ${segments.length} chunks`);
+
+  // Extract entities/relations
+  const results = await extractFromSegments({
+    docId: 'barty-full-run',
+    segments
   });
 
-  const entitiesWithMentions = entitySummaries.filter(e => e.mentionCount > 0);
-  const zeroMentionEntities = entitySummaries.filter(e => e.mentionCount === 0);
+  const { entities, relations } = results;
 
-  const entityCountsByType = countBy(entitiesWithMentions.map(e => e.type));
-  const relationCountsByType = countBy(result.relations.map(r => r.pred));
+  /* ---------------------------
+     Build Output Summary
+  ---------------------------- */
 
-  const topEntitiesByMentions = [...entitiesWithMentions]
-    .sort(sortEntitiesForDisplay)
-    .slice(0, 20);
-
-  const entityById = new Map(result.entities.map(e => [e.id, e.canonical]));
-  const relationSummaries: RelationSummary[] = result.relations.map(rel => ({
-    id: rel.id,
-    pred: rel.pred,
-    subj: entityById.get(rel.subj) || rel.subj,
-    obj: entityById.get(rel.obj) || rel.obj
+  const entitySummaries: EntitySummary[] = entities.map(e => ({
+    id: e.id,
+    canonicalName: e.canonical,
+    type: e.type,
+    mentionCount: e.mentions?.length ?? 0,
+    aliases: [...(e.aliases ?? [])]
   }));
 
-  const topRelations = Object.entries(relationCountsByType)
-    .sort(([, a], [, b]) => (b as number) - (a as number))
-    .slice(0, 10)
-    .map(([pred, count]) => ({ pred, count }));
+  const sortedEntities = entitySummaries
+    .sort(sortEntitiesForDisplay)
+    .filter(e => e.mentionCount > 0);
+
+  const relationsOut: RelationSummary[] = relations.map(r => ({
+    id: r.id,
+    pred: r.pred,
+    subj: r.subj,
+    obj: r.obj
+  }));
 
   const summary = {
-    meta: {
-      docId: 'barty-full-v1',
-      manuscriptPath,
-      totalWords,
-      chunkCount,
-      processingTimeMs
-    },
-    aggregates: {
-      entityCountsByType,
-      relationCountsByType,
-      topEntitiesByMentions,
-      topRelations
-    },
-    entities: entitiesWithMentions,
-    zeroMentionEntities,
-    relations: relationSummaries
+    totalWords,
+    chunkCount: segments.length,
+    entityCount: entities.length,
+    relationCount: relations.length,
+    entitiesByType: countBy(entitySummaries.map(e => e.type)),
+    topEntities: sortedEntities.slice(0, 30),
+    relations: relationsOut
   };
 
-  console.log(`Total words: ${totalWords}`);
-  console.log(`Chunks: ${chunkCount}`);
-  console.log('Entities by type:');
-  for (const [type, count] of Object.entries(entityCountsByType)) {
-    console.log(`  ${type}: ${count}`);
+  /* ---------------------------
+     Write Output
+  ---------------------------- */
+
+  const outPath = path.join(process.cwd(), 'out', 'barty-full-summary.json');
+
+  if (!fs.existsSync(path.dirname(outPath))) {
+    fs.mkdirSync(path.dirname(outPath), { recursive: true });
   }
 
-  console.log('\nTop 20 entities by mentions:');
-  topEntitiesByMentions.forEach((e, idx) => {
-    console.log(`  ${idx + 1}. ${e.canonicalName} (${e.type}) – ${e.mentionCount}`);
-  });
+  fs.writeFileSync(outPath, JSON.stringify(summary, null, 2), 'utf-8');
 
-  console.log('\nRelations by type:');
-  for (const [pred, count] of Object.entries(relationCountsByType)) {
-    console.log(`  ${pred}: ${count}`);
-  }
+  const elapsed = performance.now() - start;
+  console.log(
+    `[run-barty-full] Finished full extraction in ${(elapsed / 1000).toFixed(
+      2
+    )} seconds`
+  );
+  console.log(`[run-barty-full] Output written to ${outPath}`);
 
-  const outPath = path.resolve(__dirname, '..', 'out', 'barty-full-summary.json');
-  fs.mkdirSync(path.dirname(outPath), { recursive: true });
-  fs.writeFileSync(outPath, JSON.stringify(summary, null, 2));
-  console.log(`\nWrote summary JSON to ${outPath}`);
+  // Force Node to exit cleanly
+  process.exit(0);
 }
 
-main().catch(err => {
-  console.error(err);
+run().catch(err => {
+  console.error('[run-barty-full] FAILED:', err);
   process.exit(1);
 });
