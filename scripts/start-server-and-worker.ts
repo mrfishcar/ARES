@@ -7,6 +7,19 @@ import { startGraphQLServer } from '../app/api/graphql';
 import { listQueuedJobs, updateJobStatus, getJob } from '../app/jobs/job-store';
 import { runExtractionJob } from '../app/jobs/extraction-runner';
 
+// Global error handlers - register FIRST before anything else
+process.on('unhandledRejection', (reason: any) => {
+  console.error('💥 UNHANDLED REJECTION IN WORKER SCRIPT:', reason);
+  console.error('Reason:', reason);
+  console.error('Stack:', reason?.stack);
+});
+
+process.on('uncaughtException', (err: any) => {
+  console.error('💥 UNCAUGHT EXCEPTION IN WORKER SCRIPT:', err);
+  console.error('Message:', err?.message);
+  console.error('Stack:', err?.stack);
+});
+
 const PORT = parseInt(process.env.PORT || '4000', 10);
 const POLL_INTERVAL_MS = parseInt(process.env.JOB_WORKER_INTERVAL_MS || '3000', 10);
 const MAX_BATCH = parseInt(process.env.JOB_WORKER_BATCH || '1', 10);
