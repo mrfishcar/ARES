@@ -4,6 +4,7 @@
   "description": "Rule-first knowledge engine for extracting entities, relations, and events from long texts",
   "main": "app/engine/orchestrator.ts",
   "scripts": {
+    "start": "npx ts-node scripts/start-server-and-worker.ts",
     "parser": "cd app/services && uvicorn parser:app --host 127.0.0.1 --port 8000",
     "dev": "ts-node app/ui/server.ts",
     "test": "vitest run",
