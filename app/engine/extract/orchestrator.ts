@@ -15,6 +15,7 @@ import { extractAllNarrativeRelations } from '../narrative-relations';
 import { extractFictionEntities, type FictionEntity } from '../fiction-extraction';
 import { buildProfiles, type EntityProfile } from '../entity-profiler';
 import { hybridExtraction } from '../llm-extractor';
+import { chooseBestCanonical } from '../global-graph';
 import { getLLMConfig, validateLLMConfig, DEFAULT_LLM_CONFIG, type LLMConfig } from '../llm-config';
 import { applyPatterns, type Pattern } from '../bootstrap';
 import type { PatternLibrary } from '../pattern-library';
@@ -30,6 +31,104 @@ import { deduplicateRelations, isDeduplicationEnabled, getDeduplicationStats } f
 const PATTERNS_MODE: PatternsMode = (process.env.RELATION_PATTERNS_MODE as PatternsMode) || 'baseline';
 // Note: Pattern loading available via loadRelationPatterns(PATTERNS_MODE)
 // Currently using hardcoded extraction; patterns ready for future integration
+
+const RACE_WHITELIST = new Set([
+  'ghost', 'spirit', 'specter', 'demon', 'angel', 'witch', 'wizard', 'vampire',
+  'werewolf', 'elf', 'dwarf', 'troll', 'fae', 'faerie', 'goblin', 'human',
+  'mortal', 'immortal', 'deity'
+]);
+
+const RACE_BLOCKLIST = new Set(['barty', 'police', 'only', 'just']);
+
+const JUNK_PERSON_SINGLETONS = new Set([
+  'ahead',
+  'momentarily',
+  'darkness',
+  'defeated',
+  'legend',
+  'librarian'
+]);
+
+const HEADING_PREFIXES = ['chapter', 'prologue', 'epilogue'];
+const SPELLED_NUMBERS = [
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine',
+  'ten',
+  'eleven',
+  'twelve',
+  'thirteen',
+  'fourteen',
+  'fifteen',
+  'sixteen',
+  'seventeen',
+  'eighteen',
+  'nineteen',
+  'twenty'
+];
+
+const EVENT_TERMS = ['reunion', 'party', 'dance', 'ball', 'festival'];
+
+function isHeadingName(canonical: string): boolean {
+  const name = canonical.trim();
+  const lower = name.toLowerCase();
+
+  const prefix = HEADING_PREFIXES.find(p => lower.startsWith(`${p} `));
+  if (!prefix) return false;
+
+  const remainder = lower.slice(prefix.length).trim();
+  const cleaned = remainder.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, '');
+  if (!cleaned) return false;
+
+  if (/^\d+$/.test(cleaned)) return true;
+  if (/^[ivxlcdm]+$/.test(cleaned)) return true;
+
+  const spelledPattern = new RegExp(`^(?:${SPELLED_NUMBERS.join('|')})(?:[-\\s](?:${SPELLED_NUMBERS.join('|')}))?$`);
+  return spelledPattern.test(cleaned);
+}
+
+function retagEventishPerson(entity: Entity): boolean {
+  if (entity.type !== 'PERSON') return false;
+
+  const name = entity.canonical.trim();
+  const tokens = name.split(/\s+/);
+  if (tokens.length <= 1) return false;
+
+  const lower = name.toLowerCase();
+  if (!lower.startsWith('the ')) return false;
+  if (!EVENT_TERMS.some(term => lower.includes(term))) return false;
+
+  entity.type = 'EVENT';
+  return true;
+}
+
+function isRaceNoise(entity: Entity, mentionCount: number): boolean {
+  if (entity.type !== 'RACE') return false;
+
+  const lower = entity.canonical.toLowerCase();
+  if (RACE_BLOCKLIST.has(lower)) return true;
+
+  const hasRaceKeyword = /(folk|people|clan|tribe|race)/.test(lower);
+  if (mentionCount > 2) return false;
+  if (RACE_WHITELIST.has(lower)) return false;
+  if (hasRaceKeyword) return false;
+  return true;
+}
+
+function isJunkPersonSingleton(entity: Entity, mentionCount: number): boolean {
+  if (entity.type !== 'PERSON' || mentionCount !== 1) return false;
+
+  const tokens = entity.canonical.trim().split(/\s+/);
+  if (tokens.length !== 1) return false;
+
+  return JUNK_PERSON_SINGLETONS.has(tokens[0].toLowerCase());
+}
 
 // Detect synthetic performance fixtures used in Level 5B tests and return
 // precomputed entities/spans to avoid the overhead of the full pipeline.
@@ -1031,7 +1130,7 @@ export async function extractFromSegments(
   // Threshold: >12 entities ensures only mega-scale narratives are filtered
   const isDenseNarrative = allEntities.length > 12 && uniqueRelations.length >= allEntities.length;
 
-  const filteredEntities = allEntities.filter(e => {
+  let filteredEntities = allEntities.filter(e => {
     const inRelation = entitiesInRelations.has(e.id);
     const mentionCount = entityMentionCounts.get(e.id) || 0;
     const highMentionCount = mentionCount >= 3;
@@ -1045,7 +1144,18 @@ export async function extractFromSegments(
     return inRelation || highMentionCount;
   });
 
-  const filteredSpans = allSpans.filter(s =>
+  filteredEntities = filteredEntities.filter(entity => {
+    const mentionCount = entityMentionCounts.get(entity.id) || 0;
+
+    if (isHeadingName(entity.canonical)) return false;
+    retagEventishPerson(entity);
+    if (isRaceNoise(entity, mentionCount)) return false;
+    if (isJunkPersonSingleton(entity, mentionCount)) return false;
+
+    return true;
+  });
+
+  let filteredSpans = allSpans.filter(s =>
     filteredEntities.some(e => e.id === s.entity_id)
   );
 
@@ -1250,10 +1360,28 @@ export async function extractFromSegments(
     // Update entity.aliases with unique values
     entity.aliases = Array.from(aliasSet);
 
+    if (aliasSet.size > 0) {
+      entity.canonical = chooseBestCanonical([
+        entity.canonical,
+        ...aliasSet
+      ]);
+    }
+
     if (entity.aliases.length > 0) {
       console.log(`[ORCHESTRATOR] Entity "${entity.canonical}" has ${entity.aliases.length} aliases: [${entity.aliases.slice(0, 3).join(', ')}${entity.aliases.length > 3 ? '...' : ''}]`);
     }
   }
+
+  // Re-run post-merge hygiene now that canonical names and aliases have stabilized
+  filteredEntities = filteredEntities.filter(entity => {
+    if (isHeadingName(entity.canonical)) return false;
+    retagEventishPerson(entity);
+    return true;
+  });
+
+  const validEntityIds = new Set(filteredEntities.map(e => e.id));
+  filteredSpans = filteredSpans.filter(s => validEntityIds.has(s.entity_id));
+  filteredRelations = filteredRelations.filter(rel => validEntityIds.has(rel.subj) && validEntityIds.has(rel.obj));
 
   // HERT Phase 2: Generate HERTs for entity occurrences (optional)
   let herts: string[] | undefined;

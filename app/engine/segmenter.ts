@@ -12,6 +12,10 @@ export interface Seg {
   text: string;
 }
 
+function countWords(text: string): number {
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
+
 /**
  * Normalize whitespace while preserving structure
  * - Collapse runs of spaces/tabs to single space
@@ -214,16 +218,14 @@ export function splitSentences(paraText: string, paraStart: number): { text: str
 export function segmentDocument(doc_id: string, raw: string): Seg[] {
   const normalized = normalizeWhitespace(raw);
   const paragraphs = splitParagraphs(normalized);
-
-  const segments: Seg[] = [];
+  const allSentences: Array<{ paraIndex: number; sentIndex: number; start: number; end: number; text: string }> = [];
 
   for (const para of paragraphs) {
     const sentences = splitSentences(para.text, para.start);
 
     for (let sentIndex = 0; sentIndex < sentences.length; sentIndex++) {
       const sent = sentences[sentIndex];
-      segments.push({
-        doc_id,
+      allSentences.push({
         paraIndex: para.index,
         sentIndex,
         start: sent.start,
@@ -231,6 +233,61 @@ export function segmentDocument(doc_id: string, raw: string): Seg[] {
         text: sent.text
       });
     }
+  }
+
+  // Accumulate sentences into ~450-600 word chunks
+  const MIN_WORDS = 450;
+  const MAX_WORDS = 600;
+  const segments: Seg[] = [];
+
+  let currentStart: number | null = null;
+  let currentEnd: number | null = null;
+  let currentWordCount = 0;
+  let chunkIndex = 0;
+
+  for (const sentence of allSentences) {
+    const sentenceWords = countWords(sentence.text);
+
+    if (currentStart === null) {
+      currentStart = sentence.start;
+      currentEnd = sentence.end;
+      currentWordCount = sentenceWords;
+      continue;
+    }
+
+    const wouldExceedMax = currentWordCount + sentenceWords > MAX_WORDS;
+
+    if (wouldExceedMax && currentWordCount >= MIN_WORDS) {
+      const chunkText = normalized.slice(currentStart, currentEnd!);
+      segments.push({
+        doc_id,
+        paraIndex: chunkIndex,
+        sentIndex: 0,
+        start: currentStart,
+        end: currentEnd!,
+        text: chunkText
+      });
+
+      chunkIndex++;
+      currentStart = sentence.start;
+      currentEnd = sentence.end;
+      currentWordCount = sentenceWords;
+    } else {
+      currentEnd = sentence.end;
+      currentWordCount += sentenceWords;
+    }
+  }
+
+  if (currentStart !== null && currentEnd !== null) {
+    const chunkText = normalized.slice(currentStart, currentEnd);
+    segments.push({
+      doc_id,
+      paraIndex: chunkIndex,
+      sentIndex: 0,
+      start: currentStart,
+      end: currentEnd,
+      text: chunkText
+    });
   }
 
   return segments;

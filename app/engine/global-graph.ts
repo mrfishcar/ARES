@@ -10,6 +10,7 @@
  */
 
 import type { Entity, Relation, EntityType } from './schema';
+import { splitSchoolName, schoolRootKey } from './linguistics/school-names';
 
 export interface GlobalEntity {
   id: string; // Global EID
@@ -178,6 +179,16 @@ export class GlobalKnowledgeGraph {
         continue;
       }
 
+      if (shouldKeepSeparatePlaceAndSchool(existingEntity, newEntity)) {
+        if (process.env.DEBUG_ENTITY_MERGE === 'true') {
+          console.log('[ENTITY MERGE REJECTED] Place/school separation rule:', {
+            existing: `${existingEntity.canonical} (${existingEntity.type})`,
+            new: `${newEntity.canonical} (${newEntity.type})`
+          });
+        }
+        continue;
+      }
+
       matches.push({ ...match, entity1: existingEntity, entity2: newEntity });
     }
 
@@ -250,7 +261,7 @@ export class GlobalKnowledgeGraph {
     existing.attributes = mergeAttributes(existing.attributes, newEntity.attrs || {});
 
     // Choose best canonical name
-    existing.canonical = chooseBestCanonical([existing.canonical, newEntity.canonical]);
+    existing.canonical = chooseBestCanonical(existing.aliases);
 
     // Update lookup index
     this.addIndexes(existing);
@@ -502,6 +513,49 @@ function areEntityTypesCompatible(
   return true;
 }
 
+function shouldKeepSeparatePlaceAndSchool(
+  existing: GlobalEntity | Entity,
+  candidate: Entity
+): boolean {
+  const isSchoolOrg = (entity: GlobalEntity | Entity): string | null => {
+    if (entity.type !== 'ORG') return null;
+    const { rootTokens, suffixTokens } = splitSchoolName(entity.canonical);
+    if (suffixTokens.length === 0) return null;
+    const root = rootTokens.join(' ').trim().toLowerCase();
+    return root || null;
+  };
+
+  const isPlaceLike = (entity: GlobalEntity | Entity): string | null => {
+    if (entity.type === 'PLACE' || entity.type === 'GPE') {
+      return entity.canonical.toLowerCase();
+    }
+
+    if (entity.type === 'ORG') {
+      const { suffixTokens } = splitSchoolName(entity.canonical);
+      if (suffixTokens.length === 0) {
+        return entity.canonical.toLowerCase();
+      }
+    }
+
+    return null;
+  };
+
+  const schoolRootExisting = isSchoolOrg(existing);
+  const schoolRootCandidate = isSchoolOrg(candidate);
+  const placeExisting = isPlaceLike(existing);
+  const placeCandidate = isPlaceLike(candidate);
+
+  if (schoolRootExisting && placeCandidate && schoolRootExisting === placeCandidate) {
+    return true;
+  }
+
+  if (schoolRootCandidate && placeExisting && schoolRootCandidate === placeExisting) {
+    return true;
+  }
+
+  return false;
+}
+
 /**
  * Helper: Normalize entity name for comparison
  */
@@ -680,9 +734,6 @@ function calculateMatchConfidence(
 
   // 🛡️ ORG-SPECIFIC RULES: School name variant consolidation (NV-1, NV-2)
   if (e1.type === 'ORG' && e2.type === 'ORG') {
-    // Import school name utilities
-    const { schoolRootKey, splitSchoolName } = require('./linguistics/school-names');
-
     const rootKey1 = schoolRootKey(e1.canonical);
     const rootKey2 = schoolRootKey(e2.canonical);
 
@@ -721,7 +772,7 @@ function calculateMatchConfidence(
 /**
  * Choose the best (most complete) canonical name from a list
  */
-function chooseBestCanonical(names: string[]): string {
+export function chooseBestCanonical(names: string[]): string {
   // Remove duplicates and filter empty
   const unique = [...new Set(names)].filter((n) => n && n.trim());
 
@@ -729,15 +780,33 @@ function chooseBestCanonical(names: string[]): string {
     return '';
   }
 
-  // Prefer full names (first + last) over single names
-  const fullNames = unique.filter((n) => n.split(/\s+/).length >= 2);
-  if (fullNames.length > 0) {
-    // Among full names, prefer longer (more specific)
-    return fullNames.sort((a, b) => b.length - a.length)[0];
-  }
+  const GENERIC_GROUPS = new Set([
+    'students',
+    'student',
+    'kids',
+    'people',
+    'children',
+    'teens'
+  ]);
 
-  // Fall back to longer single name (more specific)
-  return unique.sort((a, b) => b.length - a.length)[0];
+  const scoreName = (name: string): number => {
+    const tokens = name.split(/\s+/).filter(Boolean);
+    const hasSpace = tokens.length >= 2;
+    const hasUpper = /[A-Z]/.test(name);
+    const head = tokens[tokens.length - 1]?.toLowerCase();
+    const hasGenericHead = head ? GENERIC_GROUPS.has(head) : false;
+
+    let score = 0;
+    if (hasSpace) score += 2;
+    if (hasUpper) score += 1;
+    if (hasGenericHead) score -= 3;
+    score += Math.min(tokens.length, 4) * 0.1; // slight preference for longer names
+    return score;
+  };
+
+  return unique
+    .map((name) => ({ name, score: scoreName(name) }))
+    .sort((a, b) => b.score - a.score || b.name.length - a.name.length)[0].name;
 }
 
 /**

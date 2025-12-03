@@ -9,6 +9,8 @@ const SCHOOL_SUFFIXES = [
   ['junior', 'high'],
   ['jr', 'high'],
   ['jr.', 'high'],
+  ['jr'],
+  ['jr.'],
   ['school'],
   ['academy'],
   ['university'],
