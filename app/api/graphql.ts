@@ -564,9 +564,13 @@ export async function startGraphQLServer(port: number = 4000, storagePath?: stri
 
   // Global error handlers
   process.on('unhandledRejection', (reason: any) => {
+    console.error('❌ UNHANDLED REJECTION:', reason);
+    console.error('Stack:', reason?.stack);
     logger.error({ msg: 'unhandledRejection', reason: String(reason) });
   });
   process.on('uncaughtException', (err: any) => {
+    console.error('❌ UNCAUGHT EXCEPTION:', err);
+    console.error('Stack:', err?.stack);
     logger.error({ msg: 'uncaughtException', err: err?.stack || String(err) });
   });
 
