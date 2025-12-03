@@ -868,7 +868,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                           : 'Start background extraction'}
                     </button>
                     <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-                      Recommended for long texts ({'>'}{SYNC_EXTRACTION_CHAR_LIMIT.toLocaleString()} chars). Polls every {(JOB_POLL_INTERVAL_MS / 1000).toFixed(1)}s.
+                      Recommended for long texts (&gt;{SYNC_EXTRACTION_CHAR_LIMIT.toLocaleString()} chars). Polls every {(JOB_POLL_INTERVAL_MS / 1000).toFixed(1)}s.
                     </span>
                     {jobId && (
                       <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
