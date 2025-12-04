@@ -209,7 +209,7 @@ function hasTitlePrefix(name: string): boolean {
 }
 
 export const DEFAULT_CONFIG: EntityQualityConfig = {
-  minConfidence: 0.65,        // Reject entities with confidence < 65%
+  minConfidence: 0.55,        // Reject entities with confidence < 55% (lowered from 0.65 to allow more FALLBACK entities)
   minNameLength: 2,            // Reject single-letter entities
   blockedTokens: new Set([
     // Pronouns (should be resolved via coreference, not extracted as entities)
@@ -244,6 +244,18 @@ export const STRICT_CONFIG: EntityQualityConfig = {
   minConfidence: 0.75,  // Higher bar in strict mode
   minNameLength: 3,      // Longer names required
   strictMode: true
+};
+
+/**
+ * PERMISSIVE_CONFIG: For long-form literary text where recall matters more than precision
+ * FALLBACK entities get 0.40 base weight, so 0.65 threshold filters them all out
+ * Lower threshold allows more entities through, improving relation extraction coverage
+ */
+export const PERMISSIVE_CONFIG: EntityQualityConfig = {
+  ...DEFAULT_CONFIG,
+  minConfidence: 0.45,   // Allow lower confidence entities (still filters pronouns/noise)
+  minNameLength: 2,
+  strictMode: false
 };
 
 /**
@@ -679,16 +691,35 @@ function isItemName(tokens: string[], normalized: string): boolean {
   }
 
   // Reject obvious verb phrases (simple heuristic: starts with common verb)
+  // Expanded list to catch more false positive ITEMs like "read Melora", "feel pain"
   const COMMON_ACTION_VERBS = new Set([
+    // Movement/action
     'walk', 'run', 'do', 'get', 'make', 'take', 'go', 'come',
     'kill', 'help', 'access', 'slowed', 'decided', 'wanted',
     'break', 'fight', 'attack', 'defend', 'use', 'give',
+    // Perception/cognition - common false positives
+    'read', 'see', 'hear', 'feel', 'find', 'look', 'watch', 'listen',
+    'think', 'know', 'believe', 'understand', 'remember', 'forget',
+    // Communication
+    'say', 'tell', 'ask', 'speak', 'talk', 'call', 'answer', 'reply',
+    // Other common verbs
+    'try', 'want', 'need', 'like', 'love', 'hate', 'start', 'stop',
+    'begin', 'end', 'keep', 'leave', 'let', 'put', 'set', 'hold',
+    'bring', 'send', 'show', 'turn', 'move', 'play', 'live', 'die',
+    'work', 'open', 'close', 'pull', 'push', 'cut', 'throw', 'catch',
+    'reach', 'touch', 'grab', 'pick', 'drop', 'lift', 'carry',
   ]);
 
   const firstWord = tokens[0].toLowerCase();
   if (COMMON_ACTION_VERBS.has(firstWord)) {
     // Exception: if it's part of a compound noun (e.g., "walking stick", "running shoes")
     // For now, reject to be safe
+    return false;
+  }
+
+  // Also reject if the last word is a common verb (passive constructions like "something found")
+  const lastWord = tokens[tokens.length - 1].toLowerCase();
+  if (tokens.length >= 2 && COMMON_ACTION_VERBS.has(lastWord)) {
     return false;
   }
 
@@ -1052,8 +1083,20 @@ export function isEntityFilterEnabled(): boolean {
 
 /**
  * Get filter config based on environment
+ *
+ * Environment variable ARES_PRECISION_MODE:
+ * - 'strict': High precision, filters more aggressively (minConfidence: 0.75)
+ * - 'permissive': High recall, allows lower confidence entities (minConfidence: 0.45)
+ * - default: Balanced mode (minConfidence: 0.65)
+ *
+ * For long-form literary text, use 'permissive' to capture more entities and relations
  */
 export function getFilterConfig(): EntityQualityConfig {
-  const strict = process.env.ARES_PRECISION_MODE === 'strict';
-  return strict ? STRICT_CONFIG : DEFAULT_CONFIG;
+  const mode = process.env.ARES_PRECISION_MODE;
+  if (mode === 'strict') {
+    return STRICT_CONFIG;
+  } else if (mode === 'permissive') {
+    return PERMISSIVE_CONFIG;
+  }
+  return DEFAULT_CONFIG;
 }

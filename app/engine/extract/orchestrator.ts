@@ -32,6 +32,11 @@ const PATTERNS_MODE: PatternsMode = (process.env.RELATION_PATTERNS_MODE as Patte
 // Note: Pattern loading available via loadRelationPatterns(PATTERNS_MODE)
 // Currently using hardcoded extraction; patterns ready for future integration
 
+// Yield to event loop periodically during long extractions
+// This allows HTTP requests (e.g., job status polls) to be processed
+const YIELD_EVERY_N_SEGMENTS = 20;
+const yieldToEventLoop = (): Promise<void> => new Promise(resolve => setImmediate(resolve));
+
 const RACE_WHITELIST = new Set([
   'ghost', 'spirit', 'specter', 'demon', 'angel', 'witch', 'wizard', 'vampire',
   'werewolf', 'elf', 'dwarf', 'troll', 'fae', 'faerie', 'goblin', 'human',
@@ -253,7 +258,9 @@ export async function extractFromSegments(
     resolvedConfig.enabled = false;
   }
   // 1. Segment the document
+  const extractionStartTime = Date.now();
   const segs = segmentDocument(docId, fullText);
+  console.log(`[ORCHESTRATOR] Document segmented into ${segs.length} chunks (${fullText.length} chars, ~${Math.round(fullText.split(/\s+/).length)} words)`);
 
   // 2. Sort segments deterministically (already sorted by segmentDocument, but be explicit)
   segs.sort((a, b) => {
@@ -316,7 +323,19 @@ export async function extractFromSegments(
     return { ...rel, evidence: mappedEvidence };
   };
 
-  for (const seg of segs) {
+  for (let segIndex = 0; segIndex < segs.length; segIndex++) {
+    const seg = segs[segIndex];
+
+    // Yield to event loop periodically to allow HTTP requests to be processed
+    // This prevents job status polls from timing out during long extractions
+    if (segIndex > 0 && segIndex % YIELD_EVERY_N_SEGMENTS === 0) {
+      await yieldToEventLoop();
+      // Log progress every 100 segments for long documents
+      if (segIndex % 100 === 0) {
+        console.log(`[ORCHESTRATOR] Progress: ${segIndex}/${segs.length} segments (${Math.round(100 * segIndex / segs.length)}%)`);
+      }
+    }
+
     // Build context window (200 chars before/after)
     const contextBefore = fullText.slice(Math.max(0, seg.start - 200), seg.start);
     const contextAfter = fullText.slice(seg.end, Math.min(fullText.length, seg.end + 200));
@@ -1426,6 +1445,12 @@ export async function extractFromSegments(
       console.log(`[ORCHESTRATOR] Saved ${herts.length} HERTs to store`);
     }
   }
+
+  // Log extraction summary
+  const extractionElapsedMs = Date.now() - extractionStartTime;
+  const wordsPerSecond = Math.round((fullText.split(/\s+/).length / (extractionElapsedMs / 1000)) || 0);
+  console.log(`[ORCHESTRATOR] ✅ Extraction complete in ${(extractionElapsedMs / 1000).toFixed(1)}s (${wordsPerSecond} words/sec)`);
+  console.log(`[ORCHESTRATOR]    Entities: ${filteredEntities.length}, Relations: ${filteredRelations.length}, Segments: ${segs.length}`);
 
   return {
     entities: filteredEntities,
