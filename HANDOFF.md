@@ -6,6 +6,48 @@
 
 ---
 
+## Running Log (2025-12-04)
+
+### ✅ NEW: Chunked Long-Form Extraction Pipeline
+
+Implemented a two-tier chunking architecture for processing long documents (55k+ words):
+
+**What it does:**
+- Splits documents into ~5000-word "macro-chunks" with 500-char overlap
+- Processes each chunk independently through the existing extraction pipeline
+- Merges entities across chunks using Jaro-Winkler clustering
+- Properly adjusts span offsets from chunk-local to document-global coordinates
+- Reports progress per-chunk and yields to event loop for UI responsiveness
+
+**How to enable:**
+```bash
+# Automatic mode (uses chunking for documents > 7500 words)
+# No env var needed - extractWithOptimalStrategy() chooses automatically
+
+# Force chunked mode for all documents
+ARES_LONGFORM_MODE=chunked
+
+# Customize chunk parameters
+ARES_CHUNK_SIZE_WORDS=5000     # Words per chunk (default: 5000)
+ARES_CHUNK_OVERLAP_CHARS=500   # Overlap between chunks (default: 500)
+```
+
+**Key files:**
+- `app/engine/chunked-extraction.ts` - New chunked extraction module
+- `app/storage/storage.ts` - Updated to use `extractWithOptimalStrategy()`
+- `tests/chunked-extraction.spec.ts` - 8 tests covering chunking, merging, offsets
+
+**Performance improvements:**
+- Job status now updates properly during long extractions (fixed event loop blocking)
+- Progress logging every 100 segments shows extraction progress
+- Per-chunk timing stats available in result
+
+**Other fixes in this session:**
+- Expanded ITEM verb filter to catch "read Melora", "feel pain" false positives
+- Lowered default entity confidence threshold from 0.65 to 0.55
+- Added `ARES_PRECISION_MODE=permissive` option (0.45 threshold) for long-form literary text
+
+---
 
 ## Running Log (2025-12-01)
 

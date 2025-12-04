@@ -10,6 +10,7 @@ import type { Conflict } from '../engine/conflicts';
 import { extractEntities } from '../engine/extract/entities';
 import { extractRelations } from '../engine/extract/relations';
 import { extractFromSegments } from '../engine/extract/orchestrator';
+import { extractWithOptimalStrategy } from '../engine/chunked-extraction';
 import { mergeEntitiesAcrossDocs } from '../engine/merge';
 import { detectConflicts } from '../engine/conflicts';
 import { ingestTotal, extractLatencyMs } from '../infra/metrics';
@@ -255,7 +256,9 @@ export async function appendDoc(
     // Load or create pattern library for new entity types
     const patternLibrary = await loadFantasyEntityPatterns();
 
-    ({ entities: newEntities, spans, relations: newRelations, fictionEntities, profiles: updatedProfiles } = await extractFromSegments(docId, text, graph.profiles, DEFAULT_LLM_CONFIG, patternLibrary));
+    // Use smart extraction strategy that chooses between chunked and legacy modes
+    // For large documents, this provides better progress tracking and responsiveness
+    ({ entities: newEntities, spans, relations: newRelations, fictionEntities, profiles: updatedProfiles } = await extractWithOptimalStrategy(docId, text, graph.profiles, DEFAULT_LLM_CONFIG, patternLibrary));
   } finally {
     end();
   }
