@@ -615,13 +615,23 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     setSaveStatus('saving');
 
     try {
+      let apiUrl = import.meta.env.VITE_API_URL;
+      if (!apiUrl) {
+        const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+        if (hostname.includes('vercel.app')) {
+          apiUrl = 'https://ares-production-72ea.up.railway.app';
+        } else {
+          apiUrl = 'http://localhost:4000';
+        }
+      }
+
       const payload = {
         title: text.trim().slice(0, 80) || 'Untitled Document',
         text,
         extraction: { entities, relations, stats },
       };
 
-      const response = await fetch('/api/documents', {
+      const response = await fetch(`${apiUrl}/api/documents`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -649,10 +659,20 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const loadLastDocument = useCallback(async () => {
     setLoadingDocument(true);
     try {
+      let apiUrl = import.meta.env.VITE_API_URL;
+      if (!apiUrl) {
+        const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+        if (hostname.includes('vercel.app')) {
+          apiUrl = 'https://ares-production-72ea.up.railway.app';
+        } else {
+          apiUrl = 'http://localhost:4000';
+        }
+      }
+
       let targetId: string | null = lastSavedId;
 
       const fetchDocument = async (id: string): Promise<StoredDocument> => {
-        const res = await fetch(`/api/documents/${id}`);
+        const res = await fetch(`${apiUrl}/api/documents/${id}`);
         if (!res.ok) {
           throw new Error(`Failed to fetch document ${id}`);
         }
@@ -664,7 +684,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       };
 
       if (!targetId) {
-        const listRes = await fetch('/api/documents');
+        const listRes = await fetch(`${apiUrl}/api/documents`);
         if (!listRes.ok) {
           throw new Error('Failed to list documents');
         }
@@ -676,6 +696,12 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           return;
         }
         targetId = firstDoc.id;
+      }
+
+      // After this point, targetId should be a valid string.
+      // This guard satisfies TypeScript narrowing (string | null → string).
+      if (!targetId) {
+        return;
       }
 
       const document = await fetchDocument(targetId);
