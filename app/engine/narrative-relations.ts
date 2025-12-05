@@ -298,6 +298,16 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
   },
 
   // === ENEMY PATTERNS ===
+  // APPOSITIVE + PRONOUN: "Name, [stuff]. He became rival to Target"
+  // This handles cases where pronoun resolution might fail by capturing the name directly
+  {
+    regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s*,\s+[^.]{5,100}\.\s+(?:He|She|They|he|she|they)\s+(?:became|remained|was|were)\s+(?:an?\s+)?(?:enemy|enemies|rival|rivals|adversary|adversaries)\s+(?:of|to)\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
+    predicate: 'enemy_of',
+    symmetric: true,
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] },
+    extractSubj: 1,  // Name before comma
+    extractObj: 2    // Target name after "to/of"
+  },
   // "X became a rival TO Y" (handles both "of" and "to") - PRONOUN VERSION
   // "He/She became a rival/enemy to/of Y"
   {

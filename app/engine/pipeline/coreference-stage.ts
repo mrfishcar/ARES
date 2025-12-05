@@ -106,8 +106,8 @@ export async function runCoreferenceStage(
   } catch (error) {
     const duration = Date.now() - startTime;
     console.error(`[${STAGE_NAME}] Failed after ${duration}ms:`, error);
-    throw new Error(`[${STAGE_NAME}] ${(error as Error).message}`, {
-      cause: error
-    });
+    const err = new Error(`[${STAGE_NAME}] ${(error as Error).message}`);
+          (err as any).cause = error;
+    throw err;
   }
 }
