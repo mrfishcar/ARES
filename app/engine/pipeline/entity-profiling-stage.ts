@@ -72,7 +72,7 @@ export async function runEntityProfilingStage(
       if (sampledCount >= 3) break;
 
       console.log(
-        `[${STAGE_NAME}] Profile: "${canonical}" - ${profile.mentions.length} mentions, ${profile.descriptors?.length || 0} descriptors`
+        `[${STAGE_NAME}] Profile: "${canonical}" - ${profile.mention_count} mentions, ${profile.descriptors.size} descriptors`
       );
 
       sampledCount++;

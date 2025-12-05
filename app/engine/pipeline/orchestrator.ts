@@ -74,9 +74,9 @@ function buildEngineConfig(
     enabled: process.env.ENTITY_FILTER_ENABLED === 'true',
     minConfidence: parseFloat(process.env.ENTITY_MIN_CONFIDENCE || '0.7'),
     minLength: parseInt(process.env.ENTITY_MIN_LENGTH || '1', 10),
-    blockedTokens: ENTITY_FILTER_DEFAULTS.blockedTokens,
+    blockedTokens: Array.from(ENTITY_FILTER_DEFAULTS.blockedTokens),
     requireCapitalization: ENTITY_FILTER_DEFAULTS.requireCapitalization,
-    allowInvalidCharacters: ENTITY_FILTER_DEFAULTS.allowInvalidCharacters,
+    allowInvalidCharacters: false,
     strictMode: ENTITY_FILTER_DEFAULTS.strictMode
   };
 
@@ -94,7 +94,7 @@ function buildEngineConfig(
     siblingDetectionEnabled: true,
     appositiveFilteringEnabled: true,
     coordinationDetectionEnabled: true,
-    minConfidence: parseFloat(process.env.ARES_MIN_CONFIDENCE || '0.70')
+    minConfidence: parseFloat(process.env.ARES_MIN_CONFIDENCE || '0.65')  // Lowered from 0.70 to improve Stage 3 recall
   };
 
   // HERT options
@@ -310,7 +310,7 @@ export async function extractFromSegments(
         spans: kgOutput.spans,
         fullText,
         docId,
-        options: config.hertOptions
+        options: config.hertOptions || { generateHERTs: false, autoSaveHERTs: false }
       });
       herts = hertOutput.herts;
     }

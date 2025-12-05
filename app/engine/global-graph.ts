@@ -12,6 +12,22 @@
 import type { Entity, Relation, EntityType } from './schema';
 import { splitSchoolName, schoolRootKey } from './linguistics/school-names';
 
+/**
+ * Helper: Union and deduplicate aliases from two sources
+ */
+function mergeAliases(existing: string[] = [], incoming: string[] = []): string[] {
+  const set = new Set<string>();
+  for (const a of existing || []) {
+    const t = (a || '').trim();
+    if (t) set.add(t);
+  }
+  for (const a of incoming || []) {
+    const t = (a || '').trim();
+    if (t) set.add(t);
+  }
+  return Array.from(set);
+}
+
 export interface GlobalEntity {
   id: string; // Global EID
   type: EntityType;
@@ -78,6 +94,8 @@ export class GlobalKnowledgeGraph {
     entities: Entity[],
     relations: Relation[]
   ): void {
+    console.log(`[GKG:addDocument] doc=${docId} incomingEntities=${entities.map(e => ({id:e.id, aliases:e.aliases}))}`);
+
     // Store document metadata
     this.documents.set(docId, {
       id: docId,
@@ -104,9 +122,9 @@ export class GlobalKnowledgeGraph {
   }
 
   private mergeEntity(newEntity: Entity, docId: string): string {
-    // 🛡️ MERGE THRESHOLDS: Tightened to prevent over-aggressive merging
-    const HARD_MIN_CONFIDENCE = 0.93;  // Auto-merge only if very confident
-    const SOFT_MIN_CONFIDENCE = 0.88;  // Consider candidates above this
+    // 🛡️ MERGE THRESHOLDS: Allow surname matches (0.90) to merge with multi-token names
+    const HARD_MIN_CONFIDENCE = 0.88;  // Auto-merge if confident (includes surname matches at 0.90)
+    const SOFT_MIN_CONFIDENCE = 0.80;  // Consider candidates above this
 
     // 🚀 OPTIMIZATION 1: Quick exact match via canonical index
     const exactKey = `${newEntity.type}::${newEntity.canonical.toLowerCase()}`;
@@ -146,21 +164,6 @@ export class GlobalKnowledgeGraph {
 
     for (const existingEntity of candidates) {
       const match = calculateMatchConfidence(existingEntity, newEntity);
-
-      // 🛡️ DEBUG LOGGING: Track merge decisions
-      if (match.confidence >= 0.7 && process.env.DEBUG_ENTITY_MERGE === 'true') {
-        console.log('[ENTITY MERGE CANDIDATE]', {
-          existingId: existingEntity.id,
-          existingName: existingEntity.canonical,
-          existingType: existingEntity.type,
-          newId: newEntity.id,
-          newName: newEntity.canonical,
-          newType: newEntity.type,
-          confidence: match.confidence.toFixed(3),
-          matchType: match.matchType,
-          reason: match.evidence.join('; ')
-        });
-      }
 
       // 🛡️ SOFT FILTER: Ignore low-confidence matches
       if (match.confidence < SOFT_MIN_CONFIDENCE) {
@@ -252,9 +255,8 @@ export class GlobalKnowledgeGraph {
       });
     }
 
-    // Merge data
-    existing.aliases.push(newEntity.canonical);
-    existing.aliases = [...new Set(existing.aliases)]; // Deduplicate
+    // Merge data - use helper to union aliases
+    existing.aliases = mergeAliases(existing.aliases, [newEntity.canonical, ...(newEntity.aliases || [])]);
     existing.mentionCount += 1;
     existing.documents.push(docId);
     existing.documents = [...new Set(existing.documents)];
@@ -440,8 +442,14 @@ export class GlobalKnowledgeGraph {
       (r) => entityIds.has(r.subj) && entityIds.has(r.obj)
     );
 
+    // Defensive export: ensure aliases are always present and deduplicated
+    const exportedEntities = entities.map(e => ({
+      ...e,
+      aliases: Array.isArray(e.aliases) ? Array.from(new Set(e.aliases.map(a => (a || '').trim()).filter(Boolean))) : [],
+    }));
+
     return {
-      entities,
+      entities: exportedEntities,
       relations,
       documents: Array.from(this.documents.values())
     };

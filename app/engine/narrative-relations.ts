@@ -11,6 +11,7 @@ import { v4 as uuid } from "uuid";
 import type { Relation, EntityType } from "./schema";
 import type { CorefLinks } from "./coref";
 import { getDynamicPatterns, type RelationPattern as DynamicRelationPattern } from "./dynamic-pattern-loader";
+import { resolveMentionToCanonical, isPronoun, type CorefLink } from "./pipeline/coref-utils";
 
 /**
  * Normalize text for pattern matching
@@ -261,6 +262,14 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
   },
 
   // === LOCATION/RESIDENCE PATTERNS ===
+  // "He/She lived at Y" - PRONOUN VERSION
+  {
+    regex: /\b((?:He|She|They|he|she|they))\s+(?:lived|dwelt|dwelled|resides|resided|lives)\s+(?:at|in)\s+(?:the\s+)?([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
+    predicate: 'lives_in',
+    typeGuard: { subj: ['PERSON'], obj: ['PLACE'] },
+    extractSubj: 1,  // Pronoun in group 1
+    extractObj: 2    // Place in group 2
+  },
   // "X lived at Y" (handles "lived at the Burrow")
   {
     regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:lived|dwelt|dwelled|resides|resided|lives)\s+at\s+(?:the\s+)?([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
@@ -289,7 +298,18 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
   },
 
   // === ENEMY PATTERNS ===
-  // "X became a rival TO Y" (handles both "of" and "to")
+  // "X became a rival TO Y" (handles both "of" and "to") - PRONOUN VERSION
+  // "He/She became a rival/enemy to/of Y"
+  {
+    regex: /\b((?:He|She|They|he|she|they))\s+(?:became|remained|was|were)\s+(?:an?\s+)?(?:enemy|enemies|rival|rivals|adversary|adversaries)\s+(?:of|to)\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
+    predicate: 'enemy_of',
+    symmetric: true,
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] },
+    extractSubj: 1,  // Pronoun in group 1
+    extractObj: 2,   // Object name in group 2
+    reversed: false
+  },
+  // "X became a rival TO Y" (handles both "of" and "to") - PROPER NAME VERSION
   {
     regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:became|remained|was|were)\s+(?:an?\s+)?(?:enemy|enemies|rival|rivals)\s+(?:of|to)\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
     predicate: 'enemy_of',
@@ -769,8 +789,27 @@ function resolvePronounReference(
 }
 
 /**
- * Match entity by surface form (case-insensitive, handles aliases)
+ * Build a map of pronoun text → entity ID from coref links
+ * Used for mention-aware pronoun resolution during pattern matching
  */
+function buildPronounResolutionMap(corefLinks: CorefLinks | undefined): Map<string, string> {
+  const map = new Map<string, string>();
+  if (!corefLinks || !corefLinks.links) {
+    console.log('[buildPronounResolutionMap] No coref links found');
+    return map;
+  }
+
+  // For each coref link, if the mention text is a pronoun, map it to the entity id
+  for (const link of corefLinks.links) {
+    if (link.mention && isPronoun(link.mention.text)) {
+      map.set(link.mention.text.toLowerCase(), link.entity_id);
+      console.log(`[buildPronounResolutionMap] Mapped "${link.mention.text}" → ${link.entity_id}`);
+    }
+  }
+  console.log(`[buildPronounResolutionMap] Total pronoun mappings: ${map.size}`);
+  return map;
+}
+
 function matchEntity(surface: string, entities: EntityLookup[]): EntityLookup | null {
   const cleaned = surface
     .replace(/^[\s,.;:"'“”‘’()]+/, '')
@@ -874,6 +913,33 @@ export function extractNarrativeRelations(
   // Normalize text for pattern matching (removes leading conjunctions/articles)
   const normalizedText = normalizeTextForPatterns(text);
 
+  // Build entity map and pronoun resolution map for mention-aware resolution
+  const entitiesById = new Map(entities.map(e => [e.id, e]));
+  const pronounMap = buildPronounResolutionMap(corefLinks);
+
+  /**
+   * Mention-aware entity matching: try direct lookup first, then pronoun resolution
+   */
+  const matchEntityWithCoref = (surface: string): EntityLookup | null => {
+    // Try normal matching first
+    let entity = matchEntity(surface, entities);
+    if (entity) return entity;
+
+    // If normal matching fails and surface is a pronoun, try coref resolution
+    if (isPronoun(surface)) {
+      const resolvedEntityId = pronounMap.get(surface.toLowerCase());
+      if (resolvedEntityId) {
+        const resolvedEntity = entitiesById.get(resolvedEntityId);
+        if (resolvedEntity) {
+          console.log(`[NarrativeRelations:coref] Resolved pronoun "${surface}" → ${resolvedEntity.canonical}`);
+          return resolvedEntity;
+        }
+      }
+    }
+
+    return null;
+  };
+
   // Combine static patterns with dynamic patterns
   const dynamicPatterns = getDynamicPatterns();
   const allPatterns = [...NARRATIVE_PATTERNS, ...dynamicPatterns];
@@ -895,8 +961,8 @@ export function extractNarrativeRelations(
         // Case 1: Subject-Object coordination (e.g., "Harry and Ron studied at Hogwarts")
         if (obj) {
           for (const subjSurface of [firstSubj, secondSubj]) {
-            const subjEntity = matchEntity(subjSurface, entities);
-            const objEntity = matchEntity(obj, entities);
+            const subjEntity = matchEntityWithCoref(subjSurface);
+            const objEntity = matchEntityWithCoref(obj);
 
             if (subjEntity && objEntity && passesTypeGuard(pattern, subjEntity, objEntity)) {
               const matchStart = match.index;
@@ -939,8 +1005,8 @@ export function extractNarrativeRelations(
         }
         // Case 2: Symmetric coordination (e.g., "Harry and Ron were friends")
         else if (pattern.symmetric) {
-          const entity1 = matchEntity(firstSubj, entities);
-          const entity2 = matchEntity(secondSubj, entities);
+          const entity1 = matchEntityWithCoref(firstSubj);
+          const entity2 = matchEntityWithCoref(secondSubj);
 
           if (entity1 && entity2 && passesTypeGuard(pattern, entity1, entity2)) {
             const matchStart = match.index;
@@ -1075,20 +1141,8 @@ export function extractNarrativeRelations(
       if ((pattern as any).deicticObj) {
         const subjSurface = match[1];  // "He" or proper name
 
-        // Resolve subject (may be pronoun "He"/"She")
-        let subjEntity = matchEntity(subjSurface, entities);
-        if (!subjEntity && corefLinks) {
-          const subjPosition = match.index;
-          const subjLinks = corefLinks.links.filter(link =>
-            link.mention.start <= subjPosition &&
-            subjPosition < link.mention.end &&
-            link.mention.text.toLowerCase() === subjSurface.toLowerCase()
-          );
-          if (subjLinks.length > 0) {
-            const bestLink = subjLinks.sort((a, b) => b.confidence - a.confidence)[0];
-            subjEntity = entities.find(e => e.id === bestLink.entity_id) || null;
-          }
-        }
+        // Resolve subject (may be pronoun "He"/"She") using mention-aware resolution
+        let subjEntity = matchEntityWithCoref(subjSurface);
 
         // Resolve "there" to most recent PLACE entity before the match
         let objEntity: EntityLookup | null = null;
@@ -1165,7 +1219,8 @@ export function extractNarrativeRelations(
       if (/\b(?:the|a)\s+couple\b/i.test(subjSurface) || COLLECTIVE_CUE_REGEX.test(subjSurface)) {
         subjEntities = resolveCollectiveReference(text, subjAbsoluteStart, corefLinks, entities);
       } else {
-        const subjEntity = matchEntity(subjSurface, entities);
+        // Use mention-aware resolution (includes pronoun→entity mapping from coref)
+        const subjEntity = matchEntityWithCoref(subjSurface);
         if (subjEntity) subjEntities = [subjEntity];
       }
 
@@ -1198,7 +1253,8 @@ export function extractNarrativeRelations(
       ) {
         objEntities = resolveCollectiveReference(text, objAbsoluteStart, corefLinks, entities);
       } else {
-        const objEntity = matchEntity(objSurface, entities);
+        // Use mention-aware resolution (includes pronoun→entity mapping from coref)
+        const objEntity = matchEntityWithCoref(objSurface);
         if (objEntity) objEntities = [objEntity];
       }
 

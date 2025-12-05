@@ -180,9 +180,29 @@ export class AliasResolver {
 
   /**
    * Check if two forms are title variations of each other
+   *
+   * GUARD: Don't match pure surnames to compound names
+   * e.g., "Potter" should NOT match "Harry Potter"
+   * This prevents premature canonicalization that blocks GlobalKnowledgeGraph
+   * surname-based merging with 0.90 confidence thresholds
    */
   private isTitleVariation(form1: string, form2: string): boolean {
     if (form1 === form2) return true;
+
+    // Guard: Check if one is a pure surname (single token)
+    const tokens1 = form1.split(/\s+/).filter(Boolean);
+    const tokens2 = form2.split(/\s+/).filter(Boolean);
+
+    const isPureSurname1 = tokens1.length === 1;
+    const isPureSurname2 = tokens2.length === 1;
+
+    // If one is pure surname and other is compound name, reject
+    // Example: "Potter" (1 token) + "Harry Potter" (2 tokens) → reject
+    // This allows GlobalKnowledgeGraph to do proper surname merging later
+    if ((isPureSurname1 && tokens2.length > 1) ||
+        (isPureSurname2 && tokens1.length > 1)) {
+      return false;
+    }
 
     // Try removing titles/epithets from both
     let stripped1 = form1;

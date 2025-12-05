@@ -9,7 +9,7 @@ import type { Entity, Relation } from '../engine/schema';
 import type { Conflict } from '../engine/conflicts';
 import { extractEntities } from '../engine/extract/entities';
 import { extractRelations } from '../engine/extract/relations';
-import { extractFromSegments } from '../engine/extract/orchestrator';
+import { extractFromSegments } from '../engine/pipeline/orchestrator';
 import { extractWithOptimalStrategy } from '../engine/chunked-extraction';
 import { mergeEntitiesAcrossDocs } from '../engine/merge';
 import { detectConflicts } from '../engine/conflicts';

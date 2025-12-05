@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { extractFromSegments } from '../../app/engine/extract/orchestrator';
+import { extractFromSegments } from '../../app/engine/pipeline/orchestrator';
 import { GlobalKnowledgeGraph } from '../../app/engine/global-graph';
 
 describe('Level 5A: Cross-Document Entity Resolution', { timeout: 60000 }, () => {
