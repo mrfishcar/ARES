@@ -42,6 +42,37 @@ import type {
   HERTOptions
 } from './types';
 
+// ===== DEBUG TYPES (for instrumentation) =====
+export type DebugFailureReason = 'never_produced' | 'low_confidence' | 'wrong_args' | 'other';
+
+export type DebugPrediction = {
+  relation: string;
+  args: { arg1: string; arg2?: string };
+  score: number;
+  evidenceSpans: { text: string; sentIndex?: number; charStart?: number; charEnd?: number }[];
+  supports?: string[];
+};
+
+export type DebugCorefChain = {
+  mentionText: string;
+  canonical: string;
+  chain: string[];
+};
+
+export type DebugFailureRecord = {
+  testCaseId: string;
+  goldRelations: { relation: string; args: { arg1: string; arg2?: string } }[];
+  predicted: DebugPrediction[];
+  corefChains?: DebugCorefChain[];
+  failureReason?: DebugFailureReason;
+  timestamp?: string;
+  debugInfo?: Record<string, any>;
+};
+
+export type DebugCallback = (rec: DebugFailureRecord) => void;
+
+// ============================================
+
 // Import all 13 stages
 import { runDocumentParseStage } from './parse-stage';
 import { runEntityExtractionStage } from './entity-extraction-stage';
@@ -136,6 +167,7 @@ export async function extractFromSegments(
   options?: {
     generateHERTs?: boolean;
     autoSaveHERTs?: boolean;
+    debugCallback?: DebugCallback;
   }
 ): Promise<{
   entities: Entity[];
@@ -258,6 +290,60 @@ export async function extractFromSegments(
       sentences: parseOutput.sentences,
       config: config.relationFilterConfig
     });
+
+    // ========================================================================
+    // DEBUG CALLBACK (Optional instrumentation)
+    // ========================================================================
+    // If a debug callback was provided, emit detailed failure/prediction data
+    // This is used by instrumented test runners to analyze relation extraction
+    if (options?.debugCallback) {
+      try {
+        const debugPreds: DebugPrediction[] = (filteredRelations.relations || []).map((r: Relation) => ({
+          relation: r.pred || 'unknown',
+          args: {
+            arg1: r.subj_surface || r.subj || '',
+            arg2: r.obj_surface || r.obj || ''
+          },
+          score: r.confidence ?? 0.5,
+          evidenceSpans: (r.evidence || []).slice(0, 1).map((e: any) => ({
+            text: typeof e === 'string' ? e : e.text || String(e)
+          })),
+          supports: []
+        }));
+
+        const corefChains: DebugCorefChain[] = [];
+        if (corefOutput.corefLinks && Array.isArray(corefOutput.corefLinks)) {
+          const seen = new Set<string>();
+          for (const link of corefOutput.corefLinks) {
+            if (link.entity_id && !seen.has(link.entity_id)) {
+              seen.add(link.entity_id);
+              const mentions = (corefOutput.corefLinks as any[])
+                .filter((l: any) => l.entity_id === link.entity_id)
+                .map((l: any) => l.mention?.text || '')
+                .filter(Boolean);
+              corefChains.push({
+                mentionText: link.mention?.text || '',
+                canonical: link.entity_id,
+                chain: mentions
+              });
+            }
+          }
+        }
+
+        const rec: DebugFailureRecord = {
+          testCaseId: docId,
+          goldRelations: [], // Populated by test runner when comparing
+          predicted: debugPreds,
+          corefChains: corefChains.length > 0 ? corefChains : undefined,
+          timestamp: new Date().toISOString()
+        };
+
+        options.debugCallback(rec);
+      } catch (err) {
+        // Swallow debugging errors so they don't crash pipeline
+        console.warn('Debug callback error:', (err as Error).message);
+      }
+    }
 
     // ========================================================================
     // STAGE 9: INVERSE GENERATION
