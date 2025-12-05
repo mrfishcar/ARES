@@ -1,6 +1,0 @@
-{
-  "query": "mutation ExtractEntities($text: String!) { extractEntities(text: $text) { entities { id type canonical aliases confidence } relations { subj pred obj confidence } } }",
-  "variables": {
-    "text": "Frederick walked. He knocked. Saul appeared. He spoke."
-  }
-}
