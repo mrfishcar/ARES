@@ -3,7 +3,26 @@
 Welcome! This guide helps you get oriented in the ARES project quickly.
 
 **Read Time**: 10 minutes
-**Last Updated**: 2025-11-13
+**Last Updated**: 2025-12-05
+
+---
+
+## ⚠️ Model Selection First
+
+**Before doing anything, check if you're the right model for this task:**
+
+| Your Model | Best For | Warning |
+|------------|----------|---------|
+| HAIKU | Simple edits, searches, test additions | Default for quick tasks |
+| SONNET | Feature implementation, bug fixes | Default for development |
+| OPUS | Architecture, multi-file refactors, complex debugging | Use sparingly |
+
+**See `docs/AI_MODEL_GUIDE.md` for full criteria.**
+
+If you're OPUS/SONNET doing a simple edit, emit:
+```
+⚠️ MODEL EFFICIENCY: Consider using HAIKU for this task.
+```
 
 ---
 

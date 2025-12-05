@@ -1,23 +1,74 @@
 # CLAUDE.md - AI Assistant Guide for ARES
 
-**Version**: 1.0
-**Last Updated**: 2025-11-25
+**Version**: 1.1
+**Last Updated**: 2025-12-05
 **Repository**: Advanced Relation Extraction System (ARES)
 
 ---
 
 ## Table of Contents
 
-1. [Project Overview](#project-overview)
-2. [Quick Start](#quick-start)
-3. [Architecture](#architecture)
-4. [Development Workflows](#development-workflows)
-5. [Testing Strategy](#testing-strategy)
-6. [Code Organization](#code-organization)
-7. [Key Conventions](#key-conventions)
-8. [Common Tasks](#common-tasks)
-9. [Debugging Guide](#debugging-guide)
-10. [Documentation Index](#documentation-index)
+1. [AI Model Selection](#ai-model-selection) ⚠️ **READ FIRST**
+2. [Project Overview](#project-overview)
+3. [Quick Start](#quick-start)
+4. [Architecture](#architecture)
+5. [Development Workflows](#development-workflows)
+6. [Testing Strategy](#testing-strategy)
+7. [Code Organization](#code-organization)
+8. [Key Conventions](#key-conventions)
+9. [Common Tasks](#common-tasks)
+10. [Debugging Guide](#debugging-guide)
+11. [Documentation Index](#documentation-index)
+
+---
+
+## AI Model Selection
+
+### ⚠️ MODEL SELF-CHECK - EVALUATE BEFORE EVERY TASK
+
+**Before proceeding, determine if you are the right model for this task:**
+
+| Task Type | Recommended Model | Warning |
+|-----------|-------------------|---------|
+| Simple edit, typo fix, search | **HAIKU** | If you are OPUS/SONNET doing this, you're wasting resources |
+| Feature implementation (1-3 files) | **SONNET** | Default for development work |
+| Architecture, multi-file refactor (>5 files) | **OPUS** | Only escalate when truly needed |
+| Inline code completion | **CODEX** | Use IDE integration |
+
+### Emit Warnings When Mismatched
+
+**If you are OPUS/SONNET handling a simple task, emit:**
+```
+⚠️ MODEL EFFICIENCY: This task is simple enough for HAIKU.
+Task: [describe task]
+Recommendation: Use Claude Haiku or GPT-3.5 to conserve resources.
+```
+
+**If you are HAIKU/SONNET and task seems too complex, emit:**
+```
+⚠️ MODEL CAPABILITY: This task may need OPUS.
+Reason: [>5 files / architecture decision / complex debugging]
+Recommendation: Escalate to Claude Opus or GPT-4.
+```
+
+**If task involves linguistic understanding (entity extraction bugs, pronoun resolution):**
+```
+⚠️ LINGUISTIC EXPERTISE: The user is an English language expert.
+STOP technical debugging. ASK THE USER for linguistic rules.
+Question: "What's the linguistic rule for [specific ambiguity]?"
+```
+
+### Quick Decision Tree
+
+```
+Is this a simple edit/search? → HAIKU
+Is this feature implementation? → SONNET (default)
+Is this architecture or >5 files? → OPUS
+Am I stuck >30 minutes? → ASK USER or escalate to OPUS
+Is this a linguistic issue? → ASK USER (they're the expert)
+```
+
+**Full guide:** See `docs/AI_MODEL_GUIDE.md` for detailed model selection criteria.
 
 ---
 
@@ -33,23 +84,24 @@ ARES is a **local-first entity and relation extraction system** that builds know
 - **Provenance-first**: Every fact includes source text and evidence
 - **Progressive quality**: 5-stage testing ladder from simple to production-ready
 
-### Current Status (Iteration 37)
+### Current Status (December 2025)
 
 **Test Results:**
-- ✅ **Stage 1 (Foundation)**: PASSED - 119/119 tests passing
-- ⚠️ **Stage 2 (Components)**: 99% complete - blocked on test 2.12 (appositive parsing)
-- ⏸️ **Stage 3-5**: Not started (blocked on Stage 2)
+- ✅ **Stage 1-3**: PASSED - All targets exceeded
+- ✅ **Level 5**: 96.3% (52/54 tests passing)
+- ⏸️ **Stage 4-5**: Not started (scale testing)
 
 **Extraction Quality:**
-- Entity Recall: 87.5% (target ≥75%) ✅
-- Precision: ~86% (target ≥80%) ✅
-- Recall: ~79% (target ≥75%) ✅
+- Entity Precision: 90.2% (target ≥80%) ✅
+- Entity Recall: 91.3% (target ≥75%) ✅
+- Relation Precision: 80.8% (target ≥80%) ✅
+- Relation Recall: 75.8% (target ≥75%) ✅
 - Performance: ~190 words/second
 
 **Recent Work:**
-- Partial name variant matching implemented (Iteration 37)
-- Pronoun filtering from coreference-resolved aliases
-- Entity extraction baseline: 7/28 tests passing (25%)
+- Chunked extraction for long documents (55k+ words)
+- Sibling detection pattern (FM-1) implemented
+- Level 5 cross-document resolution working
 
 ### Key Features
 
