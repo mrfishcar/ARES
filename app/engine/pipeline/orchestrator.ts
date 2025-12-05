@@ -94,7 +94,7 @@ function buildEngineConfig(
     siblingDetectionEnabled: true,
     appositiveFilteringEnabled: true,
     coordinationDetectionEnabled: true,
-    minConfidence: parseFloat(process.env.ARES_MIN_CONFIDENCE || '0.70')
+    minConfidence: parseFloat(process.env.ARES_MIN_CONFIDENCE || '0.65')  // Lowered from 0.70 to improve Stage 3 recall
   };
 
   // HERT options

@@ -261,6 +261,14 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
   },
 
   // === LOCATION/RESIDENCE PATTERNS ===
+  // "He/She lived at Y" - PRONOUN VERSION
+  {
+    regex: /\b((?:He|She|They|he|she|they))\s+(?:lived|dwelt|dwelled|resides|resided|lives)\s+(?:at|in)\s+(?:the\s+)?([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
+    predicate: 'lives_in',
+    typeGuard: { subj: ['PERSON'], obj: ['PLACE'] },
+    extractSubj: 1,  // Pronoun in group 1
+    extractObj: 2    // Place in group 2
+  },
   // "X lived at Y" (handles "lived at the Burrow")
   {
     regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:lived|dwelt|dwelled|resides|resided|lives)\s+at\s+(?:the\s+)?([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
@@ -289,7 +297,18 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
   },
 
   // === ENEMY PATTERNS ===
-  // "X became a rival TO Y" (handles both "of" and "to")
+  // "X became a rival TO Y" (handles both "of" and "to") - PRONOUN VERSION
+  // "He/She became a rival/enemy to/of Y"
+  {
+    regex: /\b((?:He|She|They|he|she|they))\s+(?:became|remained|was|were)\s+(?:an?\s+)?(?:enemy|enemies|rival|rivals|adversary|adversaries)\s+(?:of|to)\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
+    predicate: 'enemy_of',
+    symmetric: true,
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] },
+    extractSubj: 1,  // Pronoun in group 1
+    extractObj: 2,   // Object name in group 2
+    reversed: false
+  },
+  // "X became a rival TO Y" (handles both "of" and "to") - PROPER NAME VERSION
   {
     regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:became|remained|was|were)\s+(?:an?\s+)?(?:enemy|enemies|rival|rivals)\s+(?:of|to)\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
     predicate: 'enemy_of',
