@@ -59,6 +59,16 @@ interface ExtractionResponse {
   fictionEntities?: any[];
 }
 
+interface StoredDocument {
+  id: string;
+  title: string;
+  text: string;
+  extractionJson?: any;
+  extraction?: any;
+  createdAt: string;
+  updatedAt: string;
+}
+
 const JOB_POLL_INTERVAL_MS = 1500;
 const SYNC_EXTRACTION_CHAR_LIMIT = 20000;
 
@@ -401,6 +411,9 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [jobResult, setJobResult] = useState<ExtractionResponse | null>(null);
   const [backgroundProcessing, setBackgroundProcessing] = useState(false);
   const [theme, setTheme] = useState(loadThemePreference());
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [lastSavedId, setLastSavedId] = useState<string | null>(null);
+  const [loadingDocument, setLoadingDocument] = useState(false);
 
   // Initialize theme on mount
   useEffect(() => {
@@ -592,6 +605,116 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       setBackgroundProcessing(false);
     }
   };
+
+  const handleSaveDocument = useCallback(async () => {
+    if (!text.trim()) {
+      toast.error('Please paste text before saving.');
+      return;
+    }
+
+    setSaveStatus('saving');
+
+    try {
+      const payload = {
+        title: text.trim().slice(0, 80) || 'Untitled Document',
+        text,
+        extraction: { entities, relations, stats },
+      };
+
+      const response = await fetch('/api/documents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Save failed with status ${response.status}`);
+      }
+
+      const json = await response.json();
+
+      if (!json?.ok || !json.document?.id) {
+        throw new Error('Invalid save response');
+      }
+
+      setSaveStatus('saved');
+      setLastSavedId(json.document.id);
+    } catch (error) {
+      console.error('[ExtractionLab] Failed to save document', error);
+      setSaveStatus('error');
+      toast.error('Failed to save document');
+    }
+  }, [entities, relations, stats, text, toast]);
+
+  const loadLastDocument = useCallback(async () => {
+    setLoadingDocument(true);
+    try {
+      let targetId: string | null = lastSavedId;
+
+      const fetchDocument = async (id: string): Promise<StoredDocument> => {
+        const res = await fetch(`/api/documents/${id}`);
+        if (!res.ok) {
+          throw new Error(`Failed to fetch document ${id}`);
+        }
+        const json = await res.json();
+        if (!json?.ok || !json.document) {
+          throw new Error('Invalid document response');
+        }
+        return json.document;
+      };
+
+      if (!targetId) {
+        const listRes = await fetch('/api/documents');
+        if (!listRes.ok) {
+          throw new Error('Failed to list documents');
+        }
+        const listJson = await listRes.json();
+        const firstDoc = listJson?.documents?.[0];
+        if (!firstDoc?.id) {
+          toast.error('No saved documents found');
+          setLoadingDocument(false);
+          return;
+        }
+        targetId = firstDoc.id;
+      }
+
+      const document = await fetchDocument(targetId);
+      setLastSavedId(document.id);
+      setText(document.text || '');
+
+      const extraction = document.extractionJson ?? document.extraction;
+      if (extraction) {
+        if (Array.isArray(extraction.entities)) {
+          setEntities(extraction.entities);
+        }
+        if (Array.isArray(extraction.relations)) {
+          setRelations(extraction.relations);
+        }
+        const extractionStats = extraction.stats;
+        setStats({
+          time:
+            typeof extractionStats?.time === 'number'
+              ? extractionStats.time
+              : typeof extractionStats?.extractionTime === 'number'
+                ? extractionStats.extractionTime
+                : 0,
+          confidence:
+            typeof extractionStats?.confidence === 'number'
+              ? extractionStats.confidence
+              : typeof extractionStats?.averageConfidence === 'number'
+                ? extractionStats.averageConfidence
+                : 0,
+          count: extraction.entities?.length ?? 0,
+          relationCount: extraction.relations?.length ?? 0,
+        });
+      }
+    } catch (error) {
+      console.error('[ExtractionLab] Failed to load document', error);
+      toast.error('Failed to load document');
+    } finally {
+      setLoadingDocument(false);
+    }
+  }, [lastSavedId, toast]);
 
   useEffect(() => {
     if (!jobId || !jobStatus || (jobStatus !== 'queued' && jobStatus !== 'running')) {
@@ -904,7 +1027,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                     )}
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px' }}>
                     <input
                       type="checkbox"
@@ -929,6 +1052,42 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                   >
                     ⚙️ {showAdvancedControls ? 'Hide' : 'Show'} Options
                   </button>
+                  <button
+                    onClick={handleSaveDocument}
+                    disabled={saveStatus === 'saving' || !text.trim()}
+                    style={{
+                      padding: '6px 12px',
+                      background: '#0f766e',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '4px',
+                      cursor: saveStatus === 'saving' || !text.trim() ? 'not-allowed' : 'pointer',
+                      fontSize: '14px',
+                      color: '#ffffff',
+                    }}
+                  >
+                    {saveStatus === 'saving' ? 'Saving…' : 'Save document'}
+                  </button>
+                  <button
+                    onClick={loadLastDocument}
+                    disabled={loadingDocument}
+                    style={{
+                      padding: '6px 12px',
+                      background: 'var(--bg-tertiary)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '4px',
+                      cursor: loadingDocument ? 'not-allowed' : 'pointer',
+                      fontSize: '14px',
+                      color: 'var(--text-primary)',
+                    }}
+                  >
+                    {loadingDocument ? 'Loading…' : 'Load last document'}
+                  </button>
+                  {saveStatus === 'saved' && lastSavedId && (
+                    <span style={{ fontSize: '13px', color: '#15803d' }}>Saved ✓</span>
+                  )}
+                  {saveStatus === 'error' && (
+                    <span style={{ fontSize: '13px', color: '#b91c1c' }}>Save failed</span>
+                  )}
                 </div>
               </div>
 
