@@ -679,7 +679,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       }
 
       // After this point, targetId should be a valid string.
-      // This guard satisfies TypeScript (string | null → string).
+      // This guard satisfies TypeScript narrowing (string | null -> string).
       if (!targetId) {
         return;
       }
