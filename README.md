@@ -60,4 +60,8 @@ Purpose: progressive gates for extraction quality. Use the commands below; avoid
 - `HANDOFF.md`: Latest session status and remaining Level 5 issues.
 - `tests/ladder/*.spec.ts`: Ladder tests and fixtures.
 - `app/engine/*`: Core extraction, relation logic, and coreference handling.
+- `docs/AI_MODEL_GUIDE.md`: **NEW** - Model selection guide (OPUS/SONNET/HAIKU/CODEX).
+- `docs/ARCHITECTURE_REVIEW_2025_12.md`: **NEW** - Architecture review and strategic roadmap.
+- `docs/VISION.md`: Core product vision (writing tool for authors).
+- `docs/LINGUISTIC_REFERENCE.md`: Linguistic patterns for debugging.
 
