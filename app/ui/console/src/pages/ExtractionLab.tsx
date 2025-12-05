@@ -678,6 +678,8 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         targetId = firstDoc.id;
       }
 
+      // After this point, targetId should be a valid string.
+      // This guard satisfies TypeScript (string | null → string).
       if (!targetId) {
         return;
       }
