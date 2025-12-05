@@ -104,9 +104,9 @@ export class GlobalKnowledgeGraph {
   }
 
   private mergeEntity(newEntity: Entity, docId: string): string {
-    // 🛡️ MERGE THRESHOLDS: Tightened to prevent over-aggressive merging
-    const HARD_MIN_CONFIDENCE = 0.93;  // Auto-merge only if very confident
-    const SOFT_MIN_CONFIDENCE = 0.88;  // Consider candidates above this
+    // 🛡️ MERGE THRESHOLDS: Allow surname matches (0.90) to merge with multi-token names
+    const HARD_MIN_CONFIDENCE = 0.88;  // Auto-merge if confident (includes surname matches at 0.90)
+    const SOFT_MIN_CONFIDENCE = 0.80;  // Consider candidates above this
 
     // 🚀 OPTIMIZATION 1: Quick exact match via canonical index
     const exactKey = `${newEntity.type}::${newEntity.canonical.toLowerCase()}`;
@@ -254,6 +254,9 @@ export class GlobalKnowledgeGraph {
 
     // Merge data
     existing.aliases.push(newEntity.canonical);
+    if (newEntity.aliases) {
+      existing.aliases.push(...newEntity.aliases);
+    }
     existing.aliases = [...new Set(existing.aliases)]; // Deduplicate
     existing.mentionCount += 1;
     existing.documents.push(docId);
