@@ -21,36 +21,36 @@ The pipeline breaks down the monolithic orchestrator into discrete stages with c
 ```
 Raw Text Input
     ↓
-1. DocumentParseStage     → Parse text into tokens, sentences, dependencies
+1. DocumentParseStage     → Parse text into tokens, sentences, dependencies ✅
     ↓
-2. EntityExtractionStage  → Extract entity candidates (NER, patterns, LLM)
+2. EntityExtractionStage  → Extract entity candidates (NER, patterns, LLM) ✅
     ↓
-3. EntityFilteringStage   → Filter low-quality entities (Layer 1 defense)
+3. EntityFilteringStage   → Filter low-quality entities (Layer 1 defense) ✅
     ↓
 4. EntityProfilingStage   → Build entity profiles for adaptive learning ✅
     ↓
-5. CoreferenceStage       → Resolve pronouns → entities
+5. CoreferenceStage       → Resolve pronouns → entities ✅
     ↓
 6. DeicticResolutionStage → Resolve "there" → locations ✅
     ↓
-7. RelationExtractionStage → Extract relation candidates
+7. RelationExtractionStage → Extract relation candidates ✅
     ↓
-8. RelationFilteringStage → Filter false positives (Layer 2 defense)
+8. RelationFilteringStage → Filter false positives (Layer 2 defense) ✅
     ↓
 9. InverseGenerationStage → Generate inverse relations ✅
     ↓
 10. DeduplicationStage    → Merge duplicate relations (Layer 3 defense) ✅
     ↓
-11. AliasResolutionStage  → Resolve aliases, assign EIDs/AIDs/SPs
+11. AliasResolutionStage  → Resolve aliases, assign EIDs/AIDs/SPs ✅
     ↓
-12. KnowledgeGraphStage   → Final assembly and hygiene
+12. KnowledgeGraphStage   → Final assembly and hygiene ✅
     ↓
 13. HERTGenerationStage   → Generate HERT IDs (optional) ✅
     ↓
 Knowledge Graph Output
 ```
 
-✅ = Implemented as separate module
+✅ = **ALL 13 STAGES IMPLEMENTED** 🎉
 
 ## File Structure
 
@@ -59,25 +59,45 @@ pipeline/
 ├── README.md                        # This file
 ├── types.ts                         # Shared types for all stages ✅
 ├── index.ts                         # Stage exports ✅
+├── orchestrator.ts                  # Pipeline composition layer ✅
 │
+├── parse-stage.ts                   # Stage 1 ✅
+├── entity-extraction-stage.ts       # Stage 2 ✅
+├── entity-filtering-stage.ts        # Stage 3 ✅
 ├── entity-profiling-stage.ts        # Stage 4 ✅
+├── coreference-stage.ts             # Stage 5 ✅
 ├── deictic-resolution-stage.ts      # Stage 6 ✅
+├── relation-extraction-stage.ts     # Stage 7 ✅
+├── relation-filtering-stage.ts      # Stage 8 ✅
 ├── inverse-generation-stage.ts      # Stage 9 ✅
 ├── deduplication-stage.ts           # Stage 10 ✅
-├── hert-generation-stage.ts         # Stage 13 ✅
-│
-└── TODO: Implement remaining stages
-    ├── parse-stage.ts               # Stage 1
-    ├── entity-extraction-stage.ts   # Stage 2
-    ├── entity-filtering-stage.ts    # Stage 3
-    ├── coreference-stage.ts         # Stage 5
-    ├── relation-extraction-stage.ts # Stage 7
-    ├── relation-filtering-stage.ts  # Stage 8
-    ├── alias-resolution-stage.ts    # Stage 11
-    └── knowledge-graph-stage.ts     # Stage 12
+├── alias-resolution-stage.ts        # Stage 11 ✅
+├── knowledge-graph-stage.ts         # Stage 12 ✅
+└── hert-generation-stage.ts         # Stage 13 ✅
 ```
 
+**Total:** 14 files, ~4,500 lines of modular, testable code
+
 ## Usage
+
+### Full Pipeline (Recommended)
+
+```typescript
+import { extractFromSegments } from './pipeline/orchestrator';
+
+const result = await extractFromSegments(
+  'doc-123',
+  'Aragorn married Arwen. They ruled Gondor together.',
+  undefined,           // existingProfiles
+  undefined,           // llmConfig (uses DEFAULT_LLM_CONFIG)
+  undefined,           // patternLibrary
+  { generateHERTs: true, autoSaveHERTs: false }
+);
+
+console.log(result.entities);   // [{ canonical: 'Aragorn', ... }, ...]
+console.log(result.relations);  // [{ pred: 'married_to', ... }, ...]
+console.log(result.herts);      // ['HERTv1:...', ...]
+```
 
 ### Individual Stage
 
@@ -94,7 +114,7 @@ console.log(output.processedText);
 // "Frodo studied at Rivendell. He lived in Rivendell for many years."
 ```
 
-### Composed Pipeline
+### Manual Composition
 
 ```typescript
 import {
@@ -269,36 +289,54 @@ const [profilesOutput, deicticOutput] = await Promise.all([
 - [x] Stage 10: Deduplication
 - [x] Stage 13: HERT Generation
 
-### Phase 3: Implement Complex Stages 🚧 IN PROGRESS
+### Phase 3: Implement Complex Stages ✅ COMPLETE
 
-- [ ] Stage 1: Document Parse
-- [ ] Stage 2: Entity Extraction
-- [ ] Stage 3: Entity Filtering
-- [ ] Stage 5: Coreference
-- [ ] Stage 7: Relation Extraction
-- [ ] Stage 8: Relation Filtering
-- [ ] Stage 11: Alias Resolution
-- [ ] Stage 12: Knowledge Graph
+- [x] Stage 1: Document Parse
+- [x] Stage 2: Entity Extraction
+- [x] Stage 3: Entity Filtering
+- [x] Stage 5: Coreference
+- [x] Stage 7: Relation Extraction
+- [x] Stage 8: Relation Filtering
+- [x] Stage 11: Alias Resolution
+- [x] Stage 12: Knowledge Graph
 
-### Phase 4: Orchestrator Refactor 📋 TODO
+### Phase 4: Orchestrator Refactor ✅ COMPLETE
 
-- [ ] Create new pipeline orchestrator
-- [ ] Wire stages together
-- [ ] Add logging and error handling
-- [ ] Test with existing ladder tests
+- [x] Create new pipeline orchestrator
+- [x] Wire stages together
+- [x] Add logging and error handling
+- [x] Ready for testing with existing ladder tests
 
-### Phase 5: Cleanup 📋 TODO
+### Phase 5: Testing & Integration 📋 NEXT
 
-- [ ] Remove old orchestrator code
-- [ ] Update documentation
-- [ ] Verify all tests pass
+- [ ] Run ladder tests (Level 1-5)
+- [ ] Verify behavior matches original orchestrator
+- [ ] Update imports in existing code
+- [ ] Optional: Remove old orchestrator (keep as reference)
+- [ ] Update main documentation
 
 ## Next Steps
 
-1. **Implement remaining stages** - Extract logic from orchestrator.ts into stage modules
-2. **Create new orchestrator** - Compose stages in pipeline/orchestrator.ts
-3. **Run tests** - Verify behavior unchanged with ladder tests
-4. **Iterate** - Refine stages based on test results
+**🎉 All stages implemented! Ready for testing.**
+
+1. **Test the new pipeline** - Validate behavior matches original:
+   ```bash
+   make parser  # Terminal 1
+   npm test tests/ladder/level-1-simple.spec.ts  # Terminal 2
+   npm test tests/ladder/level-2-multisentence.spec.ts
+   npm test tests/ladder/level-3-complex.spec.ts
+   ```
+
+2. **Integration (Optional)** - Update existing code to use new pipeline:
+   ```typescript
+   // Old import
+   import { extractFromSegments } from '../engine/extract/orchestrator';
+
+   // New import
+   import { extractFromSegments } from '../engine/pipeline/orchestrator';
+   ```
+
+3. **Iterate** - Refine based on test results and performance metrics
 
 ## Documentation
 

@@ -70,3 +70,10 @@ export { runKnowledgeGraphStage } from './knowledge-graph-stage';
 
 // Stage 13: HERT Generation ✅
 export { runHERTGenerationStage } from './hert-generation-stage';
+
+// ============================================================================
+// ORCHESTRATOR - PIPELINE COMPOSITION ✅
+// ============================================================================
+
+// Main orchestrator - wires all 13 stages together
+export { extractFromSegments } from './orchestrator';
