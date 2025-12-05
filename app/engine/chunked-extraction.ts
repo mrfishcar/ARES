@@ -16,7 +16,7 @@ import type { EntityProfile } from './entity-profiles';
 import type { LLMConfig } from './llm-providers/types';
 import type { FictionEntity } from './fiction-entity-types';
 import type { PatternLibrary } from './patterns/pattern-library';
-import { extractFromSegments } from './extract/orchestrator';
+import { extractFromSegments } from './pipeline/orchestrator';
 import { DEFAULT_LLM_CONFIG } from './llm-config';
 import { mergeEntitiesAcrossDocs, rewireRelationsToGlobal } from './merge';
 
