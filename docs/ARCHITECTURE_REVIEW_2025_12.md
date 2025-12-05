@@ -7,9 +7,11 @@
 
 ## Executive Summary
 
-After thorough review of ARES documentation, research materials, architecture designs, and the entity-extraction-sota.pdf research paper, I can confirm that **ARES is on the correct path** with minor course corrections needed. The core philosophy of local-first, deterministic extraction with human-in-the-loop correction is validated by cutting-edge NER research as the optimal approach for high-quality entity extraction.
+After thorough review of ARES documentation, research materials, architecture designs, and the entity-extraction-sota.pdf research paper, I can confirm that **ARES is on the correct path** with a critical integration priority identified. The core philosophy of local-first, deterministic extraction with human-in-the-loop correction is validated by cutting-edge NER research as the optimal approach for high-quality entity extraction.
 
-**Key Finding:** ARES's manual override approach aligns perfectly with the research paper's recommendation of "Active Learning for NER" - the human-in-the-loop paradigm that "could supercharge development" by having users verify/correct entities that then "feed back into training."
+**Key Finding #1:** ARES's manual override approach aligns perfectly with the research paper's recommendation of "Active Learning for NER" - the human-in-the-loop paradigm that "could supercharge development" by having users verify/correct entities that then "feed back into training."
+
+**Key Finding #2 (CRITICAL):** The backend infrastructure for document persistence, knowledge graphs, and wiki generation **already exists** but is **not exposed in the Lab UI**. The Lab UI currently operates in ephemeral mode - extractions are lost on refresh. Connecting existing backend to Lab UI is the highest priority.
 
 ---
 
@@ -59,6 +61,118 @@ After thorough review of ARES documentation, research materials, architecture de
 | Zero-Shot Entity Types | HIGH | GLiNER: "extract entities of those types in zero-shot fashion" |
 | Weak Supervision | MEDIUM | "Programmatically labeling data... can be as effective as hand-labeling" |
 | Graph-Based Context | LOW | "GCNs for capturing long-distance context" |
+
+---
+
+## Part 1B: Lab UI vs. Backend - Critical Gap Analysis
+
+### ⚠️ KEY FINDING: Infrastructure Exists, UI Doesn't Expose It
+
+The following capabilities **exist in the backend** but are **NOT accessible from the Extraction Lab UI**:
+
+| Capability | Backend | Lab UI | Gap |
+|------------|---------|--------|-----|
+| **Document Memory** | ✅ `storage.ts`: JSON persistence, `appendDoc()` | ❌ sessionStorage only | CRITICAL |
+| **Knowledge Graph** | ✅ `global-graph.ts`: GlobalKnowledgeGraph class | ❌ Ephemeral per-extraction | CRITICAL |
+| **Wiki Generation** | ✅ `wiki-generator.ts`: Type-specific templates | ⚠️ WikiModal exists (on-the-fly) | HIGH |
+| **Cross-Doc Resolution** | ✅ Entity merging in `mergeEntitiesAcrossDocs()` | ❌ Single-doc only | HIGH |
+| **Provenance Tracking** | ✅ `ProvenanceEntry` with doc/paragraph/token | ⚠️ Partial (spans only) | MEDIUM |
+
+### 1B.1 What Exists in Backend
+
+**Storage System (`app/storage/storage.ts`):**
+```typescript
+// KnowledgeGraph interface - fully implemented
+interface KnowledgeGraph {
+  entities: Entity[];
+  relations: Relation[];
+  conflicts: Conflict[];
+  provenance: Map<string, ProvenanceEntry>;
+  profiles: Map<string, EntityProfile>;  // Adaptive learning
+  metadata: { created_at, updated_at, doc_count, doc_ids };
+}
+
+// Functions available:
+saveGraph(graph, filePath)     // Persist to ares_graph.json
+loadGraph(filePath)            // Load from disk
+appendDoc(docId, text, path)   // Add document, merge entities
+clearStorage()                 // Reset for testing
+```
+
+**Global Knowledge Graph (`app/engine/global-graph.ts`):**
+```typescript
+class GlobalKnowledgeGraph {
+  addDocument(docId, text, entities, relations)  // Add + merge
+  findEntitiesByName(name, type?)                // Query entities
+  getEntitiesByType(type)                        // Filter by type
+  getRelations(entityId, direction?)             // Get relations
+  export({ entityTypes?, documentIds? })         // Export filtered
+}
+```
+
+**Wiki Generator (`app/generate/wiki-generator.ts`):**
+```typescript
+class WikiGenerator {
+  generatePage(eid, options)           // Generate full wiki page
+  generatePersonPage(entity, opts)     // Person-specific template
+  generatePlacePage(entity, opts)      // Place-specific template
+  generateOrgPage(entity, opts)        // Org-specific template
+  // ... 5 more type-specific generators
+}
+
+renderWikiPageToMarkdown(page)         // Export to markdown
+```
+
+### 1B.2 What Lab UI Currently Does
+
+The Extraction Lab (`app/ui/console/src/pages/ExtractionLab.tsx`):
+
+1. **Sends text** → `/extract-entities` API → Gets entities + relations
+2. **Displays results** → EntityModal, WikiModal (on-the-fly)
+3. **Manual tagging** → `#Entity:TYPE` syntax in editor
+4. **Session storage only** → `sessionStorage` (lost on refresh)
+
+**What's Missing in Lab UI:**
+- No "Save Document" button → `appendDoc()` never called
+- No "Load Project" → `loadGraph()` never called
+- No persistent graph → `GlobalKnowledgeGraph` not used
+- No cross-document wiki → Each extraction is isolated
+- No document list → No way to see/manage saved docs
+
+### 1B.3 Required Lab UI Integrations
+
+To fulfill the vision, the Lab UI needs:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│              LAB UI INTEGRATION REQUIREMENTS                     │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  1. DOCUMENT MANAGEMENT                                          │
+│  ├── "Save to Project" button → calls appendDoc()               │
+│  ├── Document list sidebar → shows saved docs                   │
+│  ├── "Load Document" → retrieves from storage                   │
+│  └── "New Document" → creates fresh extraction                  │
+│                                                                  │
+│  2. PERSISTENT KNOWLEDGE GRAPH                                   │
+│  ├── Display cumulative entities (not just current doc)         │
+│  ├── Show cross-document relations                              │
+│  ├── Entity merge suggestions from global graph                 │
+│  └── "View Full Graph" → visualization of all docs              │
+│                                                                  │
+│  3. INTEGRATED WIKI                                              │
+│  ├── Wiki pages from persistent graph (not current extraction)  │
+│  ├── "Generate Wiki" button → calls WikiGenerator               │
+│  ├── Wiki page list for all entities                           │
+│  └── Export wiki as markdown/HTML                               │
+│                                                                  │
+│  4. CORRECTION TRACKING                                          │
+│  ├── Log manual type changes to correction store                │
+│  ├── Track entity merges/splits                                 │
+│  └── Feed corrections into pattern learning                     │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -219,30 +333,109 @@ RECOMMENDED STRUCTURE:
 
 ## Part 5: Step-by-Step Implementation Plan
 
-### Phase 1: Complete Core Vision (Weeks 1-4)
+### ⚠️ REVISED PRIORITY: Lab UI Integration First
 
-**Week 1-2: Manual Override UI**
+The original roadmap focused on building new backend features. **This revision prioritizes connecting the Lab UI to existing backend infrastructure**, which is the critical gap preventing the vision from being realized.
+
+### Phase 0: Lab UI Foundation (Week 1) - NEW PRIORITY
+
+**Week 1: Connect Lab UI to Persistent Storage**
+```
+Priority: CRITICAL (Blocker for everything else)
+Model: SONNET for implementation
+
+Files to Modify:
+- app/ui/console/src/pages/ExtractionLab.tsx
+- app/ui/console/src/lib/api.ts (add new endpoints)
+- app/api/server.ts (expose storage endpoints)
+
+Tasks:
+1. Add API endpoints for storage operations:
+   - POST /api/projects/:id/documents (save doc + extraction)
+   - GET /api/projects/:id/documents (list saved docs)
+   - GET /api/projects/:id/graph (get merged graph)
+   - DELETE /api/projects/:id/documents/:docId (remove doc)
+
+2. Lab UI changes:
+   - "Save to Project" button → calls appendDoc()
+   - Document list sidebar (collapsible)
+   - "Load Document" from list
+   - Project selector dropdown
+
+3. State management:
+   - useProject hook for current project
+   - useDocuments hook for document list
+   - Persist project selection in localStorage
+
+Success Criteria:
+- User can save extraction → persists after browser refresh
+- User can load previous documents
+- User can see document list
+```
+
+**Backend code already exists:**
+```typescript
+// These functions are ready to use:
+import { saveGraph, loadGraph, appendDoc } from 'app/storage/storage';
+```
+
+### Phase 1: Complete Core Vision (Weeks 2-5)
+
+**Week 2: Integrate Knowledge Graph in Lab UI**
+```
+Priority: CRITICAL
+Model: SONNET for implementation
+
+Tasks:
+1. Add "View Full Graph" button → GraphPage with all entities
+2. Show cumulative entity count (not just current doc)
+3. Cross-document entity suggestions when typing
+4. Merge indicator when entity matches existing global entity
+
+Backend exists: GlobalKnowledgeGraph class in global-graph.ts
+
+Success: User sees entities accumulating across documents
+```
+
+**Week 3: Integrate Wiki Generator in Lab UI**
+```
+Priority: HIGH
+Model: SONNET for implementation
+
+Tasks:
+1. WikiPage from persistent graph (not current extraction only)
+2. "Generate All Wiki Pages" bulk action
+3. Wiki page list in sidebar (alphabetical by entity)
+4. Export wiki to markdown files
+5. Wiki page navigation (click entity → wiki page)
+
+Backend exists: WikiGenerator class with 8 type-specific templates
+
+Success: User can generate and browse persistent wiki pages
+```
+
+**Week 4: Manual Override UI Enhancement**
 ```
 Priority: CRITICAL
 Model: SONNET for implementation, OPUS for design decisions
 
 Tasks:
-1. Entity correction interface (change types)
-2. Entity merge/split operations
-3. Relationship add/edit/delete
-4. Confidence override capability
-5. Batch operations
+1. Entity correction interface (change types) - partially exists
+2. Entity merge/split operations - needs implementation
+3. Relationship add/edit/delete - needs implementation
+4. Confidence override capability - needs implementation
+5. Batch operations for multiple entities
 
 Success: Author can fix any extraction error via UI
 ```
 
-**Week 3: Feedback Loop**
+**Week 5: Feedback Loop & Correction Tracking**
 ```
 Priority: CRITICAL
 Model: OPUS for architecture, SONNET for implementation
 
 Tasks:
-1. Correction tracking system
+1. Correction tracking system (log all manual changes)
 2. Pattern extraction from corrections
 3. Confidence boost for validated patterns
 4. Initial learning algorithm
@@ -250,23 +443,23 @@ Tasks:
 Success: System logs corrections and adjusts confidence
 ```
 
-**Week 4: Reactive Wiki**
+### Phase 2: Research-Informed Enhancements (Weeks 6-9)
+
+**Week 6: Reactive Wiki**
 ```
 Priority: HIGH
 Model: SONNET
 
 Tasks:
-1. Auto-regeneration on data changes
+1. Auto-regeneration on data changes (via subscription)
 2. Version history tracking
-3. Change propagation
+3. Change propagation to related pages
 4. Rollback functionality
 
 Success: Wiki updates within 1s of correction
 ```
 
-### Phase 2: Research-Informed Enhancements (Weeks 5-8)
-
-**Week 5-6: Zero-Shot Entity Types**
+**Week 7-8: Zero-Shot Entity Types**
 ```
 Priority: HIGH
 Model: OPUS for design, SONNET for implementation
@@ -282,7 +475,7 @@ Tasks:
 Success: Authors can add new entity types without code changes
 ```
 
-**Week 7-8: Weak Supervision Bootstrap**
+**Week 9: Weak Supervision Bootstrap**
 ```
 Priority: MEDIUM
 Model: SONNET
@@ -298,9 +491,9 @@ Tasks:
 Success: New domains bootstrapped with <100 manual labels
 ```
 
-### Phase 3: Scale & Polish (Weeks 9-12)
+### Phase 3: Scale & Polish (Weeks 10-12)
 
-**Week 9-10: Stage 4 Testing**
+**Week 10-11: Stage 4 Testing**
 ```
 Priority: MEDIUM
 Model: SONNET
@@ -313,7 +506,7 @@ Tasks:
 Success: All Stage 4 metrics pass
 ```
 
-**Week 11-12: Production Readiness**
+**Week 12: Production Readiness**
 ```
 Priority: MEDIUM
 Model: SONNET for implementation, HAIKU for test expansion
@@ -374,7 +567,7 @@ These Stanford resources are relevant and recommended for ARES:
 
 ## Conclusion: Path Validation
 
-**VERDICT: ARES IS ON THE CORRECT PATH**
+**VERDICT: ARES IS ON THE CORRECT PATH - WITH INTEGRATION PRIORITY**
 
 The architecture, philosophy, and implementation approach are validated by:
 
@@ -384,17 +577,31 @@ The architecture, philosophy, and implementation approach are validated by:
 4. ✅ HERT system provides stable entity references
 5. ✅ Progressive testing ladder ensures quality gates
 
-**Primary Focus Should Be:**
-1. Complete Manual Override UI (CRITICAL - differentiator)
-2. Implement Feedback Loop (CRITICAL - the "intelligence")
-3. Add Zero-Shot Entity Types (HIGH - author flexibility)
+### ⚠️ CRITICAL FINDING: Lab UI Integration Gap
+
+**The backend infrastructure is more complete than initially assessed.** Key capabilities exist but are not exposed in the Lab UI:
+
+| Backend Component | Status | Lab UI Status |
+|-------------------|--------|---------------|
+| Document Persistence | ✅ Complete (`storage.ts`) | ❌ Not integrated |
+| Knowledge Graph | ✅ Complete (`global-graph.ts`) | ❌ Not integrated |
+| Wiki Generation | ✅ Complete (`wiki-generator.ts`) | ⚠️ On-the-fly only |
+| Cross-Doc Merging | ✅ Complete (`mergeEntitiesAcrossDocs`) | ❌ Not integrated |
+
+**Revised Primary Focus:**
+1. **Connect Lab UI to Storage** (CRITICAL - Week 1 priority)
+2. **Integrate Knowledge Graph in Lab UI** (CRITICAL - Week 2)
+3. **Wire Wiki Generator to Persistent Graph** (HIGH - Week 3)
+4. Complete Manual Override UI (CRITICAL - Week 4)
+5. Implement Feedback Loop (CRITICAL - Week 5)
 
 **Do Not Deviate For:**
 - LLM-based extraction (conflicts with deterministic goal)
 - Cloud dependencies (conflicts with local-first)
 - Complex ML training (conflicts with "algorithms over AI" philosophy)
+- Building new backend features before Lab UI integration
 
 ---
 
-**Document Version:** 1.0
-**Next Review:** After Phase 1 completion
+**Document Version:** 1.1 (Revised with Lab UI gap analysis)
+**Next Review:** After Phase 0 (Lab UI Foundation) completion
