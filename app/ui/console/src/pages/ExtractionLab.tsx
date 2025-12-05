@@ -59,6 +59,16 @@ interface ExtractionResponse {
   fictionEntities?: any[];
 }
 
+interface StoredDocument {
+  id: string;
+  title: string;
+  text: string;
+  extractionJson?: any;
+  extraction?: any;
+  createdAt: string;
+  updatedAt: string;
+}
+
 const JOB_POLL_INTERVAL_MS = 1500;
 const SYNC_EXTRACTION_CHAR_LIMIT = 20000;
 
@@ -401,6 +411,12 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [jobResult, setJobResult] = useState<ExtractionResponse | null>(null);
   const [backgroundProcessing, setBackgroundProcessing] = useState(false);
   const [theme, setTheme] = useState(loadThemePreference());
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [lastSavedId, setLastSavedId] = useState<string | null>(null);
+  const [loadingDocument, setLoadingDocument] = useState(false);
+  const [documentList, setDocumentList] = useState<StoredDocument[]>([]);
+  const [loadingDocuments, setLoadingDocuments] = useState(false);
+  const [showDocumentSidebar, setShowDocumentSidebar] = useState(false);
 
   // Initialize theme on mount
   useEffect(() => {
@@ -592,6 +608,196 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       setBackgroundProcessing(false);
     }
   };
+
+  const fetchDocumentById = useCallback(async (id: string): Promise<StoredDocument> => {
+    const res = await fetch(`/api/documents/${id}`);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch document ${id}`);
+    }
+    const json = await res.json();
+    if (!json?.ok || !json.document) {
+      throw new Error('Invalid document response');
+    }
+    return json.document;
+  }, []);
+
+  const applyDocumentToState = useCallback(
+    (document: StoredDocument) => {
+      setLastSavedId(document.id);
+      setText(document.text || '');
+
+      const extraction = document.extractionJson ?? document.extraction;
+      if (extraction) {
+        if (Array.isArray(extraction.entities)) {
+          setEntities(extraction.entities);
+        }
+        if (Array.isArray(extraction.relations)) {
+          setRelations(extraction.relations);
+        }
+        const extractionStats = extraction.stats;
+        setStats({
+          time:
+            typeof extractionStats?.time === 'number'
+              ? extractionStats.time
+              : typeof extractionStats?.extractionTime === 'number'
+                ? extractionStats.extractionTime
+                : 0,
+          confidence:
+            typeof extractionStats?.confidence === 'number'
+              ? extractionStats.confidence
+              : typeof extractionStats?.averageConfidence === 'number'
+                ? extractionStats.averageConfidence
+                : 0,
+          count: extraction.entities?.length ?? 0,
+          relationCount: extraction.relations?.length ?? 0,
+        });
+      }
+    },
+    [setEntities, setRelations, setStats, setText]
+  );
+
+  const refreshDocumentList = useCallback(async () => {
+    setLoadingDocuments(true);
+    try {
+      const listRes = await fetch('/api/documents');
+      if (!listRes.ok) {
+        throw new Error('Failed to list documents');
+      }
+      const listJson = await listRes.json();
+      const documents = Array.isArray(listJson?.documents) ? listJson.documents : [];
+
+      const hydratedDocs: StoredDocument[] = [];
+      for (const doc of documents) {
+        if (!doc?.id) continue;
+        try {
+          const fullDoc = await fetchDocumentById(doc.id);
+          hydratedDocs.push(fullDoc);
+        } catch (error) {
+          console.error('[ExtractionLab] Failed to hydrate document', error);
+        }
+      }
+
+      const sorted = hydratedDocs.sort(
+        (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      );
+      setDocumentList(sorted);
+    } catch (error) {
+      console.error('[ExtractionLab] Failed to refresh document list', error);
+      toast.error('Failed to load saved documents');
+    } finally {
+      setLoadingDocuments(false);
+    }
+  }, [fetchDocumentById, toast]);
+
+  useEffect(() => {
+    if (showDocumentSidebar) {
+      refreshDocumentList();
+    }
+  }, [refreshDocumentList, showDocumentSidebar]);
+
+  const deriveDocumentName = useCallback((doc: StoredDocument) => {
+    const firstNonEmptyLine = doc.text
+      ?.split(/\r?\n/)
+      .find((line: string) => line.trim().length > 0);
+    return (firstNonEmptyLine?.trim() || doc.title || 'Untitled Document').slice(0, 120);
+  }, []);
+
+  const handleLoadDocumentById = useCallback(
+    async (id: string) => {
+      setLoadingDocument(true);
+      try {
+        const document = await fetchDocumentById(id);
+        applyDocumentToState(document);
+        setShowDocumentSidebar(false);
+      } catch (error) {
+        console.error('[ExtractionLab] Failed to load document', error);
+        toast.error('Failed to load document');
+      } finally {
+        setLoadingDocument(false);
+      }
+    },
+    [applyDocumentToState, fetchDocumentById, toast]
+  );
+
+  const handleSaveDocument = useCallback(async () => {
+    if (!text.trim()) {
+      toast.error('Please paste text before saving.');
+      return;
+    }
+
+    setSaveStatus('saving');
+
+    try {
+      const payload = {
+        title: text.trim().slice(0, 80) || 'Untitled Document',
+        text,
+        extraction: { entities, relations, stats },
+      };
+
+      const response = await fetch('/api/documents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Save failed with status ${response.status}`);
+      }
+
+      const json = await response.json();
+
+      if (!json?.ok || !json.document?.id) {
+        throw new Error('Invalid save response');
+      }
+
+      setSaveStatus('saved');
+      setLastSavedId(json.document.id);
+
+      if (showDocumentSidebar) {
+        refreshDocumentList();
+      }
+    } catch (error) {
+      console.error('[ExtractionLab] Failed to save document', error);
+      setSaveStatus('error');
+      toast.error('Failed to save document');
+    }
+  }, [entities, relations, stats, text, toast, showDocumentSidebar, refreshDocumentList]);
+
+  const loadLastDocument = useCallback(async () => {
+    setLoadingDocument(true);
+    try {
+      let targetId: string | null = lastSavedId;
+
+      if (!targetId) {
+        const listRes = await fetch('/api/documents');
+        if (!listRes.ok) {
+          throw new Error('Failed to list documents');
+        }
+        const listJson = await listRes.json();
+        const firstDoc = listJson?.documents?.[0];
+        if (!firstDoc?.id) {
+          toast.error('No saved documents found');
+          setLoadingDocument(false);
+          return;
+        }
+        targetId = firstDoc.id;
+      }
+
+      // After this point, targetId should be a valid string.
+      // This guard satisfies TypeScript narrowing (string | null → string).
+      if (!targetId) {
+        return;
+      }
+
+      const document = await fetchDocumentById(targetId);
+      applyDocumentToState(document);
+    } catch (error) {
+      console.error('[ExtractionLab] Failed to load document', error);
+      toast.error('Failed to load document');
+    } finally {
+      setLoadingDocument(false);
+    }
+  }, [applyDocumentToState, fetchDocumentById, lastSavedId, toast]);
 
   useEffect(() => {
     if (!jobId || !jobStatus || (jobStatus !== 'queued' && jobStatus !== 'running')) {
@@ -859,6 +1065,80 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         </div>
       </div>
 
+      {/* Saved documents sidebar */}
+      <div
+        style={{
+          position: 'fixed',
+          top: '72px',
+          left: 0,
+          bottom: 0,
+          width: '320px',
+          maxWidth: '80vw',
+          background: 'var(--bg-primary)',
+          borderRight: '1px solid var(--border-color)',
+          boxShadow: '2px 0 12px rgba(0, 0, 0, 0.12)',
+          transform: showDocumentSidebar ? 'translateX(0)' : 'translateX(-100%)',
+          transition: 'transform 0.25s ease',
+          zIndex: 30,
+          overflowY: 'auto',
+          padding: '16px',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: '16px' }}>Saved documents</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Most recent first</div>
+          </div>
+          <button
+            onClick={() => setShowDocumentSidebar(false)}
+            style={{
+              border: '1px solid var(--border-color)',
+              background: 'var(--bg-tertiary)',
+              borderRadius: '4px',
+              padding: '4px 8px',
+              cursor: 'pointer',
+            }}
+            title="Hide saved documents"
+          >
+            Close
+          </button>
+        </div>
+
+        {loadingDocuments ? (
+          <div style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>Loading saved documents…</div>
+        ) : documentList.length === 0 ? (
+          <div style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>No saved documents yet.</div>
+        ) : (
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {documentList.map((doc) => (
+              <li key={doc.id}>
+                <button
+                  onClick={() => handleLoadDocumentById(doc.id)}
+                  style={{
+                    width: '100%',
+                    textAlign: 'left',
+                    border: '1px solid var(--border-color)',
+                    background: 'var(--bg-secondary)',
+                    borderRadius: '8px',
+                    padding: '10px',
+                    cursor: loadingDocument ? 'not-allowed' : 'pointer',
+                    opacity: loadingDocument ? 0.7 : 1,
+                  }}
+                  disabled={loadingDocument}
+                >
+                  <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '4px', color: 'var(--text-primary)' }}>
+                    {deriveDocumentName(doc)}
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                    Updated {new Date(doc.updatedAt).toLocaleString()}
+                  </div>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
       {/* Main Content */}
       <div className="lab-content">
         {/* Center: Editor with side margins */}
@@ -904,7 +1184,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                     )}
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px' }}>
                     <input
                       type="checkbox"
@@ -929,6 +1209,57 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                   >
                     ⚙️ {showAdvancedControls ? 'Hide' : 'Show'} Options
                   </button>
+                  <button
+                    onClick={handleSaveDocument}
+                    disabled={saveStatus === 'saving' || !text.trim()}
+                    style={{
+                      padding: '6px 12px',
+                      background: '#0f766e',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '4px',
+                      cursor: saveStatus === 'saving' || !text.trim() ? 'not-allowed' : 'pointer',
+                      fontSize: '14px',
+                      color: '#ffffff',
+                    }}
+                  >
+                    {saveStatus === 'saving' ? 'Saving…' : 'Save document'}
+                  </button>
+                  <button
+                    onClick={() => setShowDocumentSidebar(!showDocumentSidebar)}
+                    style={{
+                      padding: '6px 12px',
+                      background: 'var(--bg-tertiary)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      color: 'var(--text-primary)',
+                    }}
+                    title="Browse saved documents"
+                  >
+                    {showDocumentSidebar ? 'Hide saved docs' : 'Show saved docs'}
+                  </button>
+                  <button
+                    onClick={loadLastDocument}
+                    disabled={loadingDocument}
+                    style={{
+                      padding: '6px 12px',
+                      background: 'var(--bg-tertiary)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '4px',
+                      cursor: loadingDocument ? 'not-allowed' : 'pointer',
+                      fontSize: '14px',
+                      color: 'var(--text-primary)',
+                    }}
+                  >
+                    {loadingDocument ? 'Loading…' : 'Load last document'}
+                  </button>
+                  {saveStatus === 'saved' && lastSavedId && (
+                    <span style={{ fontSize: '13px', color: '#15803d' }}>Saved ✓</span>
+                  )}
+                  {saveStatus === 'error' && (
+                    <span style={{ fontSize: '13px', color: '#b91c1c' }}>Save failed</span>
+                  )}
                 </div>
               </div>
 
