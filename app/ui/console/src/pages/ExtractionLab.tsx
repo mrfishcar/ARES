@@ -32,6 +32,17 @@ interface Relation {
 
 type JobStatus = 'queued' | 'running' | 'done' | 'failed';
 
+type SpanKey = string;
+
+function makeSpanKey(e: EntitySpan): SpanKey {
+  return `${e.start}:${e.end}:${e.text}`;
+}
+
+interface EntityOverrides {
+  rejectedSpans: Set<SpanKey>;
+  typeOverrides: Record<SpanKey, EntityType>;
+}
+
 interface ExtractionResponse {
   success: boolean;
   entities: Array<{
@@ -474,6 +485,33 @@ function deduplicateEntities(entities: EntitySpan[]): EntitySpan[] {
   return deduplicated.sort((a, b) => a.start - b.start);
 }
 
+function applyEntityOverrides(
+  baseEntities: EntitySpan[],
+  overrides: EntityOverrides,
+  highlightMode: boolean
+): EntitySpan[] {
+  if (!highlightMode) {
+    // When not in highlight mode, just return the original entities
+    return baseEntities;
+  }
+
+  if (!baseEntities.length) return baseEntities;
+
+  const { rejectedSpans, typeOverrides } = overrides;
+
+  return baseEntities
+    .filter((e) => !rejectedSpans.has(makeSpanKey(e)))
+    .map((e) => {
+      const key = makeSpanKey(e);
+      const overrideType = typeOverrides[key];
+      if (!overrideType) return e;
+      return {
+        ...e,
+        type: overrideType,
+      };
+    });
+}
+
 interface SelectedEntityState {
   name: string;
   type: string;
@@ -491,6 +529,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [showAdvancedControls, setShowAdvancedControls] = useState(false);
   const [showEntityModal, setShowEntityModal] = useState(false);
   const [renderMarkdown, setRenderMarkdown] = useState(true);
+  const [liveExtractionEnabled, setLiveExtractionEnabled] = useState(true);
   const [jobId, setJobId] = useState<string | null>(null);
   const [jobStatus, setJobStatus] = useState<JobStatus | null>(null);
   const [jobError, setJobError] = useState<string | null>(null);
@@ -507,6 +546,18 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [documentList, setDocumentList] = useState<StoredDocument[]>([]);
   const [loadingDocuments, setLoadingDocuments] = useState(false);
   const [showDocumentSidebar, setShowDocumentSidebar] = useState(false);
+  const [entityHighlightMode, setEntityHighlightMode] = useState(false);
+  const [entityOverrides, setEntityOverrides] = useState<EntityOverrides>({
+    rejectedSpans: new Set(),
+    typeOverrides: {},
+  });
+
+  const resetEntityOverrides = useCallback(() => {
+    setEntityOverrides({
+      rejectedSpans: new Set(),
+      typeOverrides: {},
+    });
+  }, []);
 
   // Initialize theme on mount
   useEffect(() => {
@@ -521,6 +572,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
   const requiresBackground = text.length > SYNC_EXTRACTION_CHAR_LIMIT;
   const hasActiveJob = jobStatus === 'queued' || jobStatus === 'running';
+  const displayEntities = applyEntityOverrides(entities, entityOverrides, entityHighlightMode);
 
   const applyExtractionResults = useCallback(
     (data: ExtractionResponse, rawText: string, elapsedMs?: number) => {
@@ -564,8 +616,10 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         count: mergedEntities.length,
         relationCount: data.relations?.length || 0,
       });
+
+      resetEntityOverrides();
     },
-    []
+    [resetEntityOverrides]
   );
 
   // Real-time extraction using FULL ARES ENGINE (debounced 1000ms for heavier processing)
@@ -587,21 +641,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         // Incomplete tags like "#Cory:" won't be sent, so backend won't try to extract from them
         const textForExtraction = stripIncompleteTagsForExtraction(text);
 
-        // Call ARES engine API
-        // For production (Vercel): use Railway backend
-        // For local dev: use localhost
-        let apiUrl = import.meta.env.VITE_API_URL;
-        if (!apiUrl) {
-          // If VITE_API_URL not set, detect environment
-          const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-          if (hostname.includes('vercel.app')) {
-            // Production on Vercel - use Railway backend
-            apiUrl = 'https://ares-production-72ea.up.railway.app';
-          } else {
-            // Local development
-            apiUrl = 'http://localhost:4000';
-          }
-        }
+        const apiUrl = resolveApiUrl();
         const response = await fetch(`${apiUrl}/extract-entities`, {
           method: 'POST',
           headers: {
@@ -636,6 +676,15 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     [toast, applyExtractionResults]
   );
 
+  const runExtractionNow = useCallback(() => {
+    if (!text.trim()) {
+      toast.error('Please paste text before running extraction.');
+      return;
+    }
+
+    extractEntities(text);
+  }, [text, extractEntities, toast]);
+
   useEffect(() => {
     if (requiresBackground || hasActiveJob) {
       setProcessing(false);
@@ -647,8 +696,12 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       return;
     }
 
+    if (!liveExtractionEnabled) {
+      return;
+    }
+
     extractEntities(text);
-  }, [text, extractEntities, requiresBackground, hasActiveJob]);
+  }, [text, extractEntities, requiresBackground, hasActiveJob, liveExtractionEnabled]);
 
   const startBackgroundJob = async () => {
     if (!text.trim()) {
@@ -661,17 +714,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     setJobResult(null);
 
     try {
-      // Use Railway backend for background jobs (same as extract-entities)
-      let apiUrl = import.meta.env.VITE_API_URL;
-      if (!apiUrl) {
-        const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-        if (hostname.includes('vercel.app')) {
-          apiUrl = 'https://ares-production-72ea.up.railway.app';
-        } else {
-          apiUrl = 'http://localhost:4000';
-        }
-      }
-
+      const apiUrl = resolveApiUrl();
       const payload = { text: stripIncompleteTagsForExtraction(text) };
       const response = await fetch(`${apiUrl}/jobs/start`, {
         method: 'POST',
@@ -710,7 +753,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
   const fetchDocumentById = useCallback(async (id: string): Promise<StoredDocument> => {
     const apiUrl = resolveApiUrl();
-    const res = await fetch(`${apiUrl}/api/documents/${id}`);
+    const res = await fetch(`${apiUrl}/documents/${id}`);
     if (!res.ok) {
       throw new Error(`Failed to fetch document ${id}`);
     }
@@ -763,7 +806,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     setLoadingDocuments(true);
     const apiUrl = resolveApiUrl();
     try {
-      const listRes = await fetch(`${apiUrl}/api/documents`);
+      const listRes = await fetch(`${apiUrl}/documents`);
       if (!listRes.ok) {
         throw new Error('Failed to list documents');
       }
@@ -857,7 +900,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       };
 
       const apiUrl = resolveApiUrl();
-      const response = await fetch(`${apiUrl}/api/documents`, {
+      const response = await fetch(`${apiUrl}/documents`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -893,7 +936,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
       if (!targetId) {
         const apiUrl = resolveApiUrl();
-        const listRes = await fetch(`${apiUrl}/api/documents`);
+        const listRes = await fetch(`${apiUrl}/documents`);
         if (!listRes.ok) {
           throw new Error('Failed to list documents');
         }
@@ -930,17 +973,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
     const interval = setInterval(async () => {
       try {
-        // Use Railway backend for job polling (same as extract-entities)
-        let apiUrl = import.meta.env.VITE_API_URL;
-        if (!apiUrl) {
-          const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-          if (hostname.includes('vercel.app')) {
-            apiUrl = 'https://ares-production-72ea.up.railway.app';
-          } else {
-            apiUrl = 'http://localhost:4000';
-          }
-        }
-
+        const apiUrl = resolveApiUrl();
         const statusRes = await fetch(`${apiUrl}/jobs/status?jobId=${jobId}`);
         const statusData = await statusRes.json();
 
@@ -1005,6 +1038,20 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const handleChangeType = async (entity: EntitySpan, newType: EntityType) => {
     console.log('[ExtractionLab] Changing entity type:', { entity, newType });
 
+    if (entityHighlightMode) {
+      const key = makeSpanKey(entity);
+      setEntityOverrides((prev) => ({
+        ...prev,
+        typeOverrides: {
+          ...prev.typeOverrides,
+          [key]: newType,
+        },
+      }));
+
+      toast.success(`Type changed to ${newType} (overlay)`);
+      return;
+    }
+
     // Format new tag based on whether entity has spaces
     const newTag = entity.text.includes(' ')
       ? `#[${entity.text}]:${newType}`
@@ -1045,6 +1092,28 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const handleCreateNew = async (entity: EntitySpan, type: EntityType) => {
     console.log('[ExtractionLab] Creating new entity:', { entity, type });
 
+    if (entityHighlightMode) {
+      const newEntity: EntitySpan = {
+        ...entity,
+        type,
+        source: 'manual',
+        confidence: entity.confidence ?? 1.0,
+        displayText: entity.displayText ?? entity.text,
+      };
+
+      setEntities((prev) => deduplicateEntities([...prev, newEntity]));
+      setEntityOverrides((prev) => ({
+        ...prev,
+        typeOverrides: {
+          ...prev.typeOverrides,
+          [makeSpanKey(newEntity)]: type,
+        },
+      }));
+
+      toast.success(`New entity created (overlay): ${newEntity.text}:${type}`);
+      return;
+    }
+
     // Format tag
     const newTag = entity.text.includes(' ')
       ? `#[${entity.text}]:${type}`
@@ -1078,6 +1147,24 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   // Handles existing tags by replacing them entirely
   const handleReject = async (entity: EntitySpan) => {
     console.log('[ExtractionLab] Rejecting entity:', entity);
+
+    if (entityHighlightMode) {
+      const key = makeSpanKey(entity);
+      setEntityOverrides((prev) => {
+        const nextRejected = new Set(prev.rejectedSpans);
+        nextRejected.add(key);
+        return {
+          ...prev,
+          rejectedSpans: nextRejected,
+        };
+      });
+
+      // Also remove from immediate visible entities so the user sees it disappear right away
+      setEntities((prev) => prev.filter((e) => makeSpanKey(e) !== key));
+
+      toast.info(`"${entity.text}" rejected (overlay)`);
+      return;
+    }
 
     // Format rejection tag
     const rejectTag = `${entity.text}:REJECT_ENTITY`;
@@ -1168,43 +1255,64 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           <span className="powered-badge">Powered by Full ARES Engine</span>
         </div>
         <div className="lab-stats">
-          {processing ? (
-            <span className="stat-badge processing">Processing...</span>
-          ) : (
-            <>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                <span className="stat-badge">⏱️ {stats.time}ms</span>
-                <span className="stat-badge">🎯 {stats.confidence}% confidence</span>
-                <span className="stat-badge">📊 {stats.count} entities</span>
-                <span className="stat-badge">🔗 {stats.relationCount} relations</span>
-                {hasActiveJob && <span className="stat-badge processing">Job {jobStatus}</span>}
-                {jobStatus === 'done' && <span className="stat-badge">✅ Job done</span>}
-                {jobStatus === 'failed' && jobError && (
-                  <span className="stat-badge" style={{ background: '#fee2e2', color: '#991b1b' }}>
-                    ❌ {jobError}
-                  </span>
-                )}
-              </div>
-              {hasActiveJob && (
-                <JobProgressBar jobStatus={jobStatus} jobProgress={jobProgress} jobEtaSeconds={jobEtaSeconds} />
-              )}
-              <button
-                onClick={copyReport}
-                className="report-button"
-                disabled={entities.length === 0}
-                title="Copy extraction report to clipboard"
-              >
-                📋 Copy Report
-              </button>
-            </>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <span className="stat-badge">⏱️ {stats.time}ms</span>
+            <span className="stat-badge">🎯 {stats.confidence}% confidence</span>
+            <span className="stat-badge">📊 {stats.count} entities</span>
+            <span className="stat-badge">🔗 {stats.relationCount} relations</span>
+            {hasActiveJob && <span className="stat-badge processing">Job {jobStatus}</span>}
+            {jobStatus === 'done' && <span className="stat-badge">✅ Job done</span>}
+            {jobStatus === 'failed' && jobError && (
+              <span className="stat-badge" style={{ background: '#fee2e2', color: '#991b1b' }}>
+                ❌ {jobError}
+              </span>
+            )}
+            {processing && <span className="stat-badge processing">Updating…</span>}
+          </div>
+          {hasActiveJob && (
+            <JobProgressBar jobStatus={jobStatus} jobProgress={jobProgress} jobEtaSeconds={jobEtaSeconds} />
           )}
+          <button
+            onClick={copyReport}
+            className="report-button"
+            disabled={displayEntities.length === 0}
+            title="Copy extraction report to clipboard"
+          >
+            📋 Copy Report
+          </button>
           <button
             onClick={() => setShowEntityModal(true)}
             className="entities-button"
-            disabled={entities.length === 0}
+            disabled={displayEntities.length === 0}
             title="View extracted entities and relations"
           >
-            📊 {entities.length}
+            📊 {displayEntities.length}
+          </button>
+          <button
+            onClick={() => setEntityHighlightMode((v) => !v)}
+            className="entity-highlight-toggle"
+            title="Toggle Entity Highlight Mode (edit entities without changing text)"
+            style={{ marginLeft: '8px' }}
+          >
+            {entityHighlightMode ? '🖍️ Entity Mode: ON' : '🖍️ Entity Mode: OFF'}
+          </button>
+          <button
+            onClick={resetEntityOverrides}
+            className="entity-reset-button"
+            type="button"
+            style={{
+              marginLeft: '8px',
+              padding: '4px 10px',
+              borderRadius: '4px',
+              border: '1px solid var(--border-color)',
+              background: 'var(--bg-tertiary)',
+              cursor: 'pointer',
+              fontSize: '13px',
+              whiteSpace: 'nowrap',
+            }}
+            title="Clear entity overrides and return to raw engine output"
+          >
+            🔄 Reset entity edits
           </button>
           <button
             onClick={handleThemeToggle}
@@ -1346,6 +1454,31 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                     />
                     <span>📄 Show Raw Text</span>
                   </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px' }}>
+                    <input
+                      type="checkbox"
+                      checked={liveExtractionEnabled}
+                      onChange={(e) => setLiveExtractionEnabled(e.target.checked)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                    <span>⚡ Live extraction</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={runExtractionNow}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '4px',
+                      border: '1px solid var(--border-color)',
+                      background: 'var(--bg-tertiary)',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      whiteSpace: 'nowrap',
+                    }}
+                    title="Run extraction once using the current text"
+                  >
+                    ▶️ Run extraction now
+                  </button>
                   <button
                     onClick={() => setShowAdvancedControls(!showAdvancedControls)}
                     style={{
@@ -1464,7 +1597,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
             <div className="editor-with-indicators-wrapper">
               {/* Entity indicators on left side */}
               <EntityIndicators
-                entities={entities}
+                entities={displayEntities}
                 text={text}
                 editorHeight={Math.max(400, window.innerHeight - 380)}
               />
@@ -1478,12 +1611,13 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                   highlightOpacity={highlightOpacity}
                   enableWYSIWYG={false}
                   renderMarkdown={renderMarkdown}
-                  entities={entities}
+                  entities={displayEntities}
                   projectId={project}
                   onReject={handleReject}
                   onChangeType={handleChangeType}
                   onTagEntity={handleTagEntity}
                   onCreateNew={handleCreateNew}
+                  entityHighlightMode={entityHighlightMode}
                 />
               </div>
             </div>
@@ -1495,11 +1629,11 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       {/* Entity Modal */}
       {showEntityModal && (
         <EntityModal
-          entities={entities}
+          entities={displayEntities}
           relations={relations}
           onClose={() => setShowEntityModal(false)}
           onViewWiki={(entityName) => {
-            const entity = entities.find(e => e.text === entityName);
+            const entity = displayEntities.find(e => e.text === entityName);
             if (entity) {
               setSelectedEntity({ name: entityName, type: entity.type });
             }
@@ -1514,7 +1648,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           entityType={selectedEntity.type}
           project={project}
           onClose={() => setSelectedEntity(null)}
-          extractionContext={{ entities, relations }}
+          extractionContext={{ entities: displayEntities, relations }}
         />
       )}
     </div>
