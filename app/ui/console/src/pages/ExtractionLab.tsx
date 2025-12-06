@@ -72,6 +72,79 @@ interface StoredDocument {
 const JOB_POLL_INTERVAL_MS = 1500;
 const SYNC_EXTRACTION_CHAR_LIMIT = 20000;
 
+function estimateJobDurationMs(textLength: number): number {
+  const baseMs = 8000;
+  const extraMs = Math.floor(textLength / 5000) * 1000;
+  const estimated = baseMs + extraMs;
+  return Math.min(90000, Math.max(10000, estimated));
+}
+
+interface JobProgressBarProps {
+  jobStatus: JobStatus | null;
+  jobProgress: number;
+  jobEtaSeconds: number | null;
+}
+
+const JobProgressBar = ({ jobStatus, jobProgress, jobEtaSeconds }: JobProgressBarProps) => {
+  if (!jobStatus || (jobStatus !== 'queued' && jobStatus !== 'running')) {
+    return null;
+  }
+
+  const pct = Math.max(0, Math.min(100, jobProgress || 0));
+  const etaText =
+    jobEtaSeconds == null
+      ? 'Estimating…'
+      : jobEtaSeconds <= 0
+        ? 'Finishing up…'
+        : `≈ ${jobEtaSeconds}s remaining`;
+
+  return (
+    <div
+      className="job-progress-wrapper"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 4,
+        minWidth: 220,
+      }}
+      aria-label="Extraction progress"
+    >
+      <div
+        className="job-progress-bar"
+        style={{
+          position: 'relative',
+          height: 6,
+          borderRadius: 999,
+          background: 'var(--bg-tertiary)',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="job-progress-bar-fill"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            transform: `translateX(${pct - 100}%)`,
+            transition: 'transform 0.3s ease-out',
+            background: '#22c55e',
+          }}
+        />
+      </div>
+      <div
+        style={{
+          fontSize: 12,
+          color: 'var(--text-secondary)',
+          display: 'flex',
+          justifyContent: 'space-between',
+        }}
+      >
+        <span>{jobStatus === 'queued' ? 'Queued…' : 'Processing…'}</span>
+        <span>{etaText}</span>
+      </div>
+    </div>
+  );
+};
+
 // Debounce helper
 function debounce<T extends (...args: any[]) => any>(
   func: T,
@@ -422,6 +495,10 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [jobStatus, setJobStatus] = useState<JobStatus | null>(null);
   const [jobError, setJobError] = useState<string | null>(null);
   const [jobResult, setJobResult] = useState<ExtractionResponse | null>(null);
+  const [jobStartedAt, setJobStartedAt] = useState<number | null>(null);
+  const [jobExpectedDurationMs, setJobExpectedDurationMs] = useState<number | null>(null);
+  const [jobProgress, setJobProgress] = useState<number>(0);
+  const [jobEtaSeconds, setJobEtaSeconds] = useState<number | null>(null);
   const [backgroundProcessing, setBackgroundProcessing] = useState(false);
   const [theme, setTheme] = useState(loadThemePreference());
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
@@ -609,6 +686,11 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
       setJobId(data.jobId);
       setJobStatus('queued');
+      const expectedDuration = estimateJobDurationMs(text.length);
+      setJobStartedAt(Date.now());
+      setJobExpectedDurationMs(expectedDuration);
+      setJobProgress(0);
+      setJobEtaSeconds(null);
       setEntities([]);
       setRelations([]);
       setStats({ time: 0, confidence: 0, count: 0, relationCount: 0 });
@@ -617,6 +699,10 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       toast.error(`Failed to start job: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setJobId(null);
       setJobStatus(null);
+      setJobStartedAt(null);
+      setJobExpectedDurationMs(null);
+      setJobProgress(0);
+      setJobEtaSeconds(null);
     } finally {
       setBackgroundProcessing(false);
     }
@@ -864,13 +950,30 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
         setJobStatus(statusData.status);
 
+        if (statusData.status === 'queued' || statusData.status === 'running') {
+          if (jobStartedAt && jobExpectedDurationMs) {
+            const elapsed = Date.now() - jobStartedAt;
+            const rawProgress = elapsed / jobExpectedDurationMs;
+            const pct = Math.min(98, Math.max(5, Math.floor(rawProgress * 100)));
+            setJobProgress(pct);
+            const remainingMs = Math.max(0, jobExpectedDurationMs - elapsed);
+            setJobEtaSeconds(Math.round(remainingMs / 1000));
+          }
+        }
+
         if (statusData.status === 'failed') {
           setJobError(statusData.errorMessage || 'Job failed');
+          setJobProgress(0);
+          setJobEtaSeconds(null);
+          setJobStartedAt(null);
+          setJobExpectedDurationMs(null);
           clearInterval(interval);
           return;
         }
 
         if (statusData.status === 'done') {
+          setJobProgress(100);
+          setJobEtaSeconds(0);
           const resultRes = await fetch(`${apiUrl}/jobs/result?jobId=${jobId}`);
           const resultJson = await resultRes.json();
 
@@ -880,6 +983,12 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
           setJobResult(resultJson as ExtractionResponse);
           applyExtractionResults(resultJson as ExtractionResponse, text, resultJson?.stats?.extractionTime);
+          setTimeout(() => {
+            setJobProgress(0);
+            setJobEtaSeconds(null);
+            setJobStartedAt(null);
+            setJobExpectedDurationMs(null);
+          }, 3000);
           clearInterval(interval);
         }
       } catch (error) {
@@ -888,7 +997,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     }, JOB_POLL_INTERVAL_MS);
 
     return () => clearInterval(interval);
-  }, [jobId, jobStatus, applyExtractionResults, text]);
+  }, [jobId, jobStatus, applyExtractionResults, text, jobStartedAt, jobExpectedDurationMs]);
 
   // Entity handler: Change Type
   // Inserts tag: #Entity:TYPE or #[Multi Word]:TYPE
@@ -1063,16 +1172,21 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
             <span className="stat-badge processing">Processing...</span>
           ) : (
             <>
-              <span className="stat-badge">⏱️ {stats.time}ms</span>
-              <span className="stat-badge">🎯 {stats.confidence}% confidence</span>
-              <span className="stat-badge">📊 {stats.count} entities</span>
-              <span className="stat-badge">🔗 {stats.relationCount} relations</span>
-              {hasActiveJob && <span className="stat-badge processing">Job {jobStatus}</span>}
-              {jobStatus === 'done' && <span className="stat-badge">✅ Job done</span>}
-              {jobStatus === 'failed' && jobError && (
-                <span className="stat-badge" style={{ background: '#fee2e2', color: '#991b1b' }}>
-                  ❌ {jobError}
-                </span>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <span className="stat-badge">⏱️ {stats.time}ms</span>
+                <span className="stat-badge">🎯 {stats.confidence}% confidence</span>
+                <span className="stat-badge">📊 {stats.count} entities</span>
+                <span className="stat-badge">🔗 {stats.relationCount} relations</span>
+                {hasActiveJob && <span className="stat-badge processing">Job {jobStatus}</span>}
+                {jobStatus === 'done' && <span className="stat-badge">✅ Job done</span>}
+                {jobStatus === 'failed' && jobError && (
+                  <span className="stat-badge" style={{ background: '#fee2e2', color: '#991b1b' }}>
+                    ❌ {jobError}
+                  </span>
+                )}
+              </div>
+              {hasActiveJob && (
+                <JobProgressBar jobStatus={jobStatus} jobProgress={jobProgress} jobEtaSeconds={jobEtaSeconds} />
               )}
               <button
                 onClick={copyReport}
