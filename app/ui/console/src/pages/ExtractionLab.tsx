@@ -13,6 +13,7 @@ import { WikiModal } from '../components/WikiModal';
 import { isValidEntityType, type EntitySpan, type EntityType } from '../types/entities';
 import { initializeTheme, toggleTheme, loadThemePreference } from '../utils/darkMode';
 import '../styles/darkMode.css';
+import '../styles/extraction-lab.css';
 
 interface ExtractionLabProps {
   project: string;
@@ -547,6 +548,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [loadingDocuments, setLoadingDocuments] = useState(false);
   const [showDocumentSidebar, setShowDocumentSidebar] = useState(false);
   const [entityHighlightMode, setEntityHighlightMode] = useState(false);
+  const [warningMessage, setWarningMessage] = useState<string | null>(null);
   const [entityOverrides, setEntityOverrides] = useState<EntityOverrides>({
     rejectedSpans: new Set(),
     typeOverrides: {},
@@ -572,7 +574,18 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
   const requiresBackground = text.length > SYNC_EXTRACTION_CHAR_LIMIT;
   const hasActiveJob = jobStatus === 'queued' || jobStatus === 'running';
+  const isUpdating = processing && !requiresBackground && !hasActiveJob;
   const displayEntities = applyEntityOverrides(entities, entityOverrides, entityHighlightMode);
+
+  useEffect(() => {
+    if (!requiresBackground) {
+      return;
+    }
+
+    setWarningMessage('Text is very long. Extraction may be slower.');
+    const timeout = setTimeout(() => setWarningMessage(null), 6000);
+    return () => clearTimeout(timeout);
+  }, [requiresBackground]);
 
   const applyExtractionResults = useCallback(
     (data: ExtractionResponse, rawText: string, elapsedMs?: number) => {
@@ -1245,6 +1258,16 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     toast.success('Full ARES report copied! Includes entities AND relations.');
   };
 
+  const handleViewWiki = useCallback(
+    (entityName: string) => {
+      const entity = displayEntities.find((e) => e.text === entityName);
+      if (entity) {
+        setSelectedEntity({ name: entityName, type: entity.type });
+      }
+    },
+    [displayEntities]
+  );
+
   return (
     <div className="extraction-lab">
       {/* Header */}
@@ -1255,7 +1278,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           <span className="powered-badge">Powered by Full ARES Engine</span>
         </div>
         <div className="lab-stats">
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="lab-stats-row">
             <span className="stat-badge">⏱️ {stats.time}ms</span>
             <span className="stat-badge">🎯 {stats.confidence}% confidence</span>
             <span className="stat-badge">📊 {stats.count} entities</span>
@@ -1267,14 +1290,14 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                 ❌ {jobError}
               </span>
             )}
-            {processing && <span className="stat-badge processing">Updating…</span>}
+            {isUpdating && <span className="stat-badge processing">Updating…</span>}
           </div>
           {hasActiveJob && (
             <JobProgressBar jobStatus={jobStatus} jobProgress={jobProgress} jobEtaSeconds={jobEtaSeconds} />
           )}
           <button
             onClick={copyReport}
-            className="report-button"
+            className={`ares-btn ares-btn-secondary ${displayEntities.length === 0 ? 'ares-btn-muted' : ''}`}
             disabled={displayEntities.length === 0}
             title="Copy extraction report to clipboard"
           >
@@ -1290,35 +1313,23 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           </button>
           <button
             onClick={() => setEntityHighlightMode((v) => !v)}
-            className="entity-highlight-toggle"
+            className="ares-btn ares-btn-ghost ares-btn-pill"
             title="Toggle Entity Highlight Mode (edit entities without changing text)"
-            style={{ marginLeft: '8px' }}
           >
             {entityHighlightMode ? '🖍️ Entity Mode: ON' : '🖍️ Entity Mode: OFF'}
           </button>
           <button
             onClick={resetEntityOverrides}
-            className="entity-reset-button"
+            className="ares-btn ares-btn-ghost ares-btn-pill"
             type="button"
-            style={{
-              marginLeft: '8px',
-              padding: '4px 10px',
-              borderRadius: '4px',
-              border: '1px solid var(--border-color)',
-              background: 'var(--bg-tertiary)',
-              cursor: 'pointer',
-              fontSize: '13px',
-              whiteSpace: 'nowrap',
-            }}
             title="Clear entity overrides and return to raw engine output"
           >
             🔄 Reset entity edits
           </button>
           <button
             onClick={handleThemeToggle}
-            className="theme-toggle"
+            className="ares-btn ares-btn-ghost ares-btn-pill"
             title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-            style={{ marginLeft: '16px' }}
           >
             {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
           </button>
@@ -1413,15 +1424,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                     <button
                       onClick={startBackgroundJob}
                       disabled={backgroundProcessing || hasActiveJob || !text.trim()}
-                      style={{
-                        padding: '8px 12px',
-                        borderRadius: '8px',
-                        border: '1px solid var(--border-color)',
-                        background: hasActiveJob ? 'var(--bg-tertiary)' : '#1d4ed8',
-                        color: '#ffffff',
-                        cursor: backgroundProcessing || hasActiveJob || !text.trim() ? 'not-allowed' : 'pointer',
-                        fontWeight: 600,
-                      }}
+                      className="ares-btn ares-btn-primary"
                     >
                       {hasActiveJob
                         ? `Job ${jobStatus || ''}`
@@ -1466,30 +1469,14 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                   <button
                     type="button"
                     onClick={runExtractionNow}
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: '4px',
-                      border: '1px solid var(--border-color)',
-                      background: 'var(--bg-tertiary)',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      whiteSpace: 'nowrap',
-                    }}
                     title="Run extraction once using the current text"
+                    className="ares-btn ares-btn-secondary"
                   >
                     ▶️ Run extraction now
                   </button>
                   <button
                     onClick={() => setShowAdvancedControls(!showAdvancedControls)}
-                    style={{
-                      padding: '6px 12px',
-                      background: showAdvancedControls ? 'var(--bg-tertiary)' : 'transparent',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      color: 'var(--text-primary)',
-                    }}
+                    className="ares-btn ares-btn-secondary"
                     title="Toggle highlighting options"
                   >
                     ⚙️ {showAdvancedControls ? 'Hide' : 'Show'} Options
@@ -1497,29 +1484,13 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                   <button
                     onClick={handleSaveDocument}
                     disabled={saveStatus === 'saving' || !text.trim()}
-                    style={{
-                      padding: '6px 12px',
-                      background: '#0f766e',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: '4px',
-                      cursor: saveStatus === 'saving' || !text.trim() ? 'not-allowed' : 'pointer',
-                      fontSize: '14px',
-                      color: '#ffffff',
-                    }}
+                    className="ares-btn ares-btn-primary"
                   >
                     {saveStatus === 'saving' ? 'Saving…' : 'Save document'}
                   </button>
                   <button
                     onClick={() => setShowDocumentSidebar(!showDocumentSidebar)}
-                    style={{
-                      padding: '6px 12px',
-                      background: 'var(--bg-tertiary)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      color: 'var(--text-primary)',
-                    }}
+                    className="ares-btn ares-btn-secondary"
                     title="Browse saved documents"
                   >
                     {showDocumentSidebar ? 'Hide saved docs' : 'Show saved docs'}
@@ -1527,31 +1498,30 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                   <button
                     onClick={loadLastDocument}
                     disabled={loadingDocument}
-                    style={{
-                      padding: '6px 12px',
-                      background: 'var(--bg-tertiary)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: '4px',
-                      cursor: loadingDocument ? 'not-allowed' : 'pointer',
-                      fontSize: '14px',
-                      color: 'var(--text-primary)',
-                    }}
+                    className="ares-btn ares-btn-secondary"
                   >
                     {loadingDocument ? 'Loading…' : 'Load last document'}
                   </button>
                   {saveStatus === 'saved' && lastSavedId && (
                     <span style={{ fontSize: '13px', color: '#15803d' }}>Saved ✓</span>
                   )}
-                  {saveStatus === 'error' && (
-                    <span style={{ fontSize: '13px', color: '#b91c1c' }}>Save failed</span>
-                  )}
-                </div>
+                {saveStatus === 'error' && (
+                  <span style={{ fontSize: '13px', color: '#b91c1c' }}>Save failed</span>
+                )}
               </div>
+            </div>
 
-              {/* Advanced Controls - Hidden by default */}
-              {showAdvancedControls && (
-                <div style={{ marginTop: '12px', display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px' }}>
+            {warningMessage && (
+              <div className="ares-alert ares-alert-warn">
+                ⚠️ {warningMessage}
+                <span className="ares-alert-dismiss" onClick={() => setWarningMessage(null)}>✖</span>
+              </div>
+            )}
+
+            {/* Advanced Controls - Hidden by default */}
+            {showAdvancedControls && (
+              <div style={{ marginTop: '12px', display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px' }}>
                     <input
                       type="checkbox"
                       checked={showHighlighting}
@@ -1577,22 +1547,6 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                 </div>
               )}
             </div>
-            {requiresBackground && (
-              <div
-                style={{
-                  marginTop: '12px',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  border: '1px solid #fed7aa',
-                  background: '#fff7ed',
-                  color: '#9a3412',
-                  fontSize: '14px',
-                }}
-              >
-                Live extraction is paused for long text. Use the background extraction button above and keep this tab open while
-                the worker processes your job.
-              </div>
-            )}
             {/* Entity indicators on left + Editor on right */}
             <div className="editor-with-indicators-wrapper">
               {/* Entity indicators on left side */}
@@ -1623,6 +1577,14 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
             </div>
 
           </div>
+          <div className="entities-sidebar-desktop">
+            <EntityResultsPanel
+              entities={displayEntities}
+              relations={relations}
+              onViewWiki={handleViewWiki}
+              isUpdating={isUpdating}
+            />
+          </div>
         </div>
       </div>
 
@@ -1632,12 +1594,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           entities={displayEntities}
           relations={relations}
           onClose={() => setShowEntityModal(false)}
-          onViewWiki={(entityName) => {
-            const entity = displayEntities.find(e => e.text === entityName);
-            if (entity) {
-              setSelectedEntity({ name: entityName, type: entity.type });
-            }
-          }}
+          onViewWiki={handleViewWiki}
         />
       )}
 

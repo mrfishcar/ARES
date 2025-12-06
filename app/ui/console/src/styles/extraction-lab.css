@@ -1,0 +1,111 @@
+/* Base button */
+.ares-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.05s ease;
+  white-space: nowrap;
+}
+
+.ares-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Primary action (e.g. Start background extraction, Save document) */
+.ares-btn-primary {
+  background: #1d4ed8;
+  color: #ffffff;
+  border-color: #1d4ed8;
+}
+
+.ares-btn-primary:hover:not(:disabled) {
+  background: #1e40af;
+}
+
+/* Secondary / neutral button */
+.ares-btn-secondary {
+  background: var(--bg-tertiary);
+}
+
+.ares-btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Quiet / ghost button (low emphasis actions) */
+.ares-btn-ghost {
+  background: transparent;
+  border-color: transparent;
+}
+
+.ares-btn-ghost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Small pill-style badges/buttons in header (Entity mode, Reset, theme toggle) */
+.ares-btn-pill {
+  border-radius: 999px;
+  padding-inline: 10px;
+  font-size: 12px;
+}
+
+/* Copy report button when disabled */
+.ares-btn-muted {
+  opacity: 0.5;
+}
+
+/* Header stats container tweaks */
+.lab-stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.ares-alert {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  border: 1px solid transparent;
+}
+
+.ares-alert-info {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #bfdbfe;
+}
+
+.ares-alert-warn {
+  background: rgba(251, 146, 60, 0.12);
+  border-color: rgba(251, 146, 60, 0.4);
+  color: #fed7aa;
+}
+
+.ares-alert-danger {
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(248, 113, 113, 0.4);
+  color: #fecaca;
+}
+
+.ares-alert-dismiss {
+  margin-left: auto;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.ares-alert-dismiss:hover {
+  opacity: 1;
+}
