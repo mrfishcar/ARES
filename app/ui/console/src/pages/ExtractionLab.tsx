@@ -84,6 +84,19 @@ function debounce<T extends (...args: any[]) => any>(
   };
 }
 
+function resolveApiUrl() {
+  let apiUrl = import.meta.env.VITE_API_URL;
+  if (!apiUrl) {
+    const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+    if (hostname.includes('vercel.app')) {
+      apiUrl = 'https://ares-production-72ea.up.railway.app';
+    } else {
+      apiUrl = 'http://localhost:4000';
+    }
+  }
+  return apiUrl;
+}
+
 /**
  * Parse manual tags from raw text
  * Supports: #Entity:TYPE, #[Multi Word]:TYPE, Entity:ALIAS_OF_Canonical:TYPE, Entity:REJECT_ENTITY
@@ -610,13 +623,17 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   };
 
   const fetchDocumentById = useCallback(async (id: string): Promise<StoredDocument> => {
-    const res = await fetch(`/api/documents/${id}`);
+    const apiUrl = resolveApiUrl();
+    const res = await fetch(`${apiUrl}/api/documents/${id}`);
     if (!res.ok) {
       throw new Error(`Failed to fetch document ${id}`);
     }
     const json = await res.json();
     if (!json?.ok || !json.document) {
       throw new Error('Invalid document response');
+    }
+    if (typeof window !== 'undefined') {
+      (window as any).__ARES_DOC_ERROR_SHOWN__ = false;
     }
     return json.document;
   }, []);
@@ -658,8 +675,9 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
   const refreshDocumentList = useCallback(async () => {
     setLoadingDocuments(true);
+    const apiUrl = resolveApiUrl();
     try {
-      const listRes = await fetch('/api/documents');
+      const listRes = await fetch(`${apiUrl}/api/documents`);
       if (!listRes.ok) {
         throw new Error('Failed to list documents');
       }
@@ -681,9 +699,18 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       );
       setDocumentList(sorted);
+      if (typeof window !== 'undefined') {
+        (window as any).__ARES_DOC_ERROR_SHOWN__ = false;
+      }
     } catch (error) {
       console.error('[ExtractionLab] Failed to refresh document list', error);
-      toast.error('Failed to load saved documents');
+      if (
+        typeof window !== 'undefined' &&
+        !(window as any).__ARES_DOC_ERROR_SHOWN__
+      ) {
+        toast.error('Failed to load saved documents');
+        (window as any).__ARES_DOC_ERROR_SHOWN__ = true;
+      }
     } finally {
       setLoadingDocuments(false);
     }
@@ -708,10 +735,19 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       try {
         const document = await fetchDocumentById(id);
         applyDocumentToState(document);
+        if (typeof window !== 'undefined') {
+          (window as any).__ARES_DOC_ERROR_SHOWN__ = false;
+        }
         setShowDocumentSidebar(false);
       } catch (error) {
         console.error('[ExtractionLab] Failed to load document', error);
-        toast.error('Failed to load document');
+        if (
+          typeof window !== 'undefined' &&
+          !(window as any).__ARES_DOC_ERROR_SHOWN__
+        ) {
+          toast.error('Failed to load saved documents');
+          (window as any).__ARES_DOC_ERROR_SHOWN__ = true;
+        }
       } finally {
         setLoadingDocument(false);
       }
@@ -734,7 +770,8 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         extraction: { entities, relations, stats },
       };
 
-      const response = await fetch('/api/documents', {
+      const apiUrl = resolveApiUrl();
+      const response = await fetch(`${apiUrl}/api/documents`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -769,7 +806,8 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       let targetId: string | null = lastSavedId;
 
       if (!targetId) {
-        const listRes = await fetch('/api/documents');
+        const apiUrl = resolveApiUrl();
+        const listRes = await fetch(`${apiUrl}/api/documents`);
         if (!listRes.ok) {
           throw new Error('Failed to list documents');
         }
