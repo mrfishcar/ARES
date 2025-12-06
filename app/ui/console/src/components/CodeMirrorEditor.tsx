@@ -1012,7 +1012,8 @@ export function CodeMirrorEditor({
   onChangeType,
   onCreateNew,
   onReject,
-  onTagEntity
+  onTagEntity,
+  entityHighlightMode = false
 }: CodeMirrorEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
@@ -1022,12 +1023,42 @@ export function CodeMirrorEditor({
   const renderMarkdownRef = useRef<boolean>(renderMarkdown);
   const disableHighlightingRef = useRef<boolean>(disableHighlighting);
   const highlightOpacityRef = useRef<number>(highlightOpacity);
+  const entityHighlightModeRef = useRef<boolean>(entityHighlightMode);
 
   // Context menu state
   const [contextMenu, setContextMenu] = useState<{
     position: { x: number; y: number };
     entity: EntitySpan;
   } | null>(null);
+
+  const createEntityFromSelection = useCallback(() => {
+    const view = viewRef.current;
+    if (!view || !entityHighlightModeRef.current || !onCreateNew) return;
+
+    const selection = view.state.selection.main;
+    if (selection.empty) return;
+
+    const start = selection.from;
+    const end = selection.to;
+    const selectedText = view.state.doc.sliceString(start, end).trim();
+    if (!selectedText) return;
+
+    const rawType = window.prompt('Enter entity type (e.g. PERSON, PLACE, ITEM):');
+    if (!rawType) return;
+
+    const type = rawType.trim().toUpperCase();
+    const entitySpan: EntitySpan = {
+      start,
+      end,
+      text: selectedText,
+      displayText: selectedText,
+      type: type as EntityType,
+      confidence: 1.0,
+      source: 'manual'
+    };
+
+    onCreateNew(entitySpan, type as EntityType);
+  }, [onCreateNew]);
 
   // Apply dynamic scrollbar colors based on theme
   useEffect(() => {
@@ -1119,6 +1150,10 @@ export function CodeMirrorEditor({
     }
   }, [highlightOpacity]);
 
+  useEffect(() => {
+    entityHighlightModeRef.current = entityHighlightMode;
+  }, [entityHighlightMode]);
+
   // Watch for theme changes and rebuild entity decorations
   useEffect(() => {
     const observer = new MutationObserver(() => {
@@ -1146,7 +1181,17 @@ export function CodeMirrorEditor({
     const state = EditorState.create({
       doc: value,
       extensions: [
-        keymap.of(defaultKeymap),
+        keymap.of([
+          {
+            key: 'Mod-e',
+            run: () => {
+              if (!entityHighlightModeRef.current) return false;
+              createEntityFromSelection();
+              return true;
+            }
+          },
+          ...defaultKeymap
+        ]),
         markdown(),
         // Enable live markdown syntax highlighting with custom markdown styles
         syntaxHighlighting(markdownHighlightStyle),
@@ -1201,6 +1246,14 @@ export function CodeMirrorEditor({
     if (!contextMenu) return;
     const entity = contextMenu.entity;
 
+    if (entityHighlightMode) {
+      setContextMenu(null);
+      if (onChangeType) {
+        await onChangeType(entity, newType);
+      }
+      return;
+    }
+
     const tag = entity.text.includes(' ')
       ? `#[${entity.text}]:${newType}`
       : `#${entity.text}:${newType}`;
@@ -1233,6 +1286,14 @@ export function CodeMirrorEditor({
     if (!contextMenu) return;
     const entity = contextMenu.entity;
 
+    if (entityHighlightMode) {
+      setContextMenu(null);
+      if (onCreateNew) {
+        await onCreateNew(entity, type);
+      }
+      return;
+    }
+
     const tag = entity.text.includes(' ')
       ? `#[${entity.text}]:${type}`
       : `#${entity.text}:${type}`;
@@ -1264,6 +1325,14 @@ export function CodeMirrorEditor({
   const handleReject = async () => {
     if (!contextMenu) return;
     const entity = contextMenu.entity;
+
+    if (entityHighlightMode) {
+      setContextMenu(null);
+      if (onReject) {
+        await onReject(entity);
+      }
+      return;
+    }
 
     // Use brackets for multi-word entities, plain syntax for single words
     const rejectTag = entity.text.includes(' ')
@@ -1317,6 +1386,17 @@ export function CodeMirrorEditor({
           scrollbarColor: '#E8A87C #FFEFD5',
           scrollbarWidth: 'thin'
         } as React.CSSProperties}
+        onContextMenu={(e) => {
+          const view = viewRef.current;
+          if (entityHighlightModeRef.current && view) {
+            const sel = view.state.selection.main;
+            if (!sel.empty) {
+              e.preventDefault();
+              createEntityFromSelection();
+              return;
+            }
+          }
+        }}
       />
 
       {contextMenu && (
