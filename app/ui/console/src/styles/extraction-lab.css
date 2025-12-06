@@ -63,6 +63,66 @@
   opacity: 0.5;
 }
 
+.lab-button {
+  border-radius: 8px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-color);
+  font-size: 14px;
+  cursor: pointer;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.2;
+}
+
+.lab-button.primary {
+  background: #1d4ed8;
+  color: #ffffff;
+  border-color: #1d4ed8;
+}
+
+.lab-button.secondary {
+  background: var(--bg-tertiary);
+}
+
+.lab-button:disabled,
+.lab-button.primary:disabled,
+.lab-button.secondary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.theme-toggle {
+  border-radius: 999px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
+  font-size: 16px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.sr-only {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+.powered-badge {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
 /* Header stats container tweaks */
 .lab-stats-row {
   display: flex;
