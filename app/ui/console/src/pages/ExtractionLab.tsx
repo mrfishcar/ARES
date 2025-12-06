@@ -35,6 +35,13 @@ type JobStatus = 'queued' | 'running' | 'done' | 'failed';
 
 type SpanKey = string;
 
+interface ExtractionStats {
+  time: number;
+  confidence: number;
+  count: number;
+  relationCount: number;
+}
+
 function makeSpanKey(e: EntitySpan): SpanKey {
   return `${e.start}:${e.end}:${e.text}`;
 }
@@ -156,6 +163,10 @@ const JobProgressBar = ({ jobStatus, jobProgress, jobEtaSeconds }: JobProgressBa
     </div>
   );
 };
+
+const StatBadge = ({ label }: { label: string }) => (
+  <span className="stat-badge">{label}</span>
+);
 
 // Debounce helper
 function debounce<T extends (...args: any[]) => any>(
@@ -523,7 +534,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [entities, setEntities] = useState<EntitySpan[]>([]);
   const [relations, setRelations] = useState<Relation[]>([]);
   const [processing, setProcessing] = useState(false);
-  const [stats, setStats] = useState({ time: 0, confidence: 0, count: 0, relationCount: 0 });
+  const [stats, setStats] = useState<ExtractionStats>({ time: 0, confidence: 0, count: 0, relationCount: 0 });
   const [selectedEntity, setSelectedEntity] = useState<SelectedEntityState | null>(null);
   const [showHighlighting, setShowHighlighting] = useState(true);
   const [highlightOpacity, setHighlightOpacity] = useState(1.0);
@@ -548,7 +559,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [loadingDocuments, setLoadingDocuments] = useState(false);
   const [showDocumentSidebar, setShowDocumentSidebar] = useState(false);
   const [entityHighlightMode, setEntityHighlightMode] = useState(false);
-  const [warningMessage, setWarningMessage] = useState<string | null>(null);
+  const [showLongTextNotice, setShowLongTextNotice] = useState(true);
   const [entityOverrides, setEntityOverrides] = useState<EntityOverrides>({
     rejectedSpans: new Set(),
     typeOverrides: {},
@@ -576,16 +587,34 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const hasActiveJob = jobStatus === 'queued' || jobStatus === 'running';
   const isUpdating = processing && !requiresBackground && !hasActiveJob;
   const displayEntities = applyEntityOverrides(entities, entityOverrides, entityHighlightMode);
+  const heavyLongTextMode = requiresBackground && hasActiveJob;
+  const hasReport = stats.count > 0 || stats.relationCount > 0;
+  const jobStatusLabel =
+    jobStatus === 'running'
+      ? 'Job running'
+      : jobStatus === 'queued'
+        ? 'Queued'
+        : jobStatus === 'failed'
+          ? 'Failed'
+          : jobStatus === 'done'
+            ? 'Done'
+            : 'Idle';
 
   useEffect(() => {
     if (!requiresBackground) {
       return;
     }
 
-    setWarningMessage('Text is very long. Extraction may be slower.');
-    const timeout = setTimeout(() => setWarningMessage(null), 6000);
-    return () => clearTimeout(timeout);
-  }, [requiresBackground]);
+    setShowLongTextNotice(true);
+
+    try {
+      toast?.info?.(
+        'Text is long. Live extraction is paused; use background extraction for best performance.'
+      );
+    } catch (error) {
+      console.debug('[ExtractionLab] Long text toast skipped', error);
+    }
+  }, [requiresBackground, toast]);
 
   const applyExtractionResults = useCallback(
     (data: ExtractionResponse, rawText: string, elapsedMs?: number) => {
@@ -1271,68 +1300,107 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   return (
     <div className="extraction-lab">
       {/* Header */}
-      <div className="lab-header">
+      <div
+        className="lab-header"
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '12px 24px 20px 24px',
+          minHeight: '90px',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+        }}
+      >
         <div className="lab-title">
           <span className="lab-icon">🧪</span>
           <h1>ARES Extraction Lab</h1>
           <span className="powered-badge">Powered by Full ARES Engine</span>
         </div>
-        <div className="lab-stats">
-          <div className="lab-stats-row">
-            <span className="stat-badge">⏱️ {stats.time}ms</span>
-            <span className="stat-badge">🎯 {stats.confidence}% confidence</span>
-            <span className="stat-badge">📊 {stats.count} entities</span>
-            <span className="stat-badge">🔗 {stats.relationCount} relations</span>
-            {hasActiveJob && <span className="stat-badge processing">Job {jobStatus}</span>}
-            {jobStatus === 'done' && <span className="stat-badge">✅ Job done</span>}
-            {jobStatus === 'failed' && jobError && (
-              <span className="stat-badge" style={{ background: '#fee2e2', color: '#991b1b' }}>
-                ❌ {jobError}
-              </span>
-            )}
-            {isUpdating && <span className="stat-badge processing">Updating…</span>}
+        <div className="lab-header-right">
+          <div className="lab-header-stats">
+            <StatBadge label={`⏱️ ${stats.time}ms`} />
+            <StatBadge label={`🎯 ${Math.round(stats.confidence)}% confidence`} />
+            <StatBadge label={`📊 ${stats.count} entities`} />
+            <StatBadge label={`🔗 ${stats.relationCount} relations`} />
           </div>
-          {hasActiveJob && (
-            <JobProgressBar jobStatus={jobStatus} jobProgress={jobProgress} jobEtaSeconds={jobEtaSeconds} />
-          )}
-          <button
-            onClick={copyReport}
-            className={`ares-btn ares-btn-secondary ${displayEntities.length === 0 ? 'ares-btn-muted' : ''}`}
-            disabled={displayEntities.length === 0}
-            title="Copy extraction report to clipboard"
-          >
-            📋 Copy Report
-          </button>
-          <button
-            onClick={() => setShowEntityModal(true)}
-            className="entities-button"
-            disabled={displayEntities.length === 0}
-            title="View extracted entities and relations"
-          >
-            📊 {displayEntities.length}
-          </button>
-          <button
-            onClick={() => setEntityHighlightMode((v) => !v)}
-            className="ares-btn ares-btn-ghost ares-btn-pill"
-            title="Toggle Entity Highlight Mode (edit entities without changing text)"
-          >
-            {entityHighlightMode ? '🖍️ Entity Mode: ON' : '🖍️ Entity Mode: OFF'}
-          </button>
-          <button
-            onClick={resetEntityOverrides}
-            className="ares-btn ares-btn-ghost ares-btn-pill"
-            type="button"
-            title="Clear entity overrides and return to raw engine output"
-          >
-            🔄 Reset entity edits
-          </button>
-          <button
-            onClick={handleThemeToggle}
-            className="ares-btn ares-btn-ghost ares-btn-pill"
-            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-          >
-            {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
-          </button>
+          <div className="lab-header-status-row">
+            <div
+              className="job-status-pill"
+              style={{
+                minWidth: '110px',
+                padding: '6px 12px',
+                borderRadius: '20px',
+                textAlign: 'center',
+                fontSize: 13,
+                background:
+                  jobStatus === 'running'
+                    ? 'rgba(34,197,94,0.2)'
+                    : jobStatus === 'failed'
+                      ? 'rgba(239,68,68,0.2)'
+                      : 'rgba(255,255,255,0.05)',
+                color:
+                  jobStatus === 'running'
+                    ? '#4ade80'
+                    : jobStatus === 'failed'
+                      ? '#f87171'
+                      : 'var(--text-secondary)',
+              }}
+            >
+              {jobStatusLabel}
+            </div>
+            <div className="lab-header-progress-row">
+              {hasActiveJob ? (
+                <JobProgressBar jobStatus={jobStatus} jobProgress={jobProgress} jobEtaSeconds={jobEtaSeconds} />
+              ) : (
+                <div className="progress-placeholder" aria-hidden />
+              )}
+            </div>
+            <button
+              disabled={!hasReport}
+              onClick={copyReport}
+              className="report-button"
+              type="button"
+              title="Copy extraction report"
+            >
+              📋 Copy report
+            </button>
+          </div>
+          <div className="lab-header-controls-row">
+            <button
+              onClick={() => setShowEntityModal(true)}
+              className="entities-button"
+              disabled={displayEntities.length === 0}
+              title="View extracted entities and relations"
+              type="button"
+            >
+              📊 {displayEntities.length}
+            </button>
+            <button
+              onClick={() => setEntityHighlightMode((v) => !v)}
+              className="ares-btn ares-btn-ghost ares-btn-pill"
+              title="Toggle Entity Highlight Mode (edit entities without changing text)"
+              type="button"
+            >
+              {entityHighlightMode ? '🖍️ Entity Mode: ON' : '🖍️ Entity Mode: OFF'}
+            </button>
+            <button
+              onClick={resetEntityOverrides}
+              className="ares-btn ares-btn-ghost ares-btn-pill"
+              type="button"
+              title="Clear entity overrides and return to raw engine output"
+            >
+              🔄 Reset entity edits
+            </button>
+            <button
+              onClick={handleThemeToggle}
+              className="theme-toggle"
+              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              type="button"
+            >
+              {theme === 'dark' ? '☀️' : '🌙'}
+              <span className="sr-only">{theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1424,7 +1492,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                     <button
                       onClick={startBackgroundJob}
                       disabled={backgroundProcessing || hasActiveJob || !text.trim()}
-                      className="ares-btn ares-btn-primary"
+                      className="lab-button primary"
                     >
                       {hasActiveJob
                         ? `Job ${jobStatus || ''}`
@@ -1470,13 +1538,13 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                     type="button"
                     onClick={runExtractionNow}
                     title="Run extraction once using the current text"
-                    className="ares-btn ares-btn-secondary"
+                    className="lab-button secondary"
                   >
                     ▶️ Run extraction now
                   </button>
                   <button
                     onClick={() => setShowAdvancedControls(!showAdvancedControls)}
-                    className="ares-btn ares-btn-secondary"
+                    className="lab-button secondary"
                     title="Toggle highlighting options"
                   >
                     ⚙️ {showAdvancedControls ? 'Hide' : 'Show'} Options
@@ -1484,13 +1552,13 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                   <button
                     onClick={handleSaveDocument}
                     disabled={saveStatus === 'saving' || !text.trim()}
-                    className="ares-btn ares-btn-primary"
+                    className="lab-button primary"
                   >
                     {saveStatus === 'saving' ? 'Saving…' : 'Save document'}
                   </button>
                   <button
                     onClick={() => setShowDocumentSidebar(!showDocumentSidebar)}
-                    className="ares-btn ares-btn-secondary"
+                    className="lab-button secondary"
                     title="Browse saved documents"
                   >
                     {showDocumentSidebar ? 'Hide saved docs' : 'Show saved docs'}
@@ -1498,7 +1566,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                   <button
                     onClick={loadLastDocument}
                     disabled={loadingDocument}
-                    className="ares-btn ares-btn-secondary"
+                    className="lab-button secondary"
                   >
                     {loadingDocument ? 'Loading…' : 'Load last document'}
                   </button>
@@ -1511,10 +1579,42 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
               </div>
             </div>
 
-            {warningMessage && (
-              <div className="ares-alert ares-alert-warn">
-                ⚠️ {warningMessage}
-                <span className="ares-alert-dismiss" onClick={() => setWarningMessage(null)}>✖</span>
+            {requiresBackground && showLongTextNotice && (
+              <div
+                style={{
+                  marginTop: '8px',
+                  padding: '8px 10px',
+                  borderRadius: '999px',
+                  border: '1px solid rgba(251, 191, 36, 0.25)',
+                  background: 'rgba(251, 191, 36, 0.08)',
+                  color: 'var(--text-secondary)',
+                  fontSize: '12px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                }}
+              >
+                <span role="img" aria-label="info">
+                  ⚠️
+                </span>
+                <span>
+                  Live extraction is paused for very long texts. Use <strong>Start background extraction</strong> and
+                  keep this tab open while the worker runs.
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowLongTextNotice(false)}
+                  style={{
+                    marginLeft: '4px',
+                    border: 'none',
+                    background: 'transparent',
+                    color: 'var(--text-secondary)',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Dismiss
+                </button>
               </div>
             )}
 
@@ -1551,7 +1651,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
             <div className="editor-with-indicators-wrapper">
               {/* Entity indicators on left side */}
               <EntityIndicators
-                entities={displayEntities}
+                entities={heavyLongTextMode ? [] : displayEntities}
                 text={text}
                 editorHeight={Math.max(400, window.innerHeight - 380)}
               />
@@ -1561,11 +1661,11 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                   value={text}
                   onChange={(newText) => setText(newText)}
                   minHeight="calc(100vh - 380px)"
-                  disableHighlighting={!showHighlighting}
+                  disableHighlighting={!showHighlighting || heavyLongTextMode}
                   highlightOpacity={highlightOpacity}
                   enableWYSIWYG={false}
                   renderMarkdown={renderMarkdown}
-                  entities={displayEntities}
+                  entities={heavyLongTextMode ? [] : displayEntities}
                   projectId={project}
                   onReject={handleReject}
                   onChangeType={handleChangeType}
@@ -1577,14 +1677,17 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
             </div>
 
           </div>
-          <div className="entities-sidebar-desktop">
-            <EntityResultsPanel
-              entities={displayEntities}
-              relations={relations}
-              onViewWiki={handleViewWiki}
-              isUpdating={isUpdating}
-            />
-          </div>
+        </div>
+
+        <div className="results-wrapper entities-sidebar-desktop">
+          <EntityResultsPanel
+            entities={displayEntities}
+            relations={relations}
+            onViewWiki={handleViewWiki}
+            isUpdating={isUpdating}
+            stats={stats}
+            onCopyReport={copyReport}
+          />
         </div>
       </div>
 

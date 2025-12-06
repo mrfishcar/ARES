@@ -24,6 +24,13 @@ interface EntityResultsPanelProps {
   relations?: Relation[];
   onViewWiki: (entityName: string) => void;
   isUpdating?: boolean;
+  stats: {
+    time: number;
+    confidence: number;
+    count: number;
+    relationCount: number;
+  };
+  onCopyReport: () => void;
 }
 
 interface EntityGroup {
@@ -43,9 +50,18 @@ const ENTITY_TYPE_CONFIG = {
   OBJECT: { label: 'Objects', emoji: '🎁', color: '#D89BAA' },
 };
 
-export function EntityResultsPanel({ entities, relations = [], onViewWiki, isUpdating }: EntityResultsPanelProps) {
+export function EntityResultsPanel({
+  entities,
+  relations = [],
+  onViewWiki,
+  isUpdating,
+  stats,
+  onCopyReport,
+}: EntityResultsPanelProps) {
   const [draggedEntity, setDraggedEntity] = useState<EntitySpan | null>(null);
   const [dropTarget, setDropTarget] = useState<string | null>(null);
+
+  const hasReport = stats.count > 0 || stats.relationCount > 0;
 
   // Group entities by type
   const groups: EntityGroup[] = Object.entries(
@@ -129,18 +145,35 @@ export function EntityResultsPanel({ entities, relations = [], onViewWiki, isUpd
     return acc;
   }, {} as Record<string, Relation[]>);
 
-  return (
-    <div className="results-panel" style={{ position: 'relative' }}>
-      {/* Neon Planet Universe Icon */}
-      <div className="universe-section">
-        <NeonPlanet />
-        <h2 className="universe-title">Your Universe</h2>
-        <p className="universe-subtitle">
-          {entities.length === 0
-            ? 'Start writing to discover entities...'
-            : `${entities.length} ${entities.length === 1 ? 'entity' : 'entities'} • ${relations.length} ${relations.length === 1 ? 'relation' : 'relations'}`}
-        </p>
-      </div>
+    return (
+      <div className="results-panel results-card">
+        {/* Neon Planet Universe Icon */}
+        <div className="universe-section">
+          <NeonPlanet />
+          <h2 className="universe-title">Your Universe</h2>
+          <p className="universe-subtitle">
+            {entities.length === 0
+              ? 'Start writing to discover entities...'
+              : `${entities.length} ${entities.length === 1 ? 'entity' : 'entities'} • ${relations.length} ${relations.length === 1 ? 'relation' : 'relations'}`}
+          </p>
+          <div className="sidebar-snapshot">
+            <div className="snapshot-badges">
+              <span className="snapshot-badge">⏱️ {stats.time}ms</span>
+              <span className="snapshot-badge">🎯 {stats.confidence}%</span>
+              <span className="snapshot-badge">📊 {stats.count}</span>
+              <span className="snapshot-badge">🔗 {stats.relationCount}</span>
+            </div>
+            <button
+              type="button"
+              className="lab-button secondary"
+              onClick={onCopyReport}
+              disabled={!hasReport}
+              title="Copy extraction report"
+            >
+              📋 Copy report
+            </button>
+          </div>
+        </div>
 
       {/* Entity Groups */}
       {groups.length === 0 ? (
