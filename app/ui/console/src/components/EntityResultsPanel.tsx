@@ -23,6 +23,7 @@ interface EntityResultsPanelProps {
   entities: EntitySpan[];
   relations?: Relation[];
   onViewWiki: (entityName: string) => void;
+  isUpdating?: boolean;
 }
 
 interface EntityGroup {
@@ -42,7 +43,7 @@ const ENTITY_TYPE_CONFIG = {
   OBJECT: { label: 'Objects', emoji: '🎁', color: '#D89BAA' },
 };
 
-export function EntityResultsPanel({ entities, relations = [], onViewWiki }: EntityResultsPanelProps) {
+export function EntityResultsPanel({ entities, relations = [], onViewWiki, isUpdating }: EntityResultsPanelProps) {
   const [draggedEntity, setDraggedEntity] = useState<EntitySpan | null>(null);
   const [dropTarget, setDropTarget] = useState<string | null>(null);
 
@@ -129,7 +130,7 @@ export function EntityResultsPanel({ entities, relations = [], onViewWiki }: Ent
   }, {} as Record<string, Relation[]>);
 
   return (
-    <div className="results-panel">
+    <div className="results-panel" style={{ position: 'relative' }}>
       {/* Neon Planet Universe Icon */}
       <div className="universe-section">
         <NeonPlanet />
@@ -220,6 +221,26 @@ export function EntityResultsPanel({ entities, relations = [], onViewWiki }: Ent
             </div>
           )}
         </>
+      )}
+
+      {isUpdating && (
+        <div
+          className="entity-results-overlay"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.12)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            pointerEvents: 'none',
+            fontSize: 13,
+            color: 'var(--text-secondary)',
+            backdropFilter: 'blur(2px)',
+          }}
+        >
+          <span>Updating…</span>
+        </div>
       )}
     </div>
   );
