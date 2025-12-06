@@ -1035,12 +1035,13 @@ export function CodeMirrorEditor({
     const view = viewRef.current;
     if (!view || !entityHighlightModeRef.current || !onCreateNew) return;
 
-    const selection = view.state.selection.main;
+    const state = view.state;
+    const selection = state.selection.main;
     if (selection.empty) return;
 
     const start = selection.from;
     const end = selection.to;
-    const selectedText = view.state.doc.sliceString(start, end).trim();
+    const selectedText = state.doc.sliceString(start, end).trim();
     if (!selectedText) return;
 
     const rawType = window.prompt('Enter entity type (e.g. PERSON, PLACE, ITEM):');

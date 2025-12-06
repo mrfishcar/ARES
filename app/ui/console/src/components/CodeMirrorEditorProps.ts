@@ -16,7 +16,7 @@ export interface CodeMirrorEditorProps {
   documentMetadata?: DocumentEntityMetadata;
   onChangeType?: (entity: EntitySpan, type: EntityType) => Promise<void>;
   onTagEntity?: (entity: EntitySpan, targetEntity: EntitySpan) => Promise<void>;
-  onCreateNew?: (entity: EntitySpan, type: EntityType) => Promise<void>;
+  onCreateNew?: (entity: EntitySpan, type: EntityType) => void | Promise<void>;
   onReject?: (entity: EntitySpan) => Promise<void>;
   entityHighlightMode?: boolean;
 }
