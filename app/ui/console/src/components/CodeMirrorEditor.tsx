@@ -193,21 +193,65 @@ function entityHighlighterExtension(
   _getEntityHighlightMode: () => boolean
 ) {
   // Fixed buffer - not too large, not too small
-  const VIEWPORT_BUFFER = 1000;
+  const VIEWPORT_BUFFER = 2000;
   // Hard limit on decorations to prevent performance issues
-  const MAX_DECORATIONS = 150;
+  const MAX_DECORATIONS = 120;
+  const SCROLL_VELOCITY_THRESHOLD = 2.5; // px per ms
+  const SCROLL_REST_DELAY = 180; // ms
 
-  return ViewPlugin.fromClass(class {
+  class EntityHighlightPlugin {
     decorations: DecorationSet;
+    private suspended: boolean;
+    private suspendedUntil: number;
+    private lastScrollTop: number;
+    private lastScrollTime: number;
 
     constructor(readonly view: EditorView) {
+      this.decorations = Decoration.none;
+      this.suspended = false;
+      this.suspendedUntil = 0;
+      this.lastScrollTop = view.scrollDOM.scrollTop;
+      this.lastScrollTime = performance.now();
       this.decorations = this.buildDecorations();
     }
 
     update(update: ViewUpdate) {
-      // Rebuild on any change - simple and reliable
+      const now = performance.now();
+
+      // Resume highlighting after rest period
+      if (this.suspended && now >= this.suspendedUntil) {
+        this.suspended = false;
+      }
+
+      if (this.suspended) {
+        // Drop decorations immediately while suspended
+        this.decorations = Decoration.none;
+        return;
+      }
+
+      // Rebuild on any change - scoped to viewport only
       if (update.docChanged || update.viewportChanged || update.transactions.length > 0) {
         this.decorations = this.buildDecorations();
+      }
+    }
+
+    handleScroll(event: Event) {
+      const target = event.target as HTMLElement | null;
+      if (!target) return;
+
+      const now = performance.now();
+      const currentTop = target.scrollTop;
+      const delta = Math.abs(currentTop - this.lastScrollTop);
+      const dt = Math.max(1, now - this.lastScrollTime);
+      const velocity = delta / dt; // px per ms
+
+      this.lastScrollTop = currentTop;
+      this.lastScrollTime = now;
+
+      if (velocity > SCROLL_VELOCITY_THRESHOLD) {
+        this.suspended = true;
+        this.suspendedUntil = now + SCROLL_REST_DELAY;
+        this.decorations = Decoration.none;
       }
     }
 
@@ -223,17 +267,14 @@ function entityHighlighterExtension(
           return Decoration.none;
         }
 
-        const { from: viewFrom, to: viewTo } = this.view.viewport;
+        const ranges = this.view.visibleRanges;
         const docLength = this.view.state.doc.length;
-
-        // Defensive: ensure valid document
-        if (docLength === 0) {
+        if (docLength === 0 || ranges.length === 0) {
           return Decoration.none;
         }
 
-        // Calculate window with buffer, clamped to document bounds
-        const windowFrom = Math.max(0, viewFrom - VIEWPORT_BUFFER);
-        const windowTo = Math.min(docLength, viewTo + VIEWPORT_BUFFER);
+        const windowFrom = Math.max(0, ranges[0].from - VIEWPORT_BUFFER);
+        const windowTo = Math.min(docLength, ranges[ranges.length - 1].to + VIEWPORT_BUFFER);
 
         // Get entities in range using binary search
         const visibleEntities = getEntitiesInRange(entities, windowFrom, windowTo);
@@ -310,8 +351,16 @@ function entityHighlighterExtension(
     destroy() {
       // Nothing to clean up
     }
-  }, {
-    decorations: plugin => plugin.decorations
+  }
+
+  return ViewPlugin.fromClass(EntityHighlightPlugin, {
+    decorations: plugin => plugin.decorations,
+    eventHandlers: {
+      scroll(event, view) {
+        const plugin = view.plugin(EntityHighlightPlugin);
+        plugin?.handleScroll(event);
+      }
+    }
   });
 }
 
