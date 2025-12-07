@@ -559,7 +559,6 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [loadingDocuments, setLoadingDocuments] = useState(false);
   const [showDocumentSidebar, setShowDocumentSidebar] = useState(false);
   const [entityHighlightMode, setEntityHighlightMode] = useState(false);
-  const [showLongTextNotice, setShowLongTextNotice] = useState(true);
   const [entityOverrides, setEntityOverrides] = useState<EntityOverrides>({
     rejectedSpans: new Set(),
     typeOverrides: {},
@@ -604,8 +603,6 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     if (!requiresBackground) {
       return;
     }
-
-    setShowLongTextNotice(true);
 
     try {
       toast?.info?.(
@@ -1241,6 +1238,11 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
   // Generate and copy test report
   const copyReport = () => {
+    if (!text.trim() || (entities.length === 0 && relations.length === 0)) {
+      toast.error('Nothing to report yet – run an extraction first.');
+      return;
+    }
+
     const report = {
       timestamp: new Date().toISOString(),
       engineVersion: 'ARES Full Engine (orchestrator.ts)',
@@ -1514,6 +1516,18 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                       </span>
                     )}
                   </div>
+                  {requiresBackground && !hasActiveJob && (
+                    <p
+                      style={{
+                        marginTop: '6px',
+                        fontSize: '12px',
+                        color: 'var(--text-secondary)',
+                      }}
+                    >
+                      Long text detected. Live extraction is paused to keep things fast — use “Start background extraction” to run the
+                      full engine in the background.
+                    </p>
+                  )}
                 </div>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px' }}>
@@ -1579,45 +1593,6 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
               </div>
             </div>
 
-            {requiresBackground && showLongTextNotice && (
-              <div
-                style={{
-                  marginTop: '8px',
-                  padding: '8px 10px',
-                  borderRadius: '999px',
-                  border: '1px solid rgba(251, 191, 36, 0.25)',
-                  background: 'rgba(251, 191, 36, 0.08)',
-                  color: 'var(--text-secondary)',
-                  fontSize: '12px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 8,
-                }}
-              >
-                <span role="img" aria-label="info">
-                  ⚠️
-                </span>
-                <span>
-                  Live extraction is paused for very long texts. Use <strong>Start background extraction</strong> and
-                  keep this tab open while the worker runs.
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setShowLongTextNotice(false)}
-                  style={{
-                    marginLeft: '4px',
-                    border: 'none',
-                    background: 'transparent',
-                    color: 'var(--text-secondary)',
-                    fontSize: '12px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Dismiss
-                </button>
-              </div>
-            )}
-
             {/* Advanced Controls - Hidden by default */}
             {showAdvancedControls && (
               <div style={{ marginTop: '12px', display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -1661,7 +1636,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                   value={text}
                   onChange={(newText) => setText(newText)}
                   minHeight="calc(100vh - 380px)"
-                  disableHighlighting={!showHighlighting || heavyLongTextMode}
+                  disableHighlighting={!showHighlighting || requiresBackground}
                   highlightOpacity={highlightOpacity}
                   enableWYSIWYG={false}
                   renderMarkdown={renderMarkdown}
