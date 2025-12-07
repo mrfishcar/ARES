@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { CodeMirrorEditor } from '../components/CodeMirrorEditor';
+import { VirtualizedExtractionEditor } from '../components/VirtualizedExtractionEditor';
 import { EntityResultsPanel } from '../components/EntityResultsPanel';
 import { EntityIndicators } from '../components/EntityIndicators';
 import { EntityModal } from '../components/EntityModal';
@@ -1632,21 +1632,18 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
               />
               {/* Editor area */}
               <div className="editor-with-indicators">
-                <CodeMirrorEditor
-                  value={text}
-                  onChange={(newText) => setText(newText)}
-                  minHeight="calc(100vh - 380px)"
+                <VirtualizedExtractionEditor
+                  text={text}
+                  onTextChange={setText}
+                  entities={displayEntities}
                   disableHighlighting={editorDisableHighlighting}
                   highlightOpacity={highlightOpacity}
-                  enableWYSIWYG={false}
                   renderMarkdown={renderMarkdown}
-                  entities={displayEntities}
-                  projectId={project}
-                  onReject={handleReject}
-                  onChangeType={handleChangeType}
-                  onTagEntity={handleTagEntity}
-                  onCreateNew={handleCreateNew}
                   entityHighlightMode={entityHighlightMode}
+                  onChangeType={handleChangeType}
+                  onCreateNew={handleCreateNew}
+                  onReject={handleReject}
+                  onTagEntity={handleTagEntity}
                 />
               </div>
             </div>

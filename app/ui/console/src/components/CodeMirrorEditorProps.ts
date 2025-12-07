@@ -19,4 +19,8 @@ export interface CodeMirrorEditorProps {
   onCreateNew?: (entity: EntitySpan, type: EntityType) => void | Promise<void>;
   onReject?: (entity: EntitySpan) => Promise<void>;
   entityHighlightMode?: boolean;
+
+  /** NEW: Windowed mode support for large documents */
+  baseOffset?: number; // Global offset where this window starts (default 0 = full doc mode)
+  onCursorChange?: (globalPos: number) => void; // Called when cursor moves (for window adjustment)
 }

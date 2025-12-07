@@ -757,7 +757,9 @@ function buildManualTagDecorations(
 function contextMenuHandler(
   setContextMenu: (ctx: any) => void,
   entitiesRef: React.MutableRefObject<EntitySpan[]>,
-  entityMapRef: React.MutableRefObject<Map<string, EntitySpan>>
+  entityMapRef: React.MutableRefObject<Map<string, EntitySpan>>,
+  globalEntityMapRef: React.MutableRefObject<Map<string, EntitySpan>>,
+  baseOffsetRef: React.MutableRefObject<number>
 ) {
   // Long-press tracking for touch devices
   let touchStartTime = 0;
@@ -799,14 +801,19 @@ function contextMenuHandler(
     contextmenu: (event, view) => {
       // Context menu logging only in verbose mode
       if (VERBOSE_LOGGING) console.log('[ContextMenu] Right-click handler called');
-      const entity = findEntityAtEvent(event, view);
+      const localEntity = findEntityAtEvent(event, view);
 
-      if (entity) {
+      if (localEntity) {
         event.preventDefault();
-        if (VERBOSE_LOGGING) console.log('[ContextMenu] Found entity:', entity.text);
+        if (VERBOSE_LOGGING) console.log('[ContextMenu] Found entity:', localEntity.text);
+
+        // Look up the global entity for callbacks
+        const key = makeSpanKey(localEntity);
+        const globalEntity = globalEntityMapRef.current.get(key) || localEntity;
+
         setContextMenu({
           position: { x: event.clientX, y: event.clientY },
-          entity
+          entity: globalEntity
         });
         return true;
       }
@@ -829,17 +836,22 @@ function contextMenuHandler(
       // Set timer for long-press
       longPressTimer = setTimeout(() => {
         if (VERBOSE_LOGGING) console.log('[ContextMenu] Long-press detected');
-        const entity = findEntityAtEvent({
+        const localEntity = findEntityAtEvent({
           target: event.target,
           clientX: touch.clientX,
           clientY: touch.clientY
         }, view);
 
-        if (entity) {
-          if (VERBOSE_LOGGING) console.log('[ContextMenu] Found entity:', entity.text);
+        if (localEntity) {
+          if (VERBOSE_LOGGING) console.log('[ContextMenu] Found entity:', localEntity.text);
+
+          // Look up the global entity for callbacks
+          const key = makeSpanKey(localEntity);
+          const globalEntity = globalEntityMapRef.current.get(key) || localEntity;
+
           setContextMenu({
             position: { x: touch.clientX, y: touch.clientY },
-            entity
+            entity: globalEntity
           });
         }
       }, LONG_PRESS_DURATION);
@@ -1098,14 +1110,30 @@ export function CodeMirrorEditor({
   onCreateNew,
   onReject,
   onTagEntity,
-  entityHighlightMode = false
+  entityHighlightMode = false,
+  baseOffset = 0,
+  onCursorChange
 }: CodeMirrorEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
 
+  // Windowed mode: Convert global entities to local window coordinates
+  // In full doc mode (baseOffset=0), this is a no-op
+  const windowLength = value.length;
+  const localEntities: EntitySpan[] = entities
+    .filter(e => e.end > baseOffset && e.start < baseOffset + windowLength)
+    .map(e => ({
+      ...e,
+      start: Math.max(0, e.start - baseOffset),
+      end: Math.min(windowLength, e.end - baseOffset),
+    }));
+
   // Refs for passing data to decorations (must be mutable refs, not props)
-  const entitiesRef = useRef<EntitySpan[]>(entities);
+  // IMPORTANT: Store GLOBAL entities in the map for context menu actions
+  const entitiesRef = useRef<EntitySpan[]>(localEntities);
   const entityMapRef = useRef<Map<string, EntitySpan>>(new Map());
+  const globalEntityMapRef = useRef<Map<string, EntitySpan>>(new Map()); // Global entities for callbacks
+  const baseOffsetRef = useRef<number>(baseOffset);
   const renderMarkdownRef = useRef<boolean>(renderMarkdown);
   const disableHighlightingRef = useRef<boolean>(disableHighlighting);
   const highlightOpacityRef = useRef<number>(highlightOpacity);
@@ -1188,15 +1216,24 @@ export function CodeMirrorEditor({
   // Keep refs in sync - ViewPlugin rebuilds on any transaction
   useEffect(() => {
     if (VERBOSE_LOGGING) console.log('[CodeMirror] entities changed:', entities.length);
-    // Sort entities by start position for efficient binary search
-    const sorted = [...entities].sort((a, b) => a.start - b.start);
-    entitiesRef.current = sorted;
 
-    const map = new Map<string, EntitySpan>();
-    for (const e of sorted) {
-      map.set(makeSpanKey(e), e);
+    // Sort LOCAL entities by start position for efficient binary search
+    const sortedLocal = [...localEntities].sort((a, b) => a.start - b.start);
+    entitiesRef.current = sortedLocal;
+
+    // Store local entities in entityMapRef (for decoration rendering)
+    const localMap = new Map<string, EntitySpan>();
+    for (const e of sortedLocal) {
+      localMap.set(makeSpanKey(e), e);
     }
-    entityMapRef.current = map;
+    entityMapRef.current = localMap;
+
+    // Store GLOBAL entities in globalEntityMapRef (for context menu callbacks)
+    const globalMap = new Map<string, EntitySpan>();
+    for (const e of entities) {
+      globalMap.set(makeSpanKey(e), e);
+    }
+    globalEntityMapRef.current = globalMap;
 
     // Simple empty dispatch to trigger ViewPlugin update
     // The ViewPlugin rebuilds on transactions.length > 0
@@ -1208,7 +1245,7 @@ export function CodeMirrorEditor({
         // Ignore errors during dispatch
       }
     }
-  }, [entities]);
+  }, [entities, localEntities]);
 
   useEffect(() => {
     renderMarkdownRef.current = renderMarkdown;
@@ -1249,6 +1286,10 @@ export function CodeMirrorEditor({
   useEffect(() => {
     entityHighlightModeRef.current = entityHighlightMode;
   }, [entityHighlightMode]);
+
+  useEffect(() => {
+    baseOffsetRef.current = baseOffset;
+  }, [baseOffset]);
 
   // Watch for theme changes - rebuild decorations with new colors
   useEffect(() => {
@@ -1308,12 +1349,19 @@ export function CodeMirrorEditor({
           () => entityHighlightModeRef.current
         ),
         manualTagHidingExtension(() => renderMarkdownRef.current, () => entitiesRef.current),
-        contextMenuHandler(setContextMenu, entitiesRef, entityMapRef),
+        contextMenuHandler(setContextMenu, entitiesRef, entityMapRef, globalEntityMapRef, baseOffsetRef),
         editorTheme,
         EditorView.lineWrapping,
         EditorView.updateListener.of((update: ViewUpdate) => {
           if (update.docChanged) {
             onChange(update.state.doc.toString());
+          }
+
+          // Report cursor position for windowed mode
+          if (update.selectionSet && onCursorChange) {
+            const localPos = update.state.selection.main.head;
+            const globalPos = baseOffset + localPos;
+            onCursorChange(globalPos);
           }
         })
       ]
