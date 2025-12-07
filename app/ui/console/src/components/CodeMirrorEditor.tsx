@@ -39,10 +39,59 @@ import type { CodeMirrorEditorProps } from './CodeMirrorEditorProps';
 
 const LARGE_DOC_THRESHOLD = 30000; // characters
 const IS_DEV_ENV = typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production';
+const VERBOSE_LOGGING = false; // Set to true only when debugging highlighting issues
 
 // ============================================================================
 // 0. UTILITY FUNCTIONS
 // ============================================================================
+
+/**
+ * Binary search to find the first entity that ends after a given position.
+ * Entities must be sorted by start position.
+ */
+function findFirstEntityInRange(entities: EntitySpan[], rangeStart: number): number {
+  let lo = 0;
+  let hi = entities.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1;
+    // An entity is potentially in range if it ends after rangeStart
+    if (entities[mid].end <= rangeStart) {
+      lo = mid + 1;
+    } else {
+      hi = mid;
+    }
+  }
+  return lo;
+}
+
+/**
+ * Get entities that overlap with a given range [rangeStart, rangeEnd).
+ * Entities must be sorted by start position.
+ * Returns a subset of entities efficiently using binary search.
+ */
+function getEntitiesInRange(
+  entities: EntitySpan[],
+  rangeStart: number,
+  rangeEnd: number
+): EntitySpan[] {
+  if (entities.length === 0) return [];
+
+  // Find first entity that could be in range
+  const startIdx = findFirstEntityInRange(entities, rangeStart);
+
+  // Collect entities until we pass rangeEnd
+  const result: EntitySpan[] = [];
+  for (let i = startIdx; i < entities.length; i++) {
+    const entity = entities[i];
+    // Stop when entities start after our range
+    if (entity.start >= rangeEnd) break;
+    // Include if it overlaps with range
+    if (entity.end > rangeStart && entity.start < rangeEnd) {
+      result.push(entity);
+    }
+  }
+  return result;
+}
 
 /**
  * Lighten and saturate a hex color for better glow visibility
@@ -126,25 +175,44 @@ function entityHighlighterExtension(
   getHighlightOpacity: () => number,
   getEntityHighlightMode: () => boolean
 ) {
-  const VIEWPORT_BUFFER = 2000;
-  const SPEED_THRESHOLD = 30; // characters per millisecond
+  const VIEWPORT_BUFFER = 1500; // chars before/after viewport
+  const SPEED_THRESHOLD = 50; // chars per millisecond - skip rendering during fast scroll
+  const DEBOUNCE_MS = 16; // ~60fps max rebuild rate
 
   return ViewPlugin.fromClass(class {
     decorations: DecorationSet;
     private lastCenter: number;
     private lastTimestamp: number;
+    private pendingRebuild: number | null;
+    private lastRebuildTime: number;
+    private cachedEntities: EntitySpan[] | null;
+    private cachedDisabled: boolean | null;
+    private cachedOpacity: number | null;
 
     constructor(readonly view: EditorView) {
       this.lastCenter = (view.viewport.from + view.viewport.to) / 2;
       this.lastTimestamp = performance.now();
-      this.decorations = this.buildDecorations(view);
+      this.pendingRebuild = null;
+      this.lastRebuildTime = 0;
+      this.cachedEntities = null;
+      this.cachedDisabled = null;
+      this.cachedOpacity = null;
+      this.decorations = this.buildDecorations(view, true);
     }
 
     update(update: ViewUpdate) {
       const view = update.view;
 
+      // Check if highlighting settings changed
+      const currentDisabled = isHighlightingDisabled();
+      const currentOpacity = getHighlightOpacity();
+      const settingsChanged = currentDisabled !== this.cachedDisabled ||
+                              currentOpacity !== this.cachedOpacity;
+
       if (update.docChanged) {
-        this.decorations = this.buildDecorations(view);
+        // Document changed - must rebuild immediately
+        this.cachedEntities = null; // Invalidate entity cache
+        this.decorations = this.buildDecorations(view, true);
         this.lastCenter = (view.viewport.from + view.viewport.to) / 2;
         this.lastTimestamp = performance.now();
         return;
@@ -158,37 +226,89 @@ function entityHighlighterExtension(
         const distance = Math.abs(center - this.lastCenter);
         const speed = dt > 0 ? distance / dt : 0;
 
-        if (speed <= SPEED_THRESHOLD) {
-          this.decorations = this.buildDecorations(view);
-        }
-
         this.lastCenter = center;
         this.lastTimestamp = now;
+
+        // Skip rendering during fast scroll
+        if (speed > SPEED_THRESHOLD) {
+          // Schedule a delayed rebuild when scrolling stops
+          if (this.pendingRebuild !== null) {
+            cancelAnimationFrame(this.pendingRebuild);
+          }
+          this.pendingRebuild = requestAnimationFrame(() => {
+            this.pendingRebuild = null;
+            this.decorations = this.buildDecorations(view, false);
+          });
+          return;
+        }
+
+        // Debounce rapid viewport changes
+        if (now - this.lastRebuildTime < DEBOUNCE_MS) {
+          if (this.pendingRebuild === null) {
+            this.pendingRebuild = requestAnimationFrame(() => {
+              this.pendingRebuild = null;
+              this.decorations = this.buildDecorations(view, false);
+            });
+          }
+          return;
+        }
+
+        this.decorations = this.buildDecorations(view, false);
         return;
       }
 
-      if (update.transactions.length > 0 && !update.docChanged && !update.viewportChanged) {
-        this.decorations = this.buildDecorations(view);
+      // Settings changed (highlight toggle, opacity) - rebuild
+      if (settingsChanged) {
+        this.decorations = this.buildDecorations(view, true);
+        return;
+      }
+
+      // Other state updates (cursor move, etc) - check if entities changed
+      if (update.transactions.length > 0) {
+        const newEntities = getEntities();
+        if (newEntities !== this.cachedEntities) {
+          this.cachedEntities = newEntities;
+          this.decorations = this.buildDecorations(view, false);
+        }
       }
     }
 
-    buildDecorations(view: EditorView): DecorationSet {
+    buildDecorations(view: EditorView, forceCache: boolean): DecorationSet {
+      const now = performance.now();
+      this.lastRebuildTime = now;
+
       const { from, to } = view.viewport;
       const windowFrom = Math.max(0, from - VIEWPORT_BUFFER);
       const windowTo = Math.min(view.state.doc.length, to + VIEWPORT_BUFFER);
 
+      const entities = getEntities();
+      const disabled = isHighlightingDisabled();
+      const opacity = getHighlightOpacity();
+      const highlightMode = getEntityHighlightMode();
+
+      // Cache current settings for change detection
+      if (forceCache) {
+        this.cachedEntities = entities;
+      }
+      this.cachedDisabled = disabled;
+      this.cachedOpacity = opacity;
+
       return buildEntityDecorations(
         view.state,
-        getEntities(),
-        isHighlightingDisabled(),
-        getHighlightOpacity(),
-        getEntityHighlightMode(),
+        entities,
+        disabled,
+        opacity,
+        highlightMode,
         windowFrom,
         windowTo
       );
     }
 
-    destroy() {}
+    destroy() {
+      if (this.pendingRebuild !== null) {
+        cancelAnimationFrame(this.pendingRebuild);
+      }
+    }
   }, {
     decorations: plugin => plugin.decorations
   });
@@ -205,7 +325,8 @@ function buildEntityDecorations(
 ): DecorationSet {
   const shouldHighlight = !isDisabled && Array.isArray(entities) && entities.length > 0;
 
-  if (IS_DEV_ENV) {
+  // Only log when verbose logging is enabled (debugging only)
+  if (VERBOSE_LOGGING && IS_DEV_ENV) {
     console.debug('[CodeMirrorEditor] highlight check', {
       disableHighlighting: isDisabled,
       entityHighlightMode,
@@ -217,20 +338,22 @@ function buildEntityDecorations(
   if (!shouldHighlight) {
     return Decoration.none;
   }
+
   const builder = new RangeSetBuilder<Decoration>();
   const docLength = state.doc.length;
   const rangeFrom = Math.max(0, windowFrom ?? 0);
   const rangeTo = Math.min(docLength, windowTo ?? docLength);
 
-  // Detect current theme
+  // Detect current theme (cached per render - DOM access is relatively cheap)
   const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
 
-  for (const entity of entities) {
-    if (entity.start >= 0 && entity.end <= docLength && entity.start < entity.end) {
-      if (entity.end <= rangeFrom || entity.start >= rangeTo) {
-        continue;
-      }
+  // Use efficient binary search to get only entities in viewport range
+  // This avoids iterating over thousands of entities for large documents
+  const visibleEntities = getEntitiesInRange(entities, rangeFrom, rangeTo);
 
+  for (const entity of visibleEntities) {
+    // Entity is guaranteed to overlap with [rangeFrom, rangeTo] by getEntitiesInRange
+    if (entity.start >= 0 && entity.end <= docLength && entity.start < entity.end) {
       const start = Math.max(entity.start, rangeFrom);
       const end = Math.min(entity.end, rangeTo);
       const color = getEntityTypeColor(entity.type);
@@ -302,10 +425,7 @@ class EntityNameWidget extends WidgetType {
     private highlightColor: string
   ) {
     super();
-    console.log('[EntityNameWidget] Constructor called:', {
-      displayName,
-      highlightColor
-    });
+    // Logging removed from constructor - called frequently for every widget
   }
 
   toDOM() {
@@ -420,7 +540,8 @@ function buildManualTagDecorations(
 ): DecorationSet {
   const text = state.doc.toString();
   const docLength = text.length;
-  const debugLogging = IS_DEV_ENV;
+  // Only log when verbose logging is explicitly enabled (for debugging)
+  const debugLogging = VERBOSE_LOGGING && IS_DEV_ENV;
 
   // If we're not in pretty markdown mode, or the document is large,
   // skip manual tag hiding entirely for performance.
@@ -720,7 +841,7 @@ function contextMenuHandler(
   let touchStartTime = 0;
   let touchStartX = 0;
   let touchStartY = 0;
-  let longPressTimer: NodeJS.Timeout | null = null;
+  let longPressTimer: ReturnType<typeof setTimeout> | null = null;
   const LONG_PRESS_DURATION = 500; // milliseconds
   const TOUCH_MOVEMENT_THRESHOLD = 10; // pixels
 
@@ -758,12 +879,13 @@ function contextMenuHandler(
 
   return EditorView.domEventHandlers({
     contextmenu: (event, view) => {
-      console.log('[ContextMenu] Right-click handler called');
+      // Context menu logging only in verbose mode
+      if (VERBOSE_LOGGING) console.log('[ContextMenu] Right-click handler called');
       const entity = findEntityAtEvent(event, view);
 
       if (entity) {
         event.preventDefault();
-        console.log('[ContextMenu] Found entity via right-click:', entity.text);
+        if (VERBOSE_LOGGING) console.log('[ContextMenu] Found entity:', entity.text);
         setContextMenu({
           position: { x: event.clientX, y: event.clientY },
           entity
@@ -771,7 +893,7 @@ function contextMenuHandler(
         return true;
       }
 
-      console.log('[ContextMenu] No entity found at cursor position');
+      if (VERBOSE_LOGGING) console.log('[ContextMenu] No entity at cursor');
       return false;
     },
 
@@ -788,7 +910,7 @@ function contextMenuHandler(
 
       // Set timer for long-press
       longPressTimer = setTimeout(() => {
-        console.log('[ContextMenu] Long-press detected');
+        if (VERBOSE_LOGGING) console.log('[ContextMenu] Long-press detected');
         const entity = findEntityAtEvent({
           target: event.target,
           clientX: touch.clientX,
@@ -796,7 +918,7 @@ function contextMenuHandler(
         }, view);
 
         if (entity) {
-          console.log('[ContextMenu] Found entity via long-press:', entity.text);
+          if (VERBOSE_LOGGING) console.log('[ContextMenu] Found entity:', entity.text);
           setContextMenu({
             position: { x: touch.clientX, y: touch.clientY },
             entity
@@ -1144,55 +1266,41 @@ export function CodeMirrorEditor({
     return () => styleTag.remove();
   }, []);
 
-  // Keep refs in sync and trigger decoration updates
+  // Keep refs in sync - ViewPlugin will detect changes via its cached state
+  // No need for explicit dispatch() calls since ViewPlugin checks on each transaction
   useEffect(() => {
-    console.log('[CodeMirror] entities prop changed:', entities.length, 'entities');
+    if (VERBOSE_LOGGING) console.log('[CodeMirror] entities changed:', entities.length);
     entitiesRef.current = entities;
-    console.log('[CodeMirror] entitiesRef updated, current value:', entitiesRef.current.length);
-    // Trigger view update from React (safe - outside CM update cycle)
-    const view = viewRef.current;
-    if (view) {
-      requestAnimationFrame(() => {
-        console.log('[CodeMirror] Dispatching empty update to trigger decoration rebuild');
-        // Empty dispatch triggers StateField update without cursor manipulation
-        view.dispatch({});
-      });
-    }
+    // Sort entities by start position for efficient binary search in viewport filtering
+    // This is a one-time cost when entities change, enabling O(log n) viewport filtering
+    entitiesRef.current = [...entities].sort((a, b) => a.start - b.start);
   }, [entities]);
 
   useEffect(() => {
     renderMarkdownRef.current = renderMarkdown;
-    // Trigger view update from React (safe - outside CM update cycle)
+    // Manual tag hiding uses StateField which only rebuilds on docChanged
+    // Trigger update only when renderMarkdown changes
     const view = viewRef.current;
     if (view) {
-      requestAnimationFrame(() => {
-        // Empty dispatch triggers StateField update without cursor manipulation
-        view.dispatch({});
-      });
+      requestAnimationFrame(() => view.dispatch({}));
     }
   }, [renderMarkdown]);
 
   useEffect(() => {
     disableHighlightingRef.current = disableHighlighting;
-    // Trigger view update to toggle entity highlighting on/off
+    // ViewPlugin detects this change via cachedDisabled comparison
     const view = viewRef.current;
     if (view) {
-      requestAnimationFrame(() => {
-        // Empty dispatch triggers StateField update to rebuild decorations
-        view.dispatch({});
-      });
+      requestAnimationFrame(() => view.dispatch({}));
     }
   }, [disableHighlighting]);
 
   useEffect(() => {
     highlightOpacityRef.current = highlightOpacity;
-    // Trigger view update when opacity changes
+    // ViewPlugin detects this change via cachedOpacity comparison
     const view = viewRef.current;
     if (view) {
-      requestAnimationFrame(() => {
-        // Empty dispatch triggers StateField update to rebuild decorations with new opacity
-        view.dispatch({});
-      });
+      requestAnimationFrame(() => view.dispatch({}));
     }
   }, [highlightOpacity]);
 
@@ -1200,16 +1308,19 @@ export function CodeMirrorEditor({
     entityHighlightModeRef.current = entityHighlightMode;
   }, [entityHighlightMode]);
 
-  // Watch for theme changes and rebuild entity decorations
+  // Watch for theme changes - rebuild decorations with new colors
   useEffect(() => {
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
     const observer = new MutationObserver(() => {
-      const view = viewRef.current;
-      if (view) {
-        requestAnimationFrame(() => {
-          // Empty dispatch triggers StateField update to rebuild decorations with new theme
+      // Debounce theme changes to avoid multiple rapid rebuilds
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        const view = viewRef.current;
+        if (view) {
           view.dispatch({});
-        });
-      }
+        }
+      }, 50);
     });
 
     observer.observe(document.documentElement, {
@@ -1217,7 +1328,10 @@ export function CodeMirrorEditor({
       attributeFilter: ['data-theme']
     });
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      if (debounceTimer) clearTimeout(debounceTimer);
+    };
   }, []);
 
   // Initialize editor on mount
