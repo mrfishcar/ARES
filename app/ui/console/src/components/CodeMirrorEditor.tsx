@@ -46,16 +46,15 @@ const VERBOSE_LOGGING = false; // Set to true only when debugging highlighting i
 // ============================================================================
 
 /**
- * Binary search to find the first entity that ends after a given position.
- * Entities must be sorted by start position.
+ * Binary search to find the first entity whose start position is at or after
+ * the given position. Entities must be sorted by start position.
  */
-function findFirstEntityInRange(entities: EntitySpan[], rangeStart: number): number {
+function findFirstEntityStartingAfter(entities: EntitySpan[], position: number): number {
   let lo = 0;
   let hi = entities.length;
   while (lo < hi) {
     const mid = (lo + hi) >>> 1;
-    // An entity is potentially in range if it ends after rangeStart
-    if (entities[mid].end <= rangeStart) {
+    if (entities[mid].start < position) {
       lo = mid + 1;
     } else {
       hi = mid;
@@ -76,8 +75,15 @@ function getEntitiesInRange(
 ): EntitySpan[] {
   if (entities.length === 0) return [];
 
-  // Find first entity that could be in range
-  const startIdx = findFirstEntityInRange(entities, rangeStart);
+  // Start by finding the first entity whose start is within or after the range.
+  // Because end positions are not sorted, we also scan backward to include
+  // earlier entities that overlap the range (e.g., very long spans).
+  const firstCandidate = findFirstEntityStartingAfter(entities, rangeStart);
+
+  let startIdx = firstCandidate;
+  while (startIdx > 0 && entities[startIdx - 1].end > rangeStart) {
+    startIdx--;
+  }
 
   // Collect entities until we pass rangeEnd
   const result: EntitySpan[] = [];
