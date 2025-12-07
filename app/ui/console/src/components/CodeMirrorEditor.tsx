@@ -169,149 +169,188 @@ function hexToRgba(hex: string, opacity: number = 1): string {
 // 1. ENTITY HIGHLIGHTING EXTENSION
 // ============================================================================
 
+// Pre-compute entity JSON strings to avoid repeated serialization
+const entityJsonCache = new WeakMap<EntitySpan, string>();
+function getEntityJson(entity: EntitySpan): string {
+  let json = entityJsonCache.get(entity);
+  if (!json) {
+    json = JSON.stringify(entity);
+    entityJsonCache.set(entity, json);
+  }
+  return json;
+}
+
 function entityHighlighterExtension(
   getEntities: () => EntitySpan[],
   isHighlightingDisabled: () => boolean,
   getHighlightOpacity: () => number,
   getEntityHighlightMode: () => boolean
 ) {
-  const VIEWPORT_BUFFER = 1500; // chars before/after viewport
-  const SPEED_THRESHOLD = 50; // chars per millisecond - skip rendering during fast scroll
-  const DEBOUNCE_MS = 16; // ~60fps max rebuild rate
+  // Smaller buffer for fast scroll, larger for normal scroll
+  const FAST_SCROLL_BUFFER = 500;
+  const NORMAL_BUFFER = 2000;
+  const SCROLL_SPEED_THRESHOLD = 80; // chars per ms - more lenient
+  const MAX_DECORATIONS_PER_FRAME = 200; // Prevent frame drops
 
   return ViewPlugin.fromClass(class {
     decorations: DecorationSet;
-    private lastCenter: number;
-    private lastTimestamp: number;
-    private pendingRebuild: number | null;
-    private lastRebuildTime: number;
-    private cachedEntities: EntitySpan[] | null;
-    private cachedDisabled: boolean | null;
-    private cachedOpacity: number | null;
+    private lastViewportFrom: number;
+    private lastViewportTo: number;
+    private lastScrollTime: number;
+    private isScrolling: boolean;
+    private scrollEndTimer: ReturnType<typeof setTimeout> | null;
+    private lastEntitiesRef: EntitySpan[] | null;
 
     constructor(readonly view: EditorView) {
-      this.lastCenter = (view.viewport.from + view.viewport.to) / 2;
-      this.lastTimestamp = performance.now();
-      this.pendingRebuild = null;
-      this.lastRebuildTime = 0;
-      this.cachedEntities = null;
-      this.cachedDisabled = null;
-      this.cachedOpacity = null;
-      this.decorations = this.buildDecorations(view, true);
+      const { from, to } = view.viewport;
+      this.lastViewportFrom = from;
+      this.lastViewportTo = to;
+      this.lastScrollTime = performance.now();
+      this.isScrolling = false;
+      this.scrollEndTimer = null;
+      this.lastEntitiesRef = null;
+      this.decorations = this.buildDecorations(NORMAL_BUFFER);
     }
 
     update(update: ViewUpdate) {
-      const view = update.view;
+      // Always check for entity changes first
+      const currentEntities = getEntities();
+      const entitiesChanged = currentEntities !== this.lastEntitiesRef;
+      this.lastEntitiesRef = currentEntities;
 
-      // Check if highlighting settings changed
-      const currentDisabled = isHighlightingDisabled();
-      const currentOpacity = getHighlightOpacity();
-      const settingsChanged = currentDisabled !== this.cachedDisabled ||
-                              currentOpacity !== this.cachedOpacity;
-
+      // Document changed - must rebuild
       if (update.docChanged) {
-        // Document changed - must rebuild immediately
-        this.cachedEntities = null; // Invalidate entity cache
-        this.decorations = this.buildDecorations(view, true);
-        this.lastCenter = (view.viewport.from + view.viewport.to) / 2;
-        this.lastTimestamp = performance.now();
+        this.decorations = this.buildDecorations(NORMAL_BUFFER);
         return;
       }
 
+      // Viewport changed - check scroll speed
       if (update.viewportChanged) {
-        const { from, to } = view.viewport;
-        const center = (from + to) / 2;
+        const { from, to } = update.view.viewport;
         const now = performance.now();
-        const dt = now - this.lastTimestamp;
-        const distance = Math.abs(center - this.lastCenter);
-        const speed = dt > 0 ? distance / dt : 0;
+        const dt = now - this.lastScrollTime;
+        const scrollDistance = Math.abs(from - this.lastViewportFrom) + Math.abs(to - this.lastViewportTo);
+        const scrollSpeed = dt > 0 ? scrollDistance / dt : 0;
 
-        this.lastCenter = center;
-        this.lastTimestamp = now;
+        this.lastViewportFrom = from;
+        this.lastViewportTo = to;
+        this.lastScrollTime = now;
 
-        // Skip rendering during fast scroll
-        if (speed > SPEED_THRESHOLD) {
-          // Schedule a delayed rebuild when scrolling stops
-          if (this.pendingRebuild !== null) {
-            cancelAnimationFrame(this.pendingRebuild);
-          }
-          this.pendingRebuild = requestAnimationFrame(() => {
-            this.pendingRebuild = null;
-            this.decorations = this.buildDecorations(view, false);
-          });
-          return;
+        // Clear any pending scroll-end timer
+        if (this.scrollEndTimer) {
+          clearTimeout(this.scrollEndTimer);
         }
 
-        // Debounce rapid viewport changes
-        if (now - this.lastRebuildTime < DEBOUNCE_MS) {
-          if (this.pendingRebuild === null) {
-            this.pendingRebuild = requestAnimationFrame(() => {
-              this.pendingRebuild = null;
-              this.decorations = this.buildDecorations(view, false);
+        // Fast scrolling - use minimal buffer, schedule full rebuild when scroll stops
+        if (scrollSpeed > SCROLL_SPEED_THRESHOLD) {
+          this.isScrolling = true;
+          this.decorations = this.buildDecorations(FAST_SCROLL_BUFFER);
+
+          // Schedule rebuild with full buffer when scrolling stops
+          this.scrollEndTimer = setTimeout(() => {
+            this.isScrolling = false;
+            this.scrollEndTimer = null;
+            // Trigger a transaction to rebuild with full buffer
+            this.view.dispatch({
+              effects: StateEffect.appendConfig.of([])
             });
-          }
+          }, 150);
           return;
         }
 
-        this.decorations = this.buildDecorations(view, false);
+        // Normal scroll - full buffer
+        this.isScrolling = false;
+        this.decorations = this.buildDecorations(NORMAL_BUFFER);
         return;
       }
 
-      // Settings changed (highlight toggle, opacity) - rebuild
-      if (settingsChanged) {
-        this.decorations = this.buildDecorations(view, true);
-        return;
-      }
-
-      // Other state updates (cursor move, etc) - check if entities changed
-      if (update.transactions.length > 0) {
-        const newEntities = getEntities();
-        if (newEntities !== this.cachedEntities) {
-          this.cachedEntities = newEntities;
-          this.decorations = this.buildDecorations(view, false);
-        }
+      // Settings or entities changed
+      if (entitiesChanged || update.transactions.length > 0) {
+        const buffer = this.isScrolling ? FAST_SCROLL_BUFFER : NORMAL_BUFFER;
+        this.decorations = this.buildDecorations(buffer);
       }
     }
 
-    buildDecorations(view: EditorView, forceCache: boolean): DecorationSet {
-      const now = performance.now();
-      this.lastRebuildTime = now;
-
-      const { from, to } = view.viewport;
-      const windowFrom = Math.max(0, from - VIEWPORT_BUFFER);
-      const windowTo = Math.min(view.state.doc.length, to + VIEWPORT_BUFFER);
+    buildDecorations(buffer: number): DecorationSet {
+      const disabled = isHighlightingDisabled();
+      if (disabled) return Decoration.none;
 
       const entities = getEntities();
-      const disabled = isHighlightingDisabled();
+      if (!entities || entities.length === 0) return Decoration.none;
+
+      const { from, to } = this.view.viewport;
+      const docLength = this.view.state.doc.length;
+      const windowFrom = Math.max(0, from - buffer);
+      const windowTo = Math.min(docLength, to + buffer);
+
+      // Get visible entities using binary search
+      const visibleEntities = getEntitiesInRange(entities, windowFrom, windowTo);
+
+      // Limit decorations per frame to prevent frame drops
+      const entitiesToRender = visibleEntities.length > MAX_DECORATIONS_PER_FRAME
+        ? visibleEntities.slice(0, MAX_DECORATIONS_PER_FRAME)
+        : visibleEntities;
+
+      if (entitiesToRender.length === 0) return Decoration.none;
+
+      const builder = new RangeSetBuilder<Decoration>();
       const opacity = getHighlightOpacity();
-      const highlightMode = getEntityHighlightMode();
+      const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
 
-      // Cache current settings for change detection
-      if (forceCache) {
-        this.cachedEntities = entities;
+      for (const entity of entitiesToRender) {
+        if (entity.start < 0 || entity.end > docLength || entity.start >= entity.end) {
+          continue; // Skip invalid entities
+        }
+
+        const start = Math.max(entity.start, windowFrom);
+        const end = Math.min(entity.end, windowTo);
+
+        if (start >= end) continue; // Skip if clamped to nothing
+
+        const color = getEntityTypeColor(entity.type);
+        const style = isDarkMode
+          ? buildDarkModeStyle(color, opacity)
+          : buildLightModeStyle(color, opacity);
+
+        builder.add(start, end, Decoration.mark({
+          class: 'cm-entity-highlight',
+          attributes: {
+            'data-entity': getEntityJson(entity),
+            style
+          }
+        }));
       }
-      this.cachedDisabled = disabled;
-      this.cachedOpacity = opacity;
 
-      return buildEntityDecorations(
-        view.state,
-        entities,
-        disabled,
-        opacity,
-        highlightMode,
-        windowFrom,
-        windowTo
-      );
+      return builder.finish();
     }
 
     destroy() {
-      if (this.pendingRebuild !== null) {
-        cancelAnimationFrame(this.pendingRebuild);
+      if (this.scrollEndTimer) {
+        clearTimeout(this.scrollEndTimer);
       }
     }
   }, {
     decorations: plugin => plugin.decorations
   });
+}
+
+// Pre-built style generators to avoid string concatenation in hot path
+function buildDarkModeStyle(color: string, opacity: number): string {
+  const glowColor = lightenColor(color, 15);
+  const a1 = hexToRgba(glowColor, 0.7 * opacity);
+  const a2 = hexToRgba(glowColor, 0.5 * opacity);
+  const a3 = hexToRgba(glowColor, 0.3 * opacity);
+  return `text-shadow: 0 0 4px ${a1}, 0 0 8px ${a2}, 0 0 12px ${a2}, 0 0 16px ${a3}; font-weight: 500; cursor: pointer;`;
+}
+
+function buildLightModeStyle(color: string, opacity: number): string {
+  const hc = lightenColor(color, 10);
+  const sc = hexToRgba(hc, 0.55 * opacity);
+  const f1 = hexToRgba(hc, 0.35 * opacity);
+  const f2 = hexToRgba(hc, 0.20 * opacity);
+  const f3 = hexToRgba(hc, 0.10 * opacity);
+  const f4 = hexToRgba(hc, 0.04 * opacity);
+  return `background-color: ${sc}; box-shadow: -20px 0 16px -8px ${f4}, -14px 0 12px -6px ${f3}, -8px 0 10px -4px ${f2}, -4px 0 6px -2px ${f1}, 4px 0 6px -2px ${f1}, 8px 0 10px -4px ${f2}, 14px 0 12px -6px ${f3}, 20px 0 16px -8px ${f4}; font-weight: 500; cursor: pointer;`;
 }
 
 function buildEntityDecorations(
@@ -356,53 +395,15 @@ function buildEntityDecorations(
     if (entity.start >= 0 && entity.end <= docLength && entity.start < entity.end) {
       const start = Math.max(entity.start, rangeFrom);
       const end = Math.min(entity.end, rangeTo);
-      const color = getEntityTypeColor(entity.type);
-      let style: string;
 
-      if (isDarkMode) {
-        // Dark mode: Use text-shadow glow effect with opacity control
-        const glowColor = lightenColor(color, 15);
-        const glowColorAlpha = hexToRgba(glowColor, 0.7 * opacityMultiplier);
-        const glowColorAlpha2 = hexToRgba(glowColor, 0.5 * opacityMultiplier);
-        const glowColorAlpha3 = hexToRgba(glowColor, 0.3 * opacityMultiplier);
-        style = `
-          text-shadow:
-            0 0 4px ${glowColorAlpha},
-            0 0 8px ${glowColorAlpha2},
-            0 0 12px ${glowColorAlpha2},
-            0 0 16px ${glowColorAlpha3};
-          font-weight: 500;
-          cursor: pointer;
-        `;
-      } else {
-        // Light mode: Use background highlight with feathering
-        // Use lighter version of the color with reduced opacity for soft appearance
-        const highlightColor = lightenColor(color, 10);
-        const softColor = hexToRgba(highlightColor, 0.55 * opacityMultiplier);
-        const featherColor1 = hexToRgba(highlightColor, 0.35 * opacityMultiplier);
-        const featherColor2 = hexToRgba(highlightColor, 0.20 * opacityMultiplier);
-        const featherColor3 = hexToRgba(highlightColor, 0.10 * opacityMultiplier);
-        const featherColor4 = hexToRgba(highlightColor, 0.04 * opacityMultiplier);
-        style = `
-          background-color: ${softColor};
-          box-shadow:
-            -20px 0 16px -8px ${featherColor4},
-            -14px 0 12px -6px ${featherColor3},
-            -8px 0 10px -4px ${featherColor2},
-            -4px 0 6px -2px ${featherColor1},
-            4px 0 6px -2px ${featherColor1},
-            8px 0 10px -4px ${featherColor2},
-            14px 0 12px -6px ${featherColor3},
-            20px 0 16px -8px ${featherColor4};
-          font-weight: 500;
-          cursor: pointer;
-        `;
-      }
+      const style = isDarkMode
+        ? buildDarkModeStyle(getEntityTypeColor(entity.type), opacityMultiplier)
+        : buildLightModeStyle(getEntityTypeColor(entity.type), opacityMultiplier);
 
       builder.add(start, end, Decoration.mark({
         class: 'cm-entity-highlight',
         attributes: {
-          'data-entity': JSON.stringify(entity),
+          'data-entity': getEntityJson(entity),
           style
         }
       }));
@@ -1266,41 +1267,47 @@ export function CodeMirrorEditor({
     return () => styleTag.remove();
   }, []);
 
-  // Keep refs in sync - ViewPlugin will detect changes via its cached state
-  // No need for explicit dispatch() calls since ViewPlugin checks on each transaction
+  // Keep refs in sync and trigger ViewPlugin update
   useEffect(() => {
     if (VERBOSE_LOGGING) console.log('[CodeMirror] entities changed:', entities.length);
-    entitiesRef.current = entities;
     // Sort entities by start position for efficient binary search in viewport filtering
     // This is a one-time cost when entities change, enabling O(log n) viewport filtering
     entitiesRef.current = [...entities].sort((a, b) => a.start - b.start);
+
+    // Trigger ViewPlugin update - it compares entity refs to detect changes
+    const view = viewRef.current;
+    if (view) {
+      // Use StateEffect to trigger a proper update cycle
+      view.dispatch({
+        effects: StateEffect.appendConfig.of([])
+      });
+    }
   }, [entities]);
 
   useEffect(() => {
     renderMarkdownRef.current = renderMarkdown;
     // Manual tag hiding uses StateField which only rebuilds on docChanged
-    // Trigger update only when renderMarkdown changes
     const view = viewRef.current;
     if (view) {
-      requestAnimationFrame(() => view.dispatch({}));
+      view.dispatch({ effects: StateEffect.appendConfig.of([]) });
     }
   }, [renderMarkdown]);
 
   useEffect(() => {
     disableHighlightingRef.current = disableHighlighting;
-    // ViewPlugin detects this change via cachedDisabled comparison
+    // Trigger ViewPlugin rebuild
     const view = viewRef.current;
     if (view) {
-      requestAnimationFrame(() => view.dispatch({}));
+      view.dispatch({ effects: StateEffect.appendConfig.of([]) });
     }
   }, [disableHighlighting]);
 
   useEffect(() => {
     highlightOpacityRef.current = highlightOpacity;
-    // ViewPlugin detects this change via cachedOpacity comparison
+    // Trigger ViewPlugin rebuild
     const view = viewRef.current;
     if (view) {
-      requestAnimationFrame(() => view.dispatch({}));
+      view.dispatch({ effects: StateEffect.appendConfig.of([]) });
     }
   }, [highlightOpacity]);
 
