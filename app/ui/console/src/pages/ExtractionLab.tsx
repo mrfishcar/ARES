@@ -165,7 +165,9 @@ const JobProgressBar = ({ jobStatus, jobProgress, jobEtaSeconds }: JobProgressBa
 };
 
 const StatBadge = ({ label }: { label: string }) => (
-  <span className="stat-badge">{label}</span>
+  <span className="stat-badge" style={{ minWidth: 120, textAlign: 'center', display: 'inline-flex', justifyContent: 'center' }}>
+    {label}
+  </span>
 );
 
 // Debounce helper
@@ -587,7 +589,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const isUpdating = processing && !requiresBackground && !hasActiveJob;
   const displayEntities = applyEntityOverrides(entities, entityOverrides, entityHighlightMode);
   const heavyLongTextMode = requiresBackground && hasActiveJob;
-  const hasReport = stats.count > 0 || stats.relationCount > 0;
+  const hasResults = displayEntities.length > 0 || relations.length > 0 || stats.count > 0 || stats.relationCount > 0;
   const jobStatusLabel =
     jobStatus === 'running'
       ? 'Job running'
@@ -598,20 +600,6 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           : jobStatus === 'done'
             ? 'Done'
             : 'Idle';
-
-  useEffect(() => {
-    if (!requiresBackground) {
-      return;
-    }
-
-    try {
-      toast?.info?.(
-        'Text is long. Live extraction is paused; use background extraction for best performance.'
-      );
-    } catch (error) {
-      console.debug('[ExtractionLab] Long text toast skipped', error);
-    }
-  }, [requiresBackground, toast]);
 
   const applyExtractionResults = useCallback(
     (data: ExtractionResponse, rawText: string, elapsedMs?: number) => {
@@ -725,9 +713,9 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   }, [text, extractEntities, toast]);
 
   useEffect(() => {
-    if (requiresBackground || hasActiveJob) {
+    if (requiresBackground) {
       setProcessing(false);
-      if (requiresBackground && !hasActiveJob) {
+      if (!hasActiveJob && jobStatus !== 'done' && jobStatus !== 'failed') {
         setEntities([]);
         setRelations([]);
         setStats({ time: 0, confidence: 0, count: 0, relationCount: 0 });
@@ -735,12 +723,12 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       return;
     }
 
-    if (!liveExtractionEnabled) {
+    if (hasActiveJob || !liveExtractionEnabled) {
       return;
     }
 
     extractEntities(text);
-  }, [text, extractEntities, requiresBackground, hasActiveJob, liveExtractionEnabled]);
+  }, [text, extractEntities, requiresBackground, hasActiveJob, liveExtractionEnabled, jobStatus]);
 
   const startBackgroundJob = async () => {
     if (!text.trim()) {
@@ -1329,7 +1317,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
             <div
               className="job-status-pill"
               style={{
-                minWidth: '110px',
+                minWidth: '120px',
                 padding: '6px 12px',
                 borderRadius: '20px',
                 textAlign: 'center',
@@ -1354,11 +1342,15 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
               {hasActiveJob ? (
                 <JobProgressBar jobStatus={jobStatus} jobProgress={jobProgress} jobEtaSeconds={jobEtaSeconds} />
               ) : (
-                <div className="progress-placeholder" aria-hidden />
+                <div
+                  className="progress-placeholder"
+                  aria-hidden
+                  style={{ minWidth: 220, minHeight: 18 }}
+                />
               )}
             </div>
             <button
-              disabled={!hasReport}
+              disabled={!hasResults}
               onClick={copyReport}
               className="report-button"
               type="button"
@@ -1516,7 +1508,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                       </span>
                     )}
                   </div>
-                  {requiresBackground && !hasActiveJob && (
+                  {requiresBackground && (
                     <p
                       style={{
                         marginTop: '6px',
@@ -1524,8 +1516,8 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                         color: 'var(--text-secondary)',
                       }}
                     >
-                      Long text detected. Live extraction is paused to keep things fast — use “Start background extraction” to run the
-                      full engine in the background.
+                      Text is long. Live extraction is paused to keep things snappy — use <strong>“Start background extraction”</strong>{' '}
+                      for best performance.
                     </p>
                   )}
                 </div>
@@ -1553,6 +1545,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                     onClick={runExtractionNow}
                     title="Run extraction once using the current text"
                     className="lab-button secondary"
+                    disabled={requiresBackground || !text.trim()}
                   >
                     ▶️ Run extraction now
                   </button>
