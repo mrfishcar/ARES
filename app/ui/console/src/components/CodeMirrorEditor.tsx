@@ -180,154 +180,135 @@ function getEntityJson(entity: EntitySpan): string {
   return json;
 }
 
+// Simple, robust entity highlighter
+// Key principles:
+// 1. Always build decorations synchronously - no async/timers
+// 2. Only decorate what's visible + small buffer
+// 3. Defensive checks to prevent crashes
+// 4. No clever scroll detection - just simple viewport filtering
 function entityHighlighterExtension(
   getEntities: () => EntitySpan[],
   isHighlightingDisabled: () => boolean,
   getHighlightOpacity: () => number,
-  getEntityHighlightMode: () => boolean
+  _getEntityHighlightMode: () => boolean
 ) {
-  // Smaller buffer for fast scroll, larger for normal scroll
-  const FAST_SCROLL_BUFFER = 500;
-  const NORMAL_BUFFER = 2000;
-  const SCROLL_SPEED_THRESHOLD = 80; // chars per ms - more lenient
-  const MAX_DECORATIONS_PER_FRAME = 200; // Prevent frame drops
+  // Fixed buffer - not too large, not too small
+  const VIEWPORT_BUFFER = 1000;
+  // Hard limit on decorations to prevent performance issues
+  const MAX_DECORATIONS = 150;
 
   return ViewPlugin.fromClass(class {
     decorations: DecorationSet;
-    private lastViewportFrom: number;
-    private lastViewportTo: number;
-    private lastScrollTime: number;
-    private isScrolling: boolean;
-    private scrollEndTimer: ReturnType<typeof setTimeout> | null;
-    private lastEntitiesRef: EntitySpan[] | null;
 
     constructor(readonly view: EditorView) {
-      const { from, to } = view.viewport;
-      this.lastViewportFrom = from;
-      this.lastViewportTo = to;
-      this.lastScrollTime = performance.now();
-      this.isScrolling = false;
-      this.scrollEndTimer = null;
-      this.lastEntitiesRef = null;
-      this.decorations = this.buildDecorations(NORMAL_BUFFER);
+      this.decorations = this.buildDecorations();
     }
 
     update(update: ViewUpdate) {
-      // Always check for entity changes first
-      const currentEntities = getEntities();
-      const entitiesChanged = currentEntities !== this.lastEntitiesRef;
-      this.lastEntitiesRef = currentEntities;
-
-      // Document changed - must rebuild
-      if (update.docChanged) {
-        this.decorations = this.buildDecorations(NORMAL_BUFFER);
-        return;
-      }
-
-      // Viewport changed - check scroll speed
-      if (update.viewportChanged) {
-        const { from, to } = update.view.viewport;
-        const now = performance.now();
-        const dt = now - this.lastScrollTime;
-        const scrollDistance = Math.abs(from - this.lastViewportFrom) + Math.abs(to - this.lastViewportTo);
-        const scrollSpeed = dt > 0 ? scrollDistance / dt : 0;
-
-        this.lastViewportFrom = from;
-        this.lastViewportTo = to;
-        this.lastScrollTime = now;
-
-        // Clear any pending scroll-end timer
-        if (this.scrollEndTimer) {
-          clearTimeout(this.scrollEndTimer);
-        }
-
-        // Fast scrolling - use minimal buffer, schedule full rebuild when scroll stops
-        if (scrollSpeed > SCROLL_SPEED_THRESHOLD) {
-          this.isScrolling = true;
-          this.decorations = this.buildDecorations(FAST_SCROLL_BUFFER);
-
-          // Schedule rebuild with full buffer when scrolling stops
-          this.scrollEndTimer = setTimeout(() => {
-            this.isScrolling = false;
-            this.scrollEndTimer = null;
-            // Trigger a transaction to rebuild with full buffer
-            this.view.dispatch({
-              effects: StateEffect.appendConfig.of([])
-            });
-          }, 150);
-          return;
-        }
-
-        // Normal scroll - full buffer
-        this.isScrolling = false;
-        this.decorations = this.buildDecorations(NORMAL_BUFFER);
-        return;
-      }
-
-      // Settings or entities changed
-      if (entitiesChanged || update.transactions.length > 0) {
-        const buffer = this.isScrolling ? FAST_SCROLL_BUFFER : NORMAL_BUFFER;
-        this.decorations = this.buildDecorations(buffer);
+      // Rebuild on any change - simple and reliable
+      if (update.docChanged || update.viewportChanged || update.transactions.length > 0) {
+        this.decorations = this.buildDecorations();
       }
     }
 
-    buildDecorations(buffer: number): DecorationSet {
-      const disabled = isHighlightingDisabled();
-      if (disabled) return Decoration.none;
-
-      const entities = getEntities();
-      if (!entities || entities.length === 0) return Decoration.none;
-
-      const { from, to } = this.view.viewport;
-      const docLength = this.view.state.doc.length;
-      const windowFrom = Math.max(0, from - buffer);
-      const windowTo = Math.min(docLength, to + buffer);
-
-      // Get visible entities using binary search
-      const visibleEntities = getEntitiesInRange(entities, windowFrom, windowTo);
-
-      // Limit decorations per frame to prevent frame drops
-      const entitiesToRender = visibleEntities.length > MAX_DECORATIONS_PER_FRAME
-        ? visibleEntities.slice(0, MAX_DECORATIONS_PER_FRAME)
-        : visibleEntities;
-
-      if (entitiesToRender.length === 0) return Decoration.none;
-
-      const builder = new RangeSetBuilder<Decoration>();
-      const opacity = getHighlightOpacity();
-      const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
-
-      for (const entity of entitiesToRender) {
-        if (entity.start < 0 || entity.end > docLength || entity.start >= entity.end) {
-          continue; // Skip invalid entities
+    buildDecorations(): DecorationSet {
+      try {
+        // Early exit if highlighting disabled
+        if (isHighlightingDisabled()) {
+          return Decoration.none;
         }
 
-        const start = Math.max(entity.start, windowFrom);
-        const end = Math.min(entity.end, windowTo);
+        const entities = getEntities();
+        if (!entities || entities.length === 0) {
+          return Decoration.none;
+        }
 
-        if (start >= end) continue; // Skip if clamped to nothing
+        const { from: viewFrom, to: viewTo } = this.view.viewport;
+        const docLength = this.view.state.doc.length;
 
-        const color = getEntityTypeColor(entity.type);
-        const style = isDarkMode
-          ? buildDarkModeStyle(color, opacity)
-          : buildLightModeStyle(color, opacity);
+        // Defensive: ensure valid document
+        if (docLength === 0) {
+          return Decoration.none;
+        }
 
-        builder.add(start, end, Decoration.mark({
-          class: 'cm-entity-highlight',
-          attributes: {
-            'data-entity': getEntityJson(entity),
-            style
+        // Calculate window with buffer, clamped to document bounds
+        const windowFrom = Math.max(0, viewFrom - VIEWPORT_BUFFER);
+        const windowTo = Math.min(docLength, viewTo + VIEWPORT_BUFFER);
+
+        // Get entities in range using binary search
+        const visibleEntities = getEntitiesInRange(entities, windowFrom, windowTo);
+
+        if (visibleEntities.length === 0) {
+          return Decoration.none;
+        }
+
+        // Limit to prevent performance issues
+        const entitiesToRender = visibleEntities.slice(0, MAX_DECORATIONS);
+
+        const opacity = getHighlightOpacity();
+        const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+
+        // Collect valid decorations first, then sort by position
+        const decorations: Array<{ from: number; to: number; decoration: Decoration }> = [];
+
+        for (const entity of entitiesToRender) {
+          // Defensive checks
+          if (typeof entity.start !== 'number' || typeof entity.end !== 'number') {
+            continue;
           }
-        }));
-      }
+          if (entity.start < 0 || entity.end > docLength) {
+            continue;
+          }
+          if (entity.start >= entity.end) {
+            continue;
+          }
 
-      return builder.finish();
+          // Clamp to window
+          const from = Math.max(entity.start, windowFrom);
+          const to = Math.min(entity.end, windowTo);
+
+          if (from >= to) {
+            continue;
+          }
+
+          const color = getEntityTypeColor(entity.type);
+          const style = isDarkMode
+            ? buildDarkModeStyle(color, opacity)
+            : buildLightModeStyle(color, opacity);
+
+          decorations.push({
+            from,
+            to,
+            decoration: Decoration.mark({
+              class: 'cm-entity-highlight',
+              attributes: {
+                'data-entity': getEntityJson(entity),
+                style
+              }
+            })
+          });
+        }
+
+        // RangeSetBuilder requires decorations in sorted order
+        decorations.sort((a, b) => a.from - b.from || a.to - b.to);
+
+        const builder = new RangeSetBuilder<Decoration>();
+        for (const { from, to, decoration } of decorations) {
+          builder.add(from, to, decoration);
+        }
+
+        return builder.finish();
+      } catch (error) {
+        // Never crash the editor - return empty decorations on error
+        if (VERBOSE_LOGGING) {
+          console.error('[EntityHighlighter] Error building decorations:', error);
+        }
+        return Decoration.none;
+      }
     }
 
     destroy() {
-      if (this.scrollEndTimer) {
-        clearTimeout(this.scrollEndTimer);
-      }
+      // Nothing to clean up
     }
   }, {
     decorations: plugin => plugin.decorations
@@ -1267,47 +1248,57 @@ export function CodeMirrorEditor({
     return () => styleTag.remove();
   }, []);
 
-  // Keep refs in sync and trigger ViewPlugin update
+  // Keep refs in sync - ViewPlugin rebuilds on any transaction
   useEffect(() => {
     if (VERBOSE_LOGGING) console.log('[CodeMirror] entities changed:', entities.length);
-    // Sort entities by start position for efficient binary search in viewport filtering
-    // This is a one-time cost when entities change, enabling O(log n) viewport filtering
+    // Sort entities by start position for efficient binary search
     entitiesRef.current = [...entities].sort((a, b) => a.start - b.start);
 
-    // Trigger ViewPlugin update - it compares entity refs to detect changes
+    // Simple empty dispatch to trigger ViewPlugin update
+    // The ViewPlugin rebuilds on transactions.length > 0
     const view = viewRef.current;
     if (view) {
-      // Use StateEffect to trigger a proper update cycle
-      view.dispatch({
-        effects: StateEffect.appendConfig.of([])
-      });
+      try {
+        view.dispatch({});
+      } catch (e) {
+        // Ignore errors during dispatch
+      }
     }
   }, [entities]);
 
   useEffect(() => {
     renderMarkdownRef.current = renderMarkdown;
-    // Manual tag hiding uses StateField which only rebuilds on docChanged
     const view = viewRef.current;
     if (view) {
-      view.dispatch({ effects: StateEffect.appendConfig.of([]) });
+      try {
+        view.dispatch({});
+      } catch (e) {
+        // Ignore errors
+      }
     }
   }, [renderMarkdown]);
 
   useEffect(() => {
     disableHighlightingRef.current = disableHighlighting;
-    // Trigger ViewPlugin rebuild
     const view = viewRef.current;
     if (view) {
-      view.dispatch({ effects: StateEffect.appendConfig.of([]) });
+      try {
+        view.dispatch({});
+      } catch (e) {
+        // Ignore errors
+      }
     }
   }, [disableHighlighting]);
 
   useEffect(() => {
     highlightOpacityRef.current = highlightOpacity;
-    // Trigger ViewPlugin rebuild
     const view = viewRef.current;
     if (view) {
-      view.dispatch({ effects: StateEffect.appendConfig.of([]) });
+      try {
+        view.dispatch({});
+      } catch (e) {
+        // Ignore errors
+      }
     }
   }, [highlightOpacity]);
 
@@ -1320,14 +1311,18 @@ export function CodeMirrorEditor({
     let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
     const observer = new MutationObserver(() => {
-      // Debounce theme changes to avoid multiple rapid rebuilds
+      // Debounce theme changes
       if (debounceTimer) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         const view = viewRef.current;
         if (view) {
-          view.dispatch({});
+          try {
+            view.dispatch({});
+          } catch (e) {
+            // Ignore errors
+          }
         }
-      }, 50);
+      }, 100);
     });
 
     observer.observe(document.documentElement, {
