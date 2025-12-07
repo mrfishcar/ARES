@@ -588,7 +588,8 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const hasActiveJob = jobStatus === 'queued' || jobStatus === 'running';
   const isUpdating = processing && !requiresBackground && !hasActiveJob;
   const displayEntities = applyEntityOverrides(entities, entityOverrides, entityHighlightMode);
-  const heavyLongTextMode = requiresBackground && hasActiveJob;
+  const entityHighlightingEnabled = showHighlighting;
+  const editorDisableHighlighting = !entityHighlightingEnabled;
   const hasResults = displayEntities.length > 0 || relations.length > 0 || stats.count > 0 || stats.relationCount > 0;
   const jobStatusLabel =
     jobStatus === 'running'
@@ -1287,6 +1288,12 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     [displayEntities]
   );
 
+  console.debug('[ExtractionLab] Editor props', {
+    entitiesCount: displayEntities?.length ?? 0,
+    editorDisableHighlighting,
+    entityHighlightMode,
+  });
+
   return (
     <div className="extraction-lab">
       {/* Header */}
@@ -1619,7 +1626,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
             <div className="editor-with-indicators-wrapper">
               {/* Entity indicators on left side */}
               <EntityIndicators
-                entities={heavyLongTextMode ? [] : displayEntities}
+                entities={displayEntities}
                 text={text}
                 editorHeight={Math.max(400, window.innerHeight - 380)}
               />
@@ -1629,11 +1636,11 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                   value={text}
                   onChange={(newText) => setText(newText)}
                   minHeight="calc(100vh - 380px)"
-                  disableHighlighting={!showHighlighting || requiresBackground}
+                  disableHighlighting={editorDisableHighlighting}
                   highlightOpacity={highlightOpacity}
                   enableWYSIWYG={false}
                   renderMarkdown={renderMarkdown}
-                  entities={heavyLongTextMode ? [] : displayEntities}
+                  entities={displayEntities}
                   projectId={project}
                   onReject={handleReject}
                   onChangeType={handleChangeType}

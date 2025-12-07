@@ -120,26 +120,47 @@ function hexToRgba(hex: string, opacity: number = 1): string {
 function entityHighlighterExtension(
   getEntities: () => EntitySpan[],
   isHighlightingDisabled: () => boolean,
-  getHighlightOpacity: () => number
+  getHighlightOpacity: () => number,
+  getEntityHighlightMode: () => boolean
 ) {
   return StateField.define<DecorationSet>({
     create(state) {
-      return buildEntityDecorations(state, getEntities(), isHighlightingDisabled(), getHighlightOpacity());
+      return buildEntityDecorations(
+        state,
+        getEntities(),
+        isHighlightingDisabled(),
+        getHighlightOpacity(),
+        getEntityHighlightMode()
+      );
     },
     update(deco, tr) {
       // Always rebuild - we read fresh entities from the getter
       // The key insight: entitiesRef is always in sync with latest extraction
       // because useEffect updates it when entities prop changes.
       // So rebuilding here with getEntities() always gives us current data.
-      return buildEntityDecorations(tr.state, getEntities(), isHighlightingDisabled(), getHighlightOpacity());
+      return buildEntityDecorations(
+        tr.state,
+        getEntities(),
+        isHighlightingDisabled(),
+        getHighlightOpacity(),
+        getEntityHighlightMode()
+      );
     },
     provide: f => EditorView.decorations.from(f)
   });
 }
 
-function buildEntityDecorations(state: EditorState, entities: EntitySpan[], isDisabled: boolean, opacityMultiplier: number = 1.0): DecorationSet {
-  // If highlighting is disabled, return empty decorations
-  if (isDisabled) {
+function buildEntityDecorations(state: EditorState, entities: EntitySpan[], isDisabled: boolean, opacityMultiplier: number = 1.0, entityHighlightMode: boolean = false): DecorationSet {
+  const shouldHighlight = !isDisabled && Array.isArray(entities) && entities.length > 0;
+
+  console.debug('[CodeMirrorEditor] highlight check', {
+    disableHighlighting: isDisabled,
+    entityHighlightMode,
+    entityCount: Array.isArray(entities) ? entities.length : 0
+  });
+
+  // If highlighting is disabled or there are no entities, return empty decorations
+  if (!shouldHighlight) {
     return Decoration.none;
   }
   const builder = new RangeSetBuilder<Decoration>();
@@ -1196,7 +1217,12 @@ export function CodeMirrorEditor({
         markdown(),
         // Enable live markdown syntax highlighting with custom markdown styles
         syntaxHighlighting(markdownHighlightStyle),
-        entityHighlighterExtension(() => entitiesRef.current, () => disableHighlightingRef.current, () => highlightOpacityRef.current),
+        entityHighlighterExtension(
+          () => entitiesRef.current,
+          () => disableHighlightingRef.current,
+          () => highlightOpacityRef.current,
+          () => entityHighlightModeRef.current
+        ),
         manualTagHidingExtension(() => renderMarkdownRef.current, () => entitiesRef.current),
         contextMenuHandler(setContextMenu, entitiesRef),
         editorTheme,
