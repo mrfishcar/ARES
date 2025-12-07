@@ -37,6 +37,9 @@ import { getEntityTypeColor, isValidEntityType } from '../types/entities';
 import { EntityContextMenu } from './EntityContextMenu';
 import type { CodeMirrorEditorProps } from './CodeMirrorEditorProps';
 
+const LARGE_DOC_THRESHOLD = 30000; // characters
+const IS_DEV_ENV = typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production';
+
 // ============================================================================
 // 0. UTILITY FUNCTIONS
 // ============================================================================
@@ -153,85 +156,26 @@ function entityHighlighterExtension(
 function buildEntityDecorations(state: EditorState, entities: EntitySpan[], isDisabled: boolean, opacityMultiplier: number = 1.0, entityHighlightMode: boolean = false): DecorationSet {
   const shouldHighlight = !isDisabled && Array.isArray(entities) && entities.length > 0;
 
-  console.debug('[CodeMirrorEditor] highlight check', {
-    disableHighlighting: isDisabled,
-    entityHighlightMode,
-    entityCount: Array.isArray(entities) ? entities.length : 0
-  });
+  if (IS_DEV_ENV) {
+    console.debug('[CodeMirrorEditor] highlight check', {
+      disableHighlighting: isDisabled,
+      entityHighlightMode,
+      entityCount: Array.isArray(entities) ? entities.length : 0
+    });
+  }
 
   // If highlighting is disabled or there are no entities, return empty decorations
   if (!shouldHighlight) {
     return Decoration.none;
   }
   const builder = new RangeSetBuilder<Decoration>();
-  const text = state.doc.toString();
-
-  // Find all rejected regions to exclude them from highlighting
-  const rejectedRegions: Array<{ start: number; end: number }> = [];
-  const rejectionRegex = /\[([^\]]+)\]:REJECT_ENTITY|(\w+)(?:[.,!?;-]*):REJECT_ENTITY/g;
-  let match;
-  while ((match = rejectionRegex.exec(text)) !== null) {
-    rejectedRegions.push({
-      start: match.index,
-      end: match.index + match[0].length
-    });
-  }
-
-  // Find all manual tag syntax regions (the :TYPE parts) to exclude them from auto-detected entities
-  // This prevents ":ORG", ":PERSON" etc from being highlighted as separate entities
-  const tagSyntaxRegions: Array<{ start: number; end: number }> = [];
-  const tagRegex = /#\[([^\]]+)\]:(\w+)|#(\w+):(\w+)|(\w+):ALIAS_OF_([^:]+):(\w+)|\[([^\]]+)\]:REJECT_ENTITY|(\w+)(?:[.,!?;-]*):REJECT_ENTITY/g;
-  while ((match = tagRegex.exec(text)) !== null) {
-    // Extract just the :TYPE or :REJECT_ENTITY syntax part
-    if (match[1]) {
-      // Pattern: #[Multi Word]:TYPE - hide ]:TYPE part
-      const typeStart = match.index + match[0].indexOf(']:') + 1;
-      tagSyntaxRegions.push({ start: typeStart, end: match.index + match[0].length });
-    } else if (match[3]) {
-      // Pattern: #Entity:TYPE - hide :TYPE part
-      const typeStart = match.index + match[0].indexOf(':');
-      tagSyntaxRegions.push({ start: typeStart, end: match.index + match[0].length });
-    } else if (match[5]) {
-      // Pattern: Entity:ALIAS_OF_...:TYPE - hide :ALIAS_OF_... part
-      const aliasStart = match.index + match[0].indexOf(':');
-      tagSyntaxRegions.push({ start: aliasStart, end: match.index + match[0].length });
-    } else if (match[8]) {
-      // Pattern: [Multi Word]:REJECT_ENTITY - hide ]:REJECT_ENTITY part
-      const typeStart = match.index + match[0].indexOf(']:') + 1;
-      tagSyntaxRegions.push({ start: typeStart, end: match.index + match[0].length });
-    } else if (match[9]) {
-      // Pattern: Word:REJECT_ENTITY - hide :REJECT_ENTITY part
-      const typeStart = match.index + match[0].indexOf(':');
-      tagSyntaxRegions.push({ start: typeStart, end: match.index + match[0].length });
-    }
-  }
-
-  // Helper to check if position overlaps with any rejected region
-  const isInRejectedRegion = (start: number, end: number): boolean => {
-    return rejectedRegions.some(region => !(end <= region.start || start >= region.end));
-  };
-
-  // Helper to check if position overlaps with any tag syntax region
-  const isInTagSyntaxRegion = (start: number, end: number): boolean => {
-    return tagSyntaxRegions.some(region => !(end <= region.start || start >= region.end));
-  };
+  const docLength = state.doc.length;
 
   // Detect current theme
   const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
 
   for (const entity of entities) {
-    if (entity.start >= 0 && entity.end <= text.length && entity.start < entity.end) {
-      // Skip entities that overlap with rejected regions
-      if (isInRejectedRegion(entity.start, entity.end)) {
-        continue;
-      }
-
-      // Skip entities that are tag syntax parts (like ":ORG", ":PERSON")
-      // These are artifacts from manual tag detection in the backend
-      if (isInTagSyntaxRegion(entity.start, entity.end)) {
-        continue;
-      }
-
+    if (entity.start >= 0 && entity.end <= docLength && entity.start < entity.end) {
       const color = getEntityTypeColor(entity.type);
       let style: string;
 
@@ -394,34 +338,45 @@ function manualTagHidingExtension(
 ) {
   return StateField.define<DecorationSet>({
     create(state) {
-      return buildTagHidingDecorations(state, getRenderMarkdown(), getEntities());
+      return buildManualTagDecorations(state, getRenderMarkdown(), getEntities());
     },
     update(deco, tr) {
-      // Always rebuild - read fresh toggle state and entities from getters
-      // This ensures: toggle changes OR text changes OR entities change → decorations update
-      return buildTagHidingDecorations(tr.state, getRenderMarkdown(), getEntities());
+      // If markdown rendering is disabled, clear decorations
+      if (!getRenderMarkdown()) return Decoration.none;
+
+      // Only rebuild when the document actually changes.
+      // Selection changes alone should NOT trigger a full regex pass.
+      if (tr.docChanged) {
+        return buildManualTagDecorations(tr.state, getRenderMarkdown(), getEntities());
+      }
+
+      return deco;
     },
     provide: f => EditorView.decorations.from(f)
   });
 }
 
-function buildTagHidingDecorations(
+function buildManualTagDecorations(
   state: EditorState,
   renderMarkdown: boolean,
   entities: EntitySpan[]
 ): DecorationSet {
-  // In raw mode, don't hide tags
-  if (!renderMarkdown) {
-    console.log('[TagHiding] RAW MODE - skipping tag hiding');
+  const text = state.doc.toString();
+  const docLength = text.length;
+  const debugLogging = IS_DEV_ENV;
+
+  // If we're not in pretty markdown mode, or the document is large,
+  // skip manual tag hiding entirely for performance.
+  if (!renderMarkdown || docLength > LARGE_DOC_THRESHOLD) {
+    if (debugLogging && docLength > LARGE_DOC_THRESHOLD) {
+      console.log('[TagHiding] Large doc - skipping manual tag hiding');
+    }
     return Decoration.none;
   }
-
-  console.log('[TagHiding] PRETTY MODE - processing tags with entities:', entities.length);
 
   // In pretty mode, hide ONLY the tag syntax, not the entity word
   // For "#Gondor:PLACE", hide "#" and ":PLACE" but keep "Gondor" visible
   const builder = new RangeSetBuilder<Decoration>();
-  const text = state.doc.toString();
 
   // Helper function to find entity at a given position
   const findEntityAtPosition = (pos: number): EntitySpan | undefined => {
@@ -470,7 +425,9 @@ function buildTagHidingDecorations(
   // Reset regex for the decoration matching loop
   tagRegex.lastIndex = 0;
 
-  console.log('[TagHiding] Looking for tags in text:', text.substring(0, 100));
+  if (debugLogging) {
+    console.log('[TagHiding] Looking for tags in text:', text.substring(0, 100));
+  }
 
   let match;
   let tagCount = 0;
@@ -480,7 +437,9 @@ function buildTagHidingDecorations(
     const matchEnd = match.index + match[0].length;
     const fullTag = match[0];
 
-    console.log(`[TagHiding] Found tag #${tagCount}: "${fullTag}" at position ${matchStart}-${matchEnd}`);
+    if (debugLogging) {
+      console.log(`[TagHiding] Found tag #${tagCount}: "${fullTag}" at position ${matchStart}-${matchEnd}`);
+    }
 
     // PROTECTION: Skip tag hiding if this match is in the incomplete/being-typed region
     if (incompleteTagStart !== -1 && matchStart >= incompleteTagStart && matchStart < incompleteTagEnd) {
@@ -498,7 +457,9 @@ function buildTagHidingDecorations(
     // If STILL no entity found, create a synthetic entity from the tag itself
     // This allows manual tags to be hidden and have context menus even if extraction fails
     if (!entityToUse) {
-      console.log('[TagHiding] No entity found, creating synthetic entity from tag:', fullTag);
+      if (debugLogging) {
+        console.log('[TagHiding] No entity found, creating synthetic entity from tag:', fullTag);
+      }
 
       // Extract entity name and type from the tag match groups
       let entityName = '';
@@ -529,10 +490,12 @@ function buildTagHidingDecorations(
       }
 
       // Validate the entity type - if invalid, default to MISC
-      if (!isValidEntityType(entityType)) {
-        console.log('[TagHiding] Invalid entity type:', entityType, '- defaulting to MISC');
-        entityType = 'MISC';
-      }
+        if (!isValidEntityType(entityType)) {
+          if (debugLogging) {
+            console.log('[TagHiding] Invalid entity type:', entityType, '- defaulting to MISC');
+          }
+          entityType = 'MISC';
+        }
 
       // Create synthetic entity for the tag
       entityToUse = {
@@ -545,21 +508,25 @@ function buildTagHidingDecorations(
         source: 'manual' as const
       };
 
-      console.log('[TagHiding] Created synthetic entity:', {
-        text: entityName,
-        type: entityType,
-        isRejected: !!match[8] || !!match[9],
-        position: `${matchStart}-${matchEnd}`
+        if (debugLogging) {
+          console.log('[TagHiding] Created synthetic entity:', {
+            text: entityName,
+            type: entityType,
+            isRejected: !!match[8] || !!match[9],
+            position: `${matchStart}-${matchEnd}`
+          });
+        }
+      }
+
+    if (debugLogging) {
+      console.log('[TagHiding] Creating widget for tag:', {
+        fullTag,
+        position: `${matchStart}-${matchEnd}`,
+        entityText: entityToUse.text,
+        entityType: entityToUse.type,
+        entityPos: `${entityToUse.start}-${entityToUse.end}`
       });
     }
-
-    console.log('[TagHiding] Creating widget for tag:', {
-      fullTag,
-      position: `${matchStart}-${matchEnd}`,
-      entityText: entityToUse.text,
-      entityType: entityToUse.type,
-      entityPos: `${entityToUse.start}-${entityToUse.end}`
-    });
 
     // Note: The entity highlighting layer (buildEntityDecorations) already handles
     // highlighting the entity text with glow effects. We don't add highlighting here
