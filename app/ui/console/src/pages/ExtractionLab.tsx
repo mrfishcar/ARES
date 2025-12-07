@@ -713,9 +713,9 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   }, [text, extractEntities, toast]);
 
   useEffect(() => {
-    if (requiresBackground || hasActiveJob) {
+    if (requiresBackground) {
       setProcessing(false);
-      if (requiresBackground && !hasActiveJob) {
+      if (!hasActiveJob && jobStatus !== 'done' && jobStatus !== 'failed') {
         setEntities([]);
         setRelations([]);
         setStats({ time: 0, confidence: 0, count: 0, relationCount: 0 });
@@ -723,12 +723,12 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       return;
     }
 
-    if (!liveExtractionEnabled) {
+    if (hasActiveJob || !liveExtractionEnabled) {
       return;
     }
 
     extractEntities(text);
-  }, [text, extractEntities, requiresBackground, hasActiveJob, liveExtractionEnabled]);
+  }, [text, extractEntities, requiresBackground, hasActiveJob, liveExtractionEnabled, jobStatus]);
 
   const startBackgroundJob = async () => {
     if (!text.trim()) {
