@@ -14,10 +14,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import {
   EditorState,
-  StateEffect,
-  StateField,
-  RangeSetBuilder,
-  Transaction
+  RangeSetBuilder
 } from '@codemirror/state';
 import {
   EditorView,
@@ -37,7 +34,6 @@ import { getEntityTypeColor, isValidEntityType } from '../types/entities';
 import { EntityContextMenu } from './EntityContextMenu';
 import type { CodeMirrorEditorProps } from './CodeMirrorEditorProps';
 
-const LARGE_DOC_THRESHOLD = 30000; // characters
 const IS_DEV_ENV = typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production';
 const VERBOSE_LOGGING = false; // Set to true only when debugging highlighting issues
 
@@ -62,6 +58,10 @@ function findFirstEntityInRange(entities: EntitySpan[], rangeStart: number): num
     }
   }
   return lo;
+}
+
+function makeSpanKey(e: EntitySpan): string {
+  return `${e.start}-${e.end}-${e.type}`;
 }
 
 /**
@@ -169,17 +169,6 @@ function hexToRgba(hex: string, opacity: number = 1): string {
 // 1. ENTITY HIGHLIGHTING EXTENSION
 // ============================================================================
 
-// Pre-compute entity JSON strings to avoid repeated serialization
-const entityJsonCache = new WeakMap<EntitySpan, string>();
-function getEntityJson(entity: EntitySpan): string {
-  let json = entityJsonCache.get(entity);
-  if (!json) {
-    json = JSON.stringify(entity);
-    entityJsonCache.set(entity, json);
-  }
-  return json;
-}
-
 // Simple, robust entity highlighter
 // Key principles:
 // 1. Always build decorations synchronously - no async/timers
@@ -190,177 +179,44 @@ function entityHighlighterExtension(
   getEntities: () => EntitySpan[],
   isHighlightingDisabled: () => boolean,
   getHighlightOpacity: () => number,
-  _getEntityHighlightMode: () => boolean
+  getEntityHighlightMode: () => boolean
 ) {
-  // Fixed buffer - not too large, not too small
-  const VIEWPORT_BUFFER = 2000;
-  // Hard limit on decorations to prevent performance issues
-  const MAX_DECORATIONS = 120;
-  const SCROLL_VELOCITY_THRESHOLD = 2.5; // px per ms
-  const SCROLL_REST_DELAY = 180; // ms
+  const VIEWPORT_BUFFER = 2000; // chars before/after viewport
 
-  class EntityHighlightPlugin {
+  return ViewPlugin.fromClass(class {
     decorations: DecorationSet;
-    private suspended: boolean;
-    private suspendedUntil: number;
-    private lastScrollTop: number;
-    private lastScrollTime: number;
 
     constructor(readonly view: EditorView) {
-      this.decorations = Decoration.none;
-      this.suspended = false;
-      this.suspendedUntil = 0;
-      this.lastScrollTop = view.scrollDOM.scrollTop;
-      this.lastScrollTime = performance.now();
-      this.decorations = this.buildDecorations();
+      this.decorations = this.buildDecorations(view);
     }
 
     update(update: ViewUpdate) {
-      const now = performance.now();
-
-      // Resume highlighting after rest period
-      if (this.suspended && now >= this.suspendedUntil) {
-        this.suspended = false;
-      }
-
-      if (this.suspended) {
-        // Drop decorations immediately while suspended
-        this.decorations = Decoration.none;
-        return;
-      }
-
-      // Rebuild on any change - scoped to viewport only
       if (update.docChanged || update.viewportChanged || update.transactions.length > 0) {
-        this.decorations = this.buildDecorations();
+        this.decorations = this.buildDecorations(update.view);
       }
     }
 
-    handleScroll(event: Event) {
-      const target = event.target as HTMLElement | null;
-      if (!target) return;
+    buildDecorations(view: EditorView): DecorationSet {
+      const state = view.state;
+      const doc = state.doc;
+      const docLength = doc.length;
 
-      const now = performance.now();
-      const currentTop = target.scrollTop;
-      const delta = Math.abs(currentTop - this.lastScrollTop);
-      const dt = Math.max(1, now - this.lastScrollTime);
-      const velocity = delta / dt; // px per ms
+      const { from: vpFrom, to: vpTo } = view.viewport;
+      const windowFrom = Math.max(0, vpFrom - VIEWPORT_BUFFER);
+      const windowTo = Math.min(docLength, vpTo + VIEWPORT_BUFFER);
 
-      this.lastScrollTop = currentTop;
-      this.lastScrollTime = now;
-
-      if (velocity > SCROLL_VELOCITY_THRESHOLD) {
-        this.suspended = true;
-        this.suspendedUntil = now + SCROLL_REST_DELAY;
-        this.decorations = Decoration.none;
-      }
+      return buildEntityDecorations(
+        state,
+        getEntities(),
+        isHighlightingDisabled(),
+        getHighlightOpacity(),
+        getEntityHighlightMode(),
+        windowFrom,
+        windowTo
+      );
     }
-
-    buildDecorations(): DecorationSet {
-      try {
-        // Early exit if highlighting disabled
-        if (isHighlightingDisabled()) {
-          return Decoration.none;
-        }
-
-        const entities = getEntities();
-        if (!entities || entities.length === 0) {
-          return Decoration.none;
-        }
-
-        const ranges = this.view.visibleRanges;
-        const docLength = this.view.state.doc.length;
-        if (docLength === 0 || ranges.length === 0) {
-          return Decoration.none;
-        }
-
-        const windowFrom = Math.max(0, ranges[0].from - VIEWPORT_BUFFER);
-        const windowTo = Math.min(docLength, ranges[ranges.length - 1].to + VIEWPORT_BUFFER);
-
-        // Get entities in range using binary search
-        const visibleEntities = getEntitiesInRange(entities, windowFrom, windowTo);
-
-        if (visibleEntities.length === 0) {
-          return Decoration.none;
-        }
-
-        // Limit to prevent performance issues
-        const entitiesToRender = visibleEntities.slice(0, MAX_DECORATIONS);
-
-        const opacity = getHighlightOpacity();
-        const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
-
-        // Collect valid decorations first, then sort by position
-        const decorations: Array<{ from: number; to: number; decoration: Decoration }> = [];
-
-        for (const entity of entitiesToRender) {
-          // Defensive checks
-          if (typeof entity.start !== 'number' || typeof entity.end !== 'number') {
-            continue;
-          }
-          if (entity.start < 0 || entity.end > docLength) {
-            continue;
-          }
-          if (entity.start >= entity.end) {
-            continue;
-          }
-
-          // Clamp to window
-          const from = Math.max(entity.start, windowFrom);
-          const to = Math.min(entity.end, windowTo);
-
-          if (from >= to) {
-            continue;
-          }
-
-          const color = getEntityTypeColor(entity.type);
-          const style = isDarkMode
-            ? buildDarkModeStyle(color, opacity)
-            : buildLightModeStyle(color, opacity);
-
-          decorations.push({
-            from,
-            to,
-            decoration: Decoration.mark({
-              class: 'cm-entity-highlight',
-              attributes: {
-                'data-entity': getEntityJson(entity),
-                style
-              }
-            })
-          });
-        }
-
-        // RangeSetBuilder requires decorations in sorted order
-        decorations.sort((a, b) => a.from - b.from || a.to - b.to);
-
-        const builder = new RangeSetBuilder<Decoration>();
-        for (const { from, to, decoration } of decorations) {
-          builder.add(from, to, decoration);
-        }
-
-        return builder.finish();
-      } catch (error) {
-        // Never crash the editor - return empty decorations on error
-        if (VERBOSE_LOGGING) {
-          console.error('[EntityHighlighter] Error building decorations:', error);
-        }
-        return Decoration.none;
-      }
-    }
-
-    destroy() {
-      // Nothing to clean up
-    }
-  }
-
-  return ViewPlugin.fromClass(EntityHighlightPlugin, {
-    decorations: plugin => plugin.decorations,
-    eventHandlers: {
-      scroll(event, view) {
-        const plugin = view.plugin(EntityHighlightPlugin);
-        plugin?.handleScroll(event);
-      }
-    }
+  }, {
+    decorations: v => v.decorations
   });
 }
 
@@ -389,8 +245,8 @@ function buildEntityDecorations(
   isDisabled: boolean,
   opacityMultiplier: number = 1.0,
   entityHighlightMode: boolean = false,
-  windowFrom?: number,
-  windowTo?: number
+  windowFrom: number,
+  windowTo: number
 ): DecorationSet {
   const shouldHighlight = !isDisabled && Array.isArray(entities) && entities.length > 0;
 
@@ -410,30 +266,38 @@ function buildEntityDecorations(
 
   const builder = new RangeSetBuilder<Decoration>();
   const docLength = state.doc.length;
-  const rangeFrom = Math.max(0, windowFrom ?? 0);
-  const rangeTo = Math.min(docLength, windowTo ?? docLength);
+  const rangeFrom = Math.max(0, windowFrom);
+  const rangeTo = Math.min(docLength, windowTo);
+  const textWindow = state.doc.sliceString(rangeFrom, rangeTo);
+  const windowLength = textWindow.length;
+
+  if (windowLength === 0) {
+    return Decoration.none;
+  }
 
   // Detect current theme (cached per render - DOM access is relatively cheap)
   const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
 
-  // Use efficient binary search to get only entities in viewport range
-  // This avoids iterating over thousands of entities for large documents
-  const visibleEntities = getEntitiesInRange(entities, rangeFrom, rangeTo);
+  const visibleEntities = entities.filter(e => !(e.end <= rangeFrom || e.start >= rangeTo));
+  const MAX_DECORATIONS = 500;
+  const limitedEntities = visibleEntities.slice(0, MAX_DECORATIONS);
 
-  for (const entity of visibleEntities) {
-    // Entity is guaranteed to overlap with [rangeFrom, rangeTo] by getEntitiesInRange
+  for (const entity of limitedEntities) {
     if (entity.start >= 0 && entity.end <= docLength && entity.start < entity.end) {
       const start = Math.max(entity.start, rangeFrom);
       const end = Math.min(entity.end, rangeTo);
 
+      if (start >= end) continue;
+
       const style = isDarkMode
         ? buildDarkModeStyle(getEntityTypeColor(entity.type), opacityMultiplier)
         : buildLightModeStyle(getEntityTypeColor(entity.type), opacityMultiplier);
+      const key = makeSpanKey(entity);
 
       builder.add(start, end, Decoration.mark({
         class: 'cm-entity-highlight',
         attributes: {
-          'data-entity': getEntityJson(entity),
+          'data-entity-key': key,
           style
         }
       }));
@@ -544,52 +408,79 @@ function manualTagHidingExtension(
   getRenderMarkdown: () => boolean,
   getEntities: () => EntitySpan[]
 ) {
-  return StateField.define<DecorationSet>({
-    create(state) {
-      return buildManualTagDecorations(state, getRenderMarkdown(), getEntities());
-    },
-    update(deco, tr) {
-      // If markdown rendering is disabled, clear decorations
-      if (!getRenderMarkdown()) return Decoration.none;
+  const VIEWPORT_BUFFER = 2000;
 
-      // Only rebuild when the document actually changes.
-      // Selection changes alone should NOT trigger a full regex pass.
-      if (tr.docChanged) {
-        return buildManualTagDecorations(tr.state, getRenderMarkdown(), getEntities());
+  return ViewPlugin.fromClass(class {
+    decorations: DecorationSet;
+
+    constructor(readonly view: EditorView) {
+      this.decorations = this.buildDecorations(view);
+    }
+
+    update(update: ViewUpdate) {
+      if (update.docChanged || update.viewportChanged || update.transactions.length > 0) {
+        this.decorations = this.buildDecorations(update.view);
+      }
+    }
+
+    buildDecorations(view: EditorView): DecorationSet {
+      const renderMarkdown = getRenderMarkdown();
+      if (!renderMarkdown) {
+        return Decoration.none;
       }
 
-      return deco;
-    },
-    provide: f => EditorView.decorations.from(f)
+      const state = view.state;
+      const docLength = state.doc.length;
+      const { from: vpFrom, to: vpTo } = view.viewport;
+      const windowFrom = Math.max(0, vpFrom - VIEWPORT_BUFFER);
+      const windowTo = Math.min(docLength, vpTo + VIEWPORT_BUFFER);
+
+      return buildManualTagDecorations(
+        state,
+        renderMarkdown,
+        getEntities(),
+        windowFrom,
+        windowTo
+      );
+    }
+  }, {
+    decorations: v => v.decorations
   });
 }
 
 function buildManualTagDecorations(
   state: EditorState,
   renderMarkdown: boolean,
-  entities: EntitySpan[]
+  entities: EntitySpan[],
+  windowFrom: number,
+  windowTo: number
 ): DecorationSet {
-  const text = state.doc.toString();
-  const docLength = text.length;
+  const doc = state.doc;
+  const docLength = doc.length;
+  const rangeFrom = Math.max(0, windowFrom);
+  const rangeTo = Math.min(docLength, windowTo);
+  const text = doc.sliceString(rangeFrom, rangeTo);
+  const windowLength = text.length;
   // Only log when verbose logging is explicitly enabled (for debugging)
   const debugLogging = VERBOSE_LOGGING && IS_DEV_ENV;
 
-  // If we're not in pretty markdown mode, or the document is large,
-  // skip manual tag hiding entirely for performance.
-  if (!renderMarkdown || docLength > LARGE_DOC_THRESHOLD) {
-    if (debugLogging && docLength > LARGE_DOC_THRESHOLD) {
-      console.log('[TagHiding] Large doc - skipping manual tag hiding');
-    }
+  if (!renderMarkdown || windowLength === 0) {
     return Decoration.none;
   }
 
   // In pretty mode, hide ONLY the tag syntax, not the entity word
   // For "#Gondor:PLACE", hide "#" and ":PLACE" but keep "Gondor" visible
   const builder = new RangeSetBuilder<Decoration>();
+  const visibleEntities = entities.filter(e => !(e.end <= rangeFrom || e.start >= rangeTo));
 
   // Helper function to find entity at a given position
   const findEntityAtPosition = (pos: number): EntitySpan | undefined => {
-    return entities.find(e => e.start <= pos && pos < e.end);
+    for (const e of visibleEntities) {
+      if (e.start <= pos && pos < e.end) {
+        return e;
+      }
+    }
+    return undefined;
   };
 
   // CRITICAL: Identify incomplete tag being typed (protected zone)
@@ -615,18 +506,19 @@ function buildManualTagDecorations(
 
   // If there's a last tag match, check if it's been terminated/committed
   if (lastTagMatch) {
-    const matchEnd = lastTagMatch.index + lastTagMatch[0].length;
+    const matchStart = rangeFrom + lastTagMatch.index;
+    const matchEnd = matchStart + lastTagMatch[0].length;
     // Tag is COMMITTED only if there's an EXPLICIT terminating character immediately after
     // Terminating chars: space, period, comma, quotes, newline, etc.
     // DO NOT treat EOF as a terminator (user might still be typing at end of document)
     // This prevents: "#[Cory Gilford]:PERSON" (typing P at EOF) from being hidden prematurely
     // And requires: "#Cory:PERSON " (explicit space) or "#Cory:PERSON." to be hidden
-    const isCommitted = matchEnd < text.length && /\W/.test(text[matchEnd]);
+    const isCommitted = matchEnd < docLength && /\W/.test(doc.sliceString(matchEnd, matchEnd + 1));
 
     if (!isCommitted) {
       // Either: no char after (EOF), or next char IS a word character → still being typed (incomplete)
-      incompleteTagStart = lastTagMatch.index;
-      incompleteTagEnd = text.length;
+      incompleteTagStart = matchStart;
+      incompleteTagEnd = docLength;
     }
     // else: Next char is a non-word char → tag is committed, allow hiding
   }
@@ -642,8 +534,8 @@ function buildManualTagDecorations(
   let tagCount = 0;
   while ((match = tagRegex.exec(text)) !== null) {
     tagCount++;
-    const matchStart = match.index;
-    const matchEnd = match.index + match[0].length;
+    const matchStart = rangeFrom + match.index;
+    const matchEnd = matchStart + match[0].length;
     const fullTag = match[0];
 
     if (debugLogging) {
@@ -659,9 +551,7 @@ function buildManualTagDecorations(
     const entity = findEntityAtPosition(matchStart);
 
     // If entity not found by position, try to find one that overlaps with this tag
-    let entityToUse = entity || entities.find(e =>
-      !(e.end <= matchStart || e.start >= matchEnd)
-    );
+    let entityToUse = entity || visibleEntities.find(e => !(e.end <= matchStart || e.start >= matchEnd));
 
     // If STILL no entity found, create a synthetic entity from the tag itself
     // This allows manual tags to be hidden and have context menus even if extraction fails
@@ -752,7 +642,7 @@ function buildManualTagDecorations(
         Decoration.mark({
           class: 'cm-tag-highlight',
           attributes: {
-            'data-entity': JSON.stringify(entityToUse),
+            'data-entity-key': makeSpanKey(entityToUse),
             style: `cursor: pointer;`
           }
         })
@@ -866,7 +756,8 @@ function buildManualTagDecorations(
 
 function contextMenuHandler(
   setContextMenu: (ctx: any) => void,
-  entitiesRef: React.MutableRefObject<EntitySpan[]>
+  entitiesRef: React.MutableRefObject<EntitySpan[]>,
+  entityMapRef: React.MutableRefObject<Map<string, EntitySpan>>
 ) {
   // Long-press tracking for touch devices
   let touchStartTime = 0;
@@ -879,17 +770,13 @@ function contextMenuHandler(
   const findEntityAtEvent = (event: any, view: EditorView) => {
     const target = event.target as HTMLElement;
 
-    // First, try to find data-entity attribute in DOM (works for regular highlights)
-    const elementWithData = target.closest('[data-entity]') as HTMLElement | null;
+    const elementWithData = target.closest('[data-entity-key]') as HTMLElement | null;
     if (elementWithData) {
-      const entityData = elementWithData.getAttribute('data-entity');
-      if (entityData) {
-        try {
-          const entity = JSON.parse(entityData) as EntitySpan;
+      const key = elementWithData.dataset.entityKey;
+      if (key) {
+        const entity = entityMapRef.current.get(key);
+        if (entity) {
           return entity;
-        } catch (e) {
-          console.error('[ContextMenu] Failed to parse entity data:', entityData, e);
-          return null;
         }
       }
     }
@@ -1218,6 +1105,7 @@ export function CodeMirrorEditor({
 
   // Refs for passing data to decorations (must be mutable refs, not props)
   const entitiesRef = useRef<EntitySpan[]>(entities);
+  const entityMapRef = useRef<Map<string, EntitySpan>>(new Map());
   const renderMarkdownRef = useRef<boolean>(renderMarkdown);
   const disableHighlightingRef = useRef<boolean>(disableHighlighting);
   const highlightOpacityRef = useRef<number>(highlightOpacity);
@@ -1301,7 +1189,14 @@ export function CodeMirrorEditor({
   useEffect(() => {
     if (VERBOSE_LOGGING) console.log('[CodeMirror] entities changed:', entities.length);
     // Sort entities by start position for efficient binary search
-    entitiesRef.current = [...entities].sort((a, b) => a.start - b.start);
+    const sorted = [...entities].sort((a, b) => a.start - b.start);
+    entitiesRef.current = sorted;
+
+    const map = new Map<string, EntitySpan>();
+    for (const e of sorted) {
+      map.set(makeSpanKey(e), e);
+    }
+    entityMapRef.current = map;
 
     // Simple empty dispatch to trigger ViewPlugin update
     // The ViewPlugin rebuilds on transactions.length > 0
@@ -1413,7 +1308,7 @@ export function CodeMirrorEditor({
           () => entityHighlightModeRef.current
         ),
         manualTagHidingExtension(() => renderMarkdownRef.current, () => entitiesRef.current),
-        contextMenuHandler(setContextMenu, entitiesRef),
+        contextMenuHandler(setContextMenu, entitiesRef, entityMapRef),
         editorTheme,
         EditorView.lineWrapping,
         EditorView.updateListener.of((update: ViewUpdate) => {
