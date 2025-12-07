@@ -138,6 +138,15 @@ export function VirtualizedExtractionEditor({
   const handleWindowChange = useCallback((newWindowText: string) => {
     const oldWindowText = text.slice(windowStart, windowEnd);
 
+    console.log('[VirtualizedEditor] handleWindowChange', {
+      textLength: text.length,
+      windowStart,
+      windowEnd,
+      oldWindowLength: oldWindowText.length,
+      newWindowLength: newWindowText.length,
+      match: newWindowText === oldWindowText
+    });
+
     // No change
     if (newWindowText === oldWindowText) return;
 
@@ -148,6 +157,12 @@ export function VirtualizedExtractionEditor({
       oldWindowText,
       newWindowText
     );
+
+    console.log('[VirtualizedEditor] Patched result', {
+      originalLength: text.length,
+      patchedLength: patched.length,
+      firstChars: patched.slice(0, 100)
+    });
 
     onTextChange(patched);
   }, [text, windowStart, windowEnd, onTextChange]);
