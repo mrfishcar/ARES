@@ -126,34 +126,83 @@ function entityHighlighterExtension(
   getHighlightOpacity: () => number,
   getEntityHighlightMode: () => boolean
 ) {
-  return StateField.define<DecorationSet>({
-    create(state) {
+  const VIEWPORT_BUFFER = 2000;
+  const SPEED_THRESHOLD = 30; // characters per millisecond
+
+  return ViewPlugin.fromClass(class {
+    decorations: DecorationSet;
+    private lastCenter: number;
+    private lastTimestamp: number;
+
+    constructor(readonly view: EditorView) {
+      this.lastCenter = (view.viewport.from + view.viewport.to) / 2;
+      this.lastTimestamp = performance.now();
+      this.decorations = this.buildDecorations(view);
+    }
+
+    update(update: ViewUpdate) {
+      const view = update.view;
+
+      if (update.docChanged) {
+        this.decorations = this.buildDecorations(view);
+        this.lastCenter = (view.viewport.from + view.viewport.to) / 2;
+        this.lastTimestamp = performance.now();
+        return;
+      }
+
+      if (update.viewportChanged) {
+        const { from, to } = view.viewport;
+        const center = (from + to) / 2;
+        const now = performance.now();
+        const dt = now - this.lastTimestamp;
+        const distance = Math.abs(center - this.lastCenter);
+        const speed = dt > 0 ? distance / dt : 0;
+
+        if (speed <= SPEED_THRESHOLD) {
+          this.decorations = this.buildDecorations(view);
+        }
+
+        this.lastCenter = center;
+        this.lastTimestamp = now;
+        return;
+      }
+
+      if (update.transactions.length > 0 && !update.docChanged && !update.viewportChanged) {
+        this.decorations = this.buildDecorations(view);
+      }
+    }
+
+    buildDecorations(view: EditorView): DecorationSet {
+      const { from, to } = view.viewport;
+      const windowFrom = Math.max(0, from - VIEWPORT_BUFFER);
+      const windowTo = Math.min(view.state.doc.length, to + VIEWPORT_BUFFER);
+
       return buildEntityDecorations(
-        state,
+        view.state,
         getEntities(),
         isHighlightingDisabled(),
         getHighlightOpacity(),
-        getEntityHighlightMode()
+        getEntityHighlightMode(),
+        windowFrom,
+        windowTo
       );
-    },
-    update(deco, tr) {
-      // Always rebuild - we read fresh entities from the getter
-      // The key insight: entitiesRef is always in sync with latest extraction
-      // because useEffect updates it when entities prop changes.
-      // So rebuilding here with getEntities() always gives us current data.
-      return buildEntityDecorations(
-        tr.state,
-        getEntities(),
-        isHighlightingDisabled(),
-        getHighlightOpacity(),
-        getEntityHighlightMode()
-      );
-    },
-    provide: f => EditorView.decorations.from(f)
+    }
+
+    destroy() {}
+  }, {
+    decorations: plugin => plugin.decorations
   });
 }
 
-function buildEntityDecorations(state: EditorState, entities: EntitySpan[], isDisabled: boolean, opacityMultiplier: number = 1.0, entityHighlightMode: boolean = false): DecorationSet {
+function buildEntityDecorations(
+  state: EditorState,
+  entities: EntitySpan[],
+  isDisabled: boolean,
+  opacityMultiplier: number = 1.0,
+  entityHighlightMode: boolean = false,
+  windowFrom?: number,
+  windowTo?: number
+): DecorationSet {
   const shouldHighlight = !isDisabled && Array.isArray(entities) && entities.length > 0;
 
   if (IS_DEV_ENV) {
@@ -170,12 +219,20 @@ function buildEntityDecorations(state: EditorState, entities: EntitySpan[], isDi
   }
   const builder = new RangeSetBuilder<Decoration>();
   const docLength = state.doc.length;
+  const rangeFrom = Math.max(0, windowFrom ?? 0);
+  const rangeTo = Math.min(docLength, windowTo ?? docLength);
 
   // Detect current theme
   const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
 
   for (const entity of entities) {
     if (entity.start >= 0 && entity.end <= docLength && entity.start < entity.end) {
+      if (entity.end <= rangeFrom || entity.start >= rangeTo) {
+        continue;
+      }
+
+      const start = Math.max(entity.start, rangeFrom);
+      const end = Math.min(entity.end, rangeTo);
       const color = getEntityTypeColor(entity.type);
       let style: string;
 
@@ -219,7 +276,7 @@ function buildEntityDecorations(state: EditorState, entities: EntitySpan[], isDi
         `;
       }
 
-      builder.add(entity.start, entity.end, Decoration.mark({
+      builder.add(start, end, Decoration.mark({
         class: 'cm-entity-highlight',
         attributes: {
           'data-entity': JSON.stringify(entity),
