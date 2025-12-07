@@ -24,10 +24,10 @@ interface VirtualizedExtractionEditorProps {
   highlightOpacity: number;
   renderMarkdown: boolean;
   entityHighlightMode: boolean;
-  onChangeType?: (entity: EntitySpan, type: EntityType) => Promise<void> | void;
-  onCreateNew?: (entity: EntitySpan, type: EntityType) => Promise<void> | void;
-  onReject?: (entity: EntitySpan) => Promise<void> | void;
-  onTagEntity?: (entity: EntitySpan, targetEntity: EntitySpan) => Promise<void> | void;
+  onChangeType?: (entity: EntitySpan, type: EntityType) => Promise<void>;
+  onCreateNew?: (entity: EntitySpan, type: EntityType) => void | Promise<void>;
+  onReject?: (entity: EntitySpan) => Promise<void>;
+  onTagEntity?: (entity: EntitySpan, targetEntity: EntitySpan) => Promise<void>;
 }
 
 // Configurable window parameters
