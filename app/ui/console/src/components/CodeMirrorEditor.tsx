@@ -1358,10 +1358,23 @@ export function CodeMirrorEditor({
           }
 
           // Report cursor position for windowed mode
-          if (update.selectionSet && onCursorChange) {
-            const localPos = update.state.selection.main.head;
-            const globalPos = baseOffset + localPos;
-            onCursorChange(globalPos);
+          // Track cursor after user actions (typing, clicking, arrow keys)
+          if (onCursorChange) {
+            const hasUserInput = update.transactions.some(tr => {
+              const userEvent = tr.annotation(EditorView.userEvent);
+              return userEvent && (
+                userEvent.startsWith('select.') ||
+                userEvent.startsWith('input.') ||
+                userEvent.startsWith('delete.')
+              );
+            });
+
+            // Report cursor position after user input
+            if (hasUserInput) {
+              const localPos = update.state.selection.main.head;
+              const globalPos = baseOffset + localPos;
+              onCursorChange(globalPos);
+            }
           }
         })
       ]
