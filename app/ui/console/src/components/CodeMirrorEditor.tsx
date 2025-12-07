@@ -244,7 +244,7 @@ function buildEntityDecorations(
   entities: EntitySpan[],
   isDisabled: boolean,
   opacityMultiplier: number = 1.0,
-  _entityHighlightMode: boolean = false,
+  entityHighlightMode: boolean = false,
   windowFrom: number,
   windowTo: number
 ): DecorationSet {
