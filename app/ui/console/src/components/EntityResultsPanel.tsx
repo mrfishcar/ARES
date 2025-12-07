@@ -61,7 +61,7 @@ export function EntityResultsPanel({
   const [draggedEntity, setDraggedEntity] = useState<EntitySpan | null>(null);
   const [dropTarget, setDropTarget] = useState<string | null>(null);
 
-  const hasReport = stats.count > 0 || stats.relationCount > 0;
+  const hasReport = entities.length > 0 || relations.length > 0 || stats.count > 0 || stats.relationCount > 0;
 
   // Group entities by type
   const groups: EntityGroup[] = Object.entries(
