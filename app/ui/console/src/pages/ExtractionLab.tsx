@@ -1332,177 +1332,135 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   });
 
   return (
-    <div className="extraction-lab">
-      {/* Branding Sidebar - Always Visible */}
-      <div className="branding-sidebar">
-        <div className="brand-logo">
-          <span className="brand-icon">🧪</span>
-          <span className="brand-label">ARES</span>
-        </div>
-      </div>
+    <div className="extraction-lab" style={{ marginLeft: showDocumentSidebar ? '280px' : '0' }}>
+      {/* Hamburger button - absolute position, always accessible */}
+      <button
+        onClick={() => setShowDocumentSidebar(!showDocumentSidebar)}
+        className="hamburger-btn"
+        title="Documents"
+        type="button"
+      >
+        ☰
+      </button>
 
-      {/* Control Bar - Slim, no branding */}
+      {/* iOS-style Floating Control Bar - centered, auto-width */}
       <div
         className={`lab-control-bar ${isHeaderVisible ? 'visible' : 'hidden'}`}
       >
-        <div className="control-bar-content">
-          <div className="lab-header-status-row">
-            <div
-              className="job-status-pill"
-              style={{
-                minWidth: '120px',
-                padding: '6px 12px',
-                borderRadius: '20px',
-                textAlign: 'center',
-                fontSize: 13,
-                background:
-                  jobStatus === 'running'
-                    ? 'rgba(34,197,94,0.2)'
-                    : jobStatus === 'failed'
-                      ? 'rgba(239,68,68,0.2)'
-                      : 'rgba(255,255,255,0.05)',
-                color:
-                  jobStatus === 'running'
-                    ? '#4ade80'
-                    : jobStatus === 'failed'
-                      ? '#f87171'
-                      : 'var(--text-secondary)',
-              }}
-            >
-              {jobStatusLabel}
-            </div>
-            <div className="lab-header-progress-row">
-              {hasActiveJob ? (
-                <JobProgressBar jobStatus={jobStatus} jobProgress={jobProgress} jobEtaSeconds={jobEtaSeconds} />
-              ) : (
-                <div
-                  className="progress-placeholder"
-                  aria-hidden
-                  style={{ minWidth: 220, minHeight: 18 }}
-                />
-              )}
-            </div>
-            <button
-              disabled={!hasResults}
-              onClick={copyReport}
-              className="report-button"
-              type="button"
-              title="Copy extraction report"
-            >
-              📋 Copy report
-            </button>
-          </div>
-          <div className="lab-header-controls-row">
-            <button
-              onClick={() => setShowEntityModal(true)}
-              className="entities-button"
-              disabled={displayEntities.length === 0}
-              title="View extracted entities and relations"
-              type="button"
-            >
-              📊 {displayEntities.length}
-            </button>
-            <button
-              onClick={() => setEntityHighlightMode((v) => !v)}
-              className="ares-btn ares-btn-ghost ares-btn-pill"
-              title="Toggle Entity Highlight Mode (edit entities without changing text)"
-              type="button"
-            >
-              {entityHighlightMode ? '🖍️ Entity Mode: ON' : '🖍️ Entity Mode: OFF'}
-            </button>
-            <button
-              onClick={resetEntityOverrides}
-              className="ares-btn ares-btn-ghost ares-btn-pill"
-              type="button"
-              title="Clear entity overrides and return to raw engine output"
-            >
-              🔄 Reset entity edits
-            </button>
-            <button
-              onClick={handleThemeToggle}
-              className="theme-toggle"
-              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-              type="button"
-            >
-              {theme === 'dark' ? '☀️' : '🌙'}
-              <span className="sr-only">{theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}</span>
-            </button>
-          </div>
+        {/* Status indicator */}
+        <div
+          className="status-indicator"
+          style={{
+            fontSize: 11,
+            color: jobStatus === 'running' ? '#10B981' : jobStatus === 'failed' ? '#EF4444' : 'var(--text-tertiary)',
+            fontWeight: 500,
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+          }}
+        >
+          {jobStatusLabel}
+        </div>
+
+        {/* Icon controls */}
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <button
+            onClick={startBackgroundJob}
+            disabled={backgroundProcessing || hasActiveJob || !text.trim()}
+            className="control-btn"
+            title="Start background extraction"
+            type="button"
+          >
+            ⚡
+          </button>
+          <button
+            onClick={() => setEntityHighlightMode((v) => !v)}
+            className="control-btn"
+            title="Toggle Entity Highlight Mode"
+            type="button"
+            style={{ opacity: entityHighlightMode ? 1 : 0.5 }}
+          >
+            🖍️
+          </button>
+          <button
+            onClick={handleThemeToggle}
+            className="control-btn"
+            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            type="button"
+          >
+            {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
         </div>
       </div>
 
-      {/* Saved documents sidebar */}
+      {/* Documents sidebar with ARES branding */}
       <div
+        className="documents-sidebar"
         style={{
-          position: 'fixed',
-          top: '56px',
-          left: '64px', // Account for branding sidebar
-          bottom: 0,
-          width: '320px',
-          maxWidth: '80vw',
-          background: 'var(--bg-primary)',
-          borderRight: '1px solid var(--border-color)',
-          boxShadow: '2px 0 12px rgba(0, 0, 0, 0.12)',
           transform: showDocumentSidebar ? 'translateX(0)' : 'translateX(-100%)',
-          transition: 'transform 0.25s ease',
-          zIndex: 30,
-          overflowY: 'auto',
-          padding: '16px',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <div>
-            <div style={{ fontWeight: 700, fontSize: '16px' }}>Saved documents</div>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Most recent first</div>
+        {/* ARES branding at top */}
+        <div style={{
+          padding: '20px 16px',
+          borderBottom: '1px solid var(--border-soft)',
+          marginBottom: '16px',
+        }}>
+          <div style={{
+            fontSize: '13px',
+            fontWeight: 700,
+            color: 'var(--text-tertiary)',
+            textTransform: 'uppercase',
+            letterSpacing: '1.5px',
+          }}>
+            ARES
           </div>
-          <button
-            onClick={() => setShowDocumentSidebar(false)}
-            style={{
-              border: '1px solid var(--border-color)',
-              background: 'var(--bg-tertiary)',
-              borderRadius: '4px',
-              padding: '4px 8px',
-              cursor: 'pointer',
-            }}
-            title="Hide saved documents"
-          >
-            Close
-          </button>
         </div>
 
-        {loadingDocuments ? (
-          <div style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>Loading saved documents…</div>
-        ) : documentList.length === 0 ? (
-          <div style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>No saved documents yet.</div>
-        ) : (
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {documentList.map((doc) => (
-              <li key={doc.id}>
-                <button
-                  onClick={() => handleLoadDocumentById(doc.id)}
-                  style={{
-                    width: '100%',
-                    textAlign: 'left',
-                    border: '1px solid var(--border-color)',
-                    background: 'var(--bg-secondary)',
-                    borderRadius: '8px',
-                    padding: '10px',
-                    cursor: loadingDocument ? 'not-allowed' : 'pointer',
-                    opacity: loadingDocument ? 0.7 : 1,
-                  }}
-                  disabled={loadingDocument}
-                >
-                  <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: '4px', color: 'var(--text-primary)' }}>
-                    {deriveDocumentName(doc)}
-                  </div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                    Updated {new Date(doc.updatedAt).toLocaleString()}
-                  </div>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+        <div style={{ padding: '0 16px' }}>
+          <div style={{
+            fontSize: '14px',
+            fontWeight: 600,
+            color: 'var(--text-secondary)',
+            marginBottom: '12px',
+          }}>
+            Documents
+          </div>
+
+          {loadingDocuments ? (
+            <div style={{ color: 'var(--text-secondary)', fontSize: '13px', padding: '20px 0' }}>Loading…</div>
+          ) : documentList.length === 0 ? (
+            <div style={{ color: 'var(--text-tertiary)', fontSize: '13px', padding: '20px 0' }}>No documents yet</div>
+          ) : (
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {documentList.map((doc) => (
+                <li key={doc.id}>
+                  <button
+                    onClick={() => handleLoadDocumentById(doc.id)}
+                    style={{
+                      width: '100%',
+                      textAlign: 'left',
+                      border: '1px solid var(--border-soft)',
+                      background: 'var(--bg-secondary)',
+                      borderRadius: '12px',
+                      padding: '12px',
+                      cursor: loadingDocument ? 'not-allowed' : 'pointer',
+                      opacity: loadingDocument ? 0.5 : 1,
+                      transition: 'all 0.2s ease',
+                    }}
+                    disabled={loadingDocument}
+                  >
+                    <div style={{ fontWeight: 500, fontSize: '14px', marginBottom: '4px', color: 'var(--text-primary)' }}>
+                      {deriveDocumentName(doc)}
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-tertiary)' }}>
+                      {new Date(doc.updatedAt).toLocaleDateString()}
+                    </div>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
 
       {/* Main Content */}
@@ -1510,145 +1468,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         {/* Center: Editor with side margins */}
         <div className="editor-wrapper">
           <div className="editor-panel">
-            <div className="panel-header">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '16px', flexWrap: 'wrap' }}>
-                <div>
-                  <h2>Write or paste text...</h2>
-                  <p className="panel-subtitle">Full ARES engine extracts entities AND relations (updates after typing; long texts run as background jobs)</p>
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginTop: '8px' }}>
-                    <button
-                      onClick={startBackgroundJob}
-                      disabled={backgroundProcessing || hasActiveJob || !text.trim()}
-                      className="lab-button primary"
-                    >
-                      {hasActiveJob
-                        ? `Job ${jobStatus || ''}`
-                        : backgroundProcessing
-                          ? 'Starting...'
-                          : 'Start background extraction'}
-                    </button>
-                    <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-                      Recommended for long texts (&gt;{SYNC_EXTRACTION_CHAR_LIMIT.toLocaleString()} chars). Polls every {(JOB_POLL_INTERVAL_MS / 1000).toFixed(1)}s.
-                    </span>
-                    {jobId && (
-                      <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-                        Job ID: {jobId}
-                      </span>
-                    )}
-                    {jobStatus === 'done' && jobResult?.stats?.extractionTime != null && (
-                      <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-                        Completed in {Math.round(jobResult.stats.extractionTime)}ms
-                      </span>
-                    )}
-                  </div>
-                  {requiresBackground && (
-                    <p
-                      style={{
-                        marginTop: '6px',
-                        fontSize: '12px',
-                        color: 'var(--text-secondary)',
-                      }}
-                    >
-                      Text is long. Live extraction is paused to keep things snappy — use <strong>“Start background extraction”</strong>{' '}
-                      for best performance.
-                    </p>
-                  )}
-                </div>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px' }}>
-                    <input
-                      type="checkbox"
-                      checked={!renderMarkdown}
-                      onChange={(e) => setRenderMarkdown(!e.target.checked)}
-                      style={{ cursor: 'pointer' }}
-                    />
-                    <span>📄 Show Raw Text</span>
-                  </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px' }}>
-                    <input
-                      type="checkbox"
-                      checked={liveExtractionEnabled}
-                      onChange={(e) => setLiveExtractionEnabled(e.target.checked)}
-                      style={{ cursor: 'pointer' }}
-                    />
-                    <span>⚡ Live extraction</span>
-                  </label>
-                  <button
-                    type="button"
-                    onClick={runExtractionNow}
-                    title="Run extraction once using the current text"
-                    className="lab-button secondary"
-                    disabled={requiresBackground || !text.trim()}
-                  >
-                    ▶️ Run extraction now
-                  </button>
-                  <button
-                    onClick={() => setShowAdvancedControls(!showAdvancedControls)}
-                    className="lab-button secondary"
-                    title="Toggle highlighting options"
-                  >
-                    ⚙️ {showAdvancedControls ? 'Hide' : 'Show'} Options
-                  </button>
-                  <button
-                    onClick={handleSaveDocument}
-                    disabled={saveStatus === 'saving' || !text.trim()}
-                    className="lab-button primary"
-                  >
-                    {saveStatus === 'saving' ? 'Saving…' : 'Save document'}
-                  </button>
-                  <button
-                    onClick={() => setShowDocumentSidebar(!showDocumentSidebar)}
-                    className="lab-button secondary"
-                    title="Browse saved documents"
-                  >
-                    {showDocumentSidebar ? 'Hide saved docs' : 'Show saved docs'}
-                  </button>
-                  <button
-                    onClick={loadLastDocument}
-                    disabled={loadingDocument}
-                    className="lab-button secondary"
-                  >
-                    {loadingDocument ? 'Loading…' : 'Load last document'}
-                  </button>
-                  {saveStatus === 'saved' && lastSavedId && (
-                    <span style={{ fontSize: '13px', color: '#15803d' }}>Saved ✓</span>
-                  )}
-                {saveStatus === 'error' && (
-                  <span style={{ fontSize: '13px', color: '#b91c1c' }}>Save failed</span>
-                )}
-              </div>
-            </div>
-
-            {/* Advanced Controls - Hidden by default */}
-            {showAdvancedControls && (
-              <div style={{ marginTop: '12px', display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px' }}>
-                    <input
-                      type="checkbox"
-                      checked={showHighlighting}
-                      onChange={(e) => setShowHighlighting(e.target.checked)}
-                      style={{ cursor: 'pointer' }}
-                    />
-                    <span>✨ Entity Highlighting</span>
-                  </label>
-                  {showHighlighting && (
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
-                      <span style={{ whiteSpace: 'nowrap' }}>Opacity:</span>
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        value={highlightOpacity * 100}
-                        onChange={(e) => setHighlightOpacity(Number(e.target.value) / 100)}
-                        style={{ width: '120px', cursor: 'pointer' }}
-                      />
-                      <span style={{ minWidth: '35px', textAlign: 'right' }}>{Math.round(highlightOpacity * 100)}%</span>
-                    </label>
-                  )}
-                </div>
-              )}
-            </div>
-            {/* Entity indicators on left + Editor on right */}
+            {/* Clean iOS-style editor - no clutter */}
             <div className="editor-with-indicators-wrapper">
               {/* Entity indicators on left side */}
               <EntityIndicators

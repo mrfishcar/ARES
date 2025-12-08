@@ -33,6 +33,7 @@ import {
   ViewPlugin,
   ViewUpdate,
   keymap,
+  placeholder,
 } from '@codemirror/view';
 
 import { defaultKeymap } from '@codemirror/commands';
@@ -383,6 +384,7 @@ export function CodeMirrorEditor({
         ]),
         markdown(),
         syntaxHighlighting(markdownHighlightStyle),
+        placeholder('Write or paste text...'),
         editorTheme,
         entityHighlighterExtension(
           () => entitiesRef.current,
