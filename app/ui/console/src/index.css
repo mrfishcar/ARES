@@ -40,10 +40,11 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 15px;
+  font-weight: 400;
   line-height: 1.6;
   background: var(--bg-primary);
   color: var(--text-primary);
@@ -82,51 +83,49 @@ a:hover {
 }
 
 
-/* Hamburger Button - simple icon, moves with page */
+/* Hamburger Button - ChatGPT style */
 .hamburger-btn {
   position: fixed;
   top: 20px;
   left: 20px;
   border: none;
   background: transparent;
-  color: var(--text-primary);
+  color: rgb(180, 190, 210);
   cursor: pointer;
-  font-size: 24px;
   padding: 8px;
   line-height: 1;
   z-index: 60;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 0.6;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .hamburger-btn:hover {
-  opacity: 1;
-  transform: scale(1.1);
+  color: rgb(230, 235, 245);
 }
 
 .hamburger-btn:active {
-  opacity: 0.8;
+  color: rgb(255, 255, 255);
   transform: scale(0.95);
 }
 
-/* Documents Sidebar - iOS style, pushes content */
+/* Documents Sidebar - ChatGPT navigation rail */
 .documents-sidebar {
   position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
   width: 280px;
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-right: 2px solid rgba(255, 255, 255, 0.95);
-  box-shadow: 2px 0 24px rgba(0, 0, 0, 0.12);
+  background: rgb(16, 20, 30);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: none;
   z-index: 100;
   overflow-y: auto;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Floating Glass Control Bar - centered, auto-width, fixed */
+/* Floating Control Bar - ChatGPT dark style */
 .lab-control-bar {
   position: fixed;
   top: 16px;
@@ -135,14 +134,12 @@ a:hover {
   height: 44px;
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
   padding: 0 20px;
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgb(24, 28, 40);
   border-radius: 22px;
-  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.15), 0 0 1px rgba(255, 255, 255, 0.5) inset;
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  border: none;
   z-index: 50;
   transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -152,44 +149,46 @@ a:hover {
   pointer-events: none;
 }
 
-/* Circular icon buttons in control bar */
+/* Icon buttons in control bar - ChatGPT style */
 .control-btn {
   width: 32px;
   height: 32px;
-  border-radius: var(--border-radius-full);
+  border-radius: 8px;
   border: none;
   background: transparent;
-  color: var(--text-secondary);
+  color: rgb(180, 190, 210);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  font-size: 16px;
   position: relative;
 }
 
-.control-btn:hover {
-  background: rgba(0, 0, 0, 0.06);
-  color: var(--text-primary);
+.control-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgb(230, 235, 245);
 }
 
-.control-btn:active {
-  background: rgba(0, 0, 0, 0.1);
+.control-btn:active:not(:disabled) {
+  color: rgb(255, 255, 255);
   transform: scale(0.95);
 }
 
-/* Settings Dropdown */
+.control-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Settings Dropdown - ChatGPT style */
 .settings-dropdown {
   position: absolute;
   top: 48px;
   right: 0;
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgb(24, 28, 40);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   padding: 16px;
   min-width: 280px;
   z-index: 1000;
@@ -221,8 +220,8 @@ a:hover {
 
 .settings-label {
   font-size: 13px;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-weight: 500;
+  color: rgb(180, 190, 210);
   margin-bottom: 8px;
 }
 
@@ -231,19 +230,20 @@ a:hover {
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  background: var(--bg-secondary);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .settings-toggle:hover {
-  background: var(--bg-tertiary);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .settings-toggle-label {
   font-size: 14px;
-  color: var(--text-primary);
+  font-weight: 400;
+  color: rgb(230, 235, 245);
 }
 
 .toggle-switch {

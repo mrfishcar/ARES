@@ -109,41 +109,39 @@ body.light-mode {
   transition: background-color 0.3s ease;
 }
 
-/* Dark mode glass effects */
+/* Dark mode - ChatGPT style */
 html[data-theme="dark"] .documents-sidebar {
-  background: rgba(10, 14, 39, 0.98);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-right: 2px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 2px 0 24px rgba(0, 0, 0, 0.6);
+  background: rgb(16, 20, 30);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: none;
 }
 
 html[data-theme="dark"] .lab-control-bar {
-  background: rgba(10, 14, 39, 0.98);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  background: rgb(24, 28, 40);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  border: none;
 }
 
 html[data-theme="dark"] .hamburger-btn {
-  color: var(--text-primary);
+  color: rgb(180, 190, 210);
+}
+
+html[data-theme="dark"] .hamburger-btn:hover {
+  color: rgb(230, 235, 245);
 }
 
 html[data-theme="dark"] .settings-dropdown {
-  background: rgba(10, 14, 39, 0.98);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  background: rgb(24, 28, 40);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 html[data-theme="dark"] .settings-toggle {
-  background: rgba(20, 24, 41, 0.6);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 html[data-theme="dark"] .settings-toggle:hover {
-  background: rgba(26, 31, 58, 0.8);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 html[data-theme="dark"] .overlay-panel {
@@ -307,9 +305,9 @@ pre {
   transition: none;
 }
 
-/* Scrollbar Styling - Light Mode (applied to wrapper) */
+/* Scrollbar Styling - Light Mode */
 .cm-editor-wrapper {
-  scrollbar-color: #E8A87C #FFEFD5 !important;
+  scrollbar-color: rgb(180, 190, 210) rgb(240, 242, 245) !important;
   scrollbar-width: thin !important;
 }
 
@@ -319,16 +317,16 @@ pre {
 }
 
 .cm-editor-wrapper::-webkit-scrollbar-track {
-  background: #FFEFD5 !important;
+  background: rgb(240, 242, 245) !important;
 }
 
 .cm-editor-wrapper::-webkit-scrollbar-thumb {
-  background: #E8A87C !important;
+  background: rgb(180, 190, 210) !important;
   border-radius: 6px !important;
 }
 
 .cm-editor-wrapper::-webkit-scrollbar-thumb:hover {
-  background: #FFB347 !important;
+  background: rgb(160, 170, 190) !important;
 }
 
 /* Scrollbar Styling - Dark Mode */
