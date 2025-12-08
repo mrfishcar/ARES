@@ -1333,16 +1333,19 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
   return (
     <div className="extraction-lab">
-      {/* Header */}
-      <div
-        className={`lab-header ${isHeaderVisible ? 'visible' : 'hidden'}`}
-      >
-        <div className="lab-title">
-          <span className="lab-icon">🧪</span>
-          <h1>ARES Extraction Lab</h1>
-          <span className="powered-badge">Powered by Full ARES Engine</span>
+      {/* Branding Sidebar - Always Visible */}
+      <div className="branding-sidebar">
+        <div className="brand-logo">
+          <span className="brand-icon">🧪</span>
+          <span className="brand-label">ARES</span>
         </div>
-        <div className="lab-header-right">
+      </div>
+
+      {/* Control Bar - Slim, no branding */}
+      <div
+        className={`lab-control-bar ${isHeaderVisible ? 'visible' : 'hidden'}`}
+      >
+        <div className="control-bar-content">
           <div className="lab-header-status-row">
             <div
               className="job-status-pill"
@@ -1432,8 +1435,8 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       <div
         style={{
           position: 'fixed',
-          top: '72px',
-          left: 0,
+          top: '56px',
+          left: '64px', // Account for branding sidebar
           bottom: 0,
           width: '320px',
           maxWidth: '80vw',
