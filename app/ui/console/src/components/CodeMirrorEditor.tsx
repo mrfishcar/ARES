@@ -13,11 +13,11 @@
  *       left out so the file is easy to maintain.
  */
 
-import React, {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
+import React, { 
+	useEffect, 
+	useRef, 
+	useState, 
+	useCallback 
 } from 'react';
 
 import {
