@@ -14,7 +14,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import {
   EditorState,
-  RangeSetBuilder
+  RangeSetBuilder,
+  Transaction
 } from '@codemirror/state';
 import {
   EditorView,
@@ -1371,7 +1372,7 @@ export function CodeMirrorEditor({
           // Track cursor after user actions (typing, clicking, arrow keys)
           if (onCursorChangeRef.current) {
             const hasUserInput = update.transactions.some(tr => {
-              const userEvent = tr.annotation(EditorView.userEvent);
+              const userEvent = tr.annotation(Transaction.userEvent);
               return userEvent && (
                 userEvent.startsWith('select.') ||
                 userEvent.startsWith('input.') ||
