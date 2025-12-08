@@ -114,16 +114,36 @@ html[data-theme="dark"] .documents-sidebar {
   background: rgba(10, 14, 39, 0.98);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: 2px solid rgba(255, 255, 255, 0.15);
   box-shadow: 2px 0 24px rgba(0, 0, 0, 0.6);
 }
 
 html[data-theme="dark"] .lab-control-bar {
-  background: rgba(10, 14, 39, 0.92);
+  background: rgba(10, 14, 39, 0.98);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 0.5px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+html[data-theme="dark"] .hamburger-btn {
+  color: var(--text-primary);
+}
+
+html[data-theme="dark"] .settings-dropdown {
+  background: rgba(10, 14, 39, 0.98);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+html[data-theme="dark"] .settings-toggle {
+  background: rgba(20, 24, 41, 0.6);
+}
+
+html[data-theme="dark"] .settings-toggle:hover {
+  background: rgba(26, 31, 58, 0.8);
 }
 
 html[data-theme="dark"] .overlay-panel {
