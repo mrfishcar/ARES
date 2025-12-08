@@ -10,6 +10,8 @@ import { EntityResultsPanel } from '../components/EntityResultsPanel';
 import { EntityIndicators } from '../components/EntityIndicators';
 import { EntityModal } from '../components/EntityModal';
 import { WikiModal } from '../components/WikiModal';
+import { FloatingActionButton } from '../components/FloatingActionButton';
+import { EntityOverlay } from '../components/EntityOverlay';
 import { isValidEntityType, type EntitySpan, type EntityType } from '../types/entities';
 import { initializeTheme, toggleTheme, loadThemePreference } from '../utils/darkMode';
 import '../styles/darkMode.css';
@@ -559,6 +561,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     rejectedSpans: new Set(),
     typeOverrides: {},
   });
+  const [entityPanelMode, setEntityPanelMode] = useState<'closed' | 'overlay' | 'pinned'>('closed');
 
   const resetEntityOverrides = useCallback(() => {
     setEntityOverrides({
@@ -1282,6 +1285,19 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     [displayEntities]
   );
 
+  // Entity panel handlers
+  const handleOpenEntityPanel = useCallback(() => {
+    setEntityPanelMode('overlay');
+  }, []);
+
+  const handleCloseEntityPanel = useCallback(() => {
+    setEntityPanelMode('closed');
+  }, []);
+
+  const handlePinEntityPanel = useCallback(() => {
+    setEntityPanelMode('pinned');
+  }, []);
+
   console.debug('[ExtractionLab] Editor props', {
     entitiesCount: displayEntities?.length ?? 0,
     editorDisableHighlighting,
@@ -1639,17 +1655,45 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           </div>
         </div>
 
-        <div className="results-wrapper entities-sidebar-desktop">
-          <EntityResultsPanel
+        {/* Pinned sidebar mode */}
+        {entityPanelMode === 'pinned' && (
+          <EntityOverlay
+            mode="pinned"
             entities={displayEntities}
             relations={relations}
-            onViewWiki={handleViewWiki}
-            isUpdating={isUpdating}
             stats={stats}
+            onClose={handleCloseEntityPanel}
+            onPin={handlePinEntityPanel}
+            onViewWiki={handleViewWiki}
             onCopyReport={copyReport}
+            isUpdating={isUpdating}
           />
-        </div>
+        )}
       </div>
+
+      {/* Floating Action Button - Only show when text exists and panel is not pinned */}
+      <FloatingActionButton
+        icon="📊"
+        label="View entities and stats"
+        onClick={handleOpenEntityPanel}
+        visible={text.trim().length > 0 && entityPanelMode === 'closed'}
+        position="bottom-right"
+      />
+
+      {/* Entity Overlay - Full-screen mode */}
+      {entityPanelMode === 'overlay' && (
+        <EntityOverlay
+          mode="overlay"
+          entities={displayEntities}
+          relations={relations}
+          stats={stats}
+          onClose={handleCloseEntityPanel}
+          onPin={handlePinEntityPanel}
+          onViewWiki={handleViewWiki}
+          onCopyReport={copyReport}
+          isUpdating={isUpdating}
+        />
+      )}
 
       {/* Entity Modal */}
       {showEntityModal && (
