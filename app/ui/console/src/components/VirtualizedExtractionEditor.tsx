@@ -111,6 +111,8 @@ export function VirtualizedExtractionEditor({
   const prevTextLengthRef = useRef(text.length);
   const pendingWindowStartRef = useRef<number | null>(null);
   const windowUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isUpdatingWindowRef = useRef(false); // Track programmatic window updates
+  const lastWindowStartRef = useRef(windowStart);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -120,6 +122,26 @@ export function VirtualizedExtractionEditor({
       }
     };
   }, []);
+
+  // Track when window position changes and set update flag
+  useEffect(() => {
+    if (windowStart !== lastWindowStartRef.current) {
+      console.log('[VirtualizedEditor] Window position changed', {
+        from: lastWindowStartRef.current,
+        to: windowStart
+      });
+
+      // Set flag to ignore cursor changes during window update
+      isUpdatingWindowRef.current = true;
+      lastWindowStartRef.current = windowStart;
+
+      // Clear flag after window has settled (longer delay to account for rendering)
+      setTimeout(() => {
+        isUpdatingWindowRef.current = false;
+        console.log('[VirtualizedEditor] Window update settled');
+      }, 200);
+    }
+  }, [windowStart]);
 
   // Reset window to beginning when text changes dramatically (paste, load, etc.)
   useEffect(() => {
@@ -187,6 +209,12 @@ export function VirtualizedExtractionEditor({
 
   // Handle cursor position changes to adjust window
   const handleCursorChange = useCallback((globalPos: number) => {
+    // Ignore cursor changes during programmatic window updates to prevent feedback loops
+    if (isUpdatingWindowRef.current) {
+      console.log('[VirtualizedEditor] Ignoring cursor change during window update');
+      return;
+    }
+
     console.log('[VirtualizedEditor] handleCursorChange', {
       globalPos,
       windowStart,
