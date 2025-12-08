@@ -964,11 +964,9 @@ const editorTheme = EditorView.theme({
     backgroundColor: 'var(--bg-primary)',
     color: 'var(--text-primary)'
   },
-  '.cm-scroller': {
-    // Let the outer React wrapper be the ONLY scroll container.
-    // The scroller just flexes to fill the available space.
-    flex: '1 1 auto',
-    minHeight: '0 !important'
+  '.cm'.cm-scroller': {
+  height: '100%',
+  overflow: 'auto'
   },
   '.cm-line': {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif !important',
@@ -1549,48 +1547,45 @@ export function CodeMirrorEditor({
     setContextMenu(null);
   };
 
-  return (
-    <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div
-        ref={editorRef}
-        className="cm-editor-wrapper"
-        style={{
-          border: '1px solid var(--border-color)',
-          borderRadius: '0',
-          backgroundColor: 'var(--bg-primary)',
-          width: '100%',
-          height: '100%',
-          // This wrapper is the single scroll container for the editor.
-          overflow: 'auto'
-        } as React.CSSProperties}
-        onContextMenu={(e) => {
-          const view = viewRef.current;
-          if (entityHighlightModeRef.current && view) {
-            const sel = view.state.selection.main;
-            if (!sel.empty) {
-              e.preventDefault();
-              createEntityFromSelection();
-              return;
-            }
+return (
+  <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div
+      ref={editorRef}
+      className="cm-editor-wrapper"
+      style={{
+        border: '1px solid var(--border-color)',
+        borderRadius: '0',
+        backgroundColor: 'var(--bg-primary)',
+        width: '100%',
+        height: '100%'
+      }}
+      onContextMenu={(e) => {
+        const view = viewRef.current;
+        if (entityHighlightModeRef.current && view) {
+          const sel = view.state.selection.main;
+          if (!sel.empty) {
+            e.preventDefault();
+            createEntityFromSelection();
+            return;
           }
-        }}
-      />
+        }
+      }}
+    />
 
-      {contextMenu && (
-        <EntityContextMenu
-          position={contextMenu.position}
-          entity={{
-            text: contextMenu.entity.text,
-            type: contextMenu.entity.type,
-            confidence: contextMenu.entity.confidence
-          }}
-          onChangeType={handleChangeType}
-          onCreateNew={handleCreateNew}
-          onReject={handleReject}
-          onTagEntity={handleTagEntity}
-          onClose={() => setContextMenu(null)}
-        />
-      )}
-    </div>
-  );
+    {contextMenu && (
+      <EntityContextMenu
+        position={contextMenu.position}
+        entity={{
+          text: contextMenu.entity.text,
+          type: contextMenu.entity.type,
+          confidence: contextMenu.entity.confidence
+        }}
+        onChangeType={handleChangeType}
+        onReject={handleReject}
+        onTagEntity={handleTagEntity}
+        onCreateNew={handleCreateNew}
+      />
+    )}
+  </div>
+);
 }
