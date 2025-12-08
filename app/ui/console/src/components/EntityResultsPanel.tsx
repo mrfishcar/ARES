@@ -166,9 +166,8 @@ export function EntityResultsPanel({
               📋 Copy report
             </button>
           </div>
-        </div>
 
-      {/* Entity Groups */}
+        {/* Entity Groups */}
       {groups.length === 0 ? (
         <div className="empty-state">
           <p>No entities detected yet.</p>
