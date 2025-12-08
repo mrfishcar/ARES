@@ -1368,8 +1368,8 @@ export function CodeMirrorEditor({
             onChangeRef.current(update.state.doc.toString());
           }
 
-          // Report cursor position for windowed mode
-          // Track cursor after user actions (typing, clicking, arrow keys)
+          // Report position for windowed mode
+          // Track user actions (typing, clicking, arrow keys) AND viewport scrolling
           if (onCursorChangeRef.current) {
             const hasUserInput = update.transactions.some(tr => {
               const userEvent = tr.annotation(Transaction.userEvent);
@@ -1380,10 +1380,19 @@ export function CodeMirrorEditor({
               );
             });
 
-            // Report cursor position after user input
-            if (hasUserInput) {
-              const localPos = update.state.selection.main.head;
-              const globalPos = baseOffsetRef.current + localPos;
+            // Report position after user input OR when viewport scrolls
+            if (hasUserInput || update.viewportChanged) {
+              // Use viewport center for scroll tracking, cursor for typing/selection
+              let globalPos: number;
+              if (update.viewportChanged && !hasUserInput) {
+                // Scrolling - use viewport center
+                const viewportCenter = Math.floor((update.view.viewport.from + update.view.viewport.to) / 2);
+                globalPos = baseOffsetRef.current + viewportCenter;
+              } else {
+                // User action - use cursor position
+                const localPos = update.state.selection.main.head;
+                globalPos = baseOffsetRef.current + localPos;
+              }
               onCursorChangeRef.current(globalPos);
             }
           }
