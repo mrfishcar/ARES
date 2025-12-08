@@ -1,3 +1,5 @@
+Here you go – full CodeMirrorEditor.tsx with the scroll fix baked in:
+
 /**
  * ARES Extraction Lab Editor - Clean Implementation
  *
@@ -608,12 +610,12 @@ function buildManualTagDecorations(
       }
 
       // Validate the entity type - if invalid, default to MISC
-        if (!isValidEntityType(entityType)) {
-          if (debugLogging) {
-            console.log('[TagHiding] Invalid entity type:', entityType, '- defaulting to MISC');
-          }
-          entityType = 'MISC';
+      if (!isValidEntityType(entityType)) {
+        if (debugLogging) {
+          console.log('[TagHiding] Invalid entity type:', entityType, '- defaulting to MISC');
         }
+        entityType = 'MISC';
+      }
 
       // Create synthetic entity for the tag
       entityToUse = {
@@ -626,15 +628,15 @@ function buildManualTagDecorations(
         source: 'manual' as const
       };
 
-        if (debugLogging) {
-          console.log('[TagHiding] Created synthetic entity:', {
-            text: entityName,
-            type: entityType,
-            isRejected: !!match[8] || !!match[9],
-            position: `${matchStart}-${matchEnd}`
-          });
-        }
+      if (debugLogging) {
+        console.log('[TagHiding] Created synthetic entity:', {
+          text: entityName,
+          type: entityType,
+          isRejected: !!match[8] || !!match[9],
+          position: `${matchStart}-${matchEnd}`
+        });
       }
+    }
 
     if (debugLogging) {
       console.log('[TagHiding] Creating widget for tag:', {
@@ -963,13 +965,10 @@ const editorTheme = EditorView.theme({
     color: 'var(--text-primary)'
   },
   '.cm-scroller': {
-    height: '100% !important',
-    minHeight: '0 !important',
-    maxHeight: '100%',
-    overflow: 'auto',
-    touchAction: 'pan-y',
-    scrollbarColor: 'var(--accent-color) var(--bg-tertiary) !important',
-    scrollbarWidth: 'thin !important'
+    // Let the outer React wrapper be the ONLY scroll container.
+    // The scroller just flexes to fill the available space.
+    flex: '1 1 auto',
+    minHeight: '0 !important'
   },
   '.cm-line': {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif !important',
@@ -1560,7 +1559,9 @@ export function CodeMirrorEditor({
           borderRadius: '0',
           backgroundColor: 'var(--bg-primary)',
           width: '100%',
-          height: '100%'
+          height: '100%',
+          // This wrapper is the single scroll container for the editor.
+          overflow: 'auto'
         } as React.CSSProperties}
         onContextMenu={(e) => {
           const view = viewRef.current;
