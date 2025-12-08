@@ -156,13 +156,6 @@ export function EntityResultsPanel({
               ? 'Start writing to discover entities...'
               : `${entities.length} ${entities.length === 1 ? 'entity' : 'entities'} • ${relations.length} ${relations.length === 1 ? 'relation' : 'relations'}`}
           </p>
-          <div className="sidebar-snapshot">
-            <div className="snapshot-badges">
-              <span className="snapshot-badge">⏱️ {stats.time}ms</span>
-              <span className="snapshot-badge">🎯 {stats.confidence}%</span>
-              <span className="snapshot-badge">📊 {stats.count}</span>
-              <span className="snapshot-badge">🔗 {stats.relationCount}</span>
-            </div>
             <button
               type="button"
               className="lab-button secondary"
