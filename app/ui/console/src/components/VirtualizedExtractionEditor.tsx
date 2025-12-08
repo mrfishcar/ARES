@@ -31,9 +31,10 @@ interface VirtualizedExtractionEditorProps {
 }
 
 // Configurable window parameters
-const DEFAULT_WINDOW_SIZE = 16000; // chars to show at once (increased for smoother scrolling)
-const DEFAULT_SAFE_MARGIN = 4000; // chars before/after caret before moving window
-const WINDOW_SHIFT_STEP = 2000; // How much to shift window when needed (smaller = smoother)
+const VIRTUALIZATION_THRESHOLD = 50000; // Only virtualize docs larger than this
+const DEFAULT_WINDOW_SIZE = 50000; // Much larger window to minimize updates
+const DEFAULT_SAFE_MARGIN = 10000; // Large margins to reduce update frequency
+const WINDOW_SHIFT_STEP = 5000; // Larger shifts for smoother transitions
 
 /**
  * Diff-based patch: apply changes from window back to full text
@@ -165,14 +166,29 @@ export function VirtualizedExtractionEditor({
     prevTextLengthRef.current = currentLength;
   }, [text.length]);
 
-  // Derived values
-  const windowEnd = Math.min(text.length, windowStart + windowSize);
-  const windowText = text.slice(windowStart, windowEnd);
+  // Skip virtualization for small documents
+  const shouldVirtualize = text.length > VIRTUALIZATION_THRESHOLD;
 
-  // Filter entities to those in the current window
-  const windowEntities = entities.filter(e =>
-    e.end > windowStart && e.start < windowEnd
-  );
+  // Derived values
+  const windowEnd = shouldVirtualize
+    ? Math.min(text.length, windowStart + windowSize)
+    : text.length;
+  const windowText = shouldVirtualize
+    ? text.slice(windowStart, windowEnd)
+    : text;
+
+  // Filter entities to those in the current window (or all if not virtualizing)
+  const windowEntities = shouldVirtualize
+    ? entities.filter(e => e.end > windowStart && e.start < windowEnd)
+    : entities;
+
+  console.log('[VirtualizedEditor] Render', {
+    textLength: text.length,
+    shouldVirtualize,
+    windowStart,
+    windowEnd,
+    windowSize: windowText.length
+  });
 
   // Handle changes from the windowed editor
   const handleWindowChange = useCallback((newWindowText: string) => {
@@ -209,6 +225,11 @@ export function VirtualizedExtractionEditor({
 
   // Handle cursor position changes to adjust window
   const handleCursorChange = useCallback((globalPos: number) => {
+    // Skip if not virtualizing
+    if (!shouldVirtualize) {
+      return;
+    }
+
     // Ignore cursor changes during programmatic window updates to prevent feedback loops
     if (isUpdatingWindowRef.current) {
       console.log('[VirtualizedEditor] Ignoring cursor change during window update');
@@ -273,13 +294,13 @@ export function VirtualizedExtractionEditor({
         pendingWindowStartRef.current = null;
       }
     }, 50); // Small debounce to batch rapid scroll events
-  }, [windowStart, windowEnd, windowSize, text.length]);
+  }, [windowStart, windowEnd, windowSize, text.length, shouldVirtualize]);
 
   return (
     <CodeMirrorEditor
       value={windowText}
       onChange={handleWindowChange}
-      baseOffset={windowStart}
+      baseOffset={shouldVirtualize ? windowStart : 0}
       disableHighlighting={disableHighlighting}
       highlightOpacity={highlightOpacity}
       renderMarkdown={renderMarkdown}
