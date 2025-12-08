@@ -563,6 +563,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   });
   const [entityPanelMode, setEntityPanelMode] = useState<'closed' | 'overlay' | 'pinned'>('closed');
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   const lastScrollY = useRef(0);
 
   const resetEntityOverrides = useCallback(() => {
@@ -1389,6 +1390,60 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           >
             {theme === 'dark' ? '☀️' : '🌙'}
           </button>
+          {/* Settings dropdown */}
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
+              className="control-btn"
+              title="Settings"
+              type="button"
+            >
+              ⚙️
+            </button>
+            {showSettingsDropdown && (
+              <>
+                <div
+                  onClick={() => setShowSettingsDropdown(false)}
+                  style={{
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 999,
+                  }}
+                />
+                <div className="settings-dropdown">
+                  <div className="settings-section">
+                    <div className="settings-label">Entity Highlighting</div>
+                    <div
+                      className="settings-toggle"
+                      onClick={() => setShowHighlighting(!showHighlighting)}
+                    >
+                      <span className="settings-toggle-label">Highlight Entities</span>
+                      <div className={`toggle-switch ${showHighlighting ? 'active' : ''}`}>
+                        <div className="toggle-switch-knob" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="settings-section">
+                    <div className="settings-label">Highlight Transparency</div>
+                    <div className="settings-slider">
+                      <div className="slider-container">
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          value={highlightOpacity * 100}
+                          onChange={(e) => setHighlightOpacity(Number(e.target.value) / 100)}
+                          className="slider-input"
+                          disabled={!showHighlighting}
+                        />
+                        <span className="slider-value">{Math.round(highlightOpacity * 100)}%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
