@@ -104,27 +104,26 @@ body.light-mode {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.branding-sidebar {
-  background-color: var(--bg-secondary);
-  border-right: 1px solid var(--border-color);
+.documents-sidebar {
+  background-color: rgba(255, 255, 255, 0.98);
   transition: background-color 0.3s ease;
 }
 
 /* Dark mode glass effects */
-html[data-theme="dark"] .branding-sidebar {
-  background: rgba(20, 24, 41, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+html[data-theme="dark"] .documents-sidebar {
+  background: rgba(10, 14, 39, 0.98);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border-right: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 2px 0 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 2px 0 24px rgba(0, 0, 0, 0.6);
 }
 
 html[data-theme="dark"] .lab-control-bar {
-  background: rgba(10, 14, 39, 0.88);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+  background: rgba(10, 14, 39, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
 }
 
 html[data-theme="dark"] .overlay-panel {
