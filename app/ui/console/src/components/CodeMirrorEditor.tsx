@@ -23,6 +23,7 @@ import React, {
 import {
   EditorState,
   RangeSetBuilder,
+  StateEffect,
 } from '@codemirror/state';
 
 import {
@@ -107,6 +108,9 @@ const editorTheme = EditorView.theme({
 // Entity highlighting
 // ---------------------------------------------------------------------------
 
+// Custom effect to force decoration rebuild without scrolling
+const ForceDecorationUpdate = StateEffect.define<void>();
+
 type EntityGetter = () => EntitySpan[];
 type DisabledGetter = () => boolean;
 type OpacityGetter = () => number;
@@ -129,7 +133,12 @@ function entityHighlighterExtension(
       }
 
       update(update: ViewUpdate) {
-        if (update.docChanged || update.viewportChanged) {
+        // Rebuild decorations on doc change, viewport change, or forced update
+        const forceUpdate = update.transactions.some(tr =>
+          tr.effects.some(e => e.is(ForceDecorationUpdate))
+        );
+
+        if (update.docChanged || update.viewportChanged || forceUpdate) {
           this.decorations = this.buildDecorations(update.view);
         }
       }
@@ -284,8 +293,10 @@ export function CodeMirrorEditor({
   useEffect(() => {
     entitiesRef.current = entities.slice().sort((a, b) => a.start - b.start);
     if (viewRef.current) {
-      // Force a re-draw of decorations when entities change
-      viewRef.current.dispatch({ effects: EditorView.scrollIntoView(0) });
+      // Force a re-draw of decorations when entities change (without scrolling)
+      viewRef.current.dispatch({
+        effects: ForceDecorationUpdate.of(undefined),
+      });
     }
   }, [entities]);
 
@@ -295,10 +306,20 @@ export function CodeMirrorEditor({
 
   useEffect(() => {
     disableHighlightingRef.current = disableHighlighting;
+    if (viewRef.current) {
+      viewRef.current.dispatch({
+        effects: ForceDecorationUpdate.of(undefined),
+      });
+    }
   }, [disableHighlighting]);
 
   useEffect(() => {
     highlightOpacityRef.current = highlightOpacity;
+    if (viewRef.current) {
+      viewRef.current.dispatch({
+        effects: ForceDecorationUpdate.of(undefined),
+      });
+    }
   }, [highlightOpacity]);
 
   useEffect(() => {
