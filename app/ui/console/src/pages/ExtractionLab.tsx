@@ -1332,65 +1332,63 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   });
 
   return (
-    <div className="extraction-lab">
-      {/* iOS-style Floating Control Bar */}
+    <div className="extraction-lab" style={{ marginLeft: showDocumentSidebar ? '280px' : '0' }}>
+      {/* Hamburger button - absolute position, always accessible */}
+      <button
+        onClick={() => setShowDocumentSidebar(!showDocumentSidebar)}
+        className="hamburger-btn"
+        title="Documents"
+        type="button"
+      >
+        ☰
+      </button>
+
+      {/* iOS-style Floating Control Bar - centered, auto-width */}
       <div
         className={`lab-control-bar ${isHeaderVisible ? 'visible' : 'hidden'}`}
       >
-        <div className="control-bar-content">
-          {/* Left: Hamburger menu */}
+        {/* Status indicator */}
+        <div
+          className="status-indicator"
+          style={{
+            fontSize: 11,
+            color: jobStatus === 'running' ? '#10B981' : jobStatus === 'failed' ? '#EF4444' : 'var(--text-tertiary)',
+            fontWeight: 500,
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+          }}
+        >
+          {jobStatusLabel}
+        </div>
+
+        {/* Icon controls */}
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <button
-            onClick={() => setShowDocumentSidebar(!showDocumentSidebar)}
+            onClick={startBackgroundJob}
+            disabled={backgroundProcessing || hasActiveJob || !text.trim()}
             className="control-btn"
-            title="Documents"
+            title="Start background extraction"
             type="button"
           >
-            ☰
+            ⚡
           </button>
-
-          {/* Center: Status indicator */}
-          <div
-            className="status-indicator"
-            style={{
-              fontSize: 11,
-              color: jobStatus === 'running' ? '#10B981' : jobStatus === 'failed' ? '#EF4444' : 'var(--text-tertiary)',
-              fontWeight: 500,
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}
+          <button
+            onClick={() => setEntityHighlightMode((v) => !v)}
+            className="control-btn"
+            title="Toggle Entity Highlight Mode"
+            type="button"
+            style={{ opacity: entityHighlightMode ? 1 : 0.5 }}
           >
-            {jobStatusLabel}
-          </div>
-
-          {/* Right: Icon controls */}
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <button
-              onClick={startBackgroundJob}
-              disabled={backgroundProcessing || hasActiveJob || !text.trim()}
-              className="control-btn"
-              title="Start background extraction"
-              type="button"
-            >
-              ⚡
-            </button>
-            <button
-              onClick={() => setEntityHighlightMode((v) => !v)}
-              className="control-btn"
-              title="Toggle Entity Highlight Mode"
-              type="button"
-              style={{ opacity: entityHighlightMode ? 1 : 0.5 }}
-            >
-              🖍️
-            </button>
-            <button
-              onClick={handleThemeToggle}
-              className="control-btn"
-              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-              type="button"
-            >
-              {theme === 'dark' ? '☀️' : '🌙'}
-            </button>
-          </div>
+            🖍️
+          </button>
+          <button
+            onClick={handleThemeToggle}
+            className="control-btn"
+            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            type="button"
+          >
+            {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
         </div>
       </div>
 
