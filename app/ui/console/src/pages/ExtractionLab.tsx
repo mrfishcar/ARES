@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { Menu, Zap, Highlighter, Sun, Moon, Settings } from 'lucide-react';
 import { VirtualizedExtractionEditor } from '../components/VirtualizedExtractionEditor';
 import { EntityResultsPanel } from '../components/EntityResultsPanel';
 import { EntityIndicators } from '../components/EntityIndicators';
@@ -1342,7 +1343,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         title="Documents"
         type="button"
       >
-        ☰
+        <Menu size={20} strokeWidth={2} />
       </button>
 
       {/* iOS-style Floating Control Bar - centered, auto-width */}
@@ -1372,7 +1373,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
             title="Start background extraction"
             type="button"
           >
-            ⚡
+            <Zap size={16} strokeWidth={2} />
           </button>
           <button
             onClick={() => setEntityHighlightMode((v) => !v)}
@@ -1381,7 +1382,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
             type="button"
             style={{ opacity: entityHighlightMode ? 1 : 0.5 }}
           >
-            🖍️
+            <Highlighter size={16} strokeWidth={2} />
           </button>
           <button
             onClick={handleThemeToggle}
@@ -1389,7 +1390,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
             title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
             type="button"
           >
-            {theme === 'dark' ? '☀️' : '🌙'}
+            {theme === 'dark' ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
           </button>
           {/* Settings dropdown */}
           <div style={{ position: 'relative' }}>
@@ -1399,7 +1400,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
               title="Settings"
               type="button"
             >
-              ⚙️
+              <Settings size={16} strokeWidth={2} />
             </button>
             {showSettingsDropdown && (
               <>
