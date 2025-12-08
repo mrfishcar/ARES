@@ -940,6 +940,9 @@ const markdownHighlightStyle = HighlightStyle.define([
 // ============================================================================
 
 const editorTheme = EditorView.theme({
+  '&': {
+    height: '100%',
+  },
   '.cm-editor': {
     height: '100% !important',
     cursor: 'text',
@@ -962,6 +965,9 @@ const editorTheme = EditorView.theme({
   '.cm-scroller': {
     height: '100% !important',
     minHeight: '0 !important',
+    maxHeight: '100%',
+    overflow: 'auto',
+    touchAction: 'pan-y',
     scrollbarColor: 'var(--accent-color) var(--bg-tertiary) !important',
     scrollbarWidth: 'thin !important'
   },
@@ -1554,10 +1560,7 @@ export function CodeMirrorEditor({
           borderRadius: '0',
           backgroundColor: 'var(--bg-primary)',
           width: '100%',
-          height: '100%',
-          overflow: 'hidden', // CodeMirror's internal scroller is the sole scroll container
-          scrollbarColor: '#E8A87C #FFEFD5',
-          scrollbarWidth: 'thin'
+          height: '100%'
         } as React.CSSProperties}
         onContextMenu={(e) => {
           const view = viewRef.current;
