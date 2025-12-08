@@ -1334,10 +1334,11 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
   return (
     <div className="extraction-lab" style={{ marginLeft: showDocumentSidebar ? '280px' : '0' }}>
-      {/* Hamburger button - absolute position, always accessible */}
+      {/* Hamburger button - moves with page content */}
       <button
         onClick={() => setShowDocumentSidebar(!showDocumentSidebar)}
         className="hamburger-btn"
+        style={{ left: showDocumentSidebar ? '300px' : '20px' }}
         title="Documents"
         type="button"
       >
