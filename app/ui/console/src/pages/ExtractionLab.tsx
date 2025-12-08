@@ -4,7 +4,7 @@
  * NOW POWERED BY THE FULL ARES ENGINE
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { VirtualizedExtractionEditor } from '../components/VirtualizedExtractionEditor';
 import { EntityResultsPanel } from '../components/EntityResultsPanel';
 import { EntityIndicators } from '../components/EntityIndicators';
@@ -562,6 +562,8 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     typeOverrides: {},
   });
   const [entityPanelMode, setEntityPanelMode] = useState<'closed' | 'overlay' | 'pinned'>('closed');
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const lastScrollY = useRef(0);
 
   const resetEntityOverrides = useCallback(() => {
     setEntityOverrides({
@@ -580,6 +582,31 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     const newTheme = toggleTheme();
     setTheme(newTheme);
   };
+
+  // Auto-hide header on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const scrollDelta = currentScrollY - lastScrollY.current;
+
+      // Show header when scrolling up or at the top
+      // Hide header when scrolling down and past a threshold
+      if (currentScrollY < 10) {
+        setIsHeaderVisible(true);
+      } else if (scrollDelta > 0 && currentScrollY > 100) {
+        // Scrolling down - hide header
+        setIsHeaderVisible(false);
+      } else if (scrollDelta < 0) {
+        // Scrolling up - show header
+        setIsHeaderVisible(true);
+      }
+
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const requiresBackground = text.length > SYNC_EXTRACTION_CHAR_LIMIT;
   const hasActiveJob = jobStatus === 'queued' || jobStatus === 'running';
@@ -1308,15 +1335,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     <div className="extraction-lab">
       {/* Header */}
       <div
-        className="lab-header"
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '12px 24px 20px 24px',
-          minHeight: '90px',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
-        }}
+        className={`lab-header ${isHeaderVisible ? 'visible' : 'hidden'}`}
       >
         <div className="lab-title">
           <span className="lab-icon">🧪</span>
