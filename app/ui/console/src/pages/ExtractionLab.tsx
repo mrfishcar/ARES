@@ -164,12 +164,6 @@ const JobProgressBar = ({ jobStatus, jobProgress, jobEtaSeconds }: JobProgressBa
   );
 };
 
-const StatBadge = ({ label }: { label: string }) => (
-  <span className="stat-badge" style={{ minWidth: 120, textAlign: 'center', display: 'inline-flex', justifyContent: 'center' }}>
-    {label}
-  </span>
-);
-
 // Debounce helper
 function debounce<T extends (...args: any[]) => any>(
   func: T,
@@ -1314,12 +1308,6 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           <span className="powered-badge">Powered by Full ARES Engine</span>
         </div>
         <div className="lab-header-right">
-          <div className="lab-header-stats">
-            <StatBadge label={`⏱️ ${stats.time}ms`} />
-            <StatBadge label={`🎯 ${Math.round(stats.confidence)}% confidence`} />
-            <StatBadge label={`📊 ${stats.count} entities`} />
-            <StatBadge label={`🔗 ${stats.relationCount} relations`} />
-          </div>
           <div className="lab-header-status-row">
             <div
               className="job-status-pill"
