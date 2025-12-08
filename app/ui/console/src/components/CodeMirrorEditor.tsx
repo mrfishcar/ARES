@@ -15,6 +15,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import {
   EditorState,
   RangeSetBuilder,
+  StateEffect,
   Transaction
 } from '@codemirror/state';
 import {
@@ -37,6 +38,7 @@ import type { CodeMirrorEditorProps } from './CodeMirrorEditorProps';
 
 const IS_DEV_ENV = typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production';
 const VERBOSE_LOGGING = false; // Set to true only when debugging highlighting issues
+const ForceDecorationUpdate = StateEffect.define<void>();
 
 // ============================================================================
 // 0. UTILITY FUNCTIONS
@@ -166,6 +168,22 @@ function hexToRgba(hex: string, opacity: number = 1): string {
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 }
 
+function shouldRebuildDecorations(update: ViewUpdate): boolean {
+  const hasForceEffect = update.transactions.some(tr =>
+    tr.effects?.some(e => e.is(ForceDecorationUpdate))
+  );
+
+  return update.docChanged || update.viewportChanged || hasForceEffect;
+}
+
+function dispatchDecorationUpdate(view: EditorView | null | undefined) {
+  if (!view) return;
+
+  view.dispatch({
+    effects: ForceDecorationUpdate.of(undefined)
+  });
+}
+
 // ============================================================================
 // 1. ENTITY HIGHLIGHTING EXTENSION
 // ============================================================================
@@ -192,7 +210,7 @@ function entityHighlighterExtension(
     }
 
     update(update: ViewUpdate) {
-      if (update.docChanged || update.viewportChanged || update.transactions.length > 0) {
+      if (shouldRebuildDecorations(update)) {
         this.decorations = this.buildDecorations(update.view);
       }
     }
@@ -419,7 +437,7 @@ function manualTagHidingExtension(
     }
 
     update(update: ViewUpdate) {
-      if (update.docChanged || update.viewportChanged || update.transactions.length > 0) {
+      if (shouldRebuildDecorations(update)) {
         this.decorations = this.buildDecorations(update.view);
       }
     }
@@ -1178,7 +1196,7 @@ export function CodeMirrorEditor({
     onCreateNew(entitySpan, type as EntityType);
   }, [onCreateNew]);
 
-  // Apply dynamic scrollbar colors based on theme
+  // Apply dynamic scrollbar colors based on theme (CodeMirror scroller only)
   useEffect(() => {
     const theme = document.documentElement.getAttribute('data-theme') || 'light';
     const isDark = theme === 'dark';
@@ -1187,25 +1205,26 @@ export function CodeMirrorEditor({
     const oldStyle = document.getElementById('cm-scrollbar-colors');
     if (oldStyle) oldStyle.remove();
 
-    // Create new style tag with theme-specific scrollbar colors
+    // Create new style tag with theme-specific scrollbar colors. We scope this
+    // to the CodeMirror scroller so it remains the only scroll container.
     const styleTag = document.createElement('style');
     styleTag.id = 'cm-scrollbar-colors';
 
     if (isDark) {
       styleTag.textContent = `
-        .cm-editor-wrapper::-webkit-scrollbar-thumb {
+        .cm-scroller::-webkit-scrollbar-thumb {
           background: #64d5ff !important;
         }
-        .cm-editor-wrapper::-webkit-scrollbar-thumb:hover {
+        .cm-scroller::-webkit-scrollbar-thumb:hover {
           background: #a0e7ff !important;
         }
       `;
     } else {
       styleTag.textContent = `
-        .cm-editor-wrapper::-webkit-scrollbar-thumb {
+        .cm-scroller::-webkit-scrollbar-thumb {
           background: #E8A87C !important;
         }
-        .cm-editor-wrapper::-webkit-scrollbar-thumb:hover {
+        .cm-scroller::-webkit-scrollbar-thumb:hover {
           background: #FFB347 !important;
         }
       `;
@@ -1216,7 +1235,7 @@ export function CodeMirrorEditor({
     return () => styleTag.remove();
   }, []);
 
-  // Keep refs in sync - ViewPlugin rebuilds on any transaction
+  // Keep refs in sync and trigger decoration rebuilds for dependent plugins
   useEffect(() => {
     if (VERBOSE_LOGGING) console.log('[CodeMirror] entities changed:', entities.length);
 
@@ -1237,53 +1256,22 @@ export function CodeMirrorEditor({
       globalMap.set(makeSpanKey(e), e);
     }
     globalEntityMapRef.current = globalMap;
-
-    // Simple empty dispatch to trigger ViewPlugin update
-    // The ViewPlugin rebuilds on transactions.length > 0
-    const view = viewRef.current;
-    if (view) {
-      try {
-        view.dispatch({});
-      } catch (e) {
-        // Ignore errors during dispatch
-      }
-    }
+    dispatchDecorationUpdate(viewRef.current);
   }, [entities, localEntities]);
 
   useEffect(() => {
     renderMarkdownRef.current = renderMarkdown;
-    const view = viewRef.current;
-    if (view) {
-      try {
-        view.dispatch({});
-      } catch (e) {
-        // Ignore errors
-      }
-    }
+    dispatchDecorationUpdate(viewRef.current);
   }, [renderMarkdown]);
 
   useEffect(() => {
     disableHighlightingRef.current = disableHighlighting;
-    const view = viewRef.current;
-    if (view) {
-      try {
-        view.dispatch({});
-      } catch (e) {
-        // Ignore errors
-      }
-    }
+    dispatchDecorationUpdate(viewRef.current);
   }, [disableHighlighting]);
 
   useEffect(() => {
     highlightOpacityRef.current = highlightOpacity;
-    const view = viewRef.current;
-    if (view) {
-      try {
-        view.dispatch({});
-      } catch (e) {
-        // Ignore errors
-      }
-    }
+    dispatchDecorationUpdate(viewRef.current);
   }, [highlightOpacity]);
 
   useEffect(() => {
@@ -1310,14 +1298,7 @@ export function CodeMirrorEditor({
       // Debounce theme changes
       if (debounceTimer) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
-        const view = viewRef.current;
-        if (view) {
-          try {
-            view.dispatch({});
-          } catch (e) {
-            // Ignore errors
-          }
-        }
+        dispatchDecorationUpdate(viewRef.current);
       }, 100);
     });
 
@@ -1574,7 +1555,7 @@ export function CodeMirrorEditor({
           backgroundColor: 'var(--bg-primary)',
           width: '100%',
           height: '100%',
-          overflow: 'auto',
+          overflow: 'hidden', // CodeMirror's internal scroller is the sole scroll container
           scrollbarColor: '#E8A87C #FFEFD5',
           scrollbarWidth: 'thin'
         } as React.CSSProperties}
