@@ -1138,6 +1138,8 @@ export function CodeMirrorEditor({
   const disableHighlightingRef = useRef<boolean>(disableHighlighting);
   const highlightOpacityRef = useRef<number>(highlightOpacity);
   const entityHighlightModeRef = useRef<boolean>(entityHighlightMode);
+  const onChangeRef = useRef(onChange);
+  const onCursorChangeRef = useRef(onCursorChange);
 
   // Context menu state
   const [contextMenu, setContextMenu] = useState<{
@@ -1291,6 +1293,14 @@ export function CodeMirrorEditor({
     baseOffsetRef.current = baseOffset;
   }, [baseOffset]);
 
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  useEffect(() => {
+    onCursorChangeRef.current = onCursorChange;
+  }, [onCursorChange]);
+
   // Watch for theme changes - rebuild decorations with new colors
   useEffect(() => {
     let debounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -1354,14 +1364,27 @@ export function CodeMirrorEditor({
         EditorView.lineWrapping,
         EditorView.updateListener.of((update: ViewUpdate) => {
           if (update.docChanged) {
-            onChange(update.state.doc.toString());
+            onChangeRef.current(update.state.doc.toString());
           }
 
           // Report cursor position for windowed mode
-          if (update.selectionSet && onCursorChange) {
-            const localPos = update.state.selection.main.head;
-            const globalPos = baseOffset + localPos;
-            onCursorChange(globalPos);
+          // Track cursor after user actions (typing, clicking, arrow keys)
+          if (onCursorChangeRef.current) {
+            const hasUserInput = update.transactions.some(tr => {
+              const userEvent = tr.annotation(EditorView.userEvent);
+              return userEvent && (
+                userEvent.startsWith('select.') ||
+                userEvent.startsWith('input.') ||
+                userEvent.startsWith('delete.')
+              );
+            });
+
+            // Report cursor position after user input
+            if (hasUserInput) {
+              const localPos = update.state.selection.main.head;
+              const globalPos = baseOffsetRef.current + localPos;
+              onCursorChangeRef.current(globalPos);
+            }
           }
         })
       ]

@@ -12,7 +12,7 @@
  * - Entity highlighting and tag hiding work in window coordinates
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { CodeMirrorEditor } from './CodeMirrorEditor';
 import type { EntitySpan, EntityType } from '../types/entities';
 
@@ -107,6 +107,23 @@ export function VirtualizedExtractionEditor({
   // Window state
   const [windowStart, setWindowStart] = useState(0);
   const [windowSize] = useState(DEFAULT_WINDOW_SIZE);
+  const prevTextLengthRef = useRef(text.length);
+
+  // Reset window to beginning when text changes dramatically (paste, load, etc.)
+  useEffect(() => {
+    const prevLength = prevTextLengthRef.current;
+    const currentLength = text.length;
+
+    // Large change detected (paste, load, clear) - reset to beginning
+    const lengthChange = Math.abs(currentLength - prevLength);
+    const significantChange = lengthChange > 1000 || currentLength === 0;
+
+    if (significantChange) {
+      setWindowStart(0);
+    }
+
+    prevTextLengthRef.current = currentLength;
+  }, [text.length]);
 
   // Derived values
   const windowEnd = Math.min(text.length, windowStart + windowSize);
@@ -121,6 +138,15 @@ export function VirtualizedExtractionEditor({
   const handleWindowChange = useCallback((newWindowText: string) => {
     const oldWindowText = text.slice(windowStart, windowEnd);
 
+    console.log('[VirtualizedEditor] handleWindowChange', {
+      textLength: text.length,
+      windowStart,
+      windowEnd,
+      oldWindowLength: oldWindowText.length,
+      newWindowLength: newWindowText.length,
+      match: newWindowText === oldWindowText
+    });
+
     // No change
     if (newWindowText === oldWindowText) return;
 
@@ -131,6 +157,12 @@ export function VirtualizedExtractionEditor({
       oldWindowText,
       newWindowText
     );
+
+    console.log('[VirtualizedEditor] Patched result', {
+      originalLength: text.length,
+      patchedLength: patched.length,
+      firstChars: patched.slice(0, 100)
+    });
 
     onTextChange(patched);
   }, [text, windowStart, windowEnd, onTextChange]);
