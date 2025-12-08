@@ -110,6 +110,41 @@ body.light-mode {
   transition: background-color 0.3s ease;
 }
 
+/* Dark mode glass effects */
+html[data-theme="dark"] .branding-sidebar {
+  background: rgba(20, 24, 41, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 2px 0 24px rgba(0, 0, 0, 0.4);
+}
+
+html[data-theme="dark"] .lab-control-bar {
+  background: rgba(10, 14, 39, 0.88);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+}
+
+html[data-theme="dark"] .overlay-panel {
+  background: rgba(10, 14, 39, 0.95);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+html[data-theme="dark"] .scroll-to-top {
+  background: rgba(20, 24, 41, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+}
+
+html[data-theme="dark"] .scroll-to-top:hover {
+  background: rgba(26, 31, 58, 1);
+  color: var(--text-primary);
+}
+
 .lab-control-bar {
   background-color: var(--bg-primary);
   border-bottom: 1px solid var(--border-color);
