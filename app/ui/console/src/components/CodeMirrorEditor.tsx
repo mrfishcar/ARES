@@ -66,7 +66,7 @@ const editorTheme = EditorView.theme({
     height: '100%',
     fontFamily:
       '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", Inter, system-ui, sans-serif',
-    fontSize: '15px',
+    fontSize: '1rem',
     lineHeight: '1.75',
     backgroundColor: 'var(--bg-primary)',
     color: 'var(--text-primary)',
