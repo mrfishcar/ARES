@@ -7,23 +7,26 @@
 :root {
   /* Clean Glass UI System - NO ORANGE ALLOWED */
   --bg-primary: #000000;
-  --bg-secondary: #F8F9FA;
-  --bg-tertiary: #F1F3F5;
-  --bg-elevated: #FFFFFF;
-  --text-primary: #1A1A1A;
-  --text-secondary: #6B7280;
-  --text-tertiary: #9CA3AF;
+  --bg-secondary: #10141E;
+  --bg-tertiary: #151929;
+  --bg-elevated: #181C2A;
+
+  --text-primary: #E5E7EB;
+  --text-secondary: #9CA3AF;
+  --text-tertiary: #6B7280;
+  --text-muted: #6B7280;
+
   --accent-color: #6366F1; /* Indigo - the ONLY accent */
   --accent-hover: #4F46E5;
-  --border-soft: #E5E7EB;
-  --border-color: #E5E7EB;
+  --border-soft: #2A2F3A;
+  --border-color: #2A2F3A;
 
   /* Glass UI Shadows */
-  --shadow-glass: 0 10px 40px rgba(0, 0, 0, 0.15);
-  --shadow-float: 0 12px 30px rgba(0, 0, 0, 0.25);
-  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.12);
-  --shadow-strong: 0 8px 24px rgba(0, 0, 0, 0.18);
+  --shadow-glass: 0 10px 40px rgba(0, 0, 0, 0.4);
+  --shadow-float: 0 12px 30px rgba(0, 0, 0, 0.5);
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-strong: 0 8px 24px rgba(0, 0, 0, 0.5);
 
   /* Border Radius - Apple-like */
   --border-radius: 16px;
@@ -32,10 +35,10 @@
 
   /* Entity Type Colors - Subtle, No Orange */
   --entity-person: #8B5CF6; /* Purple */
-  --entity-place: #10B981; /* Green */
-  --entity-org: #3B82F6; /* Blue */
-  --entity-event: #EC4899; /* Pink */
-  --entity-concept: #14B8A6; /* Teal */
+  --entity-place: #10B981;  /* Green */
+  --entity-org: #3B82F6;    /* Blue */
+  --entity-event: #EC4899;  /* Pink */
+  --entity-concept: #14B8A6;/* Teal */
   --entity-object: #8B5CF6; /* Purple */
 }
 
@@ -81,7 +84,6 @@ a:hover {
   background: var(--bg-primary);
   overflow: hidden;
 }
-
 
 /* Hamburger Button - ChatGPT style */
 .hamburger-btn {
@@ -377,7 +379,7 @@ a:hover {
 
 .stat-badge {
   padding: 6px 12px;
-  background: var(--bg-secondary);
+  background: var(--bg-tertiary);
   border: 1px solid var(--border-soft);
   border-radius: 999px;
   font-size: 13px;
@@ -412,7 +414,7 @@ a:hover {
 .report-button:hover:not(:disabled) {
   background: var(--accent-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(232, 168, 124, 0.3);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
 }
 
 .report-button:active:not(:disabled) {
@@ -434,7 +436,6 @@ a:hover {
   gap: 0;
   padding: 0;
   padding-top: 20px; /* Minimal top padding for floating bar */
-   /* Account for branding sidebar */
   flex: 1;
   min-height: 0;
   overflow: hidden;
@@ -657,7 +658,7 @@ a:hover {
   height: 6px;
   background: var(--accent-hover);
   border-radius: 50%;
-  box-shadow: 0 0 8px rgba(255, 179, 71, 0.8);
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.8);
   animation: orbit 4s linear infinite;
 }
 
@@ -805,7 +806,7 @@ a:hover {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(74, 64, 58, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -823,7 +824,7 @@ a:hover {
   width: 90%;
   max-width: 700px;
   max-height: 85vh;
-  background: var(--bg-secondary);
+  background: var(--bg-elevated);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-strong);
   display: flex;
@@ -850,7 +851,7 @@ a:hover {
   justify-content: space-between;
   padding: 24px;
   border-bottom: 1px solid var(--border-soft);
-  background: var(--bg-secondary);
+  background: var(--bg-elevated);
 }
 
 .wiki-title {
@@ -973,7 +974,7 @@ a:hover {
 
 /* Editor Scrollbar Styling - Light Mode (Default) */
 .cm-editor-wrapper {
-  scrollbar-color: #9CA3AF #F1F3F5 !important;
+  scrollbar-color: #9CA3AF #151929 !important;
   scrollbar-width: thin !important;
 }
 
@@ -983,14 +984,14 @@ a:hover {
 }
 
 .cm-editor-wrapper::-webkit-scrollbar-track {
-  background: #F1F3F5 !important;
+  background: #151929 !important;
   border-radius: 6px !important;
 }
 
 .cm-editor-wrapper::-webkit-scrollbar-thumb {
   background: #9CA3AF !important;
   border-radius: 6px !important;
-  border: 2px solid #F1F3F5 !important;
+  border: 2px solid #151929 !important;
 }
 
 .cm-editor-wrapper::-webkit-scrollbar-thumb:hover {
@@ -1017,16 +1018,16 @@ html[data-theme="dark"] .cm-editor-wrapper::-webkit-scrollbar-thumb:hover {
 
 /* Apply color-scheme to control native scrollbar colors */
 .cm-editor-wrapper {
-  color-scheme: light !important;
+  color-scheme: dark !important;
 }
 
 html[data-theme="dark"] .cm-editor-wrapper {
   color-scheme: dark !important;
 }
 
-/* Also style .cm-scroller scrollbar (CodeMirror's internal scrollable element) - Light Mode */
+/* Also style .cm-scroller scrollbar (CodeMirror's internal scrollable element) */
 .cm-scroller {
-  color-scheme: light !important;
+  color-scheme: dark !important;
 }
 
 .cm-scroller::-webkit-scrollbar {
@@ -1035,14 +1036,14 @@ html[data-theme="dark"] .cm-editor-wrapper {
 }
 
 .cm-scroller::-webkit-scrollbar-track {
-  background: #F1F3F5 !important;
+  background: #151929 !important;
   border-radius: 6px !important;
 }
 
 .cm-scroller::-webkit-scrollbar-thumb {
   background: #9CA3AF !important;
   border-radius: 6px !important;
-  border: 2px solid #F1F3F5 !important;
+  border: 2px solid #151929 !important;
 }
 
 .cm-scroller::-webkit-scrollbar-thumb:hover {
@@ -1065,17 +1066,6 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb {
 
 html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   background: #a0e7ff !important;
-}
-
-/* Text margins inside editor */
-.cm-content {
-  padding: 96px !important; /* 1 inch all around on desktop */
-}
-
-@media (max-width: 768px) {
-  .cm-content {
-    padding: 48px !important; /* 0.5 inch all around on mobile */
-  }
 }
 
 /* Responsive: Mobile */
@@ -1130,7 +1120,6 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
 }
 
 /* Entity Indicators */
-/* Wrapper for indicators and editor */
 .editor-with-indicators-wrapper {
   display: flex;
   flex: 1;
@@ -1363,13 +1352,6 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   flex-shrink: 0;
 }
 
-.empty-state {
-  text-align: center;
-  color: var(--text-secondary);
-  padding: 20px;
-  font-size: 13px;
-}
-
 /* Entities Button */
 .entities-button {
   padding: 6px 12px;
@@ -1443,12 +1425,12 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   width: 36px;
   height: 36px;
   border-radius: var(--border-radius-full);
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   color: var(--text-secondary);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1460,9 +1442,9 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
 
 .scroll-to-top:hover {
   transform: translateY(-2px);
-  background: rgba(255, 255, 255, 1);
+  background: rgba(255, 255, 255, 0.16);
   color: var(--text-primary);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
 }
 
 .scroll-to-top:active {
@@ -1491,11 +1473,11 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   bottom: 0;
   width: 90%;
   max-width: 480px;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(16, 20, 30, 0.95);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.2);
-  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.4);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
   z-index: 201;
   display: flex;
   flex-direction: column;
