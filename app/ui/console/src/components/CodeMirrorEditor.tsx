@@ -554,25 +554,46 @@ export function CodeMirrorEditor({
   // Render
   // -----------------------------------------------------------------------
 
-  return (
+    return (
     <div
       style={{
         position: 'relative',
         width: '100%',
-        height: minHeight,
+        height: '100%',
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: 'column'
       }}
     >
       <div
         ref={editorRef}
         className="cm-editor-wrapper"
         style={{
+          // Leave clearance under the floating header pill so text never hides behind it.
+          // Tweak this number if you change the header height.
+          marginTop: '80px',
+
+          // Make the editor feel like it owns the whole panel instead of a little card.
+          border: 'none',
+          borderRadius: 0,
+          backgroundColor: 'var(--bg-primary)',
           width: '100%',
           height: '100%',
-          border: '1px solid var(--border-color)',
-          backgroundColor: 'var(--bg-primary)',
+          boxSizing: 'border-box',
+
+          // This wrapper is the single scroll container for the editor.
+          overflow: 'auto'
         } as React.CSSProperties}
+        onContextMenu={(e) => {
+          const view = viewRef.current;
+          if (entityHighlightModeRef.current && view) {
+            const sel = view.state.selection.main;
+            if (!sel.empty) {
+              e.preventDefault();
+              createEntityFromSelection();
+              return;
+            }
+          }
+        }}
       />
 
       {contextMenu && (
@@ -581,7 +602,7 @@ export function CodeMirrorEditor({
           entity={{
             text: contextMenu.entity.text,
             type: contextMenu.entity.type,
-            confidence: contextMenu.entity.confidence,
+            confidence: contextMenu.entity.confidence
           }}
           onChangeType={handleChangeType}
           onCreateNew={handleCreateNew}
@@ -592,4 +613,5 @@ export function CodeMirrorEditor({
       )}
     </div>
   );
+}
 }
