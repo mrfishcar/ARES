@@ -1361,7 +1361,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
       {/* iOS-style Floating Control Bar - centered, auto-width */}
       <div
-        className={`lab-control-bar ${isHeaderVisible ? 'visible' : 'hidden'}`}
+        className={`lab-control-bar liquid-glass ${isHeaderVisible ? 'visible' : 'hidden'}`}
       >
         {/* Status indicator */}
         <div
@@ -1426,7 +1426,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                   }}
                 />
                 <div
-                  className="settings-dropdown"
+                  className="settings-dropdown liquid-glass"
                   style={{
                     top: '64px',
                     right: '20px',
