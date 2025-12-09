@@ -36,6 +36,8 @@ const DEFAULT_WINDOW_SIZE = 50000; // Much larger window to minimize updates
 const DEFAULT_SAFE_MARGIN = 10000; // Large margins to reduce update frequency
 const WINDOW_SHIFT_STEP = 5000; // Larger shifts for smoother transitions
 
+const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
+
 /**
  * Diff-based patch: apply changes from window back to full text
  *
@@ -166,8 +168,8 @@ export function VirtualizedExtractionEditor({
     prevTextLengthRef.current = currentLength;
   }, [text.length]);
 
-  // Skip virtualization for small documents
-  const shouldVirtualize = text.length > VIRTUALIZATION_THRESHOLD;
+  // Skip virtualization for small documents and iPad/iOS to prevent cursor jumps and remount flicker
+  const shouldVirtualize = !isIOS && text.length > VIRTUALIZATION_THRESHOLD;
 
   // Derived values
   const windowEnd = shouldVirtualize
