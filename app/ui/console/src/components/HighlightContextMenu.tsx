@@ -69,28 +69,15 @@ export function HighlightContextMenu({
       {/* Backdrop */}
       <div
         onClick={onClose}
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 9998,
-        }}
+        className="context-menu-backdrop"
       />
 
       {/* Context Menu */}
       <div
+        className="context-menu"
         style={{
-          position: 'fixed',
           top: position.y,
           left: position.x,
-          background: 'white',
-          borderRadius: '6px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          padding: '4px 0',
-          minWidth: '180px',
-          zIndex: 9999,
         }}
       >
         {/* Header */}
