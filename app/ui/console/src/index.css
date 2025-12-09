@@ -25,6 +25,15 @@ body {
   --editor-margin-desktop: 96px;
   --editor-margin-mobile: 24px;
   --editor-header-offset: 80px;
+
+  /* Glassmorphism Variables – Dark Mode Defaults */
+  --glass-bg-dark: rgba(15, 23, 42, 0.75);
+  --glass-bg-light: rgba(255, 255, 255, 0.9);
+  --glass-border-dark: rgba(148, 163, 184, 0.15);
+  --glass-border-light: rgba(200, 210, 240, 0.35);
+  --glass-blur-heavy: 18px;
+  --glass-blur-medium: 12px;
+  --glass-blur-light: 6px;
 }
 
 /* Light mode – "paper" */
@@ -40,6 +49,10 @@ html[data-theme="light"] {
 
   --border-soft: #e5e7eb;
   --border-color: #cbd5f5;
+
+  /* Light mode glass variables */
+  --glass-bg-light: rgba(255, 255, 255, 0.92);
+  --glass-border-light: rgba(200, 210, 240, 0.4);
 }
 
 /* Dark mode – "liquid glass" */
@@ -55,6 +68,10 @@ html[data-theme="dark"] {
 
   --border-soft: rgba(148, 163, 184, 0.45);
   --border-color: rgba(148, 163, 184, 0.6);
+
+  /* Dark mode glass variables */
+  --glass-bg-dark: rgba(15, 23, 42, 0.75);
+  --glass-border-dark: rgba(148, 163, 184, 0.15);
 }
 
 body {
@@ -161,15 +178,15 @@ a:hover {
   align-items: center;
   gap: 16px;
   padding: 0 20px;
-  /* ✅ Glass effect: semi-transparent background + blur */
+  /* ✅ Glass effect: semi-transparent background + stronger blur for iPad */
   background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.06), transparent 70%),
               radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.08), transparent 75%),
-              rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(148, 163, 184, 0.25);
+              var(--glass-bg-dark);
+  backdrop-filter: blur(var(--glass-blur-heavy));
+  -webkit-backdrop-filter: blur(var(--glass-blur-heavy));
+  border: 1px solid var(--glass-border-dark);
   border-radius: 22px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   z-index: 50;
   transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: auto;
@@ -211,15 +228,20 @@ a:hover {
   cursor: not-allowed;
 }
 
-/* Settings Dropdown - ChatGPT style */
+/* Settings Dropdown - Glass card style */
 .settings-dropdown {
   position: absolute;
   top: 48px;
   right: 0;
-  background: rgb(24, 28, 40);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  /* ✅ Glass effect: semi-transparent + backdrop blur */
+  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.04), transparent 60%),
+              radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.06), transparent 65%),
+              var(--glass-bg-dark);
+  backdrop-filter: blur(var(--glass-blur-medium));
+  -webkit-backdrop-filter: blur(var(--glass-blur-medium));
+  border: 1px solid var(--glass-border-dark);
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   padding: 16px;
   min-width: 280px;
   z-index: 1000;
@@ -1491,12 +1513,17 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(var(--glass-blur-light));
+  -webkit-backdrop-filter: blur(var(--glass-blur-light));
   z-index: 200;
   cursor: pointer;
   animation: fadeIn 0.25s ease;
   pointer-events: auto;
+}
+
+/* Light mode overlay backdrop: lighter dimming for readability */
+html[data-theme="light"] .overlay-backdrop {
+  background: rgba(0, 0, 0, 0.15);
 }
 
 /* Floating mode: centered glass card */
@@ -1513,14 +1540,14 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   overflow: hidden;
   z-index: 201;
 
-  /* Subtle glass effect with theme-aware coloring */
+  /* Strong glass effect: semi-transparent + heavy blur for overlay mode */
   background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.08), transparent 60%),
               radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.1), transparent 65%),
-              var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+              var(--glass-bg-dark);
+  border: 1px solid var(--glass-border-dark);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
 
   animation: overlayPopIn 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
@@ -1536,7 +1563,7 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   }
 }
 
-/* Docked mode: becomes the right sidebar again */
+/* Docked mode: becomes the right sidebar with lighter glass effect */
 .overlay-panel.pinned {
   position: relative;
   top: 0;
@@ -1548,30 +1575,49 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   max-height: none;
   border-radius: 0;
   box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  /* ✅ Lighter glass effect (4-6px blur) for docked sidebar mode */
+  backdrop-filter: blur(var(--glass-blur-light));
+  -webkit-backdrop-filter: blur(var(--glass-blur-light));
 
-  background: var(--bg-secondary);
+  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.04), transparent 60%),
+              radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.05), transparent 65%),
+              var(--bg-secondary);
   border-left: 1px solid var(--border-soft);
   border-top: none;
 }
 
-/* Light mode overlay: flat card with subtle glass */
+/* Light mode overlay: glass card with brighter appearance */
 html[data-theme="light"] .overlay-panel {
   background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.04), transparent 60%),
-              radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.06), transparent 65%),
-              rgba(255, 255, 255, 0.95);
-  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.12);
-  border-color: rgba(200, 210, 240, 0.5);
+              radial-gradient(circle at bottom right, rgba(200, 220, 255, 0.06), transparent 65%),
+              rgba(255, 255, 255, 0.92);
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.15);
+  border-color: rgba(200, 210, 240, 0.4);
 }
 
 /* Light mode toolbar: bright glass */
 html[data-theme="light"] .lab-control-bar {
-  background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.04), transparent 70%),
-              radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.06), transparent 75%),
-              rgba(255, 255, 255, 0.92);
-  border-color: rgba(200, 210, 240, 0.4);
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  background: radial-gradient(circle at top left, rgba(200, 220, 255, 0.04), transparent 70%),
+              radial-gradient(circle at bottom right, rgba(200, 220, 255, 0.06), transparent 75%),
+              var(--glass-bg-light);
+  border-color: var(--glass-border-light);
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Light mode settings dropdown: glass card */
+html[data-theme="light"] .settings-dropdown {
+  background: radial-gradient(circle at top left, rgba(200, 220, 255, 0.04), transparent 60%),
+              radial-gradient(circle at bottom right, rgba(200, 220, 255, 0.06), transparent 65%),
+              var(--glass-bg-light);
+  border-color: var(--glass-border-light);
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Light mode pinned panel: lighter glass for docked sidebar */
+html[data-theme="light"] .overlay-panel.pinned {
+  background: radial-gradient(circle at top left, rgba(200, 220, 255, 0.04), transparent 60%),
+              radial-gradient(circle at bottom right, rgba(200, 220, 255, 0.05), transparent 65%),
+              rgba(255, 255, 255, 0.98);
 }
 
 .overlay-header {
