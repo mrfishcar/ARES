@@ -116,6 +116,7 @@ a:hover {
   display: flex;
   align-items: center;
   justify-content: center;
+  pointer-events: auto;
 }
 
 .hamburger-btn:hover {
@@ -153,12 +154,13 @@ a:hover {
   align-items: center;
   gap: 16px;
   padding: 0 20px;
-  background: rgb(24, 28, 40);
+  background: var(--bg-secondary);
   border-radius: 22px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
   border: none;
   z-index: 50;
   transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: auto;
 }
 
 .lab-control-bar.hidden {
@@ -487,6 +489,7 @@ a:hover {
   box-shadow: none;
   overflow: hidden;
   transition: background-color 0.3s ease;
+  pointer-events: auto;
 }
 
 /* Desktop sidebar for entities */
@@ -1479,6 +1482,7 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   z-index: 200;
   cursor: pointer;
   animation: fadeIn 0.25s ease;
+  pointer-events: auto;
 }
 
 /* Floating mode: centered glass card */
