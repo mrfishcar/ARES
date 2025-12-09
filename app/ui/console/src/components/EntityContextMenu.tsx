@@ -212,21 +212,18 @@ export function EntityContextMenu({
 
               {showTypeMenu && (
                 <div
+                  className="liquid-glass"
                   style={{
                     position: 'absolute',
                     left: 0,
                     top: '100%',
                     marginTop: '4px',
-                    background: colors.bg,
-                    border: `1px solid ${colors.border}`,
                     borderRadius: '8px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                     minWidth: '200px',
                     maxHeight: '300px',
                     overflowY: 'auto',
                     padding: '4px 0',
                     zIndex: 1001,
-                    color: colors.text,
                   }}
                 >
                   {ENTITY_TYPES.map((type) => (
