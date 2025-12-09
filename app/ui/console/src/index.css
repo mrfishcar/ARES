@@ -34,6 +34,16 @@ body {
   --glass-blur-heavy: 18px;
   --glass-blur-medium: 12px;
   --glass-blur-light: 6px;
+
+  /* Unified Liquid Glass Material System */
+  --liquid-glass-blur: 18px;
+  --liquid-glass-bg-dark: rgba(15, 23, 42, 0.75);
+  --liquid-glass-bg-light: rgba(255, 255, 255, 0.92);
+  --liquid-glass-border-dark: rgba(148, 163, 184, 0.15);
+  --liquid-glass-border-light: rgba(200, 210, 240, 0.4);
+  --liquid-glass-glow-inner: rgba(255, 255, 255, 0.08);
+  --liquid-glass-glow-outer-dark: rgba(0, 0, 0, 0.25);
+  --liquid-glass-glow-outer-light: rgba(15, 23, 42, 0.1);
 }
 
 /* Light mode – "paper" */
@@ -178,15 +188,15 @@ a:hover {
   align-items: center;
   gap: 16px;
   padding: 0 20px;
-  /* ✅ Glass effect: semi-transparent background + stronger blur for iPad */
+  /* ✅ Unified liquid glass material */
   background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.06), transparent 70%),
               radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.08), transparent 75%),
-              var(--glass-bg-dark);
-  backdrop-filter: blur(var(--glass-blur-heavy));
-  -webkit-backdrop-filter: blur(var(--glass-blur-heavy));
-  border: 1px solid var(--glass-border-dark);
+              var(--liquid-glass-bg-dark);
+  backdrop-filter: blur(var(--liquid-glass-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--liquid-glass-blur)) saturate(1.2);
+  border: 1px solid var(--liquid-glass-border-dark);
   border-radius: 22px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px var(--liquid-glass-glow-outer-dark), inset 0 1px 0 var(--liquid-glass-glow-inner);
   z-index: 50;
   transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: auto;
@@ -232,14 +242,15 @@ a:hover {
 .settings-dropdown {
   position: fixed;
   /* Position calculated dynamically by JS, starts at top: 48px, right: 20px relative to control bar */
-  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.08), transparent 60%),
-              radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.1), transparent 65%),
-              rgba(15, 23, 42, 0.55);
-  backdrop-filter: blur(var(--glass-blur-medium));
-  -webkit-backdrop-filter: blur(var(--glass-blur-medium));
-  border: 1px solid var(--glass-border-dark);
+  /* ✅ Unified liquid glass material */
+  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.06), transparent 70%),
+              radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.08), transparent 75%),
+              var(--liquid-glass-bg-dark);
+  backdrop-filter: blur(var(--liquid-glass-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--liquid-glass-blur)) saturate(1.2);
+  border: 1px solid var(--liquid-glass-border-dark);
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px var(--liquid-glass-glow-outer-dark), inset 0 1px 0 var(--liquid-glass-glow-inner);
   padding: 16px;
   min-width: 280px;
   z-index: 1000;
@@ -262,14 +273,15 @@ a:hover {
 /* Context Menu - Glass card style (for right-click menus) */
 .context-menu {
   position: fixed;
-  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.08), transparent 60%),
-              radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.1), transparent 65%),
-              rgba(15, 23, 42, 0.55);
-  backdrop-filter: blur(var(--glass-blur-medium));
-  -webkit-backdrop-filter: blur(var(--glass-blur-medium));
-  border: 1px solid var(--glass-border-dark);
+  /* ✅ Unified liquid glass material */
+  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.06), transparent 70%),
+              radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.08), transparent 75%),
+              var(--liquid-glass-bg-dark);
+  backdrop-filter: blur(var(--liquid-glass-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--liquid-glass-blur)) saturate(1.2);
+  border: 1px solid var(--liquid-glass-border-dark);
   border-radius: 8px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px var(--liquid-glass-glow-outer-dark), inset 0 1px 0 var(--liquid-glass-glow-inner);
   padding: 4px 0;
   min-width: 180px;
   z-index: 9999;
@@ -1666,18 +1678,18 @@ html[data-theme="light"] .overlay-panel {
 html[data-theme="light"] .lab-control-bar {
   background: radial-gradient(circle at top left, rgba(200, 220, 255, 0.04), transparent 70%),
               radial-gradient(circle at bottom right, rgba(200, 220, 255, 0.06), transparent 75%),
-              var(--glass-bg-light);
-  border-color: var(--glass-border-light);
-  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+              var(--liquid-glass-bg-light);
+  border-color: var(--liquid-glass-border-light);
+  box-shadow: 0 8px 32px var(--liquid-glass-glow-outer-light), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 /* Light mode settings dropdown: glass card */
 html[data-theme="light"] .settings-dropdown {
-  background: radial-gradient(circle at top left, rgba(200, 220, 255, 0.06), transparent 60%),
-              radial-gradient(circle at bottom right, rgba(200, 220, 255, 0.08), transparent 65%),
-              rgba(255, 255, 255, 0.75);
-  border-color: var(--glass-border-light);
-  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  background: radial-gradient(circle at top left, rgba(200, 220, 255, 0.04), transparent 70%),
+              radial-gradient(circle at bottom right, rgba(200, 220, 255, 0.06), transparent 75%),
+              var(--liquid-glass-bg-light);
+  border-color: var(--liquid-glass-border-light);
+  box-shadow: 0 8px 32px var(--liquid-glass-glow-outer-light), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 /* Light mode pinned panel: lighter glass for docked sidebar */
@@ -1707,11 +1719,11 @@ html[data-theme="light"] .floating-button:hover {
 
 /* Light mode context menu: bright glass */
 html[data-theme="light"] .context-menu {
-  background: radial-gradient(circle at top left, rgba(200, 220, 255, 0.06), transparent 60%),
-              radial-gradient(circle at bottom right, rgba(200, 220, 255, 0.08), transparent 65%),
-              rgba(255, 255, 255, 0.75);
-  border-color: var(--glass-border-light);
-  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  background: radial-gradient(circle at top left, rgba(200, 220, 255, 0.04), transparent 70%),
+              radial-gradient(circle at bottom right, rgba(200, 220, 255, 0.06), transparent 75%),
+              var(--liquid-glass-bg-light);
+  border-color: var(--liquid-glass-border-light);
+  box-shadow: 0 8px 32px var(--liquid-glass-glow-outer-light), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 html[data-theme="light"] .context-menu-item {
