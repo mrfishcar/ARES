@@ -1693,8 +1693,7 @@ html[data-theme="light"] .overlay-backdrop {
   width: 100%;
   max-height: none;
   border-radius: 0;
-  border-left: 1px solid var(--liquid-glass-border);
-  border-top: none;
+  /* Border and glass styling handled by .liquid-glass--subtle */
 }
 
 
