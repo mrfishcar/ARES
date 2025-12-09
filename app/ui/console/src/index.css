@@ -45,6 +45,11 @@ body {
   --liquid-glass-glow-outer-dark: rgba(0, 0, 0, 0.25);
   --liquid-glass-glow-outer-light: rgba(15, 23, 42, 0.1);
 
+  /* Theme-resolved Liquid Glass tokens */
+  --liquid-glass-bg: var(--liquid-glass-bg-dark);
+  --liquid-glass-border: var(--liquid-glass-border-dark);
+  --liquid-glass-glow-outer: var(--liquid-glass-glow-outer-dark);
+
   /* Default theme variables (dark mode defaults to prevent white flash) */
   --bg-primary: #020617;
   --bg-secondary: rgba(15, 23, 42, 0.96);
@@ -76,6 +81,11 @@ html[data-theme="light"] {
   /* Light mode glass variables */
   --glass-bg-light: rgba(255, 255, 255, 0.92);
   --glass-border-light: rgba(200, 210, 240, 0.4);
+
+  /* Light mode Liquid Glass */
+  --liquid-glass-bg: var(--liquid-glass-bg-light);
+  --liquid-glass-border: var(--liquid-glass-border-light);
+  --liquid-glass-glow-outer: var(--liquid-glass-glow-outer-light);
 }
 
 /* Dark mode – "liquid glass" */
@@ -95,6 +105,11 @@ html[data-theme="dark"] {
   /* Dark mode glass variables */
   --glass-bg-dark: rgba(15, 23, 42, 0.75);
   --glass-border-dark: rgba(148, 163, 184, 0.15);
+
+  /* Dark mode Liquid Glass */
+  --liquid-glass-bg: var(--liquid-glass-bg-dark);
+  --liquid-glass-border: var(--liquid-glass-border-dark);
+  --liquid-glass-glow-outer: var(--liquid-glass-glow-outer-dark);
 }
 
 body {
@@ -204,12 +219,12 @@ a:hover {
   /* ✅ Unified liquid glass material */
   background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.06), transparent 70%),
               radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.08), transparent 75%),
-              var(--liquid-glass-bg-dark);
+              var(--liquid-glass-bg);
   backdrop-filter: blur(var(--liquid-glass-blur)) saturate(1.2);
   -webkit-backdrop-filter: blur(var(--liquid-glass-blur)) saturate(1.2);
-  border: 1px solid var(--liquid-glass-border-dark);
+  border: 1px solid var(--liquid-glass-border);
   border-radius: 22px;
-  box-shadow: 0 8px 32px var(--liquid-glass-glow-outer-dark), inset 0 1px 0 var(--liquid-glass-glow-inner);
+  box-shadow: 0 8px 32px var(--liquid-glass-glow-outer), inset 0 1px 0 var(--liquid-glass-glow-inner);
   z-index: 50;
   transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: auto;
@@ -258,12 +273,12 @@ a:hover {
   /* ✅ Unified liquid glass material */
   background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.06), transparent 70%),
               radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.08), transparent 75%),
-              var(--liquid-glass-bg-dark);
+              var(--liquid-glass-bg);
   backdrop-filter: blur(var(--liquid-glass-blur)) saturate(1.2);
   -webkit-backdrop-filter: blur(var(--liquid-glass-blur)) saturate(1.2);
-  border: 1px solid var(--liquid-glass-border-dark);
+  border: 1px solid var(--liquid-glass-border);
   border-radius: 12px;
-  box-shadow: 0 8px 32px var(--liquid-glass-glow-outer-dark), inset 0 1px 0 var(--liquid-glass-glow-inner);
+  box-shadow: 0 8px 32px var(--liquid-glass-glow-outer), inset 0 1px 0 var(--liquid-glass-glow-inner);
   padding: 16px;
   min-width: 280px;
   z-index: 1000;
@@ -289,12 +304,12 @@ a:hover {
   /* ✅ Unified liquid glass material */
   background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.06), transparent 70%),
               radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.08), transparent 75%),
-              var(--liquid-glass-bg-dark);
+              var(--liquid-glass-bg);
   backdrop-filter: blur(var(--liquid-glass-blur)) saturate(1.2);
   -webkit-backdrop-filter: blur(var(--liquid-glass-blur)) saturate(1.2);
-  border: 1px solid var(--liquid-glass-border-dark);
+  border: 1px solid var(--liquid-glass-border);
   border-radius: 8px;
-  box-shadow: 0 8px 32px var(--liquid-glass-glow-outer-dark), inset 0 1px 0 var(--liquid-glass-glow-inner);
+  box-shadow: 0 8px 32px var(--liquid-glass-glow-outer), inset 0 1px 0 var(--liquid-glass-glow-inner);
   padding: 4px 0;
   min-width: 180px;
   z-index: 9999;
@@ -1535,12 +1550,12 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   /* ✅ Glass effect: semi-transparent background + backdrop blur */
   background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.08), transparent 70%),
               radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.1), transparent 75%),
-              var(--glass-bg-dark);
-  backdrop-filter: blur(var(--glass-blur-medium));
-  -webkit-backdrop-filter: blur(var(--glass-blur-medium));
+              var(--liquid-glass-bg);
+  backdrop-filter: blur(var(--liquid-glass-blur));
+  -webkit-backdrop-filter: blur(var(--liquid-glass-blur));
   color: rgb(230, 235, 245);
-  border: 1px solid var(--glass-border-dark);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--liquid-glass-border);
+  box-shadow: 0 8px 32px var(--liquid-glass-glow-outer), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1553,10 +1568,10 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
 .floating-button:hover {
   transform: scale(1.05);
   opacity: 1;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  box-shadow: 0 12px 40px var(--liquid-glass-glow-outer), inset 0 1px 0 rgba(255, 255, 255, 0.15);
   background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 70%),
               radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.15), transparent 75%),
-              var(--glass-bg-dark);
+              var(--liquid-glass-bg);
   color: rgb(255, 255, 255);
 }
 
@@ -1635,9 +1650,9 @@ html[data-theme="light"] .overlay-backdrop {
   /* Strong glass effect: semi-transparent + heavy blur for overlay mode */
   background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.08), transparent 60%),
               radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.1), transparent 65%),
-              var(--glass-bg-dark);
-  border: 1px solid var(--glass-border-dark);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+              var(--liquid-glass-bg);
+  border: 1px solid var(--liquid-glass-border);
+  box-shadow: 0 20px 50px var(--liquid-glass-glow-outer), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
 
@@ -1673,80 +1688,12 @@ html[data-theme="light"] .overlay-backdrop {
 
   background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.04), transparent 60%),
               radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.05), transparent 65%),
-              var(--bg-secondary);
-  border-left: 1px solid var(--border-soft);
+              var(--liquid-glass-bg);
+  border-left: 1px solid var(--liquid-glass-border);
   border-top: none;
 }
 
-/* Light mode overlay: glass card with brighter appearance */
-html[data-theme="light"] .overlay-panel {
-  background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.04), transparent 60%),
-              radial-gradient(circle at bottom right, rgba(200, 220, 255, 0.06), transparent 65%),
-              rgba(255, 255, 255, 0.92);
-  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.15);
-  border-color: rgba(200, 210, 240, 0.4);
-}
 
-/* Light mode toolbar: bright glass */
-html[data-theme="light"] .lab-control-bar {
-  background: radial-gradient(circle at top left, rgba(200, 220, 255, 0.04), transparent 70%),
-              radial-gradient(circle at bottom right, rgba(200, 220, 255, 0.06), transparent 75%),
-              var(--liquid-glass-bg-light);
-  border-color: var(--liquid-glass-border-light);
-  box-shadow: 0 8px 32px var(--liquid-glass-glow-outer-light), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-/* Light mode settings dropdown: glass card */
-html[data-theme="light"] .settings-dropdown {
-  background: radial-gradient(circle at top left, rgba(200, 220, 255, 0.04), transparent 70%),
-              radial-gradient(circle at bottom right, rgba(200, 220, 255, 0.06), transparent 75%),
-              var(--liquid-glass-bg-light);
-  border-color: var(--liquid-glass-border-light);
-  box-shadow: 0 8px 32px var(--liquid-glass-glow-outer-light), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-/* Light mode pinned panel: lighter glass for docked sidebar */
-html[data-theme="light"] .overlay-panel.pinned {
-  background: radial-gradient(circle at top left, rgba(200, 220, 255, 0.04), transparent 60%),
-              radial-gradient(circle at bottom right, rgba(200, 220, 255, 0.05), transparent 65%),
-              rgba(255, 255, 255, 0.98);
-}
-
-/* Light mode floating button: bright glass */
-html[data-theme="light"] .floating-button {
-  background: radial-gradient(circle at top left, rgba(200, 220, 255, 0.06), transparent 70%),
-              radial-gradient(circle at bottom right, rgba(200, 220, 255, 0.08), transparent 75%),
-              var(--glass-bg-light);
-  border-color: var(--glass-border-light);
-  color: rgb(100, 120, 180);
-  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4);
-}
-
-html[data-theme="light"] .floating-button:hover {
-  background: radial-gradient(circle at top left, rgba(200, 220, 255, 0.08), transparent 70%),
-              radial-gradient(circle at bottom right, rgba(200, 220, 255, 0.12), transparent 75%),
-              var(--glass-bg-light);
-  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  color: rgb(50, 80, 150);
-}
-
-/* Light mode context menu: bright glass */
-html[data-theme="light"] .context-menu {
-  background: radial-gradient(circle at top left, rgba(200, 220, 255, 0.04), transparent 70%),
-              radial-gradient(circle at bottom right, rgba(200, 220, 255, 0.06), transparent 75%),
-              var(--liquid-glass-bg-light);
-  border-color: var(--liquid-glass-border-light);
-  box-shadow: 0 8px 32px var(--liquid-glass-glow-outer-light), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-html[data-theme="light"] .context-menu-item {
-  color: var(--text-primary);
-  border-bottom-color: rgba(200, 210, 240, 0.3);
-}
-
-html[data-theme="light"] .context-menu-item:hover {
-  background: rgba(200, 220, 255, 0.2);
-}
 
 .overlay-header {
   display: flex;
