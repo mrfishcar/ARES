@@ -6,18 +6,14 @@
  * - Entity highlighting
  * - Right-click context menu on entities
  * - Optional “entity highlight mode” for manual tagging workflows
- *
- * NOTE: This is a simplified, “clean” version intended to get the
- *       console working again. Some of the super-fancy glow / tag-
- *       hiding behavior from experimental builds is intentionally
- *       left out so the file is easy to maintain.
  */
 
-import React, { 
-	useEffect, 
-	useRef, 
-	useState, 
-	useCallback 
+import type { MutableRefObject } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
 } from 'react';
 
 import {
@@ -136,7 +132,7 @@ function entityHighlighterExtension(
       update(update: ViewUpdate) {
         // Rebuild decorations on doc change, viewport change, or forced update
         const forceUpdate = update.transactions.some(tr =>
-          tr.effects.some(e => e.is(ForceDecorationUpdate))
+          tr.effects.some(e => e.is(ForceDecorationUpdate)),
         );
 
         if (update.docChanged || update.viewportChanged || forceUpdate) {
@@ -220,8 +216,8 @@ function contextMenuExtension(
     position: { x: number; y: number };
     entity: EntitySpan;
   } | null) => void,
-  entitiesRef: React.MutableRefObject<EntitySpan[]>,
-  baseOffsetRef: React.MutableRefObject<number>,
+  entitiesRef: MutableRefObject<EntitySpan[]>,
+  baseOffsetRef: MutableRefObject<number>,
 ) {
   return EditorView.domEventHandlers({
     contextmenu: (event, view) => {
@@ -424,7 +420,7 @@ export function CodeMirrorEditor({
       view.destroy();
       viewRef.current = null;
     };
-  }, []);
+  }, [value, onCreateNew]);
 
   // Keep value in sync when external value changes (e.g. load new doc)
   useEffect(() => {
@@ -554,14 +550,15 @@ export function CodeMirrorEditor({
   // Render
   // -----------------------------------------------------------------------
 
-    return (
+  return (
     <div
       style={{
         position: 'relative',
         width: '100%',
         height: '100%',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        minHeight,
       }}
     >
       <div
@@ -581,18 +578,7 @@ export function CodeMirrorEditor({
           boxSizing: 'border-box',
 
           // This wrapper is the single scroll container for the editor.
-          overflow: 'auto'
-        } as React.CSSProperties}
-        onContextMenu={(e) => {
-          const view = viewRef.current;
-          if (entityHighlightModeRef.current && view) {
-            const sel = view.state.selection.main;
-            if (!sel.empty) {
-              e.preventDefault();
-              createEntityFromSelection();
-              return;
-            }
-          }
+          overflow: 'auto',
         }}
       />
 
@@ -602,7 +588,7 @@ export function CodeMirrorEditor({
           entity={{
             text: contextMenu.entity.text,
             type: contextMenu.entity.type,
-            confidence: contextMenu.entity.confidence
+            confidence: contextMenu.entity.confidence,
           }}
           onChangeType={handleChangeType}
           onCreateNew={handleCreateNew}
