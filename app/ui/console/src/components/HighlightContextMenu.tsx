@@ -74,7 +74,7 @@ export function HighlightContextMenu({
 
       {/* Context Menu */}
       <div
-        className="context-menu"
+        className="context-menu liquid-glass"
         style={{
           top: position.y,
           left: position.x,

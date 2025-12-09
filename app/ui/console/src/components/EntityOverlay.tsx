@@ -88,7 +88,7 @@ export function EntityOverlay({
     // Pinned sidebar mode - no backdrop
     return (
       <div
-        className="overlay-panel pinned"
+        className="overlay-panel liquid-glass--subtle pinned"
         style={{
           flex: '0 0 400px',
           maxWidth: '460px',
@@ -144,7 +144,7 @@ export function EntityOverlay({
       {/* Overlay panel */}
       <div
         ref={overlayRef}
-        className="overlay-panel"
+        className="overlay-panel liquid-glass--strong"
         role="dialog"
         aria-modal="true"
         aria-labelledby="entity-overlay-title"

@@ -62,7 +62,7 @@ export function FloatingActionButton({
       }}
     >
       <button
-        className="floating-button"
+        className="floating-button liquid-glass"
         onClick={onClick}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}

@@ -156,7 +156,7 @@ export function EntityContextMenu({
 
       {/* Context menu */}
       <div
-        className="context-menu"
+        className="context-menu liquid-glass"
         style={{
           top: `${position.y}px`,
           left: `${position.x}px`,
