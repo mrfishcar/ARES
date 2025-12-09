@@ -6,7 +6,7 @@
 
 :root {
   /* Clean Glass UI System - NO ORANGE ALLOWED */
-  --bg-primary: #FFFFFF;
+  --bg-primary: #000000;
   --bg-secondary: #F8F9FA;
   --bg-tertiary: #F1F3F5;
   --bg-elevated: #FFFFFF;
@@ -51,7 +51,7 @@ body {
 }
 
 code {
-  font-family: 'Courier New', monospace;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', 'Inter', system-ui, sans-serif;
 }
 
 button {
