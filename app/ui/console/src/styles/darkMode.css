@@ -3,34 +3,45 @@
  * Deep midnight blue with starlight accents
  */
 
-/* Light Mode (Default) */
+/* ================================
+   GLOBAL BASE (PREVENT WHITE FLASH)
+================================== */
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* ================================
+   LIGHT MODE (DEFAULT)
+================================== */
+
 :root,
 html[data-theme="light"],
 .light-mode {
-  /* Background Colors */
   --bg-primary: #ffffff;
   --bg-secondary: #f8f7f6;
   --bg-tertiary: #f0ede8;
 
-  /* Text Colors */
   --text-primary: #4a403a;
   --text-secondary: #8b7e77;
   --text-tertiary: #c2b8af;
   --text-inverse: #ffffff;
 
-  /* Border & Accent Colors */
   --border-color: #e8e6e3;
   --border-light: #f0ede8;
   --accent-color: #5a4d46;
   --accent-light: #e8e6e1;
 
-  /* Semantic Colors */
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
   --color-info: #3b82f6;
 
-  /* Markdown Colors */
   --md-heading: #2d2420;
   --md-link: #3b82f6;
   --md-quote: #9ca3af;
@@ -38,82 +49,80 @@ html[data-theme="light"],
   --md-code-color: #c28b6b;
   --md-format: #d1d5db;
 
-  /* Shadows */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Dark Mode (Night Sky) */
+/* ================================
+   DARK MODE (NIGHT SKY)
+================================== */
+
 html[data-theme="dark"],
 .dark-mode {
-  /* Background Colors */
-  --bg-primary: #0a0e27;      /* Deep midnight blue */
-  --bg-secondary: #141829;    /* Slightly lighter midnight */
-  --bg-tertiary: #1a1f3a;     /* Code night blue */
+  --bg-primary: #0a0e27;
+  --bg-secondary: #141829;
+  --bg-tertiary: #1a1f3a;
 
-  /* Text Colors */
-  --text-primary: #e8e6e1;    /* Soft starlight */
-  --text-secondary: #a8b5cc;  /* Twilight gray-blue */
-  --text-tertiary: #6d7a99;   /* Deep twilight */
+  --text-primary: #e8e6e1;
+  --text-secondary: #a8b5cc;
+  --text-tertiary: #6d7a99;
   --text-inverse: #0a0e27;
 
-  /* Border & Accent Colors */
-  --border-color: #2a2f4a;    /* Twilight blue */
-  --border-light: #3a4159;    /* Lighter twilight */
-  --accent-color: #64d5ff;    /* Lunar glow cyan */
-  --accent-light: #a8b5cc;    /* Soft twilight */
+  --border-color: #2a2f4a;
+  --border-light: #3a4159;
+  --accent-color: #64d5ff;
+  --accent-light: #a8b5cc;
 
-  /* Semantic Colors - adjusted for dark mode */
-  --color-success: #6ee7b7;   /* Emerald */
-  --color-warning: #fbbf24;   /* Golden */
-  --color-error: #f87171;     /* Soft red */
-  --color-info: #7dd3fc;      /* Sky blue */
+  --color-success: #6ee7b7;
+  --color-warning: #fbbf24;
+  --color-error: #f87171;
+  --color-info: #7dd3fc;
 
-  /* Markdown Colors */
-  --md-heading: #7dd3fc;      /* Sky blue */
-  --md-link: #bb86fc;         /* Aurora violet */
-  --md-quote: #a8b5cc;        /* Twilight blue */
-  --md-code-bg: #1a1f3a;      /* Code night */
-  --md-code-color: #ffd89b;   /* Golden starlight */
-  --md-format: #6d7a99;       /* Deep twilight */
+  --md-heading: #7dd3fc;
+  --md-link: #bb86fc;
+  --md-quote: #a8b5cc;
+  --md-code-bg: #1a1f3a;
+  --md-code-color: #ffd89b;
+  --md-format: #6d7a99;
 
-  /* Shadows - subtle on dark */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
 }
 
-/* Body Styling */
-body.dark-mode {
+/* ================================
+   CORE APP SURFACES
+================================== */
+
+body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-body.light-mode {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* Extraction Lab Styling */
+/* Extraction Lab */
 .extraction-lab {
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* ✅ FIXED: No more hard-coded white */
 .documents-sidebar {
-  background-color: rgba(255, 255, 255, 0.98);
+  background-color: var(--bg-secondary);
   transition: background-color 0.3s ease;
 }
 
-/* Dark mode - ChatGPT style */
+/* Dark Sidebar */
 html[data-theme="dark"] .documents-sidebar {
   background: rgb(16, 20, 30);
   border-right: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: none;
+}
+
+/* Control Bar */
+.lab-control-bar {
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
 }
 
 html[data-theme="dark"] .lab-control-bar {
@@ -122,51 +131,9 @@ html[data-theme="dark"] .lab-control-bar {
   border: none;
 }
 
-html[data-theme="dark"] .hamburger-btn {
-  color: rgb(180, 190, 210);
-}
-
-html[data-theme="dark"] .hamburger-btn:hover {
-  color: rgb(230, 235, 245);
-}
-
-html[data-theme="dark"] .settings-dropdown {
-  background: rgb(24, 28, 40);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-}
-
-html[data-theme="dark"] .settings-toggle {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-html[data-theme="dark"] .settings-toggle:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-html[data-theme="dark"] .overlay-panel {
-  background: rgba(10, 14, 39, 0.95);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-html[data-theme="dark"] .scroll-to-top {
-  background: rgba(20, 24, 41, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-secondary);
-}
-
-html[data-theme="dark"] .scroll-to-top:hover {
-  background: rgba(26, 31, 58, 1);
-  color: var(--text-primary);
-}
-
-.lab-control-bar {
-  background-color: var(--bg-primary);
-  border-bottom: 1px solid var(--border-color);
-  transition: background-color 0.3s ease;
-}
+/* ================================
+   PANELS
+================================== */
 
 .lab-content {
   background-color: var(--bg-primary);
@@ -177,7 +144,6 @@ html[data-theme="dark"] .scroll-to-top:hover {
 .results-panel {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  color: var(--text-primary);
 }
 
 .panel-header {
@@ -193,7 +159,10 @@ html[data-theme="dark"] .scroll-to-top:hover {
   color: var(--text-secondary);
 }
 
-/* Buttons */
+/* ================================
+   BUTTONS & INPUTS
+================================== */
+
 button {
   background-color: var(--accent-color);
   color: var(--text-inverse);
@@ -211,20 +180,12 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* Input Elements */
-input[type="checkbox"],
-input[type="text"],
-input[type="email"],
+input,
 textarea,
 select {
   background-color: var(--bg-secondary);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
-  transition: all 0.2s ease;
-}
-
-input[type="checkbox"]:checked {
-  accent-color: var(--accent-color);
 }
 
 input:focus,
@@ -234,12 +195,14 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(100, 213, 255, 0.1);
 }
 
-/* Entity Results Panel */
+/* ================================
+   ENTITIES
+================================== */
+
 .entity-item,
 .relation-item {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  color: var(--text-primary);
 }
 
 .entity-type {
@@ -250,12 +213,10 @@ select:focus {
   color: var(--text-tertiary);
 }
 
-/* Labels */
-label {
-  color: var(--text-primary);
-}
+/* ================================
+   LINKS
+================================== */
 
-/* Links */
 a {
   color: var(--md-link);
 }
@@ -264,7 +225,10 @@ a:hover {
   opacity: 0.8;
 }
 
-/* Code blocks */
+/* ================================
+   CODE BLOCKS
+================================== */
+
 code,
 pre {
   background-color: var(--md-code-bg);
@@ -272,7 +236,10 @@ pre {
   border: 1px solid var(--border-color);
 }
 
-/* Modal & Overlays */
+/* ================================
+   MODALS
+================================== */
+
 .modal-overlay {
   background-color: rgba(0, 0, 0, 0.5);
 }
@@ -280,10 +247,12 @@ pre {
 .modal-content {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  color: var(--text-primary);
 }
 
-/* Stat Badges */
+/* ================================
+   STAT BADGES
+================================== */
+
 .stat-badge {
   background-color: var(--bg-tertiary);
   color: var(--text-primary);
@@ -295,53 +264,59 @@ pre {
   color: white;
 }
 
-/* Smooth transitions for all theme-affected elements */
+/* ================================
+   TRANSITIONS
+================================== */
+
+/* ✅ Keeps theme snappy without causing layout jank */
 * {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
 }
 
-/* Disable transitions for animations to be smooth */
+/* ✅ Prevents CodeMirror repaint lag */
 .cm-editor * {
-  transition: none;
+  transition: none !important;
 }
 
-/* Scrollbar Styling - Light Mode */
+/* ================================
+   SCROLLBARS
+================================== */
+
 .cm-editor-wrapper {
-  scrollbar-color: rgb(180, 190, 210) rgb(240, 242, 245) !important;
-  scrollbar-width: thin !important;
+  scrollbar-color: rgb(180, 190, 210) rgb(240, 242, 245);
+  scrollbar-width: thin;
 }
 
 .cm-editor-wrapper::-webkit-scrollbar {
-  width: 12px !important;
-  height: 12px !important;
+  width: 12px;
+  height: 12px;
 }
 
 .cm-editor-wrapper::-webkit-scrollbar-track {
-  background: rgb(240, 242, 245) !important;
+  background: rgb(240, 242, 245);
 }
 
 .cm-editor-wrapper::-webkit-scrollbar-thumb {
-  background: rgb(180, 190, 210) !important;
-  border-radius: 6px !important;
+  background: rgb(180, 190, 210);
+  border-radius: 6px;
 }
 
 .cm-editor-wrapper::-webkit-scrollbar-thumb:hover {
-  background: rgb(160, 170, 190) !important;
+  background: rgb(160, 170, 190);
 }
 
-/* Scrollbar Styling - Dark Mode */
 html[data-theme="dark"] .cm-editor-wrapper {
-  scrollbar-color: #64d5ff #1a1f3a !important;
+  scrollbar-color: #64d5ff #1a1f3a;
 }
 
 html[data-theme="dark"] .cm-editor-wrapper::-webkit-scrollbar-track {
-  background: #1a1f3a !important;
+  background: #1a1f3a;
 }
 
 html[data-theme="dark"] .cm-editor-wrapper::-webkit-scrollbar-thumb {
-  background: #64d5ff !important;
+  background: #64d5ff;
 }
 
 html[data-theme="dark"] .cm-editor-wrapper::-webkit-scrollbar-thumb:hover {
-  background: #a0e7ff !important;
+  background: #a0e7ff;
 }
