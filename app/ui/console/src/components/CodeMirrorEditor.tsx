@@ -6,14 +6,17 @@
  * - Entity highlighting
  * - Right-click context menu on entities
  * - Optional “entity highlight mode” for manual tagging workflows
+ *
+ * This version is focused on:
+ * - Stability on iPadOS (no re-mount on each keystroke)
+ * - Letting iPadOS autocorrect / text services work
  */
 
-import type { MutableRefObject } from 'react';
-import {
+import React, {
   useEffect,
   useRef,
   useState,
-  useCallback,
+  useCallback
 } from 'react';
 
 import {
@@ -86,7 +89,7 @@ const editorTheme = EditorView.theme({
     padding: '16px',
   },
   '.cm-scroller': {
-    // Let the editor itself be the scroll container.
+    // The editor content scrolls; outer wrapper just holds it.
     overflow: 'auto',
   },
   '.cm-gutters': {
@@ -132,7 +135,7 @@ function entityHighlighterExtension(
       update(update: ViewUpdate) {
         // Rebuild decorations on doc change, viewport change, or forced update
         const forceUpdate = update.transactions.some(tr =>
-          tr.effects.some(e => e.is(ForceDecorationUpdate)),
+          tr.effects.some(e => e.is(ForceDecorationUpdate))
         );
 
         if (update.docChanged || update.viewportChanged || forceUpdate) {
@@ -216,8 +219,8 @@ function contextMenuExtension(
     position: { x: number; y: number };
     entity: EntitySpan;
   } | null) => void,
-  entitiesRef: MutableRefObject<EntitySpan[]>,
-  baseOffsetRef: MutableRefObject<number>,
+  entitiesRef: React.MutableRefObject<EntitySpan[]>,
+  baseOffsetRef: React.MutableRefObject<number>,
 ) {
   return EditorView.domEventHandlers({
     contextmenu: (event, view) => {
@@ -260,7 +263,8 @@ export function CodeMirrorEditor({
   disableHighlighting = false,
   highlightOpacity = 1.0,
   entities = [],
-  renderMarkdown = true, // currently affects styling only; raw/pretty split is handled elsewhere
+  // renderMarkdown is currently handled elsewhere in the layout;
+  // we keep the prop in the type but don't need it here.
   onChangeType,
   onCreateNew,
   onReject,
@@ -286,7 +290,42 @@ export function CodeMirrorEditor({
     entity: EntitySpan;
   } | null>(null);
 
-  // Keep refs in sync
+  // Helper: create entity from current selection (used for Mod-E and context menu shortcut)
+  const createEntityFromSelection = useCallback(() => {
+    const view = viewRef.current;
+    if (!view || !entityHighlightModeRef.current || !onCreateNew) return;
+
+    const sel = view.state.selection.main;
+    if (sel.empty) return;
+
+    const text = view.state.doc.sliceString(sel.from, sel.to).trim();
+    if (!text) return;
+
+    const typeInput = window.prompt(
+      'Enter entity type (e.g. PERSON, PLACE, ITEM):',
+    );
+    if (!typeInput) return;
+
+    const type = typeInput.trim().toUpperCase() as EntityType;
+
+    const globalStart = baseOffsetRef.current + sel.from;
+    const globalEnd = baseOffsetRef.current + sel.to;
+
+    const span: EntitySpan = {
+      start: globalStart,
+      end: globalEnd,
+      text,
+      displayText: text,
+      type,
+      confidence: 1,
+      source: 'manual',
+    };
+
+    onCreateNew(span, type);
+  }, [onCreateNew]);
+
+  // Keep refs in sync -------------------------------------------------------
+
   useEffect(() => {
     entitiesRef.current = entities.slice().sort((a, b) => a.start - b.start);
     if (viewRef.current) {
@@ -331,7 +370,8 @@ export function CodeMirrorEditor({
     onCursorChangeRef.current = onCursorChange;
   }, [onCursorChange]);
 
-  // Create the editor once
+  // Create the editor once --------------------------------------------------
+
   useEffect(() => {
     if (!editorRef.current) return;
     if (viewRef.current) return;
@@ -343,37 +383,8 @@ export function CodeMirrorEditor({
           ...defaultKeymap,
           {
             key: 'Mod-e',
-            run: (view) => {
-              // Quick “create entity from selection” shortcut.
-              if (!entityHighlightModeRef.current || !onCreateNew) return false;
-
-              const sel = view.state.selection.main;
-              if (sel.empty) return false;
-
-              const text = view.state.doc.sliceString(sel.from, sel.to).trim();
-              if (!text) return false;
-
-              const typeInput = window.prompt(
-                'Enter entity type (e.g. PERSON, PLACE, ITEM):',
-              );
-              if (!typeInput) return true;
-
-              const type = typeInput.trim().toUpperCase() as EntityType;
-
-              const globalStart = baseOffsetRef.current + sel.from;
-              const globalEnd = baseOffsetRef.current + sel.to;
-
-              const span: EntitySpan = {
-                start: globalStart,
-                end: globalEnd,
-                text,
-                displayText: text,
-                type,
-                confidence: 1,
-                source: 'manual',
-              };
-
-              onCreateNew(span, type);
+            run: () => {
+              createEntityFromSelection();
               return true;
             },
           },
@@ -382,6 +393,12 @@ export function CodeMirrorEditor({
         syntaxHighlighting(markdownHighlightStyle),
         placeholder('Write or paste text...'),
         editorTheme,
+        // iPadOS text-services friendliness: let the OS handle autocorrect etc.
+        EditorView.contentAttributes.of({
+          autocapitalize: 'sentences',
+          autocorrect: 'on',
+          spellcheck: 'true',
+        }),
         entityHighlighterExtension(
           () => entitiesRef.current,
           () => disableHighlightingRef.current,
@@ -411,7 +428,7 @@ export function CodeMirrorEditor({
       parent: editorRef.current,
     });
 
-    // Spellcheck on
+    // Also set spellcheck on the outer element (harmless, sometimes helps)
     view.dom.setAttribute('spellcheck', 'true');
 
     viewRef.current = view;
@@ -420,9 +437,13 @@ export function CodeMirrorEditor({
       view.destroy();
       viewRef.current = null;
     };
-  }, [value, onCreateNew]);
+    // IMPORTANT: we intentionally do NOT depend on `value` or callbacks here.
+    // The document text is synced via the separate [value] effect below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Keep value in sync when external value changes (e.g. load new doc)
+  // Keep value in sync when external value changes (e.g. load new doc) ------
+
   useEffect(() => {
     const view = viewRef.current;
     if (!view) return;
@@ -445,9 +466,7 @@ export function CodeMirrorEditor({
 
   const applyTagChange = useCallback(
     (entity: EntitySpan, tagType: 'SET_TYPE' | 'REJECT', newType?: EntityType) => {
-      // NOTE: For now, we operate directly on the visible text.
-      // We *replace* the entity span with a tag like:
-      //   #Name:TYPE     or     [Multi Word]:REJECT_ENTITY
+      // Operate directly on the visible text.
       const text = value;
       const localStart = entity.start - baseOffset;
       const localEnd = entity.end - baseOffset;
@@ -457,7 +476,6 @@ export function CodeMirrorEditor({
         localEnd > text.length ||
         localStart >= localEnd
       ) {
-        // Out of range – bail; still call callbacks so backend can react.
         return;
       }
 
@@ -555,10 +573,9 @@ export function CodeMirrorEditor({
       style={{
         position: 'relative',
         width: '100%',
-        height: '100%',
+        height: minHeight,
         display: 'flex',
         flexDirection: 'column',
-        minHeight,
       }}
     >
       <div
@@ -566,7 +583,6 @@ export function CodeMirrorEditor({
         className="cm-editor-wrapper"
         style={{
           // Leave clearance under the floating header pill so text never hides behind it.
-          // Tweak this number if you change the header height.
           marginTop: '80px',
 
           // Make the editor feel like it owns the whole panel instead of a little card.
@@ -577,8 +593,19 @@ export function CodeMirrorEditor({
           height: '100%',
           boxSizing: 'border-box',
 
-          // This wrapper is the single scroll container for the editor.
-          overflow: 'auto',
+          // This wrapper is the scroll container for the editor.
+          overflow: 'hidden',
+        } as React.CSSProperties}
+        onContextMenu={(e) => {
+          const view = viewRef.current;
+          if (entityHighlightModeRef.current && view) {
+            const sel = view.state.selection.main;
+            if (!sel.empty) {
+              e.preventDefault();
+              createEntityFromSelection();
+              return;
+            }
+          }
         }}
       />
 
