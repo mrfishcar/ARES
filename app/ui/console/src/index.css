@@ -36,7 +36,12 @@ body {
   --glass-blur-light: 6px;
 
   /* Unified Liquid Glass Material System */
-  --liquid-glass-blur: 18px;
+  /* Blur amounts for consistent glass hierarchy */
+  --liquid-glass-blur-toolbar: 12px;    /* Toolbar, dropdown, context menu */
+  --liquid-glass-blur-overlay: 20px;    /* Floating overlay panels */
+  --liquid-glass-blur-pinned: 6px;      /* Pinned sidebar mode */
+
+  /* Color bases */
   --liquid-glass-bg-dark: rgba(15, 23, 42, 0.75);
   --liquid-glass-bg-light: rgba(255, 255, 255, 0.92);
   --liquid-glass-border-dark: rgba(148, 163, 184, 0.15);
@@ -45,10 +50,18 @@ body {
   --liquid-glass-glow-outer-dark: rgba(0, 0, 0, 0.25);
   --liquid-glass-glow-outer-light: rgba(15, 23, 42, 0.1);
 
+  /* Subtle tint gradients for glass surfaces (reduced opacity for subtlety) */
+  --liquid-glass-tint-1-dark: rgba(56, 189, 248, 0.03);   /* Subtle cyan */
+  --liquid-glass-tint-2-dark: rgba(129, 140, 248, 0.04);  /* Subtle indigo */
+  --liquid-glass-tint-1-light: rgba(200, 220, 255, 0.02);
+  --liquid-glass-tint-2-light: rgba(200, 220, 255, 0.03);
+
   /* Theme-resolved Liquid Glass tokens */
   --liquid-glass-bg: var(--liquid-glass-bg-dark);
   --liquid-glass-border: var(--liquid-glass-border-dark);
   --liquid-glass-glow-outer: var(--liquid-glass-glow-outer-dark);
+  --liquid-glass-tint-1: var(--liquid-glass-tint-1-dark);
+  --liquid-glass-tint-2: var(--liquid-glass-tint-2-dark);
 
   /* Default theme variables (dark mode defaults to prevent white flash) */
   --bg-primary: #020617;
@@ -86,6 +99,8 @@ html[data-theme="light"] {
   --liquid-glass-bg: var(--liquid-glass-bg-light);
   --liquid-glass-border: var(--liquid-glass-border-light);
   --liquid-glass-glow-outer: var(--liquid-glass-glow-outer-light);
+  --liquid-glass-tint-1: var(--liquid-glass-tint-1-light);
+  --liquid-glass-tint-2: var(--liquid-glass-tint-2-light);
 }
 
 /* Dark mode – "liquid glass" */
@@ -110,6 +125,8 @@ html[data-theme="dark"] {
   --liquid-glass-bg: var(--liquid-glass-bg-dark);
   --liquid-glass-border: var(--liquid-glass-border-dark);
   --liquid-glass-glow-outer: var(--liquid-glass-glow-outer-dark);
+  --liquid-glass-tint-1: var(--liquid-glass-tint-1-dark);
+  --liquid-glass-tint-2: var(--liquid-glass-tint-2-dark);
 }
 
 body {
@@ -216,12 +233,12 @@ a:hover {
   align-items: center;
   gap: 16px;
   padding: 0 20px;
-  /* ✅ Unified liquid glass material */
-  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.06), transparent 70%),
-              radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.08), transparent 75%),
+  /* ✅ Unified liquid glass material - subtle tint */
+  background: radial-gradient(circle at top left, var(--liquid-glass-tint-1), transparent 70%),
+              radial-gradient(circle at bottom right, var(--liquid-glass-tint-2), transparent 75%),
               var(--liquid-glass-bg);
-  backdrop-filter: blur(var(--liquid-glass-blur)) saturate(1.2);
-  -webkit-backdrop-filter: blur(var(--liquid-glass-blur)) saturate(1.2);
+  backdrop-filter: blur(var(--liquid-glass-blur-toolbar));
+  -webkit-backdrop-filter: blur(var(--liquid-glass-blur-toolbar));
   border: 1px solid var(--liquid-glass-border);
   border-radius: 22px;
   box-shadow: 0 8px 32px var(--liquid-glass-glow-outer), inset 0 1px 0 var(--liquid-glass-glow-inner);
@@ -271,11 +288,11 @@ a:hover {
   position: fixed;
   /* Position calculated dynamically by JS, starts at top: 48px, right: 20px relative to control bar */
   /* ✅ Unified liquid glass material */
-  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.06), transparent 70%),
-              radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.08), transparent 75%),
+  background: radial-gradient(circle at top left, var(--liquid-glass-tint-1), transparent 70%),
+              radial-gradient(circle at bottom right, var(--liquid-glass-tint-2), transparent 75%),
               var(--liquid-glass-bg);
-  backdrop-filter: blur(var(--liquid-glass-blur)) saturate(1.2);
-  -webkit-backdrop-filter: blur(var(--liquid-glass-blur)) saturate(1.2);
+  backdrop-filter: blur(var(--liquid-glass-blur-toolbar));
+  -webkit-backdrop-filter: blur(var(--liquid-glass-blur-toolbar));
   border: 1px solid var(--liquid-glass-border);
   border-radius: 12px;
   box-shadow: 0 8px 32px var(--liquid-glass-glow-outer), inset 0 1px 0 var(--liquid-glass-glow-inner);
@@ -302,11 +319,11 @@ a:hover {
 .context-menu {
   position: fixed;
   /* ✅ Unified liquid glass material */
-  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.06), transparent 70%),
-              radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.08), transparent 75%),
+  background: radial-gradient(circle at top left, var(--liquid-glass-tint-1), transparent 70%),
+              radial-gradient(circle at bottom right, var(--liquid-glass-tint-2), transparent 75%),
               var(--liquid-glass-bg);
-  backdrop-filter: blur(var(--liquid-glass-blur)) saturate(1.2);
-  -webkit-backdrop-filter: blur(var(--liquid-glass-blur)) saturate(1.2);
+  backdrop-filter: blur(var(--liquid-glass-blur-toolbar));
+  -webkit-backdrop-filter: blur(var(--liquid-glass-blur-toolbar));
   border: 1px solid var(--liquid-glass-border);
   border-radius: 8px;
   box-shadow: 0 8px 32px var(--liquid-glass-glow-outer), inset 0 1px 0 var(--liquid-glass-glow-inner);
@@ -1548,11 +1565,11 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   height: 44px;
   border-radius: 50%;
   /* ✅ Glass effect: semi-transparent background + backdrop blur */
-  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.08), transparent 70%),
-              radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.1), transparent 75%),
+  background: radial-gradient(circle at top left, var(--liquid-glass-tint-1), transparent 70%),
+              radial-gradient(circle at bottom right, var(--liquid-glass-tint-2), transparent 75%),
               var(--liquid-glass-bg);
-  backdrop-filter: blur(var(--liquid-glass-blur));
-  -webkit-backdrop-filter: blur(var(--liquid-glass-blur));
+  backdrop-filter: blur(var(--liquid-glass-blur-toolbar));
+  -webkit-backdrop-filter: blur(var(--liquid-glass-blur-toolbar));
   color: rgb(230, 235, 245);
   border: 1px solid var(--liquid-glass-border);
   box-shadow: 0 8px 32px var(--liquid-glass-glow-outer), inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -1569,8 +1586,8 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   transform: scale(1.05);
   opacity: 1;
   box-shadow: 0 12px 40px var(--liquid-glass-glow-outer), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 70%),
-              radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.15), transparent 75%),
+  background: radial-gradient(circle at top left, var(--liquid-glass-tint-1), transparent 70%),
+              radial-gradient(circle at bottom right, var(--liquid-glass-tint-2), transparent 75%),
               var(--liquid-glass-bg);
   color: rgb(255, 255, 255);
 }
@@ -1648,13 +1665,13 @@ html[data-theme="light"] .overlay-backdrop {
   z-index: 201;
 
   /* Strong glass effect: semi-transparent + heavy blur for overlay mode */
-  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.08), transparent 60%),
-              radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.1), transparent 65%),
+  background: radial-gradient(circle at top left, var(--liquid-glass-tint-1), transparent 60%),
+              radial-gradient(circle at bottom right, var(--liquid-glass-tint-2), transparent 65%),
               var(--liquid-glass-bg);
   border: 1px solid var(--liquid-glass-border);
   box-shadow: 0 20px 50px var(--liquid-glass-glow-outer), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(var(--liquid-glass-blur-overlay));
+  -webkit-backdrop-filter: blur(var(--liquid-glass-blur-overlay));
 
   animation: overlayPopIn 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
@@ -1682,12 +1699,12 @@ html[data-theme="light"] .overlay-backdrop {
   max-height: none;
   border-radius: 0;
   box-shadow: none;
-  /* ✅ Lighter glass effect (4-6px blur) for docked sidebar mode */
-  backdrop-filter: blur(var(--glass-blur-light));
-  -webkit-backdrop-filter: blur(var(--glass-blur-light));
+  /* ✅ Lighter glass effect for docked sidebar mode */
+  backdrop-filter: blur(var(--liquid-glass-blur-pinned));
+  -webkit-backdrop-filter: blur(var(--liquid-glass-blur-pinned));
 
-  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.04), transparent 60%),
-              radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.05), transparent 65%),
+  background: radial-gradient(circle at top left, var(--liquid-glass-tint-1), transparent 60%),
+              radial-gradient(circle at bottom right, var(--liquid-glass-tint-2), transparent 65%),
               var(--liquid-glass-bg);
   border-left: 1px solid var(--liquid-glass-border);
   border-top: none;
