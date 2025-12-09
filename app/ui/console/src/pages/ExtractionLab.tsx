@@ -1347,12 +1347,12 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   });
 
   return (
-    <div className="extraction-lab" style={{ marginLeft: showDocumentSidebar ? '280px' : '0' }}>
-      {/* Hamburger button - moves with page content */}
+    <div className="extraction-lab">
+      {/* Hamburger button - moves with sidebar */}
       <button
         onClick={() => setShowDocumentSidebar(!showDocumentSidebar)}
         className="hamburger-btn"
-        style={{ left: showDocumentSidebar ? '300px' : '20px' }}
+        style={{ left: showDocumentSidebar ? '300px' : '20px', transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}
         title="Documents"
         type="button"
       >
