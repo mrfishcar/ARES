@@ -228,14 +228,12 @@ a:hover {
   cursor: not-allowed;
 }
 
-/* Settings Dropdown - Glass card style */
+/* Settings Dropdown - Glass card style - FIXED positioning for backdrop-filter */
 .settings-dropdown {
-  position: absolute;
-  top: 48px;
-  right: 0;
-  /* ✅ Glass effect: highly transparent + strong backdrop blur for liquid glass */
-  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.06), transparent 60%),
-              radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.08), transparent 65%),
+  position: fixed;
+  /* Position calculated dynamically by JS, starts at top: 48px, right: 20px relative to control bar */
+  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.08), transparent 60%),
+              radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.1), transparent 65%),
               rgba(15, 23, 42, 0.55);
   backdrop-filter: blur(var(--glass-blur-medium));
   -webkit-backdrop-filter: blur(var(--glass-blur-medium));
@@ -246,6 +244,8 @@ a:hover {
   min-width: 280px;
   z-index: 1000;
   animation: dropdownSlideIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: backdrop-filter;
+  -webkit-will-change: backdrop-filter;
 }
 
 @keyframes dropdownSlideIn {
@@ -257,6 +257,61 @@ a:hover {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Context Menu - Glass card style (for right-click menus) */
+.context-menu {
+  position: fixed;
+  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.08), transparent 60%),
+              radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.1), transparent 65%),
+              rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(var(--glass-blur-medium));
+  -webkit-backdrop-filter: blur(var(--glass-blur-medium));
+  border: 1px solid var(--glass-border-dark);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  padding: 4px 0;
+  min-width: 180px;
+  z-index: 9999;
+  animation: contextMenuSlideIn 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: backdrop-filter;
+  -webkit-will-change: backdrop-filter;
+}
+
+@keyframes contextMenuSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Context Menu Backdrop */
+.context-menu-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9998;
+}
+
+/* Context Menu Item */
+.context-menu-item {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-primary);
+  transition: background-color 0.15s ease;
+}
+
+.context-menu-item:hover {
+  background: rgba(56, 189, 248, 0.15);
+  color: var(--text-primary);
 }
 
 .settings-section {
@@ -1648,6 +1703,24 @@ html[data-theme="light"] .floating-button:hover {
               var(--glass-bg-light);
   box-shadow: 0 12px 40px rgba(15, 23, 42, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.5);
   color: rgb(50, 80, 150);
+}
+
+/* Light mode context menu: bright glass */
+html[data-theme="light"] .context-menu {
+  background: radial-gradient(circle at top left, rgba(200, 220, 255, 0.06), transparent 60%),
+              radial-gradient(circle at bottom right, rgba(200, 220, 255, 0.08), transparent 65%),
+              rgba(255, 255, 255, 0.75);
+  border-color: var(--glass-border-light);
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+html[data-theme="light"] .context-menu-item {
+  color: var(--text-primary);
+  border-bottom-color: rgba(200, 210, 240, 0.3);
+}
+
+html[data-theme="light"] .context-menu-item:hover {
+  background: rgba(200, 220, 255, 0.2);
 }
 
 .overlay-header {

@@ -1425,7 +1425,13 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                     zIndex: 999,
                   }}
                 />
-                <div className="settings-dropdown">
+                <div
+                  className="settings-dropdown"
+                  style={{
+                    top: '64px',
+                    right: '20px',
+                  }}
+                >
                   <div className="settings-section">
                     <div className="settings-label">Page Margins</div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

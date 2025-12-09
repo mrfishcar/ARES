@@ -151,31 +151,16 @@ export function EntityContextMenu({
       {/* Backdrop to catch clicks */}
       <div
         onClick={handleBackdropClick}
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'transparent',
-          zIndex: 999,
-        }}
+        className="context-menu-backdrop"
       />
 
       {/* Context menu */}
       <div
+        className="context-menu"
         style={{
-          position: 'fixed',
           top: `${position.y}px`,
           left: `${position.x}px`,
-          background: colors.bg,
-          border: `1px solid ${colors.border}`,
-          borderRadius: '8px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          zIndex: 1000,
           minWidth: '200px',
-          padding: '4px 0',
-          color: colors.text,
         }}
       >
         {/* Entity info header */}
