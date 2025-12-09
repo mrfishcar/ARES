@@ -233,10 +233,10 @@ a:hover {
   position: absolute;
   top: 48px;
   right: 0;
-  /* ✅ Glass effect: semi-transparent + backdrop blur */
-  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.04), transparent 60%),
-              radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.06), transparent 65%),
-              var(--glass-bg-dark);
+  /* ✅ Glass effect: highly transparent + strong backdrop blur for liquid glass */
+  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.06), transparent 60%),
+              radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.08), transparent 65%),
+              rgba(15, 23, 42, 0.55);
   backdrop-filter: blur(var(--glass-blur-medium));
   -webkit-backdrop-filter: blur(var(--glass-blur-medium));
   border: 1px solid var(--glass-border-dark);
@@ -1618,9 +1618,9 @@ html[data-theme="light"] .lab-control-bar {
 
 /* Light mode settings dropdown: glass card */
 html[data-theme="light"] .settings-dropdown {
-  background: radial-gradient(circle at top left, rgba(200, 220, 255, 0.04), transparent 60%),
-              radial-gradient(circle at bottom right, rgba(200, 220, 255, 0.06), transparent 65%),
-              var(--glass-bg-light);
+  background: radial-gradient(circle at top left, rgba(200, 220, 255, 0.06), transparent 60%),
+              radial-gradient(circle at bottom right, rgba(200, 220, 255, 0.08), transparent 65%),
+              rgba(255, 255, 255, 0.75);
   border-color: var(--glass-border-light);
   box-shadow: 0 8px 32px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
