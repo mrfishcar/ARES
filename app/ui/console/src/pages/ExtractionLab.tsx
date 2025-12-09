@@ -1347,7 +1347,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   });
 
   return (
-    <div className="extraction-lab">
+    <div className={`extraction-lab${showDocumentSidebar ? ' sidebar-open' : ''}`}>
       {/* Hamburger button - moves with sidebar */}
       <button
         onClick={() => setShowDocumentSidebar(!showDocumentSidebar)}
