@@ -565,6 +565,10 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [entityPanelMode, setEntityPanelMode] = useState<'closed' | 'overlay' | 'pinned'>('closed');
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
+  const [editorMargin, setEditorMargin] = useState<number>(() => {
+    const saved = localStorage.getItem('ares.editorMargin');
+    return saved ? Number(saved) : 96;
+  });
   const lastScrollY = useRef(0);
 
   const resetEntityOverrides = useCallback(() => {
@@ -584,6 +588,15 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     const newTheme = toggleTheme();
     setTheme(newTheme);
   };
+
+  // Update editor margin CSS variable and persist to localStorage
+  useEffect(() => {
+    document.documentElement.style.setProperty(
+      '--editor-margin-desktop',
+      `${editorMargin}px`
+    );
+    localStorage.setItem('ares.editorMargin', String(editorMargin));
+  }, [editorMargin]);
 
   // Auto-hide header on scroll
   useEffect(() => {
@@ -1413,6 +1426,59 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
                   }}
                 />
                 <div className="settings-dropdown">
+                  <div className="settings-section">
+                    <div className="settings-label">Page Margins</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <button
+                        onClick={() => setEditorMargin(48)}
+                        style={{
+                          padding: '8px 12px',
+                          background: editorMargin === 48 ? 'var(--accent-color)' : 'rgba(255, 255, 255, 0.05)',
+                          color: editorMargin === 48 ? 'white' : 'var(--text-primary)',
+                          border: '1px solid ' + (editorMargin === 48 ? 'var(--accent-color)' : 'rgba(255, 255, 255, 0.08)'),
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          fontSize: '13px',
+                          fontWeight: '500',
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        Narrow (0.5″)
+                      </button>
+                      <button
+                        onClick={() => setEditorMargin(96)}
+                        style={{
+                          padding: '8px 12px',
+                          background: editorMargin === 96 ? 'var(--accent-color)' : 'rgba(255, 255, 255, 0.05)',
+                          color: editorMargin === 96 ? 'white' : 'var(--text-primary)',
+                          border: '1px solid ' + (editorMargin === 96 ? 'var(--accent-color)' : 'rgba(255, 255, 255, 0.08)'),
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          fontSize: '13px',
+                          fontWeight: '500',
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        Default (1″)
+                      </button>
+                      <button
+                        onClick={() => setEditorMargin(120)}
+                        style={{
+                          padding: '8px 12px',
+                          background: editorMargin === 120 ? 'var(--accent-color)' : 'rgba(255, 255, 255, 0.05)',
+                          color: editorMargin === 120 ? 'white' : 'var(--text-primary)',
+                          border: '1px solid ' + (editorMargin === 120 ? 'var(--accent-color)' : 'rgba(255, 255, 255, 0.08)'),
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          fontSize: '13px',
+                          fontWeight: '500',
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        Wide (1.25″)
+                      </button>
+                    </div>
+                  </div>
                   <div className="settings-section">
                     <div className="settings-label">Entity Highlighting</div>
                     <div

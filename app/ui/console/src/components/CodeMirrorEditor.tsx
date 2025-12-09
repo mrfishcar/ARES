@@ -65,7 +65,7 @@ const editorTheme = EditorView.theme({
   '.cm-editor': {
     height: '100%',
     fontFamily:
-      '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif',
+      '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", Inter, system-ui, sans-serif',
     fontSize: '15px',
     lineHeight: '1.75',
     backgroundColor: 'var(--bg-primary)',
@@ -74,7 +74,10 @@ const editorTheme = EditorView.theme({
 
   // ✅ MAIN FIX: text starts below the header, but cannot scroll under it
   '.cm-content': {
-    padding: '96px 16px 16px 16px', // ~80px header clearance + normal padding
+    paddingTop: 'calc(var(--editor-header-offset, 80px) + var(--editor-margin-desktop, 96px))',
+    paddingRight: 'var(--editor-margin-desktop, 96px)',
+    paddingBottom: 'var(--editor-margin-desktop, 96px)',
+    paddingLeft: 'var(--editor-margin-desktop, 96px)',
     boxSizing: 'border-box',
   },
 

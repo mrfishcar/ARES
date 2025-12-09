@@ -40,10 +40,15 @@
   --entity-event: #EC4899;  /* Pink */
   --entity-concept: #14B8A6;/* Teal */
   --entity-object: #8B5CF6; /* Purple */
+
+  /* Editor Margins */
+  --editor-margin-desktop: 96px;
+  --editor-margin-mobile: 24px;
+  --editor-header-offset: 80px;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', 'Inter', system-ui, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 15px;
@@ -54,7 +59,7 @@ body {
 }
 
 code {
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', 'Inter', system-ui, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", Inter, system-ui, sans-serif;
 }
 
 button {
@@ -1606,5 +1611,12 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
 
   .lab-content {
     padding-left: 40px;
+  }
+}
+
+/* Mobile editor margins override */
+@media (max-width: 768px) {
+  :root {
+    --editor-margin-desktop: var(--editor-margin-mobile, 24px);
   }
 }
