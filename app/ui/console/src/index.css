@@ -167,28 +167,38 @@ a:hover {
   transform: translateX(0);
 }
 
-/* Floating Control Bar - Liquid glass style */
+/* Glassy floating toolbar – matches dropdown glass */
 .lab-control-bar {
   position: fixed;
   top: 16px;
   left: 50%;
   transform: translateX(-50%);
   height: 44px;
+
   display: flex;
   align-items: center;
   gap: 16px;
   padding: 0 20px;
-  /* ✅ Glass effect: semi-transparent background + stronger blur for iPad */
-  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.06), transparent 70%),
-              radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.08), transparent 75%),
-              var(--glass-bg-dark);
-  backdrop-filter: blur(var(--glass-blur-heavy));
-  -webkit-backdrop-filter: blur(var(--glass-blur-heavy));
-  border: 1px solid var(--glass-border-dark);
+
+  /* Semi-transparent background so content shows through */
+  background: rgba(15, 23, 42, 0.80);
+
+  /* Real "Liquid Glass" blur + saturation */
+  backdrop-filter: blur(20px) saturate(130%);
+  -webkit-backdrop-filter: blur(20px) saturate(130%);
+
+  /* Rounded pill + glass border + strong depth shadow */
   border-radius: 22px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow:
+    0 14px 40px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(15, 23, 42, 0.9);
+
   z-index: 50;
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
   pointer-events: auto;
 }
 
@@ -228,24 +238,30 @@ a:hover {
   cursor: not-allowed;
 }
 
-/* Settings Dropdown - Glass card style - FIXED positioning for backdrop-filter */
+/* Glassy settings dropdown – real Liquid Glass */
 .settings-dropdown {
-  position: fixed;
-  /* Position calculated dynamically by JS, starts at top: 48px, right: 20px relative to control bar */
-  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.08), transparent 60%),
-              radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.1), transparent 65%),
-              rgba(15, 23, 42, 0.55);
-  backdrop-filter: blur(var(--glass-blur-medium));
-  -webkit-backdrop-filter: blur(var(--glass-blur-medium));
-  border: 1px solid var(--glass-border-dark);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: absolute;
+  top: 48px;
+  right: 0;
+
+  /* Semi-transparent, allows background to show */
+  background: rgba(15, 23, 42, 0.78); /* dark navy with alpha */
+
+  /* Actual blur and saturation – REQUIRED for "glass" */
+  backdrop-filter: blur(18px) saturate(120%);
+  -webkit-backdrop-filter: blur(18px) saturate(120%);
+
+  /* Soft glassy borders + depth */
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow:
+    0 18px 45px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(15, 23, 42, 0.9);
+
   padding: 16px;
   min-width: 280px;
   z-index: 1000;
   animation: dropdownSlideIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: backdrop-filter;
-  -webkit-will-change: backdrop-filter;
 }
 
 @keyframes dropdownSlideIn {
