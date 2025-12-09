@@ -1,13 +1,20 @@
 /**
  * ARES Extraction Lab Editor — CLEAN STABLE BUILD
+ *
  * Fixes:
  * - Header overlap (top padding inside editor content)
  * - iPad keyboard blur loss
  * - Autocorrect / spellcheck enabled
  * - Single scroll container
+ * - Keeps entity context-menu behavior wired correctly
  */
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+} from 'react';
 
 import {
   EditorState,
@@ -65,9 +72,9 @@ const editorTheme = EditorView.theme({
     color: 'var(--text-primary)',
   },
 
-  // ✅ THIS IS THE FIX — TEXT STARTS BELOW HEADER BUT CAN'T SCROLL UNDER IT
+  // ✅ MAIN FIX: text starts below the header, but cannot scroll under it
   '.cm-content': {
-    padding: '96px 16px 16px 16px', // 80px header + normal padding
+    padding: '96px 16px 16px 16px', // ~80px header clearance + normal padding
     boxSizing: 'border-box',
   },
 
@@ -99,8 +106,6 @@ function entityHighlighterExtension(
   getOpacity: () => number,
   getBaseOffset: () => number,
 ) {
-  const BUFFER = 2000;
-
   return ViewPlugin.fromClass(
     class {
       decorations: DecorationSet;
@@ -124,13 +129,13 @@ function entityHighlighterExtension(
         const entities = getEntities();
         if (!entities.length) return Decoration.none;
 
-        const { from, to } = view.viewport;
         const base = getBaseOffset();
+        const doc = view.state.doc;
         const builder = new RangeSetBuilder<Decoration>();
 
         for (const ent of entities) {
           const start = Math.max(0, ent.start - base);
-          const end = Math.min(view.state.doc.length, ent.end - base);
+          const end = Math.min(doc.length, ent.end - base);
           if (end <= start) continue;
 
           const color = getEntityTypeColor(ent.type);
@@ -145,6 +150,7 @@ function entityHighlighterExtension(
                   background: ${color}20;
                   box-shadow: 0 0 0 1px ${color}40;
                   border-radius: 3px;
+                  padding: 0 1px;
                 `,
               },
             }),
@@ -158,12 +164,50 @@ function entityHighlighterExtension(
   );
 }
 
+// -------------------- CONTEXT MENU EXTENSION --------------------
+
+function contextMenuExtension(
+  setContextMenu: (ctx: {
+    position: { x: number; y: number };
+    entity: EntitySpan;
+  } | null) => void,
+  entitiesRef: React.MutableRefObject<EntitySpan[]>,
+  baseOffsetRef: React.MutableRefObject<number>,
+) {
+  return EditorView.domEventHandlers({
+    contextmenu: (event, view) => {
+      const mouseEvent = event as MouseEvent;
+      const pos = view.posAtCoords({
+        x: mouseEvent.clientX,
+        y: mouseEvent.clientY,
+      });
+
+      if (pos == null) return false;
+
+      const globalPos = baseOffsetRef.current + pos;
+      const entity = entitiesRef.current.find(
+        e => e.start <= globalPos && globalPos <= e.end,
+      );
+      if (!entity) return false;
+
+      event.preventDefault();
+
+      setContextMenu({
+        position: { x: mouseEvent.clientX, y: mouseEvent.clientY },
+        entity,
+      });
+
+      return true;
+    },
+  });
+}
+
 // -------------------- MAIN COMPONENT --------------------
 
 export function CodeMirrorEditor({
   value,
   onChange,
-  minHeight = '400px',
+  minHeight = '400px', // kept for type compatibility, not directly used here
   disableHighlighting = false,
   highlightOpacity = 1,
   entities = [],
@@ -171,31 +215,61 @@ export function CodeMirrorEditor({
   onCreateNew,
   onReject,
   onTagEntity,
-  entityHighlightMode = false,
+  entityHighlightMode = false, // not used in this trimmed build yet
   baseOffset = 0,
   onCursorChange,
 }: CodeMirrorEditorProps) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
+
   const entitiesRef = useRef<EntitySpan[]>(entities);
   const baseOffsetRef = useRef(baseOffset);
+  const disableHighlightingRef = useRef(disableHighlighting);
+  const highlightOpacityRef = useRef(highlightOpacity);
+  const onCursorChangeRef = useRef(onCursorChange);
 
   const [contextMenu, setContextMenu] = useState<{
     position: { x: number; y: number };
     entity: EntitySpan;
   } | null>(null);
 
+  // keep refs in sync
   useEffect(() => {
     entitiesRef.current = entities;
-    viewRef.current?.dispatch({
-      effects: ForceDecorationUpdate.of(undefined),
-    });
+    if (viewRef.current) {
+      viewRef.current.dispatch({
+        effects: ForceDecorationUpdate.of(undefined),
+      });
+    }
   }, [entities]);
 
   useEffect(() => {
     baseOffsetRef.current = baseOffset;
   }, [baseOffset]);
 
+  useEffect(() => {
+    disableHighlightingRef.current = disableHighlighting;
+    if (viewRef.current) {
+      viewRef.current.dispatch({
+        effects: ForceDecorationUpdate.of(undefined),
+      });
+    }
+  }, [disableHighlighting]);
+
+  useEffect(() => {
+    highlightOpacityRef.current = highlightOpacity;
+    if (viewRef.current) {
+      viewRef.current.dispatch({
+        effects: ForceDecorationUpdate.of(undefined),
+      });
+    }
+  }, [highlightOpacity]);
+
+  useEffect(() => {
+    onCursorChangeRef.current = onCursorChange;
+  }, [onCursorChange]);
+
+  // create editor once
   useEffect(() => {
     if (!wrapperRef.current || viewRef.current) return;
 
@@ -210,13 +284,20 @@ export function CodeMirrorEditor({
         EditorView.lineWrapping,
         entityHighlighterExtension(
           () => entitiesRef.current,
-          () => disableHighlighting,
-          () => highlightOpacity,
+          () => disableHighlightingRef.current,
+          () => highlightOpacityRef.current,
           () => baseOffsetRef.current,
         ),
-        EditorView.updateListener.of(update => {
+        contextMenuExtension(setContextMenu, entitiesRef, baseOffsetRef),
+        EditorView.updateListener.of((update: ViewUpdate) => {
           if (update.docChanged) {
             onChange(update.state.doc.toString());
+          }
+
+          if (onCursorChangeRef.current && update.selectionSet) {
+            const head = update.state.selection.main.head;
+            const globalPos = baseOffsetRef.current + head;
+            onCursorChangeRef.current(globalPos);
           }
         }),
       ],
@@ -227,7 +308,7 @@ export function CodeMirrorEditor({
       parent: wrapperRef.current,
     });
 
-    // ✅ REQUIRED FOR iPadOS AUTOCORRECT
+    // ✅ iPadOS autocorrect & spellcheck
     view.dom.setAttribute('contenteditable', 'true');
     view.dom.setAttribute('spellcheck', 'true');
     view.dom.setAttribute('autocorrect', 'on');
@@ -241,10 +322,10 @@ export function CodeMirrorEditor({
     };
   }, []);
 
+  // external value sync (e.g. loading another document)
   useEffect(() => {
     const view = viewRef.current;
     if (!view) return;
-
     const current = view.state.doc.toString();
     if (current === value) return;
 
@@ -253,12 +334,63 @@ export function CodeMirrorEditor({
     });
   }, [value]);
 
+  // -------------------- CONTEXT MENU HANDLERS --------------------
+
+  const handleMenuChangeType = useCallback(
+    (type: EntityType) => {
+      if (!contextMenu || !onChangeType) {
+        setContextMenu(null);
+        return;
+      }
+      const entity = contextMenu.entity;
+      void onChangeType(entity, type);
+      setContextMenu(null);
+    },
+    [contextMenu, onChangeType],
+  );
+
+  const handleMenuCreateNew = useCallback(
+    (type: EntityType) => {
+      if (!contextMenu || !onCreateNew) {
+        setContextMenu(null);
+        return;
+      }
+      const entity = contextMenu.entity;
+      void onCreateNew(entity, type);
+      setContextMenu(null);
+    },
+    [contextMenu, onCreateNew],
+  );
+
+  const handleMenuReject = useCallback(() => {
+    if (!contextMenu || !onReject) {
+      setContextMenu(null);
+      return;
+    }
+    const entity = contextMenu.entity;
+    void onReject(entity);
+    setContextMenu(null);
+  }, [contextMenu, onReject]);
+
+  const handleMenuTagEntity = useCallback(() => {
+    if (!contextMenu || !onTagEntity) {
+      setContextMenu(null);
+      return;
+    }
+    const entity = contextMenu.entity;
+    void onTagEntity(entity, entity);
+    setContextMenu(null);
+  }, [contextMenu, onTagEntity]);
+
+  // -------------------- RENDER --------------------
+
   return (
     <div
       style={{
         position: 'relative',
         width: '100%',
         height: '100%',
+        minHeight,
         background: 'var(--bg-primary)',
         overflow: 'hidden',
       }}
@@ -280,10 +412,10 @@ export function CodeMirrorEditor({
         <EntityContextMenu
           position={contextMenu.position}
           entity={contextMenu.entity}
-          onChangeType={onChangeType}
-          onCreateNew={onCreateNew}
-          onReject={onReject}
-          onTagEntity={onTagEntity}
+          onChangeType={handleMenuChangeType}
+          onCreateNew={handleMenuCreateNew}
+          onReject={handleMenuReject}
+          onTagEntity={handleMenuTagEntity}
           onClose={() => setContextMenu(null)}
         />
       )}
