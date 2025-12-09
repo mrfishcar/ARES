@@ -17,79 +17,10 @@ body {
 }
 
 /* ================================
-   LIGHT MODE (DEFAULT)
+   THEME VARIABLES
+   ⚠️ Single source of truth: index.css
+   This file only contains component-specific overrides
 ================================== */
-
-:root,
-html[data-theme="light"],
-.light-mode {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8f7f6;
-  --bg-tertiary: #f0ede8;
-
-  --text-primary: #4a403a;
-  --text-secondary: #8b7e77;
-  --text-tertiary: #c2b8af;
-  --text-inverse: #ffffff;
-
-  --border-color: #e8e6e3;
-  --border-light: #f0ede8;
-  --accent-color: #5a4d46;
-  --accent-light: #e8e6e1;
-
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
-  --color-info: #3b82f6;
-
-  --md-heading: #2d2420;
-  --md-link: #3b82f6;
-  --md-quote: #9ca3af;
-  --md-code-bg: #fef4e6;
-  --md-code-color: #c28b6b;
-  --md-format: #d1d5db;
-
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-}
-
-/* ================================
-   DARK MODE (NIGHT SKY)
-================================== */
-
-html[data-theme="dark"],
-.dark-mode {
-  --bg-primary: #0a0e27;
-  --bg-secondary: #141829;
-  --bg-tertiary: #1a1f3a;
-
-  --text-primary: #e8e6e1;
-  --text-secondary: #a8b5cc;
-  --text-tertiary: #6d7a99;
-  --text-inverse: #0a0e27;
-
-  --border-color: #2a2f4a;
-  --border-light: #3a4159;
-  --accent-color: #64d5ff;
-  --accent-light: #a8b5cc;
-
-  --color-success: #6ee7b7;
-  --color-warning: #fbbf24;
-  --color-error: #f87171;
-  --color-info: #7dd3fc;
-
-  --md-heading: #7dd3fc;
-  --md-link: #bb86fc;
-  --md-quote: #a8b5cc;
-  --md-code-bg: #1a1f3a;
-  --md-code-color: #ffd89b;
-  --md-format: #6d7a99;
-
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
-}
 
 /* ================================
    CORE APP SURFACES
@@ -119,17 +50,7 @@ html[data-theme="dark"] .documents-sidebar {
   box-shadow: none;
 }
 
-/* Control Bar */
-.lab-control-bar {
-  background-color: var(--bg-primary);
-  border-bottom: 1px solid var(--border-color);
-}
-
-html[data-theme="dark"] .lab-control-bar {
-  background: rgb(24, 28, 40);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-  border: none;
-}
+/* Control Bar - Styles moved to index.css for unified liquid glass system */
 
 /* ================================
    PANELS
