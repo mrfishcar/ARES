@@ -5,46 +5,51 @@
 }
 
 :root {
-  /* Clean Glass UI System - NO ORANGE ALLOWED */
-  --bg-primary: #000000;
-  --bg-secondary: #10141E;
-  --bg-tertiary: #151929;
-  --bg-elevated: #181C2A;
+  /* shared tokens that don't really change with theme */
+  --accent-color: #38bdf8;
+  --accent-hover: #0ea5e9;
 
-  --text-primary: #E5E7EB;
-  --text-secondary: #9CA3AF;
-  --text-tertiary: #6B7280;
-  --text-muted: #6B7280;
-
-  --accent-color: #6366F1; /* Indigo - the ONLY accent */
-  --accent-hover: #4F46E5;
-  --border-soft: #2A2F3A;
-  --border-color: #2A2F3A;
-
-  /* Glass UI Shadows */
-  --shadow-glass: 0 10px 40px rgba(0, 0, 0, 0.4);
-  --shadow-float: 0 12px 30px rgba(0, 0, 0, 0.5);
-  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.4);
-  --shadow-strong: 0 8px 24px rgba(0, 0, 0, 0.5);
-
-  /* Border Radius - Apple-like */
-  --border-radius: 16px;
-  --border-radius-small: 12px;
-  --border-radius-full: 50%;
-
-  /* Entity Type Colors - Subtle, No Orange */
-  --entity-person: #8B5CF6; /* Purple */
-  --entity-place: #10B981;  /* Green */
-  --entity-org: #3B82F6;    /* Blue */
-  --entity-event: #EC4899;  /* Pink */
-  --entity-concept: #14B8A6;/* Teal */
-  --entity-object: #8B5CF6; /* Purple */
+  --entity-person: #8b5cf6;
+  --entity-place: #10b981;
+  --entity-org: #3b82f6;
+  --entity-event: #ec4899;
+  --entity-concept: #14b8a6;
+  --entity-object: #8b5cf6;
 
   /* Editor Margins */
   --editor-margin-desktop: 96px;
   --editor-margin-mobile: 24px;
   --editor-header-offset: 80px;
+}
+
+/* Light mode – "paper" */
+html[data-theme="light"] {
+  --bg-primary: #f9fafb;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #e5e7eb;
+  --bg-elevated: #ffffff;
+
+  --text-primary: #020617;
+  --text-secondary: #475569;
+  --text-tertiary: #94a3b8;
+
+  --border-soft: #e5e7eb;
+  --border-color: #cbd5f5;
+}
+
+/* Dark mode – "liquid glass" */
+html[data-theme="dark"] {
+  --bg-primary: #020617;
+  --bg-secondary: rgba(15, 23, 42, 0.96);
+  --bg-tertiary: rgba(30, 41, 59, 0.9);
+  --bg-elevated: rgba(15, 23, 42, 0.96);
+
+  --text-primary: #e5e7eb;
+  --text-secondary: #9ca3af;
+  --text-tertiary: #6b7280;
+
+  --border-soft: rgba(148, 163, 184, 0.45);
+  --border-color: rgba(148, 163, 184, 0.6);
 }
 
 body {
@@ -1456,56 +1461,82 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   transform: translateY(0) scale(0.95);
 }
 
-/* Overlay panel system - Glass dimmed backdrop */
+/* Dimmed background when the panel is floating */
 .overlay-backdrop {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   z-index: 200;
-  animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
+  animation: fadeIn 0.25s ease;
 }
 
+/* Floating mode: centered glass card */
 .overlay-panel {
   position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 90%;
-  max-width: 480px;
-  background: rgba(16, 20, 30, 0.95);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.4);
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
-  z-index: 201;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(560px, 90vw);
+  max-height: 80vh;
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 201;
+
+  /* theme-aware glass */
+  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.14), transparent 55%),
+              radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.16), transparent 60%),
+              var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+
+  animation: overlayPopIn 0.25s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
-@keyframes slideInRight {
+@keyframes overlayPopIn {
   from {
-    transform: translateX(100%);
     opacity: 0;
+    transform: translate(-50%, -45%) scale(0.98);
   }
   to {
-    transform: translateX(0);
     opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 
+/* Docked mode: becomes the right sidebar again */
 .overlay-panel.pinned {
   position: relative;
-  animation: none;
+  top: 0;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  transform: none;
+  width: 100%;
+  max-height: none;
+  border-radius: 0;
   box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+
+  background: var(--bg-secondary);
   border-left: 1px solid var(--border-soft);
+  border-top: none;
+}
+
+/* Light mode overlay: flat card */
+html[data-theme="light"] .overlay-panel {
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
 }
 
 .overlay-header {
