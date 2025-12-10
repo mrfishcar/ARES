@@ -225,6 +225,11 @@ export function CodeMirrorEditor({
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
 
+  const handlePointerDown: React.PointerEventHandler<HTMLDivElement> = event => {
+    // Let iOS focus handling proceed normally while keeping global listeners from hijacking the event.
+    event.stopPropagation();
+  };
+
   const entitiesRef = useRef<EntitySpan[]>(entities);
   const baseOffsetRef = useRef(baseOffset);
   const disableHighlightingRef = useRef(disableHighlighting);
@@ -397,6 +402,7 @@ export function CodeMirrorEditor({
         background: 'var(--bg-primary)',
         overflow: 'hidden',
       }}
+      onPointerDown={handlePointerDown}
     >
       <div
         ref={wrapperRef}
