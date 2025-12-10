@@ -1378,109 +1378,96 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           >
             {theme === 'dark' ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
           </button>
-          {/* Settings dropdown */}
-          <div style={{ position: 'relative' }}>
+          {/* Settings dropdown - CLEAN REBUILD */}
+          <div className="settings-dropdown-container">
             <button
               onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
               className="control-btn"
               title="Settings"
               type="button"
+              aria-expanded={showSettingsDropdown}
+              aria-label="Settings menu"
             >
               <Settings size={16} strokeWidth={2} />
             </button>
+
             {showSettingsDropdown && (
               <>
+                {/* Backdrop - closes dropdown on click */}
                 <div
-                  className="settings-backdrop"
+                  className="settings-dropdown-backdrop"
                   onClick={() => setShowSettingsDropdown(false)}
+                  aria-hidden="true"
                 />
-                <div
-                  className="settings-dropdown liquid-glass"
-                  style={{
-                    top: '64px',
-                    right: '20px',
-                  }}
-                >
-                  <div className="settings-section">
-                    <div className="settings-label">Page Margins</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+
+                {/* Dropdown panel - liquid glass surface */}
+                <div className="settings-dropdown-panel liquid-glass">
+                  {/* Page Margins Section */}
+                  <div className="settings-dropdown-section">
+                    <div className="settings-dropdown-label">Page Margins</div>
+                    <div className="settings-dropdown-buttons">
                       <button
                         onClick={() => setEditorMargin(48)}
-                        style={{
-                          padding: '8px 12px',
-                          background: editorMargin === 48 ? 'var(--accent-color)' : 'rgba(255, 255, 255, 0.05)',
-                          color: editorMargin === 48 ? 'white' : 'var(--text-primary)',
-                          border: '1px solid ' + (editorMargin === 48 ? 'var(--accent-color)' : 'rgba(255, 255, 255, 0.08)'),
-                          borderRadius: '8px',
-                          cursor: 'pointer',
-                          fontSize: '13px',
-                          fontWeight: '500',
-                          transition: 'all 0.2s ease',
-                        }}
+                        className={`settings-margin-btn ${editorMargin === 48 ? 'active' : ''}`}
+                        type="button"
                       >
                         Narrow (0.5″)
                       </button>
                       <button
                         onClick={() => setEditorMargin(96)}
-                        style={{
-                          padding: '8px 12px',
-                          background: editorMargin === 96 ? 'var(--accent-color)' : 'rgba(255, 255, 255, 0.05)',
-                          color: editorMargin === 96 ? 'white' : 'var(--text-primary)',
-                          border: '1px solid ' + (editorMargin === 96 ? 'var(--accent-color)' : 'rgba(255, 255, 255, 0.08)'),
-                          borderRadius: '8px',
-                          cursor: 'pointer',
-                          fontSize: '13px',
-                          fontWeight: '500',
-                          transition: 'all 0.2s ease',
-                        }}
+                        className={`settings-margin-btn ${editorMargin === 96 ? 'active' : ''}`}
+                        type="button"
                       >
                         Default (1″)
                       </button>
                       <button
                         onClick={() => setEditorMargin(120)}
-                        style={{
-                          padding: '8px 12px',
-                          background: editorMargin === 120 ? 'var(--accent-color)' : 'rgba(255, 255, 255, 0.05)',
-                          color: editorMargin === 120 ? 'white' : 'var(--text-primary)',
-                          border: '1px solid ' + (editorMargin === 120 ? 'var(--accent-color)' : 'rgba(255, 255, 255, 0.08)'),
-                          borderRadius: '8px',
-                          cursor: 'pointer',
-                          fontSize: '13px',
-                          fontWeight: '500',
-                          transition: 'all 0.2s ease',
-                        }}
+                        className={`settings-margin-btn ${editorMargin === 120 ? 'active' : ''}`}
+                        type="button"
                       >
                         Wide (1.25″)
                       </button>
                     </div>
                   </div>
-                  <div className="settings-section">
-                    <div className="settings-label">Entity Highlighting</div>
+
+                  {/* Entity Highlighting Section */}
+                  <div className="settings-dropdown-section">
+                    <div className="settings-dropdown-label">Entity Highlighting</div>
                     <div
-                      className="settings-toggle"
+                      className="settings-dropdown-toggle"
                       onClick={() => setShowHighlighting(!showHighlighting)}
+                      role="switch"
+                      aria-checked={showHighlighting}
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setShowHighlighting(!showHighlighting);
+                        }
+                      }}
                     >
-                      <span className="settings-toggle-label">Highlight Entities</span>
-                      <div className={`toggle-switch ${showHighlighting ? 'active' : ''}`}>
-                        <div className="toggle-switch-knob" />
+                      <span className="settings-dropdown-toggle-label">Highlight Entities</span>
+                      <div className={`settings-toggle-switch ${showHighlighting ? 'active' : ''}`}>
+                        <div className="settings-toggle-knob" />
                       </div>
                     </div>
                   </div>
-                  <div className="settings-section">
-                    <div className="settings-label">Highlight Transparency</div>
-                    <div className="settings-slider">
-                      <div className="slider-container">
-                        <input
-                          type="range"
-                          min="0"
-                          max="100"
-                          value={highlightOpacity * 100}
-                          onChange={(e) => setHighlightOpacity(Number(e.target.value) / 100)}
-                          className="slider-input"
-                          disabled={!showHighlighting}
-                        />
-                        <span className="slider-value">{Math.round(highlightOpacity * 100)}%</span>
-                      </div>
+
+                  {/* Transparency Section */}
+                  <div className="settings-dropdown-section">
+                    <div className="settings-dropdown-label">Highlight Transparency</div>
+                    <div className="settings-dropdown-slider">
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={highlightOpacity * 100}
+                        onChange={(e) => setHighlightOpacity(Number(e.target.value) / 100)}
+                        className="settings-slider-input"
+                        disabled={!showHighlighting}
+                        aria-label="Highlight transparency"
+                      />
+                      <span className="settings-slider-value">{Math.round(highlightOpacity * 100)}%</span>
                     </div>
                   </div>
                 </div>
