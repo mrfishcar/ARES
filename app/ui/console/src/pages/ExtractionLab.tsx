@@ -4,7 +4,7 @@
  * NOW POWERED BY THE FULL ARES ENGINE
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Menu, Zap, Highlighter, Sun, Moon, Settings } from 'lucide-react';
 import { VirtualizedExtractionEditor } from '../components/VirtualizedExtractionEditor';
 import { EntityResultsPanel } from '../components/EntityResultsPanel';
@@ -563,13 +563,11 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     typeOverrides: {},
   });
   const [entityPanelMode, setEntityPanelMode] = useState<'closed' | 'overlay' | 'pinned'>('closed');
-  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   const [editorMargin, setEditorMargin] = useState<number>(() => {
     const saved = localStorage.getItem('ares.editorMargin');
     return saved ? Number(saved) : 96;
   });
-  const lastScrollY = useRef(0);
 
   const resetEntityOverrides = useCallback(() => {
     setEntityOverrides({
@@ -597,31 +595,6 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     );
     localStorage.setItem('ares.editorMargin', String(editorMargin));
   }, [editorMargin]);
-
-  // Auto-hide header on scroll
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      const scrollDelta = currentScrollY - lastScrollY.current;
-
-      // Show header when scrolling up or at the top
-      // Hide header when scrolling down and past a threshold
-      if (currentScrollY < 10) {
-        setIsHeaderVisible(true);
-      } else if (scrollDelta > 0 && currentScrollY > 100) {
-        // Scrolling down - hide header
-        setIsHeaderVisible(false);
-      } else if (scrollDelta < 0) {
-        // Scrolling up - show header
-        setIsHeaderVisible(true);
-      }
-
-      lastScrollY.current = currentScrollY;
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   const requiresBackground = text.length > SYNC_EXTRACTION_CHAR_LIMIT;
   const hasActiveJob = jobStatus === 'queued' || jobStatus === 'running';
@@ -1361,7 +1334,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
       {/* iOS-style Floating Control Bar - centered, auto-width */}
       <div
-        className={`lab-control-bar liquid-glass ${isHeaderVisible ? 'visible' : 'hidden'}`}
+        className="lab-control-bar liquid-glass"
       >
         {/* Status indicator */}
         <div
@@ -1418,12 +1391,8 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
             {showSettingsDropdown && (
               <>
                 <div
+                  className="settings-backdrop"
                   onClick={() => setShowSettingsDropdown(false)}
-                  style={{
-                    position: 'fixed',
-                    inset: 0,
-                    zIndex: 999,
-                  }}
                 />
                 <div
                   className="settings-dropdown liquid-glass"

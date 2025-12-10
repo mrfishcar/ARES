@@ -288,6 +288,8 @@ a:hover {
   align-items: center;
   gap: 16px;
   padding: 0 20px;
+  width: auto;
+  max-width: min(960px, calc(100% - 64px));
   border-radius: 22px;
   z-index: 50;
   transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1826,9 +1828,11 @@ html[data-theme="light"] .overlay-backdrop {
   }
 
   .lab-control-bar {
-    left: 48px;
+    left: 50%;
+    transform: translateX(-50%);
     padding: 6px 12px;
     min-height: 48px;
+    max-width: calc(100% - 56px);
   }
 
   .lab-content {
@@ -1862,8 +1866,10 @@ html[data-theme="light"] .overlay-backdrop {
   }
 
   .lab-control-bar {
-    left: 40px;
+    left: 50%;
+    transform: translateX(-50%);
     padding: 4px 8px;
+    max-width: calc(100% - 48px);
   }
 
   .lab-content {
