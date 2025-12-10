@@ -895,10 +895,11 @@ a:hover {
 
 /*
  * Merge selectors: enforce the shared liquid-glass material on all floating surfaces so layout rules
- * (.settings-dropdown-panel, .context-menu, .context-submenu, .lab-control-bar, .floating-button) cannot override
+ * (.context-menu, .context-submenu, .lab-control-bar, .floating-button) cannot override
  * the blur/background stack on Safari.
+ * NOTE: .settings-dropdown-panel is NOT included - it has its own simplified rule below to avoid double backgrounds
  */
-:is(.settings-dropdown-panel, .context-menu, .context-submenu, .lab-control-bar, .floating-button).liquid-glass {
+:is(.context-menu, .context-submenu, .lab-control-bar, .floating-button).liquid-glass {
   background: radial-gradient(circle at top left, var(--liquid-glass-tint-1), transparent 70%),
               radial-gradient(circle at bottom right, var(--liquid-glass-tint-2), transparent 75%),
               var(--liquid-glass-bg) !important;
