@@ -622,6 +622,59 @@ aliases = aliases.filter(a => !PRONOUNS.includes(a.toLowerCase()));
 
 ---
 
+## UI Development Pitfalls
+
+### Safari/iOS Backdrop-Filter Issue
+
+**CRITICAL:** `backdrop-filter` (blur effects) breaks when used inside elements with CSS transforms.
+
+**The Problem:**
+When a parent element has `transform` property (e.g., `translateX(-50%)`), it creates a new containing block. Children with `position: fixed` are then positioned relative to that parent, NOT the viewport. This breaks the rendering context for `backdrop-filter` on Safari/iOS.
+
+**Example of Broken Code:**
+```jsx
+<div style={{ transform: 'translateX(-50%)' }}>  {/* ← Creates containing block */}
+  <div style={{ position: 'fixed', backdropFilter: 'blur(12px)' }}>
+    {/* ❌ Blur won't work on Safari! */}
+  </div>
+</div>
+```
+
+**Solution: Use React Portal**
+```jsx
+import { createPortal } from 'react-dom';
+
+function MyComponent() {
+  return (
+    <>
+      <div className="parent-with-transform">
+        <button>Click me</button>
+      </div>
+
+      {/* Portal renders at document.body, escaping transform context */}
+      {showDropdown && createPortal(
+        <div style={{ position: 'fixed', backdropFilter: 'blur(12px)' }}>
+          {/* ✅ Blur works! */}
+        </div>,
+        document.body
+      )}
+    </>
+  );
+}
+```
+
+**Key Requirements for backdrop-filter on Safari:**
+1. Element must be in clean stacking context (no parent transforms)
+2. Add `isolation: isolate` to create isolated stacking context
+3. Add `transform: translateZ(0)` for GPU acceleration
+4. Background must be semi-transparent (alpha < 1.0)
+5. Avoid complex animations with transforms
+6. Use `!important` if needed to override conflicting styles
+
+**Reference:** See `app/ui/console/src/components/LabToolbar.tsx` for working implementation.
+
+---
+
 ## Common Tasks
 
 ### Task 1: Add a New Relation Pattern

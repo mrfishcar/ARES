@@ -4,6 +4,7 @@
  */
 
 import { createPortal } from 'react-dom';
+import { useRef, useState, useEffect } from 'react';
 import { Settings, Sun, Moon, Zap, Highlighter } from 'lucide-react';
 
 interface LabToolbarProps {
@@ -58,6 +59,20 @@ export function LabToolbar({
   canExtract,
   isExtracting,
 }: LabToolbarProps) {
+  const settingsButtonRef = useRef<HTMLButtonElement>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 64, right: 20 });
+
+  // Calculate dropdown position when it opens
+  useEffect(() => {
+    if (showSettingsDropdown && settingsButtonRef.current) {
+      const rect = settingsButtonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + 8, // 8px gap below button
+        right: window.innerWidth - rect.right, // Align right edge with button
+      });
+    }
+  }, [showSettingsDropdown]);
+
   // Derive status label
   const statusLabel = jobStatus === 'running'
     ? 'Job running'
@@ -118,6 +133,7 @@ export function LabToolbar({
         {/* Settings dropdown */}
         <div className="settings-dropdown-container">
           <button
+            ref={settingsButtonRef}
             onClick={onSettingsToggle}
             className="control-btn"
             title="Settings"
@@ -142,7 +158,13 @@ export function LabToolbar({
         />
 
         {/* Dropdown panel */}
-        <div className="settings-dropdown-panel liquid-glass">
+        <div
+          className="settings-dropdown-panel liquid-glass"
+          style={{
+            top: `${dropdownPosition.top}px`,
+            right: `${dropdownPosition.right}px`,
+          }}
+        >
                 {/* Page Margins */}
                 <div className="settings-dropdown-section">
                   <div className="settings-dropdown-label">Page Margins</div>
