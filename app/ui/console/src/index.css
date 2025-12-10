@@ -99,7 +99,12 @@
   }
 }
 
-:root,
+:root {
+  margin: 0;
+  padding: 0;
+  background-color: var(--app-surface);
+}
+
 html,
 body {
   margin: 0;
@@ -112,7 +117,8 @@ html,
 body,
 #root {
   height: 100%;
-  min-height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh; /* Use dynamic viewport height */
   overflow: hidden;
 }
 
@@ -143,9 +149,10 @@ body,
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for iOS keyboard */
   height: 100%;
   flex: 1;
-  background-color: transparent;
+  background-color: var(--app-surface);
   color: var(--text-primary);
 }
 
@@ -325,6 +332,9 @@ body::before {
   z-index: -1;
   background-color: var(--app-surface);
   background-image: var(--app-background-gradient);
+  /* Ensure it covers viewport even when keyboard appears */
+  min-height: 100vh;
+  min-height: 100dvh; /* Use dynamic viewport height on supporting browsers */
 }
 
 #root {
@@ -335,6 +345,7 @@ body::before {
 .app-root {
   position: relative;
   min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for iOS keyboard */
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -897,12 +908,18 @@ a:hover {
 
 /* Settings dropdown specific - FORCE blur on Safari */
 .glass-panel {
-  background: rgba(10, 10, 20, 0.65);
+  /* Use theme-aware liquid glass styling */
+  background: radial-gradient(circle at top left, var(--liquid-glass-tint-1), transparent 70%),
+              radial-gradient(circle at bottom right, var(--liquid-glass-tint-2), transparent 75%),
+              var(--liquid-glass-bg);
   backdrop-filter: blur(18px) saturate(140%);
   -webkit-backdrop-filter: blur(18px) saturate(140%);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
-  color: #f4f6fb;
+  border: 1px solid var(--liquid-glass-border);
+  box-shadow: 0 18px 40px var(--liquid-glass-glow-outer), inset 0 1px 0 var(--liquid-glass-glow-inner);
+  color: var(--text-primary);
+  /* Force GPU acceleration for better blur on Safari */
+  transform: translateZ(0);
+  isolation: isolate;
 }
 
 .overlay-panel.liquid-glass--strong {
