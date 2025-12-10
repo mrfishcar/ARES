@@ -4,6 +4,15 @@
   padding: 0;
 }
 
+:root,
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #050713;
+  color-scheme: dark;
+}
+
 html {
   font-size: 100%;
   -webkit-text-size-adjust: 100%;
@@ -69,7 +78,7 @@ body {
   --liquid-glass-tint-2: var(--liquid-glass-tint-2-dark);
 
   /* Default theme variables (dark mode defaults to prevent white flash) */
-  --bg-primary: #020617;
+  --bg-primary: #050713;
   --bg-secondary: rgba(15, 23, 42, 0.96);
   --bg-tertiary: rgba(30, 41, 59, 0.9);
   --bg-elevated: rgba(15, 23, 42, 0.96);
@@ -80,6 +89,11 @@ body {
 
   --border-soft: rgba(148, 163, 184, 0.45);
   --border-color: rgba(148, 163, 184, 0.6);
+
+  /* Global background gradient for the deepest layer */
+  --app-background-gradient: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.08), transparent 35%),
+    radial-gradient(circle at 80% 0%, rgba(129, 140, 248, 0.06), transparent 40%),
+    linear-gradient(180deg, #050713 0%, #0b1024 55%, #050713 100%);
 }
 
 /* Light mode – "paper" */
@@ -110,7 +124,7 @@ html[data-theme="light"] {
 
 /* Dark mode – "liquid glass" */
 html[data-theme="dark"] {
-  --bg-primary: #020617;
+  --bg-primary: #050713;
   --bg-secondary: rgba(15, 23, 42, 0.96);
   --bg-tertiary: rgba(30, 41, 59, 0.9);
   --bg-elevated: rgba(15, 23, 42, 0.96);
@@ -186,7 +200,23 @@ body {
   font-weight: 400;
   line-height: 1.6;
   background: var(--bg-primary);
+  background-color: #050713;
   color: var(--text-primary);
+  position: relative;
+  min-height: 100vh;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--app-background-gradient);
+}
+
+#root,
+.app-root {
+  min-height: 100vh;
 }
 
 code {
