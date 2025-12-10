@@ -4,7 +4,7 @@
  */
 
 import { createPortal } from 'react-dom';
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Settings, Sun, Moon, Zap, Highlighter } from 'lucide-react';
 
 interface LabToolbarProps {
@@ -61,119 +61,17 @@ export function LabToolbar({
 }: LabToolbarProps) {
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 64, right: 20 });
-  const [dropdownWidth, setDropdownWidth] = useState(320);
-  const [isDropdownMounted, setIsDropdownMounted] = useState(false);
-  const [dropdownState, setDropdownState] = useState<'opening' | 'open' | 'closing'>('closing');
-  const dropdownPanelRef = useRef<HTMLDivElement>(null);
-  const overlayRoot = typeof document !== 'undefined' ? document.getElementById('overlay-root') ?? document.body : null;
-
-  const updateDropdownPosition = useCallback(() => {
-    if (typeof window !== 'undefined' && settingsButtonRef.current && dropdownPanelRef.current) {
-      const rect = settingsButtonRef.current.getBoundingClientRect();
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
-      const viewportPadding = viewportWidth < 600 ? 12 : 16;
-      const panelMaxWidth = viewportWidth >= 768 ? 360 : 320;
-      const availableWidth = Math.min(panelMaxWidth, viewportWidth - viewportPadding * 2);
-
-      // Horizontal positioning - center under button and clamp to viewport
-      const centeredLeft = rect.left + rect.width / 2 - availableWidth / 2;
-      const clampedLeft = Math.max(viewportPadding, Math.min(centeredLeft, viewportWidth - viewportPadding - availableWidth));
-
-      // Vertical positioning - check if dropdown fits below button
-      const topOffset = viewportWidth <= 1024 ? 12 : 8;
-      const dropdownHeight = dropdownPanelRef.current.offsetHeight || 400; // Estimate if not mounted yet
-      const spaceBelow = viewportHeight - rect.bottom - topOffset;
-      const spaceAbove = rect.top - topOffset;
-
-      let finalTop: number;
-
-      // If dropdown doesn't fit below, try to position it above
-      if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
-        // Position above button
-        finalTop = rect.top - dropdownHeight - topOffset;
-        // Clamp to not go above viewport
-        finalTop = Math.max(viewportPadding, finalTop);
-      } else {
-        // Position below button (default)
-        finalTop = rect.bottom + topOffset;
-        // Clamp to not go below viewport
-        const maxTop = viewportHeight - dropdownHeight - viewportPadding;
-        finalTop = Math.min(finalTop, maxTop);
-      }
-
-      setDropdownPosition({
-        top: finalTop,
-        right: viewportWidth - clampedLeft - availableWidth,
-      });
-      setDropdownWidth(availableWidth);
-    }
-  }, []);
 
   // Calculate dropdown position when it opens
   useEffect(() => {
-    if (showSettingsDropdown) {
-      updateDropdownPosition();
-      setIsDropdownMounted(true);
-      setDropdownState('opening');
-
-      requestAnimationFrame(() => setDropdownState('open'));
-    } else if (isDropdownMounted) {
-      setDropdownState('closing');
-      const timeout = setTimeout(() => setIsDropdownMounted(false), 180);
-      return () => clearTimeout(timeout);
+    if (showSettingsDropdown && settingsButtonRef.current) {
+      const rect = settingsButtonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + 8, // 8px gap below button
+        right: window.innerWidth - rect.right, // Align right edge with button
+      });
     }
-  }, [showSettingsDropdown, isDropdownMounted, updateDropdownPosition]);
-
-  // Reposition on resize/scroll
-  useEffect(() => {
-    if (!isDropdownMounted) return;
-
-    const handleWindowChange = () => updateDropdownPosition();
-    window.addEventListener('resize', handleWindowChange);
-    window.addEventListener('scroll', handleWindowChange, true);
-
-    return () => {
-      window.removeEventListener('resize', handleWindowChange);
-      window.removeEventListener('scroll', handleWindowChange, true);
-    };
-  }, [isDropdownMounted, updateDropdownPosition]);
-
-  // Focus trapping + escape handling
-  useEffect(() => {
-    if (!isDropdownMounted) return;
-
-    const panel = dropdownPanelRef.current;
-    const focusableElements = panel?.querySelectorAll<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-    );
-
-    focusableElements?.[0]?.focus();
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onSettingsClose();
-      }
-
-      if (event.key === 'Tab' && focusableElements && focusableElements.length > 0) {
-        const first = focusableElements[0];
-        const last = focusableElements[focusableElements.length - 1];
-
-        if (event.shiftKey) {
-          if (document.activeElement === first) {
-            event.preventDefault();
-            last.focus();
-          }
-        } else if (document.activeElement === last) {
-          event.preventDefault();
-          first.focus();
-        }
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isDropdownMounted, onSettingsClose]);
+  }, [showSettingsDropdown]);
 
   // Derive status label
   const statusLabel = jobStatus === 'running'
@@ -250,7 +148,7 @@ export function LabToolbar({
     </div>
 
     {/* Portal: Render dropdown outside toolbar to escape transform context */}
-    {isDropdownMounted && overlayRoot && createPortal(
+    {showSettingsDropdown && typeof document !== 'undefined' && createPortal(
       <>
         {/* Backdrop */}
         <div
@@ -261,16 +159,11 @@ export function LabToolbar({
 
         {/* Dropdown panel */}
         <div
-          ref={dropdownPanelRef}
           className="settings-dropdown-panel liquid-glass"
           style={{
             top: `${dropdownPosition.top}px`,
             right: `${dropdownPosition.right}px`,
-            width: dropdownWidth,
           }}
-          role="dialog"
-          aria-modal="true"
-          data-state={dropdownState}
         >
                 {/* Page Margins */}
                 <div className="settings-dropdown-section">
@@ -342,7 +235,7 @@ export function LabToolbar({
                 </div>
         </div>
       </>,
-      overlayRoot
+      document.body
     )}
     </>
   );
