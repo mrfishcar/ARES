@@ -79,6 +79,120 @@
   --app-background-gradient: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.08), transparent 35%),
     radial-gradient(circle at 80% 0%, rgba(129, 140, 248, 0.06), transparent 40%),
     linear-gradient(180deg, #050713 0%, #0b1024 55%, #050713 100%);
+
+  --app-surface: var(--app-bg-dark);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    background-color: var(--app-bg-dark);
+    --app-surface: var(--app-bg-dark);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    background-color: var(--app-bg-light);
+    --app-surface: var(--app-bg-light);
+  }
+}
+
+:root,
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--app-surface);
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  min-height: 100%;
+  overflow: hidden;
+}
+
+@media (prefers-color-scheme: light) {
+  :root,
+  html,
+  body {
+    background-color: var(--app-bg-light);
+    color-scheme: light;
+  }
+
+  body {
+    background-color: var(--app-bg-light);
+  }
+
+  .app-root {
+    background-color: var(--app-bg-light);
+  }
+
+  body::before {
+    background-color: var(--app-bg-light);
+  }
+}
+
+.app-shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background-color: transparent;
+  color: var(--text-primary);
+}
+
+.app-scroll-root {
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: none;
+  background-color: transparent;
+  color: var(--text-primary);
+}
+
+.portal-root,
+.modal-root,
+.overlay-root {
+  background-color: transparent;
+}
+
+.overlay-root {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1200;
+}
+
+.portal-root::backdrop,
+.modal-root::backdrop,
+.overlay-root::backdrop,
+.portal-backdrop,
+.modal-backdrop,
+.overlay-backdrop {
+  background-color: rgba(5, 7, 19, 0.7);
+}
+
+html {
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
+  background-color: var(--app-surface);
+}
+
+@media (prefers-color-scheme: light) {
+  html {
+    background-color: var(--app-bg-light);
+  }
+}
+
+html,
+body {
+  background-color: var(--app-surface);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -281,8 +395,7 @@ body {
   font-size: 0.9375rem;
   font-weight: 400;
   line-height: 1.6;
-  background: var(--bg-primary);
-  background-color: var(--bg-primary);
+  background-color: var(--app-surface);
   color: var(--text-primary);
   position: relative;
   min-height: 100%;
@@ -293,13 +406,22 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background-color: var(--bg-primary);
+  background-color: var(--app-surface);
   background-image: var(--app-background-gradient);
 }
 
-#root,
+#root {
+  height: 100%;
+}
+
 .app-root {
-  min-height: 100%;
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--app-surface);
+  background-image: var(--app-background-gradient);
+  color: var(--text-primary);
 }
 
 code {
@@ -603,6 +725,7 @@ a:hover {
   bottom: 0;
   z-index: 999;
   cursor: default;
+  background-color: transparent;
 }
 
 /* Dropdown Panel - Liquid Glass Surface */

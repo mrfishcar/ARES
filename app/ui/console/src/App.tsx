@@ -127,20 +127,23 @@ function AppShell() {
     : '/notes';
 
   return (
-    <div className="app-shell">
-      <main className="app-scroll-root">
-        <Routes>
-          <Route path="/" element={<ExtractionLab project={project} toast={toast} />} />
-          <Route path="/lab" element={<UnifiedHomePage project={project} toast={toast} />} />
-          <Route path="/notes" element={<NotesPage project={project} toast={toast} />} />
-          <Route path="/entities" element={<EntitiesPage project={project} toast={toast} />} />
-          <Route path="/relations" element={<RelationsPage project={project} toast={toast} />} />
-          <Route path="/graph" element={<GraphPage project={project} toast={toast} />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </main>
+    <div className="app-root">
+      <div className="app-shell">
+        <main className="app-scroll-root">
+          <Routes>
+            <Route path="/" element={<ExtractionLab project={project} toast={toast} />} />
+            <Route path="/lab" element={<UnifiedHomePage project={project} toast={toast} />} />
+            <Route path="/notes" element={<NotesPage project={project} toast={toast} />} />
+            <Route path="/entities" element={<EntitiesPage project={project} toast={toast} />} />
+            <Route path="/relations" element={<RelationsPage project={project} toast={toast} />} />
+            <Route path="/graph" element={<GraphPage project={project} toast={toast} />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </main>
 
-      <ToastContainer messages={toast.messages} onClose={toast.closeToast} />
+        <ToastContainer messages={toast.messages} onClose={toast.closeToast} />
+      </div>
+      <div id="overlay-root" className="overlay-root" />
     </div>
   );
 }
