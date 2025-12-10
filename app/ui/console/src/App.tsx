@@ -42,15 +42,17 @@ function _Navigation({
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '16px 28px',
-        borderBottom: '1px solid #e5e7eb',
-        background: '#ffffff',
+        borderBottom: '1px solid var(--border-soft)',
+        background: 'var(--bg-secondary)',
         position: 'sticky',
         top: 0,
         zIndex: 20,
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <span style={{ fontSize: '18px', fontWeight: 600, color: '#111827' }}>ARES Workspace</span>
+        <span style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)' }}>
+          ARES Workspace
+        </span>
         <nav style={{ display: 'flex', gap: '8px' }}>
           {items.map(item => {
             const isActive = activePath === item.path;
@@ -62,8 +64,8 @@ function _Navigation({
                   padding: '8px 16px',
                   borderRadius: '20px',
                   border: 'none',
-                  background: isActive ? '#1d4ed8' : '#f3f4f6',
-                  color: isActive ? '#ffffff' : '#4b5563',
+                  background: isActive ? '#1d4ed8' : 'var(--bg-tertiary)',
+                  color: isActive ? '#ffffff' : 'var(--text-secondary)',
                   fontWeight: isActive ? 600 : 500,
                   cursor: 'pointer',
                 }}
@@ -76,7 +78,7 @@ function _Navigation({
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <label style={{ fontSize: '13px', color: '#6b7280' }}>Project</label>
+        <label style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Project</label>
         <input
           type="text"
           value={project}
@@ -84,9 +86,11 @@ function _Navigation({
           style={{
             padding: '6px 12px',
             borderRadius: '8px',
-            border: '1px solid #d1d5db',
+            border: '1px solid var(--border-soft)',
             fontSize: '14px',
             width: '140px',
+            background: 'var(--bg-secondary)',
+            color: 'var(--text-primary)',
           }}
         />
       </div>
@@ -123,8 +127,8 @@ function AppShell() {
     : '/notes';
 
   return (
-    <>
-      <main style={{ minHeight: '100vh', background: '#ffffff' }}>
+    <div className="app-shell">
+      <main className="app-scroll-root">
         <Routes>
           <Route path="/" element={<ExtractionLab project={project} toast={toast} />} />
           <Route path="/lab" element={<UnifiedHomePage project={project} toast={toast} />} />
@@ -137,7 +141,7 @@ function AppShell() {
       </main>
 
       <ToastContainer messages={toast.messages} onClose={toast.closeToast} />
-    </>
+    </div>
   );
 }
 

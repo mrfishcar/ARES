@@ -5,9 +5,9 @@
 export function TestHomePage() {
   return (
     <div style={{
-      width: '100vw',
-      height: '100vh',
-      background: '#f0f0f0',
+      width: '100%',
+      height: '100%',
+      background: 'var(--bg-primary)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
