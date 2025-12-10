@@ -16,7 +16,7 @@ import { WikiModal } from '../components/WikiModal';
 import { FloatingActionButton } from '../components/FloatingActionButton';
 import { EntityOverlay } from '../components/EntityOverlay';
 import { isValidEntityType, type EntitySpan, type EntityType } from '../types/entities';
-import { initializeTheme, toggleTheme, loadThemePreference } from '../utils/darkMode';
+import { initializeTheme, toggleTheme, loadThemePreference, getEffectiveTheme } from '../utils/darkMode';
 import { useLabLayoutState } from '../hooks/useLabLayoutState';
 import { useExtractionSettings } from '../hooks/useExtractionSettings';
 import '../styles/darkMode.css';
@@ -584,6 +584,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const displayEntities = applyEntityOverrides(entities, entityOverrides, settings.entityHighlightMode);
   const entityHighlightingEnabled = settings.showHighlighting;
   const editorDisableHighlighting = !entityHighlightingEnabled;
+  const effectiveTheme = getEffectiveTheme(theme);
   const hasResults = displayEntities.length > 0 || relations.length > 0 || stats.count > 0 || stats.relationCount > 0;
   const jobStatusLabel =
     jobStatus === 'running'
@@ -889,7 +890,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         if (typeof window !== 'undefined') {
           (window as any).__ARES_DOC_ERROR_SHOWN__ = false;
         }
-        setShowDocumentSidebar(false);
+        layout.closeDocumentSidebar();
       } catch (error) {
         console.error('[ExtractionLab] Failed to load document', error);
         if (
@@ -1060,7 +1061,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const handleChangeType = async (entity: EntitySpan, newType: EntityType) => {
     console.log('[ExtractionLab] Changing entity type:', { entity, newType });
 
-    if (entityHighlightMode) {
+    if (settings.entityHighlightMode) {
       const key = makeSpanKey(entity);
       setEntityOverrides((prev) => ({
         ...prev,
@@ -1114,7 +1115,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const handleCreateNew = async (entity: EntitySpan, type: EntityType) => {
     console.log('[ExtractionLab] Creating new entity:', { entity, type });
 
-    if (entityHighlightMode) {
+    if (settings.entityHighlightMode) {
       const newEntity: EntitySpan = {
         ...entity,
         type,
@@ -1170,7 +1171,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const handleReject = async (entity: EntitySpan) => {
     console.log('[ExtractionLab] Rejecting entity:', entity);
 
-    if (entityHighlightMode) {
+    if (settings.entityHighlightMode) {
       const key = makeSpanKey(entity);
       setEntityOverrides((prev) => {
         const nextRejected = new Set(prev.rejectedSpans);
@@ -1304,7 +1305,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       {/* Toolbar - NEW COMPONENT */}
       <LabToolbar
         jobStatus={jobStatus}
-        theme={theme}
+        theme={effectiveTheme}
         entityHighlightMode={settings.entityHighlightMode}
         showSettingsDropdown={layout.showSettingsDropdown}
         showHighlighting={settings.showHighlighting}

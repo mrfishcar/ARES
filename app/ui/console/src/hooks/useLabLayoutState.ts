@@ -17,6 +17,10 @@ export function useLabLayoutState() {
     setShowDocumentSidebar(prev => !prev);
   }, []);
 
+  const closeDocumentSidebar = useCallback(() => {
+    setShowDocumentSidebar(false);
+  }, []);
+
   const openEntityPanel = useCallback(() => {
     setEntityPanelMode('overlay');
   }, []);
@@ -54,6 +58,7 @@ export function useLabLayoutState() {
 
     // Actions
     toggleDocumentSidebar,
+    closeDocumentSidebar,
     openEntityPanel,
     closeEntityPanel,
     pinEntityPanel,

@@ -7,6 +7,7 @@ interface Document {
   id: string;
   title: string;
   text: string;
+  createdAt?: string;
   updatedAt: string;
 }
 

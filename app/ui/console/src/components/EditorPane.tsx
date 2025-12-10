@@ -19,10 +19,10 @@ interface EditorPaneProps {
   entityHighlightMode: boolean;
 
   // Entity handlers
-  onChangeType: (entity: EntitySpan, newType: EntityType) => void;
-  onCreateNew: (entity: EntitySpan, type: EntityType) => void;
-  onReject: (entity: EntitySpan) => void;
-  onTagEntity: (entity: EntitySpan, targetEntity: EntitySpan) => void;
+  onChangeType: (entity: EntitySpan, newType: EntityType) => Promise<void> | void;
+  onCreateNew: (entity: EntitySpan, type: EntityType) => Promise<void> | void;
+  onReject: (entity: EntitySpan) => Promise<void> | void;
+  onTagEntity: (entity: EntitySpan, targetEntity: EntitySpan) => Promise<void> | void;
 }
 
 export function EditorPane({
