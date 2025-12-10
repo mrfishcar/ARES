@@ -195,6 +195,103 @@ body {
   background-color: var(--app-surface);
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    background-color: var(--app-bg-dark);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    background-color: var(--app-bg-light);
+  }
+}
+
+:root,
+html,
+body,
+#root,
+#__next,
+.app-root,
+.app,
+main {
+  margin: 0;
+  padding: 0;
+  background-color: var(--app-bg-dark);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  min-height: 100%;
+  overflow: hidden;
+}
+
+@media (prefers-color-scheme: light) {
+  :root,
+  html,
+  body,
+  #root,
+  .app-root,
+  main {
+    background-color: var(--app-bg-light);
+  }
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 100%;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.app-scroll-root {
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: none;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.portal-root,
+.modal-root,
+.overlay-root {
+  background-color: transparent;
+}
+
+.portal-root::backdrop,
+.modal-root::backdrop,
+.overlay-root::backdrop,
+.portal-backdrop,
+.modal-backdrop,
+.overlay-backdrop {
+  background-color: rgba(5, 7, 19, 0.7);
+}
+
+html {
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
+  background-color: var(--app-bg-dark);
+}
+
+@media (prefers-color-scheme: light) {
+  html {
+    background-color: var(--app-bg-light);
+  }
+}
+
+html,
+body {
+  background: var(--bg-primary);
+}
+
 /* Light mode – "paper" */
 html[data-theme="light"] {
   --bg-primary: #f9fafb;
