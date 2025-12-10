@@ -559,7 +559,7 @@ a:hover {
 /* Margin Button */
 .settings-margin-btn {
   padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.05);
+  background: transparent; /* No background - rely on parent glass effect */
   color: var(--text-primary);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
@@ -571,8 +571,8 @@ a:hover {
 }
 
 .settings-margin-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.03); /* Very subtle hover */
 }
 
 .settings-margin-btn.active {
@@ -587,14 +587,14 @@ a:hover {
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.05);
+  background: transparent; /* No background - rely on parent glass effect */
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .settings-dropdown-toggle:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03); /* Very subtle hover */
 }
 
 .settings-dropdown-toggle-label {
