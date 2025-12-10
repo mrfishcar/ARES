@@ -3,6 +3,7 @@
  * Clean component with minimal state, uses liquid-glass styling
  */
 
+import { createPortal } from 'react-dom';
 import { Settings, Sun, Moon, Zap, Highlighter } from 'lucide-react';
 
 interface LabToolbarProps {
@@ -125,18 +126,22 @@ export function LabToolbar({
           >
             <Settings size={16} strokeWidth={2} />
           </button>
+        </div>
+      </div>
+    </div>
 
-          {showSettingsDropdown && (
-            <>
-              {/* Backdrop */}
-              <div
-                className="settings-dropdown-backdrop"
-                onClick={onSettingsClose}
-                aria-hidden="true"
-              />
+    {/* Portal: Render dropdown outside toolbar to escape transform context */}
+    {showSettingsDropdown && typeof document !== 'undefined' && createPortal(
+      <>
+        {/* Backdrop */}
+        <div
+          className="settings-dropdown-backdrop"
+          onClick={onSettingsClose}
+          aria-hidden="true"
+        />
 
-              {/* Dropdown panel */}
-              <div className="settings-dropdown-panel liquid-glass">
+        {/* Dropdown panel */}
+        <div className="settings-dropdown-panel liquid-glass">
                 {/* Page Margins */}
                 <div className="settings-dropdown-section">
                   <div className="settings-dropdown-label">Page Margins</div>
@@ -205,11 +210,10 @@ export function LabToolbar({
                     <span className="settings-slider-value">{Math.round(highlightOpacity * 100)}%</span>
                   </div>
                 </div>
-              </div>
-            </>
-          )}
         </div>
-      </div>
-    </div>
+      </>,
+      document.body
+    )}
+  </>
   );
 }
