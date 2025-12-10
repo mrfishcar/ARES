@@ -687,40 +687,35 @@ a:hover {
 
   /* Layout */
   min-width: 280px;
-  max-width: 360px;
-  padding: 18px;
-  border-radius: 18px;
-  box-sizing: border-box;
+  max-width: 320px;
+  padding: 16px;
+  border-radius: 12px;
 
   /* Stacking */
   z-index: 1000;
   pointer-events: auto; /* Override overlay-root's pointer-events: none */
 
-  /* Animation */
-  opacity: 0;
-  transform: translateY(-6px) scale(0.96);
-  transform-origin: top center;
-  transition: transform 0.18s cubic-bezier(0.22, 0.61, 0.36, 1),
-              opacity 0.18s cubic-bezier(0.22, 0.61, 0.36, 1);
-  /* will-change removed - it creates stacking context that breaks backdrop-filter on children */
+  /* Safari/iOS backdrop-filter CRITICAL requirements */
+  isolation: isolate;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+
+  /* NO ANIMATION - breaks backdrop-filter on Safari */
+  /* animation: settingsDropdownSlideIn 0.2s cubic-bezier(0.4, 0, 0.2, 1); */
 }
 
-.settings-dropdown-panel[data-state='opening'] {
-  opacity: 0;
-  transform: translateY(-6px) scale(0.96);
-  will-change: transform, opacity; /* Only during animation */
-}
+/* Settings dropdown specific - FORCE blur on Safari */
+.settings-dropdown-panel.liquid-glass {
+  /* Simplified background - complex gradients can break blur on Safari */
+  background: var(--liquid-glass-bg) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid var(--liquid-glass-border);
+  box-shadow: 0 8px 32px var(--liquid-glass-glow-outer), inset 0 1px 0 var(--liquid-glass-glow-inner);
 
-.settings-dropdown-panel[data-state='open'] {
-  opacity: 1;
-  transform: none; /* No transform when open - prevents stacking context */
-  will-change: auto; /* Reset will-change */
-}
-
-.settings-dropdown-panel[data-state='closing'] {
-  opacity: 0;
-  transform: translateY(-4px) scale(0.96);
-  will-change: transform, opacity; /* Only during animation */
+  /* Force GPU layer */
+  will-change: backdrop-filter;
+  -webkit-will-change: backdrop-filter;
 }
 
 /* Section Container */

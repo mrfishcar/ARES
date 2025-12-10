@@ -262,7 +262,7 @@ export function LabToolbar({
         {/* Dropdown panel */}
         <div
           ref={dropdownPanelRef}
-          className="settings-dropdown-panel glass-panel"
+          className="settings-dropdown-panel liquid-glass"
           style={{
             top: `${dropdownPosition.top}px`,
             right: `${dropdownPosition.right}px`,
