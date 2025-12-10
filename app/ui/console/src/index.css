@@ -42,9 +42,9 @@ body {
 
   /* Unified Liquid Glass Material System */
   /* Blur amounts for consistent glass hierarchy */
-  --liquid-glass-blur-toolbar: 5px;    /* Toolbar, dropdown, context menu */
-  --liquid-glass-blur-overlay: 5px;    /* Floating overlay panels */
-  --liquid-glass-blur-pinned: 6px;      /* Pinned sidebar mode */
+  --liquid-glass-blur-toolbar: 12px;    /* Toolbar, dropdown, context menu */
+  --liquid-glass-blur-overlay: 12px;    /* Floating overlay panels */
+  --liquid-glass-blur-pinned: 12px;     /* Pinned sidebar mode */
 
   /* Color bases */
   --liquid-glass-bg-dark: rgba(15, 23, 42, 0.75);
@@ -442,6 +442,36 @@ a:hover {
 .document-item__date {
   font-size: 11px;
   color: var(--text-tertiary);
+}
+
+/* Job Progress */
+.job-progress-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 220px;
+}
+
+.job-progress-bar {
+  position: relative;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--bg-tertiary);
+  overflow: hidden;
+}
+
+.job-progress-bar-fill {
+  position: absolute;
+  inset: 0;
+  background: #22c55e;
+  transition: transform 0.3s ease-out;
+}
+
+.job-progress-status {
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: flex;
+  justify-content: space-between;
 }
 
 /* ===== SETTINGS DROPDOWN - CLEAN ARCHITECTURE ===== */
@@ -2057,6 +2087,113 @@ html[data-theme="light"] .overlay-backdrop {
 @media (max-width: 768px) {
   :root {
     --editor-margin-desktop: var(--editor-margin-mobile, 24px);
+  }
+}
+
+/* ===== iOS/SAFARI HARDENING ===== */
+
+/* Smooth scrolling on iOS */
+.documents-sidebar,
+.overlay-panel,
+.editor-panel {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Safe area insets for notched devices */
+@supports (padding: env(safe-area-inset-top)) {
+  .extraction-lab {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .lab-control-bar {
+    top: calc(16px + env(safe-area-inset-top));
+  }
+
+  .hamburger-btn {
+    top: calc(20px + env(safe-area-inset-top));
+  }
+}
+
+/* iOS: Prevent zoom on input focus */
+@media (max-width: 768px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important; /* Prevents iOS zoom on focus */
+  }
+}
+
+/* iOS: Fix fixed positioning with keyboard */
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari specific */
+  .lab-control-bar {
+    /* Use absolute within viewport instead of fixed to prevent jumps */
+    position: -webkit-sticky;
+    position: sticky;
+    top: 16px;
+  }
+
+  /* Prevent backdrop-filter performance issues on older iOS */
+  @media (max-width: 768px) {
+    .liquid-glass {
+      will-change: auto; /* Disable will-change on mobile to save GPU memory */
+    }
+  }
+}
+
+/* iOS: Prevent body scroll when modals open */
+body.modal-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100vh;
+}
+
+/* iOS: Ensure editor doesn't remount on keyboard show/hide */
+.editor-panel {
+  /* Keep editor mounted and stable */
+  contain: layout style;
+  transform: translateZ(0); /* Force GPU acceleration for stability */
+}
+
+/* iOS: Prevent layout shift when keyboard appears */
+@media (max-width: 768px) {
+  .lab-content {
+    /* Allow content to scroll instead of hiding overflow */
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* Prevent momentum scroll issues */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Keep toolbar visible above keyboard */
+  .lab-control-bar {
+    /* Switch to top positioning that doesn't shift with keyboard */
+    position: fixed;
+    top: 16px;
+    /* Ensure it stays on top */
+    z-index: 1001;
+  }
+}
+
+/* iOS: Fix transform issues with fixed elements */
+@supports (-webkit-touch-callout: none) {
+  .hamburger-btn:active,
+  .control-btn:active {
+    /* Prevent transform on iOS which can cause blur loss */
+    transform: none;
+    opacity: 0.7;
+  }
+
+  .documents-sidebar {
+    /* Use hardware acceleration for smooth slide */
+    transform: translate3d(-100%, 0, 0);
+    -webkit-transform: translate3d(-100%, 0, 0);
+  }
+
+  .extraction-lab.sidebar-open .documents-sidebar {
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
   }
 }
 
