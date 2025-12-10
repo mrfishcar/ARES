@@ -7,11 +7,20 @@
 html {
   font-size: 100%;
   -webkit-text-size-adjust: 100%;
+  /* Prevent iOS elastic scrolling/bounce */
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 html,
 body {
   background: var(--bg-primary);
+  /* Lock height to viewport, prevent pull-to-refresh */
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  position: fixed;
+  width: 100%;
 }
 
 :root {
@@ -216,7 +225,8 @@ a:hover {
 .extraction-lab {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
   background: var(--bg-primary);
   /*
    * Safari/iPad blur + keyboard guard: removing full overflow clipping prevents
@@ -225,6 +235,11 @@ a:hover {
    */
   overflow-x: hidden;
   overflow-y: auto;
+  /* Prevent iOS elastic scrolling/pull-to-refresh */
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+  /* Position relative to body's fixed positioning */
+  position: relative;
 }
 
 /* Hamburger Button - ChatGPT style */
