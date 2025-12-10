@@ -508,12 +508,13 @@ a:hover {
   /* Stacking */
   z-index: 1000;
 
-  /* Animation */
-  animation: settingsDropdownSlideIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Safari/iOS backdrop-filter CRITICAL requirements */
+  isolation: isolate;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 
-  /* Safari Compatibility - CRITICAL */
-  /* No transforms, no overflow, no filter on this element */
-  /* Liquid glass applied via utility class */
+  /* NO ANIMATION - breaks backdrop-filter on Safari */
+  /* animation: settingsDropdownSlideIn 0.2s cubic-bezier(0.4, 0, 0.2, 1); */
 }
 
 @keyframes settingsDropdownSlideIn {
@@ -714,13 +715,18 @@ a:hover {
   box-shadow: 0 8px 32px var(--liquid-glass-glow-outer), inset 0 1px 0 var(--liquid-glass-glow-inner);
 }
 
-/* Settings dropdown specific - ensure blur is applied */
+/* Settings dropdown specific - FORCE blur on Safari */
 .settings-dropdown-panel.liquid-glass {
-  background: radial-gradient(circle at top left, var(--liquid-glass-tint-1), transparent 70%),
-              radial-gradient(circle at bottom right, var(--liquid-glass-tint-2), transparent 75%),
-              var(--liquid-glass-bg) !important;
-  backdrop-filter: blur(var(--liquid-glass-blur-toolbar)) !important;
-  -webkit-backdrop-filter: blur(var(--liquid-glass-blur-toolbar)) !important;
+  /* Simplified background - complex gradients can break blur on Safari */
+  background: var(--liquid-glass-bg) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid var(--liquid-glass-border);
+  box-shadow: 0 8px 32px var(--liquid-glass-glow-outer), inset 0 1px 0 var(--liquid-glass-glow-inner);
+
+  /* Force GPU layer */
+  will-change: backdrop-filter;
+  -webkit-will-change: backdrop-filter;
 }
 
 .overlay-panel.liquid-glass--strong {
