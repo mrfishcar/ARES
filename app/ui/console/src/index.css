@@ -501,31 +501,36 @@ a:hover {
 
   /* Layout */
   min-width: 280px;
-  max-width: 320px;
-  padding: 16px;
-  border-radius: 12px;
+  max-width: 360px;
+  padding: 18px;
+  border-radius: 18px;
+  box-sizing: border-box;
 
   /* Stacking */
   z-index: 1000;
 
-  /* Safari/iOS backdrop-filter CRITICAL requirements */
-  isolation: isolate;
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-
-  /* NO ANIMATION - breaks backdrop-filter on Safari */
-  /* animation: settingsDropdownSlideIn 0.2s cubic-bezier(0.4, 0, 0.2, 1); */
+  /* Animation */
+  opacity: 0;
+  transform: translateY(-6px) scale(0.96);
+  transform-origin: top center;
+  transition: transform 0.18s cubic-bezier(0.22, 0.61, 0.36, 1),
+              opacity 0.18s cubic-bezier(0.22, 0.61, 0.36, 1);
+  will-change: transform, opacity;
 }
 
-@keyframes settingsDropdownSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.settings-dropdown-panel[data-state='opening'] {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.96);
+}
+
+.settings-dropdown-panel[data-state='open'] {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.settings-dropdown-panel[data-state='closing'] {
+  opacity: 0;
+  transform: translateY(-4px) scale(0.96);
 }
 
 /* Section Container */
@@ -716,17 +721,13 @@ a:hover {
 }
 
 /* Settings dropdown specific - FORCE blur on Safari */
-.settings-dropdown-panel.liquid-glass {
-  /* Simplified background - complex gradients can break blur on Safari */
-  background: var(--liquid-glass-bg) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  border: 1px solid var(--liquid-glass-border);
-  box-shadow: 0 8px 32px var(--liquid-glass-glow-outer), inset 0 1px 0 var(--liquid-glass-glow-inner);
-
-  /* Force GPU layer */
-  will-change: backdrop-filter;
-  -webkit-will-change: backdrop-filter;
+.glass-panel {
+  background: rgba(10, 10, 20, 0.65);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+  color: #f4f6fb;
 }
 
 .overlay-panel.liquid-glass--strong {
