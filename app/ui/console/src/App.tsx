@@ -129,7 +129,7 @@ function AppShell() {
   return (
     <div className="app-root">
       <div className="app-shell">
-        <main className="app-scroll-root">
+        <main className="app-main app-scroll-root">
           <Routes>
             <Route path="/" element={<ExtractionLab project={project} toast={toast} />} />
             <Route path="/lab" element={<UnifiedHomePage project={project} toast={toast} />} />
