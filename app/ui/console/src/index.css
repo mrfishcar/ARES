@@ -705,22 +705,25 @@ a:hover {
   transform-origin: top center;
   transition: transform 0.18s cubic-bezier(0.22, 0.61, 0.36, 1),
               opacity 0.18s cubic-bezier(0.22, 0.61, 0.36, 1);
-  will-change: transform, opacity;
+  /* will-change removed - it creates stacking context that breaks backdrop-filter on children */
 }
 
 .settings-dropdown-panel[data-state='opening'] {
   opacity: 0;
   transform: translateY(-6px) scale(0.96);
+  will-change: transform, opacity; /* Only during animation */
 }
 
 .settings-dropdown-panel[data-state='open'] {
   opacity: 1;
-  transform: translateY(0) scale(1);
+  transform: none; /* No transform when open - prevents stacking context */
+  will-change: auto; /* Reset will-change */
 }
 
 .settings-dropdown-panel[data-state='closing'] {
   opacity: 0;
   transform: translateY(-4px) scale(0.96);
+  will-change: transform, opacity; /* Only during animation */
 }
 
 /* Section Container */
