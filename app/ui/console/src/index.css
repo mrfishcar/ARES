@@ -110,7 +110,7 @@ body {
   margin: 0;
   padding: 0;
   background-color: var(--app-surface);
-  color-scheme: dark;
+  /* color-scheme is set by media queries and theme classes */
 }
 
 html,
@@ -466,8 +466,10 @@ a:hover {
 .lab-control-bar {
   position: fixed;
   top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -676,6 +678,7 @@ a:hover {
   z-index: 999;
   cursor: default;
   background-color: transparent;
+  pointer-events: auto; /* Override overlay-root's pointer-events: none */
 }
 
 /* Dropdown Panel - Liquid Glass Surface */
@@ -694,6 +697,7 @@ a:hover {
 
   /* Stacking */
   z-index: 1000;
+  pointer-events: auto; /* Override overlay-root's pointer-events: none */
 
   /* Animation */
   opacity: 0;
