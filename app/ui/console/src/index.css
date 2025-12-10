@@ -340,23 +340,341 @@ a:hover {
   cursor: not-allowed;
 }
 
-/* Settings Dropdown - Uses liquid-glass utility */
-.settings-dropdown {
-  position: fixed;
-  /* Position calculated dynamically by JS, starts at top: 48px, right: 20px relative to control bar */
-  border-radius: 12px;
-  padding: 16px;
-  min-width: 280px;
-  z-index: 1000;
-  animation: dropdownSlideIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+/* ===== STATUS INDICATOR ===== */
+.status-indicator {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-tertiary);
+  transition: color 0.2s ease;
 }
+
+.status-indicator--running {
+  color: #10B981;
+}
+
+.status-indicator--failed {
+  color: #EF4444;
+}
+
+/* ===== TOOLBAR ACTIONS ===== */
+.toolbar-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.control-btn--active {
+  opacity: 1;
+}
+
+/* ===== DOCUMENTS SIDEBAR ===== */
+.sidebar-header {
+  padding: 20px 16px;
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 16px;
+}
+
+.sidebar-brand {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.sidebar-content {
+  padding: 0 16px;
+}
+
+.sidebar-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.sidebar-loading,
+.sidebar-empty {
+  color: var(--text-tertiary);
+  font-size: 13px;
+  padding: 20px 0;
+}
+
+.document-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.document-item {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.document-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.document-item:hover:not(:disabled) {
+  background: var(--bg-tertiary);
+  border-color: var(--accent-color);
+}
+
+.document-item__title {
+  font-weight: 500;
+  font-size: 14px;
+  margin-bottom: 4px;
+  color: var(--text-primary);
+}
+
+.document-item__date {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+/* ===== SETTINGS DROPDOWN - CLEAN ARCHITECTURE ===== */
+
+/* Container - relative positioning anchor */
+.settings-dropdown-container {
+  position: relative;
+}
+
+/* Backdrop - full screen, closes dropdown */
+.settings-dropdown-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  cursor: default;
+}
+
+/* Dropdown Panel - Liquid Glass Surface */
+.settings-dropdown-panel {
+  /* Positioning - fixed to viewport, anchored to control bar */
+  position: fixed;
+  top: 64px;  /* Below control bar (48px height + 16px gap) */
+  right: 20px; /* Align with control bar right edge */
+
+  /* Layout */
+  min-width: 280px;
+  max-width: 320px;
+  padding: 16px;
+  border-radius: 12px;
+
+  /* Stacking */
+  z-index: 1000;
+
+  /* Animation */
+  animation: settingsDropdownSlideIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Safari Compatibility - CRITICAL */
+  /* No transforms, no overflow, no filter on this element */
+  /* Liquid glass applied via utility class */
+}
+
+@keyframes settingsDropdownSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Section Container */
+.settings-dropdown-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 0;
+}
+
+.settings-dropdown-section + .settings-dropdown-section {
+  border-top: 1px solid var(--liquid-glass-border);
+  margin-top: 4px;
+}
+
+/* Section Label */
+.settings-dropdown-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgb(180, 190, 210);
+  letter-spacing: 0.3px;
+}
+
+/* Margin Buttons Container */
+.settings-dropdown-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Margin Button */
+.settings-margin-btn {
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.settings-margin-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.settings-margin-btn.active {
+  background: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+}
+
+/* Toggle Container */
+.settings-dropdown-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.settings-dropdown-toggle:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.settings-dropdown-toggle-label {
+  font-size: 14px;
+  font-weight: 400;
+  color: rgb(230, 235, 245);
+}
+
+/* Toggle Switch */
+.settings-toggle-switch {
+  width: 44px;
+  height: 24px;
+  background: var(--border-soft);
+  border-radius: 12px;
+  position: relative;
+  transition: background 0.2s ease;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.settings-toggle-switch.active {
+  background: var(--accent-color);
+}
+
+.settings-toggle-knob {
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.settings-toggle-switch.active .settings-toggle-knob {
+  transform: translateX(20px);
+}
+
+/* Slider Container */
+.settings-dropdown-slider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Slider Input */
+.settings-slider-input {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: var(--border-soft);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.settings-slider-input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.settings-slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--accent-color);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.settings-slider-input::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+}
+
+.settings-slider-input::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: var(--accent-color);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.settings-slider-input::-moz-range-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+}
+
+.settings-slider-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  min-width: 40px;
+  text-align: right;
+}
+
+/* ===== END SETTINGS DROPDOWN ===== */
 
 /*
  * Merge selectors: enforce the shared liquid-glass material on all floating surfaces so layout rules
- * (.settings-dropdown, .context-menu, .context-submenu, .lab-control-bar, .floating-button) cannot override
+ * (.settings-dropdown-panel, .context-menu, .context-submenu, .lab-control-bar, .floating-button) cannot override
  * the blur/background stack on Safari.
  */
-:is(.settings-dropdown, .context-menu, .context-submenu, .lab-control-bar, .floating-button).liquid-glass {
+:is(.settings-dropdown-panel, .context-menu, .context-submenu, .lab-control-bar, .floating-button).liquid-glass {
   background: radial-gradient(circle at top left, var(--liquid-glass-tint-1), transparent 70%),
               radial-gradient(circle at bottom right, var(--liquid-glass-tint-2), transparent 75%),
               var(--liquid-glass-bg);
@@ -384,17 +702,6 @@ a:hover {
   -webkit-backdrop-filter: blur(var(--liquid-glass-blur-pinned));
   border-left: 1px solid var(--liquid-glass-border);
   box-shadow: inset 0 1px 0 var(--liquid-glass-glow-inner);
-}
-
-@keyframes dropdownSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 /* Context Menu - Uses liquid-glass utility */
@@ -441,137 +748,6 @@ a:hover {
 .context-menu-item:hover {
   background: rgba(56, 189, 248, 0.15);
   color: var(--text-primary);
-}
-
-.settings-section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 8px 0;
-}
-
-.settings-section + .settings-section {
-  border-top: 1px solid var(--border-soft);
-  margin-top: 12px;
-}
-
-.settings-label {
-  font-size: 13px;
-  font-weight: 500;
-  color: rgb(180, 190, 210);
-  margin-bottom: 8px;
-}
-
-.settings-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.settings-toggle:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.settings-toggle-label {
-  font-size: 14px;
-  font-weight: 400;
-  color: rgb(230, 235, 245);
-}
-
-.toggle-switch {
-  width: 44px;
-  height: 24px;
-  background: var(--border-soft);
-  border-radius: 12px;
-  position: relative;
-  transition: background 0.2s ease;
-  cursor: pointer;
-}
-
-.toggle-switch.active {
-  background: var(--accent-color);
-}
-
-.toggle-switch-knob {
-  width: 20px;
-  height: 20px;
-  background: white;
-  border-radius: 50%;
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.toggle-switch.active .toggle-switch-knob {
-  transform: translateX(20px);
-}
-
-.settings-slider {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.slider-container {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.slider-input {
-  flex: 1;
-  -webkit-appearance: none;
-  appearance: none;
-  height: 4px;
-  background: var(--border-soft);
-  border-radius: 2px;
-  outline: none;
-}
-
-.slider-input::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 16px;
-  height: 16px;
-  background: var(--accent-color);
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.slider-input::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
-  box-shadow: 0 0 8px rgba(99, 102, 241, 0.4);
-}
-
-.slider-input::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
-  background: var(--accent-color);
-  border-radius: 50%;
-  cursor: pointer;
-  border: none;
-  transition: all 0.2s ease;
-}
-
-.slider-input::-moz-range-thumb:hover {
-  transform: scale(1.2);
-  box-shadow: 0 0 8px rgba(99, 102, 241, 0.4);
-}
-
-.slider-value {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  min-width: 36px;
-  text-align: right;
 }
 
 .lab-header-stats {
