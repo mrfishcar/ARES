@@ -4,27 +4,10 @@
   padding: 0;
 }
 
-:root,
-html,
-body {
-  margin: 0;
-  padding: 0;
-  background-color: #050713;
-  color-scheme: dark;
-}
-
-html {
-  font-size: 100%;
-  -webkit-text-size-adjust: 100%;
-}
-
-html,
-body {
-  background: var(--bg-primary);
-  background-color: #050713;
-}
-
 :root {
+  --app-bg-dark: #050713;
+  --app-bg-light: #f5f6fa;
+
   /* shared tokens that don't really change with theme */
   --accent-color: #38bdf8;
   --accent-hover: #0ea5e9;
@@ -79,7 +62,7 @@ body {
   --liquid-glass-tint-2: var(--liquid-glass-tint-2-dark);
 
   /* Default theme variables (dark mode defaults to prevent white flash) */
-  --bg-primary: #050713;
+  --bg-primary: var(--app-bg-dark);
   --bg-secondary: rgba(15, 23, 42, 0.96);
   --bg-tertiary: rgba(30, 41, 59, 0.9);
   --bg-elevated: rgba(15, 23, 42, 0.96);
@@ -95,6 +78,77 @@ body {
   --app-background-gradient: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.08), transparent 35%),
     radial-gradient(circle at 80% 0%, rgba(129, 140, 248, 0.06), transparent 40%),
     linear-gradient(180deg, #050713 0%, #0b1024 55%, #050713 100%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    background-color: var(--app-bg-dark);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    background-color: var(--app-bg-light);
+  }
+}
+
+:root,
+html,
+body,
+#root,
+#__next,
+.app-root,
+.app,
+main {
+  margin: 0;
+  padding: 0;
+  background-color: var(--app-bg-dark);
+  min-height: 100vh;
+}
+
+@media (prefers-color-scheme: light) {
+  :root,
+  html,
+  body,
+  #root,
+  .app-root,
+  main {
+    background-color: var(--app-bg-light);
+  }
+}
+
+.portal-root,
+.modal-root,
+.overlay-root {
+  background-color: transparent;
+}
+
+.portal-root::backdrop,
+.modal-root::backdrop,
+.overlay-root::backdrop,
+.portal-backdrop,
+.modal-backdrop,
+.overlay-backdrop {
+  background-color: rgba(5, 7, 19, 0.7);
+}
+
+html {
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
+  background-color: var(--app-bg-dark);
+}
+
+@media (prefers-color-scheme: light) {
+  html {
+    background-color: var(--app-bg-light);
+  }
+}
+
+html,
+body {
+  background: var(--bg-primary);
 }
 
 /* Light mode – "paper" */
@@ -125,7 +179,7 @@ html[data-theme="light"] {
 
 /* Dark mode – "liquid glass" */
 html[data-theme="dark"] {
-  --bg-primary: #050713;
+  --bg-primary: var(--app-bg-dark);
   --bg-secondary: rgba(15, 23, 42, 0.96);
   --bg-tertiary: rgba(30, 41, 59, 0.9);
   --bg-elevated: rgba(15, 23, 42, 0.96);
@@ -201,7 +255,7 @@ body {
   font-weight: 400;
   line-height: 1.6;
   background: var(--bg-primary);
-  background-color: #050713;
+  background-color: var(--bg-primary);
   color: var(--text-primary);
   position: relative;
   min-height: 100vh;
@@ -212,7 +266,8 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: var(--app-background-gradient);
+  background-color: var(--bg-primary);
+  background-image: var(--app-background-gradient);
 }
 
 #root,
@@ -658,7 +713,7 @@ a:hover {
 .settings-toggle-knob {
   width: 20px;
   height: 20px;
-  background: white;
+  background: var(--app-bg-light);
   border-radius: 50%;
   position: absolute;
   top: 2px;
