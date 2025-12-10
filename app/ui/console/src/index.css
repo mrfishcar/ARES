@@ -2,6 +2,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  background-color: inherit;
 }
 
 :root {
@@ -105,7 +106,14 @@ main {
   margin: 0;
   padding: 0;
   background-color: var(--app-bg-dark);
-  min-height: 100vh;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  min-height: 100%;
+  overflow: hidden;
 }
 
 @media (prefers-color-scheme: light) {
@@ -117,6 +125,25 @@ main {
   main {
     background-color: var(--app-bg-light);
   }
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 100%;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.app-scroll-root {
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: none;
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 .portal-root,
@@ -258,7 +285,7 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   position: relative;
-  min-height: 100vh;
+  min-height: 100%;
 }
 
 body::before {
@@ -272,7 +299,7 @@ body::before {
 
 #root,
 .app-root {
-  min-height: 100vh;
+  min-height: 100%;
 }
 
 code {
@@ -302,15 +329,15 @@ a:hover {
 .extraction-lab {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  height: 100%;
+  min-height: 0;
   background: var(--bg-primary);
   /*
    * Safari/iPad blur + keyboard guard: removing full overflow clipping prevents
    * backdrop-filter surfaces (toolbar + dropdown) from losing blur and allows
    * the viewport to resize when the software keyboard appears.
    */
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: visible;
 }
 
 /* Hamburger Button - ChatGPT style */
@@ -2247,7 +2274,7 @@ body.modal-open {
   overflow: hidden;
   position: fixed;
   width: 100%;
-  height: 100vh;
+  height: 100%;
 }
 
 /* iOS: Ensure editor doesn't remount on keyboard show/hide */

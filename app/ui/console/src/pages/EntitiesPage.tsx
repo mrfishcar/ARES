@@ -395,11 +395,11 @@ export function EntitiesPage({ project, toast }: EntitiesPageProps) {
         <div
           style={{
             flex: '0 0 45%',
-            background: 'white',
+            background: 'var(--bg-secondary)',
             padding: '24px',
             borderRadius: '8px',
             boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-            maxHeight: 'calc(100vh - 140px)',
+            maxHeight: 'calc(100% - 140px)',
             overflow: 'auto',
           }}
         >
