@@ -21,6 +21,7 @@ html {
 html,
 body {
   background: var(--bg-primary);
+  background-color: #050713;
 }
 
 :root {
