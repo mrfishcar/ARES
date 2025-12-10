@@ -2,29 +2,13 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-}
-
-:root,
-html,
-body {
-  margin: 0;
-  padding: 0;
-  background-color: #050713;
-  color-scheme: dark;
-}
-
-html {
-  font-size: 100%;
-  -webkit-text-size-adjust: 100%;
-}
-
-html,
-body {
-  background: var(--bg-primary);
-  background-color: #050713;
+  background-color: inherit;
 }
 
 :root {
+  --app-bg-dark: #050713;
+  --app-bg-light: #f5f6fa;
+
   /* shared tokens that don't really change with theme */
   --accent-color: #38bdf8;
   --accent-hover: #0ea5e9;
@@ -79,7 +63,7 @@ body {
   --liquid-glass-tint-2: var(--liquid-glass-tint-2-dark);
 
   /* Default theme variables (dark mode defaults to prevent white flash) */
-  --bg-primary: #050713;
+  --bg-primary: var(--app-bg-dark);
   --bg-secondary: rgba(15, 23, 42, 0.96);
   --bg-tertiary: rgba(30, 41, 59, 0.9);
   --bg-elevated: rgba(15, 23, 42, 0.96);
@@ -95,6 +79,134 @@ body {
   --app-background-gradient: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.08), transparent 35%),
     radial-gradient(circle at 80% 0%, rgba(129, 140, 248, 0.06), transparent 40%),
     linear-gradient(180deg, #050713 0%, #0b1024 55%, #050713 100%);
+
+  --app-surface: var(--app-bg-dark);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    background-color: var(--app-bg-dark);
+    --app-surface: var(--app-bg-dark);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    background-color: var(--app-bg-light);
+    --app-surface: var(--app-bg-light);
+  }
+}
+
+:root,
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--app-surface);
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  min-height: 100%;
+  overflow: hidden;
+}
+
+@media (prefers-color-scheme: light) {
+  :root,
+  html,
+  body,
+  #root {
+    background-color: var(--app-bg-light);
+    color-scheme: light;
+  }
+
+  body {
+    background-color: var(--app-bg-light);
+  }
+
+  .app-root {
+    background-color: var(--app-bg-light);
+  }
+
+  body::before {
+    background-color: var(--app-bg-light);
+  }
+}
+
+.app-shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  height: 100%;
+  flex: 1;
+  background-color: transparent;
+  color: var(--text-primary);
+}
+
+.app-main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background-color: transparent;
+}
+
+.app-scroll-root {
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: none;
+  background-color: transparent;
+  color: var(--text-primary);
+}
+
+.portal-root,
+.modal-root,
+.overlay-root {
+  background-color: transparent;
+}
+
+.overlay-root {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1200;
+}
+
+.portal-root::backdrop,
+.modal-root::backdrop,
+.overlay-root::backdrop,
+.portal-backdrop,
+.modal-backdrop,
+.overlay-backdrop {
+  background-color: rgba(5, 7, 19, 0.7);
+}
+
+html {
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
+  background-color: var(--app-surface);
+}
+
+@media (prefers-color-scheme: light) {
+  html {
+    background-color: var(--app-bg-light);
+  }
+}
+
+html,
+body {
+  background-color: var(--app-surface);
 }
 
 /* Light mode – "paper" */
@@ -125,7 +237,7 @@ html[data-theme="light"] {
 
 /* Dark mode – "liquid glass" */
 html[data-theme="dark"] {
-  --bg-primary: #050713;
+  --bg-primary: var(--app-bg-dark);
   --bg-secondary: rgba(15, 23, 42, 0.96);
   --bg-tertiary: rgba(30, 41, 59, 0.9);
   --bg-elevated: rgba(15, 23, 42, 0.96);
@@ -200,11 +312,10 @@ body {
   font-size: 0.9375rem;
   font-weight: 400;
   line-height: 1.6;
-  background: var(--bg-primary);
-  background-color: #050713;
+  background-color: var(--app-surface);
   color: var(--text-primary);
   position: relative;
-  min-height: 100vh;
+  min-height: 100%;
 }
 
 body::before {
@@ -212,12 +323,44 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: var(--app-background-gradient);
+  background-color: var(--app-surface);
+  background-image: var(--app-background-gradient);
 }
 
-#root,
+#root {
+  height: 100%;
+  background-color: var(--app-surface);
+}
+
 .app-root {
+  position: relative;
   min-height: 100vh;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background-color: var(--app-surface);
+  background-image: var(--app-background-gradient);
+  color: var(--text-primary);
+}
+
+.app-loader {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background-color: var(--app-surface);
+  background-image: var(--app-background-gradient);
+  color: var(--text-primary);
+  z-index: 2000;
+}
+
+.app-loader__text {
+  color: var(--text-secondary);
+  font-size: 14px;
 }
 
 code {
@@ -247,15 +390,15 @@ a:hover {
 .extraction-lab {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
-  background: var(--bg-primary);
+  height: 100%;
+  min-height: 100%;
+  background: transparent;
   /*
    * Safari/iPad blur + keyboard guard: removing full overflow clipping prevents
    * backdrop-filter surfaces (toolbar + dropdown) from losing blur and allows
    * the viewport to resize when the software keyboard appears.
    */
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: visible;
 }
 
 /* Hamburger Button - ChatGPT style */
@@ -521,6 +664,7 @@ a:hover {
   bottom: 0;
   z-index: 999;
   cursor: default;
+  background-color: transparent;
 }
 
 /* Dropdown Panel - Liquid Glass Surface */
@@ -658,7 +802,7 @@ a:hover {
 .settings-toggle-knob {
   width: 20px;
   height: 20px;
-  background: white;
+  background: var(--app-bg-light);
   border-radius: 50%;
   position: absolute;
   top: 2px;
@@ -928,7 +1072,7 @@ a:hover {
   min-height: 0;
   overflow: hidden;
   align-items: stretch;
-  background: var(--bg-primary);
+  background: transparent;
   /* ✅ No padding by default; will be added by media query when sidebar is open */
   transition: padding-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -937,7 +1081,7 @@ a:hover {
   display: flex;
   flex: 1;
   min-width: 0;
-  background: var(--bg-primary);
+  background: transparent;
 }
 
 .results-wrapper {
@@ -956,7 +1100,7 @@ a:hover {
   flex: 1;
   min-width: 0;
   min-height: 0;
-  background: var(--bg-primary);
+  background: transparent;
   border: none;
   border-radius: 0;
   box-shadow: none;
@@ -2192,7 +2336,7 @@ body.modal-open {
   overflow: hidden;
   position: fixed;
   width: 100%;
-  height: 100vh;
+  height: 100%;
 }
 
 /* iOS: Ensure editor doesn't remount on keyboard show/hide */

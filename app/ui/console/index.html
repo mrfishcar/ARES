@@ -4,10 +4,22 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="theme-color" content="#050713" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f6fa" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#050713" />
+    <style>
+      html,
+      body,
+      #root {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: #050713;
+        color-scheme: dark;
+      }
+    </style>
     <title>ARES Console</title>
   </head>
   <body>

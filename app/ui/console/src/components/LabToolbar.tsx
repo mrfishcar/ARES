@@ -65,6 +65,7 @@ export function LabToolbar({
   const [isDropdownMounted, setIsDropdownMounted] = useState(false);
   const [dropdownState, setDropdownState] = useState<'opening' | 'open' | 'closing'>('closing');
   const dropdownPanelRef = useRef<HTMLDivElement>(null);
+  const overlayRoot = typeof document !== 'undefined' ? document.getElementById('overlay-root') ?? document.body : null;
 
   const updateDropdownPosition = useCallback(() => {
     if (typeof window !== 'undefined' && settingsButtonRef.current) {
@@ -225,7 +226,7 @@ export function LabToolbar({
     </div>
 
     {/* Portal: Render dropdown outside toolbar to escape transform context */}
-    {isDropdownMounted && typeof document !== 'undefined' && createPortal(
+    {isDropdownMounted && overlayRoot && createPortal(
       <>
         {/* Backdrop */}
         <div
@@ -317,7 +318,7 @@ export function LabToolbar({
                 </div>
         </div>
       </>,
-      document.body
+      overlayRoot
     )}
     </>
   );

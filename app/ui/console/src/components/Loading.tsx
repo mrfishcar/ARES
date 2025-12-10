@@ -20,18 +20,9 @@ export function Spinner({ size = 24 }: { size?: number }) {
 
 export function LoadingPage() {
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '400px',
-        flexDirection: 'column',
-        gap: '16px',
-      }}
-    >
+    <div className="app-loader">
       <Spinner size={48} />
-      <p style={{ color: '#6b7280' }}>Loading...</p>
+      <p className="app-loader__text">Loading...</p>
     </div>
   );
 }

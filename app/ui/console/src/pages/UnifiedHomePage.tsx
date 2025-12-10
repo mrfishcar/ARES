@@ -193,20 +193,20 @@ export function UnifiedHomePage({ project, toast }: UnifiedHomePageProps) {
     return (
       <div
         style={{
-          width: '100vw',
-          height: '100vh',
+          width: '100%',
+          height: '100%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)',
+          background: 'var(--bg-primary)',
         }}
       >
         <div style={{ maxWidth: '1000px', width: '100%', padding: '40px' }}>
           <div style={{ marginBottom: '32px', textAlign: 'center' }}>
-            <h1 style={{ fontSize: '32px', fontWeight: '300', color: '#111827', marginBottom: '8px' }}>
+            <h1 style={{ fontSize: '32px', fontWeight: '300', color: 'var(--text-primary)', marginBottom: '8px' }}>
               Your Knowledge Garden
             </h1>
-            <p style={{ fontSize: '15px', color: '#6b7280' }}>
+            <p style={{ fontSize: '15px', color: 'var(--text-secondary)' }}>
               {entities.length} entities growing · Press Tab or Esc to return to writing
             </p>
           </div>
@@ -226,9 +226,9 @@ export function UnifiedHomePage({ project, toast }: UnifiedHomePageProps) {
     <div
       style={{
         display: 'flex',
-        height: '100vh',
+        height: '100%',
         overflow: 'hidden',
-        background: '#ffffff',
+        background: 'var(--bg-primary)',
       }}
     >
       {/* Notes Vault Sidebar */}
@@ -239,7 +239,7 @@ export function UnifiedHomePage({ project, toast }: UnifiedHomePageProps) {
             borderRight: '1px solid #e5e7eb',
             display: 'flex',
             flexDirection: 'column',
-            background: '#f9fafb',
+            background: 'var(--bg-secondary)',
           }}
         >
           {/* Vault header */}
@@ -247,13 +247,13 @@ export function UnifiedHomePage({ project, toast }: UnifiedHomePageProps) {
             style={{
               padding: '20px',
               borderBottom: '1px solid #e5e7eb',
-              background: '#ffffff',
+              background: 'var(--bg-secondary)',
             }}
           >
-            <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#111827', margin: 0 }}>
+            <h3 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', margin: 0 }}>
               Notes
             </h3>
-            <p style={{ fontSize: '12px', color: '#6b7280', margin: '4px 0 0 0' }}>
+            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>
               {notes.length} {notes.length === 1 ? 'note' : 'notes'}
             </p>
           </div>
@@ -526,7 +526,7 @@ export function UnifiedHomePage({ project, toast }: UnifiedHomePageProps) {
                 outline: 'none',
                 fontSize: '32px',
                 fontWeight: '600',
-                color: '#111827',
+                color: 'var(--text-primary)',
                 fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
                 background: 'transparent',
                 marginBottom: '16px',
@@ -536,7 +536,7 @@ export function UnifiedHomePage({ project, toast }: UnifiedHomePageProps) {
             <CodeMirrorEditor
               value={text}
               onChange={(newText) => setText(newText)}
-              minHeight="calc(100vh - 280px)"
+              minHeight="calc(100% - 280px)"
             />
           </div>
         </div>

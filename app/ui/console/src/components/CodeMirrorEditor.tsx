@@ -68,7 +68,7 @@ const editorTheme = EditorView.theme({
       '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", Inter, system-ui, sans-serif',
     fontSize: '1rem',
     lineHeight: '1.75',
-    backgroundColor: 'var(--bg-primary)',
+    backgroundColor: 'transparent',
     color: 'var(--text-primary)',
   },
 
@@ -90,7 +90,7 @@ const editorTheme = EditorView.theme({
   },
 
   '.cm-gutters': {
-    backgroundColor: 'var(--bg-secondary)',
+    backgroundColor: 'transparent',
     borderRight: '1px solid var(--border-color)',
   },
 
