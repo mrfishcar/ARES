@@ -70,6 +70,7 @@ export function LabToolbar({
           : 'Idle';
 
   return (
+    <>
     <div className="lab-control-bar liquid-glass">
       {/* Status indicator */}
       <div
@@ -214,6 +215,6 @@ export function LabToolbar({
       </>,
       document.body
     )}
-  </>
+    </>
   );
 }
