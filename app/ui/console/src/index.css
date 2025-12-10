@@ -917,9 +917,6 @@ a:hover {
   border: 1px solid var(--liquid-glass-border);
   box-shadow: 0 18px 40px var(--liquid-glass-glow-outer), inset 0 1px 0 var(--liquid-glass-glow-inner);
   color: var(--text-primary);
-  /* Force GPU acceleration for better blur on Safari */
-  transform: translateZ(0);
-  isolation: isolate;
 }
 
 .overlay-panel.liquid-glass--strong {
