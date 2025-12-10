@@ -418,7 +418,7 @@ a:hover {
   top: 20px;
   left: 20px;
   border: none;
-  background: transparent;
+  background: none; /* Safari blur fix - use 'none' instead of 'transparent' */
   color: rgb(180, 190, 210);
   cursor: pointer;
   padding: 8px;
@@ -502,7 +502,7 @@ a:hover {
   height: 32px;
   border-radius: 8px;
   border: none;
-  background: transparent;
+  background: none; /* Safari blur fix - use 'none' instead of 'transparent' */
   color: rgb(255, 255, 255);
   display: flex;
   align-items: center;
@@ -754,7 +754,7 @@ a:hover {
 /* Margin Button */
 .settings-margin-btn {
   padding: 10px 14px;
-  background: transparent;
+  background: none; /* Safari blur fix - use 'none' instead of 'transparent' */
   color: var(--text-primary);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
@@ -782,7 +782,7 @@ a:hover {
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  background: transparent;
+  background: none; /* Safari blur fix - use 'none' instead of 'transparent' */
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
