@@ -47,8 +47,8 @@ body {
   --liquid-glass-blur-pinned: 12px;     /* Pinned sidebar mode */
 
   /* Color bases */
-  --liquid-glass-bg-dark: rgba(15, 23, 42, 0.75);
-  --liquid-glass-bg-light: rgba(255, 255, 255, 0.92);
+  --liquid-glass-bg-dark: rgba(15, 23, 42, 0.60);
+  --liquid-glass-bg-light: rgba(255, 255, 255, 0.85);
   --liquid-glass-border-dark: rgba(148, 163, 184, 0.15);
   --liquid-glass-border-light: rgba(200, 210, 240, 0.4);
   --liquid-glass-glow-inner: rgba(255, 255, 255, 0.08);
@@ -2127,9 +2127,8 @@ html[data-theme="light"] .overlay-backdrop {
 @supports (-webkit-touch-callout: none) {
   /* iOS Safari specific */
   .lab-control-bar {
-    /* Use absolute within viewport instead of fixed to prevent jumps */
-    position: -webkit-sticky;
-    position: sticky;
+    /* Keep fixed positioning for floating effect */
+    position: fixed;
     top: 16px;
   }
 
