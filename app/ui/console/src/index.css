@@ -162,7 +162,7 @@ body,
   display: flex;
   flex-direction: column;
   width: 100%;
-  background-color: transparent;
+  background-color: var(--app-surface);
 }
 
 .app-scroll-root {
@@ -1098,7 +1098,7 @@ a:hover {
   display: flex;
   flex: 1;
   min-width: 0;
-  background: transparent;
+  background-color: var(--app-surface);
 }
 
 .results-wrapper {
@@ -1117,7 +1117,7 @@ a:hover {
   flex: 1;
   min-width: 0;
   min-height: 0;
-  background: transparent;
+  background-color: var(--app-surface);
   border: none;
   border-radius: 0;
   box-shadow: none;
