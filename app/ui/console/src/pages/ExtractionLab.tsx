@@ -559,6 +559,19 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     initializeTheme();
   }, []);
 
+  // iOS: Prevent body scroll when modals are open
+  useEffect(() => {
+    const hasModal = layout.showEntityModal || !!selectedEntity;
+    if (hasModal) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, [layout.showEntityModal, selectedEntity]);
+
   // Handle theme toggle
   const handleThemeToggle = () => {
     const newTheme = toggleTheme();
