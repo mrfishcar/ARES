@@ -111,9 +111,9 @@ body {
 html,
 body,
 #root {
-  height: 100%;
   min-height: 100%;
-  overflow: hidden;
+  height: auto;
+  overflow-x: hidden;
 }
 
 @media (prefers-color-scheme: light) {
@@ -141,14 +141,13 @@ body,
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 100%;
+  min-height: 100vh;
   background-color: transparent;
   color: var(--text-primary);
 }
 
 .app-scroll-root {
   flex: 1;
-  height: 100%;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: none;
@@ -225,9 +224,9 @@ main {
 html,
 body,
 #root {
-  height: 100%;
   min-height: 100%;
-  overflow: hidden;
+  height: auto;
+  overflow-x: hidden;
 }
 
 @media (prefers-color-scheme: light) {
@@ -244,15 +243,13 @@ body,
 .app-shell {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 100%;
+  min-height: 100vh;
   background: var(--bg-primary);
   color: var(--text-primary);
 }
 
 .app-scroll-root {
   flex: 1;
-  height: 100%;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: none;
