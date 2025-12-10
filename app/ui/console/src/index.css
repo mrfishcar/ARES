@@ -281,9 +281,10 @@ a:hover {
 .lab-control-bar {
   position: fixed;
   top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: inline-flex;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
   align-items: center;
   gap: 16px;
   padding: 0 20px;
@@ -296,7 +297,7 @@ a:hover {
 }
 
 /*
- * Safari/iPad blur guard: keep transforms minimal so backdrop-filter stays intact for dropdowns rendered from the
+ * Safari/iPad blur guard: removing transforms keeps backdrop-filter intact for dropdowns rendered from the
  * control bar. We keep pointer-events enabled on the children so buttons remain clickable.
  */
 .lab-control-bar > * {
@@ -348,15 +349,6 @@ a:hover {
   min-width: 280px;
   z-index: 1000;
   animation: dropdownSlideIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.settings-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 999;
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
 }
 
 /*
