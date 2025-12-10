@@ -68,18 +68,42 @@ export function LabToolbar({
   const overlayRoot = typeof document !== 'undefined' ? document.getElementById('overlay-root') ?? document.body : null;
 
   const updateDropdownPosition = useCallback(() => {
-    if (typeof window !== 'undefined' && settingsButtonRef.current) {
+    if (typeof window !== 'undefined' && settingsButtonRef.current && dropdownPanelRef.current) {
       const rect = settingsButtonRef.current.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
       const viewportPadding = viewportWidth < 600 ? 12 : 16;
       const panelMaxWidth = viewportWidth >= 768 ? 360 : 320;
       const availableWidth = Math.min(panelMaxWidth, viewportWidth - viewportPadding * 2);
+
+      // Horizontal positioning - center under button and clamp to viewport
       const centeredLeft = rect.left + rect.width / 2 - availableWidth / 2;
       const clampedLeft = Math.max(viewportPadding, Math.min(centeredLeft, viewportWidth - viewportPadding - availableWidth));
+
+      // Vertical positioning - check if dropdown fits below button
       const topOffset = viewportWidth <= 1024 ? 12 : 8;
+      const dropdownHeight = dropdownPanelRef.current.offsetHeight || 400; // Estimate if not mounted yet
+      const spaceBelow = viewportHeight - rect.bottom - topOffset;
+      const spaceAbove = rect.top - topOffset;
+
+      let finalTop: number;
+
+      // If dropdown doesn't fit below, try to position it above
+      if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
+        // Position above button
+        finalTop = rect.top - dropdownHeight - topOffset;
+        // Clamp to not go above viewport
+        finalTop = Math.max(viewportPadding, finalTop);
+      } else {
+        // Position below button (default)
+        finalTop = rect.bottom + topOffset;
+        // Clamp to not go below viewport
+        const maxTop = viewportHeight - dropdownHeight - viewportPadding;
+        finalTop = Math.min(finalTop, maxTop);
+      }
 
       setDropdownPosition({
-        top: rect.bottom + topOffset,
+        top: finalTop,
         right: viewportWidth - clampedLeft - availableWidth,
       });
       setDropdownWidth(availableWidth);
