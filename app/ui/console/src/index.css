@@ -750,9 +750,9 @@ a:hover {
 /* Margin Button */
 .settings-margin-btn {
   padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.05);
+  background: transparent;
   color: var(--text-primary);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   cursor: pointer;
   font-size: 13px;
@@ -762,8 +762,8 @@ a:hover {
 }
 
 .settings-margin-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .settings-margin-btn.active {
@@ -778,14 +778,14 @@ a:hover {
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.05);
+  background: transparent;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .settings-dropdown-toggle:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .settings-dropdown-toggle-label {
