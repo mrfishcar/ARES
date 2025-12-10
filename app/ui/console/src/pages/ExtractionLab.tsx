@@ -1,20 +1,24 @@
 /**
- * Extraction Lab - Phase 0
+ * Extraction Lab - Phase 1 Refactor
  * Real-time entity extraction testing UI with wiki generation
  * NOW POWERED BY THE FULL ARES ENGINE
+ *
+ * Clean architecture with extracted components and hooks
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { Menu, Zap, Highlighter, Sun, Moon, Settings } from 'lucide-react';
-import { VirtualizedExtractionEditor } from '../components/VirtualizedExtractionEditor';
-import { EntityResultsPanel } from '../components/EntityResultsPanel';
-import { EntityIndicators } from '../components/EntityIndicators';
+import { Menu } from 'lucide-react';
+import { LabToolbar } from '../components/LabToolbar';
+import { DocumentsSidebar } from '../components/DocumentsSidebar';
+import { EditorPane } from '../components/EditorPane';
 import { EntityModal } from '../components/EntityModal';
 import { WikiModal } from '../components/WikiModal';
 import { FloatingActionButton } from '../components/FloatingActionButton';
 import { EntityOverlay } from '../components/EntityOverlay';
 import { isValidEntityType, type EntitySpan, type EntityType } from '../types/entities';
 import { initializeTheme, toggleTheme, loadThemePreference } from '../utils/darkMode';
+import { useLabLayoutState } from '../hooks/useLabLayoutState';
+import { useExtractionSettings } from '../hooks/useExtractionSettings';
 import '../styles/darkMode.css';
 import '../styles/extraction-lab.css';
 
@@ -121,45 +125,14 @@ const JobProgressBar = ({ jobStatus, jobProgress, jobEtaSeconds }: JobProgressBa
         : `≈ ${jobEtaSeconds}s remaining`;
 
   return (
-    <div
-      className="job-progress-wrapper"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 4,
-        minWidth: 220,
-      }}
-      aria-label="Extraction progress"
-    >
-      <div
-        className="job-progress-bar"
-        style={{
-          position: 'relative',
-          height: 6,
-          borderRadius: 999,
-          background: 'var(--bg-tertiary)',
-          overflow: 'hidden',
-        }}
-      >
+    <div className="job-progress-wrapper" aria-label="Extraction progress">
+      <div className="job-progress-bar">
         <div
           className="job-progress-bar-fill"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            transform: `translateX(${pct - 100}%)`,
-            transition: 'transform 0.3s ease-out',
-            background: '#22c55e',
-          }}
+          style={{ transform: `translateX(${pct - 100}%)` }}
         />
       </div>
-      <div
-        style={{
-          fontSize: 12,
-          color: 'var(--text-secondary)',
-          display: 'flex',
-          justifyContent: 'space-between',
-        }}
-      >
+      <div className="job-progress-status">
         <span>{jobStatus === 'queued' ? 'Queued…' : 'Processing…'}</span>
         <span>{etaText}</span>
       </div>
@@ -529,18 +502,20 @@ interface SelectedEntityState {
 }
 
 export function ExtractionLab({ project, toast }: ExtractionLabProps) {
+  // Layout state (via custom hook)
+  const layout = useLabLayoutState();
+
+  // Settings state (via custom hook)
+  const settings = useExtractionSettings();
+
+  // Extraction state
   const [text, setText] = useState('');
   const [entities, setEntities] = useState<EntitySpan[]>([]);
   const [relations, setRelations] = useState<Relation[]>([]);
   const [processing, setProcessing] = useState(false);
   const [stats, setStats] = useState<ExtractionStats>({ time: 0, confidence: 0, count: 0, relationCount: 0 });
-  const [selectedEntity, setSelectedEntity] = useState<SelectedEntityState | null>(null);
-  const [showHighlighting, setShowHighlighting] = useState(true);
-  const [highlightOpacity, setHighlightOpacity] = useState(1.0);
-  const [showAdvancedControls, setShowAdvancedControls] = useState(false);
-  const [showEntityModal, setShowEntityModal] = useState(false);
-  const [renderMarkdown, setRenderMarkdown] = useState(true);
-  const [liveExtractionEnabled, setLiveExtractionEnabled] = useState(true);
+
+  // Job state
   const [jobId, setJobId] = useState<string | null>(null);
   const [jobStatus, setJobStatus] = useState<JobStatus | null>(null);
   const [jobError, setJobError] = useState<string | null>(null);
@@ -550,24 +525,27 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [jobProgress, setJobProgress] = useState<number>(0);
   const [jobEtaSeconds, setJobEtaSeconds] = useState<number | null>(null);
   const [backgroundProcessing, setBackgroundProcessing] = useState(false);
-  const [theme, setTheme] = useState(loadThemePreference());
+
+  // Document state
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [lastSavedId, setLastSavedId] = useState<string | null>(null);
   const [loadingDocument, setLoadingDocument] = useState(false);
   const [documentList, setDocumentList] = useState<StoredDocument[]>([]);
   const [loadingDocuments, setLoadingDocuments] = useState(false);
-  const [showDocumentSidebar, setShowDocumentSidebar] = useState(false);
-  const [entityHighlightMode, setEntityHighlightMode] = useState(false);
+
+  // Entity modal state
+  const [selectedEntity, setSelectedEntity] = useState<SelectedEntityState | null>(null);
+
+  // Entity override state (for highlight mode)
   const [entityOverrides, setEntityOverrides] = useState<EntityOverrides>({
     rejectedSpans: new Set(),
     typeOverrides: {},
   });
-  const [entityPanelMode, setEntityPanelMode] = useState<'closed' | 'overlay' | 'pinned'>('closed');
-  const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
-  const [editorMargin, setEditorMargin] = useState<number>(() => {
-    const saved = localStorage.getItem('ares.editorMargin');
-    return saved ? Number(saved) : 96;
-  });
+
+  // Theme state
+  const [theme, setTheme] = useState(loadThemePreference());
+  const [renderMarkdown, setRenderMarkdown] = useState(true);
+  const [liveExtractionEnabled, setLiveExtractionEnabled] = useState(true);
 
   const resetEntityOverrides = useCallback(() => {
     setEntityOverrides({
@@ -587,20 +565,11 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     setTheme(newTheme);
   };
 
-  // Update editor margin CSS variable and persist to localStorage
-  useEffect(() => {
-    document.documentElement.style.setProperty(
-      '--editor-margin-desktop',
-      `${editorMargin}px`
-    );
-    localStorage.setItem('ares.editorMargin', String(editorMargin));
-  }, [editorMargin]);
-
   const requiresBackground = text.length > SYNC_EXTRACTION_CHAR_LIMIT;
   const hasActiveJob = jobStatus === 'queued' || jobStatus === 'running';
   const isUpdating = processing && !requiresBackground && !hasActiveJob;
-  const displayEntities = applyEntityOverrides(entities, entityOverrides, entityHighlightMode);
-  const entityHighlightingEnabled = showHighlighting;
+  const displayEntities = applyEntityOverrides(entities, entityOverrides, settings.entityHighlightMode);
+  const entityHighlightingEnabled = settings.showHighlighting;
   const editorDisableHighlighting = !entityHighlightingEnabled;
   const hasResults = displayEntities.length > 0 || relations.length > 0 || stats.count > 0 || stats.relationCount > 0;
   const jobStatusLabel =
@@ -886,10 +855,10 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   }, [fetchDocumentById, toast]);
 
   useEffect(() => {
-    if (showDocumentSidebar) {
+    if (layout.showDocumentSidebar) {
       refreshDocumentList();
     }
-  }, [refreshDocumentList, showDocumentSidebar]);
+  }, [refreshDocumentList, layout.showDocumentSidebar]);
 
   const deriveDocumentName = useCallback((doc: StoredDocument) => {
     const firstNonEmptyLine = doc.text
@@ -959,7 +928,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       setSaveStatus('saved');
       setLastSavedId(json.document.id);
 
-      if (showDocumentSidebar) {
+      if (layout.showDocumentSidebar) {
         refreshDocumentList();
       }
     } catch (error) {
@@ -967,7 +936,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       setSaveStatus('error');
       toast.error('Failed to save document');
     }
-  }, [entities, relations, stats, text, toast, showDocumentSidebar, refreshDocumentList]);
+  }, [entities, relations, stats, text, toast, layout.showDocumentSidebar, refreshDocumentList]);
 
   const loadLastDocument = useCallback(async () => {
     setLoadingDocument(true);
@@ -1300,297 +1269,82 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     [displayEntities]
   );
 
-  // Entity panel handlers
-  const handleOpenEntityPanel = useCallback(() => {
-    setEntityPanelMode('overlay');
-  }, []);
-
-  const handleCloseEntityPanel = useCallback(() => {
-    setEntityPanelMode('closed');
-  }, []);
-
-  const handlePinEntityPanel = useCallback(() => {
-    setEntityPanelMode('pinned');
-  }, []);
-
   console.debug('[ExtractionLab] Editor props', {
     entitiesCount: displayEntities?.length ?? 0,
     editorDisableHighlighting,
-    entityHighlightMode,
+    entityHighlightMode: settings.entityHighlightMode,
   });
 
   return (
-    <div className={`extraction-lab${showDocumentSidebar ? ' sidebar-open' : ''}`}>
-      {/* Hamburger button - moves with sidebar */}
+    <div className={`extraction-lab${layout.showDocumentSidebar ? ' sidebar-open' : ''}`}>
+      {/* Hamburger button */}
       <button
-        onClick={() => setShowDocumentSidebar(!showDocumentSidebar)}
+        onClick={layout.toggleDocumentSidebar}
         className="hamburger-btn"
-        style={{ left: showDocumentSidebar ? '300px' : '20px', transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}
+        style={{ left: layout.showDocumentSidebar ? '300px' : '20px' }}
         title="Documents"
         type="button"
       >
         <Menu size={20} strokeWidth={2} />
       </button>
 
-      {/* iOS-style Floating Control Bar - centered, auto-width */}
-      <div
-        className="lab-control-bar liquid-glass"
-      >
-        {/* Status indicator */}
-        <div
-          className="status-indicator"
-          style={{
-            fontSize: 11,
-            color: jobStatus === 'running' ? '#10B981' : jobStatus === 'failed' ? '#EF4444' : 'var(--text-tertiary)',
-            fontWeight: 500,
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-          }}
-        >
-          {jobStatusLabel}
-        </div>
+      {/* Toolbar - NEW COMPONENT */}
+      <LabToolbar
+        jobStatus={jobStatus}
+        theme={theme}
+        entityHighlightMode={settings.entityHighlightMode}
+        showSettingsDropdown={layout.showSettingsDropdown}
+        showHighlighting={settings.showHighlighting}
+        highlightOpacity={settings.highlightOpacity}
+        editorMargin={settings.editorMargin}
+        onExtractStart={startBackgroundJob}
+        onThemeToggle={handleThemeToggle}
+        onEntityHighlightToggle={settings.toggleEntityHighlightMode}
+        onSettingsToggle={layout.toggleSettingsDropdown}
+        onSettingsClose={layout.closeSettingsDropdown}
+        onHighlightingToggle={settings.toggleHighlighting}
+        onOpacityChange={settings.setHighlightOpacity}
+        onMarginChange={settings.setEditorMargin}
+        canExtract={text.trim().length > 0 && !hasActiveJob}
+        isExtracting={backgroundProcessing || hasActiveJob}
+      />
 
-        {/* Icon controls */}
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <button
-            onClick={startBackgroundJob}
-            disabled={backgroundProcessing || hasActiveJob || !text.trim()}
-            className="control-btn"
-            title="Start background extraction"
-            type="button"
-          >
-            <Zap size={16} strokeWidth={2} />
-          </button>
-          <button
-            onClick={() => setEntityHighlightMode((v) => !v)}
-            className="control-btn"
-            title="Toggle Entity Highlight Mode"
-            type="button"
-            style={{ opacity: entityHighlightMode ? 1 : 0.5 }}
-          >
-            <Highlighter size={16} strokeWidth={2} />
-          </button>
-          <button
-            onClick={handleThemeToggle}
-            className="control-btn"
-            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-            type="button"
-          >
-            {theme === 'dark' ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
-          </button>
-          {/* Settings dropdown - CLEAN REBUILD */}
-          <div className="settings-dropdown-container">
-            <button
-              onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
-              className="control-btn"
-              title="Settings"
-              type="button"
-              aria-expanded={showSettingsDropdown}
-              aria-label="Settings menu"
-            >
-              <Settings size={16} strokeWidth={2} />
-            </button>
-
-            {showSettingsDropdown && (
-              <>
-                {/* Backdrop - closes dropdown on click */}
-                <div
-                  className="settings-dropdown-backdrop"
-                  onClick={() => setShowSettingsDropdown(false)}
-                  aria-hidden="true"
-                />
-
-                {/* Dropdown panel - liquid glass surface */}
-                <div className="settings-dropdown-panel liquid-glass">
-                  {/* Page Margins Section */}
-                  <div className="settings-dropdown-section">
-                    <div className="settings-dropdown-label">Page Margins</div>
-                    <div className="settings-dropdown-buttons">
-                      <button
-                        onClick={() => setEditorMargin(48)}
-                        className={`settings-margin-btn ${editorMargin === 48 ? 'active' : ''}`}
-                        type="button"
-                      >
-                        Narrow (0.5″)
-                      </button>
-                      <button
-                        onClick={() => setEditorMargin(96)}
-                        className={`settings-margin-btn ${editorMargin === 96 ? 'active' : ''}`}
-                        type="button"
-                      >
-                        Default (1″)
-                      </button>
-                      <button
-                        onClick={() => setEditorMargin(120)}
-                        className={`settings-margin-btn ${editorMargin === 120 ? 'active' : ''}`}
-                        type="button"
-                      >
-                        Wide (1.25″)
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Entity Highlighting Section */}
-                  <div className="settings-dropdown-section">
-                    <div className="settings-dropdown-label">Entity Highlighting</div>
-                    <div
-                      className="settings-dropdown-toggle"
-                      onClick={() => setShowHighlighting(!showHighlighting)}
-                      role="switch"
-                      aria-checked={showHighlighting}
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          setShowHighlighting(!showHighlighting);
-                        }
-                      }}
-                    >
-                      <span className="settings-dropdown-toggle-label">Highlight Entities</span>
-                      <div className={`settings-toggle-switch ${showHighlighting ? 'active' : ''}`}>
-                        <div className="settings-toggle-knob" />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Transparency Section */}
-                  <div className="settings-dropdown-section">
-                    <div className="settings-dropdown-label">Highlight Transparency</div>
-                    <div className="settings-dropdown-slider">
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        value={highlightOpacity * 100}
-                        onChange={(e) => setHighlightOpacity(Number(e.target.value) / 100)}
-                        className="settings-slider-input"
-                        disabled={!showHighlighting}
-                        aria-label="Highlight transparency"
-                      />
-                      <span className="settings-slider-value">{Math.round(highlightOpacity * 100)}%</span>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Documents sidebar with ARES branding */}
-      <div
-        className="documents-sidebar"
-        style={{
-          transform: showDocumentSidebar ? 'translateX(0)' : 'translateX(-100%)',
-        }}
-      >
-        {/* ARES branding at top */}
-        <div style={{
-          padding: '20px 16px',
-          borderBottom: '1px solid var(--border-soft)',
-          marginBottom: '16px',
-        }}>
-          <div style={{
-            fontSize: '13px',
-            fontWeight: 700,
-            color: 'var(--text-tertiary)',
-            textTransform: 'uppercase',
-            letterSpacing: '1.5px',
-          }}>
-            ARES
-          </div>
-        </div>
-
-        <div style={{ padding: '0 16px' }}>
-          <div style={{
-            fontSize: '14px',
-            fontWeight: 600,
-            color: 'var(--text-secondary)',
-            marginBottom: '12px',
-          }}>
-            Documents
-          </div>
-
-          {loadingDocuments ? (
-            <div style={{ color: 'var(--text-secondary)', fontSize: '13px', padding: '20px 0' }}>Loading…</div>
-          ) : documentList.length === 0 ? (
-            <div style={{ color: 'var(--text-tertiary)', fontSize: '13px', padding: '20px 0' }}>No documents yet</div>
-          ) : (
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {documentList.map((doc) => (
-                <li key={doc.id}>
-                  <button
-                    onClick={() => handleLoadDocumentById(doc.id)}
-                    style={{
-                      width: '100%',
-                      textAlign: 'left',
-                      border: '1px solid var(--border-soft)',
-                      background: 'var(--bg-secondary)',
-                      borderRadius: '12px',
-                      padding: '12px',
-                      cursor: loadingDocument ? 'not-allowed' : 'pointer',
-                      opacity: loadingDocument ? 0.5 : 1,
-                      transition: 'all 0.2s ease',
-                    }}
-                    disabled={loadingDocument}
-                  >
-                    <div style={{ fontWeight: 500, fontSize: '14px', marginBottom: '4px', color: 'var(--text-primary)' }}>
-                      {deriveDocumentName(doc)}
-                    </div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-tertiary)' }}>
-                      {new Date(doc.updatedAt).toLocaleDateString()}
-                    </div>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
+      {/* Documents sidebar */}
+      <DocumentsSidebar
+        isOpen={layout.showDocumentSidebar}
+        documents={documentList}
+        loadingDocuments={loadingDocuments}
+        loadingDocument={loadingDocument}
+        onLoadDocument={handleLoadDocumentById}
+        deriveDocumentName={deriveDocumentName}
+      />
 
       {/* Main Content */}
       <div className="lab-content">
-        {/* Center: Editor with side margins */}
-        <div className="editor-wrapper">
-          <div className="editor-panel">
-            {/* Clean iOS-style editor - no clutter */}
-            <div className="editor-with-indicators-wrapper">
-              {/* Entity indicators on left side */}
-              <EntityIndicators
-                entities={displayEntities}
-                text={text}
-                editorHeight={Math.max(400, window.innerHeight - 380)}
-              />
-              {/* Editor area */}
-              <div className="editor-with-indicators">
-                <VirtualizedExtractionEditor
-                  text={text}
-                  onTextChange={setText}
-                  entities={displayEntities}
-                  disableHighlighting={editorDisableHighlighting}
-                  highlightOpacity={highlightOpacity}
-                  renderMarkdown={renderMarkdown}
-                  entityHighlightMode={entityHighlightMode}
-                  onChangeType={handleChangeType}
-                  onCreateNew={handleCreateNew}
-                  onReject={handleReject}
-                  onTagEntity={handleTagEntity}
-                />
-              </div>
-            </div>
-
-          </div>
-        </div>
+        {/* Editor */}
+        <EditorPane
+          text={text}
+          entities={displayEntities}
+          onTextChange={setText}
+          disableHighlighting={editorDisableHighlighting}
+          highlightOpacity={settings.highlightOpacity}
+          renderMarkdown={renderMarkdown}
+          entityHighlightMode={settings.entityHighlightMode}
+          onChangeType={handleChangeType}
+          onCreateNew={handleCreateNew}
+          onReject={handleReject}
+          onTagEntity={handleTagEntity}
+        />
 
         {/* Pinned sidebar mode */}
-        {entityPanelMode === 'pinned' && (
+        {layout.entityPanelMode === 'pinned' && (
           <EntityOverlay
             mode="pinned"
             entities={displayEntities}
             relations={relations}
             stats={stats}
-            onClose={handleCloseEntityPanel}
-            onPin={handlePinEntityPanel}
+            onClose={layout.closeEntityPanel}
+            onPin={layout.pinEntityPanel}
             onViewWiki={handleViewWiki}
             onCopyReport={copyReport}
             isUpdating={isUpdating}
@@ -1602,20 +1356,20 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       <FloatingActionButton
         icon="📊"
         label="View entities and stats"
-        onClick={handleOpenEntityPanel}
-        visible={text.trim().length > 0 && entityPanelMode === 'closed'}
+        onClick={layout.openEntityPanel}
+        visible={text.trim().length > 0 && layout.entityPanelMode === 'closed'}
         position="bottom-right"
       />
 
       {/* Entity Overlay - Full-screen mode */}
-      {entityPanelMode === 'overlay' && (
+      {layout.entityPanelMode === 'overlay' && (
         <EntityOverlay
           mode="overlay"
           entities={displayEntities}
           relations={relations}
           stats={stats}
-          onClose={handleCloseEntityPanel}
-          onPin={handlePinEntityPanel}
+          onClose={layout.closeEntityPanel}
+          onPin={layout.pinEntityPanel}
           onViewWiki={handleViewWiki}
           onCopyReport={copyReport}
           isUpdating={isUpdating}
@@ -1623,11 +1377,11 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       )}
 
       {/* Entity Modal */}
-      {showEntityModal && (
+      {layout.showEntityModal && (
         <EntityModal
           entities={displayEntities}
           relations={relations}
-          onClose={() => setShowEntityModal(false)}
+          onClose={layout.closeEntityModal}
           onViewWiki={handleViewWiki}
         />
       )}
