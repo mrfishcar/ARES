@@ -165,9 +165,9 @@ export function LabToolbar({
             right: `${dropdownPosition.right}px`,
           }}
         >
-                {/* Page Margins */}
+                {/* Side Margins */}
                 <div className="settings-dropdown-section">
-                  <div className="settings-dropdown-label">Page Margins</div>
+                  <div className="settings-dropdown-label">Side Margins</div>
                   <div className="settings-dropdown-buttons">
                     <button
                       onClick={() => onMarginChange(48)}
