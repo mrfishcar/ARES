@@ -225,8 +225,26 @@ function contextMenuExtension(
     },
     // Click/tap handler for highlight mode - shows context menu on entity tap
     click: (event, view) => {
-      // Only intercept clicks when in highlight mode
+      // Only intercept clicks when in highlight mode AND on an entity
       if (!entityHighlightModeRef.current) return false;
+
+      // First check if there's an entity at this position
+      const pos = view.posAtCoords({
+        x: (event as MouseEvent).clientX,
+        y: (event as MouseEvent).clientY,
+      });
+
+      if (pos == null) return false;
+
+      const globalPos = baseOffsetRef.current + pos;
+      const entity = entitiesRef.current.find(
+        e => e.start <= globalPos && globalPos <= e.end,
+      );
+
+      // Only handle the click if there's an entity
+      // Otherwise, let CodeMirror handle it normally for text selection/caret placement
+      if (!entity) return false;
+
       return tryShowContextMenu(event as MouseEvent, view);
     },
   });
@@ -255,6 +273,13 @@ export function CodeMirrorEditor({
   const handlePointerDown: React.PointerEventHandler<HTMLDivElement> = event => {
     // Let iOS focus handling proceed normally while keeping global listeners from hijacking the event.
     event.stopPropagation();
+
+    // Ensure the editor receives focus on tap (important for iOS)
+    const view = viewRef.current;
+    if (view && !view.hasFocus) {
+      view.focus();
+    }
+
     const scroller = wrapperRef.current?.querySelector('.cm-scroller') as
       | HTMLElement
       | null;
@@ -263,6 +288,7 @@ export function CodeMirrorEditor({
       target: (event.target as HTMLElement)?.className,
       wrapperScrollTop: wrapperRef.current?.scrollTop,
       scrollerScrollTop: scroller?.scrollTop,
+      hadFocus: view?.hasFocus ?? 'no view',
     });
   };
 

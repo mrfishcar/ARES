@@ -1045,6 +1045,20 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     }
   }, [applyDocumentToState, fetchDocumentById, lastSavedId, toast]);
 
+  // Keyboard shortcut: cmd+s / ctrl+s to save
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Check for cmd+s (Mac) or ctrl+s (Windows/Linux)
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault();
+        handleSaveDocument();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleSaveDocument]);
+
   useEffect(() => {
     if (!jobId || !jobStatus || (jobStatus !== 'queued' && jobStatus !== 'running')) {
       return;
