@@ -5,7 +5,7 @@
 
 import { createPortal } from 'react-dom';
 import { useRef, useState, useEffect } from 'react';
-import { Settings, Sun, Moon, Zap, Highlighter } from 'lucide-react';
+import { Settings, Sun, Moon, Zap, Highlighter, FilePlus, Cloud, CloudOff } from 'lucide-react';
 
 interface LabToolbarProps {
   // Status
@@ -30,6 +30,7 @@ interface LabToolbarProps {
   onEntityHighlightToggle: () => void;
   onSettingsToggle: () => void;
   onSettingsClose: () => void;
+  onNewDocument: () => void;
 
   // Settings actions
   onHighlightingToggle: () => void;
@@ -40,6 +41,9 @@ interface LabToolbarProps {
   // State checks
   canExtract: boolean;
   isExtracting: boolean;
+
+  // Save status
+  saveStatus: 'idle' | 'saving' | 'saved' | 'error';
 }
 
 export function LabToolbar({
@@ -56,12 +60,14 @@ export function LabToolbar({
   onEntityHighlightToggle,
   onSettingsToggle,
   onSettingsClose,
+  onNewDocument,
   onHighlightingToggle,
   onOpacityChange,
   onMarginChange,
   onLongTextOptimizationToggle,
   canExtract,
   isExtracting,
+  saveStatus,
 }: LabToolbarProps) {
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
   const dropdownPanelRef = useRef<HTMLDivElement>(null);
@@ -110,24 +116,67 @@ export function LabToolbar({
           ? 'Done'
           : 'Idle';
 
+  // Determine save status label
+  const saveStatusLabel = saveStatus === 'saving'
+    ? 'Saving...'
+    : saveStatus === 'saved'
+      ? 'Saved'
+      : saveStatus === 'error'
+        ? 'Save failed'
+        : null;
+
   return (
     <>
     <div className="lab-control-bar liquid-glass">
-      {/* Status indicator */}
-      <div
-        className={`status-indicator ${
-          jobStatus === 'running'
-            ? 'status-indicator--running'
-            : jobStatus === 'failed'
-              ? 'status-indicator--failed'
-              : ''
-        }`}
-      >
-        {statusLabel}
+      {/* Status indicators */}
+      <div className="status-group">
+        <div
+          className={`status-indicator ${
+            jobStatus === 'running'
+              ? 'status-indicator--running'
+              : jobStatus === 'failed'
+                ? 'status-indicator--failed'
+                : ''
+          }`}
+        >
+          {statusLabel}
+        </div>
+        {/* Save status indicator */}
+        {saveStatusLabel && (
+          <div
+            className={`save-status-indicator ${
+              saveStatus === 'saving'
+                ? 'save-status--saving'
+                : saveStatus === 'saved'
+                  ? 'save-status--saved'
+                  : saveStatus === 'error'
+                    ? 'save-status--error'
+                    : ''
+            }`}
+          >
+            {saveStatus === 'saving' ? (
+              <Cloud size={12} strokeWidth={2} className="saving-icon" />
+            ) : saveStatus === 'saved' ? (
+              <Cloud size={12} strokeWidth={2} />
+            ) : saveStatus === 'error' ? (
+              <CloudOff size={12} strokeWidth={2} />
+            ) : null}
+            <span>{saveStatusLabel}</span>
+          </div>
+        )}
       </div>
 
       {/* Icon controls */}
       <div className="toolbar-actions">
+        <button
+          onClick={onNewDocument}
+          className="control-btn"
+          title="New document"
+          type="button"
+        >
+          <FilePlus size={16} strokeWidth={2} />
+        </button>
+
         <button
           onClick={onExtractStart}
           disabled={!canExtract || isExtracting}
@@ -141,7 +190,7 @@ export function LabToolbar({
         <button
           onClick={onEntityHighlightToggle}
           className={`control-btn ${entityHighlightMode ? 'control-btn--active' : ''}`}
-          title="Toggle Entity Highlight Mode"
+          title="Toggle Entity Highlight Mode (tap entities to edit)"
           type="button"
         >
           <Highlighter size={16} strokeWidth={2} />

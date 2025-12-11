@@ -590,6 +590,45 @@ a:hover {
   color: #EF4444;
 }
 
+/* Status group - contains job status and save status */
+.status-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Save status indicator */
+.save-status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  opacity: 0.8;
+}
+
+.save-status--saving {
+  color: var(--text-secondary);
+}
+
+.save-status--saving .saving-icon {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.save-status--saved {
+  color: #10B981;
+}
+
+.save-status--error {
+  color: #EF4444;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
 /* ===== TOOLBAR ACTIONS ===== */
 .toolbar-actions {
   display: flex;
@@ -2410,11 +2449,11 @@ html[data-theme="light"] .overlay-backdrop {
 }
 
 /* iOS: Prevent body scroll when modals open */
+/* NOTE: Avoid position:fixed on body - it causes scroll position loss on iOS Safari
+ * and can interfere with CodeMirror focus/caret behavior. overflow:hidden is sufficient. */
 body.modal-open {
   overflow: hidden;
-  position: fixed;
-  width: 100%;
-  height: 100%;
+  /* Removed: position: fixed; width: 100%; height: 100%; - causes iOS caret issues */
 }
 
 /* iOS: Ensure editor doesn't remount on keyboard show/hide */

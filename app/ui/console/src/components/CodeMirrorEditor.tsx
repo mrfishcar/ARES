@@ -190,31 +190,44 @@ function contextMenuExtension(
   } | null) => void,
   entitiesRef: React.MutableRefObject<EntitySpan[]>,
   baseOffsetRef: React.MutableRefObject<number>,
+  entityHighlightModeRef: React.MutableRefObject<boolean>,
 ) {
+  // Helper to find entity at position and show context menu
+  const tryShowContextMenu = (event: MouseEvent, view: EditorView): boolean => {
+    const pos = view.posAtCoords({
+      x: event.clientX,
+      y: event.clientY,
+    });
+
+    if (pos == null) return false;
+
+    const globalPos = baseOffsetRef.current + pos;
+    const entity = entitiesRef.current.find(
+      e => e.start <= globalPos && globalPos <= e.end,
+    );
+    if (!entity) return false;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    setContextMenu({
+      position: { x: event.clientX, y: event.clientY },
+      entity,
+    });
+
+    return true;
+  };
+
   return EditorView.domEventHandlers({
+    // Right-click context menu (always works)
     contextmenu: (event, view) => {
-      const mouseEvent = event as MouseEvent;
-      const pos = view.posAtCoords({
-        x: mouseEvent.clientX,
-        y: mouseEvent.clientY,
-      });
-
-      if (pos == null) return false;
-
-      const globalPos = baseOffsetRef.current + pos;
-      const entity = entitiesRef.current.find(
-        e => e.start <= globalPos && globalPos <= e.end,
-      );
-      if (!entity) return false;
-
-      event.preventDefault();
-
-      setContextMenu({
-        position: { x: mouseEvent.clientX, y: mouseEvent.clientY },
-        entity,
-      });
-
-      return true;
+      return tryShowContextMenu(event as MouseEvent, view);
+    },
+    // Click/tap handler for highlight mode - shows context menu on entity tap
+    click: (event, view) => {
+      // Only intercept clicks when in highlight mode
+      if (!entityHighlightModeRef.current) return false;
+      return tryShowContextMenu(event as MouseEvent, view);
     },
   });
 }
@@ -232,7 +245,7 @@ export function CodeMirrorEditor({
   onCreateNew,
   onReject,
   onTagEntity,
-  entityHighlightMode = false, // not used in this trimmed build yet
+  entityHighlightMode = false,
   baseOffset = 0,
   onCursorChange,
 }: CodeMirrorEditorProps) {
@@ -258,6 +271,7 @@ export function CodeMirrorEditor({
   const disableHighlightingRef = useRef(disableHighlighting);
   const highlightOpacityRef = useRef(highlightOpacity);
   const onCursorChangeRef = useRef(onCursorChange);
+  const entityHighlightModeRef = useRef(entityHighlightMode);
 
   const [contextMenu, setContextMenu] = useState<{
     position: { x: number; y: number };
@@ -300,6 +314,10 @@ export function CodeMirrorEditor({
     onCursorChangeRef.current = onCursorChange;
   }, [onCursorChange]);
 
+  useEffect(() => {
+    entityHighlightModeRef.current = entityHighlightMode;
+  }, [entityHighlightMode]);
+
   // create editor once
   useEffect(() => {
     if (!wrapperRef.current || viewRef.current) return;
@@ -319,7 +337,7 @@ export function CodeMirrorEditor({
           () => highlightOpacityRef.current,
           () => baseOffsetRef.current,
         ),
-        contextMenuExtension(setContextMenu, entitiesRef, baseOffsetRef),
+        contextMenuExtension(setContextMenu, entitiesRef, baseOffsetRef, entityHighlightModeRef),
         EditorView.updateListener.of((update: ViewUpdate) => {
           const { docChanged, selectionSet } = update;
 
@@ -391,6 +409,8 @@ export function CodeMirrorEditor({
     view.dispatch({
       changes: { from: 0, to: current.length, insert: value },
       selection: { anchor: nextAnchor, head: nextHead },
+      // Annotation helps CodeMirror distinguish programmatic sync from user input
+      annotations: EditorView.userEvent.of('input'),
     });
   }, [value]);
 

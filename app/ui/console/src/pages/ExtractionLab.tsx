@@ -6,7 +6,7 @@
  * Clean architecture with extracted components and hooks
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Menu } from 'lucide-react';
 import { LabToolbar } from '../components/LabToolbar';
 import { DocumentsSidebar } from '../components/DocumentsSidebar';
@@ -907,24 +907,36 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     [applyDocumentToState, fetchDocumentById, toast]
   );
 
-  const handleSaveDocument = useCallback(async () => {
+  // Auto-save timeout ref
+  const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+
+  // Core save function that handles both create and update
+  const saveDocumentInternal = useCallback(async (showToast: boolean = true): Promise<string | null> => {
     if (!text.trim()) {
-      toast.error('Please paste text before saving.');
-      return;
+      if (showToast) {
+        toast.error('Please paste text before saving.');
+      }
+      return null;
     }
 
     setSaveStatus('saving');
 
     try {
       const payload = {
-        title: text.trim().slice(0, 80) || 'Untitled Document',
+        title: text.trim().split('\n')[0]?.slice(0, 80) || 'Untitled Document',
         text,
         extraction: { entities, relations, stats },
       };
 
       const apiUrl = resolveApiUrl();
-      const response = await fetch(`${apiUrl}/documents`, {
-        method: 'POST',
+
+      // If we have an existing document, update it; otherwise create new
+      const isUpdate = !!lastSavedId;
+      const url = isUpdate ? `${apiUrl}/documents/${lastSavedId}` : `${apiUrl}/documents`;
+      const method = isUpdate ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
@@ -945,12 +957,56 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       if (layout.showDocumentSidebar) {
         refreshDocumentList();
       }
+
+      return json.document.id;
     } catch (error) {
       console.error('[ExtractionLab] Failed to save document', error);
       setSaveStatus('error');
-      toast.error('Failed to save document');
+      if (showToast) {
+        toast.error('Failed to save document');
+      }
+      return null;
     }
-  }, [entities, relations, stats, text, toast, layout.showDocumentSidebar, refreshDocumentList]);
+  }, [entities, relations, stats, text, toast, layout.showDocumentSidebar, refreshDocumentList, lastSavedId]);
+
+  // Manual save (shows toast on error)
+  const handleSaveDocument = useCallback(async () => {
+    await saveDocumentInternal(true);
+  }, [saveDocumentInternal]);
+
+  // Auto-save function (silent, no toast)
+  const autoSave = useCallback(async () => {
+    if (!text.trim()) return;
+    await saveDocumentInternal(false);
+  }, [saveDocumentInternal, text]);
+
+  // Auto-save effect - triggers 2 seconds after text changes
+  useEffect(() => {
+    // Clear existing timeout
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+
+    // Only auto-save if there's content
+    if (!text.trim()) {
+      setSaveStatus('idle');
+      return;
+    }
+
+    // Set status to indicate unsaved changes
+    setSaveStatus('idle');
+
+    // Schedule auto-save after 2 seconds of inactivity
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      autoSave();
+    }, 2000);
+
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, [text, autoSave]);
 
   const loadLastDocument = useCallback(async () => {
     setLoadingDocument(true);
@@ -1283,6 +1339,26 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     [displayEntities]
   );
 
+  // Create a new blank document
+  const handleNewDocument = useCallback(() => {
+    // Clear current document state
+    setText('');
+    setEntities([]);
+    setRelations([]);
+    setStats({ time: 0, confidence: 0, count: 0, relationCount: 0 });
+    setLastSavedId(null);
+    setSaveStatus('idle');
+    resetEntityOverrides();
+
+    // Clear any active job
+    setJobId(null);
+    setJobStatus(null);
+    setJobError(null);
+    setJobResult(null);
+    setJobProgress(0);
+    setJobEtaSeconds(null);
+  }, [resetEntityOverrides]);
+
   console.debug('[ExtractionLab] Editor props', {
     entitiesCount: displayEntities?.length ?? 0,
     editorDisableHighlighting,
@@ -1323,6 +1399,8 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         onLongTextOptimizationToggle={settings.toggleLongTextOptimization}
         canExtract={text.trim().length > 0 && !hasActiveJob}
         isExtracting={backgroundProcessing || hasActiveJob}
+        onNewDocument={handleNewDocument}
+        saveStatus={saveStatus}
       />
 
       {/* Documents sidebar */}
