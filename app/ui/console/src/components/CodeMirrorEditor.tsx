@@ -9,6 +9,16 @@
  * - Keeps entity context-menu behavior wired correctly
  */
 
+/**
+ * Scroll/Focus behavior audit (2025-12-11):
+ * - Removed or limited auto-scroll hooks that ran on every update.
+ * - No more unconditional scrollIntoView calls tied to selection changes.
+ * - Focus is not forcibly stolen from the user during normal interactions.
+ * - Known remaining explicit scroll/focus helpers:
+ *   - Context menu handler prevents default only when an entity is right-clicked.
+ *   - Pointer-down stopper to isolate the editor from global listeners on touch devices.
+ */
+
 import React, {
   useEffect,
   useRef,
@@ -177,6 +187,9 @@ function contextMenuExtension(
   entitiesRef: React.MutableRefObject<EntitySpan[]>,
   baseOffsetRef: React.MutableRefObject<number>,
 ) {
+  // SCROLL/FOCUS INVESTIGATION:
+  // - Purpose: Use preventDefault only to open the entity context menu when right-clicking an entity.
+  // - Risk: Low — scoped to contextmenu with an entity hit, does not interfere with normal scrolling.
   return EditorView.domEventHandlers({
     contextmenu: (event, view) => {
       const mouseEvent = event as MouseEvent;
@@ -225,6 +238,9 @@ export function CodeMirrorEditor({
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
 
+  // SCROLL/FOCUS INVESTIGATION:
+  // - Purpose: Stop propagation so parent listeners don't hijack pointerdown on touch devices.
+  // - Risk: Low — does not prevent default scrolling inside the editor.
   const handlePointerDown: React.PointerEventHandler<HTMLDivElement> = event => {
     // Let iOS focus handling proceed normally while keeping global listeners from hijacking the event.
     event.stopPropagation();
