@@ -500,8 +500,7 @@ a:hover {
   align-items: center;
   gap: 16px;
   padding: 8px 20px;
-  width: auto;
-  max-width: min(800px, calc(100% - 64px));
+  width: auto; /* Only take space needed for tools */
   border-radius: 22px;
   z-index: 50;
   transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);

@@ -74,10 +74,10 @@ const editorTheme = EditorView.theme({
 
   // ✅ MAIN FIX: text starts below the header, but cannot scroll under it
   '.cm-content': {
-    paddingTop: 'calc(var(--editor-header-offset, 80px) + var(--editor-margin-desktop, 96px))',
-    paddingRight: 'var(--editor-margin-desktop, 96px)',
-    paddingBottom: 'var(--editor-margin-desktop, 96px)',
-    paddingLeft: 'var(--editor-margin-desktop, 96px)',
+    paddingTop: 'var(--editor-header-offset, 80px)', // Fixed top padding, no margin adjustment
+    paddingRight: 'var(--editor-margin-desktop, 96px)', // Adjustable side margins
+    paddingBottom: '40px', // Fixed bottom padding
+    paddingLeft: 'var(--editor-margin-desktop, 96px)', // Adjustable side margins
     boxSizing: 'border-box',
   },
 
