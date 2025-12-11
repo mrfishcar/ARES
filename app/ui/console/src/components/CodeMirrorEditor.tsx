@@ -16,12 +16,11 @@
  * - Focus is not forcibly stolen from the user during normal interactions.
  * - Known remaining explicit scroll/focus helpers:
  *   - Context menu handler prevents default only when an entity is right-clicked.
- *   - Pointer-down stopper to isolate the editor from global listeners on touch devices.
  */
 
 /**
- * Editor focus bugfix (2025-12-12):
- * - Guarded wrapper pointer handling so taps inside the editor do not get swallowed.
+ * Editor focus bugfix (2025-12-13):
+ * - Removed wrapper-level pointer interception that could defocus iOS taps.
  * - Ensured click-outside style logic ignores events originating from the CodeMirror DOM.
  */
 
@@ -244,23 +243,6 @@ export function CodeMirrorEditor({
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
 
-  // EDITOR FOCUS INVESTIGATION:
-  // This runs on pointerdown on the wrapper container.
-  // target element: Wrapper div; we now explicitly skip events originating inside .cm-editor.
-  // Risk: Medium — if left unguarded it can swallow taps and leave the editor unfocused on iOS.
-  const handlePointerDown: React.PointerEventHandler<HTMLDivElement> = event => {
-    const wrapperEl = wrapperRef.current;
-    const editorEl = wrapperEl?.querySelector('.cm-editor');
-
-    if (editorEl && editorEl.contains(event.target as Node)) {
-      // Let CodeMirror manage focus for taps inside the editor surface.
-      return;
-    }
-
-    // Keep stray pointerdown events on the wrapper from triggering global listeners.
-    event.stopPropagation();
-  };
-
   const entitiesRef = useRef<EntitySpan[]>(entities);
   const baseOffsetRef = useRef(baseOffset);
   const disableHighlightingRef = useRef(disableHighlighting);
@@ -433,7 +415,6 @@ export function CodeMirrorEditor({
         background: 'var(--bg-primary)',
         overflow: 'hidden',
       }}
-      onPointerDown={handlePointerDown}
     >
       <div
         ref={wrapperRef}
