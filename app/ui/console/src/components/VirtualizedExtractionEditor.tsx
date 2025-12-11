@@ -140,7 +140,9 @@ export function VirtualizedExtractionEditor({
   const [windowSize] = useState(DEFAULT_WINDOW_SIZE);
   const prevTextLengthRef = useRef(text.length);
   const pendingWindowStartRef = useRef<number | null>(null);
-  const windowUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const windowUpdateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
   const isUpdatingWindowRef = useRef(false); // Track programmatic window updates
   const lastWindowStartRef = useRef(windowStart);
 
