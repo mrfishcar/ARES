@@ -548,7 +548,7 @@ a:hover {
   border-radius: 8px;
   border: none;
   background: transparent;
-  color: rgb(255, 255, 255);
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -558,12 +558,12 @@ a:hover {
 }
 
 .control-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.08);
-  color: rgb(230, 235, 245);
+  background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  color: var(--text-primary);
 }
 
 .control-btn:active:not(:disabled) {
-  color: rgb(255, 255, 255);
+  color: var(--text-primary);
   transform: scale(0.95);
 }
 
@@ -780,7 +780,7 @@ a:hover {
 .settings-dropdown-label {
   font-size: 13px;
   font-weight: 500;
-  color: rgb(180, 190, 210);
+  color: var(--text-secondary);
   letter-spacing: 0.3px;
 }
 
@@ -796,7 +796,7 @@ a:hover {
   padding: 10px 14px;
   background: transparent; /* No background - rely on parent glass effect */
   color: var(--text-primary);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-soft);
   border-radius: 8px;
   cursor: pointer;
   font-size: 13px;
@@ -806,8 +806,8 @@ a:hover {
 }
 
 .settings-margin-btn:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.03); /* Very subtle hover */
+  border-color: var(--border-color);
+  background: color-mix(in srgb, var(--bg-tertiary) 40%, transparent);
 }
 
 .settings-margin-btn.active {
@@ -823,19 +823,20 @@ a:hover {
   justify-content: space-between;
   padding: 10px 12px;
   background: transparent; /* No background - rely on parent glass effect */
+  color: var(--text-primary);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .settings-dropdown-toggle:hover {
-  background: rgba(255, 255, 255, 0.03); /* Very subtle hover */
+  background: color-mix(in srgb, var(--bg-tertiary) 35%, transparent); /* Very subtle hover */
 }
 
 .settings-dropdown-toggle-label {
   font-size: 14px;
   font-weight: 400;
-  color: rgb(230, 235, 245);
+  color: var(--text-primary);
 }
 
 /* Toggle Switch */
@@ -857,7 +858,7 @@ a:hover {
 .settings-toggle-knob {
   width: 20px;
   height: 20px;
-  background: var(--app-bg-light);
+  background: var(--bg-secondary);
   border-radius: 50%;
   position: absolute;
   top: 2px;
