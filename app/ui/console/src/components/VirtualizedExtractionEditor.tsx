@@ -12,7 +12,7 @@
  * - Entity highlighting and tag hiding work in window coordinates
  */
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { CodeMirrorEditor } from './CodeMirrorEditor';
 import type { EntitySpan, EntityType } from '../types/entities';
 
@@ -126,9 +126,14 @@ export function VirtualizedExtractionEditor({
   onTagEntity,
   enableLongTextOptimization = false
 }: VirtualizedExtractionEditorProps) {
-  // Skip virtualization for small documents and iPad/iOS to prevent cursor jumps and remount flicker
-  const chunkingEnabled = USE_CHUNKED_DECORATIONS && enableLongTextOptimization;
-  const shouldVirtualize = chunkingEnabled && !isIOS && text.length > VIRTUALIZATION_THRESHOLD;
+  const chunkingEnabled = useMemo(
+    () => USE_CHUNKED_DECORATIONS && enableLongTextOptimization,
+    [enableLongTextOptimization]
+  );
+  const shouldVirtualize = useMemo(
+    () => chunkingEnabled && !isIOS && text.length > VIRTUALIZATION_THRESHOLD,
+    [chunkingEnabled, text.length]
+  );
 
   // Window state
   const [windowStart, setWindowStart] = useState(0);
