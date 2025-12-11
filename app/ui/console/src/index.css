@@ -20,8 +20,6 @@ body {
   height: 100%;
   overflow: hidden;
   overscroll-behavior: none;
-  position: fixed;
-  width: 100%;
 }
 
 :root {
@@ -182,6 +180,8 @@ body,
   flex-direction: column;
   width: 100%;
   background-color: var(--app-surface);
+  /* Keep the app shell from competing with the editor scroller */
+  overflow: hidden;
 }
 
 .app-scroll-root {
@@ -190,8 +190,8 @@ body,
   min-height: 0;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  overscroll-behavior: none;
+  overflow: hidden;
+  overscroll-behavior: contain;
   background-color: transparent;
   color: var(--text-primary);
 }
@@ -1687,6 +1687,8 @@ a:hover {
 
 /* Editor Scrollbar Styling - Light Mode (Default) */
 .cm-editor-wrapper {
+  /* Keep scrolling inside the CodeMirror scroller to avoid nested scroll chains */
+  overflow: hidden;
   scrollbar-color: #9CA3AF #151929 !important;
   scrollbar-width: thin !important;
 }
@@ -1740,6 +1742,7 @@ html[data-theme="dark"] .cm-editor-wrapper {
 
 /* Also style .cm-scroller scrollbar (CodeMirror's internal scrollable element) */
 .cm-scroller {
+  touch-action: pan-y;
   color-scheme: dark !important;
 }
 

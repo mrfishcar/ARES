@@ -42,6 +42,17 @@ import { getEntityTypeColor } from '../types/entities';
 import { EntityContextMenu } from './EntityContextMenu';
 import type { CodeMirrorEditorProps } from './CodeMirrorEditorProps';
 
+const DEBUG_EDITOR_FOCUS =
+  (typeof window !== 'undefined' && (window as any).ARES_DEBUG_EDITOR_FOCUS) ||
+  import.meta.env.VITE_DEBUG_EDITOR_FOCUS === 'true';
+
+const debugLog = (...args: any[]) => {
+  if (DEBUG_EDITOR_FOCUS) {
+    // eslint-disable-next-line no-console
+    console.log('[EditorDebug]', ...args);
+  }
+};
+
 // -------------------- MARKDOWN STYLES --------------------
 
 const markdownHighlightStyle = HighlightStyle.define([
@@ -83,6 +94,9 @@ const editorTheme = EditorView.theme({
 
   '.cm-scroller': {
     overflow: 'auto',
+    overscrollBehavior: 'contain',
+    touchAction: 'pan-y',
+    WebkitOverflowScrolling: 'touch',
   },
 
   '.cm-line': {
@@ -228,6 +242,15 @@ export function CodeMirrorEditor({
   const handlePointerDown: React.PointerEventHandler<HTMLDivElement> = event => {
     // Let iOS focus handling proceed normally while keeping global listeners from hijacking the event.
     event.stopPropagation();
+    const scroller = wrapperRef.current?.querySelector('.cm-scroller') as
+      | HTMLElement
+      | null;
+
+    debugLog('pointerdown', {
+      target: (event.target as HTMLElement)?.className,
+      wrapperScrollTop: wrapperRef.current?.scrollTop,
+      scrollerScrollTop: scroller?.scrollTop,
+    });
   };
 
   const entitiesRef = useRef<EntitySpan[]>(entities);
@@ -298,11 +321,27 @@ export function CodeMirrorEditor({
         ),
         contextMenuExtension(setContextMenu, entitiesRef, baseOffsetRef),
         EditorView.updateListener.of((update: ViewUpdate) => {
-          if (update.docChanged) {
-            onChange(update.state.doc.toString());
+          const { docChanged, selectionSet } = update;
+
+          if (DEBUG_EDITOR_FOCUS && (docChanged || selectionSet)) {
+            const selection = update.state.selection.main;
+            const scroller = update.view.scrollDOM as HTMLElement;
+
+            debugLog('update', {
+              docChanged,
+              selectionSet,
+              selection: { anchor: selection.anchor, head: selection.head },
+              wrapperScrollTop: wrapperRef.current?.scrollTop,
+              scrollerScrollTop: scroller?.scrollTop,
+            });
           }
 
-          if (onCursorChangeRef.current && update.selectionSet) {
+          if (docChanged) {
+            const nextValue = update.state.doc.toString();
+            onChange(nextValue);
+          }
+
+          if (selectionSet && onCursorChangeRef.current) {
             const head = update.state.selection.main.head;
             const globalPos = baseOffsetRef.current + head;
             onCursorChangeRef.current(globalPos);
@@ -337,10 +376,48 @@ export function CodeMirrorEditor({
     const current = view.state.doc.toString();
     if (current === value) return;
 
+    const anchor = view.state.selection.main.anchor;
+    const head = view.state.selection.main.head;
+    const nextAnchor = Math.min(value.length, anchor);
+    const nextHead = Math.min(value.length, head);
+
+    debugLog('external value sync', {
+      fromLength: current.length,
+      toLength: value.length,
+      anchor,
+      head,
+    });
+
     view.dispatch({
       changes: { from: 0, to: current.length, insert: value },
+      selection: { anchor: nextAnchor, head: nextHead },
     });
   }, [value]);
+
+  useEffect(() => {
+    if (!DEBUG_EDITOR_FOCUS) return;
+
+    const wrapper = wrapperRef.current;
+    const scroller = wrapper?.querySelector('.cm-scroller') as HTMLElement | null;
+
+    const wrapperScroll = (event: Event) => {
+      const target = event.target as HTMLElement;
+      debugLog('scroll', 'cm-editor-wrapper', { scrollTop: target.scrollTop });
+    };
+
+    const scrollerScroll = (event: Event) => {
+      const target = event.target as HTMLElement;
+      debugLog('scroll', 'cm-scroller', { scrollTop: target.scrollTop });
+    };
+
+    wrapper?.addEventListener('scroll', wrapperScroll);
+    scroller?.addEventListener('scroll', scrollerScroll);
+
+    return () => {
+      wrapper?.removeEventListener('scroll', wrapperScroll);
+      scroller?.removeEventListener('scroll', scrollerScroll);
+    };
+  }, []);
 
   // -------------------- CONTEXT MENU HANDLERS --------------------
 
@@ -411,9 +488,7 @@ export function CodeMirrorEditor({
           width: '100%',
           height: '100%',
           background: 'var(--bg-primary)',
-          overflow: 'auto',
-          touchAction: 'manipulation',
-          WebkitOverflowScrolling: 'touch',
+          overflow: 'hidden',
         }}
       />
 
