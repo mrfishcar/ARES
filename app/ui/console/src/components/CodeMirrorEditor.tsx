@@ -22,6 +22,7 @@
  * Editor focus bugfix (2025-12-13):
  * - Removed wrapper-level pointer interception that could defocus iOS taps.
  * - Ensured click-outside style logic ignores events originating from the CodeMirror DOM.
+ * - Ignored touch-triggered contextmenu events so overlays don't steal focus on iPad.
  */
 
 import React, {
@@ -195,9 +196,18 @@ function contextMenuExtension(
   // SCROLL/FOCUS INVESTIGATION:
   // - Purpose: Use preventDefault only to open the entity context menu when right-clicking an entity.
   // - Risk: Low — scoped to contextmenu with an entity hit, does not interfere with normal scrolling.
+  //
+  // EDITOR FOCUS INVESTIGATION:
+  // Touch/long-press contextmenu events on iPad were stealing focus by painting a backdrop over the editor.
+  // Skip handling touch-triggered context menus so CodeMirror keeps focus and the keyboard stays active.
   return EditorView.domEventHandlers({
     contextmenu: (event, view) => {
       const mouseEvent = event as MouseEvent;
+
+      const pointerType = (mouseEvent as PointerEvent).pointerType;
+      const isTouch = pointerType === 'touch';
+      if (isTouch) return false;
+
       const pos = view.posAtCoords({
         x: mouseEvent.clientX,
         y: mouseEvent.clientY,
