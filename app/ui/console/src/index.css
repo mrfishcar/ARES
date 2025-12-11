@@ -504,7 +504,7 @@ a:hover {
   z-index: 50;
 
   /* HOW WIDE THE PILL CAN GET */
-  max-width: 720px;              /* tweak this to taste */
+  max-width: 500px;              /* tweak this to taste */
   width: calc(50% - 80px);      /* keeps nice side margins on smaller screens */
 
   transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
