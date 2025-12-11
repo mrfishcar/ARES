@@ -168,6 +168,7 @@ body,
 - ❌ Paste: Deactivates in iOS keyboard
 - ❌ Scrolling: Stutters and shows white space
 - ❌ Cursor: Invisible
+- ❌ iOS status bar: White (wrong for dark theme)
 
 ### After Fix:
 - ✅ Typing: Works immediately, stays visible
@@ -176,6 +177,7 @@ body,
 - ✅ Scrolling: Smooth, no hiccups
 - ✅ Cursor: Visible and stable
 - ✅ No white space when keyboard appears
+- ✅ iOS status bar: Black with white icons (matches dark theme)
 
 ---
 
@@ -269,6 +271,44 @@ If iOS keyboard issues return, check:
 1. **Check release notes** for iOS keyboard fixes
 2. **Test on iPad** before deploying
 3. **Verify contentDOM behavior** hasn't changed
+
+---
+
+## iOS Status Bar Color Fix
+
+### The Problem
+The iOS status bar (WiFi, time, battery icons) was showing **white** instead of **black** to match the dark theme.
+
+**Root cause**: Using deprecated `black-translucent` meta tag value from pre-iOS 14.5.
+
+### The Solution
+**File**: `app/ui/console/index.html` (line 10)
+
+```html
+<!-- iOS 14.5+ status bar: light-content = dark bar with white text/icons -->
+<meta name="apple-mobile-web-app-status-bar-style" content="light-content" />
+```
+
+### iOS 14.5+ Status Bar Values:
+- `light-content` = Dark bar with white icons ✅ (for dark-themed apps)
+- `dark-content` = White bar with dark icons (for light-themed apps)
+- `default` = System default
+- ~~`black-translucent`~~ = Deprecated, buggy on iOS 14.5+
+- ~~`black`~~ = Deprecated, shows white instead of black (known bug)
+
+**Why it works**:
+- `light-content` gives dark/black status bar background
+- White text and icons for high contrast
+- Works properly on iOS 14.5+ (modern value)
+
+**What was accidentally fixing it before**:
+- `overflow: hidden` prevented white background from bleeding through the translucent status bar
+- But proper fix is to use the correct meta tag value
+
+### References:
+- [iOS 14.5 PWA Changes](https://firt.dev/ios-14.5/)
+- [Changing iOS Status Bar](https://medium.com/appscope/changing-the-ios-status-bar-of-your-progressive-web-app-9fc8fbe8e6ab)
+- [Complete guide to customizing mobile status bar](https://intercom.help/progressier/en/articles/10574799-complete-guide-to-customizing-the-mobile-status-bar-in-a-website-or-pwa)
 
 ---
 
