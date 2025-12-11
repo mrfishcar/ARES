@@ -2,7 +2,26 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  background-color: inherit;
+}
+
+html {
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
+  background: var(--bg-primary);
+  /* Prevent iOS elastic scrolling/bounce */
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+html,
+body {
+  background: var(--bg-primary);
+  /* Lock height to viewport, prevent pull-to-refresh */
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  position: fixed;
+  width: 100%;
 }
 
 :root {
@@ -401,15 +420,21 @@ a:hover {
 .extraction-lab {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 100%;
-  background-color: var(--app-surface);
+  height: 100vh;
+  height: 100dvh;
+  background: var(--bg-primary);
   /*
    * Safari/iPad blur + keyboard guard: removing full overflow clipping prevents
    * backdrop-filter surfaces (toolbar + dropdown) from losing blur and allows
    * the viewport to resize when the software keyboard appears.
    */
-  overflow: visible;
+  overflow-x: hidden;
+  overflow-y: auto;
+  /* Prevent iOS elastic scrolling/pull-to-refresh */
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+  /* Position relative to body's fixed positioning */
+  position: relative;
 }
 
 /* Hamburger Button - ChatGPT style */
