@@ -409,8 +409,8 @@ export function CodeMirrorEditor({
     view.dispatch({
       changes: { from: 0, to: current.length, insert: value },
       selection: { anchor: nextAnchor, head: nextHead },
-      // Annotation helps CodeMirror distinguish programmatic sync from user input
-      annotations: EditorView.userEvent.of('input'),
+      // userEvent helps CodeMirror distinguish programmatic sync from user input
+      userEvent: 'input',
     });
   }, [value]);
 
