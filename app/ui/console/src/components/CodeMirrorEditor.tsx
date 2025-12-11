@@ -354,10 +354,20 @@ export function CodeMirrorEditor({
     });
 
     // ✅ iPadOS autocorrect & spellcheck
-    view.dom.setAttribute('contenteditable', 'true');
+    // NOTE: Don't manually set contenteditable - CodeMirror handles this
+    // Setting it manually causes iOS keyboard focus issues (cursor jumping, invisible typing)
     view.dom.setAttribute('spellcheck', 'true');
     view.dom.setAttribute('autocorrect', 'on');
     view.dom.setAttribute('autocapitalize', 'sentences');
+
+    // Force focus on the editor's contenteditable element on iOS
+    // This ensures keyboard appears and stays connected to the editor
+    const contentEditableElement = view.contentDOM;
+    if (contentEditableElement) {
+      contentEditableElement.setAttribute('spellcheck', 'true');
+      contentEditableElement.setAttribute('autocorrect', 'on');
+      contentEditableElement.setAttribute('autocapitalize', 'sentences');
+    }
 
     viewRef.current = view;
 

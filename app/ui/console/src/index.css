@@ -136,10 +136,11 @@ html,
 body,
 #root {
   height: 100%;
-  min-height: 100vh;
-  min-height: 100dvh; /* Use dynamic viewport height */
-  /* Allow scrolling on iOS when keyboard appears */
-  overflow: auto;
+  /* Use ONLY dynamic viewport height to fix iOS keyboard white space */
+  min-height: 100dvh;
+  /* Prevent scrolling to fix white bar and white space issues */
+  overflow: hidden;
+  overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
 }
 
