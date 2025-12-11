@@ -106,7 +106,7 @@ export function HomePage({ project, toast }: HomePageProps) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        minHeight: 'calc(100vh - 100px)',
+        minHeight: 'calc(100% - 100px)',
         padding: '40px 20px',
       }}
     >
@@ -122,7 +122,7 @@ export function HomePage({ project, toast }: HomePageProps) {
             fontSize: '28px',
             fontWeight: '400',
             textAlign: 'center',
-            color: '#111827',
+            color: 'var(--text-primary)',
             marginBottom: '32px',
             letterSpacing: '-0.02em',
           }}

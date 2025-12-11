@@ -25,6 +25,9 @@ body {
 }
 
 :root {
+  --app-bg-dark: #050713;
+  --app-bg-light: #f5f6fa;
+
   /* shared tokens that don't really change with theme */
   --accent-color: #38bdf8;
   --accent-hover: #0ea5e9;
@@ -79,7 +82,7 @@ body {
   --liquid-glass-tint-2: var(--liquid-glass-tint-2-dark);
 
   /* Default theme variables (dark mode defaults to prevent white flash) */
-  --bg-primary: #020617;
+  --bg-primary: var(--app-bg-dark);
   --bg-secondary: rgba(15, 23, 42, 0.96);
   --bg-tertiary: rgba(30, 41, 59, 0.9);
   --bg-elevated: rgba(15, 23, 42, 0.96);
@@ -90,6 +93,146 @@ body {
 
   --border-soft: rgba(148, 163, 184, 0.45);
   --border-color: rgba(148, 163, 184, 0.6);
+
+  /* Global background gradient for the deepest layer */
+  --app-background-gradient: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.08), transparent 35%),
+    radial-gradient(circle at 80% 0%, rgba(129, 140, 248, 0.06), transparent 40%),
+    linear-gradient(180deg, #050713 0%, #0b1024 55%, #050713 100%);
+
+  --app-surface: var(--app-bg-dark);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    background-color: var(--app-bg-dark);
+    --app-surface: var(--app-bg-dark);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    background-color: var(--app-bg-light);
+    --app-surface: var(--app-bg-light);
+  }
+}
+
+:root {
+  margin: 0;
+  padding: 0;
+  background-color: var(--app-surface);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--app-surface);
+  /* color-scheme is set by media queries and theme classes */
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh; /* Use dynamic viewport height */
+  overflow: hidden;
+}
+
+@media (prefers-color-scheme: light) {
+  :root,
+  html,
+  body,
+  #root {
+    background-color: var(--app-bg-light);
+    color-scheme: light;
+  }
+
+  body {
+    background-color: var(--app-bg-light);
+  }
+
+  .app-root {
+    background-color: var(--app-bg-light);
+  }
+
+  body::before {
+    background-color: var(--app-bg-light);
+  }
+}
+
+.app-shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for iOS keyboard */
+  height: 100%;
+  flex: 1;
+  background-color: var(--app-surface);
+  color: var(--text-primary);
+}
+
+.app-main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background-color: var(--app-surface);
+}
+
+.app-scroll-root {
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: none;
+  background-color: transparent;
+  color: var(--text-primary);
+}
+
+.portal-root,
+.modal-root,
+.overlay-root {
+  background-color: transparent;
+}
+
+.overlay-root {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1200;
+}
+
+.portal-root::backdrop,
+.modal-root::backdrop,
+.overlay-root::backdrop,
+.portal-backdrop,
+.modal-backdrop,
+.overlay-backdrop {
+  background-color: rgba(5, 7, 19, 0.7);
+}
+
+html {
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
+  background-color: var(--app-surface);
+}
+
+@media (prefers-color-scheme: light) {
+  html {
+    background-color: var(--app-bg-light);
+  }
+}
+
+html,
+body {
+  background-color: var(--app-surface);
 }
 
 /* Light mode – "paper" */
@@ -120,7 +263,7 @@ html[data-theme="light"] {
 
 /* Dark mode – "liquid glass" */
 html[data-theme="dark"] {
-  --bg-primary: #020617;
+  --bg-primary: var(--app-bg-dark);
   --bg-secondary: rgba(15, 23, 42, 0.96);
   --bg-tertiary: rgba(30, 41, 59, 0.9);
   --bg-elevated: rgba(15, 23, 42, 0.96);
@@ -195,8 +338,59 @@ body {
   font-size: 0.9375rem;
   font-weight: 400;
   line-height: 1.6;
-  background: var(--bg-primary);
+  background-color: var(--app-surface);
   color: var(--text-primary);
+  position: relative;
+  min-height: 100%;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--app-surface);
+  background-image: var(--app-background-gradient);
+  /* Ensure it covers viewport even when keyboard appears */
+  min-height: 100vh;
+  min-height: 100dvh; /* Use dynamic viewport height on supporting browsers */
+}
+
+#root {
+  height: 100%;
+  background-color: var(--app-surface);
+}
+
+.app-root {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for iOS keyboard */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background-color: var(--app-surface);
+  background-image: var(--app-background-gradient);
+  color: var(--text-primary);
+}
+
+.app-loader {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background-color: var(--app-surface);
+  background-image: var(--app-background-gradient);
+  color: var(--text-primary);
+  z-index: 2000;
+}
+
+.app-loader__text {
+  color: var(--text-secondary);
+  font-size: 14px;
 }
 
 code {
@@ -249,7 +443,7 @@ a:hover {
   top: 20px;
   left: 20px;
   border: none;
-  background: transparent;
+  background: none; /* Safari blur fix - use 'none' instead of 'transparent' */
   color: rgb(180, 190, 210);
   cursor: pointer;
   padding: 8px;
@@ -297,8 +491,10 @@ a:hover {
 .lab-control-bar {
   position: fixed;
   top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -506,6 +702,8 @@ a:hover {
   bottom: 0;
   z-index: 999;
   cursor: default;
+  background-color: transparent;
+  pointer-events: auto; /* Override overlay-root's pointer-events: none */
 }
 
 /* Dropdown Panel - Liquid Glass Surface */
@@ -523,6 +721,7 @@ a:hover {
 
   /* Stacking */
   z-index: 1000;
+  pointer-events: auto; /* Override overlay-root's pointer-events: none */
 
   /* Safari/iOS backdrop-filter CRITICAL requirements */
   isolation: isolate;
@@ -533,15 +732,18 @@ a:hover {
   /* animation: settingsDropdownSlideIn 0.2s cubic-bezier(0.4, 0, 0.2, 1); */
 }
 
-@keyframes settingsDropdownSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Settings dropdown specific - FORCE blur on Safari */
+.settings-dropdown-panel.liquid-glass {
+  /* Simplified background - complex gradients can break blur on Safari */
+  background: var(--liquid-glass-bg) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid var(--liquid-glass-border);
+  box-shadow: 0 8px 32px var(--liquid-glass-glow-outer), inset 0 1px 0 var(--liquid-glass-glow-inner);
+
+  /* Force GPU layer */
+  will-change: backdrop-filter;
+  -webkit-will-change: backdrop-filter;
 }
 
 /* Section Container */
@@ -638,7 +840,7 @@ a:hover {
 .settings-toggle-knob {
   width: 20px;
   height: 20px;
-  background: white;
+  background: var(--app-bg-light);
   border-radius: 50%;
   position: absolute;
   top: 2px;
@@ -718,10 +920,11 @@ a:hover {
 
 /*
  * Merge selectors: enforce the shared liquid-glass material on all floating surfaces so layout rules
- * (.settings-dropdown-panel, .context-menu, .context-submenu, .lab-control-bar, .floating-button) cannot override
+ * (.context-menu, .context-submenu, .lab-control-bar, .floating-button) cannot override
  * the blur/background stack on Safari.
+ * NOTE: .settings-dropdown-panel is NOT included - it has its own simplified rule below to avoid double backgrounds
  */
-:is(.settings-dropdown-panel, .context-menu, .context-submenu, .lab-control-bar, .floating-button).liquid-glass {
+:is(.context-menu, .context-submenu, .lab-control-bar, .floating-button).liquid-glass {
   background: radial-gradient(circle at top left, var(--liquid-glass-tint-1), transparent 70%),
               radial-gradient(circle at bottom right, var(--liquid-glass-tint-2), transparent 75%),
               var(--liquid-glass-bg) !important;
@@ -732,17 +935,16 @@ a:hover {
 }
 
 /* Settings dropdown specific - FORCE blur on Safari */
-.settings-dropdown-panel.liquid-glass {
-  /* Simplified background - complex gradients can break blur on Safari */
-  background: var(--liquid-glass-bg) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
+.glass-panel {
+  /* Use theme-aware liquid glass styling */
+  background: radial-gradient(circle at top left, var(--liquid-glass-tint-1), transparent 70%),
+              radial-gradient(circle at bottom right, var(--liquid-glass-tint-2), transparent 75%),
+              var(--liquid-glass-bg);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
   border: 1px solid var(--liquid-glass-border);
-  box-shadow: 0 8px 32px var(--liquid-glass-glow-outer), inset 0 1px 0 var(--liquid-glass-glow-inner);
-
-  /* Force GPU layer */
-  will-change: backdrop-filter;
-  -webkit-will-change: backdrop-filter;
+  box-shadow: 0 18px 40px var(--liquid-glass-glow-outer), inset 0 1px 0 var(--liquid-glass-glow-inner);
+  color: var(--text-primary);
 }
 
 .overlay-panel.liquid-glass--strong {
@@ -912,7 +1114,7 @@ a:hover {
   min-height: 0;
   overflow: hidden;
   align-items: stretch;
-  background: var(--bg-primary);
+  background: transparent;
   /* ✅ No padding by default; will be added by media query when sidebar is open */
   transition: padding-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -921,7 +1123,7 @@ a:hover {
   display: flex;
   flex: 1;
   min-width: 0;
-  background: var(--bg-primary);
+  background-color: var(--app-surface);
 }
 
 .results-wrapper {
@@ -940,7 +1142,7 @@ a:hover {
   flex: 1;
   min-width: 0;
   min-height: 0;
-  background: var(--bg-primary);
+  background-color: var(--app-surface);
   border: none;
   border-radius: 0;
   box-shadow: none;
@@ -2176,7 +2378,7 @@ body.modal-open {
   overflow: hidden;
   position: fixed;
   width: 100%;
-  height: 100vh;
+  height: 100%;
 }
 
 /* iOS: Ensure editor doesn't remount on keyboard show/hide */

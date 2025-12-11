@@ -221,13 +221,13 @@ export function NotesPage({ project, toast }: NotesPageProps) {
   }
 
   return (
-    <div style={{ display: 'flex', height: 'calc(100vh - 72px)' }}>
+    <div style={{ display: 'flex', height: 'calc(100% - 72px)' }}>
       {sidebarOpen && (
         <aside
           style={{
             width: '280px',
             borderRight: '1px solid #e5e7eb',
-            background: '#ffffff',
+            background: 'var(--bg-secondary)',
             display: 'flex',
             flexDirection: 'column',
           }}
