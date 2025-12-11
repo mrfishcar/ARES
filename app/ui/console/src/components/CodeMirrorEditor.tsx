@@ -79,6 +79,7 @@ const editorTheme = EditorView.theme({
     paddingBottom: '40px', // Fixed bottom padding
     paddingLeft: 'var(--editor-margin-desktop, 96px)', // Adjustable side margins
     boxSizing: 'border-box',
+    caretColor: 'var(--text-primary)', // ✅ Ensure cursor is visible on iOS
   },
 
   '.cm-scroller': {
@@ -95,6 +96,12 @@ const editorTheme = EditorView.theme({
   '.cm-gutters': {
     backgroundColor: 'transparent',
     borderRight: '1px solid var(--border-color)',
+  },
+
+  // ✅ iOS cursor visibility fix
+  '.cm-cursor, .cm-dropCursor': {
+    borderLeftColor: 'var(--text-primary)',
+    borderLeftWidth: '2px',
   },
 
   '.cm-entity-highlight': {
