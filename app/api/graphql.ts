@@ -1110,7 +1110,144 @@ No additional information is available at this time.
       return;
     }
 
-    // Document storage endpoints for Extraction Lab persistence
+    // Document storage endpoints for Extraction Lab persistence (without /api prefix)
+    if (req.url?.startsWith('/documents')) {
+      const urlObj = new URL(req.url, `http://${req.headers.host}`);
+      const parts = urlObj.pathname.split('/').filter(Boolean);
+      const [segmentResource, docId] = parts;
+
+      if (segmentResource === 'documents') {
+        // Handle CORS preflight
+        if (req.method === 'OPTIONS') {
+          res.writeHead(200, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+          });
+          res.end();
+          return;
+        }
+
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+        // POST /documents - create new document
+        if (req.method === 'POST' && parts.length === 1) {
+          let body = '';
+          req.on('data', (chunk) => {
+            body += chunk.toString();
+          });
+
+          req.on('end', () => {
+            try {
+              const parsed = JSON.parse(body || '{}');
+              const { title = '', text, extraction } = parsed;
+
+              if (!text || typeof text !== 'string') {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false, error: 'TEXT_REQUIRED' }));
+                return;
+              }
+
+              const document = createDocument({
+                title: typeof title === 'string' ? title : String(title),
+                text,
+                extractionJson: extraction,
+              });
+
+              saveDocument(document);
+              logger.info({ msg: 'document_created', docId: document.id });
+
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ ok: true, document }));
+            } catch (error) {
+              logger.error({ msg: 'save_document_error', err: String(error) });
+              res.writeHead(500, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ ok: false, error: 'FAILED_TO_SAVE_DOCUMENT' }));
+            }
+          });
+          return;
+        }
+
+        // GET /documents - list all documents
+        if (req.method === 'GET' && parts.length === 1) {
+          const documents = listDocuments().map(doc => ({
+            id: doc.id,
+            title: doc.title,
+            createdAt: doc.createdAt,
+            updatedAt: doc.updatedAt,
+          }));
+
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: true, documents }));
+          return;
+        }
+
+        // GET /documents/:id - get specific document
+        if (req.method === 'GET' && parts.length === 2 && docId) {
+          const document = getStoredDocument(docId);
+
+          if (!document) {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: false, error: 'DOCUMENT_NOT_FOUND' }));
+            return;
+          }
+
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: true, document }));
+          return;
+        }
+
+        // PUT /documents/:id - update existing document
+        if (req.method === 'PUT' && parts.length === 2 && docId) {
+          let body = '';
+          req.on('data', (chunk) => {
+            body += chunk.toString();
+          });
+
+          req.on('end', () => {
+            try {
+              const existing = getStoredDocument(docId);
+              if (!existing) {
+                res.writeHead(404, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false, error: 'DOCUMENT_NOT_FOUND' }));
+                return;
+              }
+
+              const parsed = JSON.parse(body || '{}');
+              const { title, text, extraction } = parsed;
+
+              // Update only provided fields
+              const updated: typeof existing = {
+                ...existing,
+                title: typeof title === 'string' ? title : existing.title,
+                text: typeof text === 'string' ? text : existing.text,
+                extractionJson: extraction !== undefined ? extraction : existing.extractionJson,
+                updatedAt: new Date().toISOString(),
+              };
+
+              saveDocument(updated);
+              logger.info({ msg: 'document_updated', docId: updated.id });
+
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ ok: true, document: updated }));
+            } catch (error) {
+              logger.error({ msg: 'update_document_error', err: String(error) });
+              res.writeHead(500, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ ok: false, error: 'SAVE_FAILED' }));
+            }
+          });
+          return;
+        }
+
+        res.writeHead(405, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: 'METHOD_NOT_ALLOWED' }));
+        return;
+      }
+    }
+
+    // Document storage endpoints for Extraction Lab persistence (with /api prefix - legacy)
     if (req.url?.startsWith('/api/documents')) {
       const urlObj = new URL(req.url, `http://${req.headers.host}`);
       const parts = urlObj.pathname.split('/').filter(Boolean);
