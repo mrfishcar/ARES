@@ -77,10 +77,24 @@ export function EntityOverlay({
     if (mode !== 'overlay') return;
 
     const originalOverflow = document.body.style.overflow;
+    const originalOverscroll = document.body.style.overscrollBehavior;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+    const originalHtmlOverscroll = document.documentElement.style.overscrollBehavior;
+
+    document.body.classList.add('overlay-open');
+    document.documentElement.classList.add('overlay-open');
     document.body.style.overflow = 'hidden';
+    document.body.style.overscrollBehavior = 'contain';
+    document.documentElement.style.overflow = 'hidden';
+    document.documentElement.style.overscrollBehavior = 'contain';
 
     return () => {
       document.body.style.overflow = originalOverflow;
+      document.body.style.overscrollBehavior = originalOverscroll;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+      document.documentElement.style.overscrollBehavior = originalHtmlOverscroll;
+      document.body.classList.remove('overlay-open');
+      document.documentElement.classList.remove('overlay-open');
     };
   }, [mode]);
 

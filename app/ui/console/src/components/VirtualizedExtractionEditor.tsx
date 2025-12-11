@@ -44,6 +44,17 @@ const USE_CHUNKED_DECORATIONS = false;
 
 const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
+const DEBUG_EDITOR_FOCUS =
+  (typeof window !== 'undefined' && (window as any).ARES_DEBUG_EDITOR_FOCUS) ||
+  import.meta.env.VITE_DEBUG_EDITOR_FOCUS === 'true';
+
+const debugLog = (...args: any[]) => {
+  if (DEBUG_EDITOR_FOCUS) {
+    // eslint-disable-next-line no-console
+    console.log('[VirtualizedEditorDebug]', ...args);
+  }
+};
+
 /**
  * Diff-based patch: apply changes from window back to full text
  *
@@ -115,6 +126,10 @@ export function VirtualizedExtractionEditor({
   onTagEntity,
   enableLongTextOptimization = false
 }: VirtualizedExtractionEditorProps) {
+  // Skip virtualization for small documents and iPad/iOS to prevent cursor jumps and remount flicker
+  const chunkingEnabled = USE_CHUNKED_DECORATIONS && enableLongTextOptimization;
+  const shouldVirtualize = chunkingEnabled && !isIOS && text.length > VIRTUALIZATION_THRESHOLD;
+
   // Window state
   const [windowStart, setWindowStart] = useState(0);
   const [windowSize] = useState(DEFAULT_WINDOW_SIZE);
@@ -135,8 +150,10 @@ export function VirtualizedExtractionEditor({
 
   // Track when window position changes and set update flag
   useEffect(() => {
+    if (!shouldVirtualize) return;
+
     if (windowStart !== lastWindowStartRef.current) {
-      console.log('[VirtualizedEditor] Window position changed', {
+      debugLog('Window position changed', {
         from: lastWindowStartRef.current,
         to: windowStart
       });
@@ -148,10 +165,10 @@ export function VirtualizedExtractionEditor({
       // Clear flag after window has settled (longer delay to account for rendering)
       setTimeout(() => {
         isUpdatingWindowRef.current = false;
-        console.log('[VirtualizedEditor] Window update settled');
+        debugLog('Window update settled');
       }, 200);
     }
-  }, [windowStart]);
+  }, [windowStart, shouldVirtualize]);
 
   // Reset window to beginning when text changes dramatically (paste, load, etc.)
   useEffect(() => {
@@ -175,9 +192,13 @@ export function VirtualizedExtractionEditor({
     prevTextLengthRef.current = currentLength;
   }, [text.length]);
 
-  // Skip virtualization for small documents and iPad/iOS to prevent cursor jumps and remount flicker
-  const chunkingEnabled = USE_CHUNKED_DECORATIONS && enableLongTextOptimization;
-  const shouldVirtualize = chunkingEnabled && !isIOS && text.length > VIRTUALIZATION_THRESHOLD;
+  if (!shouldVirtualize && DEBUG_EDITOR_FOCUS) {
+    debugLog('Virtualization disabled', {
+      chunkingEnabled,
+      isIOS,
+      textLength: text.length
+    });
+  }
 
   // Derived values
   const windowEnd = shouldVirtualize
@@ -186,13 +207,14 @@ export function VirtualizedExtractionEditor({
   const windowText = shouldVirtualize
     ? text.slice(windowStart, windowEnd)
     : text;
+  const effectiveBaseOffset = shouldVirtualize ? windowStart : 0;
 
   // Filter entities to those in the current window (or all if not virtualizing)
   const windowEntities = shouldVirtualize
     ? entities.filter(e => e.end > windowStart && e.start < windowEnd)
     : entities;
 
-  console.log('[VirtualizedEditor] Render', {
+  debugLog('Render', {
     textLength: text.length,
     shouldVirtualize,
     windowStart,
@@ -204,7 +226,7 @@ export function VirtualizedExtractionEditor({
   const handleWindowChange = useCallback((newWindowText: string) => {
     const oldWindowText = text.slice(windowStart, windowEnd);
 
-    console.log('[VirtualizedEditor] handleWindowChange', {
+    debugLog('handleWindowChange', {
       textLength: text.length,
       windowStart,
       windowEnd,
@@ -224,7 +246,7 @@ export function VirtualizedExtractionEditor({
       newWindowText
     );
 
-    console.log('[VirtualizedEditor] Patched result', {
+    debugLog('Patched result', {
       originalLength: text.length,
       patchedLength: patched.length,
       firstChars: patched.slice(0, 100)
@@ -237,16 +259,17 @@ export function VirtualizedExtractionEditor({
   const handleCursorChange = useCallback((globalPos: number) => {
     // Skip if not virtualizing
     if (!shouldVirtualize) {
+      debugLog('handleCursorChange (inert)', { globalPos });
       return;
     }
 
     // Ignore cursor changes during programmatic window updates to prevent feedback loops
     if (isUpdatingWindowRef.current) {
-      console.log('[VirtualizedEditor] Ignoring cursor change during window update');
+      debugLog('Ignoring cursor change during window update');
       return;
     }
 
-    console.log('[VirtualizedEditor] handleCursorChange', {
+    debugLog('handleCursorChange', {
       globalPos,
       windowStart,
       windowEnd,
@@ -263,7 +286,7 @@ export function VirtualizedExtractionEditor({
     const isOutside = clampedPos < safeZoneStart || clampedPos > safeZoneEnd;
 
     if (!isOutside) {
-      console.log('[VirtualizedEditor] Position inside safe zone, no adjustment needed');
+      debugLog('Position inside safe zone, no adjustment needed');
       return;
     }
 
@@ -285,7 +308,7 @@ export function VirtualizedExtractionEditor({
     // Ensure window doesn't go past document end
     newWindowStart = Math.max(0, Math.min(text.length - windowSize, newWindowStart));
 
-    console.log('[VirtualizedEditor] Adjusting window', {
+    debugLog('Adjusting window', {
       from: windowStart,
       to: newWindowStart,
       reason: clampedPos < safeZoneStart ? 'scrolling up' : 'scrolling down'
@@ -310,7 +333,7 @@ export function VirtualizedExtractionEditor({
     <CodeMirrorEditor
       value={windowText}
       onChange={handleWindowChange}
-      baseOffset={shouldVirtualize ? windowStart : 0}
+      baseOffset={effectiveBaseOffset}
       disableHighlighting={disableHighlighting}
       highlightOpacity={highlightOpacity}
       renderMarkdown={renderMarkdown}
