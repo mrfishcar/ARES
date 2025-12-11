@@ -491,20 +491,29 @@ a:hover {
 .lab-control-bar {
   position: fixed;
   top: 16px;
-  left: 0;
-  right: 0;
-  margin-left: auto;
-  margin-right: auto;
+  left: 50%;                     /* center horizontally */
+  transform: translateX(-50%);   /* center based on its own width */
+
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 16px;
+
   padding: 8px 20px;
-  width: auto; /* Only take space needed for tools */
   border-radius: 22px;
   z-index: 50;
+
+  /* HOW WIDE THE PILL CAN GET */
+  max-width: 720px;              /* tweak this to taste */
+  width: calc(100% - 80px);      /* keeps nice side margins on smaller screens */
+
   transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: none; /* Allow the bar to float over content without stealing events from backdrop */
+  pointer-events: none;          /* keeps it floating; children re-enable events */
+}
+
+/* children stay clickable */
+.lab-control-bar > * {
+  pointer-events: auto;
 }
 
 /*
