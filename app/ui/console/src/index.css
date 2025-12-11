@@ -2410,11 +2410,11 @@ html[data-theme="light"] .overlay-backdrop {
 }
 
 /* iOS: Prevent body scroll when modals open */
+/* NOTE: Avoid position:fixed on body - it causes scroll position loss on iOS Safari
+ * and can interfere with CodeMirror focus/caret behavior. overflow:hidden is sufficient. */
 body.modal-open {
   overflow: hidden;
-  position: fixed;
-  width: 100%;
-  height: 100%;
+  /* Removed: position: fixed; width: 100%; height: 100%; - causes iOS caret issues */
 }
 
 /* iOS: Ensure editor doesn't remount on keyboard show/hide */

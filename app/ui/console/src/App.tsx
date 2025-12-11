@@ -98,10 +98,74 @@ function _Navigation({
   );
 }
 
+// Global focus/selection debug instrumentation
+const DEBUG_EDITOR_FOCUS =
+  (typeof window !== 'undefined' && (window as any).ARES_DEBUG_EDITOR_FOCUS) ||
+  import.meta.env.VITE_DEBUG_EDITOR_FOCUS === 'true';
+
 function AppShell() {
   const [project] = useState<string>(() => loadState('project', 'default'));
   const toast = useToast();
   const location = useLocation();
+
+  // Global focus/selection debugging - helps track caret interruption issues on iPad
+  useEffect(() => {
+    if (!DEBUG_EDITOR_FOCUS) return;
+
+    const log = (...args: any[]) => {
+      // eslint-disable-next-line no-console
+      console.log('[GlobalFocusDebug]', ...args);
+    };
+
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target as HTMLElement | null;
+      log('pointerdown', {
+        tag: target?.tagName,
+        className: target?.className?.toString?.().slice(0, 80),
+        id: target?.id,
+      });
+    };
+
+    const onSelectionChange = () => {
+      const active = document.activeElement as HTMLElement | null;
+      const sel = window.getSelection();
+      log('selectionchange', {
+        activeTag: active?.tagName,
+        activeClass: active?.className?.toString?.().slice(0, 80),
+        selectionLength: sel?.toString().length ?? 0,
+      });
+    };
+
+    const onFocus = (e: FocusEvent) => {
+      const target = e.target as HTMLElement | null;
+      log('focus', {
+        tag: target?.tagName,
+        className: target?.className?.toString?.().slice(0, 80),
+      });
+    };
+
+    const onBlur = (e: FocusEvent) => {
+      const target = e.target as HTMLElement | null;
+      log('blur', {
+        tag: target?.tagName,
+        className: target?.className?.toString?.().slice(0, 80),
+      });
+    };
+
+    document.addEventListener('pointerdown', onPointerDown, true);
+    document.addEventListener('selectionchange', onSelectionChange);
+    document.addEventListener('focus', onFocus, true);
+    document.addEventListener('blur', onBlur, true);
+
+    log('Global focus debugging enabled');
+
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown, true);
+      document.removeEventListener('selectionchange', onSelectionChange);
+      document.removeEventListener('focus', onFocus, true);
+      document.removeEventListener('blur', onBlur, true);
+    };
+  }, []);
 
   const navItems = useMemo<NavItem[]>(
     () => [
