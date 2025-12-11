@@ -333,6 +333,8 @@ export function CodeMirrorEditor({
         contextMenuExtension(setContextMenu, entitiesRef, baseOffsetRef, entityHighlightModeRef),
         EditorView.updateListener.of((update: ViewUpdate) => {
           if (update.docChanged) {
+            // Mark that user just edited (to prevent external sync from interfering)
+            lastUserEditRef.current = Date.now();
             const nextValue = update.state.doc.toString();
             onChange(nextValue);
           }
@@ -366,11 +368,20 @@ export function CodeMirrorEditor({
   }, []);
 
   // external value sync (e.g. loading another document)
+  // Only run when value changes from external source (not from user typing)
+  const lastUserEditRef = useRef<number>(0);
+
   useEffect(() => {
     const view = viewRef.current;
     if (!view) return;
     const current = view.state.doc.toString();
     if (current === value) return;
+
+    // Don't sync if this was triggered by recent user input (within 100ms)
+    const timeSinceLastEdit = Date.now() - lastUserEditRef.current;
+    if (timeSinceLastEdit < 100) {
+      return;
+    }
 
     const anchor = view.state.selection.main.anchor;
     const head = view.state.selection.main.head;
@@ -381,7 +392,7 @@ export function CodeMirrorEditor({
       changes: { from: 0, to: current.length, insert: value },
       selection: { anchor: nextAnchor, head: nextHead },
       // userEvent helps CodeMirror distinguish programmatic sync from user input
-      userEvent: 'input',
+      userEvent: 'input.complete',
     });
   }, [value]);
 

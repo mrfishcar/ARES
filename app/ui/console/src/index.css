@@ -18,8 +18,10 @@ body {
   background: var(--bg-primary);
   /* Lock height to viewport, prevent pull-to-refresh */
   height: 100%;
-  overflow: hidden;
+  /* Allow scrolling but prevent bounce */
+  overflow: auto;
   overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 :root {
@@ -136,7 +138,9 @@ body,
   height: 100%;
   min-height: 100vh;
   min-height: 100dvh; /* Use dynamic viewport height */
-  overflow: hidden;
+  /* Allow scrolling on iOS when keyboard appears */
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 @media (prefers-color-scheme: light) {
