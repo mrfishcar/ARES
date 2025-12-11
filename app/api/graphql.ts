@@ -1199,6 +1199,47 @@ No additional information is available at this time.
           return;
         }
 
+        // PUT /api/documents/:id - update existing document
+        if (req.method === 'PUT' && parts.length === 3 && docId) {
+          let body = '';
+          req.on('data', (chunk) => {
+            body += chunk.toString();
+          });
+
+          req.on('end', () => {
+            try {
+              const existing = getStoredDocument(docId);
+              if (!existing) {
+                res.writeHead(404, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false, error: 'DOCUMENT_NOT_FOUND' }));
+                return;
+              }
+
+              const parsed = JSON.parse(body || '{}');
+              const { title, text, extraction } = parsed;
+
+              // Update only provided fields
+              const updated: typeof existing = {
+                ...existing,
+                title: typeof title === 'string' ? title : existing.title,
+                text: typeof text === 'string' ? text : existing.text,
+                extractionJson: extraction !== undefined ? extraction : existing.extractionJson,
+                updatedAt: new Date().toISOString(),
+              };
+
+              saveDocument(updated);
+
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ ok: true, document: updated }));
+            } catch (error) {
+              logger.error({ msg: 'update_document_error', err: String(error) });
+              res.writeHead(500, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ ok: false, error: 'SAVE_FAILED' }));
+            }
+          });
+          return;
+        }
+
         res.writeHead(405, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ ok: false, error: 'METHOD_NOT_ALLOWED' }));
         return;
