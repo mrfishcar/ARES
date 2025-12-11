@@ -60,6 +60,7 @@ export function LabToolbar({
   isExtracting,
 }: LabToolbarProps) {
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
+  const dropdownPanelRef = useRef<HTMLDivElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 64, right: 20 });
 
   // Calculate dropdown position when it opens
@@ -72,6 +73,27 @@ export function LabToolbar({
       });
     }
   }, [showSettingsDropdown]);
+
+  // Close settings dropdown when clicking outside the panel/button
+  useEffect(() => {
+    if (!showSettingsDropdown) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const panelEl = dropdownPanelRef.current;
+      const buttonEl = settingsButtonRef.current;
+
+      if (!panelEl || !buttonEl) return;
+      if (panelEl.contains(event.target as Node) || buttonEl.contains(event.target as Node)) return;
+
+      onSettingsClose();
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+    };
+  }, [onSettingsClose, showSettingsDropdown]);
 
   // Derive status label
   const statusLabel = jobStatus === 'running'
@@ -160,6 +182,7 @@ export function LabToolbar({
         {/* Dropdown panel */}
         <div
           className="settings-dropdown-panel liquid-glass"
+          ref={dropdownPanelRef}
           style={{
             top: `${dropdownPosition.top}px`,
             right: `${dropdownPosition.right}px`,

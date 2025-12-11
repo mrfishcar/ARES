@@ -705,7 +705,7 @@ a:hover {
   z-index: 999;
   cursor: default;
   background-color: transparent;
-  pointer-events: auto; /* Override overlay-root's pointer-events: none */
+  pointer-events: none; /* Allow underlying scroll while dropdown is open */
 }
 
 /* Dropdown Panel - Liquid Glass Surface */
