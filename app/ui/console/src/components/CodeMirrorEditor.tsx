@@ -391,7 +391,6 @@ export function CodeMirrorEditor({
     view.dispatch({
       changes: { from: 0, to: current.length, insert: value },
       selection: { anchor: nextAnchor, head: nextHead },
-      annotations: EditorView.userEvent.of('input'),
     });
   }, [value]);
 
