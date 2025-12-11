@@ -237,28 +237,34 @@ body {
 
 /* Light mode – "paper" */
 html[data-theme="light"] {
-  --bg-primary: #f9fafb;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #e5e7eb;
-  --bg-elevated: #ffffff;
+  color-scheme: light;
 
-  --text-primary: #020617;
-  --text-secondary: #475569;
-  --text-tertiary: #94a3b8;
+  /* Base surfaces */
+  --app-bg-light: #f3f4f6;        /* overall page tone */
+  --app-surface: #f3f4f6;
 
-  --border-soft: #e5e7eb;
-  --border-color: #cbd5f5;
+  --bg-primary: #f3f4f6;          /* main background behind everything */
+  --bg-secondary: #ffffff;        /* side panels / big cards */
+  --bg-tertiary: #e5e7eb;         /* inner cards, separators */
+  --bg-elevated: #ffffff;         /* popover cards, modals */
 
-  /* Light mode glass variables */
-  --glass-bg-light: rgba(255, 255, 255, 0.92);
-  --glass-border-light: rgba(200, 210, 240, 0.4);
+  /* Text */
+  --text-primary: #020617;        /* almost-black text */
+  --text-secondary: #475569;      /* slate-600 */
+  --text-tertiary: #64748b;       /* slate-500 */
 
-  /* Light mode Liquid Glass */
+  /* Borders */
+  --border-soft: #e5e7eb;         /* subtle panel/frame */
+  --border-color: #cbd5f5;        /* stronger card outline */
+
+  /* Glass */
+  --liquid-glass-bg-light: rgba(255, 255, 255, 0.92);
+  --liquid-glass-border-light: rgba(148, 163, 184, 0.35);
   --liquid-glass-bg: var(--liquid-glass-bg-light);
   --liquid-glass-border: var(--liquid-glass-border-light);
-  --liquid-glass-glow-outer: var(--liquid-glass-glow-outer-light);
-  --liquid-glass-tint-1: var(--liquid-glass-tint-1-light);
-  --liquid-glass-tint-2: var(--liquid-glass-tint-2-light);
+  --liquid-glass-glow-outer: rgba(15, 23, 42, 0.08);
+  --liquid-glass-tint-1: rgba(148, 163, 184, 0.05);
+  --liquid-glass-tint-2: rgba(129, 140, 248, 0.05);
 }
 
 /* Dark mode – "liquid glass" */
@@ -466,15 +472,27 @@ a:hover {
 }
 
 /* Documents Sidebar - ChatGPT navigation rail */
+.documents-sidebar,
+.results-wrapper,
+.overlay-panel.pinned {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-soft);
+  backdrop-filter: blur(var(--glass-blur-light));
+  -webkit-backdrop-filter: blur(var(--glass-blur-light));
+}
+
 .documents-sidebar {
   position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
   width: 280px;
-  background: var(--bg-secondary);
-  border-right: 1px solid var(--border-soft);
-  box-shadow: none;
+  border: 1px solid var(--border-soft);
+  border-left: none;
+  border-radius: 0 12px 12px 0;
+  box-shadow: inset -1px 0 0 var(--border-soft);
+  padding: 22px 18px 18px;
   z-index: 100;
   overflow-y: auto;
   /* ✅ Start off-screen by default */
@@ -530,7 +548,7 @@ a:hover {
   border-radius: 8px;
   border: none;
   background: transparent;
-  color: rgb(255, 255, 255);
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -540,12 +558,12 @@ a:hover {
 }
 
 .control-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.08);
-  color: rgb(230, 235, 245);
+  background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  color: var(--text-primary);
 }
 
 .control-btn:active:not(:disabled) {
-  color: rgb(255, 255, 255);
+  color: var(--text-primary);
   transform: scale(0.95);
 }
 
@@ -603,9 +621,9 @@ a:hover {
 }
 
 .sidebar-section-title {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   margin-bottom: 12px;
 }
 
@@ -628,8 +646,8 @@ a:hover {
 .document-item {
   width: 100%;
   text-align: left;
-  border: 1px solid var(--border-soft);
-  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  background: var(--bg-elevated);
   border-radius: 12px;
   padding: 12px;
   cursor: pointer;
@@ -642,7 +660,7 @@ a:hover {
 }
 
 .document-item:hover:not(:disabled) {
-  background: var(--bg-tertiary);
+  background: var(--bg-secondary);
   border-color: var(--accent-color);
 }
 
@@ -655,7 +673,7 @@ a:hover {
 
 .document-item__date {
   font-size: 11px;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
 }
 
 /* Job Progress */
@@ -736,16 +754,13 @@ a:hover {
 
 /* Settings dropdown specific - FORCE blur on Safari */
 .settings-dropdown-panel.liquid-glass {
-  /* Simplified background - complex gradients can break blur on Safari */
   background: var(--liquid-glass-bg) !important;
-  backdrop-filter: blur(5px) !important;
-  -webkit-backdrop-filter: blur(5px) !important;
+  backdrop-filter: blur(var(--liquid-glass-blur-toolbar)) !important;
+  -webkit-backdrop-filter: blur(var(--liquid-glass-blur-toolbar)) !important;
   border: 1px solid var(--liquid-glass-border);
-  box-shadow: 0 8px 32px var(--liquid-glass-glow-outer), inset 0 1px 0 var(--liquid-glass-glow-inner);
-
-  /* Force GPU layer */
-  will-change: backdrop-filter;
-  -webkit-will-change: backdrop-filter;
+  box-shadow: 0 12px 40px var(--liquid-glass-glow-outer),
+              inset 0 1px 0 var(--liquid-glass-glow-inner);
+  color: var(--text-primary);
 }
 
 /* Section Container */
@@ -765,7 +780,7 @@ a:hover {
 .settings-dropdown-label {
   font-size: 13px;
   font-weight: 500;
-  color: rgb(180, 190, 210);
+  color: var(--text-secondary);
   letter-spacing: 0.3px;
 }
 
@@ -781,7 +796,7 @@ a:hover {
   padding: 10px 14px;
   background: transparent; /* No background - rely on parent glass effect */
   color: var(--text-primary);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-soft);
   border-radius: 8px;
   cursor: pointer;
   font-size: 13px;
@@ -791,8 +806,8 @@ a:hover {
 }
 
 .settings-margin-btn:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.03); /* Very subtle hover */
+  border-color: var(--border-color);
+  background: color-mix(in srgb, var(--bg-tertiary) 40%, transparent);
 }
 
 .settings-margin-btn.active {
@@ -808,19 +823,20 @@ a:hover {
   justify-content: space-between;
   padding: 10px 12px;
   background: transparent; /* No background - rely on parent glass effect */
+  color: var(--text-primary);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .settings-dropdown-toggle:hover {
-  background: rgba(255, 255, 255, 0.03); /* Very subtle hover */
+  background: color-mix(in srgb, var(--bg-tertiary) 35%, transparent); /* Very subtle hover */
 }
 
 .settings-dropdown-toggle-label {
   font-size: 14px;
   font-weight: 400;
-  color: rgb(230, 235, 245);
+  color: var(--text-primary);
 }
 
 /* Toggle Switch */
@@ -842,7 +858,7 @@ a:hover {
 .settings-toggle-knob {
   width: 20px;
   height: 20px;
-  background: var(--app-bg-light);
+  background: var(--bg-secondary);
   border-radius: 50%;
   position: absolute;
   top: 2px;
@@ -960,13 +976,12 @@ a:hover {
 }
 
 .overlay-panel.pinned.liquid-glass--subtle {
-  background: radial-gradient(circle at top left, var(--liquid-glass-tint-1), transparent 60%),
-              radial-gradient(circle at bottom right, var(--liquid-glass-tint-2), transparent 65%),
-              var(--liquid-glass-bg);
-  backdrop-filter: blur(var(--liquid-glass-blur-pinned));
-  -webkit-backdrop-filter: blur(var(--liquid-glass-blur-pinned));
-  border-left: 1px solid var(--liquid-glass-border);
-  box-shadow: inset 0 1px 0 var(--liquid-glass-glow-inner);
+  background: var(--bg-secondary);
+  backdrop-filter: blur(var(--glass-blur-light));
+  -webkit-backdrop-filter: blur(var(--glass-blur-light));
+  border-left: 1px solid var(--border-soft);
+  border-radius: 12px 0 0 12px;
+  box-shadow: none;
 }
 
 /* Context Menu - Uses liquid-glass utility */
@@ -1133,8 +1148,11 @@ a:hover {
   flex: 0 0 400px;
   min-width: 0;
   max-width: 460px;
-  border-left: 1px solid var(--border-soft);
-  background: var(--bg-secondary);
+  border: 1px solid var(--border-soft);
+  border-right: none;
+  border-radius: 12px 0 0 12px;
+  padding: 22px 18px 18px;
+  box-sizing: border-box;
 }
 
 /* Editor Panel - Infinite canvas feel */
@@ -1220,6 +1238,7 @@ a:hover {
   flex-direction: column;
   height: 100%;
   background: transparent;
+  gap: 12px;
   border: none;
   box-shadow: none;
   padding: 0;
@@ -1230,7 +1249,7 @@ a:hover {
 .results-card {
   height: 100%;
   border-radius: 12px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-soft);
   background: var(--bg-secondary);
   padding: 16px 20px;
   display: flex;
@@ -1278,12 +1297,12 @@ a:hover {
 
 .snapshot-badge {
   padding: 6px 10px;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   border-radius: 999px;
   font-size: 12px;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 /* Neon Planet Icon */
@@ -1395,7 +1414,7 @@ a:hover {
 .group-count {
   font-size: 12px;
   font-weight: 500;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .entity-cards {
@@ -1409,8 +1428,8 @@ a:hover {
   flex-direction: column;
   gap: 8px;
   padding: 14px 16px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-soft);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
   border-left: 4px solid;
   border-radius: var(--border-radius-small);
   cursor: pointer;
@@ -1420,7 +1439,7 @@ a:hover {
 .entity-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-medium);
-  background: var(--bg-tertiary);
+  background: var(--bg-secondary);
 }
 
 .entity-name {
@@ -1442,7 +1461,7 @@ a:hover {
 }
 
 .entity-confidence {
-  color: var(--text-muted);
+  color: var(--text-tertiary);
   background: var(--bg-tertiary);
   padding: 2px 8px;
   border-radius: 10px;
@@ -1477,7 +1496,7 @@ a:hover {
 
 .hint {
   font-size: 13px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-style: italic;
 }
 
@@ -1964,7 +1983,7 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   align-items: center;
   gap: 10px;
   padding: 8px 12px;
-  background: var(--bg-secondary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   border-radius: 20px;
   cursor: pointer;
@@ -1975,7 +1994,7 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
 }
 
 .entity-badge:hover {
-  background: var(--bg-tertiary);
+  background: var(--bg-secondary);
   border-color: var(--text-secondary);
   transform: translateX(4px);
 }
