@@ -9,6 +9,22 @@
  * - Keeps entity context-menu behavior wired correctly
  */
 
+/**
+ * Scroll/Focus behavior audit (2025-12-11):
+ * - Removed or limited auto-scroll hooks that ran on every update.
+ * - No more unconditional scrollIntoView calls tied to selection changes.
+ * - Focus is not forcibly stolen from the user during normal interactions.
+ * - Known remaining explicit scroll/focus helpers:
+ *   - Context menu handler prevents default only when an entity is right-clicked.
+ */
+
+/**
+ * Editor focus bugfix (2025-12-13):
+ * - Removed wrapper-level pointer interception that could defocus iOS taps.
+ * - Ensured click-outside style logic ignores events originating from the CodeMirror DOM.
+ * - Ignored touch-triggered contextmenu events so overlays don't steal focus on iPad.
+ */
+
 import React, {
   useEffect,
   useRef,
@@ -177,9 +193,21 @@ function contextMenuExtension(
   entitiesRef: React.MutableRefObject<EntitySpan[]>,
   baseOffsetRef: React.MutableRefObject<number>,
 ) {
+  // SCROLL/FOCUS INVESTIGATION:
+  // - Purpose: Use preventDefault only to open the entity context menu when right-clicking an entity.
+  // - Risk: Low — scoped to contextmenu with an entity hit, does not interfere with normal scrolling.
+  //
+  // EDITOR FOCUS INVESTIGATION:
+  // Touch/long-press contextmenu events on iPad were stealing focus by painting a backdrop over the editor.
+  // Skip handling touch-triggered context menus so CodeMirror keeps focus and the keyboard stays active.
   return EditorView.domEventHandlers({
     contextmenu: (event, view) => {
       const mouseEvent = event as MouseEvent;
+
+      const pointerType = (mouseEvent as PointerEvent).pointerType;
+      const isTouch = pointerType === 'touch';
+      if (isTouch) return false;
+
       const pos = view.posAtCoords({
         x: mouseEvent.clientX,
         y: mouseEvent.clientY,
@@ -224,11 +252,6 @@ export function CodeMirrorEditor({
 }: CodeMirrorEditorProps) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
-
-  const handlePointerDown: React.PointerEventHandler<HTMLDivElement> = event => {
-    // Let iOS focus handling proceed normally while keeping global listeners from hijacking the event.
-    event.stopPropagation();
-  };
 
   const entitiesRef = useRef<EntitySpan[]>(entities);
   const baseOffsetRef = useRef(baseOffset);
@@ -402,7 +425,6 @@ export function CodeMirrorEditor({
         background: 'var(--bg-primary)',
         overflow: 'hidden',
       }}
-      onPointerDown={handlePointerDown}
     >
       <div
         ref={wrapperRef}

@@ -115,6 +115,8 @@ export function VirtualizedExtractionEditor({
   onTagEntity,
   enableLongTextOptimization = false
 }: VirtualizedExtractionEditorProps) {
+  const chunkingEnabled = USE_CHUNKED_DECORATIONS && enableLongTextOptimization;
+
   // Window state
   const [windowStart, setWindowStart] = useState(0);
   const [windowSize] = useState(DEFAULT_WINDOW_SIZE);
@@ -135,6 +137,8 @@ export function VirtualizedExtractionEditor({
 
   // Track when window position changes and set update flag
   useEffect(() => {
+    if (!chunkingEnabled) return;
+
     if (windowStart !== lastWindowStartRef.current) {
       console.log('[VirtualizedEditor] Window position changed', {
         from: lastWindowStartRef.current,
@@ -151,10 +155,15 @@ export function VirtualizedExtractionEditor({
         console.log('[VirtualizedEditor] Window update settled');
       }, 200);
     }
-  }, [windowStart]);
+  }, [chunkingEnabled, windowStart]);
 
   // Reset window to beginning when text changes dramatically (paste, load, etc.)
   useEffect(() => {
+    if (!chunkingEnabled) {
+      prevTextLengthRef.current = text.length;
+      return;
+    }
+
     const prevLength = prevTextLengthRef.current;
     const currentLength = text.length;
 
@@ -173,10 +182,9 @@ export function VirtualizedExtractionEditor({
     }
 
     prevTextLengthRef.current = currentLength;
-  }, [text.length]);
+  }, [chunkingEnabled, text.length]);
 
   // Skip virtualization for small documents and iPad/iOS to prevent cursor jumps and remount flicker
-  const chunkingEnabled = USE_CHUNKED_DECORATIONS && enableLongTextOptimization;
   const shouldVirtualize = chunkingEnabled && !isIOS && text.length > VIRTUALIZATION_THRESHOLD;
 
   // Derived values
@@ -233,6 +241,9 @@ export function VirtualizedExtractionEditor({
     onTextChange(patched);
   }, [text, windowStart, windowEnd, onTextChange]);
 
+  // SCROLL/FOCUS INVESTIGATION:
+  // - Purpose: When virtualization is on, nudge the window only if the caret leaves the safe zone.
+  // - Risk: Medium — moving the window slice can feel like snapping if triggered too often.
   // Handle cursor position changes to adjust window
   const handleCursorChange = useCallback((globalPos: number) => {
     // Skip if not virtualizing
@@ -320,7 +331,7 @@ export function VirtualizedExtractionEditor({
       onCreateNew={onCreateNew}
       onReject={onReject}
       onTagEntity={onTagEntity}
-      onCursorChange={handleCursorChange}
+      onCursorChange={shouldVirtualize ? handleCursorChange : undefined}
     />
   );
 }
