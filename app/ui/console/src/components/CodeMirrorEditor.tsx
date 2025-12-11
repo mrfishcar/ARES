@@ -9,6 +9,22 @@
  * - Keeps entity context-menu behavior wired correctly
  */
 
+/**
+ * Scroll/Focus behavior audit (2025-12-11):
+ * - Removed or limited auto-scroll hooks that ran on every update.
+ * - No more unconditional scrollIntoView calls tied to selection changes.
+ * - Focus is not forcibly stolen from the user during normal interactions.
+ * - Known remaining explicit scroll/focus helpers:
+ *   - Context menu handler prevents default only when an entity is right-clicked.
+ *   - Pointer-down stopper to isolate the editor from global listeners on touch devices.
+ */
+
+/**
+ * Editor focus bugfix (2025-12-12):
+ * - Guarded wrapper pointer handling so taps inside the editor do not get swallowed.
+ * - Ensured click-outside style logic ignores events originating from the CodeMirror DOM.
+ */
+
 import React, {
   useEffect,
   useRef,
@@ -177,6 +193,9 @@ function contextMenuExtension(
   entitiesRef: React.MutableRefObject<EntitySpan[]>,
   baseOffsetRef: React.MutableRefObject<number>,
 ) {
+  // SCROLL/FOCUS INVESTIGATION:
+  // - Purpose: Use preventDefault only to open the entity context menu when right-clicking an entity.
+  // - Risk: Low — scoped to contextmenu with an entity hit, does not interfere with normal scrolling.
   return EditorView.domEventHandlers({
     contextmenu: (event, view) => {
       const mouseEvent = event as MouseEvent;
@@ -225,8 +244,20 @@ export function CodeMirrorEditor({
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
 
+  // EDITOR FOCUS INVESTIGATION:
+  // This runs on pointerdown on the wrapper container.
+  // target element: Wrapper div; we now explicitly skip events originating inside .cm-editor.
+  // Risk: Medium — if left unguarded it can swallow taps and leave the editor unfocused on iOS.
   const handlePointerDown: React.PointerEventHandler<HTMLDivElement> = event => {
-    // Let iOS focus handling proceed normally while keeping global listeners from hijacking the event.
+    const wrapperEl = wrapperRef.current;
+    const editorEl = wrapperEl?.querySelector('.cm-editor');
+
+    if (editorEl && editorEl.contains(event.target as Node)) {
+      // Let CodeMirror manage focus for taps inside the editor surface.
+      return;
+    }
+
+    // Keep stray pointerdown events on the wrapper from triggering global listeners.
     event.stopPropagation();
   };
 
