@@ -55,9 +55,9 @@ body {
 
   /* Unified Liquid Glass Material System */
   /* Blur amounts for consistent glass hierarchy */
-  --liquid-glass-blur-toolbar: 12px;    /* Toolbar, dropdown, context menu */
-  --liquid-glass-blur-overlay: 12px;    /* Floating overlay panels */
-  --liquid-glass-blur-pinned: 12px;     /* Pinned sidebar mode */
+  --liquid-glass-blur-toolbar: 5px;    /* Toolbar, dropdown, context menu */
+  --liquid-glass-blur-overlay: 5px;    /* Floating overlay panels */
+  --liquid-glass-blur-pinned: 5px;     /* Pinned sidebar mode */
 
   /* Color bases */
   --liquid-glass-bg-dark: rgba(15, 23, 42, 0.60);
