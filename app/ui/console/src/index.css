@@ -487,14 +487,13 @@ a:hover {
   transform: translateX(0);
 }
 
-/* Floating Control Bar - Uses liquid-glass utility */
 .lab-control-bar {
   position: fixed;
   top: 16px;
-  left: 50%;                     /* center horizontally */
-  transform: translateX(-50%);   /* center based on its own width */
+  left: 50%;                      /* center anchor */
+  transform: translateX(-50%);    /* center by its own width */
 
-  display: flex;
+  display: inline-flex;           /* 👈 shrink-wrap to contents */
   justify-content: center;
   align-items: center;
   gap: 16px;
@@ -502,13 +501,8 @@ a:hover {
   padding: 8px 20px;
   border-radius: 22px;
   z-index: 50;
-
-  /* HOW WIDE THE PILL CAN GET */
-  max-width: 500px;              /* tweak this to taste */
-  width: calc(50% - 80px);      /* keeps nice side margins on smaller screens */
-
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: none;          /* keeps it floating; children re-enable events */
+  pointer-events: none;           /* keep bar floating */
+  white-space: nowrap;            /* prevent status/controls wrapping */
 }
 
 /* children stay clickable */
