@@ -28,6 +28,7 @@ interface VirtualizedExtractionEditorProps {
   onCreateNew?: (entity: EntitySpan, type: EntityType) => void | Promise<void>;
   onReject?: (entity: EntitySpan) => Promise<void>;
   onTagEntity?: (entity: EntitySpan, targetEntity: EntitySpan) => Promise<void>;
+  enableLongTextOptimization?: boolean;
 }
 
 // Configurable window parameters
@@ -35,6 +36,11 @@ const VIRTUALIZATION_THRESHOLD = 50000; // Only virtualize docs larger than this
 const DEFAULT_WINDOW_SIZE = 50000; // Much larger window to minimize updates
 const DEFAULT_SAFE_MARGIN = 10000; // Large margins to reduce update frequency
 const WINDOW_SHIFT_STEP = 5000; // Larger shifts for smoother transitions
+
+// Temporary kill switch: chunked rendering was experimental and the real perf issue was the side orbs.
+// Keep the simple full-document path until we purposely re-enable chunking.
+// TODO: Wire this to the user preference `enableLongTextOptimization` when chunked decorations return.
+const USE_CHUNKED_DECORATIONS = false;
 
 const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
@@ -106,7 +112,8 @@ export function VirtualizedExtractionEditor({
   onChangeType,
   onCreateNew,
   onReject,
-  onTagEntity
+  onTagEntity,
+  enableLongTextOptimization = false
 }: VirtualizedExtractionEditorProps) {
   // Window state
   const [windowStart, setWindowStart] = useState(0);
@@ -169,7 +176,8 @@ export function VirtualizedExtractionEditor({
   }, [text.length]);
 
   // Skip virtualization for small documents and iPad/iOS to prevent cursor jumps and remount flicker
-  const shouldVirtualize = !isIOS && text.length > VIRTUALIZATION_THRESHOLD;
+  const chunkingEnabled = USE_CHUNKED_DECORATIONS && enableLongTextOptimization;
+  const shouldVirtualize = chunkingEnabled && !isIOS && text.length > VIRTUALIZATION_THRESHOLD;
 
   // Derived values
   const windowEnd = shouldVirtualize

@@ -9,6 +9,11 @@ export function useExtractionSettings() {
   const [showHighlighting, setShowHighlighting] = useState(true);
   const [highlightOpacity, setHighlightOpacity] = useState(1.0);
   const [entityHighlightMode, setEntityHighlightMode] = useState(false);
+  const [enableLongTextOptimization, setEnableLongTextOptimization] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    const saved = localStorage.getItem('ares.enableLongTextOptimization');
+    return saved ? saved === 'true' : false;
+  });
   const [editorMargin, setEditorMargin] = useState<number>(() => {
     if (typeof window === 'undefined') return 96;
     const saved = localStorage.getItem('ares.editorMargin');
@@ -25,6 +30,14 @@ export function useExtractionSettings() {
     localStorage.setItem('ares.editorMargin', String(editorMargin));
   }, [editorMargin]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(
+      'ares.enableLongTextOptimization',
+      String(enableLongTextOptimization)
+    );
+  }, [enableLongTextOptimization]);
+
   const toggleHighlighting = useCallback(() => {
     setShowHighlighting(prev => !prev);
   }, []);
@@ -33,11 +46,16 @@ export function useExtractionSettings() {
     setEntityHighlightMode(prev => !prev);
   }, []);
 
+  const toggleLongTextOptimization = useCallback(() => {
+    setEnableLongTextOptimization(prev => !prev);
+  }, []);
+
   return {
     // State
     showHighlighting,
     highlightOpacity,
     entityHighlightMode,
+    enableLongTextOptimization,
     editorMargin,
 
     // Actions
@@ -45,6 +63,8 @@ export function useExtractionSettings() {
     setHighlightOpacity,
     toggleHighlighting,
     toggleEntityHighlightMode,
+    setEnableLongTextOptimization,
+    toggleLongTextOptimization,
     setEditorMargin,
   };
 }

@@ -23,6 +23,7 @@ interface EditorPaneProps {
   onCreateNew: (entity: EntitySpan, type: EntityType) => Promise<void>;
   onReject: (entity: EntitySpan) => Promise<void>;
   onTagEntity: (entity: EntitySpan, targetEntity: EntitySpan) => Promise<void>;
+  enableLongTextOptimization?: boolean;
 }
 
 export function EditorPane({
@@ -37,6 +38,7 @@ export function EditorPane({
   onCreateNew,
   onReject,
   onTagEntity,
+  enableLongTextOptimization,
 }: EditorPaneProps) {
   const editorHeight = Math.max(400, typeof window !== 'undefined' ? window.innerHeight - 380 : 400);
 
@@ -65,6 +67,7 @@ export function EditorPane({
               onCreateNew={onCreateNew}
               onReject={onReject}
               onTagEntity={onTagEntity}
+              enableLongTextOptimization={enableLongTextOptimization}
             />
           </div>
         </div>

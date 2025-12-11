@@ -22,6 +22,7 @@ interface LabToolbarProps {
   showHighlighting: boolean;
   highlightOpacity: number;
   editorMargin: number;
+  enableLongTextOptimization: boolean;
 
   // Actions
   onExtractStart: () => void;
@@ -34,6 +35,7 @@ interface LabToolbarProps {
   onHighlightingToggle: () => void;
   onOpacityChange: (value: number) => void;
   onMarginChange: (margin: number) => void;
+  onLongTextOptimizationToggle: () => void;
 
   // State checks
   canExtract: boolean;
@@ -47,6 +49,7 @@ export function LabToolbar({
   showSettingsDropdown,
   showHighlighting,
   highlightOpacity,
+  enableLongTextOptimization,
   editorMargin,
   onExtractStart,
   onThemeToggle,
@@ -56,6 +59,7 @@ export function LabToolbar({
   onHighlightingToggle,
   onOpacityChange,
   onMarginChange,
+  onLongTextOptimizationToggle,
   canExtract,
   isExtracting,
 }: LabToolbarProps) {
@@ -254,6 +258,36 @@ export function LabToolbar({
                       aria-label="Highlight transparency"
                     />
                     <span className="settings-slider-value">{Math.round(highlightOpacity * 100)}%</span>
+                  </div>
+                </div>
+
+                {/* Performance */}
+                <div className="settings-dropdown-section">
+                  <div className="settings-dropdown-label">Performance (Advanced)</div>
+                  <div
+                    className="settings-dropdown-toggle"
+                    onClick={onLongTextOptimizationToggle}
+                    role="switch"
+                    aria-checked={enableLongTextOptimization}
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onLongTextOptimizationToggle();
+                      }
+                    }}
+                  >
+                    <div className="settings-dropdown-toggle-text">
+                      <span className="settings-dropdown-toggle-label">
+                        Long-text optimization (chunked rendering)
+                      </span>
+                      <span className="settings-dropdown-helper">
+                        Experimental — currently disabled. Future versions may use this to speed up very long documents.
+                      </span>
+                    </div>
+                    <div className={`settings-toggle-switch ${enableLongTextOptimization ? 'active' : ''}`}>
+                      <div className="settings-toggle-knob" />
+                    </div>
                   </div>
                 </div>
         </div>
