@@ -1900,17 +1900,19 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           enableLongTextOptimization={settings.enableLongTextOptimization}
         />
 
-        {/* Pinned sidebar mode */}
+        {/* Pinned sidebar mode - integrated into layout */}
         {layout.entityPanelMode === 'pinned' && (
-          <EntityReviewSidebar
-            mode="pinned"
-            entities={entities}
-            onClose={layout.closeEntityPanel}
-            onPin={layout.pinEntityPanel}
-            onEntityUpdate={handleEntityUpdate}
-            onLogReport={handleLogReport}
-            onCopyReport={handleCopyReport}
-          />
+          <div style={{ width: '500px', flexShrink: 0, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            <EntityReviewSidebar
+              mode="pinned"
+              entities={entities}
+              onClose={layout.closeEntityPanel}
+              onPin={layout.pinEntityPanel}
+              onEntityUpdate={handleEntityUpdate}
+              onLogReport={handleLogReport}
+              onCopyReport={handleCopyReport}
+            />
+          </div>
         )}
       </div>
 
