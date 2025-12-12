@@ -119,16 +119,16 @@ export function EntitySidebar({
                     Reject
                   </button>
                 </div>
+                <label className="entity-sidebar__notes">
+                  <span className="entity-sidebar__field-label">Notes</span>
+                  <textarea
+                    value={entity.notes ?? ''}
+                    onChange={e => onUpdateNotes(entity.id, e.target.value)}
+                    placeholder="Add review notes"
+                    rows={2}
+                  />
+                </label>
               </div>
-              <label className="entity-sidebar__notes">
-                <span className="entity-sidebar__field-label">Notes</span>
-                <textarea
-                  value={entity.notes ?? ''}
-                  onChange={e => onUpdateNotes(entity.id, e.target.value)}
-                  placeholder="Add review notes"
-                  rows={2}
-                />
-              </label>
             </div>
           ))
         )}

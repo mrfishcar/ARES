@@ -1214,14 +1214,15 @@ a:hover {
 .entity-sidebar {
   display: flex;
   flex-direction: column;
-  flex: 0 0 380px;
-  max-width: 460px;
-  min-width: 320px;
+  flex: 0 0 420px;
+  width: 100%;
+  max-width: 520px;
+  min-width: 340px;
   border-left: 1px solid var(--border-soft);
   background: var(--bg-secondary);
   padding: 16px;
   gap: 12px;
-  overflow-y: auto;
+  overflow: hidden;
   height: 100%;
   max-height: 100%;
   min-height: 0;
@@ -1232,6 +1233,7 @@ a:hover {
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
   border: 1px solid var(--border-soft);
   border-left: 1px solid var(--border-soft);
+  height: auto;
 }
 
 .entity-sidebar__header {
@@ -1244,6 +1246,8 @@ a:hover {
   padding-bottom: 8px;
   background: var(--bg-secondary);
   z-index: 2;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border-soft);
 }
 
 .entity-sidebar__title h3 {
@@ -1274,6 +1278,10 @@ a:hover {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 4px;
 }
 
 .entity-sidebar__pinned-shell {
@@ -1285,7 +1293,7 @@ a:hover {
   position: fixed;
   top: 24px;
   right: 24px;
-  width: min(440px, calc(100vw - 32px));
+  width: clamp(360px, 34vw, 520px);
   max-height: calc(100vh - 48px);
   z-index: 205;
   display: flex;
@@ -1325,20 +1333,23 @@ a:hover {
 
 .entity-sidebar__row-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(160px, 0.9fr) auto;
+  grid-template-columns: minmax(0, 1.1fr) minmax(160px, 0.9fr) auto minmax(200px, 1.1fr);
   gap: 12px;
-  align-items: center;
+  align-items: start;
 }
 
 .entity-sidebar__actions-cell {
   display: flex;
   justify-content: flex-end;
   align-items: center;
+  align-self: stretch;
+  grid-column: 3;
 }
 
 .entity-sidebar__name {
   min-width: 0;
   flex: 1;
+  grid-column: 1;
 }
 
 .entity-sidebar__label {
@@ -1362,6 +1373,7 @@ a:hover {
 
 .entity-sidebar__type {
   min-width: 0;
+  grid-column: 2;
 }
 
 .entity-sidebar__field {
@@ -1392,6 +1404,8 @@ a:hover {
   gap: 4px;
   font-size: 12px;
   color: var(--text-secondary);
+  min-width: 0;
+  grid-column: 4;
 }
 
 .entity-sidebar__notes textarea {
@@ -1416,12 +1430,33 @@ a:hover {
 
 @media (max-width: 1200px) {
   .entity-sidebar__row-grid {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 1fr);
     align-items: flex-start;
+  }
+
+  .entity-sidebar__type {
+    grid-column: 2;
   }
 
   .entity-sidebar__actions-cell {
     justify-content: flex-start;
+    grid-column: 2;
+  }
+
+  .entity-sidebar__notes {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 900px) {
+  .entity-sidebar__row-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .entity-sidebar__type,
+  .entity-sidebar__actions-cell,
+  .entity-sidebar__notes {
+    grid-column: 1;
   }
 }
 
