@@ -1794,8 +1794,28 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         throw new Error(result.error || 'Failed to save report');
       }
     } catch (error) {
-      console.error('Error saving report:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to save report');
+      console.error('Error saving report to server:', error);
+
+      // Fallback to browser download if server unavailable
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      if (errorMsg.includes('Failed to fetch') || errorMsg.includes('Network') || errorMsg.includes('ECONNREFUSED')) {
+        toast.error('API server not running - downloading instead');
+
+        // Trigger browser download as fallback
+        const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `entity-review-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        toast.success('Report downloaded to your browser');
+      } else {
+        toast.error(`Failed to save: ${errorMsg}`);
+      }
     }
   }, [entities, text, lastSavedId, toast]);
 
