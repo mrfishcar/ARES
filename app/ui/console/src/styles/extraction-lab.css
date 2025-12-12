@@ -87,6 +87,17 @@
   background: var(--bg-tertiary);
 }
 
+.lab-button.ghost {
+  background: transparent;
+  border-color: var(--border-soft);
+  color: var(--text-secondary);
+}
+
+.lab-button.ghost:hover {
+  color: var(--text-primary);
+  border-color: var(--accent-color);
+}
+
 .lab-button:disabled,
 .lab-button.primary:disabled,
 .lab-button.secondary:disabled {
