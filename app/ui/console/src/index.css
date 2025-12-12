@@ -18,10 +18,10 @@ body {
   background: var(--bg-primary);
   /* Lock height to viewport, prevent pull-to-refresh */
   height: 100%;
-  /* Allow scrolling but prevent bounce */
-  overflow: auto;
+  overflow: hidden;
   overscroll-behavior: none;
-  -webkit-overflow-scrolling: touch;
+  position: fixed;
+  width: 100%;
 }
 
 :root {
