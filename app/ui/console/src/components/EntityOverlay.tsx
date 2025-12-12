@@ -108,50 +108,28 @@ export function EntityOverlay({
     };
   }, [mode]);
 
+  const panelClass = [
+    'entity-panel',
+    mode === 'pinned'
+      ? 'entity-panel--pinned liquid-glass--subtle'
+      : 'entity-panel--floating liquid-glass--strong',
+  ].join(' ');
+
   if (mode === 'pinned') {
-    // Pinned sidebar mode - no backdrop
     return (
-      <div
-        className="overlay-panel liquid-glass--subtle pinned"
-        style={{
-          flex: '0 0 400px',
-          maxWidth: '460px',
-          minWidth: '320px',
-        }}
-      >
-        <div className="overlay-header">
-          <h2 className="overlay-title">Entities & Relations</h2>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <button
-              onClick={onClose}
-              className="overlay-close"
-              title="Unpin and close"
-              aria-label="Unpin and close"
-            >
-              📌
-            </button>
-            <button
-              ref={closeButtonRef}
-              onClick={onClose}
-              className="overlay-close"
-              title="Close sidebar"
-              aria-label="Close sidebar"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-        <div className="overlay-body" style={{ padding: 0 }}>
-          <EntitySidebar
-            entities={sidebarEntities}
-            onChangeType={onChangeType}
-            onReject={onReject}
-            onNotesChange={onNotesChange}
-            onLogReport={onLogReport}
-            onCopyReport={onCopyReport}
-            isUpdating={isUpdating}
-          />
-        </div>
+      <div className={panelClass}>
+        <EntitySidebar
+          entities={sidebarEntities}
+          onChangeType={onChangeType}
+          onReject={onReject}
+          onNotesChange={onNotesChange}
+          onLogReport={onLogReport}
+          onCopyReport={onCopyReport}
+          isUpdating={isUpdating}
+          onClose={onClose}
+          onPin={onPin}
+          closeButtonRef={closeButtonRef}
+        />
       </div>
     );
   }
@@ -169,47 +147,23 @@ export function EntityOverlay({
       {/* Overlay panel */}
       <div
         ref={overlayRef}
-        className="overlay-panel liquid-glass--strong"
+        className={panelClass}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="entity-overlay-title"
+        aria-label="Entity review sidebar"
       >
-        <div className="overlay-header">
-          <h2 id="entity-overlay-title" className="overlay-title">
-            Entities & Relations
-          </h2>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <button
-              onClick={onPin}
-              className="overlay-close"
-              title="Pin as sidebar"
-              aria-label="Pin as sidebar"
-              style={{ fontSize: '18px' }}
-            >
-              📌
-            </button>
-            <button
-              ref={closeButtonRef}
-              onClick={onClose}
-              className="overlay-close"
-              title="Close overlay"
-              aria-label="Close overlay"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-        <div className="overlay-body" style={{ padding: 0 }}>
-          <EntitySidebar
-            entities={sidebarEntities}
-            onChangeType={onChangeType}
-            onReject={onReject}
-            onNotesChange={onNotesChange}
-            onLogReport={onLogReport}
-            onCopyReport={onCopyReport}
-            isUpdating={isUpdating}
-          />
-        </div>
+        <EntitySidebar
+          entities={sidebarEntities}
+          onChangeType={onChangeType}
+          onReject={onReject}
+          onNotesChange={onNotesChange}
+          onLogReport={onLogReport}
+          onCopyReport={onCopyReport}
+          isUpdating={isUpdating}
+          onClose={onClose}
+          onPin={onPin}
+          closeButtonRef={closeButtonRef}
+        />
       </div>
     </>
   );

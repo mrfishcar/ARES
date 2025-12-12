@@ -1181,15 +1181,21 @@ a:hover {
 .lab-content {
   display: flex;
   gap: 0;
-  padding: 0;
+  padding: 20px 24px 24px;
   padding-top: 20px; /* Minimal top padding for floating bar */
   flex: 1;
   min-height: 0;
   overflow: hidden;
   align-items: stretch;
   background: transparent;
-  /* ✅ No padding by default; will be added by media query when sidebar is open */
   transition: padding-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.lab-content.with-entity-sidebar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  column-gap: 20px;
+  align-items: stretch;
 }
 
 .editor-wrapper {
@@ -1199,24 +1205,61 @@ a:hover {
   background-color: var(--app-surface);
 }
 
-.entity-sidebar {
-  flex: 0 0 360px;
-  max-width: 420px;
-  min-width: 300px;
-  border-left: 1px solid var(--border-soft);
-  background: var(--bg-secondary);
-  padding: 16px;
+.entity-panel {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  height: 100%;
+  max-height: 100%;
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.25);
+}
+
+.entity-panel--pinned {
+  position: relative;
+  width: 360px;
+  max-width: 380px;
+  min-width: 340px;
+  align-self: stretch;
+}
+
+.entity-panel--floating {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  bottom: 24px;
+  transform: none;
+  width: 380px;
+  max-width: 420px;
+  min-width: 340px;
+  max-height: calc(100vh - 48px);
+  border-radius: 16px;
+  z-index: 201;
+}
+
+.entity-sidebar {
+  flex: 1;
+  border-left: 1px solid var(--border-soft);
+  background: var(--bg-secondary);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
   overflow-y: auto;
 }
 
 .entity-sidebar__header {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto;
   gap: 12px;
-  align-items: flex-start;
+  align-items: center;
+}
+
+.entity-sidebar__heading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .entity-sidebar__title {
@@ -1233,10 +1276,12 @@ a:hover {
 }
 
 .entity-sidebar__actions {
-  display: flex;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: max-content;
+  align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: end;
 }
 
 .entity-sidebar__list {
@@ -1257,30 +1302,30 @@ a:hover {
   background: var(--bg-tertiary);
   border: 1px solid var(--border-soft);
   border-radius: 14px;
-  padding: 12px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
-.entity-pill__row {
-  display: flex;
-  justify-content: space-between;
+.entity-pill__top {
+  display: grid;
+  grid-template-columns: 1fr auto;
   gap: 12px;
-  align-items: flex-start;
-  flex-wrap: wrap;
+  align-items: start;
 }
 
-.entity-pill__label {
+.entity-pill__info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .entity-pill__name {
   font-weight: 700;
   color: var(--text-primary);
+  line-height: 1.3;
 }
 
 .entity-pill__meta {
@@ -1303,10 +1348,16 @@ a:hover {
   background: rgba(255, 255, 255, 0.04);
 }
 
-.entity-pill__controls {
+.entity-pill__type {
   display: flex;
-  gap: 8px;
-  align-items: center;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-end;
+}
+
+.entity-pill__field-label {
+  font-size: 12px;
+  color: var(--text-secondary);
 }
 
 .entity-pill__select {
@@ -1326,10 +1377,25 @@ a:hover {
   padding: 6px 10px;
   border-radius: 12px;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .entity-pill__reject:hover {
   background: rgba(239, 68, 68, 0.18);
+}
+
+
+.entity-pill__notes-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.entity-pill__notes-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .entity-pill__notes-label {

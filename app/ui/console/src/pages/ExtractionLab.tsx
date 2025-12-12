@@ -1951,7 +1951,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       />
 
       {/* Main Content */}
-      <div className="lab-content">
+      <div className={`lab-content${layout.entityPanelMode === 'pinned' ? ' with-entity-sidebar' : ''}`}>
         {/* Editor */}
         <EditorPane
           text={text}
