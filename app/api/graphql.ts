@@ -1383,6 +1383,51 @@ No additional information is available at this time.
       }
     }
 
+    // Entity Review Reports endpoint
+    if (req.url === '/api/reports' && req.method === 'POST') {
+      let body = '';
+      req.on('data', (chunk) => {
+        body += chunk.toString();
+      });
+
+      req.on('end', () => {
+        try {
+          const reportData = JSON.parse(body);
+
+          // Create reports directory if it doesn't exist
+          const reportsDir = path.join(process.cwd(), 'reports', 'entity-reviews');
+          if (!fs.existsSync(reportsDir)) {
+            fs.mkdirSync(reportsDir, { recursive: true });
+          }
+
+          // Generate filename with timestamp
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+          const filename = `entity-review-${timestamp}.json`;
+          const filepath = path.join(reportsDir, filename);
+
+          // Write report to file
+          fs.writeFileSync(filepath, JSON.stringify(reportData, null, 2), 'utf-8');
+
+          res.setHeader('Access-Control-Allow-Origin', '*');
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            ok: true,
+            message: 'Report saved successfully',
+            filename,
+            path: `reports/entity-reviews/${filename}`
+          }));
+        } catch (error) {
+          res.setHeader('Access-Control-Allow-Origin', '*');
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            ok: false,
+            error: error instanceof Error ? error.message : 'Failed to save report'
+          }));
+        }
+      });
+      return;
+    }
+
     // Health check for worker status
     if (req.url === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
