@@ -45,40 +45,42 @@ export function EntitySidebar({
   return (
     <aside className={sidebarClassName}>
       <header className="entity-sidebar__header">
-        <div className="entity-sidebar__title">
-          <h3>Entities ({entities.length})</h3>
-          <p className="entity-sidebar__subtitle">
-            Review detected entities, adjust types, and capture notes.
-          </p>
-        </div>
-        <div className="entity-sidebar__actions">
-          <button type="button" className="lab-button secondary" onClick={onLogReport}>
-            🪵 Log Report
-          </button>
-          <button type="button" className="lab-button primary" onClick={onCopyReport}>
-            📋 Copy Report
-          </button>
-          {onPin && (
-            <button
-              type="button"
-              className="lab-button ghost entity-sidebar__icon-button"
-              onClick={onPin}
-              aria-label="Pin sidebar"
-              title="Pin sidebar"
-            >
-              📌
+        <div className="entity-sidebar__header-row">
+          <div className="entity-sidebar__title">
+            <h3>Entities ({entities.length})</h3>
+            <p className="entity-sidebar__subtitle">
+              Review detected entities, adjust types, and capture notes.
+            </p>
+          </div>
+          <div className="entity-sidebar__actions">
+            <button type="button" className="lab-button secondary" onClick={onLogReport}>
+              🪵 Log Report
             </button>
-          )}
-          {onClose && (
-            <button
-              type="button"
-              className="lab-button ghost entity-sidebar__icon-button"
-              onClick={onClose}
-              aria-label="Close sidebar"
-            >
-              ✕
+            <button type="button" className="lab-button primary" onClick={onCopyReport}>
+              📋 Copy Report
             </button>
-          )}
+            {onPin && (
+              <button
+                type="button"
+                className="lab-button ghost entity-sidebar__icon-button"
+                onClick={onPin}
+                aria-label="Pin sidebar"
+                title="Pin sidebar"
+              >
+                📌
+              </button>
+            )}
+            {onClose && (
+              <button
+                type="button"
+                className="lab-button ghost entity-sidebar__icon-button"
+                onClick={onClose}
+                aria-label="Close sidebar"
+              >
+                ✕
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -110,15 +112,6 @@ export function EntitySidebar({
                     ))}
                   </select>
                 </label>
-                <div className="entity-sidebar__actions-cell">
-                  <button
-                    type="button"
-                    className="lab-button secondary entity-sidebar__reject"
-                    onClick={() => onReject(entity.id)}
-                  >
-                    Reject
-                  </button>
-                </div>
                 <label className="entity-sidebar__notes">
                   <span className="entity-sidebar__field-label">Notes</span>
                   <textarea
@@ -128,6 +121,15 @@ export function EntitySidebar({
                     rows={2}
                   />
                 </label>
+                <div className="entity-sidebar__actions-cell">
+                  <button
+                    type="button"
+                    className="lab-button secondary entity-sidebar__reject"
+                    onClick={() => onReject(entity.id)}
+                  >
+                    Reject
+                  </button>
+                </div>
               </div>
             </div>
           ))
