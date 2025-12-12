@@ -1372,7 +1372,6 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     const type: EntityType = 'PERSON';
 
     const newEntity: EntitySpan = {
-      id: `drag_${Date.now()}`,
       text: selectedText,
       type,
       start,
