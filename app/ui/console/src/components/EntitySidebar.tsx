@@ -11,25 +11,39 @@ const ENTITY_TYPE_OPTIONS: EntityType[] = [
 
 interface EntitySidebarProps {
   entities: ReviewedEntity[];
+  mode?: 'overlay' | 'pinned';
+  className?: string;
   onChangeType: (id: string, type: EntityType) => void;
   onReject: (id: string) => void;
   onUpdateNotes: (id: string, notes: string) => void;
   onCopyReport: () => void;
   onLogReport: () => void;
+  onPin?: () => void;
   onClose?: () => void;
 }
 
 export function EntitySidebar({
   entities,
+  mode = 'pinned',
+  className,
   onChangeType,
   onReject,
   onUpdateNotes,
   onCopyReport,
   onLogReport,
+  onPin,
   onClose,
 }: EntitySidebarProps) {
+  const sidebarClassName = [
+    'entity-sidebar',
+    mode === 'overlay' ? 'entity-sidebar--floating' : null,
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <aside className="entity-sidebar">
+    <aside className={sidebarClassName}>
       <header className="entity-sidebar__header">
         <div className="entity-sidebar__title">
           <h3>Entities ({entities.length})</h3>
@@ -44,10 +58,21 @@ export function EntitySidebar({
           <button type="button" className="lab-button primary" onClick={onCopyReport}>
             📋 Copy Report
           </button>
+          {onPin && (
+            <button
+              type="button"
+              className="lab-button ghost entity-sidebar__icon-button"
+              onClick={onPin}
+              aria-label="Pin sidebar"
+              title="Pin sidebar"
+            >
+              📌
+            </button>
+          )}
           {onClose && (
             <button
               type="button"
-              className="lab-button secondary entity-sidebar__close"
+              className="lab-button ghost entity-sidebar__icon-button"
               onClick={onClose}
               aria-label="Close sidebar"
             >
@@ -66,29 +91,29 @@ export function EntitySidebar({
         ) : (
           entities.map(entity => (
             <div key={entity.id} className="entity-sidebar__pill">
-              <div className="entity-sidebar__row">
+              <div className="entity-sidebar__row-grid">
                 <div className="entity-sidebar__name">
                   <div className="entity-sidebar__label">{entity.canonicalName || entity.name}</div>
                   <div className="entity-sidebar__meta">Span {entity.spans[0]?.start ?? 0}–{entity.spans[0]?.end ?? 0}</div>
                 </div>
-                <div className="entity-sidebar__controls">
-                  <label className="entity-sidebar__field">
-                    <span className="entity-sidebar__field-label">Type</span>
-                    <select
-                      value={entity.currentType}
-                      onChange={e => onChangeType(entity.id, e.target.value as EntityType)}
-                      className="entity-sidebar__select"
-                    >
-                      {ENTITY_TYPE_OPTIONS.map(option => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                <label className="entity-sidebar__field entity-sidebar__type">
+                  <span className="entity-sidebar__field-label">Type</span>
+                  <select
+                    value={entity.currentType}
+                    onChange={e => onChangeType(entity.id, e.target.value as EntityType)}
+                    className="entity-sidebar__select"
+                  >
+                    {ENTITY_TYPE_OPTIONS.map(option => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <div className="entity-sidebar__actions-cell">
                   <button
                     type="button"
-                    className="lab-button secondary"
+                    className="lab-button secondary entity-sidebar__reject"
                     onClick={() => onReject(entity.id)}
                   >
                     Reject

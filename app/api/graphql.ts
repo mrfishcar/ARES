@@ -999,7 +999,7 @@ No additional information is available at this time.
       req.on('end', () => {
         try {
           const report = JSON.parse(body);
-          const reportsDir = path.join(process.cwd(), 'data', 'entity-reports');
+          const reportsDir = path.join(process.cwd(), 'app', 'debug', 'entity-reports');
           fs.mkdirSync(reportsDir, { recursive: true });
 
           const documentId = report?.documentId || 'unknown-document';

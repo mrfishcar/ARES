@@ -14,7 +14,6 @@ import { EditorPane } from '../components/EditorPane';
 import { EntityModal } from '../components/EntityModal';
 import { WikiModal } from '../components/WikiModal';
 import { FloatingActionButton } from '../components/FloatingActionButton';
-import { EntityOverlay } from '../components/EntityOverlay';
 import { EntitySidebar } from '../components/EntitySidebar';
 import { isValidEntityType, type EntitySpan, type EntityType } from '../types/entities';
 import { initializeTheme, toggleTheme, loadThemePreference, getEffectiveTheme } from '../utils/darkMode';
@@ -2006,15 +2005,18 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
         {/* Pinned sidebar mode */}
         {layout.entityPanelMode === 'pinned' && (
-          <EntitySidebar
-            entities={sidebarEntities}
-            onChangeType={handleSidebarTypeChange}
-            onReject={handleSidebarReject}
-            onUpdateNotes={handleSidebarNotesChange}
-            onCopyReport={copyDebugReport}
-            onLogReport={logDebugReport}
-            onClose={layout.closeEntityPanel}
-          />
+          <div className="entity-sidebar__pinned-shell">
+            <EntitySidebar
+              mode="pinned"
+              entities={sidebarEntities}
+              onChangeType={handleSidebarTypeChange}
+              onReject={handleSidebarReject}
+              onUpdateNotes={handleSidebarNotesChange}
+              onCopyReport={copyDebugReport}
+              onLogReport={logDebugReport}
+              onClose={layout.closeEntityPanel}
+            />
+          </div>
         )}
       </div>
 
@@ -2027,19 +2029,28 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         position="bottom-right"
       />
 
-      {/* Entity Overlay - Full-screen mode */}
+      {/* Floating sidebar overlay mode */}
       {layout.entityPanelMode === 'overlay' && (
-        <EntityOverlay
-          mode="overlay"
-          entities={displayEntities}
-          relations={relations}
-          stats={stats}
-          onClose={layout.closeEntityPanel}
-          onPin={layout.pinEntityPanel}
-          onViewWiki={handleViewWiki}
-          onCopyReport={copyDebugReport}
-          isUpdating={isUpdating}
-        />
+        <>
+          <div
+            className="overlay-backdrop"
+            onClick={layout.closeEntityPanel}
+            aria-label="Close entity sidebar"
+          />
+          <div className="entity-sidebar-overlay" role="dialog" aria-modal="true" aria-label="Entity sidebar">
+            <EntitySidebar
+              mode="overlay"
+              entities={sidebarEntities}
+              onChangeType={handleSidebarTypeChange}
+              onReject={handleSidebarReject}
+              onUpdateNotes={handleSidebarNotesChange}
+              onCopyReport={copyDebugReport}
+              onLogReport={logDebugReport}
+              onPin={layout.pinEntityPanel}
+              onClose={layout.closeEntityPanel}
+            />
+          </div>
+        </>
       )}
 
       {/* Entity Modal */}
