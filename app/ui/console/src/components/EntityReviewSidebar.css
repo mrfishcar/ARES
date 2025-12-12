@@ -230,7 +230,7 @@
 .entity-table {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .entity-table-header {
@@ -251,10 +251,10 @@
   grid-template-columns: 2fr 1.2fr 0.8fr 2fr;
   gap: 12px;
   align-items: center;
-  padding: 12px 16px;
+  padding: 8px 16px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--liquid-glass-border);
-  border-radius: 16px;
+  border-radius: 12px;
   transition: all 0.2s;
 }
 
@@ -277,8 +277,7 @@
 /* Column 1: Entity Name */
 .col-name {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
   min-width: 0;
 }
 
@@ -289,11 +288,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.entity-name-secondary {
-  font-size: 12px;
-  color: var(--text-tertiary);
 }
 
 /* Column 2: Type Dropdown */
