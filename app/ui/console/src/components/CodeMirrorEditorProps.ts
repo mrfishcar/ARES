@@ -20,6 +20,12 @@ export interface CodeMirrorEditorProps {
   onReject?: (entity: EntitySpan) => Promise<void>;
   entityHighlightMode?: boolean;
 
+  /** NEW: Entity mode drag-to-create callback */
+  onCreateEntitySpan?: (start: number, end: number, selectedText: string) => void | Promise<void>;
+
+  /** NEW: Entity mode drag-to-resize callback */
+  onResizeEntity?: (entity: EntitySpan, newStart: number, newEnd: number) => void | Promise<void>;
+
   /** NEW: Windowed mode support for large documents */
   baseOffset?: number; // Global offset where this window starts (default 0 = full doc mode)
   onCursorChange?: (globalPos: number) => void; // Called when cursor moves (for window adjustment)

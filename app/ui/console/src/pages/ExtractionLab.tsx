@@ -1363,6 +1363,79 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     toast.info(`"${entity.text}" rejected`);
   };
 
+  // Entity handler: Create Entity Span from Drag (Entity Highlight Mode)
+  const handleCreateEntitySpan = async (start: number, end: number, selectedText: string) => {
+    console.log('[ExtractionLab] Creating entity span from drag:', { start, end, selectedText });
+
+    // Prompt user for entity type (defaulting to PERSON)
+    // For now, create as PERSON - you can add a type picker UI later
+    const type: EntityType = 'PERSON';
+
+    const newEntity: EntitySpan = {
+      id: `drag_${Date.now()}`,
+      text: selectedText,
+      type,
+      start,
+      end,
+      source: 'manual',
+      confidence: 1.0,
+      displayText: selectedText,
+    };
+
+    setEntities((prev) => deduplicateEntities([...prev, newEntity]));
+    setEntityOverrides((prev) => ({
+      ...prev,
+      typeOverrides: {
+        ...prev.typeOverrides,
+        [makeSpanKey(newEntity)]: type,
+      },
+    }));
+
+    toast.success(`Entity created: "${selectedText}" as ${type}`);
+  };
+
+  // Entity handler: Resize Entity (Entity Highlight Mode)
+  const handleResizeEntity = async (entity: EntitySpan, newStart: number, newEnd: number) => {
+    console.log('[ExtractionLab] Resizing entity:', { entity, newStart, newEnd });
+
+    const newText = text.slice(newStart, newEnd);
+
+    // Remove old entity and add resized one
+    setEntities((prev) => {
+      const filtered = prev.filter(e =>
+        !(e.start === entity.start && e.end === entity.end && e.text === entity.text)
+      );
+
+      const resizedEntity: EntitySpan = {
+        ...entity,
+        start: newStart,
+        end: newEnd,
+        text: newText,
+        displayText: newText,
+      };
+
+      return deduplicateEntities([...filtered, resizedEntity]);
+    });
+
+    // Update overrides
+    const oldKey = makeSpanKey(entity);
+    const newEntity = { ...entity, start: newStart, end: newEnd, text: newText };
+    const newKey = makeSpanKey(newEntity);
+
+    setEntityOverrides((prev) => {
+      const { [oldKey]: _removed, ...restTypes } = prev.typeOverrides;
+      return {
+        ...prev,
+        typeOverrides: {
+          ...restTypes,
+          [newKey]: entity.type,
+        },
+      };
+    });
+
+    toast.success(`Entity resized: "${newText}"`);
+  };
+
   // Generate and copy test report
   const copyReport = () => {
     if (!text.trim() || (entities.length === 0 && relations.length === 0)) {
@@ -1515,6 +1588,8 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           onCreateNew={handleCreateNew}
           onReject={handleReject}
           onTagEntity={handleTagEntity}
+          onCreateEntitySpan={handleCreateEntitySpan}
+          onResizeEntity={handleResizeEntity}
           enableLongTextOptimization={settings.enableLongTextOptimization}
         />
 

@@ -28,6 +28,8 @@ interface VirtualizedExtractionEditorProps {
   onCreateNew?: (entity: EntitySpan, type: EntityType) => void | Promise<void>;
   onReject?: (entity: EntitySpan) => Promise<void>;
   onTagEntity?: (entity: EntitySpan, targetEntity: EntitySpan) => Promise<void>;
+  onCreateEntitySpan?: (start: number, end: number, selectedText: string) => void | Promise<void>;
+  onResizeEntity?: (entity: EntitySpan, newStart: number, newEnd: number) => void | Promise<void>;
   enableLongTextOptimization?: boolean;
 }
 
@@ -124,6 +126,8 @@ export function VirtualizedExtractionEditor({
   onCreateNew,
   onReject,
   onTagEntity,
+  onCreateEntitySpan,
+  onResizeEntity,
   enableLongTextOptimization = false
 }: VirtualizedExtractionEditorProps) {
   const chunkingEnabled = useMemo(
@@ -350,6 +354,8 @@ export function VirtualizedExtractionEditor({
       onCreateNew={onCreateNew}
       onReject={onReject}
       onTagEntity={onTagEntity}
+      onCreateEntitySpan={onCreateEntitySpan}
+      onResizeEntity={onResizeEntity}
       onCursorChange={handleCursorChange}
     />
   );
