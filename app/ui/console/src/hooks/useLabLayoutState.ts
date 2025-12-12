@@ -9,7 +9,7 @@ export type EntityPanelMode = 'closed' | 'overlay' | 'pinned';
 
 export function useLabLayoutState() {
   const [showDocumentSidebar, setShowDocumentSidebar] = useState(false);
-  const [entityPanelMode, setEntityPanelMode] = useState<EntityPanelMode>('closed');
+  const [entityPanelMode, setEntityPanelMode] = useState<EntityPanelMode>('pinned');
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   const [showEntityModal, setShowEntityModal] = useState(false);
 

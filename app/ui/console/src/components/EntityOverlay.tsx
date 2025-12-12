@@ -7,8 +7,8 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { EntityResultsPanel } from './EntityResultsPanel';
-import type { EntitySpan } from '../types/entities';
+import { EntitySidebar, type EntitySidebarEntity } from './EntitySidebar';
+import type { EntitySpan, EntityType } from '../types/entities';
 
 interface Relation {
   id: string;
@@ -33,8 +33,13 @@ interface EntityOverlayProps {
   onClose: () => void;
   onPin: () => void;
   onViewWiki: (entityName: string) => void;
-  onCopyReport: () => void;
   isUpdating?: boolean;
+  sidebarEntities: EntitySidebarEntity[];
+  onChangeType: (entity: EntitySpan, newType: EntityType) => void;
+  onReject: (entity: EntitySpan) => void;
+  onNotesChange: (entity: EntitySidebarEntity, notes: string) => void;
+  onLogReport: () => void;
+  onCopyReport: () => void;
 }
 
 export function EntityOverlay({
@@ -45,8 +50,13 @@ export function EntityOverlay({
   onClose,
   onPin,
   onViewWiki,
-  onCopyReport,
   isUpdating,
+  sidebarEntities,
+  onChangeType,
+  onReject,
+  onNotesChange,
+  onLogReport,
+  onCopyReport,
 }: EntityOverlayProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -98,49 +108,28 @@ export function EntityOverlay({
     };
   }, [mode]);
 
+  const panelClass = [
+    'entity-panel',
+    mode === 'pinned'
+      ? 'entity-panel--pinned liquid-glass--subtle'
+      : 'entity-panel--floating liquid-glass--strong',
+  ].join(' ');
+
   if (mode === 'pinned') {
-    // Pinned sidebar mode - no backdrop
     return (
-      <div
-        className="overlay-panel liquid-glass--subtle pinned"
-        style={{
-          flex: '0 0 400px',
-          maxWidth: '460px',
-          minWidth: '320px',
-        }}
-      >
-        <div className="overlay-header">
-          <h2 className="overlay-title">Entities & Relations</h2>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <button
-              onClick={onClose}
-              className="overlay-close"
-              title="Unpin and close"
-              aria-label="Unpin and close"
-            >
-              📌
-            </button>
-            <button
-              ref={closeButtonRef}
-              onClick={onClose}
-              className="overlay-close"
-              title="Close sidebar"
-              aria-label="Close sidebar"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-        <div className="overlay-body" style={{ padding: 0 }}>
-          <EntityResultsPanel
-            entities={entities}
-            relations={relations}
-            onViewWiki={onViewWiki}
-            isUpdating={isUpdating}
-            stats={stats}
-            onCopyReport={onCopyReport}
-          />
-        </div>
+      <div className={panelClass}>
+        <EntitySidebar
+          entities={sidebarEntities}
+          onChangeType={onChangeType}
+          onReject={onReject}
+          onNotesChange={onNotesChange}
+          onLogReport={onLogReport}
+          onCopyReport={onCopyReport}
+          isUpdating={isUpdating}
+          onClose={onClose}
+          onPin={onPin}
+          closeButtonRef={closeButtonRef}
+        />
       </div>
     );
   }
@@ -158,46 +147,23 @@ export function EntityOverlay({
       {/* Overlay panel */}
       <div
         ref={overlayRef}
-        className="overlay-panel liquid-glass--strong"
+        className={panelClass}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="entity-overlay-title"
+        aria-label="Entity review sidebar"
       >
-        <div className="overlay-header">
-          <h2 id="entity-overlay-title" className="overlay-title">
-            Entities & Relations
-          </h2>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <button
-              onClick={onPin}
-              className="overlay-close"
-              title="Pin as sidebar"
-              aria-label="Pin as sidebar"
-              style={{ fontSize: '18px' }}
-            >
-              📌
-            </button>
-            <button
-              ref={closeButtonRef}
-              onClick={onClose}
-              className="overlay-close"
-              title="Close overlay"
-              aria-label="Close overlay"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-        <div className="overlay-body" style={{ padding: 0 }}>
-          <EntityResultsPanel
-            entities={entities}
-            relations={relations}
-            onViewWiki={onViewWiki}
-            isUpdating={isUpdating}
-            stats={stats}
-            onCopyReport={onCopyReport}
-          />
-        </div>
+        <EntitySidebar
+          entities={sidebarEntities}
+          onChangeType={onChangeType}
+          onReject={onReject}
+          onNotesChange={onNotesChange}
+          onLogReport={onLogReport}
+          onCopyReport={onCopyReport}
+          isUpdating={isUpdating}
+          onClose={onClose}
+          onPin={onPin}
+          closeButtonRef={closeButtonRef}
+        />
       </div>
     </>
   );
