@@ -246,6 +246,174 @@ function contextMenuExtension(
   });
 }
 
+// -------------------- DRAG-TO-CREATE EXTENSION --------------------
+
+/**
+ * Handles drag-to-create entity spans and drag-to-resize in Entity Highlight Mode
+ */
+function dragToCreateExtension(
+  entitiesRef: React.MutableRefObject<EntitySpan[]>,
+  baseOffsetRef: React.MutableRefObject<number>,
+  entityHighlightModeRef: React.MutableRefObject<boolean>,
+  onCreateEntitySpanRef: React.MutableRefObject<((start: number, end: number, text: string) => void | Promise<void>) | undefined>,
+  onResizeEntityRef: React.MutableRefObject<((entity: EntitySpan, newStart: number, newEnd: number) => void | Promise<void>) | undefined>,
+) {
+  let dragState: {
+    startPos: number;
+    startX: number;
+    startY: number;
+    isDragging: boolean;
+    resizingEntity: EntitySpan | null;
+    resizeEdge: 'start' | 'end' | null;
+  } | null = null;
+
+  const RESIZE_HANDLE_PIXELS = 8; // Pixels from entity edge to trigger resize
+
+  // Helper: Find entity at position
+  const findEntityAtPos = (globalPos: number): EntitySpan | undefined => {
+    return entitiesRef.current.find(
+      e => e.start <= globalPos && globalPos <= e.end
+    );
+  };
+
+  // Helper: Check if near entity edge (for resize detection)
+  const checkNearEdge = (view: EditorView, entity: EntitySpan, clientX: number): 'start' | 'end' | null => {
+    const startCoords = view.coordsAtPos(entity.start - baseOffsetRef.current);
+    const endCoords = view.coordsAtPos(entity.end - baseOffsetRef.current);
+
+    if (!startCoords || !endCoords) return null;
+
+    // Check if near start edge
+    if (Math.abs(clientX - startCoords.left) <= RESIZE_HANDLE_PIXELS) {
+      return 'start';
+    }
+
+    // Check if near end edge
+    if (Math.abs(clientX - endCoords.right) <= RESIZE_HANDLE_PIXELS) {
+      return 'end';
+    }
+
+    return null;
+  };
+
+  return EditorView.domEventHandlers({
+    mousedown: (event, view) => {
+      // Only handle in entity highlight mode
+      if (!entityHighlightModeRef.current) return false;
+
+      const pos = view.posAtCoords({
+        x: (event as MouseEvent).clientX,
+        y: (event as MouseEvent).clientY,
+      });
+
+      if (pos == null) return false;
+
+      const globalPos = baseOffsetRef.current + pos;
+      const entity = findEntityAtPos(globalPos);
+
+      // Check if we're resizing an existing entity
+      if (entity) {
+        const edge = checkNearEdge(view, entity, (event as MouseEvent).clientX);
+        if (edge) {
+          // Start resizing
+          dragState = {
+            startPos: pos,
+            startX: (event as MouseEvent).clientX,
+            startY: (event as MouseEvent).clientY,
+            isDragging: false,
+            resizingEntity: entity,
+            resizeEdge: edge,
+          };
+          event.preventDefault();
+          return true;
+        }
+      }
+
+      // Start potential drag-to-create
+      dragState = {
+        startPos: pos,
+        startX: (event as MouseEvent).clientX,
+        startY: (event as MouseEvent).clientY,
+        isDragging: false,
+        resizingEntity: null,
+        resizeEdge: null,
+      };
+
+      return false; // Let click handler work for context menu
+    },
+
+    mousemove: (event, view) => {
+      if (!dragState || !entityHighlightModeRef.current) return false;
+
+      const threshold = 5; // Pixels before we consider it a drag
+      const dx = Math.abs((event as MouseEvent).clientX - dragState.startX);
+      const dy = Math.abs((event as MouseEvent).clientY - dragState.startY);
+
+      if (!dragState.isDragging && (dx > threshold || dy > threshold)) {
+        dragState.isDragging = true;
+      }
+
+      if (dragState.isDragging) {
+        // Suppress text selection during drag
+        event.preventDefault();
+        return true;
+      }
+
+      return false;
+    },
+
+    mouseup: (event, view) => {
+      if (!dragState || !entityHighlightModeRef.current) {
+        dragState = null;
+        return false;
+      }
+
+      const wasDragging = dragState.isDragging;
+      const resizingEntity = dragState.resizingEntity;
+      const resizeEdge = dragState.resizeEdge;
+
+      if (wasDragging) {
+        const endPos = view.posAtCoords({
+          x: (event as MouseEvent).clientX,
+          y: (event as MouseEvent).clientY,
+        });
+
+        if (endPos != null) {
+          const start = Math.min(dragState.startPos, endPos);
+          const end = Math.max(dragState.startPos, endPos);
+
+          if (resizingEntity && resizeEdge && onResizeEntityRef.current) {
+            // Handle entity resize
+            const globalStart = baseOffsetRef.current + start;
+            const globalEnd = baseOffsetRef.current + end;
+
+            const newStart = resizeEdge === 'start' ? globalStart : resizingEntity.start;
+            const newEnd = resizeEdge === 'end' ? globalEnd : resizingEntity.end;
+
+            onResizeEntityRef.current(resizingEntity, newStart, newEnd);
+          } else if (!resizingEntity && onCreateEntitySpanRef.current && end > start) {
+            // Handle drag-to-create new entity
+            const globalStart = baseOffsetRef.current + start;
+            const globalEnd = baseOffsetRef.current + end;
+            const selectedText = view.state.doc.sliceString(start, end);
+
+            if (selectedText.trim()) {
+              onCreateEntitySpanRef.current(globalStart, globalEnd, selectedText.trim());
+            }
+          }
+        }
+
+        dragState = null;
+        event.preventDefault();
+        return true;
+      }
+
+      dragState = null;
+      return false;
+    },
+  });
+}
+
 // -------------------- MAIN COMPONENT --------------------
 
 export function CodeMirrorEditor({
@@ -262,6 +430,8 @@ export function CodeMirrorEditor({
   entityHighlightMode = false,
   baseOffset = 0,
   onCursorChange,
+  onCreateEntitySpan,
+  onResizeEntity,
 }: CodeMirrorEditorProps) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
@@ -272,6 +442,8 @@ export function CodeMirrorEditor({
   const highlightOpacityRef = useRef(highlightOpacity);
   const onCursorChangeRef = useRef(onCursorChange);
   const entityHighlightModeRef = useRef(entityHighlightMode);
+  const onCreateEntitySpanRef = useRef(onCreateEntitySpan);
+  const onResizeEntityRef = useRef(onResizeEntity);
 
   const [contextMenu, setContextMenu] = useState<{
     position: { x: number; y: number };
@@ -318,6 +490,14 @@ export function CodeMirrorEditor({
     entityHighlightModeRef.current = entityHighlightMode;
   }, [entityHighlightMode]);
 
+  useEffect(() => {
+    onCreateEntitySpanRef.current = onCreateEntitySpan;
+  }, [onCreateEntitySpan]);
+
+  useEffect(() => {
+    onResizeEntityRef.current = onResizeEntity;
+  }, [onResizeEntity]);
+
   // create editor once
   useEffect(() => {
     if (!wrapperRef.current || viewRef.current) return;
@@ -338,6 +518,7 @@ export function CodeMirrorEditor({
           () => baseOffsetRef.current,
         ),
         contextMenuExtension(setContextMenu, entitiesRef, baseOffsetRef, entityHighlightModeRef),
+        dragToCreateExtension(entitiesRef, baseOffsetRef, entityHighlightModeRef, onCreateEntitySpanRef, onResizeEntityRef),
         EditorView.updateListener.of((update: ViewUpdate) => {
           if (update.docChanged) {
             // Mark that user just edited (to prevent external sync from interfering)
