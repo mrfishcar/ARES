@@ -643,6 +643,14 @@ a:hover {
 
 .control-btn--active {
   opacity: 1;
+  background: var(--accent-color) !important;
+  color: white !important;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.3);
+}
+
+.control-btn--active svg {
+  color: white;
+  stroke: white;
 }
 
 /* ===== DOCUMENTS SIDEBAR ===== */
