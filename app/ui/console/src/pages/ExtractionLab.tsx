@@ -15,10 +15,12 @@ import { EntityModal } from '../components/EntityModal';
 import { WikiModal } from '../components/WikiModal';
 import { FloatingActionButton } from '../components/FloatingActionButton';
 import { EntityOverlay } from '../components/EntityOverlay';
+import { EntitySidebar } from '../components/EntitySidebar';
 import { isValidEntityType, type EntitySpan, type EntityType } from '../types/entities';
 import { initializeTheme, toggleTheme, loadThemePreference, getEffectiveTheme } from '../utils/darkMode';
 import { useLabLayoutState } from '../hooks/useLabLayoutState';
 import { useExtractionSettings } from '../hooks/useExtractionSettings';
+import { buildEntityReport, formatEntityReport, type ReviewedEntity } from '../lib/entityReport';
 import '../styles/darkMode.css';
 import '../styles/extraction-lab.css';
 
@@ -501,6 +503,25 @@ interface SelectedEntityState {
   type: string;
 }
 
+function createReviewEntry(entity: EntitySpan): ReviewedEntity {
+  return {
+    id: makeSpanKey(entity),
+    name: entity.displayText || entity.text,
+    canonicalName: entity.canonicalName,
+    originalType: entity.type,
+    currentType: entity.type,
+    rejected: false,
+    notes: '',
+    spans: [
+      {
+        start: entity.start,
+        end: entity.end,
+        text: entity.text,
+      }
+    ],
+  };
+}
+
 // Floating action menu for text selection in Entity Highlight Mode
 interface EntitySelectionMenuProps {
   selectedText: string;
@@ -664,6 +685,9 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     typeOverrides: {},
   });
 
+  // Entity review state (for sidebar notes/reporting)
+  const [entityReviews, setEntityReviews] = useState<Record<string, ReviewedEntity>>({});
+
   // Text selection state (for entity highlight mode)
   const [textSelection, setTextSelection] = useState<{
     start: number;
@@ -685,10 +709,60 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     });
   }, []);
 
+  const seedReviewState = useCallback((entityList: EntitySpan[]) => {
+    setEntityReviews(() => {
+      const next: Record<string, ReviewedEntity> = {};
+      entityList.forEach(entity => {
+        const entry = createReviewEntry(entity);
+        next[entry.id] = entry;
+      });
+      return next;
+    });
+  }, []);
+
   // Initialize theme on mount
   useEffect(() => {
     initializeTheme();
   }, []);
+
+  // Keep review records in sync with visible entities and overrides
+  useEffect(() => {
+    setEntityReviews(prev => {
+      const next: Record<string, ReviewedEntity> = {};
+      const previous = { ...prev };
+
+      entities.forEach(entity => {
+        const id = makeSpanKey(entity);
+        const existing = previous[id];
+
+        next[id] = {
+          ...(existing ?? createReviewEntry(entity)),
+          id,
+          name: entity.displayText || entity.text,
+          canonicalName: entity.canonicalName,
+          spans: [
+            {
+              start: entity.start,
+              end: entity.end,
+              text: entity.text,
+            }
+          ],
+          originalType: existing?.originalType ?? entity.type,
+          currentType: entityOverrides.typeOverrides[id] ?? existing?.currentType ?? entity.type,
+          rejected: existing?.rejected ?? entityOverrides.rejectedSpans.has(id),
+        };
+      });
+
+      // Preserve rejected items even if they fall out of the active list
+      Object.values(previous).forEach(entry => {
+        if (entry.rejected && !next[entry.id]) {
+          next[entry.id] = { ...entry, rejected: true };
+        }
+      });
+
+      return next;
+    });
+  }, [entities, entityOverrides]);
 
   // iOS: Prevent body scroll when modals are open
   useEffect(() => {
@@ -727,6 +801,56 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           : jobStatus === 'done'
             ? 'Done'
             : 'Idle';
+
+  const findEntityById = useCallback(
+    (id: string) => entities.find(e => makeSpanKey(e) === id),
+    [entities]
+  );
+
+  const updateReviewType = useCallback((entity: EntitySpan, newType: EntityType) => {
+    const key = makeSpanKey(entity);
+    setEntityReviews(prev => {
+      const existing = prev[key] ?? createReviewEntry(entity);
+      return {
+        ...prev,
+        [key]: {
+          ...existing,
+          currentType: newType,
+        },
+      };
+    });
+  }, []);
+
+  const markReviewRejected = useCallback((entity: EntitySpan) => {
+    const key = makeSpanKey(entity);
+    setEntityReviews(prev => {
+      const existing = prev[key] ?? createReviewEntry(entity);
+      return {
+        ...prev,
+        [key]: {
+          ...existing,
+          rejected: true,
+        },
+      };
+    });
+  }, []);
+
+  const handleSidebarNotesChange = useCallback(
+    (id: string, notes: string) => {
+      setEntityReviews(prev => {
+        const entity = prev[id];
+        if (!entity) return prev;
+        return {
+          ...prev,
+          [id]: {
+            ...entity,
+            notes,
+          },
+        };
+      });
+    },
+    []
+  );
 
   const applyExtractionResults = useCallback(
     (data: ExtractionResponse, rawText: string, elapsedMs?: number) => {
@@ -771,9 +895,10 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         relationCount: data.relations?.length || 0,
       });
 
+      seedReviewState(mergedEntities);
       resetEntityOverrides();
     },
-    [resetEntityOverrides]
+    [resetEntityOverrides, seedReviewState]
   );
 
   // Real-time extraction using FULL ARES ENGINE (debounced 1000ms for heavier processing)
@@ -971,6 +1096,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       if (extraction) {
         if (Array.isArray(extraction.entities)) {
           setEntities(extraction.entities);
+          seedReviewState(extraction.entities);
         }
         if (Array.isArray(extraction.relations)) {
           setRelations(extraction.relations);
@@ -994,7 +1120,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         });
       }
     },
-    [setEntities, setRelations, setStats, setText]
+    [seedReviewState, setEntities, setRelations, setStats, setText]
   );
 
   const refreshDocumentList = useCallback(async () => {
@@ -1336,6 +1462,8 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const handleChangeType = async (entity: EntitySpan, newType: EntityType) => {
     console.log('[ExtractionLab] Changing entity type:', { entity, newType });
 
+    updateReviewType(entity, newType);
+
     if (settings.entityHighlightMode) {
       const key = makeSpanKey(entity);
       setEntityOverrides((prev) => ({
@@ -1446,6 +1574,8 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const handleReject = async (entity: EntitySpan) => {
     console.log('[ExtractionLab] Rejecting entity:', entity);
 
+    markReviewRejected(entity);
+
     if (settings.entityHighlightMode) {
       const key = makeSpanKey(entity);
       setEntityOverrides((prev) => {
@@ -1494,6 +1624,52 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
     toast.info(`"${entity.text}" rejected`);
   };
+
+  const handleSidebarTypeChange = useCallback(
+    async (id: string, newType: EntityType) => {
+      const entity = findEntityById(id);
+      if (entity) {
+        await handleChangeType(entity, newType);
+        return;
+      }
+
+      setEntityReviews(prev => {
+        const existing = prev[id];
+        if (!existing) return prev;
+        return {
+          ...prev,
+          [id]: {
+            ...existing,
+            currentType: newType,
+          },
+        };
+      });
+    },
+    [findEntityById, handleChangeType]
+  );
+
+  const handleSidebarReject = useCallback(
+    async (id: string) => {
+      const entity = findEntityById(id);
+      if (entity) {
+        await handleReject(entity);
+        return;
+      }
+
+      setEntityReviews(prev => {
+        const existing = prev[id];
+        if (!existing) return prev;
+        return {
+          ...prev,
+          [id]: {
+            ...existing,
+            rejected: true,
+          },
+        };
+      });
+    },
+    [findEntityById, handleReject]
+  );
 
   // Entity handler: Text Selected in Entity Highlight Mode
   const handleTextSelected = async (
@@ -1650,58 +1826,75 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     toast.success(`Entity resized: "${newText}"`);
   };
 
-  // Generate and copy test report
-  const copyReport = () => {
-    if (!text.trim() || (entities.length === 0 && relations.length === 0)) {
-      toast.error('Nothing to report yet – run an extraction first.');
+  const buildCurrentReport = useCallback(() => {
+    const reviewedEntities = Object.values(entityReviews).map((entity) => ({
+      ...entity,
+      spans:
+        entity.spans && entity.spans.length > 0
+          ? entity.spans
+          : [{ start: 0, end: 0, text: entity.name }],
+    }));
+
+    return buildEntityReport({
+      entities: reviewedEntities,
+      documentId: lastSavedId,
+      userContext: { project },
+      text,
+    });
+  }, [entityReviews, lastSavedId, project, text]);
+
+  const copyDebugReport = useCallback(async () => {
+    if (!text.trim() || Object.keys(entityReviews).length === 0) {
+      toast.error('Nothing to report yet – review an extraction first.');
       return;
     }
 
-    const report = {
-      timestamp: new Date().toISOString(),
-      engineVersion: 'ARES Full Engine (orchestrator.ts)',
-      text: text,
-      textLength: text.length,
-      stats: {
-        processingTime: stats.time,
-        averageConfidence: stats.confidence,
-        entityCount: stats.count,
-        relationCount: stats.relationCount,
-      },
-      entities: entities.map((e) => ({
-        text: e.text,
-        type: e.type,
-        confidence: e.confidence,
-        start: e.start,
-        end: e.end,
-        source: e.source,
-        displayText: e.displayText,
-        // Include surrounding context (50 chars before/after)
-        context: text.substring(Math.max(0, e.start - 50), Math.min(text.length, e.end + 50)),
-      })),
-      relations: relations.map((r) => ({
-        subject: r.subjCanonical,
-        predicate: r.pred,
-        object: r.objCanonical,
-        confidence: r.confidence,
-      })),
-      // Group entities by type for easy analysis
-      entitiesByType: entities.reduce((acc, e) => {
-        if (!acc[e.type]) acc[e.type] = [];
-        acc[e.type].push(e.text);
-        return acc;
-      }, {} as Record<string, string[]>),
-      // Group relations by predicate
-      relationsByPredicate: relations.reduce((acc, r) => {
-        if (!acc[r.pred]) acc[r.pred] = [];
-        acc[r.pred].push(`${r.subjCanonical} → ${r.objCanonical}`);
-        return acc;
-      }, {} as Record<string, string[]>),
-    };
+    const report = buildCurrentReport();
+    const formatted = formatEntityReport(report);
 
-    navigator.clipboard.writeText(JSON.stringify(report, null, 2));
-    toast.success('Full ARES report copied! Includes entities AND relations.');
-  };
+    try {
+      if (typeof navigator !== 'undefined' && navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(formatted);
+      } else {
+        throw new Error('Clipboard API unavailable');
+      }
+      toast.success('Entity review report copied to clipboard');
+    } catch (error) {
+      console.warn('Clipboard unavailable, showing report for manual copy', error);
+      window.prompt('Copy report JSON', formatted);
+    }
+  }, [buildCurrentReport, entityReviews, text, toast]);
+
+  const logDebugReport = useCallback(async () => {
+    if (!text.trim() || Object.keys(entityReviews).length === 0) {
+      toast.error('Nothing to log yet – review an extraction first.');
+      return;
+    }
+
+    const report = buildCurrentReport();
+    const apiUrl = resolveApiUrl();
+
+    try {
+      const response = await fetch(`${apiUrl}/entity-reports`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(report),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to log report: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      const fileName = result?.fileName || result?.path || 'entity report';
+      toast.success(`Report saved (${fileName})`);
+    } catch (error) {
+      console.error('[ExtractionLab] Failed to log entity report', error);
+      toast.error(`Failed to log report: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }, [buildCurrentReport, entityReviews, text, toast]);
 
   const handleViewWiki = useCallback(
     (entityName: string) => {
@@ -1723,6 +1916,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     setLastSavedId(null);
     setSaveStatus('idle');
     resetEntityOverrides();
+    setEntityReviews({});
 
     // Clear any active job
     setJobId(null);
@@ -1738,6 +1932,9 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     editorDisableHighlighting,
     entityHighlightMode: settings.entityHighlightMode,
   });
+
+  const reviewEntities = Object.values(entityReviews);
+  const sidebarEntities = reviewEntities.filter((entity) => !entity.rejected);
 
   return (
     <div className={`extraction-lab${layout.showDocumentSidebar ? ' sidebar-open' : ''}`}>
@@ -1809,16 +2006,14 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
         {/* Pinned sidebar mode */}
         {layout.entityPanelMode === 'pinned' && (
-          <EntityOverlay
-            mode="pinned"
-            entities={displayEntities}
-            relations={relations}
-            stats={stats}
+          <EntitySidebar
+            entities={sidebarEntities}
+            onChangeType={handleSidebarTypeChange}
+            onReject={handleSidebarReject}
+            onUpdateNotes={handleSidebarNotesChange}
+            onCopyReport={copyDebugReport}
+            onLogReport={logDebugReport}
             onClose={layout.closeEntityPanel}
-            onPin={layout.pinEntityPanel}
-            onViewWiki={handleViewWiki}
-            onCopyReport={copyReport}
-            isUpdating={isUpdating}
           />
         )}
       </div>
@@ -1842,7 +2037,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           onClose={layout.closeEntityPanel}
           onPin={layout.pinEntityPanel}
           onViewWiki={handleViewWiki}
-          onCopyReport={copyReport}
+          onCopyReport={copyDebugReport}
           isUpdating={isUpdating}
         />
       )}

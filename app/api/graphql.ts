@@ -969,6 +969,61 @@ No additional information is available at this time.
       return;
     }
 
+    // Entity report logging endpoint
+    if (req.url === '/entity-reports') {
+      if (req.method === 'OPTIONS') {
+        res.writeHead(200, {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        });
+        res.end();
+        return;
+      }
+
+      if (req.method !== 'POST') {
+        res.writeHead(405, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Method Not Allowed' }));
+        return;
+      }
+
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+      let body = '';
+      req.on('data', (chunk) => {
+        body += chunk.toString();
+      });
+
+      req.on('end', () => {
+        try {
+          const report = JSON.parse(body);
+          const reportsDir = path.join(process.cwd(), 'data', 'entity-reports');
+          fs.mkdirSync(reportsDir, { recursive: true });
+
+          const documentId = report?.documentId || 'unknown-document';
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+          const fileName = `entity-report-${documentId}-${timestamp}.json`;
+          const filePath = path.join(reportsDir, fileName);
+
+          fs.writeFileSync(filePath, JSON.stringify(report, null, 2), 'utf-8');
+
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: true, fileName, path: filePath }));
+        } catch (error) {
+          logger.error({ msg: 'entity_report_write_error', err: String(error) });
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            error: 'Failed to write entity report',
+            details: error instanceof Error ? error.message : 'Unknown error',
+          }));
+        }
+      });
+
+      return;
+    }
+
     // Extract entities endpoint (for Extraction Lab)
     if (req.url === '/extract-entities') {
       // Handle CORS preflight
