@@ -6,10 +6,12 @@
  * - Four columns: Entity Name, Type dropdown, Reject button, Notes
  * - No text mutation for rejection (uses entity.rejected flag)
  * - JSON reports (Log & Copy)
- * - Pinned/overlay modes
+ * - Draggable/resizable overlay mode
+ * - Pinned mode integrates into layout
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { X, Pin, PinOff, GripVertical } from 'lucide-react';
 import type { EntitySpan, EntityType } from '../types/entities';
 import './EntityReviewSidebar.css';
 
@@ -41,12 +43,91 @@ export function EntityReviewSidebar({
   onLogReport,
   onCopyReport,
 }: EntityReviewSidebarProps) {
-  // Filter out rejected entities or show all based on preference
+  // Filter state
   const [showRejected, setShowRejected] = useState(false);
+
+  // Draggable/resizable state for overlay mode
+  const [position, setPosition] = useState({ x: window.innerWidth - 620, y: 80 });
+  const [size, setSize] = useState({ width: 600, height: window.innerHeight - 160 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  const sidebarRef = useRef<HTMLDivElement>(null);
+
+  // Display entities based on filter
   const displayEntities = showRejected
     ? entities
     : entities.filter(e => !e.rejected);
 
+  // Drag handlers for overlay mode
+  const handleDragStart = useCallback((e: React.MouseEvent) => {
+    if (mode !== 'overlay') return;
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
+  }, [mode, position]);
+
+  const handleDragMove = useCallback((e: MouseEvent) => {
+    if (!isDragging) return;
+    const newX = Math.max(0, Math.min(window.innerWidth - size.width, e.clientX - dragStart.x));
+    const newY = Math.max(0, Math.min(window.innerHeight - size.height, e.clientY - dragStart.y));
+    setPosition({ x: newX, y: newY });
+  }, [isDragging, dragStart, size]);
+
+  const handleDragEnd = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  // Resize handlers for overlay mode
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    if (mode !== 'overlay') return;
+    e.stopPropagation();
+    setIsResizing(true);
+    setResizeStart({
+      x: e.clientX,
+      y: e.clientY,
+      width: size.width,
+      height: size.height
+    });
+  }, [mode, size]);
+
+  const handleResizeMove = useCallback((e: MouseEvent) => {
+    if (!isResizing) return;
+    const deltaX = e.clientX - resizeStart.x;
+    const deltaY = e.clientY - resizeStart.y;
+    const newWidth = Math.max(400, Math.min(window.innerWidth - position.x, resizeStart.width - deltaX));
+    const newHeight = Math.max(300, Math.min(window.innerHeight - position.y, resizeStart.height + deltaY));
+    setSize({ width: newWidth, height: newHeight });
+  }, [isResizing, resizeStart, position]);
+
+  const handleResizeEnd = useCallback(() => {
+    setIsResizing(false);
+  }, []);
+
+  // Mouse event listeners
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleDragMove);
+      document.addEventListener('mouseup', handleDragEnd);
+      return () => {
+        document.removeEventListener('mousemove', handleDragMove);
+        document.removeEventListener('mouseup', handleDragEnd);
+      };
+    }
+  }, [isDragging, handleDragMove, handleDragEnd]);
+
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener('mousemove', handleResizeMove);
+      document.addEventListener('mouseup', handleResizeEnd);
+      return () => {
+        document.removeEventListener('mousemove', handleResizeMove);
+        document.removeEventListener('mouseup', handleResizeEnd);
+      };
+    }
+  }, [isResizing, handleResizeMove, handleResizeEnd]);
+
+  // Entity update handlers
   const handleTypeChange = useCallback((index: number, newType: EntityType) => {
     onEntityUpdate(index, { type: newType });
   }, [onEntityUpdate]);
@@ -63,8 +144,32 @@ export function EntityReviewSidebar({
   const keptCount = entities.filter(e => !e.rejected).length;
   const rejectedCount = entities.filter(e => e.rejected).length;
 
+  // Apply position and size for overlay mode
+  const overlayStyle = mode === 'overlay' ? {
+    position: 'fixed' as const,
+    top: position.y,
+    left: position.x,
+    width: size.width,
+    height: size.height,
+  } : {};
+
   return (
-    <div className={`entity-review-sidebar ${mode}`}>
+    <div
+      ref={sidebarRef}
+      className={`entity-review-sidebar ${mode} ${mode === 'overlay' ? 'liquid-glass--strong' : 'liquid-glass--subtle'}`}
+      style={overlayStyle}
+    >
+      {/* Drag handle for overlay mode */}
+      {mode === 'overlay' && (
+        <div
+          className="sidebar-drag-handle"
+          onMouseDown={handleDragStart}
+          title="Drag to move"
+        >
+          <GripVertical size={16} />
+        </div>
+      )}
+
       {/* Header */}
       <div className="review-sidebar-header">
         <div className="review-sidebar-title">
@@ -98,14 +203,14 @@ export function EntityReviewSidebar({
             className="action-btn-icon"
             title={mode === 'pinned' ? 'Unpin sidebar' : 'Pin sidebar'}
           >
-            📌
+            {mode === 'pinned' ? <PinOff size={16} /> : <Pin size={16} />}
           </button>
           <button
             onClick={onClose}
             className="action-btn-icon"
             title="Close sidebar"
           >
-            ✕
+            <X size={16} />
           </button>
         </div>
       </div>
@@ -202,6 +307,15 @@ export function EntityReviewSidebar({
           </div>
         )}
       </div>
+
+      {/* Resize handle for overlay mode */}
+      {mode === 'overlay' && (
+        <div
+          className="sidebar-resize-handle"
+          onMouseDown={handleResizeStart}
+          title="Drag to resize"
+        />
+      )}
     </div>
   );
 }
