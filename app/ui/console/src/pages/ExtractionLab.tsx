@@ -505,6 +505,7 @@ interface SelectedEntityState {
 interface EntitySelectionMenuProps {
   selectedText: string;
   entitiesCount: number;
+  position?: { x: number; y: number };
   onTagAsEntity: () => void;
   onMergeEntities: () => void;
   onCancel: () => void;
@@ -513,18 +514,33 @@ interface EntitySelectionMenuProps {
 function EntitySelectionMenu({
   selectedText,
   entitiesCount,
+  position,
   onTagAsEntity,
   onMergeEntities,
   onCancel,
 }: EntitySelectionMenuProps) {
-  return (
-    <div
-      className="entity-selection-menu"
-      style={{
+  // Calculate menu position - near selection if provided, otherwise bottom center
+  const menuStyle: React.CSSProperties = position
+    ? {
+        position: 'absolute',
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+        transform: 'translateX(-50%)', // Center horizontally on selection
+      }
+    : {
         position: 'fixed',
         bottom: '100px',
         left: '50%',
         transform: 'translateX(-50%)',
+      };
+
+  return (
+    <div
+      className="entity-selection-menu"
+      onClick={(e) => e.stopPropagation()} // Prevent clicks from bubbling
+      onMouseDown={(e) => e.stopPropagation()} // Prevent mousedown from bubbling
+      style={{
+        ...menuStyle,
         background: 'var(--glass-bg)',
         backdropFilter: 'blur(12px)',
         border: '1px solid var(--glass-border)',
@@ -654,6 +670,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     end: number;
     text: string;
     entitiesInRange: EntitySpan[];
+    position?: { x: number; y: number }; // Position for menu
   } | null>(null);
 
   // Theme state
@@ -833,12 +850,13 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       return;
     }
 
-    if (hasActiveJob || !liveExtractionEnabled) {
+    if (hasActiveJob || !liveExtractionEnabled || settings.entityHighlightMode) {
+      // Don't auto-extract when in Entity Highlight Mode (prevents overwriting manual entities)
       return;
     }
 
     extractEntities(text);
-  }, [text, extractEntities, requiresBackground, hasActiveJob, liveExtractionEnabled, jobStatus]);
+  }, [text, extractEntities, requiresBackground, hasActiveJob, liveExtractionEnabled, jobStatus, settings.entityHighlightMode]);
 
   const startBackgroundJob = async () => {
     if (!text.trim()) {
@@ -1486,12 +1504,27 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   ) => {
     console.log('[ExtractionLab] Text selected:', { start, end, selectedText, entitiesInRange });
 
+    // Get selection position from DOM
+    const selection = window.getSelection();
+    let position: { x: number; y: number } | undefined;
+
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      // Position menu below selection, centered
+      position = {
+        x: rect.left + rect.width / 2,
+        y: rect.bottom + window.scrollY + 8, // 8px below selection
+      };
+    }
+
     // Store selection state to show floating action menu
     setTextSelection({
       start,
       end,
       text: selectedText,
       entitiesInRange,
+      position,
     });
   };
 
@@ -1840,6 +1873,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         <EntitySelectionMenu
           selectedText={textSelection.text}
           entitiesCount={textSelection.entitiesInRange.length}
+          position={textSelection.position}
           onTagAsEntity={() => createEntityFromSelection('PERSON')} // TODO: Add type picker
           onMergeEntities={mergeEntitiesFromSelection}
           onCancel={clearTextSelection}
