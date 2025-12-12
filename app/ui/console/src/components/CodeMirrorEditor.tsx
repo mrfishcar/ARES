@@ -20,6 +20,7 @@ import {
   EditorState,
   RangeSetBuilder,
   StateEffect,
+  Compartment,
 } from '@codemirror/state';
 
 import {
@@ -187,6 +188,7 @@ function contextMenuExtension(
   entitiesRef: React.MutableRefObject<EntitySpan[]>,
   baseOffsetRef: React.MutableRefObject<number>,
   entityHighlightModeRef: React.MutableRefObject<boolean>,
+  onTextSelectedRef: React.MutableRefObject<((start: number, end: number, text: string, entities: EntitySpan[]) => void | Promise<void>) | undefined>,
 ) {
   // Helper to find entity at position and show context menu
   const tryShowContextMenu = (event: MouseEvent, view: EditorView): boolean => {
@@ -215,8 +217,38 @@ function contextMenuExtension(
   };
 
   return EditorView.domEventHandlers({
-    // Right-click context menu (always works)
+    // Right-click context menu
     contextmenu: (event, view) => {
+      // In Entity Highlight Mode, check for text selection first
+      if (entityHighlightModeRef.current && onTextSelectedRef.current) {
+        const selection = view.state.selection.main;
+
+        // If there's a text selection (not just a cursor)
+        if (!selection.empty) {
+          const start = selection.from;
+          const end = selection.to;
+          const globalStart = baseOffsetRef.current + start;
+          const globalEnd = baseOffsetRef.current + end;
+          const selectedText = view.state.doc.sliceString(start, end);
+
+          // Find entities in selected range
+          const entitiesInRange = entitiesRef.current.filter(entity => {
+            return !(entity.end <= globalStart || entity.start >= globalEnd);
+          });
+
+          event.preventDefault();
+          event.stopPropagation();
+
+          // Call onTextSelected to show floating menu (same as drag behavior)
+          if (selectedText.trim()) {
+            onTextSelectedRef.current(globalStart, globalEnd, selectedText.trim(), entitiesInRange);
+          }
+
+          return true;
+        }
+      }
+
+      // Fall back to entity context menu if no selection
       return tryShowContextMenu(event as MouseEvent, view);
     },
     // Click/tap handler for highlight mode - shows context menu on entity tap
@@ -450,6 +482,9 @@ export function CodeMirrorEditor({
   const onTextSelectedRef = useRef(onTextSelected);
   const onResizeEntityRef = useRef(onResizeEntity);
 
+  // Compartment for dynamic editability (read-only when in entity highlight mode)
+  const editabilityCompartment = useRef(new Compartment());
+
   const [contextMenu, setContextMenu] = useState<{
     position: { x: number; y: number };
     entity: EntitySpan;
@@ -503,6 +538,18 @@ export function CodeMirrorEditor({
     onResizeEntityRef.current = onResizeEntity;
   }, [onResizeEntity]);
 
+  // Reconfigure editability when Entity Highlight Mode toggles
+  useEffect(() => {
+    if (!viewRef.current) return;
+
+    viewRef.current.dispatch({
+      effects: editabilityCompartment.current.reconfigure([
+        EditorView.editable.of(!entityHighlightMode),
+        EditorState.readOnly.of(entityHighlightMode),
+      ]),
+    });
+  }, [entityHighlightMode]);
+
   // create editor once
   useEffect(() => {
     if (!wrapperRef.current || viewRef.current) return;
@@ -516,13 +563,18 @@ export function CodeMirrorEditor({
         placeholder('Write or paste text...'),
         editorTheme,
         EditorView.lineWrapping,
+        // Make editor read-only when in Entity Highlight Mode (dynamic via compartment)
+        editabilityCompartment.current.of([
+          EditorView.editable.of(!entityHighlightMode),
+          EditorState.readOnly.of(entityHighlightMode),
+        ]),
         entityHighlighterExtension(
           () => entitiesRef.current,
           () => disableHighlightingRef.current,
           () => highlightOpacityRef.current,
           () => baseOffsetRef.current,
         ),
-        contextMenuExtension(setContextMenu, entitiesRef, baseOffsetRef, entityHighlightModeRef),
+        contextMenuExtension(setContextMenu, entitiesRef, baseOffsetRef, entityHighlightModeRef, onTextSelectedRef),
         dragToCreateExtension(entitiesRef, baseOffsetRef, entityHighlightModeRef, onTextSelectedRef, onResizeEntityRef),
         EditorView.updateListener.of((update: ViewUpdate) => {
           if (update.docChanged) {
