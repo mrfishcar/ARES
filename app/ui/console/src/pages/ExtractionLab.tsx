@@ -774,21 +774,61 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     }
   };
 
-  const fetchDocumentById = useCallback(async (id: string): Promise<StoredDocument> => {
-    const apiUrl = resolveApiUrl();
-    const res = await fetch(`${apiUrl}/documents/${id}`);
-    if (!res.ok) {
-      throw new Error(`Failed to fetch document ${id}`);
+  // localStorage backup helpers (for when Railway backend loses documents)
+  const getLocalStorageDocuments = useCallback((): StoredDocument[] => {
+    try {
+      const stored = localStorage.getItem('ares_documents');
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (error) {
+      console.error('[localStorage] Failed to load documents', error);
     }
-    const json = await res.json();
-    if (!json?.ok || !json.document) {
-      throw new Error('Invalid document response');
-    }
-    if (typeof window !== 'undefined') {
-      (window as any).__ARES_DOC_ERROR_SHOWN__ = false;
-    }
-    return json.document;
+    return [];
   }, []);
+
+  const saveToLocalStorage = useCallback((doc: StoredDocument) => {
+    try {
+      const docs = getLocalStorageDocuments();
+      const idx = docs.findIndex(d => d.id === doc.id);
+      if (idx >= 0) {
+        docs[idx] = doc;
+      } else {
+        docs.push(doc);
+      }
+      localStorage.setItem('ares_documents', JSON.stringify(docs));
+    } catch (error) {
+      console.error('[localStorage] Failed to save document', error);
+    }
+  }, [getLocalStorageDocuments]);
+
+  const fetchDocumentById = useCallback(async (id: string): Promise<StoredDocument> => {
+    try {
+      const apiUrl = resolveApiUrl();
+      const res = await fetch(`${apiUrl}/documents/${id}`);
+      if (!res.ok) {
+        throw new Error(`Failed to fetch document ${id}`);
+      }
+      const json = await res.json();
+      if (!json?.ok || !json.document) {
+        throw new Error('Invalid document response');
+      }
+      if (typeof window !== 'undefined') {
+        (window as any).__ARES_DOC_ERROR_SHOWN__ = false;
+      }
+      return json.document;
+    } catch (error) {
+      // Fallback to localStorage if backend fails
+      console.log(`[ExtractionLab] Backend fetch failed for ${id}, checking localStorage`);
+      const localDocs = getLocalStorageDocuments();
+      const localDoc = localDocs.find(d => d.id === id);
+      if (localDoc) {
+        console.log(`[ExtractionLab] Found document ${id} in localStorage`);
+        return localDoc;
+      }
+      throw error;
+    }
+  }, [getLocalStorageDocuments]);
 
   const applyDocumentToState = useCallback(
     (document: StoredDocument) => {
@@ -847,6 +887,15 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         }
       }
 
+      // If backend is empty, fall back to localStorage
+      if (hydratedDocs.length === 0) {
+        const localDocs = getLocalStorageDocuments();
+        if (localDocs.length > 0) {
+          console.log('[ExtractionLab] Backend empty, using localStorage backup');
+          hydratedDocs.push(...localDocs);
+        }
+      }
+
       const sorted = hydratedDocs.sort(
         (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       );
@@ -856,7 +905,14 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       }
     } catch (error) {
       console.error('[ExtractionLab] Failed to refresh document list', error);
-      if (
+      // Fall back to localStorage if backend fails
+      const localDocs = getLocalStorageDocuments();
+      if (localDocs.length > 0) {
+        console.log('[ExtractionLab] Backend failed, using localStorage backup');
+        setDocumentList(localDocs.sort(
+          (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        ));
+      } else if (
         typeof window !== 'undefined' &&
         !(window as any).__ARES_DOC_ERROR_SHOWN__
       ) {
@@ -866,7 +922,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     } finally {
       setLoadingDocuments(false);
     }
-  }, [fetchDocumentById, toast]);
+  }, [fetchDocumentById, toast, getLocalStorageDocuments]);
 
   useEffect(() => {
     if (layout.showDocumentSidebar) {
@@ -954,6 +1010,9 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       setSaveStatus('saved');
       setLastSavedId(json.document.id);
 
+      // Also save to localStorage as backup (in case Railway restarts)
+      saveToLocalStorage(json.document);
+
       if (layout.showDocumentSidebar) {
         refreshDocumentList();
       }
@@ -962,12 +1021,26 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     } catch (error) {
       console.error('[ExtractionLab] Failed to save document', error);
       setSaveStatus('error');
+
+      // Even if backend fails, save to localStorage
+      const now = new Date().toISOString();
+      const localDoc: StoredDocument = {
+        id: lastSavedId || `local_${Date.now()}`,
+        title: text.trim().split('\n')[0]?.slice(0, 80) || 'Untitled Document',
+        text,
+        extractionJson: { entities, relations, stats },
+        createdAt: now,
+        updatedAt: now,
+      };
+      saveToLocalStorage(localDoc);
+      setLastSavedId(localDoc.id);
+
       if (showToast) {
-        toast.error('Failed to save document');
+        toast.error('Failed to save document to server, but saved locally');
       }
-      return null;
+      return localDoc.id;
     }
-  }, [entities, relations, stats, text, toast, layout.showDocumentSidebar, refreshDocumentList, lastSavedId]);
+  }, [entities, relations, stats, text, toast, layout.showDocumentSidebar, refreshDocumentList, lastSavedId, saveToLocalStorage]);
 
   // Manual save (shows toast on error)
   const handleSaveDocument = useCallback(async () => {
