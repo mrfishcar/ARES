@@ -451,6 +451,69 @@ function dragToCreateExtension(
   });
 }
 
+// -------------------- KEYBOARD BLOCKER EXTENSION --------------------
+
+/**
+ * Blocks keyboard input in Entity Highlight Mode while allowing text selection
+ * This allows iOS/iPad users to select text natively without enabling typing
+ */
+function keyboardBlockerExtension(
+  entityHighlightModeRef: React.MutableRefObject<boolean>,
+) {
+  return keymap.of([
+    {
+      any: (view) => {
+        // Block all keyboard input when in Entity Highlight Mode
+        if (entityHighlightModeRef.current) {
+          return true; // Event handled, prevent default
+        }
+        return false; // Allow normal typing
+      },
+    },
+  ]);
+}
+
+// -------------------- SELECTION LISTENER EXTENSION --------------------
+
+/**
+ * Detects text selection changes and auto-triggers entity menu on iPad/touch devices
+ */
+function selectionListenerExtension(
+  entityHighlightModeRef: React.MutableRefObject<boolean>,
+  onTextSelectedRef: React.MutableRefObject<((start: number, end: number, text: string, entities: EntitySpan[]) => void | Promise<void>) | undefined>,
+  entitiesRef: React.MutableRefObject<EntitySpan[]>,
+  baseOffsetRef: React.MutableRefObject<number>,
+) {
+  return EditorView.updateListener.of((update: ViewUpdate) => {
+    // Only handle in Entity Highlight Mode
+    if (!entityHighlightModeRef.current || !onTextSelectedRef.current) return;
+
+    // Check if selection changed
+    if (update.selectionSet) {
+      const selection = update.state.selection.main;
+
+      // If there's a text selection (not just cursor)
+      if (!selection.empty) {
+        const start = selection.from;
+        const end = selection.to;
+        const globalStart = baseOffsetRef.current + start;
+        const globalEnd = baseOffsetRef.current + end;
+        const selectedText = update.state.doc.sliceString(start, end);
+
+        // Find entities in selected range
+        const entitiesInRange = entitiesRef.current.filter(entity => {
+          return !(entity.end <= globalStart || entity.start >= globalEnd);
+        });
+
+        // Call onTextSelected to show floating menu
+        if (selectedText.trim()) {
+          onTextSelectedRef.current(globalStart, globalEnd, selectedText.trim(), entitiesInRange);
+        }
+      }
+    }
+  });
+}
+
 // -------------------- MAIN COMPONENT --------------------
 
 export function CodeMirrorEditor({
@@ -481,9 +544,6 @@ export function CodeMirrorEditor({
   const entityHighlightModeRef = useRef(entityHighlightMode);
   const onTextSelectedRef = useRef(onTextSelected);
   const onResizeEntityRef = useRef(onResizeEntity);
-
-  // Compartment for dynamic editability (read-only when in entity highlight mode)
-  const editabilityCompartment = useRef(new Compartment());
 
   const [contextMenu, setContextMenu] = useState<{
     position: { x: number; y: number };
@@ -538,18 +598,6 @@ export function CodeMirrorEditor({
     onResizeEntityRef.current = onResizeEntity;
   }, [onResizeEntity]);
 
-  // Reconfigure editability when Entity Highlight Mode toggles
-  useEffect(() => {
-    if (!viewRef.current) return;
-
-    viewRef.current.dispatch({
-      effects: editabilityCompartment.current.reconfigure([
-        EditorView.editable.of(!entityHighlightMode),
-        EditorState.readOnly.of(entityHighlightMode),
-      ]),
-    });
-  }, [entityHighlightMode]);
-
   // create editor once
   useEffect(() => {
     if (!wrapperRef.current || viewRef.current) return;
@@ -563,11 +611,10 @@ export function CodeMirrorEditor({
         placeholder('Write or paste text...'),
         editorTheme,
         EditorView.lineWrapping,
-        // Make editor read-only when in Entity Highlight Mode (dynamic via compartment)
-        editabilityCompartment.current.of([
-          EditorView.editable.of(!entityHighlightMode),
-          EditorState.readOnly.of(entityHighlightMode),
-        ]),
+        // Block keyboard input in Entity Highlight Mode (allows text selection on iOS)
+        keyboardBlockerExtension(entityHighlightModeRef),
+        // Auto-show menu when text is selected (iPad-friendly)
+        selectionListenerExtension(entityHighlightModeRef, onTextSelectedRef, entitiesRef, baseOffsetRef),
         entityHighlighterExtension(
           () => entitiesRef.current,
           () => disableHighlightingRef.current,
