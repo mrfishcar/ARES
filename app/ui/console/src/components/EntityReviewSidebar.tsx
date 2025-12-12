@@ -258,9 +258,6 @@ export function EntityReviewSidebar({
                   {/* Column 1: Entity Name */}
                   <div className="col-name">
                     <div className="entity-name-primary">{entityName}</div>
-                    <div className="entity-name-secondary">
-                      Span {entity.start}–{entity.end}
-                    </div>
                   </div>
 
                   {/* Column 2: Type Dropdown */}

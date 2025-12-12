@@ -1705,12 +1705,44 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
   // Entity Review Sidebar handlers
   const handleEntityUpdate = useCallback((index: number, updates: Partial<EntitySpan>) => {
+    const entity = entities[index];
+    const key = makeSpanKey(entity);
+
+    // Update entity in state
     setEntities((prev) => {
       const updated = [...prev];
       updated[index] = { ...updated[index], ...updates };
       return updated;
     });
-  }, []);
+
+    // Update entityOverrides for visual highlighting
+    if (updates.type !== undefined) {
+      // Type change - update typeOverrides
+      setEntityOverrides((prev) => ({
+        ...prev,
+        typeOverrides: {
+          ...prev.typeOverrides,
+          [key]: updates.type as EntityType,
+        },
+      }));
+    }
+
+    if (updates.rejected !== undefined) {
+      // Rejection change - update rejectedSpans
+      setEntityOverrides((prev) => {
+        const nextRejected = new Set(prev.rejectedSpans);
+        if (updates.rejected) {
+          nextRejected.add(key);
+        } else {
+          nextRejected.delete(key);
+        }
+        return {
+          ...prev,
+          rejectedSpans: nextRejected,
+        };
+      });
+    }
+  }, [entities]);
 
   const handleLogReport = useCallback(() => {
     if (entities.length === 0) {
