@@ -767,6 +767,9 @@ export function CodeMirrorEditor({
           height: '100%',
           background: 'var(--bg-primary)',
           overflow: 'hidden',
+          // Disable iOS native context menu in Entity Highlight Mode
+          WebkitTouchCallout: entityHighlightMode ? 'none' : 'default',
+          WebkitUserSelect: entityHighlightMode ? 'text' : 'auto',
         }}
       />
 
