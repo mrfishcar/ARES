@@ -249,13 +249,13 @@ function contextMenuExtension(
 // -------------------- DRAG-TO-CREATE EXTENSION --------------------
 
 /**
- * Handles drag-to-create entity spans and drag-to-resize in Entity Highlight Mode
+ * Handles drag-to-select text and drag-to-resize in Entity Highlight Mode
  */
 function dragToCreateExtension(
   entitiesRef: React.MutableRefObject<EntitySpan[]>,
   baseOffsetRef: React.MutableRefObject<number>,
   entityHighlightModeRef: React.MutableRefObject<boolean>,
-  onCreateEntitySpanRef: React.MutableRefObject<((start: number, end: number, text: string) => void | Promise<void>) | undefined>,
+  onTextSelectedRef: React.MutableRefObject<((start: number, end: number, text: string, entities: EntitySpan[]) => void | Promise<void>) | undefined>,
   onResizeEntityRef: React.MutableRefObject<((entity: EntitySpan, newStart: number, newEnd: number) => void | Promise<void>) | undefined>,
 ) {
   let dragState: {
@@ -391,14 +391,19 @@ function dragToCreateExtension(
             const newEnd = resizeEdge === 'end' ? globalEnd : resizingEntity.end;
 
             onResizeEntityRef.current(resizingEntity, newStart, newEnd);
-          } else if (!resizingEntity && onCreateEntitySpanRef.current && end > start) {
-            // Handle drag-to-create new entity
+          } else if (!resizingEntity && onTextSelectedRef.current && end > start) {
+            // Handle drag-to-select text (could be new text or existing entities)
             const globalStart = baseOffsetRef.current + start;
             const globalEnd = baseOffsetRef.current + end;
             const selectedText = view.state.doc.sliceString(start, end);
 
+            // Find entities that overlap with the selected range
+            const entitiesInRange = entitiesRef.current.filter(entity => {
+              return !(entity.end <= globalStart || entity.start >= globalEnd);
+            });
+
             if (selectedText.trim()) {
-              onCreateEntitySpanRef.current(globalStart, globalEnd, selectedText.trim());
+              onTextSelectedRef.current(globalStart, globalEnd, selectedText.trim(), entitiesInRange);
             }
           }
         }
@@ -430,7 +435,7 @@ export function CodeMirrorEditor({
   entityHighlightMode = false,
   baseOffset = 0,
   onCursorChange,
-  onCreateEntitySpan,
+  onTextSelected,
   onResizeEntity,
 }: CodeMirrorEditorProps) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
@@ -442,7 +447,7 @@ export function CodeMirrorEditor({
   const highlightOpacityRef = useRef(highlightOpacity);
   const onCursorChangeRef = useRef(onCursorChange);
   const entityHighlightModeRef = useRef(entityHighlightMode);
-  const onCreateEntitySpanRef = useRef(onCreateEntitySpan);
+  const onTextSelectedRef = useRef(onTextSelected);
   const onResizeEntityRef = useRef(onResizeEntity);
 
   const [contextMenu, setContextMenu] = useState<{
@@ -491,8 +496,8 @@ export function CodeMirrorEditor({
   }, [entityHighlightMode]);
 
   useEffect(() => {
-    onCreateEntitySpanRef.current = onCreateEntitySpan;
-  }, [onCreateEntitySpan]);
+    onTextSelectedRef.current = onTextSelected;
+  }, [onTextSelected]);
 
   useEffect(() => {
     onResizeEntityRef.current = onResizeEntity;
@@ -518,7 +523,7 @@ export function CodeMirrorEditor({
           () => baseOffsetRef.current,
         ),
         contextMenuExtension(setContextMenu, entitiesRef, baseOffsetRef, entityHighlightModeRef),
-        dragToCreateExtension(entitiesRef, baseOffsetRef, entityHighlightModeRef, onCreateEntitySpanRef, onResizeEntityRef),
+        dragToCreateExtension(entitiesRef, baseOffsetRef, entityHighlightModeRef, onTextSelectedRef, onResizeEntityRef),
         EditorView.updateListener.of((update: ViewUpdate) => {
           if (update.docChanged) {
             // Mark that user just edited (to prevent external sync from interfering)

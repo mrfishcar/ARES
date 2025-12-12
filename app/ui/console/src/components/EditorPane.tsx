@@ -23,7 +23,7 @@ interface EditorPaneProps {
   onCreateNew: (entity: EntitySpan, type: EntityType) => Promise<void>;
   onReject: (entity: EntitySpan) => Promise<void>;
   onTagEntity: (entity: EntitySpan, targetEntity: EntitySpan) => Promise<void>;
-  onCreateEntitySpan?: (start: number, end: number, selectedText: string) => void | Promise<void>;
+  onTextSelected?: (start: number, end: number, selectedText: string, entitiesInRange: EntitySpan[]) => void | Promise<void>;
   onResizeEntity?: (entity: EntitySpan, newStart: number, newEnd: number) => void | Promise<void>;
   enableLongTextOptimization?: boolean;
 }
@@ -40,7 +40,7 @@ export function EditorPane({
   onCreateNew,
   onReject,
   onTagEntity,
-  onCreateEntitySpan,
+  onTextSelected,
   onResizeEntity,
   enableLongTextOptimization,
 }: EditorPaneProps) {
@@ -71,7 +71,7 @@ export function EditorPane({
               onCreateNew={onCreateNew}
               onReject={onReject}
               onTagEntity={onTagEntity}
-              onCreateEntitySpan={onCreateEntitySpan}
+              onTextSelected={onTextSelected}
               onResizeEntity={onResizeEntity}
               enableLongTextOptimization={enableLongTextOptimization}
             />

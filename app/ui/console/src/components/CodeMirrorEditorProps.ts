@@ -20,8 +20,13 @@ export interface CodeMirrorEditorProps {
   onReject?: (entity: EntitySpan) => Promise<void>;
   entityHighlightMode?: boolean;
 
-  /** NEW: Entity mode drag-to-create callback */
-  onCreateEntitySpan?: (start: number, end: number, selectedText: string) => void | Promise<void>;
+  /** NEW: Entity mode text selection callback - called when user drags to select text */
+  onTextSelected?: (
+    start: number,
+    end: number,
+    selectedText: string,
+    entitiesInRange: EntitySpan[]
+  ) => void | Promise<void>;
 
   /** NEW: Entity mode drag-to-resize callback */
   onResizeEntity?: (entity: EntitySpan, newStart: number, newEnd: number) => void | Promise<void>;

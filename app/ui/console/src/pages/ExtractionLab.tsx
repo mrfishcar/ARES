@@ -501,6 +501,112 @@ interface SelectedEntityState {
   type: string;
 }
 
+// Floating action menu for text selection in Entity Highlight Mode
+interface EntitySelectionMenuProps {
+  selectedText: string;
+  entitiesCount: number;
+  onTagAsEntity: () => void;
+  onMergeEntities: () => void;
+  onCancel: () => void;
+}
+
+function EntitySelectionMenu({
+  selectedText,
+  entitiesCount,
+  onTagAsEntity,
+  onMergeEntities,
+  onCancel,
+}: EntitySelectionMenuProps) {
+  return (
+    <div
+      className="entity-selection-menu"
+      style={{
+        position: 'fixed',
+        bottom: '100px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        background: 'var(--glass-bg)',
+        backdropFilter: 'blur(12px)',
+        border: '1px solid var(--glass-border)',
+        borderRadius: '12px',
+        padding: '16px',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+        zIndex: 1000,
+        minWidth: '300px',
+        maxWidth: '400px',
+      }}
+    >
+      <div style={{ marginBottom: '12px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+        Selected: <strong style={{ color: 'var(--text-primary)' }}>"{selectedText.substring(0, 50)}{selectedText.length > 50 ? '...' : ''}"</strong>
+        {entitiesCount > 0 && (
+          <div style={{ marginTop: '4px', fontSize: '12px' }}>
+            {entitiesCount} {entitiesCount === 1 ? 'entity' : 'entities'} in range
+          </div>
+        )}
+      </div>
+
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        {/* Tag as Entity button - always show */}
+        <button
+          onClick={onTagAsEntity}
+          className="action-button primary"
+          style={{
+            flex: '1 1 auto',
+            padding: '8px 16px',
+            borderRadius: '8px',
+            border: 'none',
+            background: 'var(--accent-color)',
+            color: 'white',
+            fontWeight: '500',
+            cursor: 'pointer',
+            fontSize: '14px',
+          }}
+        >
+          Tag as Entity
+        </button>
+
+        {/* Merge Entities button - only show if 2+ entities selected */}
+        {entitiesCount >= 2 && (
+          <button
+            onClick={onMergeEntities}
+            className="action-button merge"
+            style={{
+              flex: '1 1 auto',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              border: 'none',
+              background: '#8b5cf6',
+              color: 'white',
+              fontWeight: '500',
+              cursor: 'pointer',
+              fontSize: '14px',
+            }}
+          >
+            Merge {entitiesCount} Entities
+          </button>
+        )}
+
+        <button
+          onClick={onCancel}
+          className="action-button cancel"
+          style={{
+            padding: '8px 16px',
+            borderRadius: '8px',
+            border: '1px solid var(--glass-border)',
+            background: 'transparent',
+            color: 'var(--text-secondary)',
+            fontWeight: '500',
+            cursor: 'pointer',
+            fontSize: '14px',
+          }}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   // Layout state (via custom hook)
   const layout = useLabLayoutState();
@@ -541,6 +647,14 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     rejectedSpans: new Set(),
     typeOverrides: {},
   });
+
+  // Text selection state (for entity highlight mode)
+  const [textSelection, setTextSelection] = useState<{
+    start: number;
+    end: number;
+    text: string;
+    entitiesInRange: EntitySpan[];
+  } | null>(null);
 
   // Theme state
   const [theme, setTheme] = useState(loadThemePreference());
@@ -1363,22 +1477,41 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     toast.info(`"${entity.text}" rejected`);
   };
 
-  // Entity handler: Create Entity Span from Drag (Entity Highlight Mode)
-  const handleCreateEntitySpan = async (start: number, end: number, selectedText: string) => {
-    console.log('[ExtractionLab] Creating entity span from drag:', { start, end, selectedText });
+  // Entity handler: Text Selected in Entity Highlight Mode
+  const handleTextSelected = async (
+    start: number,
+    end: number,
+    selectedText: string,
+    entitiesInRange: EntitySpan[]
+  ) => {
+    console.log('[ExtractionLab] Text selected:', { start, end, selectedText, entitiesInRange });
 
-    // Prompt user for entity type (defaulting to PERSON)
-    // For now, create as PERSON - you can add a type picker UI later
-    const type: EntityType = 'PERSON';
-
-    const newEntity: EntitySpan = {
-      text: selectedText,
-      type,
+    // Store selection state to show floating action menu
+    setTextSelection({
       start,
       end,
+      text: selectedText,
+      entitiesInRange,
+    });
+  };
+
+  // Clear text selection (when user clicks away)
+  const clearTextSelection = () => {
+    setTextSelection(null);
+  };
+
+  // Create entity from selected text
+  const createEntityFromSelection = (type: EntityType) => {
+    if (!textSelection) return;
+
+    const newEntity: EntitySpan = {
+      text: textSelection.text,
+      type,
+      start: textSelection.start,
+      end: textSelection.end,
       source: 'manual',
       confidence: 1.0,
-      displayText: selectedText,
+      displayText: textSelection.text,
     };
 
     setEntities((prev) => deduplicateEntities([...prev, newEntity]));
@@ -1390,7 +1523,56 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       },
     }));
 
-    toast.success(`Entity created: "${selectedText}" as ${type}`);
+    toast.success(`Entity created: "${textSelection.text}" as ${type}`);
+    clearTextSelection();
+  };
+
+  // Merge entities in selected range
+  const mergeEntitiesFromSelection = () => {
+    if (!textSelection || textSelection.entitiesInRange.length < 2) {
+      toast.error('Select at least 2 entities to merge');
+      return;
+    }
+
+    const entitiesToMerge = textSelection.entitiesInRange;
+
+    // Use the first entity's type as the merged type
+    const mergedType = entitiesToMerge[0].type;
+
+    // Create merged entity spanning the full selection
+    const mergedEntity: EntitySpan = {
+      text: textSelection.text,
+      type: mergedType,
+      start: textSelection.start,
+      end: textSelection.end,
+      source: 'manual',
+      confidence: 1.0,
+      displayText: textSelection.text,
+    };
+
+    // Remove old entities and add merged one
+    setEntities((prev) => {
+      const filtered = prev.filter(
+        (e) => !entitiesToMerge.some(
+          (toMerge) =>
+            toMerge.start === e.start &&
+            toMerge.end === e.end &&
+            toMerge.text === e.text
+        )
+      );
+      return deduplicateEntities([...filtered, mergedEntity]);
+    });
+
+    setEntityOverrides((prev) => ({
+      ...prev,
+      typeOverrides: {
+        ...prev.typeOverrides,
+        [makeSpanKey(mergedEntity)]: mergedType,
+      },
+    }));
+
+    toast.success(`Merged ${entitiesToMerge.length} entities into "${textSelection.text}"`);
+    clearTextSelection();
   };
 
   // Entity handler: Resize Entity (Entity Highlight Mode)
@@ -1587,7 +1769,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           onCreateNew={handleCreateNew}
           onReject={handleReject}
           onTagEntity={handleTagEntity}
-          onCreateEntitySpan={handleCreateEntitySpan}
+          onTextSelected={handleTextSelected}
           onResizeEntity={handleResizeEntity}
           enableLongTextOptimization={settings.enableLongTextOptimization}
         />
@@ -1650,6 +1832,17 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           project={project}
           onClose={() => setSelectedEntity(null)}
           extractionContext={{ entities: displayEntities, relations }}
+        />
+      )}
+
+      {/* Entity Selection Menu - shown when text is selected in highlight mode */}
+      {textSelection && settings.entityHighlightMode && (
+        <EntitySelectionMenu
+          selectedText={textSelection.text}
+          entitiesCount={textSelection.entitiesInRange.length}
+          onTagAsEntity={() => createEntityFromSelection('PERSON')} // TODO: Add type picker
+          onMergeEntities={mergeEntitiesFromSelection}
+          onCancel={clearTextSelection}
         />
       )}
     </div>
