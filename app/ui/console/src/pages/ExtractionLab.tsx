@@ -1935,8 +1935,15 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const reviewEntities = Object.values(entityReviews);
   const sidebarEntities = reviewEntities.filter((entity) => !entity.rejected);
 
+  const entityPanelClass =
+    layout.entityPanelMode === 'pinned'
+      ? ' entity-panel-pinned'
+      : layout.entityPanelMode === 'overlay'
+        ? ' entity-panel-overlay'
+        : '';
+
   return (
-    <div className={`extraction-lab${layout.showDocumentSidebar ? ' sidebar-open' : ''}`}>
+    <div className={`extraction-lab${layout.showDocumentSidebar ? ' sidebar-open' : ''}${entityPanelClass}`}>
       {/* Hamburger button */}
       <button
         onClick={layout.toggleDocumentSidebar}

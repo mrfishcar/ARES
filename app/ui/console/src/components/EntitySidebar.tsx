@@ -90,7 +90,7 @@ export function EntitySidebar({
           </div>
         ) : (
           entities.map(entity => (
-            <div key={entity.id} className="entity-sidebar__pill">
+            <div key={entity.id} className="entity-sidebar__row">
               <div className="entity-sidebar__row-grid">
                 <div className="entity-sidebar__name">
                   <div className="entity-sidebar__label">{entity.canonicalName || entity.name}</div>
