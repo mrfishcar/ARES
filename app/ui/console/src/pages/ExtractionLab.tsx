@@ -14,7 +14,7 @@ import { EditorPane } from '../components/EditorPane';
 import { EntityModal } from '../components/EntityModal';
 import { WikiModal } from '../components/WikiModal';
 import { FloatingActionButton } from '../components/FloatingActionButton';
-import { EntityOverlay } from '../components/EntityOverlay';
+import { EntityReviewSidebar } from '../components/EntityReviewSidebar';
 import { isValidEntityType, type EntitySpan, type EntityType } from '../types/entities';
 import { initializeTheme, toggleTheme, loadThemePreference, getEffectiveTheme } from '../utils/darkMode';
 import { useLabLayoutState } from '../hooks/useLabLayoutState';
@@ -1703,6 +1703,99 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     toast.success('Full ARES report copied! Includes entities AND relations.');
   };
 
+  // Entity Review Sidebar handlers
+  const handleEntityUpdate = useCallback((index: number, updates: Partial<EntitySpan>) => {
+    setEntities((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], ...updates };
+      return updated;
+    });
+  }, []);
+
+  const handleLogReport = useCallback(() => {
+    if (entities.length === 0) {
+      toast.error('No entities to report');
+      return;
+    }
+
+    // Generate JSON report for entity review
+    const report = {
+      timestamp: new Date().toISOString(),
+      document: {
+        title: lastSavedId || 'Untitled',
+        textLength: text.length,
+      },
+      entities: entities.map((e) => ({
+        text: e.text,
+        type: e.type,
+        confidence: e.confidence,
+        start: e.start,
+        end: e.end,
+        source: e.source,
+        displayText: e.displayText,
+        canonicalName: e.canonicalName,
+        notes: e.notes,
+        rejected: e.rejected,
+        context: text.substring(Math.max(0, e.start - 50), Math.min(text.length, e.end + 50)),
+      })),
+      stats: {
+        total: entities.length,
+        kept: entities.filter(e => !e.rejected).length,
+        rejected: entities.filter(e => e.rejected).length,
+      },
+    };
+
+    // Trigger download
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `entity-review-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast.success('Entity review report saved to disk');
+  }, [entities, text, lastSavedId, toast]);
+
+  const handleCopyReport = useCallback(() => {
+    if (entities.length === 0) {
+      toast.error('No entities to report');
+      return;
+    }
+
+    // Generate JSON report for entity review
+    const report = {
+      timestamp: new Date().toISOString(),
+      document: {
+        title: lastSavedId || 'Untitled',
+        textLength: text.length,
+      },
+      entities: entities.map((e) => ({
+        text: e.text,
+        type: e.type,
+        confidence: e.confidence,
+        start: e.start,
+        end: e.end,
+        source: e.source,
+        displayText: e.displayText,
+        canonicalName: e.canonicalName,
+        notes: e.notes,
+        rejected: e.rejected,
+        context: text.substring(Math.max(0, e.start - 50), Math.min(text.length, e.end + 50)),
+      })),
+      stats: {
+        total: entities.length,
+        kept: entities.filter(e => !e.rejected).length,
+        rejected: entities.filter(e => e.rejected).length,
+      },
+    };
+
+    navigator.clipboard.writeText(JSON.stringify(report, null, 2));
+    toast.success('Entity review report copied to clipboard');
+  }, [entities, text, lastSavedId, toast]);
+
   const handleViewWiki = useCallback(
     (entityName: string) => {
       const entity = displayEntities.find((e) => e.text === entityName);
@@ -1809,16 +1902,14 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
         {/* Pinned sidebar mode */}
         {layout.entityPanelMode === 'pinned' && (
-          <EntityOverlay
+          <EntityReviewSidebar
             mode="pinned"
-            entities={displayEntities}
-            relations={relations}
-            stats={stats}
+            entities={entities}
             onClose={layout.closeEntityPanel}
             onPin={layout.pinEntityPanel}
-            onViewWiki={handleViewWiki}
-            onCopyReport={copyReport}
-            isUpdating={isUpdating}
+            onEntityUpdate={handleEntityUpdate}
+            onLogReport={handleLogReport}
+            onCopyReport={handleCopyReport}
           />
         )}
       </div>
@@ -1832,18 +1923,16 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         position="bottom-right"
       />
 
-      {/* Entity Overlay - Full-screen mode */}
+      {/* Entity Review Sidebar - Full-screen overlay mode */}
       {layout.entityPanelMode === 'overlay' && (
-        <EntityOverlay
+        <EntityReviewSidebar
           mode="overlay"
-          entities={displayEntities}
-          relations={relations}
-          stats={stats}
+          entities={entities}
           onClose={layout.closeEntityPanel}
           onPin={layout.pinEntityPanel}
-          onViewWiki={handleViewWiki}
-          onCopyReport={copyReport}
-          isUpdating={isUpdating}
+          onEntityUpdate={handleEntityUpdate}
+          onLogReport={handleLogReport}
+          onCopyReport={handleCopyReport}
         />
       )}
 

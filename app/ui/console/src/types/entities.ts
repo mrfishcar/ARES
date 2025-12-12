@@ -48,6 +48,9 @@ export interface EntitySpan {
   type: EntityType;
   confidence: number;
   source: 'tag' | 'natural' | 'alias' | 'manual';
+  // Review sidebar fields
+  notes?: string | null;
+  rejected?: boolean;
 }
 
 export interface HighlightConfig {
