@@ -474,11 +474,8 @@ function applyEntityOverrides(
   overrides: EntityOverrides,
   highlightMode: boolean
 ): EntitySpan[] {
-  if (!highlightMode) {
-    // When not in highlight mode, just return the original entities
-    return baseEntities;
-  }
-
+  // Always apply overrides from sidebar, context menu, etc.
+  // (highlightMode parameter kept for backwards compatibility but no longer used)
   if (!baseEntities.length) return baseEntities;
 
   const { rejectedSpans, typeOverrides } = overrides;
