@@ -230,7 +230,10 @@
 .entity-table {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--liquid-glass-border);
 }
 
 .entity-table-header {
@@ -243,35 +246,48 @@
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--liquid-glass-border);
 }
 
-/* Entity row - rounded pill style */
+/* Entity row - alternating colors, no gaps */
 .entity-row {
   display: grid;
   grid-template-columns: 2fr 1.2fr 0.8fr 2fr;
   gap: 12px;
   align-items: center;
   padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--liquid-glass-border);
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
   transition: all 0.2s;
 }
 
+/* Alternating row colors */
+.entity-row:nth-child(even) {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.entity-row:last-child {
+  border-bottom: none;
+}
+
 .entity-row:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(56, 189, 248, 0.08);
   border-color: var(--accent-color);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .entity-row--rejected {
   opacity: 0.6;
-  background: rgba(239, 68, 68, 0.05);
-  border-color: rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.03);
+}
+
+.entity-row--rejected:nth-child(even) {
+  background: rgba(239, 68, 68, 0.06);
 }
 
 .entity-row--rejected:hover {
-  background: rgba(239, 68, 68, 0.08);
+  background: rgba(239, 68, 68, 0.1);
 }
 
 /* Column 1: Entity Name */
