@@ -325,11 +325,29 @@ function findIncompleteTagRegions(rawText: string): Array<{ start: number; end: 
  * - "text #Mount:PLACE and more" → KEEP (complete tag with more text)
  */
 function stripIncompleteTagsForExtraction(rawText: string): string {
-  // Find the LAST occurrence of #
-  const lastHashIndex = rawText.lastIndexOf('#');
+  // Find the LAST occurrence of # that's NOT a markdown header
+  // Markdown headers: # or ## or ### etc at start of line
+  // Entity tags: #Entity:TYPE or #[Multi Word]:TYPE (mid-text)
+
+  let lastHashIndex = -1;
+
+  // Search backwards for # that's not a markdown header
+  for (let i = rawText.length - 1; i >= 0; i--) {
+    if (rawText[i] === '#') {
+      // Check if this # is at the start of a line (markdown header)
+      const isLineStart = i === 0 || rawText[i - 1] === '\n';
+
+      if (!isLineStart) {
+        // This # is mid-text, could be an entity tag
+        lastHashIndex = i;
+        break;
+      }
+      // Otherwise it's a markdown header, skip it
+    }
+  }
 
   if (lastHashIndex === -1) {
-    // No tags at all
+    // No entity tags found (only markdown headers or no # at all)
     return rawText;
   }
 
