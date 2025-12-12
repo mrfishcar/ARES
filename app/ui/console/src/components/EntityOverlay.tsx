@@ -7,8 +7,8 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { EntityResultsPanel } from './EntityResultsPanel';
-import type { EntitySpan } from '../types/entities';
+import { EntitySidebar, type EntitySidebarEntity } from './EntitySidebar';
+import type { EntitySpan, EntityType } from '../types/entities';
 
 interface Relation {
   id: string;
@@ -33,8 +33,13 @@ interface EntityOverlayProps {
   onClose: () => void;
   onPin: () => void;
   onViewWiki: (entityName: string) => void;
-  onCopyReport: () => void;
   isUpdating?: boolean;
+  sidebarEntities: EntitySidebarEntity[];
+  onChangeType: (entity: EntitySpan, newType: EntityType) => void;
+  onReject: (entity: EntitySpan) => void;
+  onNotesChange: (entity: EntitySidebarEntity, notes: string) => void;
+  onLogReport: () => void;
+  onCopyReport: () => void;
 }
 
 export function EntityOverlay({
@@ -45,8 +50,13 @@ export function EntityOverlay({
   onClose,
   onPin,
   onViewWiki,
-  onCopyReport,
   isUpdating,
+  sidebarEntities,
+  onChangeType,
+  onReject,
+  onNotesChange,
+  onLogReport,
+  onCopyReport,
 }: EntityOverlayProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -132,13 +142,14 @@ export function EntityOverlay({
           </div>
         </div>
         <div className="overlay-body" style={{ padding: 0 }}>
-          <EntityResultsPanel
-            entities={entities}
-            relations={relations}
-            onViewWiki={onViewWiki}
-            isUpdating={isUpdating}
-            stats={stats}
+          <EntitySidebar
+            entities={sidebarEntities}
+            onChangeType={onChangeType}
+            onReject={onReject}
+            onNotesChange={onNotesChange}
+            onLogReport={onLogReport}
             onCopyReport={onCopyReport}
+            isUpdating={isUpdating}
           />
         </div>
       </div>
@@ -189,13 +200,14 @@ export function EntityOverlay({
           </div>
         </div>
         <div className="overlay-body" style={{ padding: 0 }}>
-          <EntityResultsPanel
-            entities={entities}
-            relations={relations}
-            onViewWiki={onViewWiki}
-            isUpdating={isUpdating}
-            stats={stats}
+          <EntitySidebar
+            entities={sidebarEntities}
+            onChangeType={onChangeType}
+            onReject={onReject}
+            onNotesChange={onNotesChange}
+            onLogReport={onLogReport}
             onCopyReport={onCopyReport}
+            isUpdating={isUpdating}
           />
         </div>
       </div>

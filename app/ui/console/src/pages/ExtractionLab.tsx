@@ -6,7 +6,7 @@
  * Clean architecture with extracted components and hooks
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Menu } from 'lucide-react';
 import { LabToolbar } from '../components/LabToolbar';
 import { DocumentsSidebar } from '../components/DocumentsSidebar';
@@ -21,6 +21,7 @@ import { useLabLayoutState } from '../hooks/useLabLayoutState';
 import { useExtractionSettings } from '../hooks/useExtractionSettings';
 import '../styles/darkMode.css';
 import '../styles/extraction-lab.css';
+import { buildEntityReport, formatReportForClipboard, saveEntityReportToDisk, type ReportableEntity } from '../lib/entityReport';
 
 interface ExtractionLabProps {
   project: string;
@@ -56,6 +57,15 @@ function makeSpanKey(e: EntitySpan): SpanKey {
 interface EntityOverrides {
   rejectedSpans: Set<SpanKey>;
   typeOverrides: Record<SpanKey, EntityType>;
+}
+
+interface EntityReviewEntry {
+  key: SpanKey;
+  originalType: EntityType;
+  finalType: EntityType;
+  notes: string;
+  rejected: boolean;
+  snapshot: EntitySpan;
 }
 
 interface ExtractionResponse {
@@ -97,6 +107,13 @@ interface StoredDocument {
 
 const JOB_POLL_INTERVAL_MS = 1500;
 const SYNC_EXTRACTION_CHAR_LIMIT = 20000;
+
+function generateRunId() {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID();
+  }
+  return `run-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
 
 function estimateJobDurationMs(textLength: number): number {
   const baseMs = 8000;
@@ -205,6 +222,7 @@ function parseManualTags(rawText: string): ParsedTags {
           type: type as EntityType,
           confidence: 1.0,
           source: 'manual' as const,
+          originalType: type as EntityType,
         });
         console.log(`[ManualTag] Bracketed: "${match[0]}" → entity="${text}" at ${entityStart}-${entityEnd}, actual text in range: "${rawText.substring(entityStart, entityEnd)}"`);
       }
@@ -226,6 +244,7 @@ function parseManualTags(rawText: string): ParsedTags {
           type: type as EntityType,
           confidence: 1.0,
           source: 'manual' as const,
+          originalType: type as EntityType,
         });
         console.log(`[ManualTag] Simple: "${match[0]}" → entity="${text}" at ${entityStart}-${entityEnd}, actual text in range: "${rawText.substring(entityStart, entityEnd)}"`);
       }
@@ -247,6 +266,7 @@ function parseManualTags(rawText: string): ParsedTags {
           type: type as EntityType,
           confidence: 1.0,
           source: 'manual' as const,
+          originalType: type as EntityType,
         });
       }
     } else if (match[8]) {
@@ -270,6 +290,7 @@ function parseManualTags(rawText: string): ParsedTags {
         type: 'REJECT_ENTITY' as EntityType,
         confidence: 1.0,
         source: 'manual' as const,
+        originalType: 'REJECT_ENTITY' as EntityType,
       });
     }
   }
@@ -663,6 +684,8 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     rejectedSpans: new Set(),
     typeOverrides: {},
   });
+  const [entityReviews, setEntityReviews] = useState<Record<SpanKey, EntityReviewEntry>>({});
+  const runIdRef = useRef<string>(generateRunId());
 
   // Text selection state (for entity highlight mode)
   const [textSelection, setTextSelection] = useState<{
@@ -728,6 +751,26 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
             ? 'Done'
             : 'Idle';
 
+  useEffect(() => {
+    setEntityReviews((prev) => {
+      const next = { ...prev } as Record<SpanKey, EntityReviewEntry>;
+      for (const entity of displayEntities) {
+        const key = makeSpanKey(entity);
+        const existing = next[key];
+        const snapshot: EntitySpan = { ...entity };
+        next[key] = {
+          key,
+          originalType: existing?.originalType || entity.originalType || entity.type,
+          finalType: entity.type,
+          notes: existing?.notes ?? entity.notes ?? '',
+          rejected: existing?.rejected ?? false,
+          snapshot,
+        };
+      }
+      return next;
+    });
+  }, [displayEntities]);
+
   const applyExtractionResults = useCallback(
     (data: ExtractionResponse, rawText: string, elapsedMs?: number) => {
       const extractedEntities: EntitySpan[] = data.entities.flatMap((entity: any) => {
@@ -738,11 +781,14 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           }
 
           return entity.spans.map((span: any) => ({
+            id: entity.id,
             start: span.start,
             end: span.end,
             text: entity.text,
             displayText: entity.text,
+            canonicalName: entity.canonical || entity.text,
             type: entity.type as EntityType,
+            originalType: entity.type as EntityType,
             confidence: entity.confidence,
             source: 'natural' as const,
           }));
@@ -965,6 +1011,8 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const applyDocumentToState = useCallback(
     (document: StoredDocument) => {
       setLastSavedId(document.id);
+      runIdRef.current = generateRunId();
+      setEntityReviews({});
       setText(document.text || '');
 
       const extraction = document.extractionJson ?? document.extraction;
@@ -1336,8 +1384,24 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const handleChangeType = async (entity: EntitySpan, newType: EntityType) => {
     console.log('[ExtractionLab] Changing entity type:', { entity, newType });
 
+    const key = makeSpanKey(entity);
+    setEntityReviews((prev) => {
+      const existing = prev[key];
+      const snapshot = existing?.snapshot || { ...entity };
+      return {
+        ...prev,
+        [key]: {
+          key,
+          originalType: existing?.originalType || entity.originalType || entity.type,
+          finalType: newType,
+          notes: existing?.notes ?? entity.notes ?? '',
+          rejected: existing?.rejected ?? false,
+          snapshot,
+        },
+      };
+    });
+
     if (settings.entityHighlightMode) {
-      const key = makeSpanKey(entity);
       setEntityOverrides((prev) => ({
         ...prev,
         typeOverrides: {
@@ -1397,6 +1461,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         source: 'manual',
         confidence: entity.confidence ?? 1.0,
         displayText: entity.displayText ?? entity.text,
+        originalType: type,
       };
 
       setEntities((prev) => deduplicateEntities([...prev, newEntity]));
@@ -1446,8 +1511,24 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const handleReject = async (entity: EntitySpan) => {
     console.log('[ExtractionLab] Rejecting entity:', entity);
 
+    const key = makeSpanKey(entity);
+    setEntityReviews((prev) => {
+      const existing = prev[key];
+      const snapshot = existing?.snapshot || { ...entity };
+      return {
+        ...prev,
+        [key]: {
+          key,
+          originalType: existing?.originalType || entity.originalType || entity.type,
+          finalType: existing?.finalType || entity.type,
+          notes: existing?.notes ?? entity.notes ?? '',
+          rejected: true,
+          snapshot,
+        },
+      };
+    });
+
     if (settings.entityHighlightMode) {
-      const key = makeSpanKey(entity);
       setEntityOverrides((prev) => {
         const nextRejected = new Set(prev.rejectedSpans);
         nextRejected.add(key);
@@ -1545,6 +1626,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       source: 'manual',
       confidence: 1.0,
       displayText: textSelection.text,
+      originalType: type,
     };
 
     setEntities((prev) => deduplicateEntities([...prev, newEntity]));
@@ -1581,6 +1663,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       source: 'manual',
       confidence: 1.0,
       displayText: textSelection.text,
+      originalType: mergedType,
     };
 
     // Remove old entities and add merged one
@@ -1626,6 +1709,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         end: newEnd,
         text: newText,
         displayText: newText,
+        originalType: entity.originalType || entity.type,
       };
 
       return deduplicateEntities([...filtered, resizedEntity]);
@@ -1647,61 +1731,138 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       };
     });
 
+    setEntityReviews((prev) => {
+      const existing = prev[oldKey];
+      const { [oldKey]: _removedReview, ...rest } = prev;
+      return {
+        ...rest,
+        [newKey]: {
+          key: newKey,
+          originalType: existing?.originalType || entity.originalType || entity.type,
+          finalType: existing?.finalType || entity.type,
+          notes: existing?.notes ?? entity.notes ?? '',
+          rejected: existing?.rejected ?? false,
+          snapshot: { ...entity, start: newStart, end: newEnd, text: newText, displayText: newText },
+        },
+      };
+    });
+
     toast.success(`Entity resized: "${newText}"`);
   };
 
-  // Generate and copy test report
-  const copyReport = () => {
-    if (!text.trim() || (entities.length === 0 && relations.length === 0)) {
+  const sidebarEntities = useMemo(
+    () =>
+      displayEntities
+        .filter((entity) => !(entityReviews[makeSpanKey(entity)]?.rejected))
+        .map((entity) => {
+          const key = makeSpanKey(entity);
+          const review = entityReviews[key];
+          return {
+            ...entity,
+            id: entity.id || key,
+            originalType: review?.originalType || entity.originalType || entity.type,
+            notes: review?.notes || '',
+            spans: [{ start: entity.start, end: entity.end, text: entity.text }],
+          };
+        }),
+    [displayEntities, entityReviews]
+  );
+
+  const collectReportEntities = useCallback((): ReportableEntity[] => {
+    const allKeys = new Set<string>(Object.keys(entityReviews));
+    for (const entity of displayEntities) {
+      allKeys.add(makeSpanKey(entity));
+    }
+
+    const collected: ReportableEntity[] = [];
+    allKeys.forEach((key) => {
+      const review = entityReviews[key];
+      const active = displayEntities.find((e) => makeSpanKey(e) === key);
+      const snapshot = active || review?.snapshot;
+      if (!snapshot) return;
+
+      collected.push({
+        ...snapshot,
+        id: snapshot.id || key,
+        originalType: review?.originalType || snapshot.originalType || snapshot.type,
+        finalType: active?.type ?? review?.finalType ?? snapshot.type,
+        notes: review?.notes ?? snapshot.notes,
+        rejected: review?.rejected ?? snapshot.rejected ?? false,
+        spans: [{ start: snapshot.start, end: snapshot.end, text: snapshot.text }],
+      });
+    });
+
+    return collected;
+  }, [displayEntities, entityReviews]);
+
+  const buildReviewReport = useCallback(() => {
+    const reportEntities = collectReportEntities();
+    return buildEntityReport({
+      runId: runIdRef.current,
+      documentId: lastSavedId,
+      entities: reportEntities,
+      userContext: { project },
+      extractionMetadata: {
+        engineVersion: 'ARES Full Engine',
+        config: { mode: settings.entityHighlightMode ? 'highlight' : 'tag' },
+      },
+    });
+  }, [collectReportEntities, lastSavedId, project, settings.entityHighlightMode]);
+
+  const copyReport = useCallback(async () => {
+    if (!text.trim() || collectReportEntities().length === 0) {
       toast.error('Nothing to report yet – run an extraction first.');
       return;
     }
 
-    const report = {
-      timestamp: new Date().toISOString(),
-      engineVersion: 'ARES Full Engine (orchestrator.ts)',
-      text: text,
-      textLength: text.length,
-      stats: {
-        processingTime: stats.time,
-        averageConfidence: stats.confidence,
-        entityCount: stats.count,
-        relationCount: stats.relationCount,
-      },
-      entities: entities.map((e) => ({
-        text: e.text,
-        type: e.type,
-        confidence: e.confidence,
-        start: e.start,
-        end: e.end,
-        source: e.source,
-        displayText: e.displayText,
-        // Include surrounding context (50 chars before/after)
-        context: text.substring(Math.max(0, e.start - 50), Math.min(text.length, e.end + 50)),
-      })),
-      relations: relations.map((r) => ({
-        subject: r.subjCanonical,
-        predicate: r.pred,
-        object: r.objCanonical,
-        confidence: r.confidence,
-      })),
-      // Group entities by type for easy analysis
-      entitiesByType: entities.reduce((acc, e) => {
-        if (!acc[e.type]) acc[e.type] = [];
-        acc[e.type].push(e.text);
-        return acc;
-      }, {} as Record<string, string[]>),
-      // Group relations by predicate
-      relationsByPredicate: relations.reduce((acc, r) => {
-        if (!acc[r.pred]) acc[r.pred] = [];
-        acc[r.pred].push(`${r.subjCanonical} → ${r.objCanonical}`);
-        return acc;
-      }, {} as Record<string, string[]>),
-    };
+    const report = buildReviewReport();
+    const serialized = formatReportForClipboard(report);
 
-    navigator.clipboard.writeText(JSON.stringify(report, null, 2));
-    toast.success('Full ARES report copied! Includes entities AND relations.');
-  };
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(serialized);
+      } else {
+        // Fallback for older browsers
+        window.prompt('Copy the entity report JSON', serialized);
+      }
+      toast.success('Entity review report copied to clipboard.');
+    } catch (error) {
+      toast.error(`Failed to copy report: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }, [buildReviewReport, collectReportEntities, text, toast]);
+
+  const logReport = useCallback(async () => {
+    try {
+      const report = buildReviewReport();
+      const result = await saveEntityReportToDisk(report, resolveApiUrl());
+      if (result.ok) {
+        toast.success(`Report saved to disk${result.filename ? ` (${result.filename})` : ''}`);
+      } else {
+        toast.error(result.error || 'Failed to save report');
+      }
+    } catch (error) {
+      toast.error(`Failed to save report: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }, [buildReviewReport, toast]);
+
+  const handleNotesChange = useCallback((entity: EntitySpan, notes: string) => {
+    const key = makeSpanKey(entity);
+    setEntityReviews((prev) => {
+      const existing = prev[key];
+      const snapshot = existing?.snapshot || { ...entity };
+      return {
+        ...prev,
+        [key]: {
+          key,
+          originalType: existing?.originalType || entity.originalType || entity.type,
+          finalType: existing?.finalType || entity.type,
+          notes,
+          rejected: existing?.rejected ?? false,
+          snapshot,
+        },
+      };
+    });
+  }, []);
 
   const handleViewWiki = useCallback(
     (entityName: string) => {
@@ -1716,6 +1877,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   // Create a new blank document
   const handleNewDocument = useCallback(() => {
     // Clear current document state
+    runIdRef.current = generateRunId();
     setText('');
     setEntities([]);
     setRelations([]);
@@ -1723,6 +1885,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     setLastSavedId(null);
     setSaveStatus('idle');
     resetEntityOverrides();
+    setEntityReviews({});
 
     // Clear any active job
     setJobId(null);
@@ -1817,8 +1980,13 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
             onClose={layout.closeEntityPanel}
             onPin={layout.pinEntityPanel}
             onViewWiki={handleViewWiki}
-            onCopyReport={copyReport}
             isUpdating={isUpdating}
+            sidebarEntities={sidebarEntities}
+            onChangeType={handleChangeType}
+            onReject={handleReject}
+            onNotesChange={handleNotesChange}
+            onLogReport={logReport}
+            onCopyReport={copyReport}
           />
         )}
       </div>
@@ -1842,8 +2010,13 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           onClose={layout.closeEntityPanel}
           onPin={layout.pinEntityPanel}
           onViewWiki={handleViewWiki}
-          onCopyReport={copyReport}
           isUpdating={isUpdating}
+          sidebarEntities={sidebarEntities}
+          onChangeType={handleChangeType}
+          onReject={handleReject}
+          onNotesChange={handleNotesChange}
+          onLogReport={logReport}
+          onCopyReport={copyReport}
         />
       )}
 

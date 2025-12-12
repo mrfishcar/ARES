@@ -40,12 +40,16 @@ export type EntityType =
   | 'TITLE';
 
 export interface EntitySpan {
+  id?: string;
   start: number;
   end: number;
   text: string;
   displayText?: string;
   canonicalName?: string;
   type: EntityType;
+  originalType?: EntityType;
+  notes?: string;
+  rejected?: boolean;
   confidence: number;
   source: 'tag' | 'natural' | 'alias' | 'manual';
 }

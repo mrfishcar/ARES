@@ -43,6 +43,7 @@ import { invalidateProjectCache } from './cache-layer';
 import { handleUpload, handleMediaServe } from './upload';
 import { handleWikiEntity } from './wiki-entity';
 import { buildEntityWikiFromGraph } from '../generate/wiki';
+import { writeEntityReport } from './entity-report';
 
 // Load schema
 const schemaPath = path.join(__dirname, 'schema.graphql');
@@ -965,6 +966,55 @@ No additional information is available at this time.
           }
         });
       }
+
+      return;
+    }
+
+    // Entity debug report endpoint
+    if (req.url === '/entity-report') {
+      if (req.method === 'OPTIONS') {
+        res.writeHead(200, {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        });
+        res.end();
+        return;
+      }
+
+      if (req.method !== 'POST') {
+        res.writeHead(405, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Method Not Allowed' }));
+        return;
+      }
+
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+      let body = '';
+      req.on('data', (chunk) => {
+        body += chunk.toString();
+      });
+
+      req.on('end', () => {
+        try {
+          const payload = JSON.parse(body || '{}');
+          if (!payload?.report) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Missing report payload' }));
+            return;
+          }
+
+          const saved = writeEntityReport(payload.report);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: true, ...saved }));
+        } catch (error) {
+          logger.error({ msg: 'entity_report_failed', err: String(error) });
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Failed to save report' }));
+        }
+      });
 
       return;
     }
