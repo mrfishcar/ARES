@@ -1741,7 +1741,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     }
   }, [entities]);
 
-  const handleLogReport = useCallback(() => {
+  const handleLogReport = useCallback(async () => {
     if (entities.length === 0) {
       toast.error('No entities to report');
       return;
@@ -1774,18 +1774,29 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       },
     };
 
-    // Trigger download
-    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `entity-review-${new Date().toISOString().slice(0, 10)}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    try {
+      // Save to repository via API
+      const apiUrl = resolveApiUrl();
+      const response = await fetch(`${apiUrl}/api/reports`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(report),
+      });
 
-    toast.success('Entity review report saved to disk');
+      if (!response.ok) {
+        throw new Error(`Failed to save report: ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (result.ok) {
+        toast.success(`Report saved to ${result.path}`);
+      } else {
+        throw new Error(result.error || 'Failed to save report');
+      }
+    } catch (error) {
+      console.error('Error saving report:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to save report');
+    }
   }, [entities, text, lastSavedId, toast]);
 
   const handleCopyReport = useCallback(() => {
