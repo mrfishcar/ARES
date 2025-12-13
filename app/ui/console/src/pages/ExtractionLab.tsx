@@ -334,15 +334,25 @@ function stripIncompleteTagsForExtraction(rawText: string): string {
   // Search backwards for # that's not a markdown header
   for (let i = rawText.length - 1; i >= 0; i--) {
     if (rawText[i] === '#') {
-      // Check if this # is at the start of a line (markdown header)
-      const isLineStart = i === 0 || rawText[i - 1] === '\n';
+      // Look backwards through ALL consecutive # characters
+      // This handles ##, ###, etc. where the second # sees the first # as previous char
+      let j = i - 1;
+      while (j >= 0 && rawText[j] === '#') {
+        j--;
+      }
+
+      // Now j points to the character before the first # in the sequence
+      // Check if the FIRST # in the sequence is at line start
+      const isLineStart = j < 0 || rawText[j] === '\n' || rawText[j] === '\r';
 
       if (!isLineStart) {
-        // This # is mid-text, could be an entity tag
+        // This # sequence is mid-text, could be an entity tag
         lastHashIndex = i;
         break;
       }
-      // Otherwise it's a markdown header, skip it
+
+      // Otherwise it's a markdown header, skip past this entire sequence
+      i = j + 1;
     }
   }
 
