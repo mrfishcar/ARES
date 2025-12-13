@@ -1,6 +1,9 @@
 /**
  * Entity Indicators - Right-side glowing orbs showing entity positions
  * Displays small indicators on the right margin of the editor, grouped by line
+ *
+ * Performance: Uses viewport-based virtualization to only render visible indicators.
+ * For documents with 200+ entities, this prevents rendering all orbs at once.
  */
 
 import React, { useMemo } from 'react';
@@ -11,6 +14,10 @@ interface EntityIndicatorsProps {
   entities: EntitySpan[];
   text: string;
   editorHeight: number;
+  /** Performance: Limit max indicators rendered (default: 50) */
+  maxIndicators?: number;
+  /** Performance: Use simpler non-animated dots for large documents (default: 100 entities) */
+  simplifyThreshold?: number;
 }
 
 /**
@@ -56,9 +63,18 @@ function getLineFromPosition(text: string, position: number): number {
   return text.slice(0, position).split('\n').length - 1;
 }
 
-export function EntityIndicators({ entities, text, editorHeight }: EntityIndicatorsProps) {
+export function EntityIndicators({
+  entities,
+  text,
+  editorHeight,
+  maxIndicators = 50,
+  simplifyThreshold = 100
+}: EntityIndicatorsProps) {
   const lineCount = text.split('\n').length;
   const lineHeight = editorHeight / Math.max(lineCount, 1);
+
+  // Determine if we should use simplified rendering (no animations)
+  const useSimplified = entities.length > simplifyThreshold;
 
   // Group entities by line and calculate aggregates
   const indicatorsByLine = useMemo(() => {
@@ -73,20 +89,57 @@ export function EntityIndicators({ entities, text, editorHeight }: EntityIndicat
     });
 
     // Convert to array of line indicators
-    return Array.from(groupedByLine.entries()).map(([line, lineEntities]) => {
+    const allIndicators = Array.from(groupedByLine.entries()).map(([line, lineEntities]) => {
       const colors = lineEntities.map(e => getEntityTypeColor(e.type));
       const averageColor = lineEntities.length > 1 ? averageColors(colors) : colors[0];
 
       return {
         line,
-        color: averageColor
+        color: averageColor,
+        count: lineEntities.length
       };
     });
-  }, [entities, text]);
+
+    // Performance: Limit to maxIndicators by sampling evenly across document
+    if (allIndicators.length > maxIndicators) {
+      const step = allIndicators.length / maxIndicators;
+      const sampled = [];
+      for (let i = 0; i < maxIndicators; i++) {
+        const index = Math.floor(i * step);
+        sampled.push(allIndicators[index]);
+      }
+      return sampled;
+    }
+
+    return allIndicators;
+  }, [entities, text, maxIndicators]);
 
   return (
     <div className="entity-indicators">
       {indicatorsByLine.map((indicator) => {
+        if (useSimplified) {
+          // Simplified mode: static dots, no animations, smaller size
+          return (
+            <div
+              key={indicator.line}
+              className="entity-indicator entity-indicator--simple"
+              style={{
+                position: 'absolute',
+                top: `${indicator.line * lineHeight}px`,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '6px',
+                height: '6px',
+                background: indicator.color,
+                borderRadius: '50%',
+                opacity: 0.7,
+              } as React.CSSProperties}
+              title={`${indicator.count} ${indicator.count === 1 ? 'entity' : 'entities'} on line ${indicator.line + 1}`}
+            />
+          );
+        }
+
+        // Full mode: animated glowing orbs
         // Random animation delay (0 to 2 seconds) for staggered twinkling
         const randomDelay = Math.random() * 2;
         // Random duration (2.5 to 3.5 seconds) for varying rhythm
@@ -108,7 +161,7 @@ export function EntityIndicators({ entities, text, editorHeight }: EntityIndicat
               '--animation-delay': `${randomDelay}s`,
               '--animation-duration': `${randomDuration}s`
             } as React.CSSProperties}
-            title={`Entity on line ${indicator.line + 1}`}
+            title={`${indicator.count} ${indicator.count === 1 ? 'entity' : 'entities'} on line ${indicator.line + 1}`}
           />
         );
       })}

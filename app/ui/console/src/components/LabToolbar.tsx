@@ -22,6 +22,7 @@ interface LabToolbarProps {
   showHighlighting: boolean;
   highlightOpacity: number;
   editorMargin: number;
+  showEntityIndicators: boolean;
   enableLongTextOptimization: boolean;
 
   // Actions
@@ -36,6 +37,7 @@ interface LabToolbarProps {
   onHighlightingToggle: () => void;
   onOpacityChange: (value: number) => void;
   onMarginChange: (margin: number) => void;
+  onEntityIndicatorsToggle: () => void;
   onLongTextOptimizationToggle: () => void;
 
   // State checks
@@ -53,6 +55,7 @@ export function LabToolbar({
   showSettingsDropdown,
   showHighlighting,
   highlightOpacity,
+  showEntityIndicators,
   enableLongTextOptimization,
   editorMargin,
   onExtractStart,
@@ -64,6 +67,7 @@ export function LabToolbar({
   onHighlightingToggle,
   onOpacityChange,
   onMarginChange,
+  onEntityIndicatorsToggle,
   onLongTextOptimizationToggle,
   canExtract,
   isExtracting,
@@ -307,6 +311,36 @@ export function LabToolbar({
                       aria-label="Highlight transparency"
                     />
                     <span className="settings-slider-value">{Math.round(highlightOpacity * 100)}%</span>
+                  </div>
+                </div>
+
+                {/* Entity Indicators */}
+                <div className="settings-dropdown-section">
+                  <div className="settings-dropdown-label">Entity Indicators</div>
+                  <div
+                    className="settings-dropdown-toggle"
+                    onClick={onEntityIndicatorsToggle}
+                    role="switch"
+                    aria-checked={showEntityIndicators}
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onEntityIndicatorsToggle();
+                      }
+                    }}
+                  >
+                    <div className="settings-dropdown-toggle-text">
+                      <span className="settings-dropdown-toggle-label">
+                        Show glowing entity indicators
+                      </span>
+                      <span className="settings-dropdown-helper">
+                        Display colored dots in the left margin showing entity locations. Auto-simplifies for documents with 100+ entities.
+                      </span>
+                    </div>
+                    <div className={`settings-toggle-switch ${showEntityIndicators ? 'active' : ''}`}>
+                      <div className="settings-toggle-knob" />
+                    </div>
                   </div>
                 </div>
 

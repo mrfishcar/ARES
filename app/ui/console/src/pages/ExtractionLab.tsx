@@ -2040,6 +2040,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         showHighlighting={settings.showHighlighting}
         highlightOpacity={settings.highlightOpacity}
         editorMargin={settings.editorMargin}
+        showEntityIndicators={settings.showEntityIndicators}
         enableLongTextOptimization={settings.enableLongTextOptimization}
         onExtractStart={startBackgroundJob}
         onThemeToggle={handleThemeToggle}
@@ -2049,6 +2050,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         onHighlightingToggle={settings.toggleHighlighting}
         onOpacityChange={settings.setHighlightOpacity}
         onMarginChange={settings.setEditorMargin}
+        onEntityIndicatorsToggle={settings.toggleEntityIndicators}
         onLongTextOptimizationToggle={settings.toggleLongTextOptimization}
         canExtract={text.trim().length > 0 && !hasActiveJob}
         isExtracting={backgroundProcessing || hasActiveJob}
@@ -2077,6 +2079,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           highlightOpacity={settings.highlightOpacity}
           renderMarkdown={renderMarkdown}
           entityHighlightMode={settings.entityHighlightMode}
+          showEntityIndicators={settings.showEntityIndicators}
           onChangeType={handleChangeType}
           onCreateNew={handleCreateNew}
           onReject={handleReject}
