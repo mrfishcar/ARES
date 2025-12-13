@@ -520,6 +520,63 @@ function selectionListenerExtension(
   });
 }
 
+// -------------------- iOS CALLOUT BLOCKER EXTENSION --------------------
+
+/**
+ * Prevents iOS native callout menu (Cut/Copy/Paste/Look Up) from appearing
+ * when text is selected in Entity Highlight Mode.
+ *
+ * CSS approaches (-webkit-touch-callout: none) don't work reliably on iOS Safari,
+ * so we use JavaScript event prevention with additional DOM manipulation.
+ */
+function iosCalloutBlockerExtension(
+  entityHighlightModeRef: React.MutableRefObject<boolean>,
+  viewRef: React.MutableRefObject<EditorView | null>,
+) {
+  // Track if we're in a selection gesture
+  let isSelectingText = false;
+
+  return EditorView.domEventHandlers({
+    // Track selection start
+    touchstart: (event, view) => {
+      if (!entityHighlightModeRef.current) return false;
+      isSelectingText = false;
+      return false;
+    },
+
+    // Track selection drag
+    touchmove: (event, view) => {
+      if (!entityHighlightModeRef.current) return false;
+
+      const selection = view.state.selection.main;
+      if (!selection.empty) {
+        isSelectingText = true;
+      }
+
+      return false;
+    },
+
+    // Prevent callout menu after selection
+    touchend: (event, view) => {
+      if (!entityHighlightModeRef.current) return false;
+
+      const selection = view.state.selection.main;
+
+      // If there's a text selection, prevent the iOS callout menu
+      // This must be done synchronously during the event
+      if (!selection.empty || isSelectingText) {
+        event.preventDefault();
+        event.stopPropagation();
+        isSelectingText = false;
+        return true; // Event handled
+      }
+
+      isSelectingText = false;
+      return false;
+    },
+  });
+}
+
 // -------------------- MAIN COMPONENT --------------------
 
 export function CodeMirrorEditor({
@@ -594,35 +651,6 @@ export function CodeMirrorEditor({
 
   useEffect(() => {
     entityHighlightModeRef.current = entityHighlightMode;
-
-    // Inject CSS to disable iOS callout menu when entity highlight mode is active
-    const styleId = 'cm-ios-callout-fix';
-    let styleElement = document.getElementById(styleId) as HTMLStyleElement | null;
-
-    if (entityHighlightMode) {
-      if (!styleElement) {
-        styleElement = document.createElement('style');
-        styleElement.id = styleId;
-        document.head.appendChild(styleElement);
-      }
-      styleElement.textContent = `
-        .cm-content, .cm-scroller, .cm-line, .cm-editor {
-          -webkit-touch-callout: none !important;
-          -webkit-user-select: text !important;
-          user-select: text !important;
-        }
-      `;
-    } else {
-      if (styleElement) {
-        styleElement.remove();
-      }
-    }
-
-    return () => {
-      // Cleanup on unmount
-      const el = document.getElementById(styleId);
-      if (el) el.remove();
-    };
   }, [entityHighlightMode]);
 
   useEffect(() => {
@@ -648,6 +676,8 @@ export function CodeMirrorEditor({
         EditorView.lineWrapping,
         // Block keyboard input in Entity Highlight Mode (allows text selection on iOS)
         keyboardBlockerExtension(entityHighlightModeRef),
+        // Prevent iOS callout menu (Cut/Copy/Paste) from appearing during text selection
+        iosCalloutBlockerExtension(entityHighlightModeRef, viewRef),
         // Auto-show menu when text is selected (iPad-friendly)
         selectionListenerExtension(entityHighlightModeRef, onTextSelectedRef, entitiesRef, baseOffsetRef),
         entityHighlighterExtension(
@@ -797,19 +827,11 @@ export function CodeMirrorEditor({
       <div
         ref={wrapperRef}
         className="cm-editor-wrapper"
-        data-entity-highlight-mode={entityHighlightMode ? 'true' : 'false'}
         style={{
           width: '100%',
           height: '100%',
           background: 'var(--bg-primary)',
           overflow: 'hidden',
-          // iOS callout menu suppression (when entity highlight mode is active)
-          // Allow text selection but disable the native callout menu
-          ...(entityHighlightMode && {
-            WebkitTouchCallout: 'none',
-            WebkitUserSelect: 'text',
-            userSelect: 'text',
-          }),
         }}
       />
 
