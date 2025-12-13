@@ -9,6 +9,11 @@ export function useExtractionSettings() {
   const [showHighlighting, setShowHighlighting] = useState(true);
   const [highlightOpacity, setHighlightOpacity] = useState(1.0);
   const [entityHighlightMode, setEntityHighlightMode] = useState(false);
+  const [showEntityIndicators, setShowEntityIndicators] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true;
+    const saved = localStorage.getItem('ares.showEntityIndicators');
+    return saved ? saved === 'true' : true;
+  });
   const [enableLongTextOptimization, setEnableLongTextOptimization] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
     const saved = localStorage.getItem('ares.enableLongTextOptimization');
@@ -33,6 +38,14 @@ export function useExtractionSettings() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     localStorage.setItem(
+      'ares.showEntityIndicators',
+      String(showEntityIndicators)
+    );
+  }, [showEntityIndicators]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(
       'ares.enableLongTextOptimization',
       String(enableLongTextOptimization)
     );
@@ -46,6 +59,10 @@ export function useExtractionSettings() {
     setEntityHighlightMode(prev => !prev);
   }, []);
 
+  const toggleEntityIndicators = useCallback(() => {
+    setShowEntityIndicators(prev => !prev);
+  }, []);
+
   const toggleLongTextOptimization = useCallback(() => {
     setEnableLongTextOptimization(prev => !prev);
   }, []);
@@ -55,6 +72,7 @@ export function useExtractionSettings() {
     showHighlighting,
     highlightOpacity,
     entityHighlightMode,
+    showEntityIndicators,
     enableLongTextOptimization,
     editorMargin,
 
@@ -63,6 +81,7 @@ export function useExtractionSettings() {
     setHighlightOpacity,
     toggleHighlighting,
     toggleEntityHighlightMode,
+    toggleEntityIndicators,
     setEnableLongTextOptimization,
     toggleLongTextOptimization,
     setEditorMargin,

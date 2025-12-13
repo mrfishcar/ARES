@@ -56,6 +56,25 @@ Purpose: progressive gates for extraction quality. Use the commands below; avoid
 - **No redundant docs**: Obsolete or duplicative files should be removed immediately.
 - **If in doubt, trust this README**: Treat any other file as outdated unless it explicitly points back here.
 
+## Known Issues
+
+### iOS Safari Text Selection Menu
+**Status**: Unresolved after 3 attempts
+**Impact**: Minor UX issue - both native iOS menu and custom "Tag as Entity" button appear when selecting text in Entity Highlight Mode
+**Platform**: iOS Safari only
+**Workaround**: Both menus are functional, just overlapping
+
+**Attempts Made**:
+1. CSS with data-attribute selectors (`-webkit-touch-callout: none`) - Failed
+2. Dynamic CSS injection via JavaScript - Failed
+3. Touch event `preventDefault()` - Failed
+
+**Root Cause**: iOS Safari doesn't respect CSS callout disabling and event prevention during text selection gestures. May require native iOS behavior or accepting dual menus.
+
+**References**:
+- Commits: `a93f779`, `daea560`, `9f76eb3`
+- File: `app/ui/console/src/components/CodeMirrorEditor.tsx`
+
 ## File Pointers
 - `HANDOFF.md`: Latest session status and remaining Level 5 issues.
 - `tests/ladder/*.spec.ts`: Ladder tests and fixtures.

@@ -17,6 +17,7 @@ interface EditorPaneProps {
   highlightOpacity: number;
   renderMarkdown: boolean;
   entityHighlightMode: boolean;
+  showEntityIndicators?: boolean;
 
   // Entity handlers
   onChangeType: (entity: EntitySpan, newType: EntityType) => Promise<void>;
@@ -36,6 +37,7 @@ export function EditorPane({
   highlightOpacity,
   renderMarkdown,
   entityHighlightMode,
+  showEntityIndicators = true,
   onChangeType,
   onCreateNew,
   onReject,
@@ -50,12 +52,14 @@ export function EditorPane({
     <div className="editor-wrapper">
       <div className="editor-panel">
         <div className="editor-with-indicators-wrapper">
-          {/* Entity indicators on left side */}
-          <EntityIndicators
-            entities={entities}
-            text={text}
-            editorHeight={editorHeight}
-          />
+          {/* Entity indicators on left side - optional, can be toggled in settings */}
+          {showEntityIndicators && (
+            <EntityIndicators
+              entities={entities}
+              text={text}
+              editorHeight={editorHeight}
+            />
+          )}
 
           {/* Editor area */}
           <div className="editor-with-indicators">

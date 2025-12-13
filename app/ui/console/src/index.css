@@ -1941,11 +1941,24 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   transition: transform 0.2s ease;
 }
 
+/* Simplified mode: no animations, static dots for performance */
+.entity-indicator--simple {
+  animation: none !important;
+  will-change: auto;
+  contain: layout style paint;
+}
+
 .entity-indicator:hover {
   animation: none;
   opacity: 1;
   filter: drop-shadow(0 0 16px currentColor) brightness(1.3);
   transform: scale(1.3);
+}
+
+.entity-indicator--simple:hover {
+  opacity: 1 !important;
+  transform: scale(1.2);
+  filter: none;
 }
 
 .entity-indicator-count {
