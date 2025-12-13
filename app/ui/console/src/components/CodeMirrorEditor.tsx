@@ -768,14 +768,12 @@ export function CodeMirrorEditor({
       <div
         ref={wrapperRef}
         className="cm-editor-wrapper"
+        data-entity-highlight-mode={entityHighlightMode ? 'true' : 'false'}
         style={{
           width: '100%',
           height: '100%',
           background: 'var(--bg-primary)',
           overflow: 'hidden',
-          // Disable iOS native context menu in Entity Highlight Mode
-          WebkitTouchCallout: entityHighlightMode ? 'none' : 'default',
-          WebkitUserSelect: entityHighlightMode ? 'text' : 'auto',
         }}
       />
 

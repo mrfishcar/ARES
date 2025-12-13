@@ -2524,3 +2524,14 @@ body.modal-open {
  * 4) Type in the editor for 30+ seconds; ensure cursor stays stable and editor never flickers.
  * 5) Increase system/browser text size; confirm toolbar, dropdown, menus, and editor UI all scale together.
  */
+
+/* ===== iOS TEXT SELECTION MENU FIX ===== */
+/* Disable native iOS text selection callout menu (Cut/Copy/Paste) in Entity Highlight Mode */
+/* This prevents the iOS menu from overlapping with the custom "Tag as Entity" menu */
+.cm-editor-wrapper[data-entity-highlight-mode="true"] .cm-content,
+.cm-editor-wrapper[data-entity-highlight-mode="true"] .cm-scroller,
+.cm-editor-wrapper[data-entity-highlight-mode="true"] .cm-line {
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: text !important;
+  user-select: text !important;
+}
