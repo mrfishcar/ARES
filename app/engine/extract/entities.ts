@@ -28,6 +28,14 @@ import { isAttachedOnlyFragment, hasLowercaseEcho } from "../linguistics/token-s
 import { looksLikePersonName, isBlocklistedPersonHead, type NounPhraseContext } from "../linguistics/common-noun-filters";
 import { logEntityDecision } from "../linguistics/feature-logging";
 import { splitSchoolName } from "../linguistics/school-names";
+import {
+  applyTypeOverrides,
+  resolveSpanConflicts,
+  shouldSuppressAdjectiveColorPerson,
+  shouldSuppressSentenceInitialPerson,
+  stitchTitlecaseSpans,
+  isFragmentaryItem
+} from "../linguistics/entity-heuristics";
 
 const TRACE_SPANS = process.env.L3_TRACE === "1";
 const CAMELCASE_ALLOWED_PREFIXES = [
@@ -2123,6 +2131,65 @@ function applyLinguisticFilters(
     let shouldKeep = true;
     const tokens = entity.canonical.split(/\s+/).filter(Boolean);
     const headToken = tokens[tokens.length - 1]; // Last token is usually the head
+    const entitySpans = spans.filter(s => s.entity_id === entity.id);
+    const primarySpan = entitySpans[0];
+
+    if (primarySpan) {
+      const override = applyTypeOverrides(entity, primarySpan, text);
+      if (override.reason && DEBUG) {
+        logEntityDecision({
+          entityId: entity.id,
+          text: entity.canonical,
+          candidateType: entity.type,
+          finalType: override.type,
+          features: { rule: override.reason },
+          reason: 'Type override heuristic'
+        });
+      }
+      entity.type = override.type;
+    }
+
+    if (entity.type === 'PERSON' && primarySpan) {
+      const starterCheck = shouldSuppressSentenceInitialPerson(entity, primarySpan, text);
+      if (starterCheck.suppress) {
+        shouldKeep = false;
+        logEntityDecision({
+          entityId: entity.id,
+          text: entity.canonical,
+          candidateType: 'PERSON',
+          finalType: 'FILTERED',
+          features: { rule: starterCheck.reason },
+          reason: 'Sentence-initial single-token suppression'
+        });
+      }
+
+      if (shouldKeep) {
+        const colorCheck = shouldSuppressAdjectiveColorPerson(entity, primarySpan, text);
+        if (colorCheck.suppress) {
+          shouldKeep = false;
+          logEntityDecision({
+            entityId: entity.id,
+            text: entity.canonical,
+            candidateType: 'PERSON',
+            finalType: 'FILTERED',
+            features: { rule: colorCheck.reason },
+            reason: 'Adjective/color suppression'
+          });
+        }
+      }
+    }
+
+    if (entity.type === 'ITEM' && isFragmentaryItem(entity)) {
+      shouldKeep = false;
+      logEntityDecision({
+        entityId: entity.id,
+        text: entity.canonical,
+        candidateType: 'ITEM',
+        finalType: 'FILTERED',
+        features: { rule: 'fragmentary_item' },
+        reason: 'Fragmentary verb/determiner phrase'
+      });
+    }
 
     // Rule NF-1: Filter attached-only fragments
     // If this is a single-token entity that only appears embedded in longer proper names
@@ -2377,7 +2444,8 @@ export async function extractEntities(text: string): Promise<{
       return spans;
     })
   ];
-  const rawSpans = taggedSpans;
+  const stitched = stitchTitlecaseSpans(taggedSpans, text);
+  const rawSpans = [...taggedSpans, ...stitched];
 
   const deduped = dedupe(rawSpans);
   if (DEBUG_ENTITIES) {
@@ -3547,10 +3615,15 @@ const mergedEntries = Array.from(mergedMap.values());
   const filteredEntityIds = new Set(filteredEntities.map(e => e.id));
   const filteredSpans = spans.filter(span => filteredEntityIds.has(span.entity_id));
 
+  // Resolve exact-span conflicts and overlapping spans deterministically
+  const conflictResolved = resolveSpanConflicts(filteredEntities, filteredSpans);
+  const finalEntities = conflictResolved.entities;
+  const finalSpans = conflictResolved.spans;
+
   if (process.env.L3_DEBUG === '1' || process.env.L4_DEBUG === '1') {
-    const dateCount = filteredEntities.filter(e => e.type === 'DATE').length;
-    const removedCount = entities.length - filteredEntities.length;
-    console.log(`[EXTRACT-ENTITIES][DEBUG] returning ${filteredEntities.length} entities (${dateCount} DATEs, ${removedCount} filtered): ${filteredEntities.map(e => `${e.type}:${e.canonical}`).slice(0, 20).join(', ')}`);
+    const dateCount = finalEntities.filter(e => e.type === 'DATE').length;
+    const removedCount = entities.length - finalEntities.length;
+    console.log(`[EXTRACT-ENTITIES][DEBUG] returning ${finalEntities.length} entities (${dateCount} DATEs, ${removedCount} filtered): ${finalEntities.map(e => `${e.type}:${e.canonical}`).slice(0, 20).join(', ')}`);
   }
-  return { entities: filteredEntities, spans: filteredSpans };
+  return { entities: finalEntities, spans: finalSpans };
 }
