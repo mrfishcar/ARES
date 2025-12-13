@@ -1034,9 +1034,24 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           count: extraction.entities?.length ?? 0,
           relationCount: extraction.relations?.length ?? 0,
         });
+
+        // Restore entity overrides if they exist (deserialize Array back to Set)
+        if (extraction.entityOverrides) {
+          const overrides = extraction.entityOverrides;
+          setEntityOverrides({
+            rejectedSpans: new Set(overrides.rejectedSpans || []),
+            typeOverrides: overrides.typeOverrides || {},
+          });
+        } else {
+          // No overrides in document, reset to empty
+          resetEntityOverrides();
+        }
+      } else {
+        // No extraction data, reset everything
+        resetEntityOverrides();
       }
     },
-    [setEntities, setRelations, setStats, setText]
+    [setEntities, setRelations, setStats, setText, resetEntityOverrides]
   );
 
   const refreshDocumentList = useCallback(async () => {
@@ -1152,10 +1167,21 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     setSaveStatus('saving');
 
     try {
+      // Serialize entityOverrides for storage (convert Set to Array for JSON)
+      const serializedOverrides = {
+        rejectedSpans: Array.from(entityOverrides.rejectedSpans),
+        typeOverrides: entityOverrides.typeOverrides,
+      };
+
       const payload = {
         title: text.trim().split('\n')[0]?.slice(0, 80) || 'Untitled Document',
         text,
-        extraction: { entities, relations, stats },
+        extraction: {
+          entities,
+          relations,
+          stats,
+          entityOverrides: serializedOverrides,
+        },
       };
 
       const apiUrl = resolveApiUrl();
@@ -1198,11 +1224,20 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
       // Even if backend fails, save to localStorage
       const now = new Date().toISOString();
+      const serializedOverrides = {
+        rejectedSpans: Array.from(entityOverrides.rejectedSpans),
+        typeOverrides: entityOverrides.typeOverrides,
+      };
       const localDoc: StoredDocument = {
         id: lastSavedId || `local_${Date.now()}`,
         title: text.trim().split('\n')[0]?.slice(0, 80) || 'Untitled Document',
         text,
-        extractionJson: { entities, relations, stats },
+        extractionJson: {
+          entities,
+          relations,
+          stats,
+          entityOverrides: serializedOverrides,
+        },
         createdAt: now,
         updatedAt: now,
       };
@@ -1214,7 +1249,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       }
       return localDoc.id;
     }
-  }, [entities, relations, stats, text, toast, layout.showDocumentSidebar, refreshDocumentList, lastSavedId, saveToLocalStorage]);
+  }, [entities, relations, stats, text, toast, layout.showDocumentSidebar, refreshDocumentList, lastSavedId, saveToLocalStorage, entityOverrides]);
 
   // Manual save (shows toast on error)
   const handleSaveDocument = useCallback(async () => {
@@ -1582,9 +1617,48 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     setTextSelection(null);
   };
 
-  // Create entity from selected text
-  const createEntityFromSelection = (type: EntityType) => {
+  // Auto-detect entity type based on text content
+  const autoDetectEntityType = async (text: string): Promise<EntityType> => {
+    // Simple heuristic-based detection (fast, no API call)
+    const trimmed = text.trim();
+
+    // All caps or ends with Inc/Corp/LLC → ORG
+    if (/^[A-Z\s&.]+$/.test(trimmed) || /\b(Inc|Corp|LLC|Ltd|Company|Organization)\b/i.test(trimmed)) {
+      return 'ORG';
+    }
+
+    // Contains location indicators → PLACE
+    if (/\b(City|Street|Avenue|Road|Boulevard|State|Country|County|Province)\b/i.test(trimmed)) {
+      return 'PLACE';
+    }
+
+    // Starts with "The" followed by capitalized word → likely ORG or WORK
+    if (/^The\s+[A-Z]/.test(trimmed)) {
+      return 'ORG';
+    }
+
+    // Multiple capitalized words (proper nouns) → likely PERSON
+    const words = trimmed.split(/\s+/);
+    const capitalizedWords = words.filter(w => /^[A-Z][a-z]+/.test(w));
+    if (capitalizedWords.length >= 2 && capitalizedWords.length === words.length) {
+      return 'PERSON';
+    }
+
+    // Single capitalized word → PERSON (most common)
+    if (/^[A-Z][a-z]+$/.test(trimmed)) {
+      return 'PERSON';
+    }
+
+    // Default fallback
+    return 'PERSON';
+  };
+
+  // Create entity from selected text (with auto-detected type)
+  const createEntityFromSelection = async (manualType?: EntityType) => {
     if (!textSelection) return;
+
+    // Auto-detect type if not manually specified
+    const type = manualType || await autoDetectEntityType(textSelection.text);
 
     const newEntity: EntitySpan = {
       text: textSelection.text,
@@ -2077,7 +2151,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           selectedText={textSelection.text}
           entitiesCount={textSelection.entitiesInRange.length}
           position={textSelection.position}
-          onTagAsEntity={() => createEntityFromSelection('PERSON')} // TODO: Add type picker
+          onTagAsEntity={() => createEntityFromSelection()} // Auto-detects entity type
           onMergeEntities={mergeEntitiesFromSelection}
           onCancel={clearTextSelection}
         />
