@@ -16,7 +16,7 @@ ARES is a local-first engine that turns unstructured text into a knowledge graph
 5. **Outputs**: Knowledge graph with HERT IDs, GraphQL/API helpers, and export utilities.
 
 ## Test Ladder (levels 1–5)
-Purpose: progressive gates for extraction quality. Use the commands below; avoid the dot reporter (`--reporter=dot --silent`) due to a Vitest RangeError.
+Purpose: progressive gates for extraction quality. Reporter guardrail: default runs now force the stable `basic` reporter; use `npm run test:stable` to mirror CI and avoid the prior Vitest `RangeError` from the dot reporter.
 
 | Level | Focus | Command |
 | --- | --- | --- |
@@ -59,21 +59,12 @@ Purpose: progressive gates for extraction quality. Use the commands below; avoid
 ## Known Issues
 
 ### iOS Safari Text Selection Menu
-**Status**: Unresolved after 3 attempts
-**Impact**: Minor UX issue - both native iOS menu and custom "Tag as Entity" button appear when selecting text in Entity Highlight Mode
-**Platform**: iOS Safari only
-**Workaround**: Both menus are functional, just overlapping
-
-**Attempts Made**:
-1. CSS with data-attribute selectors (`-webkit-touch-callout: none`) - Failed
-2. Dynamic CSS injection via JavaScript - Failed
-3. Touch event `preventDefault()` - Failed
-
-**Root Cause**: iOS Safari doesn't respect CSS callout disabling and event prevention during text selection gestures. May require native iOS behavior or accepting dual menus.
-
+**Status**: Mitigated
+**Impact**: Overlay/backdrop no longer intercepts selection on iPad Safari; we avoid auto-focusing close buttons and add a touch-safe mode.
+**Debugging**: Set `VITE_OVERLAY_HITBOX_DEBUG=1` to outline overlay hitboxes. Selection logging remains unchanged; use `VITE_ARES_PERF=1` to trace decoration timing when debugging editor perf.
 **References**:
-- Commits: `a93f779`, `daea560`, `9f76eb3`
-- File: `app/ui/console/src/components/CodeMirrorEditor.tsx`
+- File: `app/ui/console/src/components/EntityOverlay.tsx` (touch-safe mode, focus guard)
+- File: `app/ui/console/src/components/CodeMirrorEditor.tsx` (selection + decoration perf)
 
 ## File Pointers
 - `HANDOFF.md`: Latest session status and remaining Level 5 issues.

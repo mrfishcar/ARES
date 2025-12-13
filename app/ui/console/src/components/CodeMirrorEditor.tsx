@@ -40,8 +40,10 @@ import { tags as t } from '@lezer/highlight';
 
 import type { EntitySpan, EntityType } from '../types/entities';
 import { getEntityTypeColor } from '../types/entities';
+import { projectEntitiesToVisibleRanges } from '../editor/entityVisibility';
 import { EntityContextMenu } from './EntityContextMenu';
 import type { CodeMirrorEditorProps } from './CodeMirrorEditorProps';
+import { measureDecorationBuild } from '../utils/perf';
 
 // -------------------- MARKDOWN STYLES --------------------
 
@@ -110,9 +112,14 @@ const editorTheme = EditorView.theme({
   },
 });
 
+const toAlphaHex = (value: number) =>
+  Math.max(0, Math.min(255, Math.round(value)))
+    .toString(16)
+    .padStart(2, '0');
+
 // -------------------- ENTITY HIGHLIGHTER --------------------
 
-const ForceDecorationUpdate = StateEffect.define<void>();
+export const ForceDecorationUpdate = StateEffect.define<void>();
 
 function entityHighlighterExtension(
   getEntities: () => EntitySpan[],
@@ -144,34 +151,46 @@ function entityHighlighterExtension(
         if (!entities.length) return Decoration.none;
 
         const base = getBaseOffset();
+        const opacity = Math.max(0, Math.min(1, getOpacity()));
+        const backgroundAlpha = toAlphaHex(32 * opacity);
+        const borderAlpha = toAlphaHex(64 * opacity);
         const doc = view.state.doc;
-        const builder = new RangeSetBuilder<Decoration>();
+        const { spans, scannedBytes } = projectEntitiesToVisibleRanges(
+          entities,
+          base,
+          doc.length,
+          view.visibleRanges,
+        );
 
-        for (const ent of entities) {
-          const start = Math.max(0, ent.start - base);
-          const end = Math.min(doc.length, ent.end - base);
-          if (end <= start) continue;
+        if (!spans.length) return Decoration.none;
 
-          const color = getEntityTypeColor(ent.type);
+        const buildDecorations = () => {
+          const builder = new RangeSetBuilder<Decoration>();
 
-          builder.add(
-            start,
-            end,
-            Decoration.mark({
-              class: 'cm-entity-highlight',
-              attributes: {
-                style: `
-                  background: ${color}20;
-                  box-shadow: 0 0 0 1px ${color}40;
-                  border-radius: 3px;
-                  padding: 0 1px;
-                `,
-              },
-            }),
-          );
-        }
+          for (const span of spans) {
+            const color = getEntityTypeColor(span.type);
 
-        return builder.finish();
+            builder.add(
+              span.from,
+              span.to,
+              Decoration.mark({
+                class: 'cm-entity-highlight',
+                attributes: {
+                  style: `
+                    background: ${color}${backgroundAlpha};
+                    box-shadow: 0 0 0 1px ${color}${borderAlpha};
+                    border-radius: 3px;
+                    padding: 0 1px;
+                  `,
+                },
+              }),
+            );
+          }
+
+          return builder.finish();
+        };
+
+        return measureDecorationBuild('entity-highlighter', scannedBytes, buildDecorations);
       }
     },
     { decorations: v => v.decorations },
@@ -692,7 +711,7 @@ export function CodeMirrorEditor({
           if (update.docChanged) {
             // Mark that user just edited (to prevent external sync from interfering)
             lastUserEditRef.current = Date.now();
-            const nextValue = update.state.doc.toString();
+            const nextValue = update.state.sliceDoc();
             onChange(nextValue);
           }
 
@@ -741,7 +760,7 @@ export function CodeMirrorEditor({
   useEffect(() => {
     const view = viewRef.current;
     if (!view) return;
-    const current = view.state.doc.toString();
+    const current = view.state.sliceDoc();
     if (current === value) return;
 
     // Don't sync if this was triggered by recent user input (within 100ms)
