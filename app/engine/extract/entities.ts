@@ -34,7 +34,8 @@ import {
   shouldSuppressAdjectiveColorPerson,
   shouldSuppressSentenceInitialPerson,
   stitchTitlecaseSpans,
-  isFragmentaryItem
+  isFragmentaryItem,
+  isViableSingleTokenPerson
 } from "../linguistics/entity-heuristics";
 
 const TRACE_SPANS = process.env.L3_TRACE === "1";
@@ -2122,10 +2123,17 @@ function applyLinguisticFilters(
   spans: Array<{entity_id: string; start: number; end: number}>,
   text: string,
   tokenStats: ReturnType<typeof buildTokenStatsFromParse>,
-  parsed: ParseResponse
+  parsed: ParseResponse,
+  sentenceStarts: Set<number>
 ): Entity[] {
   const DEBUG = process.env.DEBUG_ENTITY_DECISIONS === 'true';
   const filtered: Entity[] = [];
+  const isSentenceInitialPosition = (charPos: number): boolean => {
+    for (const start of sentenceStarts) {
+      if (Math.abs(charPos - start) <= 2) return true;
+    }
+    return false;
+  };
 
   for (const entity of entities) {
     let shouldKeep = true;
@@ -2150,7 +2158,12 @@ function applyLinguisticFilters(
     }
 
     if (entity.type === 'PERSON' && primarySpan) {
-      const starterCheck = shouldSuppressSentenceInitialPerson(entity, primarySpan, text);
+      const starterCheck = shouldSuppressSentenceInitialPerson(
+        entity,
+        primarySpan,
+        text,
+        isSentenceInitialPosition
+      );
       if (starterCheck.suppress) {
         shouldKeep = false;
         logEntityDecision({
@@ -2227,8 +2240,8 @@ function applyLinguisticFilters(
         const determiners = ['the ', 'a ', 'an ', 'my ', 'your ', 'his ', 'her ', 'their ', 'our '];
         hasDeterminer = determiners.some(det => beforeText.toLowerCase().endsWith(det));
 
-        // Check if sentence-initial (text before is empty or ends with sentence boundary)
-        isSentenceInitial = beforeText.trim() === '' || /[.!?]\s*$/.test(beforeText);
+        // Check if sentence-initial via parser-derived starts
+        isSentenceInitial = isSentenceInitialPosition(firstSpan.start);
 
         // Check if followed by comma
         followedByComma = afterText.trimStart().startsWith(',');
@@ -2703,11 +2716,38 @@ const PERSON_NICKNAME_NORMALIZERS = new Map<string, string>([
 
   for (const span of validated) {
     const textLower = toLower(span.text);
-    const key = `${span.type}:${textLower}`;
+    const originalKey = `${span.type}:${textLower}`;
+    const positionsForSpan = positionsByKey.get(originalKey) ?? [{ start: span.start, end: span.end }];
+    const posFeatures = positionFeaturesByKey.get(originalKey);
+    const originalSpanType = span.type;
+    let spanType = span.type;
+
+    if (spanType === 'PERSON') {
+      const tokens = span.text.split(/\s+/).filter(Boolean);
+      if (tokens.length === 1) {
+        const primaryPosition = positionsForSpan[0];
+        const beforeText = primaryPosition
+          ? text.slice(Math.max(0, primaryPosition.start - 10), primaryPosition.start)
+          : '';
+        const determiners = ['the ', 'a ', 'an ', 'my ', 'your ', 'his ', 'her ', 'their ', 'our '];
+        const hasDeterminer = determiners.some(det => beforeText.toLowerCase().endsWith(det));
+        const isSentenceInitialOnly = !!(posFeatures?.isSentenceInitial && !posFeatures?.occursNonInitial);
+
+        if (!isViableSingleTokenPerson(tokens[0], {
+          tokenStats,
+          isSentenceInitial: isSentenceInitialOnly,
+          hasDeterminer
+        })) {
+          spanType = 'ITEM';
+        }
+      }
+    }
+
+    const key = `${spanType}:${textLower}`;
     let matched = false;
 
     for (const entry of entries) {
-      if (entry.entity.type !== span.type) continue;
+      if (entry.entity.type !== spanType) continue;
 
       const canonicalLower = toLower(entry.entity.canonical);
       if (
@@ -2742,7 +2782,7 @@ const PERSON_NICKNAME_NORMALIZERS = new Map<string, string>([
           addAlias(entry, span.text);
         }
 
-        for (const pos of positionsByKey.get(key) ?? [{ start: span.start, end: span.end }]) {
+        for (const pos of positionsForSpan) {
           entry.spanList.push(pos);
         }
         entry.variants.set(textLower, span.text);
@@ -2754,9 +2794,9 @@ const PERSON_NICKNAME_NORMALIZERS = new Map<string, string>([
 
     if (!matched) {
       const id = uuid();
-      const positions = positionsByKey.get(key) ?? [{ start: span.start, end: span.end }];
+      const positions = positionsForSpan;
       if (span.text.includes('McGonagall')) {
-        console.log('[DEBUG-MCG] New entry', span.text, 'type', span.type);
+        console.log('[DEBUG-MCG] New entry', span.text, 'type', spanType);
       }
       // Capitalize entity name if needed (for lowercase entities from case-insensitive extraction)
       const capitalizedText = (span.text.length > 0 && /^[a-z]/.test(span.text))
@@ -2765,7 +2805,7 @@ const PERSON_NICKNAME_NORMALIZERS = new Map<string, string>([
 
       // For DATE entities, convert spelled-out years to numeric form
       let canonicalName = capitalizedText;
-      if (span.type === 'DATE') {
+      if (spanType === 'DATE') {
         const numericYear = convertSpelledYearToNumeric(span.text);
         if (numericYear !== null) {
           canonicalName = numericYear.toString();
@@ -2773,15 +2813,13 @@ const PERSON_NICKNAME_NORMALIZERS = new Map<string, string>([
       }
 
       // Get position features for this entity
-      const posFeatures = positionFeaturesByKey.get(key);
-
       // Determine if this entity has NER support (for quality filtering)
       const hasNERSupport = span.source === 'NER' || span.source === 'WHITELIST' || span.source === 'DEP';
 
       const entry: EntityEntry = {
         entity: {
           id,
-          type: span.type,
+          type: spanType,
           canonical: canonicalName,
           aliases: [],
           created_at: now,
@@ -2791,7 +2829,7 @@ const PERSON_NICKNAME_NORMALIZERS = new Map<string, string>([
               isSentenceInitial: posFeatures.isSentenceInitial,
               occursNonInitial: posFeatures.occursNonInitial
             } : {}),
-            ...(hasNERSupport ? { nerLabel: span.type } : {})
+            ...(hasNERSupport ? { nerLabel: originalSpanType } : {})
           }
         },
         spanList: [...positions],
@@ -3609,7 +3647,7 @@ const mergedEntries = Array.from(mergedMap.values());
   }
 
   // Apply linguistic filters to remove problematic entities
-  const filteredEntities = applyLinguisticFilters(entities, spans, text, tokenStats, parsed);
+  const filteredEntities = applyLinguisticFilters(entities, spans, text, tokenStats, parsed, sentenceStarts);
 
   // Update spans to remove references to filtered entities
   const filteredEntityIds = new Set(filteredEntities.map(e => e.id));
