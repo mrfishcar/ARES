@@ -1384,7 +1384,19 @@ No additional information is available at this time.
     }
 
     // Entity Review Reports endpoint
-    if (req.url === '/api/reports' && req.method === 'POST') {
+    if (req.url === '/api/reports') {
+      // Handle CORS preflight
+      if (req.method === 'OPTIONS') {
+        res.writeHead(200, {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        });
+        res.end();
+        return;
+      }
+
+      if (req.method === 'POST') {
       let body = '';
       req.on('data', (chunk) => {
         body += chunk.toString();
@@ -1426,6 +1438,7 @@ No additional information is available at this time.
         }
       });
       return;
+      }
     }
 
     // Health check for worker status
