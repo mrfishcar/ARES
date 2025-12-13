@@ -1,7 +1,7 @@
 # CLAUDE.md - AI Assistant Guide for ARES
 
-**Version**: 1.1
-**Last Updated**: 2025-12-05
+**Version**: 1.2
+**Last Updated**: 2025-12-13
 **Repository**: Advanced Relation Extraction System (ARES)
 
 ---
@@ -98,7 +98,14 @@ ARES is a **local-first entity and relation extraction system** that builds know
 - Relation Recall: 75.8% (target ≥75%) ✅
 - Performance: ~190 words/second
 
-**Recent Work:**
+**Recent Work (December 13, 2025):**
+- ✅ Fixed markdown headers blocking extraction (`##` treated as incomplete tags)
+- ✅ Fixed Entity Selection Menu overlapping text (React Portal + fixed positioning)
+- ✅ Disabled browser context menu in Entity Highlight Mode
+- ✅ Entity Review Sidebar with drag/resize and pinned modes
+- ✅ Entity review reports saved to repository (`reports/entity-reviews/`)
+
+**Previous Work:**
 - Chunked extraction for long documents (55k+ words)
 - Sibling detection pattern (FM-1) implemented
 - Level 5 cross-document resolution working
@@ -1214,12 +1221,12 @@ Before considering your work complete:
 
 - **Repository**: https://github.com/mrfishcar/ARES
 - **Issues**: https://github.com/mrfishcar/ARES/issues
-- **Branch**: `claude/claude-md-miex9940wrme9tpt-01Jd9AfTTZNzdiNeQ7jgvkmh`
+- **Current Branch**: `claude/fix-save-keyboard-focus-01GFaMhAYfSzRo9uUittyMPy`
 - **Documentation**: https://github.com/mrfishcar/ARES/tree/main/docs
 
 ---
 
-**Last Updated**: 2025-11-25 (Iteration 37)
+**Last Updated**: 2025-12-13
 **Maintainers**: ARES Team
 **License**: MIT
 
