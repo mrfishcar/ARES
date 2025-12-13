@@ -7,6 +7,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Menu } from 'lucide-react';
 import { LabToolbar } from '../components/LabToolbar';
 import { DocumentsSidebar } from '../components/DocumentsSidebar';
@@ -334,15 +335,25 @@ function stripIncompleteTagsForExtraction(rawText: string): string {
   // Search backwards for # that's not a markdown header
   for (let i = rawText.length - 1; i >= 0; i--) {
     if (rawText[i] === '#') {
-      // Check if this # is at the start of a line (markdown header)
-      const isLineStart = i === 0 || rawText[i - 1] === '\n';
+      // Look backwards through ALL consecutive # characters
+      // This handles ##, ###, etc. where the second # sees the first # as previous char
+      let j = i - 1;
+      while (j >= 0 && rawText[j] === '#') {
+        j--;
+      }
+
+      // Now j points to the character before the first # in the sequence
+      // Check if the FIRST # in the sequence is at line start
+      const isLineStart = j < 0 || rawText[j] === '\n' || rawText[j] === '\r';
 
       if (!isLineStart) {
-        // This # is mid-text, could be an entity tag
+        // This # sequence is mid-text, could be an entity tag
         lastHashIndex = i;
         break;
       }
-      // Otherwise it's a markdown header, skip it
+
+      // Otherwise it's a markdown header, skip past this entire sequence
+      i = j + 1;
     }
   }
 
@@ -520,7 +531,7 @@ interface SelectedEntityState {
 interface EntitySelectionMenuProps {
   selectedText: string;
   entitiesCount: number;
-  position?: { x: number; y: number };
+  position?: { x: number; y: number; flip?: boolean };
   onTagAsEntity: () => void;
   onMergeEntities: () => void;
   onCancel: () => void;
@@ -534,22 +545,32 @@ function EntitySelectionMenu({
   onMergeEntities,
   onCancel,
 }: EntitySelectionMenuProps) {
-  // Calculate menu position - near selection if provided, otherwise bottom center
+  // Calculate menu position using fixed positioning (viewport coordinates)
+  // Use portal to escape any transform contexts that would break backdrop-filter
   const menuStyle: React.CSSProperties = position
     ? {
-        position: 'absolute',
+        position: 'fixed',
         left: `${position.x}px`,
-        top: `${position.y}px`,
-        transform: 'translateX(-50%)', // Center horizontally on selection
+        // If flip is true, position above; otherwise below
+        // Use transform to position menu edge at the Y coordinate
+        ...(position.flip
+          ? {
+              bottom: `${window.innerHeight - position.y}px`,
+              transform: 'translate(-50%, 0)', // Center horizontally, no Y offset
+            }
+          : {
+              top: `${position.y}px`,
+              transform: 'translate(-50%, 0)', // Center horizontally, no Y offset
+            }),
       }
     : {
         position: 'fixed',
         bottom: '100px',
         left: '50%',
-        transform: 'translateX(-50%)',
+        transform: 'translate(-50%, 0)',
       };
 
-  return (
+  const menuContent = (
     <div
       className="entity-selection-menu"
       onClick={(e) => e.stopPropagation()} // Prevent clicks from bubbling
@@ -558,13 +579,16 @@ function EntitySelectionMenu({
         ...menuStyle,
         background: 'var(--glass-bg)',
         backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)', // Safari support
         border: '1px solid var(--glass-border)',
         borderRadius: '12px',
         padding: '16px',
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
-        zIndex: 1000,
+        zIndex: 10000,
         minWidth: '300px',
         maxWidth: '400px',
+        isolation: 'isolate', // Create isolated stacking context for backdrop-filter
+        willChange: 'transform', // GPU acceleration
       }}
     >
       <div style={{ marginBottom: '12px', fontSize: '14px', color: 'var(--text-secondary)' }}>
@@ -636,6 +660,9 @@ function EntitySelectionMenu({
       </div>
     </div>
   );
+
+  // Use portal to render at document.body, escaping any transform contexts
+  return createPortal(menuContent, document.body);
 }
 
 export function ExtractionLab({ project, toast }: ExtractionLabProps) {
@@ -685,7 +712,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     end: number;
     text: string;
     entitiesInRange: EntitySpan[];
-    position?: { x: number; y: number }; // Position for menu
+    position?: { x: number; y: number; flip?: boolean }; // Position for menu
   } | null>(null);
 
   // Theme state
@@ -1521,15 +1548,22 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
     // Get selection position from DOM
     const selection = window.getSelection();
-    let position: { x: number; y: number } | undefined;
+    let position: { x: number; y: number; flip?: boolean } | undefined;
 
     if (selection && selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       const rect = range.getBoundingClientRect();
-      // Position menu below selection, centered
+
+      // Position menu below selection (viewport coordinates for fixed positioning)
+      // Check if there's enough space below, otherwise position above
+      const menuHeight = 80; // Approximate menu height
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+
       position = {
         x: rect.left + rect.width / 2,
-        y: rect.bottom + window.scrollY + 8, // 8px below selection
+        y: spaceBelow >= menuHeight ? rect.bottom + 8 : rect.top - 8, // 8px offset
+        flip: spaceBelow < menuHeight, // Signal to flip menu above selection
       };
     }
 

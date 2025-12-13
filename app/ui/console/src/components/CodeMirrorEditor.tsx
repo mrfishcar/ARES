@@ -219,37 +219,43 @@ function contextMenuExtension(
   return EditorView.domEventHandlers({
     // Right-click context menu
     contextmenu: (event, view) => {
-      // In Entity Highlight Mode, check for text selection first
-      if (entityHighlightModeRef.current && onTextSelectedRef.current) {
-        const selection = view.state.selection.main;
+      // ALWAYS prevent default browser context menu in Entity Highlight Mode
+      if (entityHighlightModeRef.current) {
+        event.preventDefault();
+        event.stopPropagation();
 
-        // If there's a text selection (not just a cursor)
-        if (!selection.empty) {
-          const start = selection.from;
-          const end = selection.to;
-          const globalStart = baseOffsetRef.current + start;
-          const globalEnd = baseOffsetRef.current + end;
-          const selectedText = view.state.doc.sliceString(start, end);
+        // Check for text selection first
+        if (onTextSelectedRef.current) {
+          const selection = view.state.selection.main;
 
-          // Find entities in selected range
-          const entitiesInRange = entitiesRef.current.filter(entity => {
-            return !(entity.end <= globalStart || entity.start >= globalEnd);
-          });
+          // If there's a text selection (not just a cursor)
+          if (!selection.empty) {
+            const start = selection.from;
+            const end = selection.to;
+            const globalStart = baseOffsetRef.current + start;
+            const globalEnd = baseOffsetRef.current + end;
+            const selectedText = view.state.doc.sliceString(start, end);
 
-          event.preventDefault();
-          event.stopPropagation();
+            // Find entities in selected range
+            const entitiesInRange = entitiesRef.current.filter(entity => {
+              return !(entity.end <= globalStart || entity.start >= globalEnd);
+            });
 
-          // Call onTextSelected to show floating menu (same as drag behavior)
-          if (selectedText.trim()) {
-            onTextSelectedRef.current(globalStart, globalEnd, selectedText.trim(), entitiesInRange);
+            // Call onTextSelected to show floating menu (same as drag behavior)
+            if (selectedText.trim()) {
+              onTextSelectedRef.current(globalStart, globalEnd, selectedText.trim(), entitiesInRange);
+            }
+
+            return true;
           }
-
-          return true;
         }
+
+        // Fall back to entity context menu if no selection
+        return tryShowContextMenu(event as MouseEvent, view);
       }
 
-      // Fall back to entity context menu if no selection
-      return tryShowContextMenu(event as MouseEvent, view);
+      // Not in Entity Highlight Mode - allow default browser behavior
+      return false;
     },
     // Click/tap handler for highlight mode - shows context menu on entity tap
     click: (event, view) => {
