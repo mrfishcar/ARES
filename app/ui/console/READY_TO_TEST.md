@@ -25,6 +25,11 @@ ExtractionLab → rawMarkdownText (single source of truth)
 Result: Everything in sync, no mutations, responsive ✅
 ```
 
+## Regression Steps (iOS Safari + Perf)
+- iPad Safari selection guard: overlay now runs in touch-safe mode (no auto-focus on close buttons, backdrop/touch hitboxes outlined when `VITE_OVERLAY_HITBOX_DEBUG=1`).
+- Editor perf instrumentation: set `VITE_ARES_PERF=1` to log decoration timing; run `npx ts-node --compiler-options '{"module":"CommonJS","jsx":"react-jsx"}' scripts/benchmark-entities.ts` for a quick span-filter micro-benchmark.
+- Stable tests: `npm run test:stable` (basic reporter) avoids the Vitest RangeError seen with the dot reporter and matches CI.
+
 ---
 
 ## How It Works Now

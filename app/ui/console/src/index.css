@@ -2246,6 +2246,23 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   pointer-events: auto;
 }
 
+.overlay-backdrop.overlay-touch-safe {
+  touch-action: manipulation;
+}
+
+.overlay-panel.overlay-touch-safe {
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+.overlay-hitbox-debug {
+  outline: 1px dashed #f97316;
+}
+
+.overlay-backdrop.overlay-hitbox-debug {
+  outline: 2px solid rgba(244, 63, 94, 0.6);
+}
+
 /* Light mode overlay backdrop: lighter dimming for readability */
 html[data-theme="light"] .overlay-backdrop {
   background: rgba(0, 0, 0, 0.15);

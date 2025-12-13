@@ -10,6 +10,16 @@ import { useEffect, useRef } from 'react';
 import { EntityResultsPanel } from './EntityResultsPanel';
 import type { EntitySpan } from '../types/entities';
 
+const isTouchScreen = typeof window !== 'undefined' && 'ontouchstart' in window;
+const isiOSSafari =
+  typeof navigator !== 'undefined' &&
+  /iP(ad|hone|od)/i.test(navigator.userAgent || '') &&
+  /Safari/i.test(navigator.userAgent || '') &&
+  !/Chrome/i.test(navigator.userAgent || '');
+const overlayHitboxDebug =
+  typeof import.meta !== 'undefined' && import.meta.env?.VITE_OVERLAY_HITBOX_DEBUG === '1';
+const overlaySafeMode = isiOSSafari || (isTouchScreen && /Safari/i.test(navigator.userAgent || ''));
+
 interface Relation {
   id: string;
   subj: string;
@@ -50,13 +60,44 @@ export function EntityOverlay({
 }: EntityOverlayProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const shouldAutoFocusClose = mode === 'overlay' && !overlaySafeMode;
+
+  const overlayClassNames = [
+    'overlay-panel liquid-glass--strong',
+    overlaySafeMode ? 'overlay-touch-safe' : '',
+    overlayHitboxDebug ? 'overlay-hitbox-debug' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const pinnedOverlayClassNames = [
+    'overlay-panel liquid-glass--subtle pinned',
+    overlaySafeMode ? 'overlay-touch-safe' : '',
+    overlayHitboxDebug ? 'overlay-hitbox-debug' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const backdropClassNames = [
+    'overlay-backdrop',
+    overlaySafeMode ? 'overlay-touch-safe' : '',
+    overlayHitboxDebug ? 'overlay-hitbox-debug' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const touchSafeStyle = overlaySafeMode
+    ? ({
+        touchAction: 'manipulation',
+      } as const)
+    : undefined;
 
   // Focus trap: focus close button when opened in overlay mode
   useEffect(() => {
-    if (mode === 'overlay' && closeButtonRef.current) {
+    if (shouldAutoFocusClose && closeButtonRef.current) {
       closeButtonRef.current.focus();
     }
-  }, [mode]);
+  }, [mode, shouldAutoFocusClose]);
 
   // Handle escape key to close
   useEffect(() => {
@@ -102,7 +143,7 @@ export function EntityOverlay({
     // Pinned sidebar mode - no backdrop
     return (
       <div
-        className="overlay-panel liquid-glass--subtle pinned"
+        className={pinnedOverlayClassNames}
         style={{
           flex: '0 0 400px',
           maxWidth: '460px',
@@ -150,18 +191,20 @@ export function EntityOverlay({
     <>
       {/* Backdrop */}
       <div
-        className="overlay-backdrop"
+        className={backdropClassNames}
         onClick={onClose}
         aria-label="Close overlay"
+        style={touchSafeStyle}
       />
 
       {/* Overlay panel */}
       <div
         ref={overlayRef}
-        className="overlay-panel liquid-glass--strong"
+        className={overlayClassNames}
         role="dialog"
         aria-modal="true"
         aria-labelledby="entity-overlay-title"
+        style={touchSafeStyle}
       >
         <div className="overlay-header">
           <h2 id="entity-overlay-title" className="overlay-title">
