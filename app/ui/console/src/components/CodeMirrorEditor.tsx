@@ -594,6 +594,35 @@ export function CodeMirrorEditor({
 
   useEffect(() => {
     entityHighlightModeRef.current = entityHighlightMode;
+
+    // Inject CSS to disable iOS callout menu when entity highlight mode is active
+    const styleId = 'cm-ios-callout-fix';
+    let styleElement = document.getElementById(styleId) as HTMLStyleElement | null;
+
+    if (entityHighlightMode) {
+      if (!styleElement) {
+        styleElement = document.createElement('style');
+        styleElement.id = styleId;
+        document.head.appendChild(styleElement);
+      }
+      styleElement.textContent = `
+        .cm-content, .cm-scroller, .cm-line, .cm-editor {
+          -webkit-touch-callout: none !important;
+          -webkit-user-select: text !important;
+          user-select: text !important;
+        }
+      `;
+    } else {
+      if (styleElement) {
+        styleElement.remove();
+      }
+    }
+
+    return () => {
+      // Cleanup on unmount
+      const el = document.getElementById(styleId);
+      if (el) el.remove();
+    };
   }, [entityHighlightMode]);
 
   useEffect(() => {
@@ -774,6 +803,13 @@ export function CodeMirrorEditor({
           height: '100%',
           background: 'var(--bg-primary)',
           overflow: 'hidden',
+          // iOS callout menu suppression (when entity highlight mode is active)
+          // Allow text selection but disable the native callout menu
+          ...(entityHighlightMode && {
+            WebkitTouchCallout: 'none',
+            WebkitUserSelect: 'text',
+            userSelect: 'text',
+          }),
         }}
       />
 
