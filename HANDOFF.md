@@ -1,429 +1,617 @@
-# Level 5 Implementation Verified! 🎉
+# UI Refinement & Bug Fixes Session
 
-**Date**: 2025-11-28
-**Branch**: `claude/add-bug-fix-docs-015H1aJB5pBMoHf1wkfhpxAp`
-**Status**: ✅ **STAGE 3 + LEVEL 5 (96.3% PASSING!)**
-
----
-
-## Running Log (2025-12-04)
-
-### ✅ NEW: Chunked Long-Form Extraction Pipeline
-
-Implemented a two-tier chunking architecture for processing long documents (55k+ words):
-
-**What it does:**
-- Splits documents into ~5000-word "macro-chunks" with 500-char overlap
-- Processes each chunk independently through the existing extraction pipeline
-- Merges entities across chunks using Jaro-Winkler clustering
-- Properly adjusts span offsets from chunk-local to document-global coordinates
-- Reports progress per-chunk and yields to event loop for UI responsiveness
-
-**How to enable:**
-```bash
-# Automatic mode (uses chunking for documents > 7500 words)
-# No env var needed - extractWithOptimalStrategy() chooses automatically
-
-# Force chunked mode for all documents
-ARES_LONGFORM_MODE=chunked
-
-# Customize chunk parameters
-ARES_CHUNK_SIZE_WORDS=5000     # Words per chunk (default: 5000)
-ARES_CHUNK_OVERLAP_CHARS=500   # Overlap between chunks (default: 500)
-```
-
-**Key files:**
-- `app/engine/chunked-extraction.ts` - New chunked extraction module
-- `app/storage/storage.ts` - Updated to use `extractWithOptimalStrategy()`
-- `tests/chunked-extraction.spec.ts` - 8 tests covering chunking, merging, offsets
-
-**Performance improvements:**
-- Job status now updates properly during long extractions (fixed event loop blocking)
-- Progress logging every 100 segments shows extraction progress
-- Per-chunk timing stats available in result
-
-**Other fixes in this session:**
-- Expanded ITEM verb filter to catch "read Melora", "feel pain" false positives
-- Lowered default entity confidence threshold from 0.65 to 0.55
-- Added `ARES_PRECISION_MODE=permissive` option (0.45 threshold) for long-form literary text
+**Date**: 2025-12-13
+**Branch**: `claude/fix-save-keyboard-focus-01GFaMhAYfSzRo9uUittyMPy`
+**Status**: ✅ **UI IMPROVEMENTS & EXTRACTION FIXES**
 
 ---
 
-## Running Log (2025-12-01)
+## Session Summary
 
-- **Completed fixes**: Added npm scripts (`test:ladder`, `test:ladder:1/2/3/5a/5b/5c`) so the README commands now run directly without manual vitest arguments.
-- **Pending tasks**: Run the long-form evaluation on "Barty Beauregard and the Fabulous Fraud" using the plan below; keep an eye on coordination merging if any regressions appear during that pass.
-- **Blockers requiring human review**: None as of 2025-12-01.
-- **Next recommended steps**: Use `npm run test:ladder` before/after major changes, then follow the Barty plan.
+This session focused on fixing critical UI issues in the Extraction Lab console and resolving a markdown header bug that was blocking entity extraction. Three major fixes were implemented:
 
-### Plan: Barty Beauregard and the Fabulous Fraud (long document)
-1. **Chunk the text for stability**: Split `Barty Beauregard and the Fabulous Fraud PLAIN TEXT.txt` into ~400–600 word segments on paragraph boundaries so vitest and the orchestrator don’t choke on extremely long inputs.
-2. **Run extraction per segment**: Feed each chunk through `extractFromSegments` (see `diagnose-full-text.ts` for usage) with unique segment IDs so the global graph merges cross-chunk entities and relations.
-3. **Aggregate and inspect**: Merge outputs into a single graph via `global-graph` helpers, then review merged entities/relations for alias collisions, especially coordination cases.
-4. **Add a regression test**: If issues surface, capture the failing snippet as a focused ladder-style spec to keep runtime manageable while guarding against the large-doc regressions.
-5. **Performance watch**: Record timing/memory per chunk; if limits creep up, trim chunk size or disable expensive diagnostics during the run.
-
-
-## Quick Status - Level 5 Tests
-
-**Level 5 Results**: **52/54 tests passing (96.3%)** ✅
-
-| Level | Description | Tests Passing | Status |
-|-------|-------------|---------------|--------|
-| **5A** | Cross-Document Resolution | **9/10 (90%)** | ✅ |
-| **5B** | Performance & Queries | **9/10 (90%)** | ✅ |
-| **5C** | 15 New Entity Types | **34/34 (100%)** | ✅ |
-
-### What Level 5 Provides:
-
-**5A - Cross-Document Resolution**:
-- ✅ Same entity matching across documents (exact name)
-- ✅ Alias merging ("Harry Potter" + "Potter" → single entity)
-- ✅ Disambiguation (James Potter vs Harry Potter kept separate)
-- ✅ Attribute aggregation across documents
-- ✅ Cross-document relation merging
-- ⚠️ 1 minor issue: Coordination merging in "Harry, Ron, and Hermione"
-
-**5B - Performance & Queries**:
-- ✅ Single doc < 500ms (achieved)
-- ✅ 50 docs < 10s batch processing (achieved)
-- ✅ Memory < 100MB for 100 docs (achieved)
-- ✅ findEntitiesByName() query
-- ✅ getEntitiesByType() query
-- ✅ getRelations() with direction filtering
-- ✅ export() with filters (by document/type)
-
-**5C - 15 New Entity Types** (ALL EXTRACTING):
-- ✅ RACE (Elves, Dwarves, Elven warriors)
-- ✅ CREATURE (Smaug, phoenix Fawkes)
-- ✅ ARTIFACT (The One Ring, Excalibur)
-- ✅ SPELL (cast Fireball, Patronus spell)
-- ✅ MAGIC (Dark magic, Necromancy)
-- ✅ LANGUAGE (Elvish, Parseltongue)
-- ✅ MATERIAL (Mithril, Vibranium ore)
-- ✅ DEITY (Zeus the god, prayed to Athena)
-- ✅ SKILL (trained in swordsmanship)
-- ✅ ABILITY (ability to speak Parseltongue)
-- ✅ POWER (power of telekinesis)
-- ✅ TECHNIQUE (Hadoken technique)
-- ✅ CURRENCY (Galleon coins)
-- ✅ DRUG (Veritaserum potion)
-- ✅ TECHNOLOGY (Gundam was created)
+1. ✅ **Markdown Header Extraction Bug** - Fixed `##` headers blocking extraction
+2. ✅ **Entity Selection Menu Positioning** - Fixed overlapping menu issue
+3. ✅ **Browser Context Menu Suppression** - Disabled default menu in Entity Highlight Mode
 
 ---
 
-## Stage 3 Status
+## Running Log (2025-12-13)
 
-**Stage 3 Target**: ≥80% precision, ≥75% recall, ≥77% F1
-**Current Results**: **ALL TARGETS EXCEEDED** ✅
+### ✅ FIX: Markdown Headers Blocking Extraction
 
-| Metric | Target | Achieved | Status |
-|--------|--------|----------|--------|
-| **Entity Precision** | ≥80% | **90.2%** | ✅ +10.2% |
-| **Entity Recall** | ≥75% | **91.3%** | ✅ +16.3% |
-| **Entity F1** | ≥77% | **90.8%** | ✅ +13.8% |
-| **Relation Precision** | ≥80% | **80.8%** | ✅ +0.8% |
-| **Relation Recall** | ≥75% | **75.8%** | ✅ +0.8% |
-| **Relation F1** | ≥77% | **78.3%** | ✅ +1.3% |
+**Problem:**
+- Markdown headers (`##`, `###`) were completely blocking entity extraction
+- The `stripIncompleteTagsForExtraction()` function treated `##` as incomplete entity tags
+- For "## Heading", the second `#` saw the first `#` as previous character (not newline)
+- This caused text to be truncated at markdown headers
 
-```
-✓ tests/ladder/level-3-complex.spec.ts  (1 test) 690ms
+**Solution:**
+- Modified function to scan backwards through ALL consecutive `#` characters
+- Now checks if the FIRST `#` in sequence is at line start
+- Skips entire markdown header sequences (##, ###, etc.)
+- Only processes mid-text `#` as potential entity tags
 
-🎉 LEVEL 3 PASSED! System ready for production.
-```
+**Impact:**
+- ✅ Extraction now works on documents with markdown formatting
+- ✅ Both frontend and backend extraction fixed (frontend strips before API call)
+- ✅ Markdown headers (#, ##, ###) properly ignored
+- ✅ Entity tags like `#Person:PERSON` still work correctly
 
----
+**Files Changed:**
+- `app/ui/console/src/pages/ExtractionLab.tsx:334-357`
 
-## What Was Fixed in This Session
-
-### 1. Bill Weasley Sibling Bug (CRITICAL FIX) ✅
-
-**Problem**: "Bill Weasley, the eldest son" incorrectly identified as parent of Ron/Ginny/Fred/George
-- Created 4 false parent_of/child_of relations
-- Pattern FM-1 violation: "eldest son" indicates sibling, NOT parent
-- Impact: -4.8% precision loss
-
-**Root Cause**:
-- Sibling filter only applied to `corefRelations` (line 793-818)
-- NOT applied to `allRelations` (base dependency parsing)
-- Bill relations came from BOTH sources, so filter only caught half
-
-**Solution** (Commit 6c0fcb7):
-1. Moved sibling detection before both filter blocks (line 737-746)
-2. Applied Pattern FM-1 to BOTH `allRelations` AND `corefRelations`
-3. Bidirectional blocking:
-   - `parent_of` where subject has sibling indicator
-   - `child_of` where object has sibling indicator
-
-**Impact**:
-- Precision: 76.0% → 80.8% (+4.8%) ✅
-- F1: 75.9% → 78.3% (+2.4%) ✅
-- False positives: 5 → 1 (4 relations blocked)
-
-**Files Modified**:
-- `app/engine/extract/orchestrator.ts` (line 737-788)
+**Commit:** `1b906eb` - "fix(extraction): Ignore markdown headers when stripping incomplete tags"
 
 ---
 
-### 2. Linguistic Reference v0.6 Update ✅
+### ✅ FIX: Entity Selection Menu Overlapping Text
 
-**Added Patterns** (Commit d06ef8d):
-- **§7.1 Pattern FM-1**: Sibling indicators vs parent roles
-  - SIBLING_INDICATORS: eldest/youngest son/daughter/child/brother/sister
-  - Rule: Never infer parent_of from "eldest son" alone
+**Problem:**
+- Entity Selection Menu ("Tag as Entity" button) was overlapping and covering selected text
+- Used `position: absolute` with `transform: translateX(-50%)` which created containing block issues
+- Menu positioned using document coordinates but needed viewport coordinates
+- Backdrop-filter broken on Safari due to transform context (documented in CLAUDE.md UI pitfalls)
 
-- **§7.2 Pattern FM-2**: Children enumeration ("Their children included X, Y, Z")
-  - Resolve "Their" to married pair
-  - Emit child_of to BOTH parents
+**Solution:**
+1. **React Portal** - Menu now renders at `document.body` using `createPortal`, escaping parent transform contexts
+2. **Fixed Positioning** - Changed to `position: fixed` with viewport coordinates (removed `window.scrollY`)
+3. **Smart Flipping** - Menu automatically positions above selection when not enough space below
+4. **Safari Support** - Added:
+   - `isolation: isolate` for proper stacking context
+   - `willChange: transform` for GPU acceleration
+   - `WebkitBackdropFilter` for Safari backdrop-filter support
 
-- **§34 Pattern ORG-1**: "joined X" → member_of
-
-- **§35 Pattern ADV-1**: "rival/enemy/foe" → enemy_of (symmetric)
-
-- **§36 Pattern EDU-1**: "taught X at Y" → teaches_at
-
-**Files Modified**:
-- `docs/LINGUISTIC_REFERENCE.md` (v0.5 → v0.6)
-
----
-
-### 3. Narrative Pattern Updates ✅
-
-**Updated Patterns** (Commit d06ef8d):
-- **"taught at" pattern**: Now matches "taught [SUBJECT] at Y" with optional subject
-- **"joined" pattern**: Handles intervening phrases ("Draco, on the other hand, joined...")
-- **Sibling filters**: Added to narrative-relations.ts (though not the main source)
-
-**Files Modified**:
-- `app/engine/narrative-relations.ts` (line 238-243, 578-583, 1341-1400)
-
----
-
-## Stage Progression
-
-| Stage | Status | Precision | Recall | F1 | Notes |
-|-------|--------|-----------|--------|----|-------|
-| **Stage 1** | ✅ PASSED | - | - | - | 119/119 tests passing |
-| **Stage 2** | ✅ PASSED | - | - | - | 99% complete |
-| **Stage 3** | ✅ PASSED | 80.8% | 75.8% | 78.3% | All targets exceeded |
-| **Level 5A** | ✅ 90% | - | - | - | 9/10 cross-document tests |
-| **Level 5B** | ✅ 90% | - | - | - | 9/10 performance tests |
-| **Level 5C** | ✅ 100% | - | - | - | 34/34 new entity types |
-| **Stage 4** | ⏸️ Next | - | - | - | Mega regression (1000+ words) |
-
----
-
-## Technical Details
-
-### Sibling Detection Pattern (FM-1)
-
-**Pattern**:
+**Implementation:**
 ```typescript
-const SIBLING_APPOSITIVE_PATTERN = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*,\s*(?:the\s+)?(?:eldest|oldest|younger|youngest|twin|middle)\s+(?:son|daughter|child|brother|sister|sibling)\b/gi;
+// Calculate if menu should flip above based on available space
+const menuHeight = 80;
+const spaceBelow = window.innerHeight - rect.bottom;
+const spaceAbove = rect.top;
+
+position = {
+  x: rect.left + rect.width / 2,
+  y: spaceBelow >= menuHeight ? rect.bottom + 8 : rect.top - 8,
+  flip: spaceBelow < menuHeight,
+};
 ```
 
-**Examples**:
-- "Bill Weasley, the eldest son" → Bill is sibling, NOT parent
-- "Ron, the youngest son" → Ron is sibling, NOT parent
-- "Fred and George, the twin brothers" → Both are siblings
+**Files Changed:**
+- `app/ui/console/src/pages/ExtractionLab.tsx:540-666`
+- Added `createPortal` import from 'react-dom'
 
-**Implementation**:
+**Commit:** `7edf5a7` - "fix(ui): Fix Entity Selection Menu overlapping with text"
+
+---
+
+### ✅ FIX: Browser Context Menu Interfering with Custom Menu
+
+**Problem:**
+- When selecting text in Entity Highlight Mode and right-clicking, the browser's native context menu (Cut, Copy, Paste, Look Up) was appearing
+- It overlapped with the custom "Tag as Entity" menu, making entity creation difficult
+- Users couldn't access entity functionality due to menu overlap
+
+**Solution:**
+- Moved `event.preventDefault()` and `event.stopPropagation()` to the beginning of contextmenu handler
+- Now **always** prevents default browser context menu when in Entity Highlight Mode
+- Only shows custom menus (text selection menu or entity context menu)
+- Allows default browser behavior when NOT in Entity Highlight Mode
+
+**Implementation:**
 ```typescript
-// Step 2: Filter allRelations
-const filteredAllRelations = allRelations.filter(rel => {
-  if (rel.pred === 'parent_of') {
-    const subj = allEntities.find(e => e.id === rel.subj);
-    if (subj && siblingsWithIndicators.has(subj.canonical.toLowerCase())) {
-      return false; // Block parent_of(Bill, X)
-    }
+contextmenu: (event, view) => {
+  // ALWAYS prevent default browser context menu in Entity Highlight Mode
+  if (entityHighlightModeRef.current) {
+    event.preventDefault();
+    event.stopPropagation();
+    // ... then show custom menus
   }
-  if (rel.pred === 'child_of') {
-    const obj = allEntities.find(e => e.id === rel.obj);
-    if (obj && siblingsWithIndicators.has(obj.canonical.toLowerCase())) {
-      return false; // Block child_of(X, Bill)
-    }
-  }
-  return true;
-});
 
-// Step 3: Filter corefRelations (same logic)
+  // Not in Entity Highlight Mode - allow default browser behavior
+  return false;
+}
 ```
+
+**Files Changed:**
+- `app/ui/console/src/components/CodeMirrorEditor.tsx:221-259`
+
+**Commit:** `4fbd532` - "fix(ui): Disable browser context menu in Entity Highlight Mode"
 
 ---
 
-## Commits Pushed
-
-1. **d06ef8d** - feat(stage3): Add v0.6 linguistic patterns and initial Stage 3 fixes
-   - Updated LINGUISTIC_REFERENCE.md to v0.6
-   - Added sibling detection patterns (FM-1, FM-2)
-   - Added organizational/adversarial patterns (ORG-1, ADV-1, EDU-1)
-   - Updated narrative patterns for "joined", "taught at"
-
-2. **6c0fcb7** - fix(stage3): Add sibling filter to allRelations to block Bill Weasley false positives
-   - Applied sibling filter to BOTH allRelations and corefRelations
-   - Bidirectional blocking (parent_of and child_of)
-   - Impact: +4.8% precision, +2.4% F1
-
----
-
-## Test Case Analysis
-
-### Test 3.5 (Bill Weasley Family) - NOW PASSING ✅
-
-**Text**: "The Weasley family lived at the Burrow. Molly and Arthur were the parents. Their children included Ron, Ginny, Fred, and George. Bill Weasley, the eldest son, worked for Gringotts Bank."
-
-**Before Fix**:
-```
-FALSE POSITIVES:
-  - bill weasley::parent_of::ron ❌
-  - bill weasley::parent_of::ginny ❌
-  - bill weasley::parent_of::fred ❌
-  - bill weasley::parent_of::george ❌
-  - ron::child_of::bill weasley ❌
-  - ginny::child_of::bill weasley ❌
-  - fred::child_of::bill weasley ❌
-  - george::child_of::bill weasley ❌
-```
-
-**After Fix**:
-```
-FALSE POSITIVES:
-  - bill weasley::lives_in::burrow (acceptable - Bill living at Burrow)
-```
-
-**Impact**: Removed 8 false positives (4 parent_of + 4 child_of inverses)
-
----
-
-## Remaining Test Issues (Minor)
-
-While Stage 3 overall passes, some individual test cases still have minor issues that don't affect the aggregate metrics:
-
-### Test 3.1 (Harry Potter Family)
-- Missing: lily potter::parent_of::harry potter
-- Missing: ron weasley::child_of::arthur, arthur::parent_of::ron weasley
-- False positive: harry potter::child_of::arthur
-
-### Test 3.2 (Houses)
-- Missing: draco malfoy::enemy_of::harry potter (symmetric)
-- Note: "rival" pattern needs "enemy_of" predicate mapping
-
-### Test 3.8 (Ron & Hermione Couple)
-- False positive: ron weasley::married_to::harry potter (pronoun resolution issue)
-
-### Test 3.9 (Professor McGonagall)
-- False positive: mcgonagall::teaches_at::hogwarts (title handling)
-
-**Why Stage 3 Still Passes**:
-- These issues are distributed across 4 out of 10 test cases
-- The aggregate precision (80.8%) and recall (75.8%) exceed targets
-- System demonstrates production-ready quality overall
-
----
-
-## Next Steps: Stage 4 & 5
-
-### Stage 4: Scale Testing ⏸️
-```bash
-# Performance benchmarks (target: ≥100 words/sec)
-npx ts-node tests/integration/performance.spec.ts
-
-# Memory profiling
-node --inspect-brk $(which npx) ts-node tests/integration/mega.spec.ts
-
-# Mega regression test
-npm run test:mega
-```
-
-### Stage 5: Production Readiness ⏸️
-```bash
-# Canary corpus evaluation
-npx tsx scripts/pattern-expansion/evaluate-coverage.ts --canary corpora/canary_realtext.jsonl
-
-# Real-world validation
-# Edge case coverage
-```
-
----
-
-## How to Continue
-
-### If You Want to Improve Further (Optional):
-
-1. **Fix Test 3.1 possessive pronoun resolution**:
-   - "His father Arthur" should resolve to Ron, not Harry
-   - File: `app/engine/coref.ts` or `app/engine/extract/relations.ts`
-
-2. **Add enemy_of pattern for "rival"**:
-   - Map "rival" to enemy_of predicate
-   - File: `app/engine/narrative-relations.ts`
-
-3. **Fix "the couple" group resolution**:
-   - "The couple" should resolve to most recent married pair
-   - File: `app/engine/coref.ts`
-
-### If You Want to Move to Stage 4:
-
-1. **Run performance tests**:
-   ```bash
-   npx ts-node tests/integration/performance.spec.ts
-   ```
-
-2. **Check mega regression**:
-   ```bash
-   npm run test:mega
-   ```
-
-3. **Profile memory usage** if needed
-
----
-
-## Documentation Created
-
-- `FAILING_TESTS_STAGE3_ANALYSIS.md` - Detailed analysis of 5 failing tests
-- `LINGUISTIC_REFERENCE.md` v0.6 - Updated with FM-1, FM-2, ORG-1, ADV-1, EDU-1 patterns
-- This HANDOFF.md - Session summary
-
----
-
-## Quick Commands
+## Git History
 
 ```bash
-# Verify Stage 3 still passing
-npm test tests/ladder/level-3-complex.spec.ts
-
-# Check Stage 1-2 (no regression)
-npm test tests/ladder/level-1-simple.spec.ts
-npm test tests/ladder/level-2-multisentence.spec.ts
-
-# Check git status
-git status
-
-# View recent commits
-git log --oneline -5
+git log --oneline claude/fix-save-keyboard-focus-01GFaMhAYfSzRo9uUittyMPy
+4fbd532 fix(ui): Disable browser context menu in Entity Highlight Mode
+7edf5a7 fix(ui): Fix Entity Selection Menu overlapping with text
+1b906eb fix(extraction): Ignore markdown headers when stripping incomplete tags
+bf56f44 fix(ui): Add fallback download when API server unavailable
+99bebe3 feat(api): Add entity review reports endpoint - save to repository
 ```
 
 ---
 
-## Success Criteria ✅
+## Known Issues & Pending Work
 
-- [x] Stage 3 precision ≥80% (achieved 80.8%)
-- [x] Stage 3 recall ≥75% (achieved 75.8%)
-- [x] Stage 3 F1 ≥77% (achieved 78.3%)
-- [x] Entity metrics ≥80%/75%/77% (achieved 90.2%/91.3%/90.8%)
-- [x] Bill Weasley sibling bug fixed
-- [x] Linguistic patterns documented
-- [x] No Stage 1-2 regression
-- [x] All commits pushed to remote
+### 🚧 Disconnected Functionality (Needs Integration)
 
-**Stage 3 COMPLETE! System ready for production testing (Stage 4).** 🎉
+**1. Entity Review Sidebar ↔ Graph Visualization**
+- **Status:** Disconnected
+- **Issue:** Changes made in Entity Review Sidebar don't update the graph visualization in real-time
+- **Impact:** Users must manually refresh to see graph updates after entity edits
+- **Files:**
+  - `app/ui/console/src/components/EntityReviewSidebar.tsx` (source of changes)
+  - Graph visualization components (need to consume entity updates)
+- **Fix Needed:** Wire entity state updates from sidebar to trigger graph re-render
+
+**2. Manual Entity Tagging ↔ Auto-Extraction**
+- **Status:** Partially connected
+- **Issue:** Manual entity tags (`#Entity:TYPE`) and auto-extracted entities exist in separate systems
+- **Current State:**
+  - Manual tags are parsed in frontend (`ExtractionLab.tsx:372-417`)
+  - Auto-extraction happens via API (`extractFromSegments`)
+  - Merging happens in `mergeTagsAndExtraction()` but may have edge cases
+- **Edge Cases:**
+  - Conflicting type assignments (manual says PERSON, auto says ORG)
+  - Overlapping spans (manual tag intersects auto-detected entity)
+  - Deletion conflicts (user rejects manual tag but auto-extraction re-adds it)
+- **Files:**
+  - `app/ui/console/src/pages/ExtractionLab.tsx:372-417` (manual tags)
+  - `app/ui/console/src/pages/ExtractionLab.tsx:468-524` (merging logic)
+- **Fix Needed:**
+  - Clear precedence rules (manual > auto)
+  - Visual indicators for conflicts
+  - Better conflict resolution UI
+
+**3. Entity Overrides ↔ Persistence**
+- **Status:** Session-only (not persisted)
+- **Issue:** Type overrides and rejections in `entityOverrides` state are lost on page reload
+- **Current State:**
+  - `entityOverrides` exists in React state only
+  - `typeOverrides` and `rejectedSpans` are ephemeral
+  - No backend persistence or local storage
+- **Impact:** Users lose all manual corrections when refreshing the page
+- **Files:**
+  - `app/ui/console/src/pages/ExtractionLab.tsx:686-691` (state definition)
+  - `app/ui/console/src/pages/ExtractionLab.tsx:327-370` (applyEntityOverrides)
+- **Fix Needed:**
+  - Save overrides to localStorage or backend API
+  - Load overrides when document is opened
+  - Include overrides in document save/load
+
+**4. Entity Highlight Mode ↔ Text Editing**
+- **Status:** Mutually exclusive (by design, but limiting)
+- **Issue:** Can't edit text while in Entity Highlight Mode
+- **Current State:**
+  - `keyboardBlockerExtension` blocks all keyboard input in highlight mode
+  - Designed for iOS text selection without triggering keyboard
+  - Desktop users lose ability to make quick text edits
+- **Files:**
+  - `app/ui/console/src/components/CodeMirrorEditor.tsx:457-475` (keyboard blocker)
+- **Consideration:** Is this limitation acceptable, or should we allow hybrid mode?
+- **Possible Fix:** Detect device type, only block keyboard on touch devices
+
+**5. Background Job Status ↔ Entity Display**
+- **Status:** Partially connected
+- **Issue:** Long-running extractions show "Processing..." but don't update entity list progressively
+- **Current State:**
+  - Background jobs poll `/jobs/:jobId/status` endpoint
+  - Frontend shows job progress percentage
+  - Entities only appear after job completes (all-or-nothing)
+- **Impact:** Users see no feedback during long extractions (30+ seconds)
+- **Files:**
+  - `app/ui/console/src/pages/ExtractionLab.tsx:886-965` (background job handling)
+  - `app/api/graphql.ts:700-850` (job endpoints)
+- **Fix Needed:**
+  - Stream partial results as extraction progresses
+  - Update entity list incrementally
+  - Show "X entities found so far..." during extraction
+
+**6. HERT System ↔ Frontend Display**
+- **Status:** Backend-only (frontend uses simple spans)
+- **Issue:** Frontend doesn't use or display HERT IDs for entities
+- **Current State:**
+  - Backend generates HERTs (`app/engine/hert/`)
+  - Frontend uses `EntitySpan` interface (start, end, text, type)
+  - No HERT decoding or display in UI
+- **Impact:** Can't share entities via HERT URLs, can't copy HERTs
+- **Files:**
+  - `app/ui/console/src/types/entities.ts` (EntitySpan definition)
+  - `app/engine/hert/` (HERT encoding/decoding)
+- **Fix Needed:**
+  - Add HERT field to EntitySpan interface
+  - Display HERT in entity detail view
+  - Add "Copy HERT" button
+  - Support HERT-based entity lookup
 
 ---
 
-**Estimated next session time**:
-- Stage 4 performance testing: 1-2 hours
-- Stage 5 production validation: 2-3 hours
+### 🔧 Known Bugs (Not Yet Fixed)
 
-**Current branch**: `claude/add-bug-fix-docs-015H1aJB5pBMoHf1wkfhpxAp`
+**1. Entity Type Dropdown Position on Mobile**
+- **Status:** UI glitch on iOS/Safari
+- **Issue:** Type dropdown may appear off-screen or misaligned on small viewports
+- **Workaround:** Scroll to entity before changing type
+- **Priority:** Low (affects mobile only)
 
-All work committed and pushed. Ready for next stage.
+**2. Long Entity Names Overflow**
+- **Status:** Layout issue
+- **Issue:** Entity names >50 chars overflow sidebar rows
+- **Current State:** Text continues beyond row boundaries
+- **Fix Needed:** Add text-overflow: ellipsis or word-wrap
+
+**3. Relation Extraction Missing for Some Patterns**
+- **Status:** Coverage gap
+- **Issue:** Some narrative patterns not yet implemented
+- **Examples:**
+  - "X, the son of Y" (appositive relation)
+  - "X inherited Y from Z" (3-way relation)
+  - Dialogue attribution ("X said..." should link speaker to quote)
+- **Current Coverage:** 26% of 1827 known patterns
+- **Target:** ≥50% for Stage 3
+- **Files:**
+  - `app/engine/extract/relations.ts` (dependency patterns)
+  - `app/engine/narrative-relations.ts` (narrative patterns)
+
+**4. Safari Backdrop-Filter Flicker**
+- **Status:** CSS rendering bug
+- **Issue:** Blur effects may flicker on scroll in Safari
+- **Current State:** Mitigated by `isolation: isolate` and `willChange: transform`
+- **Impact:** Rare visual glitch, doesn't affect functionality
+- **Priority:** Low (cosmetic)
+
+---
+
+### 📋 Features Not Yet Implemented
+
+**1. Entity Type Picker in Selection Menu**
+- **Status:** Hardcoded to PERSON
+- **Issue:** "Tag as Entity" button always creates PERSON entities
+- **Current Code:**
+  ```typescript
+  onTagAsEntity={() => createEntityFromSelection('PERSON')} // TODO: Add type picker
+  ```
+- **Files:** `app/ui/console/src/pages/ExtractionLab.tsx:2068`
+- **Fix Needed:**
+  - Add dropdown to selection menu
+  - Show all available entity types
+  - Remember last-used type per session
+
+**2. Multi-Entity Merge UI**
+- **Status:** Callback exists but not fully implemented
+- **Issue:** "Merge Entities" button appears but merge logic incomplete
+- **Current State:**
+  - Button shows when 2+ entities selected
+  - `mergeEntitiesFromSelection` callback exists
+  - Backend merge logic not fully wired
+- **Files:** `app/ui/console/src/pages/ExtractionLab.tsx:1608-1654`
+- **Fix Needed:**
+  - Implement merge selection UI
+  - Choose canonical name
+  - Merge aliases and attributes
+  - Update all references
+
+**3. Entity Search/Filter in Sidebar**
+- **Status:** Not implemented
+- **Issue:** No way to search/filter entities in review sidebar
+- **Impact:** Hard to find specific entities in large documents
+- **Fix Needed:**
+  - Add search input at top of sidebar
+  - Filter by entity name, type, or confidence
+  - Highlight matching entities
+
+**4. Relation Editor UI**
+- **Status:** View-only
+- **Issue:** Can view relations but can't edit, add, or remove them
+- **Current State:** Relations display in separate view (not in sidebar)
+- **Fix Needed:**
+  - Add relation editor component
+  - Support manual relation creation
+  - Allow relation deletion
+  - Validate relation types
+
+**5. Document Comparison View**
+- **Status:** Not implemented
+- **Issue:** Can't compare entities/relations across documents
+- **Use Case:** Track entity evolution across document versions
+- **Fix Needed:**
+  - Side-by-side document comparison
+  - Highlight entity differences
+  - Show added/removed/modified entities
+
+**6. Export Formats Beyond JSON**
+- **Status:** JSON only
+- **Issue:** Can only export as JSON, no CSV, GraphML, or other formats
+- **Current Exports:**
+  - Entity review reports (JSON)
+  - Document saves (JSON)
+- **Fix Needed:**
+  - Add CSV export for entities (spreadsheet-friendly)
+  - Add GraphML for Gephi/Cytoscape visualization
+  - Add RDF/Turtle for semantic web integration
+
+---
+
+## UI Architecture Notes
+
+### Liquid-Glass Theme System
+
+The UI uses a consistent "liquid-glass" glassmorphism theme with the following components:
+
+**Base Classes:**
+- `liquid-glass--strong` - Strong blur (12px), opaque background, for overlays
+- `liquid-glass--subtle` - Subtle blur (8px), translucent background, for integrated panels
+- CSS variables: `--glass-bg`, `--glass-border`, `--text-primary`, `--text-secondary`
+
+**Safari Compatibility Requirements:**
+1. Use `createPortal()` to escape parent transform contexts
+2. Add `isolation: isolate` for proper stacking context
+3. Add `willChange: transform` for GPU acceleration
+4. Include `WebkitBackdropFilter` alongside `backdropFilter`
+5. Use `position: fixed` with viewport coordinates (not absolute + scrollY)
+
+**Files:**
+- `app/ui/console/src/styles/liquid-glass.css` - Theme definitions
+- `app/ui/console/src/components/LabToolbar.tsx` - Reference implementation
+- `app/ui/console/src/components/EntityReviewSidebar.tsx` - Sidebar theming
+- `CLAUDE.md:590-650` - Full pitfalls documentation
+
+### React State Management
+
+**Key State Objects:**
+1. **entities** - Array of extracted entities (EntitySpan[])
+2. **entityOverrides** - Type changes and rejections (session-only)
+3. **textSelection** - Current text selection for menu positioning
+4. **layout** - Sidebar modes (overlay, pinned, closed)
+5. **settings** - Entity highlight mode, live extraction, etc.
+
+**State Flow:**
+```
+User Action (sidebar/menu)
+    ↓
+handleEntityUpdate(index, updates)
+    ↓
+setEntities() + setEntityOverrides()
+    ↓
+applyEntityOverrides() in useEffect
+    ↓
+displayEntities updated
+    ↓
+UI re-renders with changes
+```
+
+**Files:**
+- `app/ui/console/src/pages/ExtractionLab.tsx:652-705` - State definitions
+- `app/ui/console/src/hooks/useLabLayoutState.ts` - Layout state hook
+- `app/ui/console/src/hooks/useExtractionSettings.ts` - Settings state hook
+
+---
+
+## Testing Status
+
+### Current Test Results
+
+**Ladder Tests:**
+- ✅ **Stage 1**: Simple sentences - PASSING
+- ✅ **Stage 2**: Multi-sentence - 99% (1 appositive test failing)
+- ✅ **Stage 3**: Complex paragraphs - PASSING
+- ⏸️ **Stage 4**: Scale testing - Not started
+- ✅ **Stage 5**: Level 5A/5B/5C - 96.3% (52/54 tests passing)
+
+**Entity Extraction:**
+- ✅ 28/28 regression tests passing
+- Entity Precision: 90.2% (target ≥80%)
+- Entity Recall: 91.3% (target ≥75%)
+
+**Relation Extraction:**
+- Relation Precision: 80.8% (target ≥80%)
+- Relation Recall: 75.8% (target ≥75%)
+- Pattern Coverage: 26% (480/1827 patterns)
+
+**UI Tests:**
+- ❌ No automated UI tests (manual testing only)
+- ❌ No E2E tests for Extraction Lab
+- ❌ No visual regression tests
+
+### Testing Gaps
+
+1. **UI Component Tests** - None exist for React components
+2. **Integration Tests** - Limited API endpoint coverage
+3. **E2E Tests** - No Playwright/Cypress tests
+4. **Visual Regression** - No screenshot comparison
+5. **Mobile Testing** - Manual testing only, no automation
+
+---
+
+## Development Environment
+
+### Prerequisites
+- Node.js 16+ and npm
+- Python 3.8+ with pip
+- Make (for running commands)
+
+### Quick Start
+```bash
+# 1. Install dependencies
+make install
+
+# 2. Start spaCy parser service (Terminal 1)
+make parser
+# Wait for: "Application startup complete"
+
+# 3. Start GraphQL API server (Terminal 2)
+make server-graphql
+# Wait for: "GraphQL server running on http://localhost:4000"
+
+# 4. Start console UI dev server (Terminal 3)
+cd app/ui/console
+npm run dev
+# Open: http://localhost:5173
+
+# 5. Run tests (Terminal 4)
+make test
+```
+
+### Key Commands
+```bash
+make test            # Run all tests
+make smoke           # Quick validation
+npm run test:ladder  # Run all ladder tests
+make ui-console      # Build production console
+make ui-console-dev  # Start console dev server
+```
+
+---
+
+## Next Recommended Steps
+
+### High Priority
+
+1. **Wire Entity Review Sidebar to Graph Visualization**
+   - Add event emitter for entity state changes
+   - Subscribe graph component to entity updates
+   - Trigger re-render on entity modifications
+   - **Estimated effort:** 2-3 hours
+
+2. **Persist Entity Overrides**
+   - Add `overrides` field to document schema
+   - Save/load overrides with document
+   - Consider localStorage for unsaved documents
+   - **Estimated effort:** 3-4 hours
+
+3. **Add Entity Type Picker to Selection Menu**
+   - Replace hardcoded 'PERSON' with dropdown
+   - Show all available entity types
+   - Add keyboard shortcuts (P for PERSON, O for ORG, etc.)
+   - **Estimated effort:** 2 hours
+
+4. **Implement Incremental Entity Display for Background Jobs**
+   - Modify job endpoint to return partial results
+   - Update frontend to append entities as they arrive
+   - Add "X entities found so far" indicator
+   - **Estimated effort:** 4-5 hours
+
+### Medium Priority
+
+5. **Add UI Component Tests**
+   - Set up Vitest + React Testing Library
+   - Test EntityReviewSidebar interactions
+   - Test EntitySelectionMenu positioning
+   - **Estimated effort:** 6-8 hours
+
+6. **Improve Pattern Coverage (26% → 50%)**
+   - Add appositive relation patterns ("X, the son of Y")
+   - Add dialogue attribution patterns
+   - Add 3-way relation patterns
+   - **Estimated effort:** 8-10 hours
+
+7. **Add Entity Search/Filter to Sidebar**
+   - Implement search input component
+   - Add type filter checkboxes
+   - Add confidence range slider
+   - **Estimated effort:** 4 hours
+
+### Low Priority
+
+8. **Export Additional Formats (CSV, GraphML)**
+   - Add CSV export for entity spreadsheets
+   - Add GraphML for graph visualization tools
+   - Add format selector to export UI
+   - **Estimated effort:** 3-4 hours
+
+9. **Implement Relation Editor UI**
+   - Design relation editor component
+   - Add relation creation dialog
+   - Add relation deletion with confirmation
+   - **Estimated effort:** 8-10 hours
+
+10. **Add Visual Regression Testing**
+    - Set up Playwright or Cypress
+    - Add screenshot tests for key UI states
+    - Add E2E tests for extraction workflow
+    - **Estimated effort:** 10-12 hours
+
+---
+
+## Important Files Reference
+
+### Frontend (Console UI)
+- `app/ui/console/src/pages/ExtractionLab.tsx` - Main extraction lab page (2100+ lines)
+- `app/ui/console/src/components/EntityReviewSidebar.tsx` - Entity review sidebar
+- `app/ui/console/src/components/CodeMirrorEditor.tsx` - Text editor with entity highlighting
+- `app/ui/console/src/components/LabToolbar.tsx` - Top toolbar with liquid-glass theme
+- `app/ui/console/src/types/entities.ts` - EntitySpan and EntityType definitions
+
+### Backend (Extraction Engine)
+- `app/engine/extract/orchestrator.ts` - Main extraction coordinator
+- `app/engine/extract/entities.ts` - Entity extraction (3-stage alias matching)
+- `app/engine/extract/relations.ts` - Relation extraction (dependency patterns)
+- `app/engine/narrative-relations.ts` - Narrative pattern extraction
+- `app/engine/hert/` - HERT encoding/decoding system
+
+### API
+- `app/api/graphql.ts` - GraphQL server + REST endpoints
+- `/api/reports` - Entity review report endpoint
+- `/extract-entities` - Entity extraction endpoint
+- `/jobs/*` - Background job endpoints
+
+### Tests
+- `tests/ladder/level-1-simple.spec.ts` - Stage 1 tests
+- `tests/ladder/level-2-multisentence.spec.ts` - Stage 2 tests
+- `tests/ladder/level-5-*.spec.ts` - Level 5 tests (5A/5B/5C)
+- `tests/entity-extraction/extraction.spec.ts` - Entity regression tests
+
+### Documentation
+- `CLAUDE.md` - AI assistant guide (THIS FILE)
+- `README.md` - Project overview
+- `INTEGRATED_TESTING_STRATEGY.md` - Testing approach
+- `docs/LINGUISTIC_REFERENCE.md` - Linguistic patterns guide
+- `docs/ARES_PROJECT_BRIEFING.md` - Latest project status
+
+---
+
+## Blockers & Open Questions
+
+### No Blockers
+All critical issues from this session have been resolved. The system is in a stable state.
+
+### Open Questions for User
+
+1. **Entity Override Persistence**: Where should we store entity overrides?
+   - Option A: Include in document JSON (saved to backend)
+   - Option B: Separate overrides file per document
+   - Option C: LocalStorage only (session-based)
+
+2. **Entity Highlight Mode Keyboard Blocking**: Should we allow text editing in highlight mode?
+   - Current: Keyboard completely blocked (iOS text selection)
+   - Alternative: Allow keyboard on desktop, block on touch devices only
+
+3. **Graph Visualization Integration**: What graph library should we use?
+   - Option A: D3.js (maximum flexibility, steep learning curve)
+   - Option B: Cytoscape.js (graph-focused, easier)
+   - Option C: React Flow (React-native, modern)
+
+4. **Entity Type Picker UI**: Where should it appear?
+   - Option A: Dropdown in selection menu (quick, inline)
+   - Option B: Modal dialog (more space, can show descriptions)
+   - Option C: Radial menu (touch-friendly, modern)
+
+---
+
+## Contact & Resources
+
+- **Repository**: https://github.com/mrfishcar/ARES
+- **Issues**: https://github.com/mrfishcar/ARES/issues
+- **Branch**: `claude/fix-save-keyboard-focus-01GFaMhAYfSzRo9uUittyMPy`
+- **Documentation**: https://github.com/mrfishcar/ARES/tree/main/docs
+
+---
+
+**Session completed**: 2025-12-13
+**Total commits**: 3 (markdown fix, menu positioning, context menu)
+**Files changed**: 2 (ExtractionLab.tsx, CodeMirrorEditor.tsx)
+**Build status**: ✅ All builds successful
+**Test status**: ✅ No regressions introduced
+
+*This handoff was created for AI assistants to continue the ARES project. Keep it updated with each session's changes.*
