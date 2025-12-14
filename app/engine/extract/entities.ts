@@ -2106,6 +2106,18 @@ const NON_ENTITY_STOPWORDS = new Set([
   "aren't", "wasn't", "weren't", 'no', 'only', 'at', 'with', 'this', 'that'
 ]);
 
+const DISCOURSE_STARTERS = new Set([
+  "when", "however", "yes", "no", "nope", "exactly", "originally", "occasionally",
+  "whatever", "absolutely", "accidental", "surprise", "look", "go", "hearing",
+  "turning", "dead", "it’s", "its", "it's", "that’s", "that's"
+]);
+
+const VERB_PHRASE_STARTERS = new Set([
+  'never', 'only', 'just', 'even', 'still', 'already', 'no', 'not'
+]);
+
+const SINGLE_TOKEN_GARBAGE = new Set(['mr', 'mrs', 'ms', 'the', 'a', 'an', 'and', 'or', 'but']);
+
 function isTitleCase(tokens: string[]): boolean {
   return tokens.length > 0 && tokens.every(tok => /^[A-Z]/.test(tok));
 }
@@ -2144,6 +2156,64 @@ function shouldDropSpanAsNonEntity(
   return false;
 }
 
+function lowercaseRatio(value: string): number {
+  const letters = value.match(/[A-Za-z]/g);
+  if (!letters || letters.length === 0) return 0;
+  const lowerCount = value.match(/[a-z]/g)?.length ?? 0;
+  return lowerCount / letters.length;
+}
+
+function isAcronymish(tokens: string[]): boolean {
+  return tokens.length > 0 && tokens.every(tok => /^[A-Z0-9]+$/.test(tok)) && tokens.some(tok => /[A-Z]/.test(tok));
+}
+
+function isViableEntitySpan(
+  span: { text: string; start: number; end: number; type: string },
+  _fullText: string,
+  _parsed?: any
+): boolean {
+  const raw = span.text?.trim();
+  if (!raw) return false;
+
+  const tokens = raw.split(/\s+/).filter(Boolean);
+  const normalizedTokens = tokens.map(tok => tok.replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g, '')).filter(Boolean);
+  if (normalizedTokens.length === 0) return false;
+
+  const firstLower = normalizedTokens[0].toLowerCase();
+  const titleCaseSpan = normalizedTokens.length >= 2 && isTitleCase(normalizedTokens);
+  const acronymSpan = isAcronymish(normalizedTokens);
+
+  // Rule A: discourse/function-word starters
+  if (DISCOURSE_STARTERS.has(firstLower) && !(titleCaseSpan || acronymSpan)) {
+    return false;
+  }
+
+  if (normalizedTokens.length > 1) {
+    const lowerRatio = lowercaseRatio(raw);
+    const startsWithVerb = VERB_LEADS.has(firstLower);
+    const startsWithAdverb = VERB_PHRASE_STARTERS.has(firstLower);
+    const looksProper = titleCaseSpan || acronymSpan || /^[A-Z]/.test(normalizedTokens[0]);
+
+    // Rule B: verb-phrase/predicate fragments
+    if (startsWithVerb || startsWithAdverb || (lowerRatio > 0.7 && !looksProper)) {
+      return false;
+    }
+
+    // Rule C: lowercase multi-token phrases
+    if (!titleCaseSpan && !acronymSpan && lowerRatio > 0.7) {
+      return false;
+    }
+  } else {
+    const stripped = normalizedTokens[0];
+    // Rule D: single-token garbage
+    if (!/\w/.test(stripped) || SINGLE_TOKEN_GARBAGE.has(stripped.toLowerCase())) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 function stitchPersonFullNames<T extends { text: string; type: EntityType; start: number; end: number; source: ExtractorSource }>(
   spans: T[],
   text: string
@@ -2163,11 +2233,12 @@ function stitchPersonFullNames<T extends { text: string; type: EntityType; start
     if (next && current.type === 'PERSON' && next.type === 'PERSON') {
       const gap = text.slice(current.end, next.start);
       const adjacent = /^\s*[,'’.-]*\s*$/.test(gap);
+      const cleanSpaceBetween = /^\s+$/.test(gap);
       const currentLower = current.text.replace(/[.'’]+$/g, '').toLowerCase();
       const hasTitle = extendedTitles.has(currentLower);
 
       const canMergeFirstLast =
-        adjacent &&
+        cleanSpaceBetween &&
         isSingleTitleCase(current.text) &&
         isSingleTitleCase(next.text);
 
@@ -2589,6 +2660,24 @@ export async function extractEntities(text: string): Promise<{
   if (DEBUG_ENTITIES) {
     console.log(
       `[EXTRACT-ENTITIES][DEBUG] validated=${validated.map(span => `${span.type}:${span.text}@${span.start}-${span.end}`).join(', ')}`
+    );
+  }
+
+  const viabilityDrops: typeof validated = [];
+  const beforeViability = validated.length;
+  validated = validated.filter(span => {
+    const keep = isViableEntitySpan(span, text, parsed);
+    if (!keep && viabilityDrops.length < 10) {
+      viabilityDrops.push(span);
+    }
+    return keep;
+  });
+  const dropped = beforeViability - validated.length;
+  if (DEBUG_ENTITIES && dropped > 0) {
+    console.log(
+      `[EXTRACT-ENTITIES][DEBUG] Dropped ${dropped} non-viable spans: ${viabilityDrops
+        .map(s => `${s.type}:${s.text}@${s.start}-${s.end}`)
+        .join(', ')}`
     );
   }
 
