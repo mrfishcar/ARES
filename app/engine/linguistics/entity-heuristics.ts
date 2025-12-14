@@ -1,4 +1,6 @@
 import type { Entity, EntityType } from '../schema';
+import { hasLowercaseEcho, isAttachedOnlyFragment, type TokenStats } from './token-stats';
+import { isBlocklistedPersonHead } from './common-noun-filters';
 
 type SpanLike = { start: number; end: number; type?: EntityType };
 
@@ -18,7 +20,7 @@ const COLOR_ADJECTIVES = new Set([
   'scarlet', 'crimson', 'amber', 'blonde', 'blond', 'hot', 'cold', 'aged', 'stained'
 ]);
 
-const VERB_LEADS = new Set([
+export const VERB_LEADS = new Set([
   'fix', 'draw', 'handle', 'agree', 'react', 'allow', 'stop', 'start', 'begin',
   'keep', 'make', 'do', 'does', 'did', 'have', 'has', 'had', 'be', 'been', 'being',
   'can', 'could', 'would', 'should', 'might', 'will', 'shall'
@@ -46,6 +48,25 @@ function logDebug(message: string) {
   }
 }
 
+export function isViableSingleTokenPerson(
+  token: string,
+  args: {
+    tokenStats: TokenStats;
+    isSentenceInitial: boolean;
+    hasDeterminer?: boolean;
+  }
+): boolean {
+  const surface = token.trim();
+  if (!surface) return false;
+
+  if (isAttachedOnlyFragment(args.tokenStats, surface)) return false;
+  if (isBlocklistedPersonHead(surface)) return false;
+  if (args.isSentenceInitial && hasLowercaseEcho(args.tokenStats, surface)) return false;
+  if (args.hasDeterminer) return false;
+
+  return true;
+}
+
 function getSurroundingTokens(text: string, start: number, end: number): { prev?: string; next?: string; nextTwo?: string[] } {
   const before = text.slice(0, start).match(/[A-Za-z']+/g) || [];
   const after = text.slice(end).match(/[A-Za-z']+/g) || [];
@@ -58,7 +79,8 @@ function getSurroundingTokens(text: string, start: number, end: number): { prev?
 export function shouldSuppressSentenceInitialPerson(
   entity: Entity,
   span: SpanLike,
-  text: string
+  text: string,
+  isSentenceInitialPosition?: (pos: number) => boolean
 ): { suppress: boolean; reason?: string } {
   const tokens = entity.canonical.split(/\s+/).filter(Boolean);
   if (tokens.length !== 1) return { suppress: false };
@@ -67,7 +89,9 @@ export function shouldSuppressSentenceInitialPerson(
   if (!/^[A-Z]/.test(token)) return { suppress: false };
 
   const prefix = text.slice(Math.max(0, span.start - 2), span.start);
-  const atSentenceStart = span.start === 0 || /[.!?\n]\s*$/.test(prefix);
+  const atSentenceStart = isSentenceInitialPosition
+    ? isSentenceInitialPosition(span.start)
+    : span.start === 0 || /[.!?\n]\s*$/.test(prefix);
   if (!atSentenceStart) return { suppress: false };
 
   const { prev, next, nextTwo } = getSurroundingTokens(text, span.start, span.end);

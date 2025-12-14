@@ -34,7 +34,9 @@ import {
   shouldSuppressAdjectiveColorPerson,
   shouldSuppressSentenceInitialPerson,
   stitchTitlecaseSpans,
-  isFragmentaryItem
+  isFragmentaryItem,
+  isViableSingleTokenPerson,
+  VERB_LEADS
 } from "../linguistics/entity-heuristics";
 
 const TRACE_SPANS = process.env.L3_TRACE === "1";
@@ -2097,6 +2099,100 @@ function dedupe<T extends { text: string; type: EntityType; start: number; end: 
   return out;
 }
 
+const NON_ENTITY_STOPWORDS = new Set([
+  'when', 'did', 'does', 'do', 'just', 'still', 'yes', 'oh', 'nope', 'exactly', 'originally',
+  'occasionally', 'ahead', 'closer', 'together', 'bring', 'take', 'give', 'say', 'wake',
+  'hopefully', 'especially', 'whatever', 'absolutely', "don't", "can't", "won't", "isn't",
+  "aren't", "wasn't", "weren't", 'no', 'only', 'at', 'with', 'this', 'that'
+]);
+
+function isTitleCase(tokens: string[]): boolean {
+  return tokens.length > 0 && tokens.every(tok => /^[A-Z]/.test(tok));
+}
+
+function isMostlyLowercase(value: string): boolean {
+  const letters = value.match(/[A-Za-z]/g);
+  if (!letters || letters.length === 0) return false;
+  const lowerCount = value.match(/[a-z]/g)?.length ?? 0;
+  const upperCount = value.match(/[A-Z]/g)?.length ?? 0;
+  return lowerCount > upperCount * 1.5;
+}
+
+function shouldDropSpanAsNonEntity(
+  span: { text: string }
+): boolean {
+  const raw = span.text.trim();
+  if (!raw) return true;
+
+  const tokens = raw.split(/\s+/).filter(Boolean);
+  const firstToken = tokens[0]?.replace(/^[^A-Za-z]+|[^A-Za-z]+$/g, '') || '';
+  const firstLower = firstToken.toLowerCase();
+  const quoted = /^['"“”‘’]/.test(raw) || /['"“”‘’]$/.test(raw);
+
+  if (tokens.length > 1 && isMostlyLowercase(raw) && !/^[A-Z]/.test(raw) && !quoted) {
+    return true;
+  }
+
+  if (firstLower && NON_ENTITY_STOPWORDS.has(firstLower) && !isTitleCase(tokens)) {
+    return true;
+  }
+
+  if (tokens.length > 1 && VERB_LEADS.has(firstLower)) {
+    return true;
+  }
+
+  return false;
+}
+
+function stitchPersonFullNames<T extends { text: string; type: EntityType; start: number; end: number; source: ExtractorSource }>(
+  spans: T[],
+  text: string
+): { spans: T[]; aliasHints: Map<string, string[]> } {
+  const sorted = [...spans].sort((a, b) => a.start - b.start);
+  const consumed = new Set<number>();
+  const aliasHints = new Map<string, string[]>();
+  const stitched: T[] = [];
+  const extendedTitles = new Set<string>([...TITLE_WORDS, 'coach', 'detective', 'nurse']);
+  const isSingleTitleCase = (value: string) => /^[A-Z][A-Za-z'’.-]*$/.test(value.trim());
+
+  for (let i = 0; i < sorted.length; i++) {
+    if (consumed.has(i)) continue;
+    const current = sorted[i];
+    const next = sorted[i + 1];
+
+    if (next && current.type === 'PERSON' && next.type === 'PERSON') {
+      const gap = text.slice(current.end, next.start);
+      const adjacent = /^\s*[,'’.-]*\s*$/.test(gap);
+      const currentLower = current.text.replace(/[.'’]+$/g, '').toLowerCase();
+      const hasTitle = extendedTitles.has(currentLower);
+
+      const canMergeFirstLast =
+        adjacent &&
+        isSingleTitleCase(current.text) &&
+        isSingleTitleCase(next.text);
+
+      const canMergeTitle = adjacent && hasTitle && isSingleTitleCase(next.text);
+
+      if (canMergeFirstLast || canMergeTitle) {
+        const mergedText = text.slice(current.start, next.end).trim();
+        const mergedSpan = { ...current, text: mergedText, start: current.start, end: next.end };
+        const aliasParts = [current.text, next.text];
+        aliasHints.set(`${mergedSpan.start}-${mergedSpan.end}-${mergedSpan.text.toLowerCase()}`, aliasParts);
+        stitched.push(mergedSpan as T);
+        consumed.add(i);
+        consumed.add(i + 1);
+        continue;
+      }
+    }
+
+    if (!consumed.has(i)) {
+      stitched.push(current);
+    }
+  }
+
+  return { spans: stitched, aliasHints };
+}
+
 /**
  * Call parser service
  */
@@ -2122,10 +2218,17 @@ function applyLinguisticFilters(
   spans: Array<{entity_id: string; start: number; end: number}>,
   text: string,
   tokenStats: ReturnType<typeof buildTokenStatsFromParse>,
-  parsed: ParseResponse
+  parsed: ParseResponse,
+  sentenceStarts: Set<number>
 ): Entity[] {
   const DEBUG = process.env.DEBUG_ENTITY_DECISIONS === 'true';
   const filtered: Entity[] = [];
+  const isSentenceInitialPosition = (charPos: number): boolean => {
+    for (const start of sentenceStarts) {
+      if (Math.abs(charPos - start) <= 2) return true;
+    }
+    return false;
+  };
 
   for (const entity of entities) {
     let shouldKeep = true;
@@ -2150,8 +2253,14 @@ function applyLinguisticFilters(
     }
 
     if (entity.type === 'PERSON' && primarySpan) {
-      const starterCheck = shouldSuppressSentenceInitialPerson(entity, primarySpan, text);
-      if (starterCheck.suppress) {
+      const hasNonInitialOccurrence = Boolean(entity.attrs?.occursNonInitial);
+      const starterCheck = shouldSuppressSentenceInitialPerson(
+        entity,
+        primarySpan,
+        text,
+        isSentenceInitialPosition
+      );
+      if (!hasNonInitialOccurrence && starterCheck.suppress) {
         shouldKeep = false;
         logEntityDecision({
           entityId: entity.id,
@@ -2227,8 +2336,8 @@ function applyLinguisticFilters(
         const determiners = ['the ', 'a ', 'an ', 'my ', 'your ', 'his ', 'her ', 'their ', 'our '];
         hasDeterminer = determiners.some(det => beforeText.toLowerCase().endsWith(det));
 
-        // Check if sentence-initial (text before is empty or ends with sentence boundary)
-        isSentenceInitial = beforeText.trim() === '' || /[.!?]\s*$/.test(beforeText);
+        // Check if sentence-initial via parser-derived starts
+        isSentenceInitial = isSentenceInitialPosition(firstSpan.start);
 
         // Check if followed by comma
         followedByComma = afterText.trimStart().startsWith(',');
@@ -2352,7 +2461,7 @@ export async function extractEntities(text: string): Promise<{
   const fantasy = extractFantasyEntities(text);
 
   // 6) Fallback: capitalized names with context classification
-  const fb = isMockBackend ? [] : fallbackNames(text);
+  const fb = fallbackNames(text);
 
   // 7) Merge all sources, deduplicate
   // Priority: dependency-based > NER > fantasy > fallback > whitelist
@@ -2462,14 +2571,21 @@ export async function extractEntities(text: string): Promise<{
   const merged = mergeOfPatterns(deduped, text);
 
   // Validate all spans before processing to prevent corruption
-  const validated = merged.filter(span => {
+  let validated = merged.filter(span => {
     const validation = validateSpan(text, span, "pre-entity-creation");
     if (!validation.valid) {
       // Skip corrupted spans to prevent bad data in registries
       return false;
     }
+    if (shouldDropSpanAsNonEntity(span)) {
+      return false;
+    }
     return true;
   });
+  const stitchedPersons = stitchPersonFullNames(validated, text);
+  validated = stitchedPersons.spans;
+  const aliasHintsBySpanKey = stitchedPersons.aliasHints;
+
   if (DEBUG_ENTITIES) {
     console.log(
       `[EXTRACT-ENTITIES][DEBUG] validated=${validated.map(span => `${span.type}:${span.text}@${span.start}-${span.end}`).join(', ')}`
@@ -2522,6 +2638,107 @@ export async function extractEntities(text: string): Promise<{
     if (!list.some(pos => pos.start === span.start && pos.end === span.end)) {
       list.push({ start: span.start, end: span.end });
     }
+  }
+
+  const stitchedAliasTokens = new Set<string>();
+  for (const aliases of aliasHintsBySpanKey.values()) {
+    for (const alias of aliases) {
+      stitchedAliasTokens.add(alias.toLowerCase());
+    }
+  }
+
+  type PersonSurfaceEvidence = {
+    token: string;
+    hasStrongPersonEvidence: boolean;
+    hasOnlySentenceInitialPersonEvidence: boolean;
+    hasDeterminerInAnyOccurrence: boolean;
+    hasNERSupportInAnyOccurrence: boolean;
+  };
+
+  const personSurfaceEvidence = new Map<string, PersonSurfaceEvidence>();
+
+  const hasAdjacentProperCase = (span: { start: number; end: number }): boolean => {
+    const after = text.slice(span.end);
+    const before = text.slice(0, span.start);
+    const afterMatch = after.match(/^\s*[,'"“”‘’()]*([A-Z][A-Za-z]+)/);
+    const beforeMatch = before.match(/([A-Z][A-Za-z]+)[,'"“”‘’()]*\s*$/);
+    return Boolean(afterMatch || beforeMatch);
+  };
+
+  for (const span of validated) {
+    if (span.type !== 'PERSON') continue;
+    const tokens = span.text.split(/\s+/).filter(Boolean);
+    if (tokens.length !== 1) continue;
+
+    const surfaceLower = span.text.toLowerCase();
+    const key = `PERSON:${surfaceLower}`;
+    const posFeatures = positionFeaturesByKey.get(key);
+    const isSentenceInitialOnly = !!(posFeatures?.isSentenceInitial && !posFeatures?.occursNonInitial);
+    const positionsForSpan = positionsByKey.get(key);
+    const primaryPosition = positionsForSpan?.[0];
+    const beforeText = primaryPosition
+      ? text.slice(Math.max(0, primaryPosition.start - 10), primaryPosition.start)
+      : '';
+    const determiners = ['the ', 'a ', 'an ', 'my ', 'your ', 'his ', 'her ', 'their ', 'our '];
+    const hasDeterminer = determiners.some(det => beforeText.toLowerCase().endsWith(det));
+    const hasNERSupport = span.source === 'NER' || span.source === 'WHITELIST' || span.source === 'DEP';
+    const existing = personSurfaceEvidence.get(surfaceLower) || {
+      token: span.text,
+      hasStrongPersonEvidence: false,
+      hasOnlySentenceInitialPersonEvidence: true,
+      hasDeterminerInAnyOccurrence: false,
+      hasNERSupportInAnyOccurrence: false
+    };
+
+    if (!isSentenceInitialOnly) {
+      existing.hasOnlySentenceInitialPersonEvidence = false;
+    }
+
+    if (hasDeterminer) {
+      existing.hasDeterminerInAnyOccurrence = true;
+    }
+
+    if (hasNERSupport) {
+      existing.hasNERSupportInAnyOccurrence = true;
+      existing.hasStrongPersonEvidence = true;
+    }
+
+    if (posFeatures?.occursNonInitial) {
+      existing.hasStrongPersonEvidence = true;
+    }
+
+    if (stitchedAliasTokens.has(surfaceLower) || hasAdjacentProperCase(span)) {
+      existing.hasStrongPersonEvidence = true;
+    }
+
+    const npContext: NounPhraseContext = {
+      headToken: tokens[0],
+      tokens,
+      hasDeterminer,
+      isSentenceInitial: isSentenceInitialOnly,
+      followedByComma: false
+    };
+
+    const allowedPerson = looksLikePersonName(npContext, tokenStats);
+    if (allowedPerson && !hasDeterminer && !isSentenceInitialOnly) {
+      existing.hasStrongPersonEvidence = true;
+    }
+
+    personSurfaceEvidence.set(surfaceLower, existing);
+  }
+
+  const preferredTypeBySurfaceLower = new Map<string, EntityType>();
+  for (const [surfaceLower, evidence] of personSurfaceEvidence.entries()) {
+    const preferred = evidence.hasStrongPersonEvidence
+      ? 'PERSON'
+      : isViableSingleTokenPerson(evidence.token, {
+          tokenStats,
+          isSentenceInitial: evidence.hasOnlySentenceInitialPersonEvidence,
+          hasDeterminer: evidence.hasDeterminerInAnyOccurrence
+        })
+        ? 'PERSON'
+        : 'ITEM';
+    preferredTypeBySurfaceLower.set(surfaceLower, preferred);
   }
 
   // 6) Build Entity objects, merging short/long variants (e.g., "Gandalf" vs "Gandalf the Grey")
@@ -2703,11 +2920,24 @@ const PERSON_NICKNAME_NORMALIZERS = new Map<string, string>([
 
   for (const span of validated) {
     const textLower = toLower(span.text);
-    const key = `${span.type}:${textLower}`;
+    const originalKey = `${span.type}:${textLower}`;
+    const positionsForSpan = positionsByKey.get(originalKey) ?? [{ start: span.start, end: span.end }];
+    const posFeatures = positionFeaturesByKey.get(originalKey);
+    const originalSpanType = span.type;
+    let spanType = span.type;
+
+    if (spanType === 'PERSON') {
+      const tokens = span.text.split(/\s+/).filter(Boolean);
+      if (tokens.length === 1) {
+        spanType = preferredTypeBySurfaceLower.get(textLower) ?? 'PERSON';
+      }
+    }
+
+    const key = `${spanType}:${textLower}`;
     let matched = false;
 
     for (const entry of entries) {
-      if (entry.entity.type !== span.type) continue;
+      if (entry.entity.type !== spanType) continue;
 
       const canonicalLower = toLower(entry.entity.canonical);
       if (
@@ -2742,7 +2972,7 @@ const PERSON_NICKNAME_NORMALIZERS = new Map<string, string>([
           addAlias(entry, span.text);
         }
 
-        for (const pos of positionsByKey.get(key) ?? [{ start: span.start, end: span.end }]) {
+        for (const pos of positionsForSpan) {
           entry.spanList.push(pos);
         }
         entry.variants.set(textLower, span.text);
@@ -2754,9 +2984,9 @@ const PERSON_NICKNAME_NORMALIZERS = new Map<string, string>([
 
     if (!matched) {
       const id = uuid();
-      const positions = positionsByKey.get(key) ?? [{ start: span.start, end: span.end }];
+      const positions = positionsForSpan;
       if (span.text.includes('McGonagall')) {
-        console.log('[DEBUG-MCG] New entry', span.text, 'type', span.type);
+        console.log('[DEBUG-MCG] New entry', span.text, 'type', spanType);
       }
       // Capitalize entity name if needed (for lowercase entities from case-insensitive extraction)
       const capitalizedText = (span.text.length > 0 && /^[a-z]/.test(span.text))
@@ -2765,7 +2995,7 @@ const PERSON_NICKNAME_NORMALIZERS = new Map<string, string>([
 
       // For DATE entities, convert spelled-out years to numeric form
       let canonicalName = capitalizedText;
-      if (span.type === 'DATE') {
+      if (spanType === 'DATE') {
         const numericYear = convertSpelledYearToNumeric(span.text);
         if (numericYear !== null) {
           canonicalName = numericYear.toString();
@@ -2773,15 +3003,13 @@ const PERSON_NICKNAME_NORMALIZERS = new Map<string, string>([
       }
 
       // Get position features for this entity
-      const posFeatures = positionFeaturesByKey.get(key);
-
       // Determine if this entity has NER support (for quality filtering)
       const hasNERSupport = span.source === 'NER' || span.source === 'WHITELIST' || span.source === 'DEP';
 
       const entry: EntityEntry = {
         entity: {
           id,
-          type: span.type,
+          type: spanType,
           canonical: canonicalName,
           aliases: [],
           created_at: now,
@@ -2791,13 +3019,29 @@ const PERSON_NICKNAME_NORMALIZERS = new Map<string, string>([
               isSentenceInitial: posFeatures.isSentenceInitial,
               occursNonInitial: posFeatures.occursNonInitial
             } : {}),
-            ...(hasNERSupport ? { nerLabel: span.type } : {})
+            ...(hasNERSupport ? { nerLabel: originalSpanType } : {})
           }
         },
         spanList: [...positions],
         variants: new Map([[textLower, span.text]]),
         sources: new Set([span.source]) // Track extraction source
       };
+
+      const aliasKey = `${span.start}-${span.end}-${span.text.toLowerCase()}`;
+      const aliasParts = aliasHintsBySpanKey.get(aliasKey);
+      if (aliasParts) {
+        for (const alias of aliasParts) {
+          addAlias(entry, alias);
+        }
+      }
+
+      if (spanType === 'PERSON') {
+        const nameTokens = span.text.split(/\s+/).filter(Boolean);
+        if (nameTokens.length === 2 && nameTokens.every(tok => /^[A-Z]/.test(tok))) {
+          addAlias(entry, nameTokens[0]);
+          addAlias(entry, nameTokens[1]);
+        }
+      }
       entries.push(entry);
     }
   }
@@ -3609,7 +3853,7 @@ const mergedEntries = Array.from(mergedMap.values());
   }
 
   // Apply linguistic filters to remove problematic entities
-  const filteredEntities = applyLinguisticFilters(entities, spans, text, tokenStats, parsed);
+  const filteredEntities = applyLinguisticFilters(entities, spans, text, tokenStats, parsed, sentenceStarts);
 
   // Update spans to remove references to filtered entities
   const filteredEntityIds = new Set(filteredEntities.map(e => e.id));
