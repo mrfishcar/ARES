@@ -20,7 +20,7 @@ const COLOR_ADJECTIVES = new Set([
   'scarlet', 'crimson', 'amber', 'blonde', 'blond', 'hot', 'cold', 'aged', 'stained'
 ]);
 
-const VERB_LEADS = new Set([
+export const VERB_LEADS = new Set([
   'fix', 'draw', 'handle', 'agree', 'react', 'allow', 'stop', 'start', 'begin',
   'keep', 'make', 'do', 'does', 'did', 'have', 'has', 'had', 'be', 'been', 'being',
   'can', 'could', 'would', 'should', 'might', 'will', 'shall'
