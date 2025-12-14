@@ -223,9 +223,21 @@ export function classifyWithContext(
   context: ContextHints,
   fallbackType?: EntityType
 ): EntityType {
-  const textLower = entityText.toLowerCase();
+  const text = entityText.trim();
+  const textLower = text.toLowerCase();
   const verbLemma = context.governingVerbLemma;
   const prep = context.preposition;
+
+  // Common false-positive PERSON tokens (especially at sentence boundaries) — treat as non-person by default.
+  const PERSON_STOPWORDS = new Set([
+    'when','whatever','saturday','dead','souls','visitors','ghosts',
+    'hearing','instinctively','mid-bite',
+    'english','spanish','european','american','native','springs','west','east',
+  ]);
+  const tokenCount = entityText.trim().split(/\s+/).filter(Boolean).length;
+  if (tokenCount === 1 && PERSON_STOPWORDS.has(textLower)) {
+    return fallbackType ?? 'ITEM';
+  }
 
   // Rule 1: Verb-Object Patterns (highest priority)
   // "X ruled Y" → Y is PLACE

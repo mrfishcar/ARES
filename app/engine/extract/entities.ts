@@ -2345,32 +2345,105 @@ function applyLinguisticFilters(
       }
 
       if (shouldKeep) {
-        const colorCheck = shouldSuppressAdjectiveColorPerson(entity, primarySpan, text);
-        if (colorCheck.suppress) {
+        // Extra PERSON junk suppression:
+        // - Common sentence-function words mis-tagged as PERSON (even when not strictly sentence-initial)
+        // - Words that were lowercase in the source text but got title-cased by upstream normalization
+        // - Shouted phrases like "Absolutely NOT" that are clearly not names
+        const raw = text.slice(primarySpan.start, primarySpan.end);
+        const rawTrim = raw.trim();
+        const rawLower = rawTrim.toLowerCase();
+
+        const COMMON_PERSON_FALSE_POSITIVES = new Set([
+          'when','whatever','saturday','dead','souls','visitors','ghosts',
+          'hearing','instinctively','mid-bite',
+          'english','spanish','european','american','native','springs','west','east'
+        ]);
+
+        // If the exact source span starts with a lowercase letter, it’s almost certainly not a proper name in prose.
+        // (This helps with cases where upstream emits "Dead" for the word "dead", etc.)
+        if (rawTrim.length > 0 && rawTrim[0] === rawTrim[0].toLowerCase() && rawTrim[0] !== rawTrim[0].toUpperCase()) {
+          if (COMMON_PERSON_FALSE_POSITIVES.has(rawLower)) {
+            shouldKeep = false;
+            logEntityDecision({
+              entityId: entity.id,
+              text: entity.canonical,
+              candidateType: 'PERSON',
+              finalType: 'FILTERED',
+              features: { rule: 'suppress_common_lowercase_person', raw: rawTrim },
+              reason: 'Common lowercase non-name'
+            });
+          }
+        }
+
+        // Suppress common function words / generic nouns that frequently get mis-tagged as PERSON.
+        if (shouldKeep && rawTrim.length > 0 && rawTrim.indexOf(' ') === -1 && COMMON_PERSON_FALSE_POSITIVES.has(rawLower)) {
+          // Special-case: "and when ..." at the start of a sentence.
+          const before = text.slice(Math.max(0, primarySpan.start - 12), primarySpan.start);
+          const beforeLower = before.toLowerCase();
+          if (beforeLower.endsWith(' and ') || /[.!?]\s+and\s+$/.test(beforeLower)) {
+            shouldKeep = false;
+            logEntityDecision({
+              entityId: entity.id,
+              text: entity.canonical,
+              candidateType: 'PERSON',
+              finalType: 'FILTERED',
+              features: { rule: 'suppress_and_starter_person', raw: rawTrim, before },
+              reason: 'Sentence-starter function word'
+            });
+          } else {
+            shouldKeep = false;
+            logEntityDecision({
+              entityId: entity.id,
+              text: entity.canonical,
+              candidateType: 'PERSON',
+              finalType: 'FILTERED',
+              features: { rule: 'suppress_common_word_person', raw: rawTrim, before },
+              reason: 'Common word mis-tagged as PERSON'
+            });
+          }
+        }
+
+        // Suppress shouted / emphatic phrases that are not names.
+        if (shouldKeep && rawTrim.includes(' ') && /(not|yes|no|never)/i.test(rawTrim) && rawTrim.length <= 24) {
           shouldKeep = false;
           logEntityDecision({
             entityId: entity.id,
             text: entity.canonical,
             candidateType: 'PERSON',
             finalType: 'FILTERED',
-            features: { rule: colorCheck.reason },
-            reason: 'Adjective/color suppression'
+            features: { rule: 'suppress_shouted_phrase_person', raw: rawTrim },
+            reason: 'Shouted/emphatic phrase mis-tagged as PERSON'
           });
         }
-      }
 
-      if (shouldKeep) {
-        const commonNonName = shouldSuppressCommonNonNamePerson(entity, primarySpan, text);
-        if (commonNonName.suppress) {
-          shouldKeep = false;
-          logEntityDecision({
-            entityId: entity.id,
-            text: entity.canonical,
-            candidateType: 'PERSON',
-            finalType: 'FILTERED',
-            features: { rule: commonNonName.reason ?? 'common_non_name_person' },
-            reason: 'Common non-name PERSON suppression'
-          });
+        if (shouldKeep) {
+          const colorCheck = shouldSuppressAdjectiveColorPerson(entity, primarySpan, text);
+          if (colorCheck.suppress) {
+            shouldKeep = false;
+            logEntityDecision({
+              entityId: entity.id,
+              text: entity.canonical,
+              candidateType: 'PERSON',
+              finalType: 'FILTERED',
+              features: { rule: colorCheck.reason },
+              reason: 'Adjective/color suppression'
+            });
+          }
+        }
+
+        if (shouldKeep) {
+          const commonNonName = shouldSuppressCommonNonNamePerson(entity, primarySpan, text);
+          if (commonNonName.suppress) {
+            shouldKeep = false;
+            logEntityDecision({
+              entityId: entity.id,
+              text: entity.canonical,
+              candidateType: 'PERSON',
+              finalType: 'FILTERED',
+              features: { rule: commonNonName.reason ?? 'common_non_name_person' },
+              reason: 'Common non-name PERSON suppression'
+            });
+          }
         }
       }
     }
