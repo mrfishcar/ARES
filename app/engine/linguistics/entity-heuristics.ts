@@ -35,6 +35,7 @@ const ARTIFACT_HEADWORDS = /\b(Mirror|Ring|Cup|Blade|Book|Yearbook|Letter|Key|Cr
 const CONNECTOR_TOKENS = new Set(['of', 'the', 'and', 'de', 'di', 'del', 'la', 'le', 'st', 'st.', 'mt', 'mt.']);
 
 const TYPE_PRIORITY: EntityType[] = ['PERSON', 'PLACE', 'ORG', 'ARTIFACT', 'ITEM', 'WORK', 'EVENT', 'HOUSE', 'TRIBE', 'SPECIES', 'TITLE'];
+const CORE_TYPES = new Set<EntityType>(['PERSON', 'PLACE', 'ORG']);
 const typeRank = (type: EntityType): number => {
   const idx = TYPE_PRIORITY.indexOf(type);
   return idx === -1 ? TYPE_PRIORITY.length : idx;
@@ -230,7 +231,7 @@ export function resolveSpanConflicts(
   const entityById = new Map(entities.map(e => [e.id, e]));
   const keptSpans: Array<{ entity_id: string; start: number; end: number }> = [];
 
-  const grouped = new Map<string, Array<{ entity: Entity; span: { start: number; end: number } }>>();
+  const grouped = new Map<string, Array<{ entity: Entity; span: { entity_id: string; start: number; end: number } }>>();
   for (const span of spans) {
     const entity = entityById.get(span.entity_id);
     if (!entity) continue;
@@ -240,20 +241,25 @@ export function resolveSpanConflicts(
     grouped.set(key, list);
   }
 
-  for (const [key, list] of grouped.entries()) {
-    if (list.length === 1) {
-      keptSpans.push(list[0].span);
-      continue;
+    for (const [key, list] of grouped.entries()) {
+      if (list.length === 1) {
+        keptSpans.push(list[0].span);
+        continue;
+      }
+      const best = list.sort((a, b) => {
+        const confA = a.entity.confidence ?? 0.5;
+        const confB = b.entity.confidence ?? 0.5;
+        if (confA !== confB) return confB - confA;
+        const coreA = CORE_TYPES.has(a.entity.type);
+        const coreB = CORE_TYPES.has(b.entity.type);
+        if (coreA !== coreB) return coreB ? -1 : 1;
+        const rankDiff = typeRank(a.entity.type) - typeRank(b.entity.type);
+        if (rankDiff !== 0) return rankDiff;
+        return a.entity.id.localeCompare(b.entity.id);
+      })[0];
+      logDebug(`Resolved exact-span conflict at ${key} to ${best.entity.canonical} (${best.entity.type})`);
+      keptSpans.push(best.span);
     }
-    const best = list.sort((a, b) => {
-      const confA = a.entity.confidence ?? 0.5;
-      const confB = b.entity.confidence ?? 0.5;
-      if (confA !== confB) return confB - confA;
-      return typeRank(a.entity.type) - typeRank(b.entity.type);
-    })[0];
-    logDebug(`Resolved exact-span conflict at ${key} to ${best.entity.canonical} (${best.entity.type})`);
-    keptSpans.push(best.span);
-  }
 
   const entityIdsWithSpans = new Set(keptSpans.map(span => span.entity_id));
   const prunedEntities = entities.filter(entity => entityIdsWithSpans.has(entity.id));
