@@ -133,17 +133,105 @@ export function shouldSuppressAdjectiveColorPerson(
   return { suppress: true, reason: 'color_adj_person' };
 }
 
+const NON_NAME_PERSON_SINGLETONS = new Set([
+  // discourse/grammar words frequently mis-tagged as PERSON
+  'when',
+  'whatever',
+  'wherever',
+  'however',
+  'therefore',
+  'meanwhile',
+  'instinctively',
+  'hearing',
+  'visitors',
+  'ghosts',
+  'tears',
+  // time / calendar
+  'saturday',
+  'sunday',
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'january',
+  'february',
+  'march',
+  'april',
+  'may',
+  'june',
+  'july',
+  'august',
+  'september',
+  'october',
+  'november',
+  'december',
+  // directions / demonyms / languages
+  'west',
+  'east',
+  'north',
+  'south',
+  'european',
+  'english',
+  'spanish',
+  'french',
+  'african',
+  'native',
+  // other common false positives
+  'dead',
+  'aged',
+  'stained',
+  'weak',
+  'fainting',
+  'mid-bite',
+]);
+
+export function shouldSuppressCommonNonNamePerson(
+  entity: Entity,
+  span: SpanLike,
+  text: string,
+): { suppress: boolean; reason?: string } {
+  if (entity.type !== 'PERSON') return { suppress: false };
+
+  const tokens = entity.canonical.split(/\s+/).filter(Boolean);
+  if (tokens.length !== 1) return { suppress: false };
+
+  const head = tokens[0].toLowerCase();
+
+  // If preceded by an honorific, let it through (e.g., "Mr. Green")
+  const prefix = text.slice(Math.max(0, span.start - 6), span.start);
+  if (/\b(Mr|Mrs|Ms|Dr|Prof)\.?\s*$/i.test(prefix)) {
+    return { suppress: false };
+  }
+
+  if (NON_NAME_PERSON_SINGLETONS.has(head)) {
+    return { suppress: true, reason: 'common_non_name_person' };
+  }
+
+  return { suppress: false };
+}
+
 export function isFragmentaryItem(entity: Entity): boolean {
   if (entity.type !== 'ITEM') return false;
+
   const tokens = entity.canonical.split(/\s+/).filter(Boolean);
   if (!tokens.length) return true;
-  const first = tokens[0].toLowerCase();
-  const last = tokens[tokens.length - 1].toLowerCase();
-  if (VERB_LEADS.has(first) || FRAGMENT_ENDINGS.has(last)) {
-    return true;
-  }
+
+  const lowerTokens = tokens.map(t => t.toLowerCase());
+  const first = lowerTokens[0];
+  const last = lowerTokens[lowerTokens.length - 1];
+
+  // obvious verb/fragment leads or endings
+  if (VERB_LEADS.has(first) || FRAGMENT_ENDINGS.has(last)) return true;
+
+  // short, all-lowercase phrases are overwhelmingly clause fragments, not "items"
+  const isAllLower = tokens.every(t => t === t.toLowerCase());
+  if (isAllLower && tokens.length <= 3) return true;
+
+  // If it doesn't contain any noun-like token, toss it.
   const hasNounLike = tokens.some(tok => /^[A-Z]/.test(tok) || /[a-z]{3,}/.test(tok));
   if (!hasNounLike) return true;
+
   return false;
 }
 

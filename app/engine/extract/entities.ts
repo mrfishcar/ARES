@@ -31,6 +31,7 @@ import { splitSchoolName } from "../linguistics/school-names";
 import {
   applyTypeOverrides,
   resolveSpanConflicts,
+  shouldSuppressCommonNonNamePerson,
   shouldSuppressAdjectiveColorPerson,
   shouldSuppressSentenceInitialPerson,
   stitchTitlecaseSpans,
@@ -2354,6 +2355,21 @@ function applyLinguisticFilters(
             finalType: 'FILTERED',
             features: { rule: colorCheck.reason },
             reason: 'Adjective/color suppression'
+          });
+        }
+      }
+
+      if (shouldKeep) {
+        const commonNonName = shouldSuppressCommonNonNamePerson(entity, primarySpan, text);
+        if (commonNonName.suppress) {
+          shouldKeep = false;
+          logEntityDecision({
+            entityId: entity.id,
+            text: entity.canonical,
+            candidateType: 'PERSON',
+            finalType: 'FILTERED',
+            features: { rule: commonNonName.reason ?? 'common_non_name_person' },
+            reason: 'Common non-name PERSON suppression'
           });
         }
       }
