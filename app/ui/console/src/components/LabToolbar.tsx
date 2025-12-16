@@ -365,7 +365,7 @@ export function LabToolbar({
                         Long-text optimization (chunked rendering)
                       </span>
                       <span className="settings-dropdown-helper">
-                        Experimental — currently disabled. Future versions may use this to speed up very long documents.
+                        For documents over 50,000 characters, render only visible portions to improve performance. Disabled on iOS. Default: OFF.
                       </span>
                     </div>
                     <div className={`settings-toggle-switch ${enableLongTextOptimization ? 'active' : ''}`}>

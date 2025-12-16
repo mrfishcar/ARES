@@ -39,11 +39,6 @@ const DEFAULT_WINDOW_SIZE = 50000; // Much larger window to minimize updates
 const DEFAULT_SAFE_MARGIN = 10000; // Large margins to reduce update frequency
 const WINDOW_SHIFT_STEP = 5000; // Larger shifts for smoother transitions
 
-// Temporary kill switch: chunked rendering was experimental and the real perf issue was the side orbs.
-// Keep the simple full-document path until we purposely re-enable chunking.
-// TODO: Wire this to the user preference `enableLongTextOptimization` when chunked decorations return.
-const USE_CHUNKED_DECORATIONS = false;
-
 const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
 const DEBUG_EDITOR_FOCUS =
@@ -131,7 +126,7 @@ export function VirtualizedExtractionEditor({
   enableLongTextOptimization = false
 }: VirtualizedExtractionEditorProps) {
   const chunkingEnabled = useMemo(
-    () => USE_CHUNKED_DECORATIONS && enableLongTextOptimization,
+    () => enableLongTextOptimization,
     [enableLongTextOptimization]
   );
   const shouldVirtualize = useMemo(
