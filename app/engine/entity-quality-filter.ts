@@ -12,6 +12,7 @@
 
 import type { Entity, EntityType } from './schema';
 import { splitSchoolName } from './linguistics/school-names';
+import { PERSON_HEAD_BLOCKLIST } from './linguistics/common-noun-filters';
 
 export interface EntityQualityConfig {
   minConfidence: number;
@@ -825,6 +826,11 @@ export function isLexicallyValidEntityName(
 
   switch (type) {
     case 'PERSON':
+      // Check single-token PERSON entities against blocklist
+      // These are common nouns that shouldn't be PERSON (hell, hall, friend, well, etc.)
+      if (isSingleToken && PERSON_HEAD_BLOCKLIST.has(normalized)) {
+        return false;
+      }
       return isPersonLikeName(
         tokens,
         normalized,
