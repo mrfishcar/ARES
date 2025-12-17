@@ -48,3 +48,8 @@ data/*-registry.json
 
 # Debug test output files
 test-*-debug.json
+test-*.json
+barty.txt
+
+# Temp session files
+tmp/mega-regression-summary.json
