@@ -21,6 +21,7 @@ import {
   RangeSetBuilder,
   StateEffect,
   Compartment,
+  StateField,
 } from '@codemirror/state';
 
 import {
@@ -90,6 +91,7 @@ const editorTheme = EditorView.theme({
     overscrollBehavior: 'contain',
     touchAction: 'pan-y',
     WebkitOverflowScrolling: 'touch',
+    scrollBehavior: 'smooth',
   },
 
   '.cm-line': {
@@ -112,6 +114,8 @@ const editorTheme = EditorView.theme({
   },
 });
 
+const FLASH_DURATION_MS = 1000;
+
 const toAlphaHex = (value: number) =>
   Math.max(0, Math.min(255, Math.round(value)))
     .toString(16)
@@ -120,6 +124,34 @@ const toAlphaHex = (value: number) =>
 // -------------------- ENTITY HIGHLIGHTER --------------------
 
 export const ForceDecorationUpdate = StateEffect.define<void>();
+
+const flashEntityEffect = StateEffect.define<{ from: number; to: number }>();
+const clearFlashEffect = StateEffect.define<void>();
+
+const flashEntityField = StateField.define<DecorationSet>({
+  create() {
+    return Decoration.none;
+  },
+  update(value, tr) {
+    let next = value.map(tr.changes);
+
+    for (const effect of tr.effects) {
+      if (effect.is(flashEntityEffect)) {
+        const { from, to } = effect.value;
+        next = Decoration.set([
+          Decoration.mark({
+            class: 'cm-entity-flash',
+          }).range(from, to),
+        ]);
+      } else if (effect.is(clearFlashEffect)) {
+        next = Decoration.none;
+      }
+    }
+
+    return next;
+  },
+  provide: f => EditorView.decorations.from(f),
+});
 
 function entityHighlighterExtension(
   getEntities: () => EntitySpan[],
@@ -614,6 +646,7 @@ export function CodeMirrorEditor({
   onCursorChange,
   onTextSelected,
   onResizeEntity,
+  navigateToRange,
 }: CodeMirrorEditorProps) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
@@ -626,6 +659,7 @@ export function CodeMirrorEditor({
   const entityHighlightModeRef = useRef(entityHighlightMode);
   const onTextSelectedRef = useRef(onTextSelected);
   const onResizeEntityRef = useRef(onResizeEntity);
+  const flashTimeoutRef = useRef<number | null>(null);
 
   const [contextMenu, setContextMenu] = useState<{
     position: { x: number; y: number };
@@ -705,6 +739,7 @@ export function CodeMirrorEditor({
           () => highlightOpacityRef.current,
           () => baseOffsetRef.current,
         ),
+        flashEntityField,
         contextMenuExtension(setContextMenu, entitiesRef, baseOffsetRef, entityHighlightModeRef, onTextSelectedRef),
         dragToCreateExtension(entitiesRef, baseOffsetRef, entityHighlightModeRef, onTextSelectedRef, onResizeEntityRef),
         EditorView.updateListener.of((update: ViewUpdate) => {
@@ -829,6 +864,48 @@ export function CodeMirrorEditor({
     void onTagEntity(entity, entity);
     setContextMenu(null);
   }, [contextMenu, onTagEntity]);
+
+  // -------------------- NAVIGATION HANDLER --------------------
+
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view || !navigateToRange) return;
+
+    const clamped = (pos: number) =>
+      Math.max(0, Math.min(view.state.doc.length, pos));
+
+    const from = clamped(navigateToRange.from);
+    const to = clamped(Math.max(navigateToRange.to, navigateToRange.from));
+
+    if (flashTimeoutRef.current) {
+      window.clearTimeout(flashTimeoutRef.current);
+      flashTimeoutRef.current = null;
+    }
+
+    view.dispatch({
+      selection: { anchor: from, head: to },
+      scrollIntoView: true,
+      effects: [
+        EditorView.scrollIntoView(from, { y: 'center' }),
+        flashEntityEffect.of({ from, to }),
+      ],
+    });
+
+    flashTimeoutRef.current = window.setTimeout(() => {
+      if (viewRef.current) {
+        viewRef.current.dispatch({ effects: clearFlashEffect.of(undefined) });
+      }
+    }, FLASH_DURATION_MS);
+
+    view.focus();
+
+    return () => {
+      if (flashTimeoutRef.current) {
+        window.clearTimeout(flashTimeoutRef.current);
+        flashTimeoutRef.current = null;
+      }
+    };
+  }, [navigateToRange]);
 
   // -------------------- RENDER --------------------
 

@@ -5,6 +5,7 @@
 
 import { EntityIndicators } from './EntityIndicators';
 import { VirtualizedExtractionEditor } from './VirtualizedExtractionEditor';
+import type { NavigateToRange } from './CodeMirrorEditorProps';
 import type { EntitySpan, EntityType } from '../types/entities';
 
 interface EditorPaneProps {
@@ -27,6 +28,7 @@ interface EditorPaneProps {
   onTextSelected?: (start: number, end: number, selectedText: string, entitiesInRange: EntitySpan[]) => void | Promise<void>;
   onResizeEntity?: (entity: EntitySpan, newStart: number, newEnd: number) => void | Promise<void>;
   enableLongTextOptimization?: boolean;
+  navigateToRange?: NavigateToRange;
 }
 
 export function EditorPane({
@@ -45,6 +47,7 @@ export function EditorPane({
   onTextSelected,
   onResizeEntity,
   enableLongTextOptimization,
+  navigateToRange,
 }: EditorPaneProps) {
   const editorHeight = Math.max(400, typeof window !== 'undefined' ? window.innerHeight - 380 : 400);
 
@@ -78,6 +81,7 @@ export function EditorPane({
               onTextSelected={onTextSelected}
               onResizeEntity={onResizeEntity}
               enableLongTextOptimization={enableLongTextOptimization}
+              navigateToRange={navigateToRange}
             />
           </div>
         </div>
