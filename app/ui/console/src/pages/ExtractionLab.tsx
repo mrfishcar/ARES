@@ -16,6 +16,7 @@ import { EntityModal } from '../components/EntityModal';
 import { WikiModal } from '../components/WikiModal';
 import { FloatingActionButton } from '../components/FloatingActionButton';
 import { EntityReviewSidebar } from '../components/EntityReviewSidebar';
+import type { NavigateToRange } from '../components/CodeMirrorEditorProps';
 import { isValidEntityType, type EntitySpan, type EntityType } from '../types/entities';
 import { initializeTheme, toggleTheme, loadThemePreference, getEffectiveTheme } from '../utils/darkMode';
 import { useLabLayoutState } from '../hooks/useLabLayoutState';
@@ -714,11 +715,13 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     entitiesInRange: EntitySpan[];
     position?: { x: number; y: number; flip?: boolean }; // Position for menu
   } | null>(null);
+  const [navigateRequest, setNavigateRequest] = useState<NavigateToRange | null>(null);
 
   // Theme state
   const [theme, setTheme] = useState(loadThemePreference());
   const [renderMarkdown, setRenderMarkdown] = useState(true);
   const [liveExtractionEnabled, setLiveExtractionEnabled] = useState(true);
+  const navigateRequestIdRef = useRef(0);
 
   const resetEntityOverrides = useCallback(() => {
     setEntityOverrides({
@@ -750,6 +753,15 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     const newTheme = toggleTheme();
     setTheme(newTheme);
   };
+
+  const handleNavigateToEntity = useCallback((entity: EntitySpan) => {
+    navigateRequestIdRef.current += 1;
+    setNavigateRequest({
+      from: entity.start,
+      to: entity.end,
+      requestId: navigateRequestIdRef.current,
+    });
+  }, []);
 
   const requiresBackground = text.length > SYNC_EXTRACTION_CHAR_LIMIT;
   const hasActiveJob = jobStatus === 'queued' || jobStatus === 'running';
@@ -2087,6 +2099,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           onTextSelected={handleTextSelected}
           onResizeEntity={handleResizeEntity}
           enableLongTextOptimization={settings.enableLongTextOptimization}
+          navigateToRange={navigateRequest ?? undefined}
         />
 
         {/* Pinned sidebar mode - integrated into layout */}
@@ -2100,6 +2113,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
               onEntityUpdate={handleEntityUpdate}
               onLogReport={handleLogReport}
               onCopyReport={handleCopyReport}
+              onNavigateEntity={handleNavigateToEntity}
             />
           </div>
         )}
@@ -2124,6 +2138,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           onEntityUpdate={handleEntityUpdate}
           onLogReport={handleLogReport}
           onCopyReport={handleCopyReport}
+          onNavigateEntity={handleNavigateToEntity}
         />
       )}
 

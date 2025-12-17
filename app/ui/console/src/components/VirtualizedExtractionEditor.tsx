@@ -14,6 +14,7 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { CodeMirrorEditor } from './CodeMirrorEditor';
+import type { NavigateToRange } from './CodeMirrorEditorProps';
 import type { EntitySpan, EntityType } from '../types/entities';
 
 interface VirtualizedExtractionEditorProps {
@@ -31,6 +32,7 @@ interface VirtualizedExtractionEditorProps {
   onTextSelected?: (start: number, end: number, selectedText: string, entitiesInRange: EntitySpan[]) => void | Promise<void>;
   onResizeEntity?: (entity: EntitySpan, newStart: number, newEnd: number) => void | Promise<void>;
   enableLongTextOptimization?: boolean;
+  navigateToRange?: NavigateToRange;
 }
 
 // Configurable window parameters
@@ -123,7 +125,8 @@ export function VirtualizedExtractionEditor({
   onTagEntity,
   onTextSelected,
   onResizeEntity,
-  enableLongTextOptimization = false
+  enableLongTextOptimization = false,
+  navigateToRange,
 }: VirtualizedExtractionEditorProps) {
   const chunkingEnabled = useMemo(
     () => enableLongTextOptimization,
@@ -144,6 +147,8 @@ export function VirtualizedExtractionEditor({
   );
   const isUpdatingWindowRef = useRef(false); // Track programmatic window updates
   const lastWindowStartRef = useRef(windowStart);
+  const pendingNavigationRef = useRef<NavigateToRange | null>(null);
+  const [localNavigateTarget, setLocalNavigateTarget] = useState<NavigateToRange | null>(null);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -153,6 +158,19 @@ export function VirtualizedExtractionEditor({
       }
     };
   }, []);
+
+  const clampToDoc = useCallback(
+    (pos: number) => Math.max(0, Math.min(text.length, pos)),
+    [text.length]
+  );
+
+  const clampWindowStart = useCallback(
+    (pos: number) => {
+      const maxStart = Math.max(0, text.length - windowSize);
+      return Math.max(0, Math.min(maxStart, pos));
+    },
+    [text.length, windowSize]
+  );
 
   // Track when window position changes and set update flag
   useEffect(() => {
@@ -219,6 +237,71 @@ export function VirtualizedExtractionEditor({
   const windowEntities = shouldVirtualize
     ? entities.filter(e => e.end > windowStart && e.start < windowEnd)
     : entities;
+
+  useEffect(() => {
+    if (!navigateToRange) return;
+
+    const normalizedFrom = clampToDoc(Math.min(navigateToRange.from, navigateToRange.to));
+    const normalizedTo = clampToDoc(Math.max(navigateToRange.from, navigateToRange.to));
+    const normalizedTarget: NavigateToRange = {
+      from: normalizedFrom,
+      to: normalizedTo,
+      requestId: navigateToRange.requestId,
+    };
+
+    pendingNavigationRef.current = normalizedTarget;
+
+    if (shouldVirtualize) {
+      const desiredStart = clampWindowStart(normalizedFrom - DEFAULT_SAFE_MARGIN);
+      if (desiredStart !== windowStart) {
+        setWindowStart(desiredStart);
+        return;
+      }
+    }
+
+    setLocalNavigateTarget({
+      ...normalizedTarget,
+      from: normalizedTarget.from - effectiveBaseOffset,
+      to: normalizedTarget.to - effectiveBaseOffset,
+    });
+    pendingNavigationRef.current = null;
+  }, [
+    navigateToRange,
+    shouldVirtualize,
+    clampToDoc,
+    clampWindowStart,
+    windowStart,
+    effectiveBaseOffset,
+  ]);
+
+  useEffect(() => {
+    if (!shouldVirtualize) return;
+    if (!pendingNavigationRef.current) return;
+
+    const pending = pendingNavigationRef.current;
+    const inWindow = pending.from >= windowStart && pending.to <= windowEnd;
+
+    if (!inWindow) {
+      const desiredStart = clampWindowStart(pending.from - DEFAULT_SAFE_MARGIN);
+      if (desiredStart !== windowStart) {
+        setWindowStart(desiredStart);
+        return;
+      }
+    }
+
+    setLocalNavigateTarget({
+      ...pending,
+      from: pending.from - effectiveBaseOffset,
+      to: pending.to - effectiveBaseOffset,
+    });
+    pendingNavigationRef.current = null;
+  }, [
+    shouldVirtualize,
+    windowStart,
+    windowEnd,
+    effectiveBaseOffset,
+    clampWindowStart,
+  ]);
 
   debugLog('Render', {
     textLength: text.length,
@@ -352,6 +435,7 @@ export function VirtualizedExtractionEditor({
       onTextSelected={onTextSelected}
       onResizeEntity={onResizeEntity}
       onCursorChange={handleCursorChange}
+      navigateToRange={localNavigateTarget || undefined}
     />
   );
 }
