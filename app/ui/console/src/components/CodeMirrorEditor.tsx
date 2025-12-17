@@ -883,12 +883,12 @@ export function CodeMirrorEditor({
     }
 
     view.dispatch({
-      selection: { anchor: from, head: to },
       scrollIntoView: true,
       effects: [
         EditorView.scrollIntoView(from, { y: 'center' }),
         flashEntityEffect.of({ from, to }),
       ],
+      userEvent: 'scroll',
     });
 
     flashTimeoutRef.current = window.setTimeout(() => {
