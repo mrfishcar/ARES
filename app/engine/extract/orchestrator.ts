@@ -1287,7 +1287,7 @@ export async function extractFromSegments(
 
               entity.eid = newEID;
               entity.sp = newSP;
-              entity.aid = aliasResolver.registerAlias(entity.canonical, newEID);
+              entity.aid = aliasResolver.registerAlias(entity.canonical, newEID, 1.0, entity.type);
 
               // Register this sense
               senseRegistry.register(entity.canonical, newEID, entity.type, newSP, profile);
@@ -1300,7 +1300,7 @@ export async function extractFromSegments(
     } else {
       // Create new entity
       entity.eid = eidRegistry.getOrCreate(entity.canonical);
-      entity.aid = aliasResolver.registerAlias(entity.canonical, entity.eid);
+      entity.aid = aliasResolver.registerAlias(entity.canonical, entity.eid, 1.0, entity.type);
 
       // Phase 4: Assign sense path if needed
       const existingSenses = senseRegistry.getSenses(entity.canonical);
@@ -1534,8 +1534,8 @@ export async function registerAlias(
   // Get or create EID for canonical entity
   const canonicalEID = entityRegistry.getOrCreate(canonical);
 
-  // Register the alias
-  const aid = aliasRegistry.register(alias, canonicalEID, 1.0);
+  // Register the alias with entity type for type compatibility checks
+  const aid = aliasRegistry.register(alias, canonicalEID, 1.0, type);
 
   // Save registries
   entityRegistry.save();

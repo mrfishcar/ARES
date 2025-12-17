@@ -29,6 +29,7 @@ export interface AliasMapping {
   surfaceForm: string;      // Original surface form
   normalizedKey: string;    // Normalized for matching
   eid: number;              // Entity this maps to
+  entityType?: string;      // Entity type (PERSON, ORG, PLACE, etc.) for type compatibility checks
   language?: string;        // ISO 639-1 code (e.g., 'en', 'es')
   script?: string;          // ISO 15924 code (e.g., 'Latn', 'Cyrl')
   created_at: string;
@@ -81,6 +82,7 @@ export class AliasRegistry {
    * @param surfaceForm - How the entity appears in text
    * @param eid - Entity ID to map to
    * @param confidence - Confidence in this mapping (0-1)
+   * @param entityType - Optional entity type for type compatibility checks
    * @param language - Optional language code
    * @param script - Optional script code
    */
@@ -88,6 +90,7 @@ export class AliasRegistry {
     surfaceForm: string,
     eid: number,
     confidence: number = 1.0,
+    entityType?: string,
     language?: string,
     script?: string
   ): number {
@@ -142,6 +145,7 @@ export class AliasRegistry {
       surfaceForm,
       normalizedKey,
       eid,
+      entityType,
       language,
       script,
       created_at: new Date().toISOString(),
