@@ -1106,3 +1106,264 @@ export function getFilterConfig(): EntityQualityConfig {
   }
   return DEFAULT_CONFIG;
 }
+
+/**
+ * ============================================================================
+ * TIERED ENTITY FILTERING (Recall Expansion)
+ * ============================================================================
+ *
+ * Instead of binary accept/reject, this system assigns entities to tiers:
+ * - TIER_A: High-confidence, graph-worthy (confidence ≥0.70, NER-backed, multi-token)
+ * - TIER_B: Medium-confidence, supporting (confidence ≥0.50, title-prefix, contextual)
+ * - TIER_C: Low-confidence, candidate (confidence ≥0.30, sentence-initial, provisional)
+ *
+ * This improves recall by keeping entities that would otherwise be rejected,
+ * while maintaining precision by segregating low-confidence entities.
+ */
+
+import {
+  assignTiersToEntities,
+  TIER_CONFIDENCE_THRESHOLDS,
+  extractTierFeatures,
+  assignEntityTier,
+} from './entity-tier-assignment';
+import type { EntityTier } from './schema';
+
+/**
+ * Result of tiered filtering
+ */
+export interface TieredFilterResult {
+  // Entities by tier
+  tierA: Entity[];      // High-confidence, graph-worthy
+  tierB: Entity[];      // Medium-confidence, supporting
+  tierC: Entity[];      // Low-confidence, candidates
+  rejected: Entity[];   // Absolute rejections (stopwords, pronouns, etc.)
+
+  // Combined views
+  allAccepted: Entity[];     // TIER_A + TIER_B + TIER_C
+  graphWorthy: Entity[];     // TIER_A only (for strict mode)
+
+  // Statistics
+  stats: {
+    original: number;
+    accepted: number;
+    rejected: number;
+    tierA: number;
+    tierB: number;
+    tierC: number;
+  };
+}
+
+/**
+ * Absolute rejection rules that apply regardless of tier
+ *
+ * These are garbage entities that should never appear in any tier:
+ * - Pronouns (he, she, it, they)
+ * - Determiners (the, a, an)
+ * - Question words (who, what, where)
+ * - Single characters
+ * - All-stopword entities
+ */
+function isAbsolutelyRejected(entity: Entity): { rejected: boolean; reason?: string } {
+  const name = entity.canonical;
+  const lowerName = name.toLowerCase().trim();
+
+  // Empty or too short
+  if (!name || name.trim().length < 2) {
+    return { rejected: true, reason: 'too_short' };
+  }
+
+  // All-digit (except DATE)
+  if (entity.type !== 'DATE' && /^\d+$/.test(name.trim())) {
+    return { rejected: true, reason: 'all_digit' };
+  }
+
+  // In global stopwords
+  if (GLOBAL_ENTITY_STOPWORDS.has(lowerName)) {
+    return { rejected: true, reason: 'stopword' };
+  }
+
+  // Pronouns are never entities
+  const PRONOUNS = new Set([
+    'he', 'she', 'it', 'they', 'them', 'we', 'us', 'i', 'you', 'me',
+    'him', 'her', 'his', 'hers', 'their', 'theirs', 'our', 'ours',
+    'this', 'that', 'these', 'those',
+  ]);
+  if (PRONOUNS.has(lowerName)) {
+    return { rejected: true, reason: 'pronoun' };
+  }
+
+  // Invalid characters (< 70% letters, except DATE)
+  if (entity.type !== 'DATE' && !hasValidCharacters(name)) {
+    return { rejected: true, reason: 'invalid_characters' };
+  }
+
+  return { rejected: false };
+}
+
+/**
+ * Filter and tier entities
+ *
+ * This is the main entry point for tiered filtering.
+ * Returns entities organized by tier, with absolute rejections separated.
+ *
+ * @param entities - Entities to filter and tier
+ * @param config - Quality filter config (used for backward compatibility)
+ * @returns TieredFilterResult with entities by tier
+ */
+export function filterAndTierEntities(
+  entities: Entity[],
+  config: EntityQualityConfig = DEFAULT_CONFIG
+): TieredFilterResult {
+  const tierA: Entity[] = [];
+  const tierB: Entity[] = [];
+  const tierC: Entity[] = [];
+  const rejected: Entity[] = [];
+
+  for (const entity of entities) {
+    // Step 1: Check absolute rejections
+    const rejection = isAbsolutelyRejected(entity);
+    if (rejection.rejected) {
+      rejected.push(entity);
+      continue;
+    }
+
+    // Step 2: Check type-specific validity
+    const name = entity.canonical;
+    const lowerName = name.toLowerCase();
+    const tokens = name.split(/\s+/).filter(Boolean);
+    const isSingleToken = tokens.length === 1;
+
+    // Check blocked tokens from config
+    if (config.blockedTokens.has(lowerName)) {
+      rejected.push(entity);
+      continue;
+    }
+
+    // Check capitalization requirement for proper nouns
+    if (config.requireCapitalization && !isValidProperNoun(name, entity.type)) {
+      rejected.push(entity);
+      continue;
+    }
+
+    // Check type-specific validity with tier-aware handling
+    const hasNERSupport = Boolean(entity.attrs?.nerLabel);
+    const isSentenceInitial = Boolean(entity.attrs?.isSentenceInitial);
+    const occursNonInitial = Boolean(entity.attrs?.occursNonInitial);
+    const isSentenceInitialOnly = isSentenceInitial && !occursNonInitial;
+
+    // PERSON blocklist check
+    if (entity.type === 'PERSON' && isSingleToken) {
+      const normalized = lowerName.trim();
+      if (PERSON_HEAD_BLOCKLIST.has(normalized)) {
+        rejected.push(entity);
+        continue;
+      }
+    }
+
+    // Too generic check
+    if (isTooGeneric(name)) {
+      rejected.push(entity);
+      continue;
+    }
+
+    // Role-based name check
+    if (isRoleBasedName(name)) {
+      rejected.push(entity);
+      continue;
+    }
+
+    // DATE validation
+    if (entity.type === 'DATE') {
+      const isSimpleYear = /^\d{4}$/.test(name);
+      if (!isSimpleYear && !isValidDate(name)) {
+        rejected.push(entity);
+        continue;
+      }
+    }
+
+    // Step 3: Assign tier based on evidence
+    const features = extractTierFeatures(entity);
+    const { tier, reason } = assignEntityTier(entity, features);
+
+    // Assign tier to entity
+    const tieredEntity: Entity = {
+      ...entity,
+      tier,
+      attrs: {
+        ...entity.attrs,
+        tierReason: reason,
+      },
+    };
+
+    // Step 4: Place in appropriate tier bucket
+    switch (tier) {
+      case 'TIER_A':
+        tierA.push(tieredEntity);
+        break;
+      case 'TIER_B':
+        tierB.push(tieredEntity);
+        break;
+      case 'TIER_C':
+        tierC.push(tieredEntity);
+        break;
+    }
+  }
+
+  // Build result
+  const allAccepted = [...tierA, ...tierB, ...tierC];
+
+  return {
+    tierA,
+    tierB,
+    tierC,
+    rejected,
+    allAccepted,
+    graphWorthy: tierA,
+    stats: {
+      original: entities.length,
+      accepted: allAccepted.length,
+      rejected: rejected.length,
+      tierA: tierA.length,
+      tierB: tierB.length,
+      tierC: tierC.length,
+    },
+  };
+}
+
+/**
+ * Get entities at or above a minimum tier
+ *
+ * @param result - TieredFilterResult from filterAndTierEntities
+ * @param minTier - Minimum tier to include (default: TIER_B for recall)
+ * @returns Entities at or above the minimum tier
+ */
+export function getEntitiesAtMinTier(
+  result: TieredFilterResult,
+  minTier: EntityTier = 'TIER_B'
+): Entity[] {
+  switch (minTier) {
+    case 'TIER_A':
+      return result.tierA;
+    case 'TIER_B':
+      return [...result.tierA, ...result.tierB];
+    case 'TIER_C':
+      return result.allAccepted;
+    default:
+      return result.tierA;
+  }
+}
+
+/**
+ * Log tiered filter statistics
+ */
+export function logTieredFilterStats(result: TieredFilterResult, label = ''): void {
+  const prefix = label ? `[${label}] ` : '';
+  console.log(`${prefix}Tiered Entity Filter Results:`);
+  console.log(`  Original: ${result.stats.original}`);
+  console.log(`  Accepted: ${result.stats.accepted} (${((result.stats.accepted / result.stats.original) * 100).toFixed(1)}%)`);
+  console.log(`    TIER_A (core): ${result.stats.tierA}`);
+  console.log(`    TIER_B (supporting): ${result.stats.tierB}`);
+  console.log(`    TIER_C (candidate): ${result.stats.tierC}`);
+  console.log(`  Rejected: ${result.stats.rejected}`);
+}

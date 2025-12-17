@@ -201,6 +201,30 @@ export interface Qualifier {
   span?: [number, number];  // Character offsets
 }
 
+/**
+ * Entity Tier System for Recall/Precision Balancing
+ *
+ * TIER_A (Core): High-confidence, graph-worthy entities
+ *   - NER-backed entities
+ *   - Multi-token proper names
+ *   - Full alias merging enabled
+ *   - Confidence threshold: ≥0.70
+ *
+ * TIER_B (Supporting): Medium-confidence, useful for indexing
+ *   - Single-token proper names with contextual support
+ *   - Title-prefixed names (Mr., Dr., etc.)
+ *   - Cautious alias merging (same-type only)
+ *   - Confidence threshold: ≥0.50
+ *
+ * TIER_C (Candidate): Low-confidence, provisional entities
+ *   - Sentence-initial single tokens without NER
+ *   - Title-based references ("the librarian")
+ *   - NO alias merging (kept isolated)
+ *   - Confidence threshold: ≥0.30
+ *   - Can be promoted to Tier B if corroborated
+ */
+export type EntityTier = 'TIER_A' | 'TIER_B' | 'TIER_C';
+
 // Entity
 export interface Entity {
   id: string;
@@ -216,6 +240,9 @@ export interface Entity {
   created_at: string;
   centrality?: number;
   confidence?: number;   // Extraction confidence (0-1) from confidence-scoring.ts
+
+  // Tier system for recall/precision balancing
+  tier?: EntityTier;     // TIER_A (core), TIER_B (supporting), TIER_C (candidate)
 
   // HERT integration (Phase 1-3)
   eid?: number;          // Stable entity ID (cross-document)

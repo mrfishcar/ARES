@@ -13,11 +13,12 @@
  * 5. Manual mappings (user-defined)
  */
 
-import type { Entity, EntityType } from './schema';
+import type { Entity, EntityType, EntityTier } from './schema';
 import type { EntityProfile } from './entity-profiler';
 import { aliasRegistry } from './alias-registry';
 import { eidRegistry } from './eid-registry';
 import { normalizeForAliasing } from './hert/fingerprint';
+import { canMergeByTier } from './entity-tier-assignment';
 
 /**
  * Alias resolution result
@@ -152,6 +153,53 @@ export class AliasResolver {
     this.manualMappings.set(normalizedForm, eid);
     aliasRegistry.register(surfaceForm, eid, 1.0, entityType);
     console.log(`[ALIAS-RESOLVER] Manual mapping: "${surfaceForm}" → EID ${eid}`);
+  }
+
+  /**
+   * Tier-aware resolution
+   *
+   * TIER_C entities are isolated and should not be merged with other entities.
+   * This prevents low-confidence provisional entities from contaminating
+   * high-confidence core entity clusters.
+   *
+   * Merging rules:
+   * - TIER_A can merge with TIER_A (full merging)
+   * - TIER_B can merge with TIER_A or TIER_B (cautious merging)
+   * - TIER_C cannot merge with anything (isolated)
+   *
+   * @param entity - Entity to resolve (includes tier information)
+   * @param profile - Optional profile for context-based matching
+   * @param existingProfiles - All existing profiles
+   * @returns Resolution or null if should create new entity
+   */
+  resolveWithTier(
+    entity: Entity,
+    profile?: EntityProfile,
+    existingProfiles?: Map<string, EntityProfile>
+  ): AliasResolution | null {
+    const tier = entity.tier ?? 'TIER_A'; // Default to TIER_A for backward compatibility
+
+    // TIER_C entities are isolated - never merge
+    if (tier === 'TIER_C') {
+      if (process.env.TIER_DEBUG === '1') {
+        console.log(`[ALIAS-RESOLVER] TIER_C entity "${entity.canonical}" is isolated - no merging`);
+      }
+      return null;
+    }
+
+    // For TIER_A and TIER_B, use standard resolution
+    return this.resolve(entity.canonical, entity.type, profile, existingProfiles);
+  }
+
+  /**
+   * Check if an entity can be merged based on its tier
+   *
+   * @param entity - Entity to check
+   * @returns true if entity can participate in alias merging
+   */
+  canMergeEntity(entity: Entity): boolean {
+    const tier = entity.tier ?? 'TIER_A';
+    return tier !== 'TIER_C';
   }
 
   /**
