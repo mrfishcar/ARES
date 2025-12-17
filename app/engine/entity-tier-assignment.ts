@@ -11,9 +11,123 @@
  * 1. Deterministic - same input always produces same tier
  * 2. Explainable - tier assignment can be logged/inspected
  * 3. Conservative promotion - entities start low and are promoted with evidence
+ * 4. Quality-based demotion - override confidence for suspicious patterns
  */
 
 import type { Entity, EntityTier, EntityType } from './schema';
+
+/* =============================================================================
+ * QUALITY-BASED DEMOTION RULES
+ * These override confidence scores to prevent garbage from reaching TIER_A
+ * ============================================================================= */
+
+/**
+ * Check if entity name contains encoding issues or invalid characters
+ */
+function hasEncodingIssues(name: string): boolean {
+  // Check for replacement character or other encoding artifacts
+  if (name.includes('�')) return true;
+  // Check for unusual unicode ranges that suggest corruption
+  if (/[\x00-\x1F\x7F-\x9F]/.test(name)) return true;
+  return false;
+}
+
+/**
+ * Check if entity looks like a sentence fragment rather than a proper name
+ * E.g., "The pair sprang", "to the", "er cars"
+ */
+function looksSentenceFragment(name: string): boolean {
+  const lower = name.toLowerCase().trim();
+  const tokens = lower.split(/\s+/);
+
+  // Too short to be meaningful
+  if (lower.length < 3) return true;
+
+  // Starts with lowercase common article/preposition only
+  const fragmentStarters = ['the', 'a', 'an', 'to', 'of', 'in', 'on', 'at', 'for', 'with', 'by'];
+  if (tokens.length <= 2 && fragmentStarters.includes(tokens[0]) && tokens.length > 1 && !tokens[1].match(/^[A-Z]/)) {
+    return true;
+  }
+
+  // Contains verb endings suggesting truncated sentence
+  const verbEndings = ['ing', 'ed', 'ied', 'ang', 'ung', 'ought'];
+  const lastToken = tokens[tokens.length - 1];
+  if (tokens.length >= 2 && verbEndings.some(e => lastToken.endsWith(e))) {
+    // Check if it's capitalized like a name - if not, it's a fragment
+    const original = name.split(/\s+/);
+    if (original.length >= 2 && !/^[A-Z]/.test(original[original.length - 1])) {
+      return true;
+    }
+  }
+
+  // Starts with "The" followed by lowercase verb-like word
+  if (tokens[0] === 'the' && tokens.length >= 2) {
+    const second = tokens[1];
+    if (verbEndings.some(e => second.endsWith(e))) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Check if entity looks like a truncated word or extraction artifact
+ * E.g., "er cars", "e obeyed", "nd march"
+ */
+function looksTruncated(name: string): boolean {
+  const tokens = name.split(/\s+/);
+
+  // First token is very short and lowercase (likely truncated)
+  if (tokens.length >= 2 && tokens[0].length <= 2 && /^[a-z]+$/.test(tokens[0])) {
+    return true;
+  }
+
+  // Single very short token (not an initial like "J")
+  if (tokens.length === 1 && name.length <= 2 && !/^[A-Z]\.?$/.test(name)) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Common words that shouldn't be entities even when capitalized
+ */
+const COMMON_WORD_BLOCKLIST = new Set([
+  // Abstract concepts often miscategorized
+  'darkness', 'light', 'shadow', 'silence', 'fear', 'death', 'life',
+  'black', 'white', 'red', 'blue', 'green', 'gold', 'silver',
+  'weak', 'strong', 'old', 'young', 'hot', 'cold',
+  // Common nouns
+  'questions', 'answers', 'secrets', 'truth', 'lies',
+  'monster', 'runner', 'stranger', 'visitor',
+  // Verbs/actions that get miscategorized
+  'mouthed', 'aged', 'certainly', 'fainting',
+]);
+
+/**
+ * Check if entity is a common word that shouldn't be an entity
+ */
+function isCommonWordEntity(name: string, type: EntityType): boolean {
+  const lower = name.toLowerCase().trim();
+
+  // Check blocklist
+  if (COMMON_WORD_BLOCKLIST.has(lower)) {
+    return true;
+  }
+
+  // Single common English words as SPELL/MATERIAL/MAGIC are suspicious
+  if (['SPELL', 'MATERIAL', 'MAGIC'].includes(type)) {
+    const tokens = lower.split(/\s+/);
+    if (tokens.length === 1 && /^[a-z]+$/.test(lower) && lower.length < 10) {
+      // Very likely a misclassified common word
+      return true;
+    }
+  }
+
+  return false;
+}
 
 /**
  * Confidence thresholds for tier assignment
@@ -73,18 +187,49 @@ function hasTitlePrefix(name: string): boolean {
  * Assign tier to an entity based on features
  *
  * Algorithm:
- * 1. Start with confidence-based tier
- * 2. Apply promotions for strong evidence (NER, multi-token)
- * 3. Apply demotions for weak evidence (sentence-initial-only)
- * 4. Return final tier with explanation
+ * 1. Apply quality-based demotions FIRST (override confidence)
+ * 2. Calculate base tier from confidence
+ * 3. Apply promotions for strong evidence (NER, multi-token)
+ * 4. Apply additional demotions for weak evidence
+ * 5. Return final tier with explanation
  */
 export function assignEntityTier(
   entity: Entity,
   features: TierAssignmentFeatures
 ): { tier: EntityTier; reason: string } {
+  const name = entity.canonical;
+  const type = entity.type;
   const confidence = entity.confidence ?? 0.5;
 
-  // Step 1: Base tier from confidence
+  // =========================================================================
+  // STEP 0: Quality-based demotions (OVERRIDE confidence)
+  // These catch garbage that slipped through with high confidence
+  // =========================================================================
+
+  // Encoding issues = TIER_C (isolated, never merge)
+  if (hasEncodingIssues(name)) {
+    return { tier: 'TIER_C', reason: 'encoding_issues' };
+  }
+
+  // Truncated artifacts = TIER_C
+  if (looksTruncated(name)) {
+    return { tier: 'TIER_C', reason: 'truncated_artifact' };
+  }
+
+  // Sentence fragments = TIER_C
+  if (looksSentenceFragment(name)) {
+    return { tier: 'TIER_C', reason: 'sentence_fragment' };
+  }
+
+  // Common word misclassified = TIER_C
+  if (isCommonWordEntity(name, type)) {
+    return { tier: 'TIER_C', reason: 'common_word' };
+  }
+
+  // =========================================================================
+  // STEP 1: Base tier from confidence
+  // =========================================================================
+
   let baseTier: EntityTier;
   if (confidence >= TIER_CONFIDENCE_THRESHOLDS.TIER_A) {
     baseTier = 'TIER_A';
@@ -97,7 +242,9 @@ export function assignEntityTier(
     baseTier = 'TIER_C';
   }
 
-  // Step 2: Promotions
+  // =========================================================================
+  // STEP 2: Promotions (evidence-based)
+  // =========================================================================
 
   // NER-backed entities get TIER_A (strong signal from spaCy)
   if (features.hasNERSupport && baseTier !== 'TIER_A') {
@@ -119,7 +266,9 @@ export function assignEntityTier(
     return { tier: 'TIER_B', reason: 'multiple_mentions' };
   }
 
-  // Step 3: Demotions
+  // =========================================================================
+  // STEP 3: Additional demotions (structural)
+  // =========================================================================
 
   // Sentence-initial-only single tokens without NER get TIER_C
   if (
@@ -131,7 +280,10 @@ export function assignEntityTier(
     return { tier: 'TIER_C', reason: 'sentence_initial_single_token' };
   }
 
-  // Step 4: Return base tier
+  // =========================================================================
+  // STEP 4: Return base tier
+  // =========================================================================
+
   return { tier: baseTier, reason: `confidence_${confidence.toFixed(2)}` };
 }
 

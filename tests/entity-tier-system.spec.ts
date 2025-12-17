@@ -383,3 +383,87 @@ describe('Recall Improvement Verification', () => {
     expect(result.stats.accepted).toBe(4);
   });
 });
+
+describe('Quality-Based Demotions', () => {
+  it('demotes entities with encoding issues to TIER_C', () => {
+    const entity = createEntity('ifying\ufffd in', 'SPELL', 0.95);
+    const features = extractTierFeatures(entity);
+    const { tier, reason } = assignEntityTier(entity, features);
+
+    expect(tier).toBe('TIER_C');
+    expect(reason).toBe('encoding_issues');
+  });
+
+  it('demotes truncated artifacts to TIER_C', () => {
+    const testCases = [
+      { name: 'er cars', type: 'SPELL' as const },
+      { name: 'e obeyed', type: 'MATERIAL' as const },
+    ];
+
+    for (const tc of testCases) {
+      const entity = createEntity(tc.name, tc.type, 0.95);
+      const features = extractTierFeatures(entity);
+      const { tier, reason } = assignEntityTier(entity, features);
+
+      expect(tier).toBe('TIER_C');
+      expect(reason).toBe('truncated_artifact');
+    }
+  });
+
+  it('demotes sentence fragments to TIER_C', () => {
+    const entity = createEntity('The pair sprang', 'PERSON', 0.98);
+    const features = extractTierFeatures(entity);
+    const { tier, reason } = assignEntityTier(entity, features);
+
+    expect(tier).toBe('TIER_C');
+    expect(reason).toBe('sentence_fragment');
+  });
+
+  it('demotes common words to TIER_C regardless of confidence', () => {
+    const testCases = [
+      { name: 'Darkness', type: 'PERSON' as const },
+      { name: 'Black', type: 'MAGIC' as const },
+      { name: 'Weak', type: 'SPELL' as const },
+    ];
+
+    for (const tc of testCases) {
+      const entity = createEntity(tc.name, tc.type, 0.98);
+      const features = extractTierFeatures(entity);
+      const { tier, reason } = assignEntityTier(entity, features);
+
+      expect(tier).toBe('TIER_C');
+      expect(reason).toBe('common_word');
+    }
+  });
+
+  it('does NOT demote legitimate names that happen to contain common words', () => {
+    // "Rose Potter" as a person name should be TIER_A
+    const entity = createEntity('Rose Potter', 'PERSON', 0.85);
+    const features = extractTierFeatures(entity);
+    const { tier } = assignEntityTier(entity, features);
+
+    expect(tier).toBe('TIER_A');
+  });
+
+  it('preserves TIER_C isolation after quality demotions', () => {
+    const garbage = createEntity('ifying\ufffd in', 'SPELL', 0.95);
+    const legitimate = createEntity('Barty Beauregard', 'PERSON', 0.90);
+
+    const garbageFeatures = extractTierFeatures(garbage);
+    const legitimateFeatures = extractTierFeatures(legitimate);
+
+    const garbageResult = assignEntityTier(garbage, garbageFeatures);
+    const legitimateResult = assignEntityTier(legitimate, legitimateFeatures);
+
+    expect(garbageResult.tier).toBe('TIER_C');
+    expect(legitimateResult.tier).toBe('TIER_A');
+
+    // TIER_C cannot merge with TIER_A
+    const mergeResult = canMergeByTier(
+      { ...garbage, tier: garbageResult.tier },
+      { ...legitimate, tier: legitimateResult.tier }
+    );
+    expect(mergeResult.canMerge).toBe(false);
+    expect(mergeResult.reason).toBe('tier_c_isolated');
+  });
+});
