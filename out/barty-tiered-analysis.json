@@ -1,0 +1,809 @@
+{
+  "meta": {
+    "totalWords": 39281,
+    "segmentCount": 67,
+    "extractionTime": "17.54",
+    "tierThresholds": {
+      "TIER_A": 0.7,
+      "TIER_B": 0.5,
+      "TIER_C": 0.3
+    }
+  },
+  "tierStats": {
+    "total": 29,
+    "tierA": 20,
+    "tierB": 0,
+    "tierC": 9,
+    "unassigned": 0
+  },
+  "titleEntities": {
+    "count": 19,
+    "examples": [
+      {
+        "text": "The City",
+        "type": "PLACE",
+        "confidence": 0.4
+      },
+      {
+        "text": "The Beach",
+        "type": "PLACE",
+        "confidence": 0.4
+      },
+      {
+        "text": "The Lady",
+        "type": "PERSON",
+        "confidence": 0.4
+      },
+      {
+        "text": "The Wall",
+        "type": "PLACE",
+        "confidence": 0.4
+      },
+      {
+        "text": "The School",
+        "type": "PLACE",
+        "confidence": 0.4
+      },
+      {
+        "text": "The Field",
+        "type": "PLACE",
+        "confidence": 0.4
+      },
+      {
+        "text": "The Sea",
+        "type": "PLACE",
+        "confidence": 0.4
+      },
+      {
+        "text": "The Principal",
+        "type": "PERSON",
+        "confidence": 0.4
+      },
+      {
+        "text": "The Shop",
+        "type": "PLACE",
+        "confidence": 0.4
+      },
+      {
+        "text": "The Lake",
+        "type": "PLACE",
+        "confidence": 0.4
+      },
+      {
+        "text": "The Store",
+        "type": "PLACE",
+        "confidence": 0.4
+      },
+      {
+        "text": "The Police",
+        "type": "ORG",
+        "confidence": 0.4
+      },
+      {
+        "text": "The Nurse",
+        "type": "PERSON",
+        "confidence": 0.4
+      },
+      {
+        "text": "The Hero",
+        "type": "PERSON",
+        "confidence": 0.4
+      },
+      {
+        "text": "The General",
+        "type": "PERSON",
+        "confidence": 0.4
+      },
+      {
+        "text": "The Librarian",
+        "type": "PERSON",
+        "confidence": 0.4
+      },
+      {
+        "text": "The Court",
+        "type": "ORG",
+        "confidence": 0.4
+      },
+      {
+        "text": "The Doctor",
+        "type": "PERSON",
+        "confidence": 0.4
+      },
+      {
+        "text": "The Officer",
+        "type": "PERSON",
+        "confidence": 0.4
+      }
+    ]
+  },
+  "tiers": {
+    "TIER_A": {
+      "tier": "TIER_A",
+      "count": 20,
+      "entities": [
+        {
+          "id": "58d34375-da6a-499a-88a9-110d63e1a99b",
+          "canonicalName": "the Family Reunion",
+          "type": "EVENT",
+          "tier": "TIER_A",
+          "tierReason": "confidence_0.98",
+          "confidence": 0.98,
+          "mentionCount": 1,
+          "aliasCount": 6,
+          "aliases": [
+            "If",
+            "Mr",
+            "If Mr",
+            "the family much",
+            "the Family Reunion",
+            "the professional family"
+          ]
+        },
+        {
+          "id": "a380c507-c1a2-4a35-bef0-c3828e791bb6",
+          "canonicalName": "Mont Linola Junior",
+          "type": "PERSON",
+          "tier": "TIER_A",
+          "tierReason": "confidence_0.98",
+          "confidence": 0.98,
+          "mentionCount": 1,
+          "aliasCount": 5,
+          "aliases": [
+            "Kelly",
+            "Prescott",
+            "Kelly Prescott",
+            "linola jr",
+            "the old woman"
+          ]
+        },
+        {
+          "id": "1faab19a-0959-49e0-b8ab-cb682aaf8233",
+          "canonicalName": "Roy Burkley",
+          "type": "PERSON",
+          "tier": "TIER_A",
+          "tierReason": "confidence_0.98",
+          "confidence": 0.98,
+          "mentionCount": 1,
+          "aliasCount": 5,
+          "aliases": [
+            "Roy",
+            "Burkley",
+            "Roy Burkley",
+            "the family",
+            "Beauregard"
+          ]
+        },
+        {
+          "id": "c32c2413-6c55-4bd6-a48c-278f7182cbe0",
+          "canonicalName": "Adaline Garbotholow",
+          "type": "PERSON",
+          "tier": "TIER_A",
+          "tierReason": "confidence_0.98",
+          "confidence": 0.98,
+          "mentionCount": 1,
+          "aliasCount": 4,
+          "aliases": [
+            "Adaline",
+            "Garbotholow",
+            "Adaline Garbotholow",
+            "the family"
+          ]
+        },
+        {
+          "id": "ff0e2d92-3ab9-4686-b797-7953e27cdb13",
+          "canonicalName": "the Family Reunion",
+          "type": "EVENT",
+          "tier": "TIER_A",
+          "tierReason": "confidence_0.98",
+          "confidence": 0.98,
+          "mentionCount": 1,
+          "aliasCount": 4,
+          "aliases": [
+            "Beauregard",
+            "the family much",
+            "the Family Reunion",
+            "the professional family"
+          ]
+        },
+        {
+          "id": "entity-person-junior",
+          "canonicalName": "Adoline Garbotholow",
+          "type": "PERSON",
+          "tier": "TIER_A",
+          "tierReason": "confidence_0.98",
+          "confidence": 0.98,
+          "mentionCount": 1,
+          "aliasCount": 3,
+          "aliases": [
+            "Adoline",
+            "Garbotholow",
+            "Adoline Garbotholow"
+          ]
+        },
+        {
+          "id": "entity-person-high",
+          "canonicalName": "Adoline Garbotholow",
+          "type": "PERSON",
+          "tier": "TIER_A",
+          "tierReason": "confidence_0.98",
+          "confidence": 0.98,
+          "mentionCount": 1,
+          "aliasCount": 3,
+          "aliases": [
+            "Adoline",
+            "Garbotholow",
+            "Adoline Garbotholow"
+          ]
+        },
+        {
+          "id": "ffc0ae51-b105-408c-8658-1887a387ced6",
+          "canonicalName": "Barty Beauregard",
+          "type": "PERSON",
+          "tier": "TIER_A",
+          "tierReason": "confidence_0.98",
+          "confidence": 0.98,
+          "mentionCount": 1,
+          "aliasCount": 3,
+          "aliases": [
+            "Barty",
+            "Beauregard",
+            "Barty Beauregard"
+          ]
+        },
+        {
+          "id": "entity-person-andrew",
+          "canonicalName": "Beau Adams",
+          "type": "PERSON",
+          "tier": "TIER_A",
+          "tierReason": "confidence_0.98",
+          "confidence": 0.98,
+          "mentionCount": 1,
+          "aliasCount": 3,
+          "aliases": [
+            "Beau",
+            "Adams",
+            "Beau Adams"
+          ]
+        },
+        {
+          "id": "entity-person-beauregard",
+          "canonicalName": "Beau Adams",
+          "type": "PERSON",
+          "tier": "TIER_A",
+          "tierReason": "confidence_0.98",
+          "confidence": 0.98,
+          "mentionCount": 1,
+          "aliasCount": 3,
+          "aliases": [
+            "Beau",
+            "Adams",
+            "Beau Adams"
+          ]
+        },
+        {
+          "id": "d929b6f6-9a61-4ed0-bc44-8247394a8e63",
+          "canonicalName": "Mr. Green",
+          "type": "PERSON",
+          "tier": "TIER_A",
+          "tierReason": "confidence_0.98",
+          "confidence": 0.98,
+          "mentionCount": 1,
+          "aliasCount": 3,
+          "aliases": [
+            "Mr.",
+            "Mr. Green",
+            "Mr"
+          ]
+        },
+        {
+          "id": "46317bc4-d2ab-45da-a05a-252140faae16",
+          "canonicalName": "Tula Ordogne",
+          "type": "PERSON",
+          "tier": "TIER_A",
+          "tierReason": "confidence_0.98",
+          "confidence": 0.98,
+          "mentionCount": 1,
+          "aliasCount": 3,
+          "aliases": [
+            "Tula",
+            "Ordogne",
+            "Tula Ordogne"
+          ]
+        },
+        {
+          "id": "b0f4d33b-c728-49de-9ad8-a08e20a143f2",
+          "canonicalName": "Beauregard",
+          "type": "SPELL",
+          "tier": "TIER_A",
+          "tierReason": "confidence_0.95",
+          "confidence": 0.9450000000000001,
+          "mentionCount": 1,
+          "aliasCount": 2,
+          "aliases": [
+            "Fainting",
+            "Beau"
+          ]
+        },
+        {
+          "id": "entity-person-thanks",
+          "canonicalName": "Michelle De Vera",
+          "type": "PERSON",
+          "tier": "TIER_A",
+          "tierReason": "confidence_0.98",
+          "confidence": 0.98,
+          "mentionCount": 1,
+          "aliasCount": 2,
+          "aliases": [
+            "Vera",
+            "Michelle De Vera"
+          ]
+        },
+        {
+          "id": "entity-person-mrs",
+          "canonicalName": "Michelle De Vera",
+          "type": "PERSON",
+          "tier": "TIER_A",
+          "tierReason": "confidence_0.98",
+          "confidence": 0.98,
+          "mentionCount": 1,
+          "aliasCount": 2,
+          "aliases": [
+            "Vera",
+            "Michelle De Vera"
+          ]
+        },
+        {
+          "id": "b18476d1-bd76-4811-b745-ce892cb66820",
+          "canonicalName": "Fabulous Fraud Cory Allen",
+          "type": "PERSON",
+          "tier": "TIER_A",
+          "tierReason": "confidence_0.85",
+          "confidence": 0.85,
+          "mentionCount": 1,
+          "aliasCount": 1,
+          "aliases": [
+            "Allen"
+          ]
+        },
+        {
+          "id": "96059ed0-ea98-4de2-ba35-5c410da1b500",
+          "canonicalName": "Fredericks",
+          "type": "PERSON",
+          "tier": "TIER_A",
+          "tierReason": "confidence_0.98",
+          "confidence": 0.98,
+          "mentionCount": 1,
+          "aliasCount": 1,
+          "aliases": [
+            "Fredericks"
+          ]
+        },
+        {
+          "id": "eda76127-22ef-495c-b557-07491dbb0f67",
+          "canonicalName": "Kenny",
+          "type": "PERSON",
+          "tier": "TIER_A",
+          "tierReason": "confidence_0.98",
+          "confidence": 0.98,
+          "mentionCount": 1,
+          "aliasCount": 1,
+          "aliases": [
+            "Barty"
+          ]
+        },
+        {
+          "id": "e0771162-9fad-4d0e-a0de-a205ebd6c402",
+          "canonicalName": "Lakefront",
+          "type": "PLACE",
+          "tier": "TIER_A",
+          "tierReason": "confidence_0.98",
+          "confidence": 0.98,
+          "mentionCount": 1,
+          "aliasCount": 1,
+          "aliases": [
+            "Lakefront"
+          ]
+        },
+        {
+          "id": "61d91fac-aec8-4a39-be30-e5553fa9ce46",
+          "canonicalName": "Librarian",
+          "type": "PERSON",
+          "tier": "TIER_A",
+          "tierReason": "confidence_0.98",
+          "confidence": 0.98,
+          "mentionCount": 1,
+          "aliasCount": 1,
+          "aliases": [
+            "Librarian"
+          ]
+        }
+      ],
+      "largestClusters": [
+        {
+          "name": "the Family Reunion",
+          "aliasCount": 6,
+          "aliases": [
+            "If",
+            "Mr",
+            "If Mr",
+            "the family much",
+            "the Family Reunion",
+            "the professional family"
+          ]
+        },
+        {
+          "name": "Mont Linola Junior",
+          "aliasCount": 5,
+          "aliases": [
+            "Kelly",
+            "Prescott",
+            "Kelly Prescott",
+            "linola jr",
+            "the old woman"
+          ]
+        },
+        {
+          "name": "Roy Burkley",
+          "aliasCount": 5,
+          "aliases": [
+            "Roy",
+            "Burkley",
+            "Roy Burkley",
+            "the family",
+            "Beauregard"
+          ]
+        },
+        {
+          "name": "Adaline Garbotholow",
+          "aliasCount": 4,
+          "aliases": [
+            "Adaline",
+            "Garbotholow",
+            "Adaline Garbotholow",
+            "the family"
+          ]
+        },
+        {
+          "name": "the Family Reunion",
+          "aliasCount": 4,
+          "aliases": [
+            "Beauregard",
+            "the family much",
+            "the Family Reunion",
+            "the professional family"
+          ]
+        },
+        {
+          "name": "Beau Adams",
+          "aliasCount": 3,
+          "aliases": [
+            "Beau",
+            "Adams",
+            "Beau Adams"
+          ]
+        },
+        {
+          "name": "Beau Adams",
+          "aliasCount": 3,
+          "aliases": [
+            "Beau",
+            "Adams",
+            "Beau Adams"
+          ]
+        },
+        {
+          "name": "Barty Beauregard",
+          "aliasCount": 3,
+          "aliases": [
+            "Barty",
+            "Beauregard",
+            "Barty Beauregard"
+          ]
+        },
+        {
+          "name": "Mr. Green",
+          "aliasCount": 3,
+          "aliases": [
+            "Mr.",
+            "Mr. Green",
+            "Mr"
+          ]
+        },
+        {
+          "name": "Tula Ordogne",
+          "aliasCount": 3,
+          "aliases": [
+            "Tula",
+            "Ordogne",
+            "Tula Ordogne"
+          ]
+        }
+      ]
+    },
+    "TIER_B": {
+      "tier": "TIER_B",
+      "count": 0,
+      "entities": [],
+      "largestClusters": []
+    },
+    "TIER_C": {
+      "tier": "TIER_C",
+      "count": 9,
+      "entities": [
+        {
+          "id": "d2d8c316-d384-433c-9231-b561402fb0f0",
+          "canonicalName": "The pair sprang",
+          "type": "PERSON",
+          "tier": "TIER_C",
+          "tierReason": "sentence_fragment",
+          "confidence": 0.98,
+          "mentionCount": 1,
+          "aliasCount": 4,
+          "aliases": [
+            "Beau",
+            "the King of",
+            "The pair sprang",
+            "the family information"
+          ]
+        },
+        {
+          "id": "16926f07-a956-492b-b9ca-5c6eddd58098",
+          "canonicalName": "The pair sprang",
+          "type": "PERSON",
+          "tier": "TIER_C",
+          "tierReason": "sentence_fragment",
+          "confidence": 0.98,
+          "mentionCount": 1,
+          "aliasCount": 4,
+          "aliases": [
+            "Monster",
+            "Runner",
+            "Monster Runner",
+            "The pair sprang"
+          ]
+        },
+        {
+          "id": "d2be74d6-058f-440c-8dd6-71a11b684c3e",
+          "canonicalName": "Black",
+          "type": "MAGIC",
+          "tier": "TIER_C",
+          "tierReason": "common_word",
+          "confidence": 0.9450000000000001,
+          "mentionCount": 1,
+          "aliasCount": 1,
+          "aliases": [
+            "Black"
+          ]
+        },
+        {
+          "id": "4287d99a-7328-4676-b30e-f0aed567e469",
+          "canonicalName": "Darkness",
+          "type": "PERSON",
+          "tier": "TIER_C",
+          "tierReason": "common_word",
+          "confidence": 0.98,
+          "mentionCount": 1,
+          "aliasCount": 1,
+          "aliases": [
+            "Darkness"
+          ]
+        },
+        {
+          "id": "b53391a2-323b-4e85-bfb2-1f8ebe151956",
+          "canonicalName": "e obeyed",
+          "type": "MATERIAL",
+          "tier": "TIER_C",
+          "tierReason": "truncated_artifact",
+          "confidence": 0.9450000000000001,
+          "mentionCount": 1,
+          "aliasCount": 1,
+          "aliases": [
+            "Aged"
+          ]
+        },
+        {
+          "id": "b779d4f8-8c0a-4741-81c7-0a6a745f02e3",
+          "canonicalName": "er cars",
+          "type": "SPELL",
+          "tier": "TIER_C",
+          "tierReason": "truncated_artifact",
+          "confidence": 0.9450000000000001,
+          "mentionCount": 1,
+          "aliasCount": 1,
+          "aliases": [
+            "Mouthed"
+          ]
+        },
+        {
+          "id": "089bc51b-666e-4d12-a351-bc0e69253619",
+          "canonicalName": "ifying� in",
+          "type": "SPELL",
+          "tier": "TIER_C",
+          "tierReason": "encoding_issues",
+          "confidence": 0.9450000000000001,
+          "mentionCount": 1,
+          "aliasCount": 1,
+          "aliases": [
+            "Certainly"
+          ]
+        },
+        {
+          "id": "ee99539a-d463-497a-8997-fe19984c55dc",
+          "canonicalName": "to the",
+          "type": "MATERIAL",
+          "tier": "TIER_C",
+          "tierReason": "truncated_artifact",
+          "confidence": 0.9450000000000001,
+          "mentionCount": 1,
+          "aliasCount": 1,
+          "aliases": [
+            "Hot"
+          ]
+        },
+        {
+          "id": "97aae532-b453-4641-b33f-9a4b529751a9",
+          "canonicalName": "Weak",
+          "type": "SPELL",
+          "tier": "TIER_C",
+          "tierReason": "common_word",
+          "confidence": 0.9450000000000001,
+          "mentionCount": 1,
+          "aliasCount": 1,
+          "aliases": [
+            "Weak"
+          ]
+        }
+      ],
+      "largestClusters": [
+        {
+          "name": "The pair sprang",
+          "aliasCount": 4,
+          "aliases": [
+            "Beau",
+            "the King of",
+            "The pair sprang",
+            "the family information"
+          ]
+        },
+        {
+          "name": "The pair sprang",
+          "aliasCount": 4,
+          "aliases": [
+            "Monster",
+            "Runner",
+            "Monster Runner",
+            "The pair sprang"
+          ]
+        },
+        {
+          "name": "e obeyed",
+          "aliasCount": 1,
+          "aliases": [
+            "Aged"
+          ]
+        },
+        {
+          "name": "Black",
+          "aliasCount": 1,
+          "aliases": [
+            "Black"
+          ]
+        },
+        {
+          "name": "Darkness",
+          "aliasCount": 1,
+          "aliases": [
+            "Darkness"
+          ]
+        },
+        {
+          "name": "ifying� in",
+          "aliasCount": 1,
+          "aliases": [
+            "Certainly"
+          ]
+        },
+        {
+          "name": "to the",
+          "aliasCount": 1,
+          "aliases": [
+            "Hot"
+          ]
+        },
+        {
+          "name": "Weak",
+          "aliasCount": 1,
+          "aliases": [
+            "Weak"
+          ]
+        },
+        {
+          "name": "er cars",
+          "aliasCount": 1,
+          "aliases": [
+            "Mouthed"
+          ]
+        }
+      ]
+    }
+  },
+  "relations": [
+    {
+      "id": "e6cc13de-d39a-4703-b97b-b0fe55477ac7",
+      "pred": "friends_with",
+      "subj": "d2d8c316-d384-433c-9231-b561402fb0f0",
+      "obj": "61d91fac-aec8-4a39-be30-e5553fa9ce46",
+      "confidence": 0.7
+    },
+    {
+      "id": "508dd44c-6f76-459e-aeba-2596b0c8092d",
+      "pred": "friends_with",
+      "subj": "61d91fac-aec8-4a39-be30-e5553fa9ce46",
+      "obj": "d2d8c316-d384-433c-9231-b561402fb0f0",
+      "confidence": 0.7
+    },
+    {
+      "id": "82250a55-94a3-4082-98a5-af4a83c1d85c",
+      "pred": "child_of",
+      "subj": "4287d99a-7328-4676-b30e-f0aed567e469",
+      "obj": "d2d8c316-d384-433c-9231-b561402fb0f0",
+      "confidence": 0.8
+    },
+    {
+      "id": "a5f59948-d217-4206-aad3-bd2d1f2dfac5",
+      "pred": "child_of",
+      "subj": "4287d99a-7328-4676-b30e-f0aed567e469",
+      "obj": "entity-person-andrew",
+      "confidence": 0.8
+    },
+    {
+      "id": "58fab2e0-872d-43c4-88f6-f7319a6c5f54",
+      "pred": "child_of",
+      "subj": "a380c507-c1a2-4a35-bef0-c3828e791bb6",
+      "obj": "c32c2413-6c55-4bd6-a48c-278f7182cbe0",
+      "confidence": 0.8
+    },
+    {
+      "id": "cb3197f4-a0c2-401d-aadc-647ea2af2e1f",
+      "pred": "child_of",
+      "subj": "d2d8c316-d384-433c-9231-b561402fb0f0",
+      "obj": "58d34375-da6a-499a-88a9-110d63e1a99b",
+      "confidence": 0.8
+    },
+    {
+      "id": "e24d021e-9f52-4fde-adec-a967caf9e5f2",
+      "pred": "child_of",
+      "subj": "a380c507-c1a2-4a35-bef0-c3828e791bb6",
+      "obj": "d929b6f6-9a61-4ed0-bc44-8247394a8e63",
+      "confidence": 0.8
+    },
+    {
+      "id": "ab22dfb7-87ec-49f2-80c2-987e4bab9bfe",
+      "pred": "parent_of",
+      "subj": "d2d8c316-d384-433c-9231-b561402fb0f0",
+      "obj": "4287d99a-7328-4676-b30e-f0aed567e469",
+      "confidence": 0.8
+    },
+    {
+      "id": "7034862d-1f52-4617-bfa3-d0f49dc13dfb",
+      "pred": "parent_of",
+      "subj": "entity-person-andrew",
+      "obj": "d929b6f6-9a61-4ed0-bc44-8247394a8e63",
+      "confidence": 0.8
+    },
+    {
+      "id": "ce2b3571-e7a3-4500-8657-703259fe5b88",
+      "pred": "parent_of",
+      "subj": "d2d8c316-d384-433c-9231-b561402fb0f0",
+      "obj": "a380c507-c1a2-4a35-bef0-c3828e791bb6",
+      "confidence": 0.8
+    },
+    {
+      "id": "b3864201-2948-4349-8268-bb4b3f3ba698",
+      "pred": "parent_of",
+      "subj": "58d34375-da6a-499a-88a9-110d63e1a99b",
+      "obj": "d2d8c316-d384-433c-9231-b561402fb0f0",
+      "confidence": 0.8
+    }
+  ]
+}
