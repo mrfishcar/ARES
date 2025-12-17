@@ -491,11 +491,11 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     typeGuard: { subj: ['PERSON'], obj: ['PLACE', 'ORG'] }
   },
   // "He became king there" - requires deictic resolution for "there"
+  // Note: Object position capture group would need deictic resolution (TODO: implement)
   {
     regex: /\b([A-Z][a-z]+|[Hh]e|[Ss]he)\s+became\s+(king|queen|ruler|leader|monarch|emperor|empress|sultan|pharaoh)\s+there\b/g,
     predicate: 'rules',
-    typeGuard: { subj: ['PERSON'], obj: ['PLACE', 'ORG'] },
-    deicticObj: true  // Special flag: object needs deictic resolution
+    typeGuard: { subj: ['PERSON'], obj: ['PLACE', 'ORG'] }
   },
 
   // === LOCATION PATTERNS - EXPANDED ===

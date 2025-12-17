@@ -107,6 +107,95 @@ export function isContextDependent(text: string): boolean {
 }
 
 /**
+ * Generic descriptors that shouldn't be entity-specific aliases
+ * These describe roles or relationships, not unique identities
+ */
+const GENERIC_DESCRIPTORS = new Set([
+  'the family', 'the old woman', 'the old man', 'the young man', 'the young woman',
+  'the boy', 'the girl', 'the man', 'the woman', 'the child', 'the children',
+  'the group', 'the crowd', 'the people', 'the others',
+  'the king of', 'the queen of', 'the prince of', 'the princess of',
+  'the professional family', 'the family much', 'the family information',
+  'linola jr',  // Partial school name
+  // Garbage token combinations from extraction artifacts
+  'if mr', 'if ms', 'if dr', 'mr if', 'ms if', 'dr if',
+]);
+
+/**
+ * Very short tokens that are almost never valid aliases
+ */
+const SHORT_GARBAGE_TOKENS = new Set([
+  'if', 'mr', 'ms', 'dr', 'or', 'an', 'at', 'by', 'to', 'of', 'in', 'on',
+  'is', 'it', 'be', 'as', 'so', 'no', 'we', 'us', 'my', 'me', 'he', 'do',
+]);
+
+/**
+ * Check if a string is a garbage alias that should be filtered
+ * Returns true if the alias should NOT be stored
+ */
+export function isGarbageAlias(text: string): boolean {
+  if (!text || typeof text !== 'string') return true;
+
+  const trimmed = text.trim();
+  const lower = trimmed.toLowerCase();
+
+  // Empty or whitespace-only
+  if (!trimmed) return true;
+
+  // Very short (< 3 chars) unless it's a valid abbreviation with period
+  if (trimmed.length < 3 && !trimmed.includes('.')) {
+    return true;
+  }
+
+  // Short garbage tokens
+  if (SHORT_GARBAGE_TOKENS.has(lower)) {
+    return true;
+  }
+
+  // Generic descriptors
+  if (GENERIC_DESCRIPTORS.has(lower)) {
+    return true;
+  }
+
+  // Starts with "the " followed by a lowercase word (generic reference)
+  if (lower.startsWith('the ') && trimmed.length < 20) {
+    const afterThe = trimmed.slice(4).trim();
+    // "The family" is generic, "The Doctor" might be a title
+    if (afterThe && /^[a-z]/.test(afterThe)) {
+      return true;
+    }
+  }
+
+  // Looks like a truncated artifact (starts with lowercase 1-2 char + space)
+  const tokens = trimmed.split(/\s+/);
+  if (tokens.length >= 2 && tokens[0].length <= 2 && /^[a-z]+$/.test(tokens[0])) {
+    return true;
+  }
+
+  // Contains encoding artifacts
+  if (trimmed.includes('�')) {
+    return true;
+  }
+
+  // Ends with verb-like suffixes (likely sentence fragment)
+  const verbEndings = ['ing', ' ed', 'ied', 'ang', 'ung'];
+  if (tokens.length >= 2 && verbEndings.some(e => lower.endsWith(e))) {
+    // Check if last token is lowercase (fragment vs proper name)
+    const lastToken = tokens[tokens.length - 1];
+    if (/^[a-z]/.test(lastToken)) {
+      return true;
+    }
+  }
+
+  // Too long to be a meaningful alias (likely a sentence fragment)
+  if (tokens.length > 4) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * Infer grammatical gender from pronoun
  */
 export type Gender = 'male' | 'female' | 'neutral' | 'plural';

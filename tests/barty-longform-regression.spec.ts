@@ -106,8 +106,9 @@ describe('Barty Long-Form Regression Tests', () => {
       expect(result.tierC.length).toBe(1);
     });
 
-    it('promotes dialogue names with multiple mentions to TIER_B', () => {
-      // If someone is mentioned 3+ times even just in dialogue
+    it('promotes dialogue names with multiple mentions to TIER_A', () => {
+      // STRUCTURAL: 5 mentions → capped at 3 points → TIER_A threshold
+      // Multiple mentions IS strong namehood evidence
       const entity = createEntity('Morty', 'PERSON', 0.45, {
         mentionCount: 5,
       });
@@ -115,8 +116,9 @@ describe('Barty Long-Form Regression Tests', () => {
       const features = extractTierFeatures(entity);
       const { tier, reason } = assignEntityTier(entity, features);
 
-      expect(tier).toBe('TIER_B');
-      expect(reason).toBe('multiple_mentions');
+      // 3+ mentions reaches TIER_A threshold
+      expect(tier).toBe('TIER_A');
+      expect(reason).toBe('namehood_score_3');
     });
   });
 
@@ -216,8 +218,12 @@ describe('Barty Long-Form Regression Tests', () => {
     });
   });
 
-  describe('Common Word Misclassifications', () => {
-    it('demotes abstract nouns misclassified as entities', () => {
+  describe('Single-Token Names Without Evidence', () => {
+    // STRUCTURAL approach: no blocklists, tier based on evidence
+    // Single-token high-confidence names get TIER_B (supporting, not graph-worthy)
+    // TIER_C is for truly ambiguous cases (sentence-initial-only, encoding issues)
+
+    it('single-token PERSON with only confidence gets TIER_B', () => {
       const testCases = [
         { name: 'Darkness', type: 'PERSON' as const },
         { name: 'Silence', type: 'PERSON' as const },
@@ -229,33 +235,36 @@ describe('Barty Long-Form Regression Tests', () => {
         const features = extractTierFeatures(entity);
         const { tier, reason } = assignEntityTier(entity, features);
 
-        expect(tier).toBe('TIER_C');
-        expect(reason).toBe('common_word');
+        // STRUCTURAL: No evidence beyond confidence → TIER_B
+        expect(tier).toBe('TIER_B');
+        expect(reason).toBe('single_token_high_confidence');
       }
     });
 
-    it('demotes color words misclassified as MAGIC', () => {
+    it('single-token MAGIC is type-capped to TIER_B', () => {
       const entity = createEntity('Black', 'MAGIC', 0.95);
 
       const features = extractTierFeatures(entity);
       const { tier, reason } = assignEntityTier(entity, features);
 
-      expect(tier).toBe('TIER_C');
-      expect(reason).toBe('common_word');
+      // MAGIC type is capped at TIER_B, confidence fallback applies
+      expect(tier).toBe('TIER_B');
+      expect(reason).toBe('confidence_type_capped');
     });
 
-    it('demotes common words misclassified as SPELL', () => {
+    it('single-token SPELL is type-capped to TIER_B', () => {
       const entity = createEntity('Weak', 'SPELL', 0.95);
 
       const features = extractTierFeatures(entity);
       const { tier, reason } = assignEntityTier(entity, features);
 
-      expect(tier).toBe('TIER_C');
-      expect(reason).toBe('common_word');
+      // SPELL type is capped at TIER_B, confidence fallback applies
+      expect(tier).toBe('TIER_B');
+      expect(reason).toBe('confidence_type_capped');
     });
 
-    it('allows legitimate names even if containing common words', () => {
-      // "Black" as a surname should be allowed when part of full name
+    it('multi-token names reach TIER_A even with common word component', () => {
+      // "Sirius Black" - multi-token overrides any common word concern
       const entity = createEntity('Sirius Black', 'PERSON', 0.85);
 
       const features = extractTierFeatures(entity);
@@ -266,14 +275,15 @@ describe('Barty Long-Form Regression Tests', () => {
   });
 
   describe('Multi-Token Proper Names', () => {
-    it('promotes multi-token names to TIER_B even with low confidence', () => {
+    it('multi-token names reach TIER_A regardless of confidence', () => {
+      // STRUCTURAL: multi-token (2) + mention (1) = 3 → TIER_A threshold
       const entity = createEntity('Roy Burkley', 'PERSON', 0.35);
 
       const features = extractTierFeatures(entity);
       const { tier, reason } = assignEntityTier(entity, features);
 
-      expect(tier).toBe('TIER_B');
-      expect(reason).toBe('multi_token_name');
+      expect(tier).toBe('TIER_A');
+      expect(reason).toBe('namehood_score_3');
     });
 
     it('keeps high-confidence multi-token names in TIER_A', () => {
@@ -330,27 +340,28 @@ describe('Barty Long-Form Regression Tests', () => {
   describe('Tier Distribution Verification', () => {
     it('correctly categorizes a realistic mix of Barty entities', () => {
       const entities = [
-        // TIER_A: High-confidence legitimate entities
+        // TIER_A: Multi-token names with namehood evidence
         createEntity('Barty Beauregard', 'PERSON', 0.98),
         createEntity('Mr. Green', 'PERSON', 0.98),
         createEntity('Roy Burkley', 'PERSON', 0.98),
         createEntity('Adaline Garbotholow', 'PERSON', 0.98),
         createEntity('Mont Linola Junior High', 'ORG', 0.85),
 
-        // Should be TIER_C: Garbage/artifacts
-        createEntity('ifying\ufffd in', 'SPELL', 0.95),
-        createEntity('er cars', 'SPELL', 0.95),
-        createEntity('The pair sprang', 'PERSON', 0.98),
-        createEntity('Darkness', 'PERSON', 0.98),
-        createEntity('Black', 'MAGIC', 0.95),
+        // TIER_B: Single-token high confidence, or type-capped
+        // (Darkness, Black - no longer blocklist-rejected)
+
+        // TIER_C: Structural garbage only
+        createEntity('ifying\ufffd in', 'SPELL', 0.95), // encoding issues
+        createEntity('er cars', 'SPELL', 0.95),         // truncated
+        createEntity('The pair sprang', 'PERSON', 0.98), // sentence fragment
       ];
 
       const tiered = assignTiersToEntities(entities);
       const stats = getTierStats(tiered);
 
-      // Should have significant separation
-      expect(stats.tierA).toBeGreaterThanOrEqual(4);
-      expect(stats.tierC).toBeGreaterThanOrEqual(4);
+      // STRUCTURAL: Multi-token names → TIER_A, structural garbage → TIER_C
+      expect(stats.tierA).toBeGreaterThanOrEqual(5);
+      expect(stats.tierC).toBeGreaterThanOrEqual(3);
 
       // Verify specific entities
       const barty = tiered.find(e => e.canonical === 'Barty Beauregard');
@@ -363,14 +374,19 @@ describe('Barty Long-Form Regression Tests', () => {
     it('provides correct graphWorthy count', () => {
       const entities = [
         createEntity('Barty Beauregard', 'PERSON', 0.98),
-        createEntity('Garbage Entity', 'PERSON', 0.35),
-        createEntity('Darkness', 'PERSON', 0.98), // Common word
+        // Use sentence-initial single token for TIER_C candidate
+        createEntity('Kenny', 'PERSON', 0.35, {
+          isSentenceInitial: true,
+          occursNonInitial: false,
+        }),
+        // Single-token high confidence → TIER_B
+        createEntity('Darkness', 'PERSON', 0.98),
       ];
 
       const result = filterAndTierEntities(entities);
       const graphWorthy = getEntitiesAtMinTier(result, 'TIER_A');
 
-      // Only high-quality entities should be graph-worthy
+      // Only Barty Beauregard has structural namehood evidence for TIER_A
       expect(graphWorthy.length).toBe(1);
       expect(graphWorthy[0].canonical).toBe('Barty Beauregard');
     });

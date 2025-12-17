@@ -1,89 +1,49 @@
 /**
  * Entity Tier Assignment Module
  *
- * Assigns entities to tiers based on extraction evidence and confidence.
+ * Assigns entities to tiers based on STRUCTURAL NAMEHOOD EVIDENCE.
  * This enables graduated recall where:
- *   - TIER_A: High-confidence core entities (full merging)
- *   - TIER_B: Medium-confidence supporting entities (cautious merging)
- *   - TIER_C: Low-confidence candidates (no merging, isolated)
+ *   - TIER_A: Strong namehood evidence (graph-worthy)
+ *   - TIER_B: Moderate namehood evidence (supporting)
+ *   - TIER_C: Weak/ambiguous namehood (isolated candidates)
  *
  * Design Principles:
- * 1. Deterministic - same input always produces same tier
- * 2. Explainable - tier assignment can be logged/inspected
- * 3. Conservative promotion - entities start low and are promoted with evidence
- * 4. Quality-based demotion - override confidence for suspicious patterns
+ * 1. STRUCTURAL over blocklists - reject based on grammar, not word lists
+ * 2. EVIDENCE-BASED - score namehood from multiple signals
+ * 3. MINIMAL TIER_C - only true ambiguity lands here
+ * 4. Deterministic and explainable
  */
 
 import type { Entity, EntityTier, EntityType } from './schema';
 
 /* =============================================================================
- * QUALITY-BASED DEMOTION RULES
- * These override confidence scores to prevent garbage from reaching TIER_A
+ * STRUCTURAL GARBAGE DETECTION (Grammar-Based)
+ * Reject based on structural patterns, NOT word blocklists
  * ============================================================================= */
 
 /**
- * Check if entity name contains encoding issues or invalid characters
+ * Check if entity name contains encoding issues
  */
 function hasEncodingIssues(name: string): boolean {
-  // Check for replacement character or other encoding artifacts
   if (name.includes('�')) return true;
-  // Check for unusual unicode ranges that suggest corruption
   if (/[\x00-\x1F\x7F-\x9F]/.test(name)) return true;
   return false;
 }
 
 /**
- * Check if entity looks like a sentence fragment rather than a proper name
- * E.g., "The pair sprang", "to the", "er cars"
- */
-function looksSentenceFragment(name: string): boolean {
-  const lower = name.toLowerCase().trim();
-  const tokens = lower.split(/\s+/);
-
-  // Too short to be meaningful
-  if (lower.length < 3) return true;
-
-  // Starts with lowercase common article/preposition only
-  const fragmentStarters = ['the', 'a', 'an', 'to', 'of', 'in', 'on', 'at', 'for', 'with', 'by'];
-  if (tokens.length <= 2 && fragmentStarters.includes(tokens[0]) && tokens.length > 1 && !tokens[1].match(/^[A-Z]/)) {
-    return true;
-  }
-
-  // Contains verb endings suggesting truncated sentence
-  const verbEndings = ['ing', 'ed', 'ied', 'ang', 'ung', 'ought'];
-  const lastToken = tokens[tokens.length - 1];
-  if (tokens.length >= 2 && verbEndings.some(e => lastToken.endsWith(e))) {
-    // Check if it's capitalized like a name - if not, it's a fragment
-    const original = name.split(/\s+/);
-    if (original.length >= 2 && !/^[A-Z]/.test(original[original.length - 1])) {
-      return true;
-    }
-  }
-
-  // Starts with "The" followed by lowercase verb-like word
-  if (tokens[0] === 'the' && tokens.length >= 2) {
-    const second = tokens[1];
-    if (verbEndings.some(e => second.endsWith(e))) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-/**
- * Check if entity looks like a truncated word or extraction artifact
+ * Check if entity looks like a truncated extraction artifact
+ * STRUCTURAL: First token is lowercase partial word
  * E.g., "er cars", "e obeyed", "nd march"
  */
 function looksTruncated(name: string): boolean {
   const tokens = name.split(/\s+/);
 
-  // First token is very short and lowercase (likely truncated)
+  // First token is very short and lowercase (likely truncated mid-word)
   if (tokens.length >= 2 && tokens[0].length <= 2 && /^[a-z]+$/.test(tokens[0])) {
     return true;
   }
 
-  // Single very short token (not an initial like "J")
+  // Single very short token that isn't an initial (J. or similar)
   if (tokens.length === 1 && name.length <= 2 && !/^[A-Z]\.?$/.test(name)) {
     return true;
   }
@@ -92,36 +52,34 @@ function looksTruncated(name: string): boolean {
 }
 
 /**
- * Common words that shouldn't be entities even when capitalized
+ * Check if entity looks like a sentence fragment
+ * STRUCTURAL: Contains verb morphology without proper name capitalization
  */
-const COMMON_WORD_BLOCKLIST = new Set([
-  // Abstract concepts often miscategorized
-  'darkness', 'light', 'shadow', 'silence', 'fear', 'death', 'life',
-  'black', 'white', 'red', 'blue', 'green', 'gold', 'silver',
-  'weak', 'strong', 'old', 'young', 'hot', 'cold',
-  // Common nouns
-  'questions', 'answers', 'secrets', 'truth', 'lies',
-  'monster', 'runner', 'stranger', 'visitor',
-  // Verbs/actions that get miscategorized
-  'mouthed', 'aged', 'certainly', 'fainting',
-]);
+function looksSentenceFragment(name: string): boolean {
+  const tokens = name.split(/\s+/);
+  const lower = name.toLowerCase();
 
-/**
- * Check if entity is a common word that shouldn't be an entity
- */
-function isCommonWordEntity(name: string, type: EntityType): boolean {
-  const lower = name.toLowerCase().trim();
+  // Too short to analyze
+  if (lower.trim().length < 3) return true;
 
-  // Check blocklist
-  if (COMMON_WORD_BLOCKLIST.has(lower)) {
-    return true;
+  // STRUCTURAL: Multi-token ending in verb morphology without capitalization
+  // "The pair sprang" - "sprang" is verb morphology, lowercase
+  const verbSuffixes = ['ing', 'ed', 'ied', 'ang', 'ung', 'ought', 'ew', 'oke'];
+  if (tokens.length >= 2) {
+    const lastToken = tokens[tokens.length - 1];
+    const lastLower = lastToken.toLowerCase();
+
+    // If last token has verb morphology AND is lowercase, it's likely a fragment
+    if (verbSuffixes.some(s => lastLower.endsWith(s)) && /^[a-z]/.test(lastToken)) {
+      return true;
+    }
   }
 
-  // Single common English words as SPELL/MATERIAL/MAGIC are suspicious
-  if (['SPELL', 'MATERIAL', 'MAGIC'].includes(type)) {
-    const tokens = lower.split(/\s+/);
-    if (tokens.length === 1 && /^[a-z]+$/.test(lower) && lower.length < 10) {
-      // Very likely a misclassified common word
+  // STRUCTURAL: "The/A + lowercase word" pattern without proper noun
+  const articles = ['the', 'a', 'an'];
+  if (tokens.length === 2 && articles.includes(tokens[0].toLowerCase())) {
+    // "The doctor" (lowercase second word) vs "The Doctor" (capitalized)
+    if (/^[a-z]/.test(tokens[1])) {
       return true;
     }
   }
@@ -130,68 +88,195 @@ function isCommonWordEntity(name: string, type: EntityType): boolean {
 }
 
 /**
- * Confidence thresholds for tier assignment
- *
- * Rationale:
- * - TIER_A requires high confidence (0.70) to be graph-worthy
- * - TIER_B accepts medium confidence (0.50) for indexing/search
- * - TIER_C accepts lower confidence (0.30) as provisional candidates
+ * Check if entity looks like a school name fragment mistyped as PERSON
+ * STRUCTURAL: Contains institutional suffix indicators
  */
-export const TIER_CONFIDENCE_THRESHOLDS = {
-  TIER_A: 0.70,  // High-confidence core entities
-  TIER_B: 0.50,  // Medium-confidence supporting entities
-  TIER_C: 0.30,  // Low-confidence candidates (provisional)
-} as const;
+function looksLikeSchoolFragment(name: string, type: EntityType): boolean {
+  if (type !== 'PERSON') return false;
+
+  const lower = name.toLowerCase();
+  // These are structural indicators of institutions, not people
+  const institutionalSuffixes = [
+    /\bjunior\s*$/,      // "Mont Linola Junior"
+    /\bhigh\s*$/,        // "Oakdale High"
+    /\bmiddle\s*$/,      // "Central Middle"
+    /\belementary\s*$/,  // "Washington Elementary"
+    /\bacademy\b/,       // "Battle Academy"
+    /\buniversity\b/,
+    /\bcollege\b/,
+    /\binstitute\b/,
+    /\bschool\b/,
+  ];
+
+  return institutionalSuffixes.some(p => p.test(lower));
+}
+
+/* =============================================================================
+ * NAMEHOOD EVIDENCE SCORING
+ * Score entities based on structural signals that indicate proper namehood
+ * ============================================================================= */
 
 /**
- * Entity features used for tier assignment
+ * Namehood evidence features for scoring
  */
-export interface TierAssignmentFeatures {
-  // From extraction
-  hasNERSupport: boolean;           // spaCy NER backed this entity
-  isSentenceInitialOnly: boolean;   // Only appears at sentence starts
-  tokenCount: number;               // Number of tokens in canonical name
-  hasTitlePrefix: boolean;          // Has Mr./Dr./etc. prefix
+export interface NamehoodEvidence {
+  // Strong positive signals
+  occursNonInitial: boolean;      // Appears mid-sentence (not just sentence-start caps)
+  isMultiToken: boolean;          // "First Last" pattern
+  hasHonorific: boolean;          // Mr., Dr., etc. prefix
+  mentionCount: number;           // Recurrence in text
 
-  // From context
-  mentionCount?: number;            // How many times mentioned
-  appearsInRelation?: boolean;      // Appears in any relation
-  hasAliases?: boolean;             // Has resolved aliases
+  // Moderate positive signals
+  hasNERSupport: boolean;         // spaCy NER backed this
+  appearsInDialogue: boolean;     // Dialogue context
+  hasAppositive: boolean;         // "X, the Y" or "Y, X" pattern
 
-  // Extraction source
-  source?: 'NER' | 'pattern' | 'coreference' | 'title_reference' | 'fallback';
+  // Type-specific
+  entityType: EntityType;
 }
 
 /**
- * Title prefixes that indicate a proper entity reference
+ * Title/honorific prefixes that indicate proper name usage
  */
-const TITLE_PREFIXES = new Set([
+const HONORIFIC_PREFIXES = new Set([
   'mr', 'mrs', 'miss', 'ms', 'dr', 'doctor',
   'prof', 'professor', 'sir', 'madam', 'madame',
   'lord', 'lady', 'king', 'queen', 'prince', 'princess',
-  'captain', 'commander', 'head', 'headmaster', 'headmistress',
-  'chief', 'general', 'mayor', 'senator', 'judge', 'officer',
-  'father', 'mother', 'brother', 'sister', 'aunt', 'uncle',
-  'grandma', 'grandpa', 'grandmother', 'grandfather',
+  'captain', 'commander', 'general', 'colonel', 'major',
+  'father', 'mother', 'brother', 'sister', 'reverend', 'pastor',
 ]);
 
 /**
- * Check if entity name has a title prefix
+ * Check if entity has honorific prefix WITH a following name
+ * "Doctor Smith" → true (honorific + name)
+ * "Doctor" → false (honorific alone isn't a name pattern)
  */
-function hasTitlePrefix(name: string): boolean {
-  const firstToken = name.split(/\s+/)[0]?.toLowerCase();
-  return firstToken ? TITLE_PREFIXES.has(firstToken.replace(/\.$/, '')) : false;
+function hasHonorificPrefix(name: string): boolean {
+  const tokens = name.split(/\s+/);
+  // Must have at least 2 tokens: honorific + name
+  if (tokens.length < 2) return false;
+
+  const firstToken = tokens[0]?.toLowerCase().replace(/\.$/, '');
+  return firstToken ? HONORIFIC_PREFIXES.has(firstToken) : false;
 }
 
 /**
- * Assign tier to an entity based on features
+ * Calculate namehood score from evidence
+ * Higher score = stronger evidence this is a proper name
+ *
+ * Scoring rationale:
+ * - Non-sentence-initial: +3 (strongest signal - intentional capitalization)
+ * - Multi-token proper: +2 (structural name pattern)
+ * - Honorific prefix: +2 (social convention for names)
+ * - NER support: +2 (spaCy believes it's an entity)
+ * - Multiple mentions: +1 per mention, max +3 (recurrence)
+ * - Dialogue context: +1 (names often appear in dialogue)
+ */
+function calculateNamehoodScore(evidence: NamehoodEvidence): number {
+  let score = 0;
+
+  // Strong signals
+  if (evidence.occursNonInitial) score += 3;
+  if (evidence.isMultiToken) score += 2;
+  if (evidence.hasHonorific) score += 2;
+  if (evidence.hasNERSupport) score += 2;
+
+  // Moderate signals
+  score += Math.min(evidence.mentionCount, 3); // Cap at 3
+  if (evidence.appearsInDialogue) score += 1;
+  if (evidence.hasAppositive) score += 1;
+
+  return score;
+}
+
+/**
+ * Namehood score thresholds for tier assignment
+ * Multi-token (2) + any mention (1) = 3 should be enough for TIER_A
+ * Single token with honorific (2) or recurrence (3+) should reach TIER_B
+ */
+const NAMEHOOD_THRESHOLDS = {
+  TIER_A: 3,  // Multi-token + mention, or honorific + mention
+  TIER_B: 2,  // Multi-token alone, or honorific alone
+  TIER_C: 0,  // No structural evidence
+};
+
+/* =============================================================================
+ * TYPE-BASED TIER CAPS
+ * Certain entity types are supporting info, not graph-worthy
+ * ============================================================================= */
+
+/**
+ * Types that max out at TIER_B regardless of evidence
+ * These are supporting/contextual, not core graph entities
+ */
+const TIER_B_MAX_TYPES = new Set<EntityType>([
+  'EVENT',    // Events are contextual
+  'MATERIAL', // Materials are descriptive
+  'SPELL',    // Often extraction noise
+  'MAGIC',    // Often extraction noise
+]);
+
+function isTypeCapped(type: EntityType): boolean {
+  return TIER_B_MAX_TYPES.has(type);
+}
+
+/* =============================================================================
+ * CONFIDENCE THRESHOLDS (Fallback)
+ * Used when namehood evidence is unavailable
+ * ============================================================================= */
+
+export const TIER_CONFIDENCE_THRESHOLDS = {
+  TIER_A: 0.70,
+  TIER_B: 0.50,
+  TIER_C: 0.30,
+} as const;
+
+/* =============================================================================
+ * FEATURE EXTRACTION
+ * ============================================================================= */
+
+export interface TierAssignmentFeatures {
+  hasNERSupport: boolean;
+  isSentenceInitialOnly: boolean;
+  tokenCount: number;
+  hasTitlePrefix: boolean;
+  mentionCount?: number;
+  appearsInRelation?: boolean;
+  hasAliases?: boolean;
+  source?: 'NER' | 'pattern' | 'coreference' | 'title_reference' | 'fallback';
+}
+
+export function extractTierFeatures(
+  entity: Entity,
+  _text?: string
+): TierAssignmentFeatures {
+  const tokens = entity.canonical.split(/\s+/).filter(Boolean);
+
+  return {
+    hasNERSupport: Boolean(entity.attrs?.nerLabel),
+    isSentenceInitialOnly: Boolean(
+      entity.attrs?.isSentenceInitial && !entity.attrs?.occursNonInitial
+    ),
+    tokenCount: tokens.length,
+    hasTitlePrefix: hasHonorificPrefix(entity.canonical),
+    mentionCount: entity.attrs?.mentionCount as number | undefined,
+    hasAliases: entity.aliases.length > 1,
+    source: entity.attrs?.source as TierAssignmentFeatures['source'],
+  };
+}
+
+/* =============================================================================
+ * MAIN TIER ASSIGNMENT
+ * ============================================================================= */
+
+/**
+ * Assign tier based on structural namehood evidence
  *
  * Algorithm:
- * 1. Apply quality-based demotions FIRST (override confidence)
- * 2. Calculate base tier from confidence
- * 3. Apply promotions for strong evidence (NER, multi-token)
- * 4. Apply additional demotions for weak evidence
- * 5. Return final tier with explanation
+ * 1. Reject structural garbage → TIER_C
+ * 2. Calculate namehood score from evidence
+ * 3. Apply type-based caps
+ * 4. Assign tier based on score
  */
 export function assignEntityTier(
   entity: Entity,
@@ -202,131 +287,134 @@ export function assignEntityTier(
   const confidence = entity.confidence ?? 0.5;
 
   // =========================================================================
-  // STEP 0: Quality-based demotions (OVERRIDE confidence)
-  // These catch garbage that slipped through with high confidence
+  // STEP 1: Structural garbage rejection → TIER_C
+  // These are grammar-based rejections, NOT blocklist-based
   // =========================================================================
 
-  // Encoding issues = TIER_C (isolated, never merge)
   if (hasEncodingIssues(name)) {
     return { tier: 'TIER_C', reason: 'encoding_issues' };
   }
 
-  // Truncated artifacts = TIER_C
   if (looksTruncated(name)) {
     return { tier: 'TIER_C', reason: 'truncated_artifact' };
   }
 
-  // Sentence fragments = TIER_C
   if (looksSentenceFragment(name)) {
     return { tier: 'TIER_C', reason: 'sentence_fragment' };
   }
 
-  // Common word misclassified = TIER_C
-  if (isCommonWordEntity(name, type)) {
-    return { tier: 'TIER_C', reason: 'common_word' };
+  if (looksLikeSchoolFragment(name, type)) {
+    return { tier: 'TIER_C', reason: 'school_fragment_mistyped' };
   }
 
   // =========================================================================
-  // STEP 1: Base tier from confidence
+  // STEP 2: Build namehood evidence and calculate score
+  // CONSERVATIVE: Only credit non-initial occurrence if we KNOW it occurs mid-sentence
   // =========================================================================
 
-  let baseTier: EntityTier;
-  if (confidence >= TIER_CONFIDENCE_THRESHOLDS.TIER_A) {
-    baseTier = 'TIER_A';
-  } else if (confidence >= TIER_CONFIDENCE_THRESHOLDS.TIER_B) {
-    baseTier = 'TIER_B';
-  } else if (confidence >= TIER_CONFIDENCE_THRESHOLDS.TIER_C) {
-    baseTier = 'TIER_C';
-  } else {
-    // Below minimum threshold - still assign TIER_C but mark as very low confidence
-    baseTier = 'TIER_C';
-  }
+  // We only know occursNonInitial if the attrs explicitly say so
+  const hasPositiveMidSentenceEvidence = Boolean(entity.attrs?.occursNonInitial);
+
+  const evidence: NamehoodEvidence = {
+    occursNonInitial: hasPositiveMidSentenceEvidence,
+    isMultiToken: features.tokenCount >= 2,
+    hasHonorific: features.hasTitlePrefix,
+    mentionCount: features.mentionCount ?? 1,
+    hasNERSupport: features.hasNERSupport,
+    appearsInDialogue: false, // TODO: extract from context
+    hasAppositive: false,     // TODO: extract from context
+    entityType: type,
+  };
+
+  const namehoodScore = calculateNamehoodScore(evidence);
 
   // =========================================================================
-  // STEP 2: Promotions (evidence-based)
+  // STEP 3: Apply type-based caps
+  // EVENT/SPELL/MATERIAL/MAGIC max out at TIER_B
   // =========================================================================
 
-  // NER-backed entities get TIER_A (strong signal from spaCy)
-  if (features.hasNERSupport && baseTier !== 'TIER_A') {
+  const typeCapped = isTypeCapped(type);
+
+  // =========================================================================
+  // STEP 4: Assign tier based on evidence score
+  // =========================================================================
+
+  // NER-backed entities get strong boost
+  if (features.hasNERSupport) {
+    if (typeCapped) {
+      return { tier: 'TIER_B', reason: 'ner_backed_type_capped' };
+    }
     return { tier: 'TIER_A', reason: 'ner_backed' };
   }
 
-  // Multi-token proper names get at least TIER_B (structural evidence)
-  if (features.tokenCount >= 2 && baseTier === 'TIER_C') {
-    return { tier: 'TIER_B', reason: 'multi_token_name' };
+  // Score-based assignment
+  if (namehoodScore >= NAMEHOOD_THRESHOLDS.TIER_A) {
+    if (typeCapped) {
+      return { tier: 'TIER_B', reason: 'type_capped_to_tier_b' };
+    }
+    return { tier: 'TIER_A', reason: `namehood_score_${namehoodScore}` };
   }
 
-  // Title-prefixed names get at least TIER_B
-  if (features.hasTitlePrefix && baseTier === 'TIER_C') {
-    return { tier: 'TIER_B', reason: 'title_prefix' };
-  }
-
-  // Entities with multiple mentions get promoted (corroboration)
-  if ((features.mentionCount ?? 0) >= 3 && baseTier === 'TIER_C') {
-    return { tier: 'TIER_B', reason: 'multiple_mentions' };
+  if (namehoodScore >= NAMEHOOD_THRESHOLDS.TIER_B) {
+    return { tier: 'TIER_B', reason: `namehood_score_${namehoodScore}` };
   }
 
   // =========================================================================
-  // STEP 3: Additional demotions (structural)
+  // STEP 5: Fallback to confidence for very low evidence cases
   // =========================================================================
 
-  // Sentence-initial-only single tokens without NER get TIER_C
-  if (
-    features.isSentenceInitialOnly &&
-    features.tokenCount === 1 &&
-    !features.hasNERSupport &&
-    baseTier !== 'TIER_C'
-  ) {
+  // Sentence-initial-only single tokens are highly ambiguous
+  if (features.isSentenceInitialOnly && features.tokenCount === 1) {
     return { tier: 'TIER_C', reason: 'sentence_initial_single_token' };
   }
 
-  // =========================================================================
-  // STEP 4: Return base tier
-  // =========================================================================
+  // Multi-token names get at least TIER_B even without other evidence
+  if (features.tokenCount >= 2) {
+    if (typeCapped) {
+      return { tier: 'TIER_B', reason: 'multi_token_type_capped' };
+    }
+    // High confidence multi-token can reach TIER_A
+    if (confidence >= TIER_CONFIDENCE_THRESHOLDS.TIER_A) {
+      return { tier: 'TIER_A', reason: `confidence_${confidence.toFixed(2)}` };
+    }
+    return { tier: 'TIER_B', reason: 'multi_token_name' };
+  }
 
-  return { tier: baseTier, reason: `confidence_${confidence.toFixed(2)}` };
+  // Single token with honorific prefix gets TIER_B
+  if (features.hasTitlePrefix) {
+    return { tier: 'TIER_B', reason: 'title_prefix' };
+  }
+
+  // Confidence-based fallback for remaining single tokens
+  if (confidence >= TIER_CONFIDENCE_THRESHOLDS.TIER_A) {
+    if (typeCapped) {
+      return { tier: 'TIER_B', reason: 'confidence_type_capped' };
+    }
+    return { tier: 'TIER_B', reason: 'single_token_high_confidence' };
+  }
+
+  if (confidence >= TIER_CONFIDENCE_THRESHOLDS.TIER_B) {
+    return { tier: 'TIER_B', reason: `confidence_${confidence.toFixed(2)}` };
+  }
+
+  // Minimal evidence → TIER_C (true ambiguity)
+  return { tier: 'TIER_C', reason: 'minimal_evidence' };
 }
 
-/**
- * Extract features for tier assignment from entity and context
- */
-export function extractTierFeatures(
-  entity: Entity,
-  text?: string
-): TierAssignmentFeatures {
-  const tokens = entity.canonical.split(/\s+/).filter(Boolean);
+/* =============================================================================
+ * BATCH PROCESSING AND UTILITIES
+ * ============================================================================= */
 
-  return {
-    hasNERSupport: Boolean(entity.attrs?.nerLabel),
-    isSentenceInitialOnly: Boolean(
-      entity.attrs?.isSentenceInitial && !entity.attrs?.occursNonInitial
-    ),
-    tokenCount: tokens.length,
-    hasTitlePrefix: hasTitlePrefix(entity.canonical),
-    mentionCount: entity.attrs?.mentionCount as number | undefined,
-    hasAliases: entity.aliases.length > 1,
-    source: entity.attrs?.source as TierAssignmentFeatures['source'],
-  };
-}
-
-/**
- * Assign tiers to a batch of entities
- *
- * This is the main entry point for tier assignment.
- * Returns entities with tier field populated.
- */
 export function assignTiersToEntities(
   entities: Entity[],
   text?: string
 ): Entity[] {
   return entities.map(entity => {
-    // Skip if tier already assigned
     if (entity.tier) return entity;
 
     const features = extractTierFeatures(entity, text);
     const { tier, reason } = assignEntityTier(entity, features);
 
-    // Log tier assignment in debug mode
     if (process.env.TIER_DEBUG === '1') {
       console.log(`[TIER] ${entity.canonical} (${entity.type}) → ${tier} (${reason})`);
     }
@@ -342,36 +430,21 @@ export function assignTiersToEntities(
   });
 }
 
-/**
- * Check if two entities can be merged based on tiers
- *
- * Merging rules:
- * - TIER_A can merge with TIER_A (full merging)
- * - TIER_B can merge with TIER_A or TIER_B (cautious merging)
- * - TIER_C cannot merge with anything (isolated)
- */
 export function canMergeByTier(
   entity1: Entity,
   entity2: Entity
 ): { canMerge: boolean; reason: string } {
-  const tier1 = entity1.tier ?? 'TIER_A'; // Default to TIER_A for backward compatibility
+  const tier1 = entity1.tier ?? 'TIER_A';
   const tier2 = entity2.tier ?? 'TIER_A';
 
-  // TIER_C entities are isolated - no merging
+  // TIER_C entities are isolated
   if (tier1 === 'TIER_C' || tier2 === 'TIER_C') {
     return { canMerge: false, reason: 'tier_c_isolated' };
   }
 
-  // TIER_A and TIER_B can merge with each other
   return { canMerge: true, reason: 'tier_compatible' };
 }
 
-/**
- * Filter entities by minimum tier
- *
- * Use this to get only graph-worthy entities (TIER_A)
- * or include supporting entities (TIER_A + TIER_B)
- */
 export function filterByTier(
   entities: Entity[],
   minTier: EntityTier = 'TIER_A'
@@ -386,9 +459,6 @@ export function filterByTier(
   });
 }
 
-/**
- * Get tier statistics for a set of entities
- */
 export function getTierStats(entities: Entity[]): {
   total: number;
   tierA: number;

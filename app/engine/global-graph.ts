@@ -534,7 +534,8 @@ function shouldKeepSeparatePlaceAndSchool(
   };
 
   const isPlaceLike = (entity: GlobalEntity | Entity): string | null => {
-    if (entity.type === 'PLACE' || entity.type === 'GPE') {
+    // GPE (Geo-Political Entity) is a spaCy label that maps to PLACE
+    if (entity.type === 'PLACE' || (entity.type as string) === 'GPE') {
       return entity.canonical.toLowerCase();
     }
 
