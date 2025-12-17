@@ -99,7 +99,7 @@ export function shouldSuppressSentenceInitialPerson(
   const hasTitleNeighbor = (prev && TITLE_WORDS.has(prev.toLowerCase())) || (next && TITLE_WORDS.has(next.toLowerCase()));
   if (hasTitleNeighbor) return { suppress: false };
 
-  const hasNearbyProperContinuation = nextTwo.some(tok => tok && /^[A-Z]/.test(tok));
+  const hasNearbyProperContinuation = nextTwo?.some(tok => tok && /^[A-Z]/.test(tok)) ?? false;
   if (hasNearbyProperContinuation) return { suppress: false };
 
   const followingDialogue = /^\s*(?:,|—|-)\s*(said|asked|replied)/i.test(text.slice(span.end, span.end + 25));
