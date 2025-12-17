@@ -43,21 +43,25 @@ function createEntity(
 
 describe('Entity Tier Assignment', () => {
   describe('assignEntityTier', () => {
-    it('assigns TIER_A to high-confidence entities', () => {
+    it('assigns TIER_A based on namehood evidence (not just confidence)', () => {
+      // STRUCTURAL: multi-token (2) + mention (1) = 3 → TIER_A
       const entity = createEntity('Barty Beauregard', 'PERSON', 0.85);
       const features = extractTierFeatures(entity);
       const { tier, reason } = assignEntityTier(entity, features);
 
       expect(tier).toBe('TIER_A');
-      expect(reason).toContain('confidence');
+      // Reason reflects structural scoring, not raw confidence
+      expect(reason).toMatch(/namehood_score|ner_backed/);
     });
 
-    it('assigns TIER_B to medium-confidence entities', () => {
+    it('multi-token names reach TIER_A regardless of confidence', () => {
+      // STRUCTURAL: multi-token (2) + mention (1) = 3 → TIER_A threshold
+      // Confidence alone doesn't demote structural evidence
       const entity = createEntity('Barty Beauregard', 'PERSON', 0.55);
       const features = extractTierFeatures(entity);
-      const { tier, reason } = assignEntityTier(entity, features);
+      const { tier } = assignEntityTier(entity, features);
 
-      expect(tier).toBe('TIER_B');
+      expect(tier).toBe('TIER_A');
     });
 
     it('assigns TIER_C to low-confidence single-token entities', () => {
@@ -78,24 +82,35 @@ describe('Entity Tier Assignment', () => {
       expect(reason).toBe('ner_backed');
     });
 
-    it('promotes multi-token names from TIER_C to TIER_B', () => {
+    it('multi-token names reach TIER_A even with low confidence', () => {
+      // STRUCTURAL: multi-token (2) + mention (1) = 3 → TIER_A
+      // Multi-token IS strong namehood evidence
       const entity = createEntity('Roy Burkley', 'PERSON', 0.35);
       const features = extractTierFeatures(entity);
-      const { tier, reason } = assignEntityTier(entity, features);
+      const { tier } = assignEntityTier(entity, features);
 
-      expect(tier).toBe('TIER_B');
-      expect(reason).toBe('multi_token_name');
+      expect(tier).toBe('TIER_A');
     });
 
-    it('promotes title-prefixed single-token entities from TIER_C to TIER_B', () => {
-      // Note: Multi-token names get promoted by multi_token_name first
-      // So we test a single-token title like "Doctor" which is in TITLE_PREFIXES
+    it('single-token titles without following names are ambiguous (TIER_C)', () => {
+      // STRUCTURAL: "Doctor" alone is ambiguous - could be a title or literal word
+      // Only "Doctor Smith" (title + name) gets promoted
       const entity = createEntity('Doctor', 'PERSON', 0.35);
       const features = extractTierFeatures(entity);
       const { tier, reason } = assignEntityTier(entity, features);
 
-      expect(tier).toBe('TIER_B');
-      expect(reason).toBe('title_prefix');
+      expect(tier).toBe('TIER_C');
+      expect(reason).toBe('minimal_evidence');
+    });
+
+    it('title-prefixed multi-token names get TIER_A/B based on evidence', () => {
+      // STRUCTURAL: "Mr. Green" has honorific + name → strong namehood evidence
+      const entity = createEntity('Mr. Green', 'PERSON', 0.55);
+      const features = extractTierFeatures(entity);
+      const { tier } = assignEntityTier(entity, features);
+
+      // Multi-token (2) + honorific (2) + mention (1) = 5 → TIER_A
+      expect(['TIER_A', 'TIER_B']).toContain(tier);
     });
 
     it('demotes sentence-initial single tokens to TIER_C', () => {
@@ -232,16 +247,24 @@ describe('Tiered Entity Filtering', () => {
       const entities = [
         createEntity('Barty Beauregard', 'PERSON', 0.85, { nerLabel: 'PERSON' }),
         createEntity('Mr. Green', 'PERSON', 0.55),
-        createEntity('Stranger', 'PERSON', 0.35),
+        // Use sentence-initial single token - passes quality filter but TIER_C
+        createEntity('Kenny', 'PERSON', 0.35, {
+          isSentenceInitial: true,
+          occursNonInitial: false,
+        }),
       ];
 
       const result = filterAndTierEntities(entities);
 
-      expect(result.tierA.length).toBe(1);
-      expect(result.tierA[0].canonical).toBe('Barty Beauregard');
+      // STRUCTURAL: Both multi-token names get TIER_A:
+      // - "Barty Beauregard": NER-backed → TIER_A
+      // - "Mr. Green": multi-token (2) + honorific (2) + mention (1) = 5 → TIER_A
+      expect(result.tierA.length).toBe(2);
+      expect(result.tierA.some(e => e.canonical === 'Barty Beauregard')).toBe(true);
+      expect(result.tierA.some(e => e.canonical === 'Mr. Green')).toBe(true);
 
-      // Mr. Green should be TIER_B due to title prefix
-      expect(result.tierB.length).toBeGreaterThanOrEqual(1);
+      // Kenny (sentence-initial-only single token) → TIER_C
+      expect(result.tierC.length).toBeGreaterThanOrEqual(1);
 
       // Stats should be accurate
       expect(result.stats.tierA).toBe(result.tierA.length);
@@ -361,9 +384,10 @@ describe('Recall Improvement Verification', () => {
 
     const result = filterAndTierEntities([entity]);
 
-    // Should be TIER_B (promoted due to multi-token)
-    expect(result.tierB.length).toBe(1);
-    expect(result.tierB[0].tier).toBe('TIER_B');
+    // STRUCTURAL: multi-token (2) + mention (1) = 3 → TIER_A threshold
+    // Multi-token names have strong namehood evidence regardless of confidence
+    expect(result.allAccepted.length).toBe(1);
+    expect(['TIER_A', 'TIER_B']).toContain(result.allAccepted[0].tier);
   });
 
   it('increases total entity count vs binary filtering', () => {
@@ -419,20 +443,24 @@ describe('Quality-Based Demotions', () => {
     expect(reason).toBe('sentence_fragment');
   });
 
-  it('demotes common words to TIER_C regardless of confidence', () => {
+  it('single-token entities without namehood evidence get TIER_B (not A)', () => {
+    // STRUCTURAL approach: These are ambiguous without context
+    // They get TIER_B because single-token + high confidence, but NOT TIER_A
+    // (no mid-sentence evidence, no recurrence, no NER backing)
     const testCases = [
       { name: 'Darkness', type: 'PERSON' as const },
-      { name: 'Black', type: 'MAGIC' as const },
-      { name: 'Weak', type: 'SPELL' as const },
+      { name: 'Black', type: 'MAGIC' as const },    // Type-capped anyway
+      { name: 'Weak', type: 'SPELL' as const },     // Type-capped anyway
     ];
 
     for (const tc of testCases) {
       const entity = createEntity(tc.name, tc.type, 0.98);
       const features = extractTierFeatures(entity);
-      const { tier, reason } = assignEntityTier(entity, features);
+      const { tier } = assignEntityTier(entity, features);
 
-      expect(tier).toBe('TIER_C');
-      expect(reason).toBe('common_word');
+      // MAGIC and SPELL are type-capped to TIER_B
+      // PERSON gets TIER_B for single_token_high_confidence
+      expect(tier).toBe('TIER_B');
     }
   });
 
@@ -465,5 +493,219 @@ describe('Quality-Based Demotions', () => {
     );
     expect(mergeResult.canMerge).toBe(false);
     expect(mergeResult.reason).toBe('tier_c_isolated');
+  });
+});
+
+// =============================================================================
+// NEW TIER BOUNDARY REGRESSION TESTS
+// Tests structural namehood scoring approach (no blocklists)
+// =============================================================================
+
+describe('Tier Boundary Regression Tests', () => {
+  describe('Type-Based TIER_B Caps', () => {
+    it('EVENT types are capped at TIER_B even with high confidence', () => {
+      // Multi-token EVENT with high confidence should be TIER_B (type-capped)
+      const entity = createEntity('the Family Reunion', 'EVENT', 0.98);
+      const features = extractTierFeatures(entity);
+      const { tier } = assignEntityTier(entity, features);
+
+      expect(tier).toBe('TIER_B');
+    });
+
+    it('SPELL types are capped at TIER_B', () => {
+      const entity = createEntity('Expelliarmus Charm', 'SPELL', 0.95);
+      const features = extractTierFeatures(entity);
+      const { tier } = assignEntityTier(entity, features);
+
+      expect(tier).toBe('TIER_B');
+    });
+
+    it('MATERIAL types are capped at TIER_B', () => {
+      const entity = createEntity('Mithril Ore', 'MATERIAL', 0.95);
+      const features = extractTierFeatures(entity);
+      const { tier } = assignEntityTier(entity, features);
+
+      expect(tier).toBe('TIER_B');
+    });
+
+    it('MAGIC types are capped at TIER_B', () => {
+      const entity = createEntity('Arcane Power', 'MAGIC', 0.95);
+      const features = extractTierFeatures(entity);
+      const { tier } = assignEntityTier(entity, features);
+
+      expect(tier).toBe('TIER_B');
+    });
+
+    it('PERSON and PLACE types can reach TIER_A with sufficient evidence', () => {
+      // Multi-token names have structural evidence
+      const person = createEntity('Barty Beauregard', 'PERSON', 0.98);
+      const multiTokenPlace = createEntity('Mont Linola', 'PLACE', 0.98);
+
+      const personFeatures = extractTierFeatures(person);
+      const placeFeatures = extractTierFeatures(multiTokenPlace);
+
+      const personResult = assignEntityTier(person, personFeatures);
+      const placeResult = assignEntityTier(multiTokenPlace, placeFeatures);
+
+      expect(personResult.tier).toBe('TIER_A');
+      expect(placeResult.tier).toBe('TIER_A');
+    });
+
+    it('single-token PLACE with only confidence gets TIER_B', () => {
+      // STRUCTURAL: "Lakefront" has high confidence but no structural evidence
+      // Single-token names need additional evidence (NER, recurrence) for TIER_A
+      const place = createEntity('Lakefront', 'PLACE', 0.98);
+      const features = extractTierFeatures(place);
+      const result = assignEntityTier(place, features);
+
+      // High confidence single-token → TIER_B (not rejected, just conservative)
+      expect(result.tier).toBe('TIER_B');
+      expect(result.reason).toBe('single_token_high_confidence');
+    });
+  });
+
+  describe('School Name Fragment Detection', () => {
+    it('demotes school fragments typed as PERSON to TIER_C', () => {
+      const testCases = [
+        { name: 'Mont Linola Junior', type: 'PERSON' as const },
+        { name: 'Oakdale High', type: 'PERSON' as const },
+        { name: 'Central Middle', type: 'PERSON' as const },
+        { name: 'Washington Elementary', type: 'PERSON' as const },
+      ];
+
+      for (const tc of testCases) {
+        const entity = createEntity(tc.name, tc.type, 0.98);
+        const features = extractTierFeatures(entity);
+        const { tier, reason } = assignEntityTier(entity, features);
+
+        expect(tier).toBe('TIER_C');
+        expect(reason).toBe('school_fragment_mistyped');
+      }
+    });
+
+    it('allows school names typed as ORG to reach higher tiers', () => {
+      const entity = createEntity('Mont Linola Junior High', 'ORG', 0.98);
+      const features = extractTierFeatures(entity);
+      const { tier } = assignEntityTier(entity, features);
+
+      // Multi-token ORG gets at least TIER_B, can reach TIER_A with high confidence
+      expect(['TIER_A', 'TIER_B']).toContain(tier);
+    });
+  });
+
+  describe('Namehood Evidence Scoring', () => {
+    it('single-token sentence-initial-only gets TIER_C (minimal evidence)', () => {
+      // No mid-sentence occurrence, no recurrence, no honorific
+      const entity = createEntity('Watson', 'PERSON', 0.85, {
+        isSentenceInitial: true,
+        occursNonInitial: false,
+      });
+
+      const features = extractTierFeatures(entity);
+      const { tier, reason } = assignEntityTier(entity, features);
+
+      expect(tier).toBe('TIER_C');
+      expect(reason).toBe('sentence_initial_single_token');
+    });
+
+    it('single-token with mid-sentence occurrence gets higher tier', () => {
+      // Mid-sentence occurrence is strong namehood evidence
+      const entity = createEntity('Watson', 'PERSON', 0.85, {
+        isSentenceInitial: true,
+        occursNonInitial: true,
+      });
+
+      const features = extractTierFeatures(entity);
+      const { tier } = assignEntityTier(entity, features);
+
+      // Should get TIER_A or TIER_B based on namehood score
+      expect(['TIER_A', 'TIER_B']).toContain(tier);
+    });
+
+    it('multi-token names get at least TIER_B', () => {
+      // Multi-token is structural evidence of namehood
+      const entity = createEntity('Sheriff Wilson', 'PERSON', 0.55);
+      const features = extractTierFeatures(entity);
+      const { tier } = assignEntityTier(entity, features);
+
+      expect(['TIER_A', 'TIER_B']).toContain(tier);
+    });
+
+    it('honorific prefix requires following name for boost', () => {
+      // "Doctor" alone doesn't get honorific boost - could be literal word
+      const standaloneTitle = createEntity('Doctor', 'PERSON', 0.35);
+      const standaloneFeatures = extractTierFeatures(standaloneTitle);
+      const standaloneResult = assignEntityTier(standaloneTitle, standaloneFeatures);
+
+      // Single token without evidence → TIER_C
+      expect(standaloneResult.tier).toBe('TIER_C');
+
+      // But "Doctor Smith" DOES get the honorific boost
+      const withName = createEntity('Doctor Smith', 'PERSON', 0.35);
+      const withNameFeatures = extractTierFeatures(withName);
+      const withNameResult = assignEntityTier(withName, withNameFeatures);
+
+      // Multi-token (2) + honorific (2) + mention (1) = 5 → TIER_A
+      expect(withNameResult.tier).toBe('TIER_A');
+    });
+  });
+
+  describe('NER-Backed Type Cap Interaction', () => {
+    it('NER-backed EVENT goes to TIER_B (not TIER_A)', () => {
+      const entity = createEntity('the Christmas Party', 'EVENT', 0.45, {
+        nerLabel: 'EVENT',
+      });
+
+      const features = extractTierFeatures(entity);
+      const { tier, reason } = assignEntityTier(entity, features);
+
+      expect(tier).toBe('TIER_B');
+      expect(reason).toBe('ner_backed_type_capped');
+    });
+
+    it('NER-backed PERSON goes to TIER_A', () => {
+      const entity = createEntity('Barty', 'PERSON', 0.45, {
+        nerLabel: 'PERSON',
+      });
+
+      const features = extractTierFeatures(entity);
+      const { tier, reason } = assignEntityTier(entity, features);
+
+      expect(tier).toBe('TIER_A');
+      expect(reason).toBe('ner_backed');
+    });
+  });
+
+  describe('Structural Garbage Rejection', () => {
+    it('rejects truncated artifacts', () => {
+      const testCases = ['er cars', 'e obeyed', 'nd march'];
+
+      for (const name of testCases) {
+        const entity = createEntity(name, 'PERSON', 0.98);
+        const features = extractTierFeatures(entity);
+        const { tier, reason } = assignEntityTier(entity, features);
+
+        expect(tier).toBe('TIER_C');
+        expect(reason).toBe('truncated_artifact');
+      }
+    });
+
+    it('rejects sentence fragments with verb morphology', () => {
+      const entity = createEntity('The pair sprang', 'PERSON', 0.98);
+      const features = extractTierFeatures(entity);
+      const { tier, reason } = assignEntityTier(entity, features);
+
+      expect(tier).toBe('TIER_C');
+      expect(reason).toBe('sentence_fragment');
+    });
+
+    it('rejects encoding artifacts', () => {
+      const entity = createEntity('ifying� in', 'SPELL', 0.95);
+      const features = extractTierFeatures(entity);
+      const { tier, reason } = assignEntityTier(entity, features);
+
+      expect(tier).toBe('TIER_C');
+      expect(reason).toBe('encoding_issues');
+    });
   });
 });

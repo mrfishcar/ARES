@@ -21,7 +21,7 @@ import { applyPatterns, type Pattern } from '../bootstrap';
 import type { PatternLibrary } from '../pattern-library';
 import { isValidEntity, correctEntityType } from '../entity-filter';
 import { loadRelationPatterns, type PatternsMode } from './load-relations';
-import { isContextDependent } from '../pronoun-utils';
+import { isContextDependent, isGarbageAlias } from '../pronoun-utils';
 
 // 🛡️ PRECISION DEFENSE SYSTEM - LAYER 1 & 3
 import { filterLowQualityEntities, isEntityFilterEnabled, getFilterConfig, getFilterStats } from '../entity-quality-filter';
@@ -1348,14 +1348,16 @@ export async function extractFromSegments(
     // 1. Add aliases from coreference links (descriptive mentions ONLY - filter pronouns and coordinations)
     // - Pronouns (he, she, it, etc.) are context-dependent and should NOT be permanent aliases
     // - Coordinations ("X and Y") should not be aliases for individual entities
+    // - Garbage aliases (short tokens, generic descriptors, truncated artifacts) are filtered
     for (const link of corefLinks.links) {
       if (link.entity_id === entity.id) {
         const mentionText = link.mention.text.trim();
 
-        // CRITICAL: Filter out pronouns, coordinations, and other context-dependent terms
+        // CRITICAL: Filter out pronouns, coordinations, garbage aliases, and context-dependent terms
         if (mentionText &&
             mentionText !== entity.canonical &&
             !isContextDependent(mentionText) &&
+            !isGarbageAlias(mentionText) &&
             link.method !== 'coordination') {
           aliasSet.add(mentionText);
         }
@@ -1367,17 +1369,21 @@ export async function extractFromSegments(
       const registeredAliases = aliasRegistry.getAliasesForEntity(entity.eid);
       for (const mapping of registeredAliases) {
         const surfaceForm = mapping.surfaceForm.trim();
-        // Add if different from canonical, not empty, and NOT a pronoun
+        // Add if different from canonical, not empty, NOT a pronoun, and NOT garbage
         if (surfaceForm &&
             surfaceForm !== entity.canonical &&
-            !isContextDependent(surfaceForm)) {
+            !isContextDependent(surfaceForm) &&
+            !isGarbageAlias(surfaceForm)) {
           aliasSet.add(surfaceForm);
         }
       }
     }
 
-    // Update entity.aliases with unique values
-    entity.aliases = Array.from(aliasSet);
+    // 3. Final filter: Remove any garbage aliases that slipped through
+    const cleanAliases = Array.from(aliasSet).filter(alias =>
+      !isGarbageAlias(alias) && !isContextDependent(alias)
+    );
+    entity.aliases = cleanAliases;
 
     if (aliasSet.size > 0) {
       entity.canonical = chooseBestCanonical([
