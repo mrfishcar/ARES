@@ -1,78 +1,122 @@
-# ARES (Advanced Relation Extraction System)
+# ARES - Advanced Relation Extraction System
 
-ARES is a local-first engine that turns unstructured text into a knowledge graph with entities, relations, and provenance. It prioritizes determinism, precision/recall tracking, and clear debugging over ML black boxes.
+A local-first, deterministic engine for extracting entities and relations from narrative text. Builds knowledge graphs with full provenance tracking.
 
-## Project Goals
-- Extract people, places, orgs, dates, events, and narrative relations with provenance.
-- Support alias, pronoun, and cross-document identity resolution.
-- Maintain a fast feedback loop through the Test Ladder and focused diagnostics.
-- Keep documentation single-sourced in this README so future agents can ramp quickly.
+## Quick Start
 
-## Current Architecture (high level)
-1. **Parsing**: spaCy-based dependency parse to drive rule evaluation.
-2. **Entity extraction**: NER + dependency patterns; alias normalization (surface + canonical); cross-document matching for exact names and known aliases; possessive pronoun handling with recency bias for sentence-openers.
-3. **Relation extraction**: Dependency + narrative patterns; inverse generation; sibling/alias/coordination filters to avoid false parentage; provenance stored alongside each relation.
-4. **Coreference + alias resolution**: Recency-weighted pronoun resolution, possessive pronoun bias toward prior sentence subjects, entity merging across documents by canonical/alias matches.
-5. **Outputs**: Knowledge graph with HERT IDs, GraphQL/API helpers, and export utilities.
+```bash
+# 1. Install dependencies
+npm install
 
-## Test Ladder (levels 1–5)
-Purpose: progressive gates for extraction quality. Reporter guardrail: default runs now force the stable `basic` reporter; use `npm run test:stable` to mirror CI and avoid the prior Vitest `RangeError` from the dot reporter.
+# 2. Start spaCy parser (Terminal 1) - REQUIRED for full NER
+make parser
+# Wait for: "Application startup complete"
+
+# 3. Run tests (Terminal 2)
+npm test
+
+# 4. Start dev server (optional)
+make server-graphql  # GraphQL API on port 4000
+```
+
+**Note**: Without the spaCy parser, tests use MockParserClient with limited NER. Start the parser for production-quality extraction.
+
+## Architecture Overview
+
+```
+Text → spaCy Parser → Entity Extraction → Relation Extraction → Knowledge Graph
+           ↓                  ↓                   ↓
+      Tokenization      3-Stage NER        Pattern Matching
+      Dependency Parse  Alias Resolution   Inverse Generation
+      POS Tagging       Coreference        Evidence Provenance
+```
+
+**Core Pipeline** (`app/engine/`):
+- `extract/orchestrator.ts` - Main extraction coordinator
+- `extract/entities.ts` - Entity extraction (NER, aliases, confidence)
+- `extract/relations.ts` - Relation extraction (dependency patterns)
+- `narrative-relations.ts` - Narrative pattern extraction
+- `coref.ts` - Coreference resolution
+- `merge.ts` - Cross-document entity merging
+
+**Parser** (`app/parser/`):
+- `HttpParserClient.ts` - Production spaCy client
+- `MockParserClient.ts` - Test fallback (limited NER)
+
+## Testing
+
+**Test Ladder** (progressive difficulty):
 
 | Level | Focus | Command |
-| --- | --- | --- |
-| 1 | Simple sentences / core entity+relation patterns | `npm run test:ladder:1` or `npm test tests/ladder/level-1-simple.spec.ts` |
-| 2 | Multi-sentence + multi-hop reasoning | `npm run test:ladder:2` or `npm test tests/ladder/level-2-multisentence.spec.ts` |
-| 3 | Coreference-heavy narratives | `npm test tests/ladder/level-3-complex.spec.ts` |
-| 5A | Cross-document identity/merging | `npm test tests/ladder/level-5-cross-document.spec.ts` |
-| 5B | Performance + query helpers | `npm test tests/ladder/level-5b-performance.spec.ts` |
-| 5C | Extended entity type coverage | `npm test tests/ladder/level-5c-new-entities.spec.ts` |
+|-------|-------|---------|
+| 1 | Simple sentences | `npm test tests/ladder/level-1-simple.spec.ts` |
+| 2 | Multi-sentence | `npm test tests/ladder/level-2-multisentence.spec.ts` |
+| 3 | Complex narratives | `npm test tests/ladder/level-3-complex.spec.ts` |
+| 5A | Cross-document | `npm test tests/ladder/level-5-cross-document.spec.ts` |
+| 5B | Performance | `npm test tests/ladder/level-5b-performance.spec.ts` |
 
-**Status snapshot (latest checks):**
-- Levels 1–3 passing locally (Level 3 passes when run without the dot reporter).
-- Level 5: all current 5A/5B/5C tests passing; keep an eye on coordination merges in "Harry, Ron, and Hermione" style sentences, but nothing is failing now.
-- Stage 3 precision/recall targets exceeded (≈80.8% precision, 75.8% recall, 78.3% F1). Stage 4 not started.
+**Quality Targets**:
+- Entity Precision: ≥80%, Recall: ≥75%
+- Relation Precision: ≥80%, Recall: ≥75%
 
-## Phase 3 & Next Tasks
-- Phase 3 goals met; keep sibling filters and possessive pronoun recency bias intact.
-- Known testing quirk: Vitest dot reporter triggers `RangeError: Invalid count value: Infinity`; use default reporter instead.
-- Next ladder focus after docs cleanup: re-verify Level 5 coordination/merging edge case and confirm full suite health.
+```bash
+npm test                    # Run all tests
+npm run test:ladder         # Run ladder tests only
+make smoke                  # Quick validation
+```
 
-## Current Behaviors to Preserve
-- **Entity extraction**: NER + pattern blend, alias normalization, cross-doc matching by canonical/alias text, and provenance per mention.
-- **Pronoun/alias resolution**: Recency-weighted pronouns; sentence-initial possessive pronouns bias to prior sentence subject; avoid overwriting higher-salience entities unless compatibility holds.
-- **Relation extraction**: Inverse generation, sibling filters preventing false parent_of/child_of from appositives (e.g., "eldest son"), narrative patterns for teaching/joined/rivalry, and coordination guards.
+## Key Concepts
 
-## Workflow: Start Here
-1. **Load context**: Read this README and the latest `HANDOFF.md` (kept lean and current).
-2. **Run targeted tests**: Start with the relevant ladder level (see commands above). Avoid the dot reporter.
-3. **Find the next task**: Check the "Phase 3 & Next Tasks" notes and `HANDOFF.md` for any remaining blockers (Level 5 coordination merging is the main watch item) before coding.
-4. **Implement safely**: Make minimal, well-reasoned changes that preserve existing passing behavior; follow existing patterns.
-5. **Update docs**: Any behavioral change must update this README (the single source of truth) and, if ongoing, `HANDOFF.md`.
+### Entity Types
+`PERSON`, `ORG`, `PLACE`, `GPE`, `DATE`, `EVENT`, `ARTIFACT`, `RACE`, `DEITY`
 
-## Documentation Rules
-- **README.md is canonical**: All project status, workflow, and testing guidance lives here.
-- **Update README.md with every change**: No feature or workflow update is complete until reflected here.
-- **HANDOFF.md is for active tasks only**: Keep it concise; defer to this README for global context.
-- **No redundant docs**: Obsolete or duplicative files should be removed immediately.
-- **If in doubt, trust this README**: Treat any other file as outdated unless it explicitly points back here.
+### Relation Predicates
+`parent_of`, `child_of`, `sibling_of`, `married_to`, `works_at`, `lives_in`, `taught`, `founded`, etc.
 
-## Known Issues
+### HERT IDs
+Hierarchical Entity Reference Tags - stable, compact entity identifiers with provenance.
+Format: `HERTv1:1J8trXOyn4HRaWXrdh9TUE` encodes entity ID, alias, document, position.
 
-### iOS Safari Text Selection Menu
-**Status**: Mitigated
-**Impact**: Overlay/backdrop no longer intercepts selection on iPad Safari; we avoid auto-focusing close buttons and add a touch-safe mode.
-**Debugging**: Set `VITE_OVERLAY_HITBOX_DEBUG=1` to outline overlay hitboxes. Selection logging remains unchanged; use `VITE_ARES_PERF=1` to trace decoration timing when debugging editor perf.
-**References**:
-- File: `app/ui/console/src/components/EntityOverlay.tsx` (touch-safe mode, focus guard)
-- File: `app/ui/console/src/components/CodeMirrorEditor.tsx` (selection + decoration perf)
+## Configuration
 
-## File Pointers
-- `HANDOFF.md`: Latest session status and remaining Level 5 issues.
-- `tests/ladder/*.spec.ts`: Ladder tests and fixtures.
-- `app/engine/*`: Core extraction, relation logic, and coreference handling.
-- `docs/IOS_KEYBOARD_FIX.md`: **🚨 CRITICAL** - iOS/iPad keyboard fix documentation. READ BEFORE modifying CodeMirror editor code.
-- `docs/AI_MODEL_GUIDE.md`: **NEW** - Model selection guide (OPUS/SONNET/HAIKU/CODEX).
-- `docs/ARCHITECTURE_REVIEW_2025_12.md`: **NEW** - Architecture review and strategic roadmap.
-- `docs/VISION.md`: Core product vision (writing tool for authors).
-- `docs/LINGUISTIC_REFERENCE.md`: Linguistic patterns for debugging.
+```bash
+# Parser selection
+PARSER_BACKEND=http|mock|embedded  # Default: auto (http → mock fallback)
+PARSER_URL=http://127.0.0.1:8000   # Parser service URL
 
+# Debug modes
+L3_DEBUG=1                         # Verbose extraction logging
+L3_TRACE=1                         # Span tracing
+```
+
+## Project Structure
+
+```
+ARES/
+├── app/
+│   ├── engine/          # Extraction engine
+│   │   ├── extract/     # Entity & relation extraction
+│   │   ├── hert/        # HERT encoding
+│   │   └── linguistics/ # Language processing utilities
+│   ├── parser/          # spaCy parser clients
+│   ├── storage/         # SQLite persistence
+│   ├── api/             # GraphQL API
+│   └── ui/              # Web interfaces
+├── tests/
+│   ├── ladder/          # Progressive test ladder
+│   └── entity-extraction/  # Entity regression tests
+├── scripts/
+│   └── parser_service.py   # spaCy service
+└── docs/                # Reference documentation
+```
+
+## Documentation
+
+- `ARCHITECTURE.md` - Detailed pipeline and design decisions
+- `CONTRIBUTING.md` - Development workflow and conventions
+- `docs/LINGUISTIC_REFERENCE.md` - Language patterns for debugging
+- `docs/architecture/` - Technical design documents
+
+## License
+
+MIT

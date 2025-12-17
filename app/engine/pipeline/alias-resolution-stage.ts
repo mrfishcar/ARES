@@ -116,7 +116,7 @@ export async function runAliasResolutionStage(
 
                 entity.eid = newEID;
                 entity.sp = newSP;
-                entity.aid = aliasResolver.registerAlias(entity.canonical, newEID);
+                entity.aid = aliasResolver.registerAlias(entity.canonical, newEID, 1.0, entity.type);
 
                 // Register this sense
                 senseRegistry.register(entity.canonical, newEID, entity.type, newSP, profile);
@@ -131,7 +131,7 @@ export async function runAliasResolutionStage(
       } else {
         // Create new entity
         entity.eid = eidRegistry.getOrCreate(entity.canonical);
-        entity.aid = aliasResolver.registerAlias(entity.canonical, entity.eid);
+        entity.aid = aliasResolver.registerAlias(entity.canonical, entity.eid, 1.0, entity.type);
 
         // Phase 4: Assign sense path if needed
         const existingSenses = senseRegistry.getSenses(entity.canonical);

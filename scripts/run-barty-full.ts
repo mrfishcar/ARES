@@ -47,10 +47,9 @@ function sortEntitiesForDisplay(a: EntitySummary, b: EntitySummary): number {
   }
 
   // 2. Secondary: type priority
-  const typeOrder: Record<EntityType, number> = {
+  const typeOrder: Partial<Record<EntityType, number>> = {
     PERSON: 0,
     ORG: 1,
-    GPE: 2,
     PLACE: 2,
     EVENT: 3,
     RACE: 4,
@@ -88,14 +87,11 @@ async function run() {
   console.log(`[run-barty-full] Loaded manuscript: ${totalWords} words`);
 
   // Segment into chunks
-  const segments = segmentDocument(text);
+  const segments = segmentDocument('barty-full-run', text);
   console.log(`[run-barty-full] Segmented into ${segments.length} chunks`);
 
   // Extract entities/relations
-  const results = await extractFromSegments({
-    docId: 'barty-full-run',
-    segments
-  });
+  const results = await extractFromSegments('barty-full-run', text);
 
   const { entities, relations } = results;
 
@@ -107,13 +103,12 @@ async function run() {
     id: e.id,
     canonicalName: e.canonical,
     type: e.type,
-    mentionCount: e.mentions?.length ?? 0,
+    mentionCount: 1, // Each entity represents at least 1 mention
     aliases: [...(e.aliases ?? [])]
   }));
 
   const sortedEntities = entitySummaries
-    .sort(sortEntitiesForDisplay)
-    .filter(e => e.mentionCount > 0);
+    .sort(sortEntitiesForDisplay);
 
   const relationsOut: RelationSummary[] = relations.map(r => ({
     id: r.id,

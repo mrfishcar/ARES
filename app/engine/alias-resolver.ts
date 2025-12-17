@@ -13,11 +13,12 @@
  * 5. Manual mappings (user-defined)
  */
 
-import type { Entity, EntityType } from './schema';
+import type { Entity, EntityType, EntityTier } from './schema';
 import type { EntityProfile } from './entity-profiler';
 import { aliasRegistry } from './alias-registry';
 import { eidRegistry } from './eid-registry';
 import { normalizeForAliasing } from './hert/fingerprint';
+import { canMergeByTier } from './entity-tier-assignment';
 
 /**
  * Alias resolution result
@@ -69,18 +70,25 @@ export class AliasResolver {
     profile?: EntityProfile,
     existingProfiles?: Map<string, EntityProfile>
   ): AliasResolution | null {
-    // Strategy 1: Check if already registered
+    // Strategy 1: Check if already registered (with type compatibility check)
     const existingAID = aliasRegistry.getAID(surfaceForm);
     if (existingAID !== null) {
       const mapping = aliasRegistry.getByAID(existingAID);
       if (mapping) {
-        return {
-          eid: mapping.eid,
-          aid: existingAID,
-          confidence: mapping.confidence,
-          method: 'exact',
-          canonical: eidRegistry.getCanonical(mapping.eid) || undefined
-        };
+        // CRITICAL: Check type compatibility before using exact match
+        // Don't resolve to an entity of incompatible type (e.g., PLACE → ORG)
+        if (mapping.entityType && !this.areTypesCompatible(entityType, mapping.entityType as EntityType)) {
+          // Types are incompatible - skip this match and try other strategies
+          // This allows "Mont Linola" (PLACE) to stay separate from "Mont Linola Junior High" (ORG)
+        } else {
+          return {
+            eid: mapping.eid,
+            aid: existingAID,
+            confidence: mapping.confidence,
+            method: 'exact',
+            canonical: eidRegistry.getCanonical(mapping.eid) || undefined
+          };
+        }
       }
     }
 
@@ -88,7 +96,7 @@ export class AliasResolver {
     const normalizedForm = normalizeForAliasing(surfaceForm);
     const manualEID = this.manualMappings.get(normalizedForm);
     if (manualEID !== undefined) {
-      const aid = aliasRegistry.register(surfaceForm, manualEID, 1.0);
+      const aid = aliasRegistry.register(surfaceForm, manualEID, 1.0, entityType);
       return {
         eid: manualEID,
         aid,
@@ -101,7 +109,7 @@ export class AliasResolver {
     // Strategy 3: Try title variations
     const titleMatch = this.findTitleVariation(surfaceForm, entityType);
     if (titleMatch) {
-      const aid = aliasRegistry.register(surfaceForm, titleMatch.eid, titleMatch.confidence);
+      const aid = aliasRegistry.register(surfaceForm, titleMatch.eid, titleMatch.confidence, entityType);
       return {
         eid: titleMatch.eid,
         aid,
@@ -115,7 +123,7 @@ export class AliasResolver {
     if (profile && existingProfiles && existingProfiles.size > 0) {
       const profileMatch = this.findBestProfileMatch(surfaceForm, profile, entityType, existingProfiles);
       if (profileMatch && profileMatch.confidence > 0.8) {
-        const aid = aliasRegistry.register(surfaceForm, profileMatch.eid, profileMatch.confidence);
+        const aid = aliasRegistry.register(surfaceForm, profileMatch.eid, profileMatch.confidence, entityType);
         return {
           eid: profileMatch.eid,
           aid,
@@ -133,18 +141,65 @@ export class AliasResolver {
   /**
    * Register a new surface form → entity mapping
    */
-  registerAlias(surfaceForm: string, eid: number, confidence: number = 1.0): number {
-    return aliasRegistry.register(surfaceForm, eid, confidence);
+  registerAlias(surfaceForm: string, eid: number, confidence: number = 1.0, entityType?: EntityType): number {
+    return aliasRegistry.register(surfaceForm, eid, confidence, entityType);
   }
 
   /**
    * Add manual mapping (user-defined)
    */
-  addManualMapping(surfaceForm: string, eid: number): void {
+  addManualMapping(surfaceForm: string, eid: number, entityType?: EntityType): void {
     const normalizedForm = normalizeForAliasing(surfaceForm);
     this.manualMappings.set(normalizedForm, eid);
-    aliasRegistry.register(surfaceForm, eid, 1.0);
+    aliasRegistry.register(surfaceForm, eid, 1.0, entityType);
     console.log(`[ALIAS-RESOLVER] Manual mapping: "${surfaceForm}" → EID ${eid}`);
+  }
+
+  /**
+   * Tier-aware resolution
+   *
+   * TIER_C entities are isolated and should not be merged with other entities.
+   * This prevents low-confidence provisional entities from contaminating
+   * high-confidence core entity clusters.
+   *
+   * Merging rules:
+   * - TIER_A can merge with TIER_A (full merging)
+   * - TIER_B can merge with TIER_A or TIER_B (cautious merging)
+   * - TIER_C cannot merge with anything (isolated)
+   *
+   * @param entity - Entity to resolve (includes tier information)
+   * @param profile - Optional profile for context-based matching
+   * @param existingProfiles - All existing profiles
+   * @returns Resolution or null if should create new entity
+   */
+  resolveWithTier(
+    entity: Entity,
+    profile?: EntityProfile,
+    existingProfiles?: Map<string, EntityProfile>
+  ): AliasResolution | null {
+    const tier = entity.tier ?? 'TIER_A'; // Default to TIER_A for backward compatibility
+
+    // TIER_C entities are isolated - never merge
+    if (tier === 'TIER_C') {
+      if (process.env.TIER_DEBUG === '1') {
+        console.log(`[ALIAS-RESOLVER] TIER_C entity "${entity.canonical}" is isolated - no merging`);
+      }
+      return null;
+    }
+
+    // For TIER_A and TIER_B, use standard resolution
+    return this.resolve(entity.canonical, entity.type, profile, existingProfiles);
+  }
+
+  /**
+   * Check if an entity can be merged based on its tier
+   *
+   * @param entity - Entity to check
+   * @returns true if entity can participate in alias merging
+   */
+  canMergeEntity(entity: Entity): boolean {
+    const tier = entity.tier ?? 'TIER_A';
+    return tier !== 'TIER_C';
   }
 
   /**
@@ -154,6 +209,8 @@ export class AliasResolver {
    * - "Gandalf" matches "Gandalf the Grey"
    * - "Professor Dumbledore" matches "Dumbledore"
    * - "King Théoden" matches "Théoden"
+   *
+   * GUARD: Prevents cross-type merging (PLACE + ORG, PERSON + ORG, etc.)
    */
   private findTitleVariation(surfaceForm: string, entityType: EntityType): { eid: number; confidence: number } | null {
     const normalized = normalizeForAliasing(surfaceForm);
@@ -162,9 +219,14 @@ export class AliasResolver {
     const allMappings = Array.from(aliasRegistry['mappings'].values());
 
     for (const mapping of allMappings) {
-      // Skip if different entity type
       const canonical = eidRegistry.getCanonical(mapping.eid);
       if (!canonical) continue;
+
+      // CRITICAL: Check type compatibility before allowing merge
+      // Don't merge entities of fundamentally different types
+      if (mapping.entityType && !this.areTypesCompatible(entityType, mapping.entityType as EntityType)) {
+        continue;
+      }
 
       // Check if it's a title variation
       if (this.isTitleVariation(normalized, mapping.normalizedKey)) {
@@ -176,6 +238,37 @@ export class AliasResolver {
     }
 
     return null;
+  }
+
+  /**
+   * Check if two entity types are compatible for merging
+   *
+   * Types in the same group can merge:
+   * - Location types: PLACE, GPE (Geographic Political Entity)
+   * - Organization types: ORG
+   * - Person types: PERSON
+   * - Date/Time types: DATE, TIME
+   *
+   * Cross-group merging is NOT allowed (e.g., PLACE + ORG)
+   */
+  private areTypesCompatible(type1: EntityType, type2: EntityType): boolean {
+    // Same type always compatible
+    if (type1 === type2) return true;
+
+    // Define type groups
+    const locationTypes = new Set(['PLACE', 'GPE']);
+    const orgTypes = new Set(['ORG']);
+    const personTypes = new Set(['PERSON']);
+    const timeTypes = new Set(['DATE', 'TIME']);
+
+    // Check if both types are in the same group
+    if (locationTypes.has(type1) && locationTypes.has(type2)) return true;
+    if (orgTypes.has(type1) && orgTypes.has(type2)) return true;
+    if (personTypes.has(type1) && personTypes.has(type2)) return true;
+    if (timeTypes.has(type1) && timeTypes.has(type2)) return true;
+
+    // Cross-group merging not allowed
+    return false;
   }
 
   /**

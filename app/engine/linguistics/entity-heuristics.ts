@@ -99,11 +99,21 @@ export function shouldSuppressSentenceInitialPerson(
   const hasTitleNeighbor = (prev && TITLE_WORDS.has(prev.toLowerCase())) || (next && TITLE_WORDS.has(next.toLowerCase()));
   if (hasTitleNeighbor) return { suppress: false };
 
-  const hasNearbyProperContinuation = nextTwo.some(tok => tok && /^[A-Z]/.test(tok));
+  const hasNearbyProperContinuation = nextTwo?.some(tok => tok && /^[A-Z]/.test(tok)) ?? false;
   if (hasNearbyProperContinuation) return { suppress: false };
 
   const followingDialogue = /^\s*(?:,|—|-)\s*(said|asked|replied)/i.test(text.slice(span.end, span.end + 25));
   if (followingDialogue) return { suppress: false };
+
+  // Check for appositive patterns: "X, son/daughter/king/prince/etc. of Y"
+  // These strongly indicate X is a proper name
+  const followingAppositive = /^\s*,\s*(son|daughter|child|heir|king|queen|prince|princess|lord|lady|duke|duchess|brother|sister|father|mother|wife|husband|widow|widower|cousin|nephew|niece|ruler|chief|leader)\s+(of|to)\s+/i.test(text.slice(span.end, span.end + 40));
+  if (followingAppositive) return { suppress: false };
+
+  // Check for comma followed by capitalized word (likely appositive with name)
+  // Pattern: "Aragorn, Arathorn's son" or "Aragorn, the heir"
+  const followingCommaCapital = /^\s*,\s+[A-Z]/.test(text.slice(span.end, span.end + 20));
+  if (followingCommaCapital) return { suppress: false };
 
   const starter = SENTENCE_STARTERS.has(token.toLowerCase());
   if (starter) {
