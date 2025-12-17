@@ -1,0 +1,387 @@
+{
+  "totalWords": 39281,
+  "chunkCount": 67,
+  "entityCount": 29,
+  "relationCount": 11,
+  "entitiesByType": {
+    "PERSON": 19,
+    "PLACE": 1,
+    "EVENT": 2,
+    "MAGIC": 1,
+    "SPELL": 4,
+    "MATERIAL": 2
+  },
+  "topEntities": [
+    {
+      "id": "3b264cc6-1efe-47db-863a-ca720af202ff",
+      "canonicalName": "Adaline Garbotholow",
+      "type": "PERSON",
+      "mentionCount": 1,
+      "aliases": [
+        "Adaline",
+        "Garbotholow",
+        "Adaline Garbotholow",
+        "the family"
+      ]
+    },
+    {
+      "id": "entity-person-junior",
+      "canonicalName": "Adoline Garbotholow",
+      "type": "PERSON",
+      "mentionCount": 1,
+      "aliases": [
+        "Adoline",
+        "Garbotholow",
+        "Adoline Garbotholow"
+      ]
+    },
+    {
+      "id": "entity-person-high",
+      "canonicalName": "Adoline Garbotholow",
+      "type": "PERSON",
+      "mentionCount": 1,
+      "aliases": [
+        "Adoline",
+        "Garbotholow",
+        "Adoline Garbotholow"
+      ]
+    },
+    {
+      "id": "3fc45256-98d5-4c05-a510-3a1f983856ab",
+      "canonicalName": "Barty Beauregard",
+      "type": "PERSON",
+      "mentionCount": 1,
+      "aliases": [
+        "Barty",
+        "Beauregard",
+        "Barty Beauregard"
+      ]
+    },
+    {
+      "id": "entity-person-andrew",
+      "canonicalName": "Beau Adams",
+      "type": "PERSON",
+      "mentionCount": 1,
+      "aliases": [
+        "Beau",
+        "Adams",
+        "Beau Adams"
+      ]
+    },
+    {
+      "id": "entity-person-beauregard",
+      "canonicalName": "Beau Adams",
+      "type": "PERSON",
+      "mentionCount": 1,
+      "aliases": [
+        "Beau",
+        "Adams",
+        "Beau Adams"
+      ]
+    },
+    {
+      "id": "688052ed-69a5-4b25-bdc7-17deb7ed4291",
+      "canonicalName": "Darkness",
+      "type": "PERSON",
+      "mentionCount": 1,
+      "aliases": [
+        "Darkness"
+      ]
+    },
+    {
+      "id": "c754e360-5222-47a1-8ea0-07ab40c8b768",
+      "canonicalName": "Fabulous Fraud Cory Allen",
+      "type": "PERSON",
+      "mentionCount": 1,
+      "aliases": [
+        "Allen"
+      ]
+    },
+    {
+      "id": "ea10cc7f-4ae2-47df-829b-79afbe42af00",
+      "canonicalName": "Fredericks",
+      "type": "PERSON",
+      "mentionCount": 1,
+      "aliases": [
+        "Fredericks"
+      ]
+    },
+    {
+      "id": "e27a9fe1-9473-4196-890c-c828151dc1b5",
+      "canonicalName": "Kenny",
+      "type": "PERSON",
+      "mentionCount": 1,
+      "aliases": [
+        "Barty"
+      ]
+    },
+    {
+      "id": "c7d0746e-aab9-433d-9609-ffc00672183d",
+      "canonicalName": "Librarian",
+      "type": "PERSON",
+      "mentionCount": 1,
+      "aliases": [
+        "Librarian"
+      ]
+    },
+    {
+      "id": "entity-person-thanks",
+      "canonicalName": "Michelle De Vera",
+      "type": "PERSON",
+      "mentionCount": 1,
+      "aliases": [
+        "Vera",
+        "Michelle De Vera"
+      ]
+    },
+    {
+      "id": "entity-person-mrs",
+      "canonicalName": "Michelle De Vera",
+      "type": "PERSON",
+      "mentionCount": 1,
+      "aliases": [
+        "Vera",
+        "Michelle De Vera"
+      ]
+    },
+    {
+      "id": "74dec81f-35af-451d-aede-f697f4ebc51a",
+      "canonicalName": "Mont Linola Junior",
+      "type": "PERSON",
+      "mentionCount": 1,
+      "aliases": [
+        "Kelly",
+        "Prescott",
+        "Kelly Prescott",
+        "linola jr",
+        "the old woman"
+      ]
+    },
+    {
+      "id": "def2118b-a10c-45dd-9c62-2948d384e0c2",
+      "canonicalName": "Mr. Green",
+      "type": "PERSON",
+      "mentionCount": 1,
+      "aliases": [
+        "Mr.",
+        "Mr. Green",
+        "Mr"
+      ]
+    },
+    {
+      "id": "c09e3d06-f497-4219-b2cd-63d1827ae8fe",
+      "canonicalName": "Roy Burkley",
+      "type": "PERSON",
+      "mentionCount": 1,
+      "aliases": [
+        "Roy",
+        "Burkley",
+        "Roy Burkley",
+        "the family",
+        "Beauregard"
+      ]
+    },
+    {
+      "id": "8bc06dff-ad70-44ca-8cc0-ff29f04a84ed",
+      "canonicalName": "The pair sprang",
+      "type": "PERSON",
+      "mentionCount": 1,
+      "aliases": [
+        "Beau",
+        "the King of",
+        "The pair sprang",
+        "the family information"
+      ]
+    },
+    {
+      "id": "a07ecacc-7d6a-43bd-9a23-d6cf38662e54",
+      "canonicalName": "The pair sprang",
+      "type": "PERSON",
+      "mentionCount": 1,
+      "aliases": [
+        "Monster",
+        "Runner",
+        "Monster Runner",
+        "The pair sprang"
+      ]
+    },
+    {
+      "id": "7591791a-e123-4cb1-8c8f-5878abbec2cf",
+      "canonicalName": "Tula Ordogne",
+      "type": "PERSON",
+      "mentionCount": 1,
+      "aliases": [
+        "Tula",
+        "Ordogne",
+        "Tula Ordogne"
+      ]
+    },
+    {
+      "id": "bac15c20-459b-4c20-9feb-ba2fd9bdbc01",
+      "canonicalName": "Lakefront",
+      "type": "PLACE",
+      "mentionCount": 1,
+      "aliases": [
+        "Lakefront"
+      ]
+    },
+    {
+      "id": "2824263f-5eaa-473f-86cb-8c518eed5ff1",
+      "canonicalName": "the Family Reunion",
+      "type": "EVENT",
+      "mentionCount": 1,
+      "aliases": [
+        "If",
+        "Mr",
+        "If Mr",
+        "the family much",
+        "the Family Reunion",
+        "the professional family"
+      ]
+    },
+    {
+      "id": "f0a5147a-8cbc-4d5b-b17a-080637b4a477",
+      "canonicalName": "the Family Reunion",
+      "type": "EVENT",
+      "mentionCount": 1,
+      "aliases": [
+        "Beauregard",
+        "the family much",
+        "the Family Reunion",
+        "the professional family"
+      ]
+    },
+    {
+      "id": "cb8e8612-955c-4bfe-8026-b32c155186be",
+      "canonicalName": "Black",
+      "type": "MAGIC",
+      "mentionCount": 1,
+      "aliases": [
+        "Black"
+      ]
+    },
+    {
+      "id": "3dda4286-20df-4ac9-82f3-362ea677ad0f",
+      "canonicalName": "Beauregard",
+      "type": "SPELL",
+      "mentionCount": 1,
+      "aliases": [
+        "Fainting",
+        "Beau"
+      ]
+    },
+    {
+      "id": "8e71399d-63c3-4d33-8a32-9c7418f4d4b3",
+      "canonicalName": "er cars",
+      "type": "SPELL",
+      "mentionCount": 1,
+      "aliases": [
+        "Mouthed"
+      ]
+    },
+    {
+      "id": "a12f67b6-eeeb-4db3-9bab-d05867616020",
+      "canonicalName": "ifying� in",
+      "type": "SPELL",
+      "mentionCount": 1,
+      "aliases": [
+        "Certainly"
+      ]
+    },
+    {
+      "id": "c0dc56c8-23be-40dc-b792-4e8bc341801a",
+      "canonicalName": "Weak",
+      "type": "SPELL",
+      "mentionCount": 1,
+      "aliases": [
+        "Weak"
+      ]
+    },
+    {
+      "id": "acc32b3d-ad5c-4e2e-b18a-616ac2dc5009",
+      "canonicalName": "e obeyed",
+      "type": "MATERIAL",
+      "mentionCount": 1,
+      "aliases": [
+        "Aged"
+      ]
+    },
+    {
+      "id": "6294211f-fba1-428f-83b7-ccc111c01491",
+      "canonicalName": "to the",
+      "type": "MATERIAL",
+      "mentionCount": 1,
+      "aliases": [
+        "Hot"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "77b3a246-f625-4579-9de0-107f4995f482",
+      "pred": "friends_with",
+      "subj": "8bc06dff-ad70-44ca-8cc0-ff29f04a84ed",
+      "obj": "c7d0746e-aab9-433d-9609-ffc00672183d"
+    },
+    {
+      "id": "7c15f7d3-95e0-457f-b253-e6c11c44bb6e",
+      "pred": "friends_with",
+      "subj": "c7d0746e-aab9-433d-9609-ffc00672183d",
+      "obj": "8bc06dff-ad70-44ca-8cc0-ff29f04a84ed"
+    },
+    {
+      "id": "2007cfb9-1ac8-46b2-9e05-58f6f1e71139",
+      "pred": "child_of",
+      "subj": "688052ed-69a5-4b25-bdc7-17deb7ed4291",
+      "obj": "8bc06dff-ad70-44ca-8cc0-ff29f04a84ed"
+    },
+    {
+      "id": "e5f96ab5-6721-4d69-ba89-631e6501089a",
+      "pred": "child_of",
+      "subj": "688052ed-69a5-4b25-bdc7-17deb7ed4291",
+      "obj": "entity-person-andrew"
+    },
+    {
+      "id": "12047b4b-6419-4306-b83a-d315481e19b1",
+      "pred": "child_of",
+      "subj": "74dec81f-35af-451d-aede-f697f4ebc51a",
+      "obj": "3b264cc6-1efe-47db-863a-ca720af202ff"
+    },
+    {
+      "id": "6cd6b429-d20d-4215-8d73-686eb5f6e818",
+      "pred": "child_of",
+      "subj": "8bc06dff-ad70-44ca-8cc0-ff29f04a84ed",
+      "obj": "2824263f-5eaa-473f-86cb-8c518eed5ff1"
+    },
+    {
+      "id": "06ff25d7-ac8a-4b52-b954-6c0f28141474",
+      "pred": "child_of",
+      "subj": "74dec81f-35af-451d-aede-f697f4ebc51a",
+      "obj": "def2118b-a10c-45dd-9c62-2948d384e0c2"
+    },
+    {
+      "id": "d88d59f5-c775-4dbb-a691-029494cf6e23",
+      "pred": "parent_of",
+      "subj": "8bc06dff-ad70-44ca-8cc0-ff29f04a84ed",
+      "obj": "688052ed-69a5-4b25-bdc7-17deb7ed4291"
+    },
+    {
+      "id": "b4d0fd8b-7946-4d6e-ab2f-478dfc9a3590",
+      "pred": "parent_of",
+      "subj": "entity-person-andrew",
+      "obj": "def2118b-a10c-45dd-9c62-2948d384e0c2"
+    },
+    {
+      "id": "48ea8a71-4ea0-462e-bd6a-7741a404847d",
+      "pred": "parent_of",
+      "subj": "8bc06dff-ad70-44ca-8cc0-ff29f04a84ed",
+      "obj": "74dec81f-35af-451d-aede-f697f4ebc51a"
+    },
+    {
+      "id": "e7d9a320-1d19-4584-ade9-fb103c5cac34",
+      "pred": "parent_of",
+      "subj": "2824263f-5eaa-473f-86cb-8c518eed5ff1",
+      "obj": "8bc06dff-ad70-44ca-8cc0-ff29f04a84ed"
+    }
+  ]
+}
