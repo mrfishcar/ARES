@@ -1,5 +1,11 @@
 import type { EntitySpan, EntityType, DocumentEntityMetadata } from '../types/entities';
 
+export interface NavigateToRange {
+  from: number;
+  to: number;
+  requestId: number;
+}
+
 export interface CodeMirrorEditorProps {
   value: string;
   onChange: (value: string) => void;
@@ -34,4 +40,7 @@ export interface CodeMirrorEditorProps {
   /** NEW: Windowed mode support for large documents */
   baseOffset?: number; // Global offset where this window starts (default 0 = full doc mode)
   onCursorChange?: (globalPos: number) => void; // Called when cursor moves (for window adjustment)
+
+  /** NEW: Navigate to a range (e.g., when clicking an entity in the sidebar) */
+  navigateToRange?: NavigateToRange;
 }

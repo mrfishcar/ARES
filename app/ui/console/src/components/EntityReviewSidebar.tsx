@@ -23,6 +23,7 @@ interface EntityReviewSidebarProps {
   onEntityUpdate: (index: number, updates: Partial<EntitySpan>) => void;
   onLogReport: () => void;
   onCopyReport: () => void;
+  onNavigateEntity?: (entity: EntitySpan) => void;
 }
 
 const ENTITY_TYPES: EntityType[] = [
@@ -42,6 +43,7 @@ export function EntityReviewSidebar({
   onEntityUpdate,
   onLogReport,
   onCopyReport,
+  onNavigateEntity,
 }: EntityReviewSidebarProps) {
   // Filter state
   const [showRejected, setShowRejected] = useState(false);
@@ -143,6 +145,13 @@ export function EntityReviewSidebar({
 
   const keptCount = entities.filter(e => !e.rejected).length;
   const rejectedCount = entities.filter(e => e.rejected).length;
+
+  const handleRowClick = useCallback((entity: EntitySpan, event: React.MouseEvent) => {
+    if (!onNavigateEntity) return;
+    const target = event.target as HTMLElement | null;
+    if (target?.closest('button, select, input, textarea')) return;
+    onNavigateEntity(entity);
+  }, [onNavigateEntity]);
 
   // Apply position and size for overlay mode
   const overlayStyle = mode === 'overlay' ? {
@@ -254,6 +263,7 @@ export function EntityReviewSidebar({
                 <div
                   key={`${entity.text}-${entity.start}-${idx}`}
                   className={`entity-row ${isRejected ? 'entity-row--rejected' : ''}`}
+                  onClick={(event) => handleRowClick(entity, event)}
                 >
                   {/* Column 1: Entity Name */}
                   <div className="col-name">
