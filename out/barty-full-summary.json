@@ -13,7 +13,7 @@
   },
   "topEntities": [
     {
-      "id": "3b264cc6-1efe-47db-863a-ca720af202ff",
+      "id": "fa4e6f6a-5b0b-4d4e-b8d4-4b9d9eb51445",
       "canonicalName": "Adaline Garbotholow",
       "type": "PERSON",
       "mentionCount": 1,
@@ -47,7 +47,7 @@
       ]
     },
     {
-      "id": "3fc45256-98d5-4c05-a510-3a1f983856ab",
+      "id": "235904ad-1d28-4aac-922b-def07af9ac58",
       "canonicalName": "Barty Beauregard",
       "type": "PERSON",
       "mentionCount": 1,
@@ -80,7 +80,7 @@
       ]
     },
     {
-      "id": "688052ed-69a5-4b25-bdc7-17deb7ed4291",
+      "id": "c3196cd9-c722-48c0-ab8e-da02ea44d58e",
       "canonicalName": "Darkness",
       "type": "PERSON",
       "mentionCount": 1,
@@ -89,7 +89,7 @@
       ]
     },
     {
-      "id": "c754e360-5222-47a1-8ea0-07ab40c8b768",
+      "id": "862e2d32-a2b6-4cff-b1f2-7ee5e8fc26f9",
       "canonicalName": "Fabulous Fraud Cory Allen",
       "type": "PERSON",
       "mentionCount": 1,
@@ -98,7 +98,7 @@
       ]
     },
     {
-      "id": "ea10cc7f-4ae2-47df-829b-79afbe42af00",
+      "id": "6a39ba53-bcfc-4f8b-9ac5-20d40f6d3e05",
       "canonicalName": "Fredericks",
       "type": "PERSON",
       "mentionCount": 1,
@@ -107,7 +107,7 @@
       ]
     },
     {
-      "id": "e27a9fe1-9473-4196-890c-c828151dc1b5",
+      "id": "7fb19618-ef27-49e7-b3f1-3172cc92125e",
       "canonicalName": "Kenny",
       "type": "PERSON",
       "mentionCount": 1,
@@ -116,7 +116,7 @@
       ]
     },
     {
-      "id": "c7d0746e-aab9-433d-9609-ffc00672183d",
+      "id": "8f8f2073-85e3-458a-a7d4-f4dc0a4feeb8",
       "canonicalName": "Librarian",
       "type": "PERSON",
       "mentionCount": 1,
@@ -145,7 +145,7 @@
       ]
     },
     {
-      "id": "74dec81f-35af-451d-aede-f697f4ebc51a",
+      "id": "2464919b-ac19-4a5c-9690-269c27b0f32b",
       "canonicalName": "Mont Linola Junior",
       "type": "PERSON",
       "mentionCount": 1,
@@ -158,7 +158,7 @@
       ]
     },
     {
-      "id": "def2118b-a10c-45dd-9c62-2948d384e0c2",
+      "id": "2a9cac47-b202-4f67-96e9-44f0a165bbfb",
       "canonicalName": "Mr. Green",
       "type": "PERSON",
       "mentionCount": 1,
@@ -169,7 +169,7 @@
       ]
     },
     {
-      "id": "c09e3d06-f497-4219-b2cd-63d1827ae8fe",
+      "id": "9f469de8-1968-41f2-ae0a-f59bd7e89c91",
       "canonicalName": "Roy Burkley",
       "type": "PERSON",
       "mentionCount": 1,
@@ -182,7 +182,7 @@
       ]
     },
     {
-      "id": "8bc06dff-ad70-44ca-8cc0-ff29f04a84ed",
+      "id": "d6a1916b-1f0f-4cea-a820-5038430386b6",
       "canonicalName": "The pair sprang",
       "type": "PERSON",
       "mentionCount": 1,
@@ -194,7 +194,7 @@
       ]
     },
     {
-      "id": "a07ecacc-7d6a-43bd-9a23-d6cf38662e54",
+      "id": "2310d46f-b196-4cac-978d-1d4f7b0db526",
       "canonicalName": "The pair sprang",
       "type": "PERSON",
       "mentionCount": 1,
@@ -206,7 +206,7 @@
       ]
     },
     {
-      "id": "7591791a-e123-4cb1-8c8f-5878abbec2cf",
+      "id": "66a2ed6d-784a-4f58-a933-282eec685000",
       "canonicalName": "Tula Ordogne",
       "type": "PERSON",
       "mentionCount": 1,
@@ -217,7 +217,7 @@
       ]
     },
     {
-      "id": "bac15c20-459b-4c20-9feb-ba2fd9bdbc01",
+      "id": "8f3de1c4-0cf8-49de-89fe-b7e3bb0b8db0",
       "canonicalName": "Lakefront",
       "type": "PLACE",
       "mentionCount": 1,
@@ -226,7 +226,7 @@
       ]
     },
     {
-      "id": "2824263f-5eaa-473f-86cb-8c518eed5ff1",
+      "id": "96670003-8538-4d23-abc2-6132a0ae54d6",
       "canonicalName": "the Family Reunion",
       "type": "EVENT",
       "mentionCount": 1,
@@ -240,7 +240,7 @@
       ]
     },
     {
-      "id": "f0a5147a-8cbc-4d5b-b17a-080637b4a477",
+      "id": "b07e6157-7a7b-4472-8da9-79b1a9fa75d7",
       "canonicalName": "the Family Reunion",
       "type": "EVENT",
       "mentionCount": 1,
@@ -252,7 +252,7 @@
       ]
     },
     {
-      "id": "cb8e8612-955c-4bfe-8026-b32c155186be",
+      "id": "a25f5734-7d80-4277-810b-6f89ba129497",
       "canonicalName": "Black",
       "type": "MAGIC",
       "mentionCount": 1,
@@ -261,7 +261,7 @@
       ]
     },
     {
-      "id": "3dda4286-20df-4ac9-82f3-362ea677ad0f",
+      "id": "739712a9-f45a-44c1-9137-31d818e2bcce",
       "canonicalName": "Beauregard",
       "type": "SPELL",
       "mentionCount": 1,
@@ -271,7 +271,7 @@
       ]
     },
     {
-      "id": "8e71399d-63c3-4d33-8a32-9c7418f4d4b3",
+      "id": "dec7e54d-5cac-4ea8-a8b3-0b974f734b0f",
       "canonicalName": "er cars",
       "type": "SPELL",
       "mentionCount": 1,
@@ -280,7 +280,7 @@
       ]
     },
     {
-      "id": "a12f67b6-eeeb-4db3-9bab-d05867616020",
+      "id": "21b62826-a8a6-4235-94ae-96e114826eb9",
       "canonicalName": "ifying� in",
       "type": "SPELL",
       "mentionCount": 1,
@@ -289,7 +289,7 @@
       ]
     },
     {
-      "id": "c0dc56c8-23be-40dc-b792-4e8bc341801a",
+      "id": "876706f9-6f58-45f2-a1ee-5afc5aff9f25",
       "canonicalName": "Weak",
       "type": "SPELL",
       "mentionCount": 1,
@@ -298,7 +298,7 @@
       ]
     },
     {
-      "id": "acc32b3d-ad5c-4e2e-b18a-616ac2dc5009",
+      "id": "dbfe0c32-f9ef-443a-a8ec-b2e8737fa17f",
       "canonicalName": "e obeyed",
       "type": "MATERIAL",
       "mentionCount": 1,
@@ -307,7 +307,7 @@
       ]
     },
     {
-      "id": "6294211f-fba1-428f-83b7-ccc111c01491",
+      "id": "820cc615-175a-4dcb-9710-b08d3dc6da17",
       "canonicalName": "to the",
       "type": "MATERIAL",
       "mentionCount": 1,
@@ -318,70 +318,70 @@
   ],
   "relations": [
     {
-      "id": "77b3a246-f625-4579-9de0-107f4995f482",
+      "id": "e32e8733-4d5c-418f-b235-48fba09dc99a",
       "pred": "friends_with",
-      "subj": "8bc06dff-ad70-44ca-8cc0-ff29f04a84ed",
-      "obj": "c7d0746e-aab9-433d-9609-ffc00672183d"
+      "subj": "d6a1916b-1f0f-4cea-a820-5038430386b6",
+      "obj": "8f8f2073-85e3-458a-a7d4-f4dc0a4feeb8"
     },
     {
-      "id": "7c15f7d3-95e0-457f-b253-e6c11c44bb6e",
+      "id": "b1a0d5ab-d5b3-4d26-9cb4-ca0949084ea2",
       "pred": "friends_with",
-      "subj": "c7d0746e-aab9-433d-9609-ffc00672183d",
-      "obj": "8bc06dff-ad70-44ca-8cc0-ff29f04a84ed"
+      "subj": "8f8f2073-85e3-458a-a7d4-f4dc0a4feeb8",
+      "obj": "d6a1916b-1f0f-4cea-a820-5038430386b6"
     },
     {
-      "id": "2007cfb9-1ac8-46b2-9e05-58f6f1e71139",
+      "id": "45a39d00-3403-43f2-a9bc-8e0ee9ce0e4e",
       "pred": "child_of",
-      "subj": "688052ed-69a5-4b25-bdc7-17deb7ed4291",
-      "obj": "8bc06dff-ad70-44ca-8cc0-ff29f04a84ed"
+      "subj": "c3196cd9-c722-48c0-ab8e-da02ea44d58e",
+      "obj": "d6a1916b-1f0f-4cea-a820-5038430386b6"
     },
     {
-      "id": "e5f96ab5-6721-4d69-ba89-631e6501089a",
+      "id": "150ee855-65e3-4d3b-bba4-74f7f109fa49",
       "pred": "child_of",
-      "subj": "688052ed-69a5-4b25-bdc7-17deb7ed4291",
+      "subj": "c3196cd9-c722-48c0-ab8e-da02ea44d58e",
       "obj": "entity-person-andrew"
     },
     {
-      "id": "12047b4b-6419-4306-b83a-d315481e19b1",
+      "id": "ad9f3da7-e22c-4bd3-bf23-909c4ebf4078",
       "pred": "child_of",
-      "subj": "74dec81f-35af-451d-aede-f697f4ebc51a",
-      "obj": "3b264cc6-1efe-47db-863a-ca720af202ff"
+      "subj": "2464919b-ac19-4a5c-9690-269c27b0f32b",
+      "obj": "fa4e6f6a-5b0b-4d4e-b8d4-4b9d9eb51445"
     },
     {
-      "id": "6cd6b429-d20d-4215-8d73-686eb5f6e818",
+      "id": "ed507425-5189-4b56-af28-a4024b7f169f",
       "pred": "child_of",
-      "subj": "8bc06dff-ad70-44ca-8cc0-ff29f04a84ed",
-      "obj": "2824263f-5eaa-473f-86cb-8c518eed5ff1"
+      "subj": "d6a1916b-1f0f-4cea-a820-5038430386b6",
+      "obj": "96670003-8538-4d23-abc2-6132a0ae54d6"
     },
     {
-      "id": "06ff25d7-ac8a-4b52-b954-6c0f28141474",
+      "id": "96574314-8d66-439f-b2f2-33235b4d08d1",
       "pred": "child_of",
-      "subj": "74dec81f-35af-451d-aede-f697f4ebc51a",
-      "obj": "def2118b-a10c-45dd-9c62-2948d384e0c2"
+      "subj": "2464919b-ac19-4a5c-9690-269c27b0f32b",
+      "obj": "2a9cac47-b202-4f67-96e9-44f0a165bbfb"
     },
     {
-      "id": "d88d59f5-c775-4dbb-a691-029494cf6e23",
+      "id": "49db7ec8-9cd7-43c8-9bf6-fba5c2012676",
       "pred": "parent_of",
-      "subj": "8bc06dff-ad70-44ca-8cc0-ff29f04a84ed",
-      "obj": "688052ed-69a5-4b25-bdc7-17deb7ed4291"
+      "subj": "d6a1916b-1f0f-4cea-a820-5038430386b6",
+      "obj": "c3196cd9-c722-48c0-ab8e-da02ea44d58e"
     },
     {
-      "id": "b4d0fd8b-7946-4d6e-ab2f-478dfc9a3590",
+      "id": "6ae1e89c-abce-45a6-8094-d2338ffe0c29",
       "pred": "parent_of",
       "subj": "entity-person-andrew",
-      "obj": "def2118b-a10c-45dd-9c62-2948d384e0c2"
+      "obj": "2a9cac47-b202-4f67-96e9-44f0a165bbfb"
     },
     {
-      "id": "48ea8a71-4ea0-462e-bd6a-7741a404847d",
+      "id": "cbc742ce-03c1-4cc2-ac1d-6f3cb1013b0d",
       "pred": "parent_of",
-      "subj": "8bc06dff-ad70-44ca-8cc0-ff29f04a84ed",
-      "obj": "74dec81f-35af-451d-aede-f697f4ebc51a"
+      "subj": "d6a1916b-1f0f-4cea-a820-5038430386b6",
+      "obj": "2464919b-ac19-4a5c-9690-269c27b0f32b"
     },
     {
-      "id": "e7d9a320-1d19-4584-ade9-fb103c5cac34",
+      "id": "b7266062-a77d-45d4-8ee2-e3987c7825ca",
       "pred": "parent_of",
-      "subj": "2824263f-5eaa-473f-86cb-8c518eed5ff1",
-      "obj": "8bc06dff-ad70-44ca-8cc0-ff29f04a84ed"
+      "subj": "96670003-8538-4d23-abc2-6132a0ae54d6",
+      "obj": "d6a1916b-1f0f-4cea-a820-5038430386b6"
     }
   ]
 }
