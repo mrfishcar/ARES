@@ -135,6 +135,7 @@ async function processBartyBeauregard() {
   console.log(`\n🔍 Extracting entities and relations...`);
   let totalEntities = 0;
   let totalRelations = 0;
+  let totalRejectedEntities = 0;
 
   for (let i = 0; i < chunks.length; i++) {
     const chunk = chunks[i];
@@ -147,6 +148,10 @@ async function processBartyBeauregard() {
 
       console.log(`    Entities: ${result.entities.length}`);
       console.log(`    Relations: ${result.relations.length}`);
+      if (result.stats?.entities) {
+        console.log(`    Rejected (classifier/filter): ${result.stats.entities.rejected}`);
+        totalRejectedEntities += result.stats.entities.rejected;
+      }
       console.log(`    Time: ${Date.now() - chunkStart}ms`);
 
       // Add to global graph
@@ -177,6 +182,7 @@ async function processBartyBeauregard() {
   console.log(`\n📈 Global Metrics:`);
   console.log(`  Merged Entities: ${exported.entities.length}`);
   console.log(`  Merged Relations: ${exported.relations.length}`);
+  console.log(`  Rejected entities (per-chunk sum): ${totalRejectedEntities}`);
   console.log(`  Total Processing Time: ${(totalTime / 1000).toFixed(2)}s`);
   console.log(`  Words/Second: ${Math.round(totalWords / (totalTime / 1000))}`);
 
@@ -249,6 +255,12 @@ async function processBartyBeauregard() {
           totalChunks: chunks.length,
           processingTimeMs: totalTime,
           wordsPerSecond: Math.round(totalWords / (totalTime / 1000))
+        },
+        stats: {
+          entities: {
+            kept: exported.entities.length,
+            rejected: totalRejectedEntities
+          }
         },
         chunks: chunks.map(c => ({ id: c.id, wordCount: c.wordCount })),
         graph: exported

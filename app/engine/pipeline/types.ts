@@ -220,6 +220,10 @@ export interface EntityExtractionOutput {
   entities: Entity[];
   spans: Span[];
   entityMap: Map<string, Entity>;  // type::canonical_lower -> entity
+  meta?: {
+    classifierRejected: number;
+    contextOnlyMentions: number;
+  };
 }
 
 // ============================================================================
@@ -414,6 +418,12 @@ export interface PipelineOutput {
   fictionEntities: FictionEntity[];
   profiles: Map<string, EntityProfile>;
   herts?: string[];
+  stats?: {
+    entities: {
+      kept: number;
+      rejected: number;
+    };
+  };
 }
 
 // ============================================================================

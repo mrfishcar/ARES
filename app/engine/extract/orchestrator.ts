@@ -231,6 +231,12 @@ export async function extractFromSegments(
   fictionEntities: FictionEntity[];
   profiles: Map<string, EntityProfile>;
   herts?: string[];              // Generated HERTs (if enabled)
+  stats?: {
+    entities: {
+      kept: number;
+      rejected: number;
+    };
+  };
 }> {
   // FAST PATH: Synthetic performance fixtures (PersonX_Y worked with PersonX_Z)
   // The Level 5B performance tests generate documents with dozens of simple
@@ -272,6 +278,8 @@ export async function extractFromSegments(
   const allEntities: Entity[] = [];
   const allSpans: Array<{ entity_id: string; start: number; end: number }> = [];
   const allRelations: Relation[] = [];
+  let classifierRejected = 0;
+  let contextOnlyMentions = 0;
 
   // Track entity canonical names across segments to avoid duplicates
   const entityMap = new Map<string, Entity>(); // key: type::canonical_lower -> entity
@@ -363,6 +371,10 @@ export async function extractFromSegments(
       const spacyResults = await extractEntities(window);
       entities = spacyResults.entities;
       spans = spacyResults.spans;
+      if (spacyResults.meta) {
+        classifierRejected += spacyResults.meta.classifierRejected || 0;
+        contextOnlyMentions += spacyResults.meta.contextOnlyMentions || 0;
+      }
     }
 
     // Filter and remap entities/spans that fall within the actual segment bounds
@@ -1458,13 +1470,32 @@ export async function extractFromSegments(
   console.log(`[ORCHESTRATOR] ✅ Extraction complete in ${(extractionElapsedMs / 1000).toFixed(1)}s (${wordsPerSecond} words/sec)`);
   console.log(`[ORCHESTRATOR]    Entities: ${filteredEntities.length}, Relations: ${filteredRelations.length}, Segments: ${segs.length}`);
 
+  const rejectedByFilter =
+    isEntityFilterEnabled() && typeof preFilterCount === 'number'
+      ? preFilterCount - filteredEntities.length
+      : 0;
+  const rejectedTotal = rejectedByFilter + classifierRejected;
+
+  // Final type correction for event-ish names missed earlier
+  for (const e of filteredEntities) {
+    if (/\b(dance|reunion|festival|party|ball)\b/i.test(e.canonical) && e.type !== 'EVENT') {
+      e.type = 'EVENT';
+    }
+  }
+
   return {
     entities: filteredEntities,
     spans: filteredSpans, // Don't include virtual spans in output
     relations: filteredRelations,
     fictionEntities,
     profiles, // Return updated profiles for cross-document learning
-    herts     // Return HERTs if generated
+    herts,     // Return HERTs if generated
+    stats: {
+      entities: {
+        kept: filteredEntities.length,
+        rejected: rejectedTotal
+      }
+    }
   };
 }
 

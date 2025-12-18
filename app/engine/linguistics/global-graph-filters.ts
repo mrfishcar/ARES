@@ -18,6 +18,11 @@ export function filterGlobalEntities(entities: GlobalEntity[]): GlobalEntity[] {
     const tokens = entity.canonical.split(/\s+/).filter(Boolean);
     const headToken = tokens[tokens.length - 1];
 
+    // Rule: discard entities whose canonical is entirely lowercase (likely fragments)
+    if (entity.canonical === entity.canonical.toLowerCase()) {
+      shouldKeep = false;
+    }
+
     // Rule: Single-token PERSON entities with blocklisted head
     if (entity.type === 'PERSON' && tokens.length === 1) {
       if (PERSON_HEAD_BLOCKLIST.has(headToken.toLowerCase())) {

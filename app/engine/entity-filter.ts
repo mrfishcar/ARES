@@ -140,6 +140,14 @@ export function correctEntityType(
   if (/\b(battle|war|treaty|accord|council|conference|summit)\s+of\b/i.test(canonical)) {
     return 'EVENT';
   }
+  if (/\b(dance|reunion|festival|party|ball|show)\b/i.test(canonical) && canonical.split(/\s+/).length >= 2) {
+    return 'EVENT';
+  }
+
+  // Demonymic race markers
+  if (/\bnative american(s)?\b/i.test(canonical)) {
+    return 'RACE';
+  }
 
   return currentType;
 }

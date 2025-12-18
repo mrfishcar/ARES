@@ -420,13 +420,29 @@ export async function extractFromSegments(
     }
     console.log('='.repeat(80));
 
+    const rejectedByFilter = filterOutput.filterStats.original - filterOutput.filterStats.filtered;
+    const rejectedByClassifier = entityOutput.meta?.classifierRejected || 0;
+
+    // Final type correction for event-ish names missed earlier
+    for (const e of kgOutput.entities) {
+      if (/\b(dance|reunion|festival|party|ball)\b/i.test(e.canonical) && e.type !== 'EVENT') {
+        e.type = 'EVENT';
+      }
+    }
+
     return {
       entities: kgOutput.entities,
       spans: kgOutput.spans,
       relations: kgOutput.relations,
       fictionEntities: kgOutput.fictionEntities,
       profiles: profilingOutput.profiles,
-      herts
+      herts,
+      stats: {
+        entities: {
+          kept: kgOutput.entities.length,
+          rejected: rejectedByFilter + rejectedByClassifier
+        }
+      }
     };
   } catch (error) {
     const pipelineDuration = Date.now() - pipelineStartTime;

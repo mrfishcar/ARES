@@ -12,6 +12,7 @@ export const PERSON_HEAD_BLOCKLIST = new Set([
   'brother', 'sister', 'aunt', 'uncle',
   // world-specific
   'hell', 'trail', // you can expand as you discover junk entities
+  'dead',
 ]);
 
 export interface NounPhraseContext {
