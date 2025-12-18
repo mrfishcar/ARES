@@ -86,6 +86,33 @@ const VALID_SHORT_ENTITIES = new Set([
   'id', 'pm', 'am'
 ]);
 
+const EVENT_KEYWORDS = new Set([
+  'dance', 'reunion', 'festival', 'party', 'ball', 'show'
+]);
+
+const STRONG_EVENT_KEYWORDS = new Set([
+  'dance', 'reunion', 'festival', 'show'
+]);
+
+const EVENT_CONTEXT_WORDS = new Set([
+  'annual', 'summer', 'winter', 'spring', 'fall', 'autumn', 'seasonal',
+  'music', 'musical', 'art', 'arts', 'film', 'movie', 'cinema', 'food', 'wine',
+  'beer', 'craft', 'harvest', 'county', 'state', 'city', 'school', 'college',
+  'university', 'campus', 'homecoming', 'prom', 'charity', 'fundraiser',
+  'benefit', 'gala', 'parade', 'concert', 'tour', 'ceremony', 'reception',
+  'birthday', 'wedding', 'anniversary', 'graduation', 'memorial', 'tribute',
+  'family', 'class',
+  'fair', 'expo', 'competition', 'tournament', 'match', 'game', 'contest',
+  'celebration',
+  'event', 'banquet', 'dinner'
+]);
+
+const POLITICAL_PARTY_MODIFIERS = new Set([
+  'democratic', 'republican', 'labour', 'labor', 'conservative', 'liberal',
+  'green', 'socialist', 'communist', 'workers', 'people', "people's",
+  'christian', 'national', 'democrat', 'independence', 'independent'
+]);
+
 /**
  * Entity type-specific filters
  */
@@ -119,7 +146,7 @@ export function correctEntityType(
   canonical: string,
   currentType: EntityType
 ): EntityType {
-  const normalized = canonical.toLowerCase();
+  const tokens = canonical.toLowerCase().split(/\s+/);
 
   // Geographic markers - MUST be PLACE
   if (/(river|creek|stream|mountain|mount|peak|hill|hillside|valley|lake|sea|ocean|island|isle|forest|wood|desert|plain|prairie|city|town|village|kingdom|realm|land|cliff|ridge|canyon|gorge|fjord|haven|harbor|bay|cove|grove|glade|dale|moor|heath|marsh|swamp|waste|wild|reach|highland|lowland|borderland)s?\b/i.test(canonical)) {
@@ -140,8 +167,14 @@ export function correctEntityType(
   if (/\b(battle|war|treaty|accord|council|conference|summit)\s+of\b/i.test(canonical)) {
     return 'EVENT';
   }
-  if (/\b(dance|reunion|festival|party|ball|show)\b/i.test(canonical) && canonical.split(/\s+/).length >= 2) {
-    return 'EVENT';
+  if (canonical.split(/\s+/).length >= 2 && tokens.some((token) => EVENT_KEYWORDS.has(token))) {
+    const hasPoliticalPartyModifier = tokens.includes('party') && tokens.some((token) => POLITICAL_PARTY_MODIFIERS.has(token));
+    const hasEventContext = tokens.some((token) => EVENT_CONTEXT_WORDS.has(token));
+    const hasStrongEventKeyword = tokens.some((token) => STRONG_EVENT_KEYWORDS.has(token));
+
+    if (!hasPoliticalPartyModifier && (hasStrongEventKeyword || hasEventContext)) {
+      return 'EVENT';
+    }
   }
 
   // Demonymic race markers
