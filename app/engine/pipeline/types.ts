@@ -223,6 +223,8 @@ export interface EntityExtractionOutput {
   meta?: {
     classifierRejected: number;
     contextOnlyMentions: number;
+    durableMentions: number;
+    rejectedMentions: number;
   };
 }
 
@@ -421,6 +423,11 @@ export interface PipelineOutput {
   stats?: {
     entities: {
       kept: number;
+      rejected: number;
+    };
+    mentions?: {
+      durable: number;
+      contextOnly: number;
       rejected: number;
     };
   };
