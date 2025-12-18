@@ -1,15 +1,17 @@
 {
   "entities": [
-    { "canonicalId": "Frederick", "type": "PERSON", "aliases": ["Freddy"] },
-    { "canonicalId": "Mr. Garrison", "type": "PERSON" },
-    { "canonicalId": "Barty Beauregard", "type": "PERSON", "aliases": ["Barty"] },
-    { "canonicalId": "Preston Farrell", "type": "PERSON", "aliases": ["Preston"] },
-    { "canonicalId": "Kelly Prescott", "type": "PERSON" },
-    { "canonicalId": "Beau Adams", "type": "PERSON", "aliases": ["Adams"] },
-    { "canonicalId": "Sarah Badeoux", "type": "PERSON", "aliases": ["Sarah"] },
-    { "canonicalId": "Principal Green", "type": "PERSON", "aliases": ["Mr. Green"] },
-    { "canonicalId": "Mont Linola Junior High", "type": "ORG" },
-    { "canonicalId": "End of School Dance", "type": "EVENT", "aliases": ["School Dance"] }
+    { "canonicalId": "Frederick", "type": "PERSON", "aliases": ["Freddy"], "required": true },
+    { "canonicalId": "Mr. Garrison", "type": "PERSON", "aliases": ["Garrison"], "required": true },
+    { "canonicalId": "Barty Beauregard", "type": "PERSON", "aliases": ["Barty"], "required": true },
+    { "canonicalId": "Preston Farrell", "type": "PERSON", "aliases": ["Preston"], "required": true },
+    { "canonicalId": "Kelly Prescott", "type": "PERSON", "aliases": ["Kelly"], "required": true },
+    { "canonicalId": "Beau Adams", "type": "PERSON", "aliases": ["Adams", "Beau"], "required": true },
+    { "canonicalId": "Sarah Badeoux", "type": "PERSON", "aliases": ["Sarah"], "required": true },
+    { "canonicalId": "Principal Green", "type": "PERSON", "aliases": ["Mr. Green", "Green"], "required": true },
+    { "canonicalId": "Mildred", "type": "PERSON", "required": true },
+    { "canonicalId": "Mont Linola Junior High", "type": "ORG", "required": true },
+    { "canonicalId": "End of School Dance", "type": "EVENT", "aliases": ["School Dance"], "required": false },
+    { "canonicalId": "Eulina Springs", "type": "PLACE", "required": false }
   ],
   "negatives": [
     "never mask",
@@ -43,11 +45,18 @@
     "Monster Runner",
     "Monster",
     "Gettin' Outta Here",
+    "Gettin'",
     "Dead",
     "Hearing",
     "Whatever",
     "Visitors",
-    "Detective"
+    "Detective",
+    "Coach",
+    "Springs"
   ],
-  "description": "Gold standard for Barty Beauregard extraction test. Includes real entities and junk phrases that must NEVER appear in output."
+  "statsRequirements": {
+    "rejectedMentions_min": 1,
+    "contextOnlyMentions_min": 0
+  },
+  "description": "Gold standard for Barty Beauregard extraction test. Includes real entities and junk phrases that must NEVER appear as minted entities. Partial compounds (Springs without Eulina) and role nouns (Detective, Coach) without identity binding should be rejected or context-only."
 }
