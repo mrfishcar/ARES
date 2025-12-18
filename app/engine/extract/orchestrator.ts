@@ -236,6 +236,11 @@ export async function extractFromSegments(
       kept: number;
       rejected: number;
     };
+    mentions?: {
+      durable: number;
+      contextOnly: number;
+      rejected: number;
+    };
   };
 }> {
   // FAST PATH: Synthetic performance fixtures (PersonX_Y worked with PersonX_Z)
@@ -279,6 +284,9 @@ export async function extractFromSegments(
   const allSpans: Array<{ entity_id: string; start: number; end: number }> = [];
   const allRelations: Relation[] = [];
   let classifierRejected = 0;
+  let mentionDurable = 0;
+  let mentionContextOnly = 0;
+  let mentionRejected = 0;
   let contextOnlyMentions = 0;
 
   // Track entity canonical names across segments to avoid duplicates
@@ -374,6 +382,9 @@ export async function extractFromSegments(
       if (spacyResults.meta) {
         classifierRejected += spacyResults.meta.classifierRejected || 0;
         contextOnlyMentions += spacyResults.meta.contextOnlyMentions || 0;
+        mentionDurable += spacyResults.meta.durableMentions || 0;
+        mentionContextOnly += spacyResults.meta.contextOnlyMentions || 0;
+        mentionRejected += spacyResults.meta.rejectedMentions || 0;
       }
     }
 
@@ -654,6 +665,8 @@ export async function extractFromSegments(
     allSpans.length = 0;
     allSpans.push(...validSpans);
   }
+
+  const afterFilterCount = allEntities.length;
 
   // 4. Build entity profiles (adaptive learning)
   // Accumulate knowledge about entities to improve future resolution
@@ -1171,9 +1184,11 @@ export async function extractFromSegments(
       return true;
     }
 
-    // For dense narratives, keep entities in relations OR with high mention count
-    return inRelation || highMentionCount;
+  // For dense narratives, keep entities in relations OR with high mention count
+  return inRelation || highMentionCount;
   });
+
+  const prePruneCount = filteredEntities.length;
 
   filteredEntities = filteredEntities.filter(entity => {
     const mentionCount = entityMentionCounts.get(entity.id) || 0;
@@ -1185,6 +1200,8 @@ export async function extractFromSegments(
 
     return true;
   });
+
+  const postPruneCount = filteredEntities.length;
 
   let filteredSpans = allSpans.filter(s =>
     filteredEntities.some(e => e.id === s.entity_id)
@@ -1470,11 +1487,11 @@ export async function extractFromSegments(
   console.log(`[ORCHESTRATOR] ✅ Extraction complete in ${(extractionElapsedMs / 1000).toFixed(1)}s (${wordsPerSecond} words/sec)`);
   console.log(`[ORCHESTRATOR]    Entities: ${filteredEntities.length}, Relations: ${filteredRelations.length}, Segments: ${segs.length}`);
 
-  const rejectedByFilter =
-    isEntityFilterEnabled() && typeof preFilterCount === 'number'
-      ? preFilterCount - filteredEntities.length
-      : 0;
-  const rejectedTotal = rejectedByFilter + classifierRejected;
+  const rejectedByFilter = isEntityFilterEnabled()
+    ? preFilterCount - afterFilterCount
+    : 0;
+  const rejectedByPrune = prePruneCount - postPruneCount;
+  const rejectedTotal = rejectedByFilter + classifierRejected + rejectedByPrune;
 
   // Final type correction for event-ish names missed earlier
   for (const e of filteredEntities) {
@@ -1494,6 +1511,11 @@ export async function extractFromSegments(
       entities: {
         kept: filteredEntities.length,
         rejected: rejectedTotal
+      },
+      mentions: {
+        durable: mentionDurable,
+        contextOnly: mentionContextOnly,
+        rejected: mentionRejected
       }
     }
   };

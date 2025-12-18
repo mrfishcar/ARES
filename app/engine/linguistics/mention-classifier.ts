@@ -12,6 +12,10 @@ const QUOTE_CHARS = new Set(['"', '“', '”', '‘', '’', "'"]);
 const IMPERATIVE_START = new Set(['tell', 'listen', 'check', 'look', 'get', 'go']);
 const THEME_LEX = new Set(['theme', 'poster', 'posters', 'called', 'titled', 'named', 'slogan', 'motto']);
 const INTERJECTIONS = new Set(['yeah', 'yep', 'nope', 'uh', 'ugh', 'huh', 'whoa', 'wow', 'oops']);
+const PREP_LEADS = new Set(['with', 'at', 'in', 'on', 'of', 'from', 'to']);
+const VERBISH = new Set(['agree', 'figure', 'murder', 'draw', 'distract', 'follow', 'meet', 'see', 'feel', 'know', 'tell']);
+const COLLECT_VERBS = new Set(['collect', 'collects', 'collected', 'collecting', 'building', 'playing', 'buying', 'trading', 'reading', 'watching']);
+const EVENT_TERMS = new Set(['dance', 'reunion', 'festival', 'ball', 'prom', 'ceremony']);
 
 function isSentenceStart(text: string, start: number): boolean {
   if (start > 0 && QUOTE_CHARS.has(text[start - 1])) return true;
@@ -54,6 +58,8 @@ export function classifyMention(
   const rawInText = fullText.slice(start, end);
   const rawLower = rawInText.toLowerCase();
   const rawIsLower = rawInText === rawLower;
+  const windowBefore = fullText.slice(Math.max(0, start - 50), start);
+  const windowAfter = fullText.slice(end, Math.min(fullText.length, end + 50));
 
   const sentenceStart = isSentenceStart(fullText, start);
   const followingWord = nextWord(fullText, end);
@@ -83,6 +89,11 @@ export function classifyMention(
   // Common interjections (case-insensitive, single token)
   if (isSingleToken && INTERJECTIONS.has(raw.toLowerCase())) {
     return { mentionClass: 'NON_ENTITY', reason: 'interjection' };
+  }
+
+  // Preposition-led fragments with lowercase tails ("with teachers")
+  if (PREP_LEADS.has(tokens[0].toLowerCase()) && (tokens.length === 1 || tokens.slice(1).every(t => t === t.toLowerCase()))) {
+    return { mentionClass: 'NON_ENTITY', reason: 'prep-led-fragment' };
   }
 
   // Determiner-led lowercase phrases ("the professional family")
@@ -166,6 +177,11 @@ export function classifyMention(
     return { mentionClass: 'CONTEXT_ONLY', reason: 'imperative-object' };
   }
 
+  // Explicit verb-object fragments (verbish + lowercase object)
+  if (tokens.length >= 2 && VERBISH.has(tokens[0].toLowerCase()) && tokens.slice(1).every(t => t === t.toLowerCase())) {
+    return { mentionClass: 'NON_ENTITY', reason: 'verb-object-fragment' };
+  }
+
   // Demonym/adjective before lowercase noun ("Jersey accent")
   if (sentenceStart && isSingleToken && followingWord && /^[a-z]/.test(followingWord)) {
     return { mentionClass: 'NON_ENTITY', reason: 'adjectival-demonym' };
@@ -173,7 +189,11 @@ export function classifyMention(
 
   // Common-noun head preceded by lowercase word ("swimming pool", "monster runner")
   const prevChar = fullText[start - 1] || '';
-  if (isSingleToken && (/[a-z]$/.test(prevChar) || /[a-z]/.test(prevNonSpace))) {
+  if (
+    isSingleToken &&
+    raw === raw.toLowerCase() &&
+    (/[a-z]$/.test(prevChar) || /[a-z]/.test(prevNonSpace))
+  ) {
     return { mentionClass: 'NON_ENTITY', reason: 'lowercase-predecessor' };
   }
 
@@ -208,6 +228,11 @@ export function classifyMention(
     /^[a-z]+s?$/.test(followingWord)
   ) {
     return { mentionClass: 'NON_ENTITY', reason: 'titlecase-plus-lower-follow' };
+  }
+
+  // Eventish phrases in context (End of School Dance) -> keep but hint type
+  if (tokens.some(t => EVENT_TERMS.has(t.toLowerCase()))) {
+    return { mentionClass: 'DURABLE_NAME', reason: 'event-lexeme' };
   }
 
   // Verb-object or infinitive-like fragments (lowercase tokens, minimal name cues)

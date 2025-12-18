@@ -422,6 +422,11 @@ export async function extractFromSegments(
 
     const rejectedByFilter = filterOutput.filterStats.original - filterOutput.filterStats.filtered;
     const rejectedByClassifier = entityOutput.meta?.classifierRejected || 0;
+    const mentionStats = {
+      durable: entityOutput.meta?.durableMentions || 0,
+      contextOnly: entityOutput.meta?.contextOnlyMentions || 0,
+      rejected: entityOutput.meta?.rejectedMentions || 0
+    };
 
     // Final type correction for event-ish names missed earlier
     for (const e of kgOutput.entities) {
@@ -441,7 +446,8 @@ export async function extractFromSegments(
         entities: {
           kept: kgOutput.entities.length,
           rejected: rejectedByFilter + rejectedByClassifier
-        }
+        },
+        mentions: mentionStats
       }
     };
   } catch (error) {

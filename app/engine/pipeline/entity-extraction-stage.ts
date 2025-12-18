@@ -200,6 +200,8 @@ export async function runEntityExtractionStage(
     const entityMap = new Map<string, Entity>(); // type::canonical_lower -> entity
     let classifierRejected = 0;
     let contextOnlyMentions = 0;
+    let durableMentions = 0;
+    let rejectedMentions = 0;
 
     for (let segIndex = 0; segIndex < input.segments.length; segIndex++) {
       const seg = input.segments[segIndex];
@@ -232,6 +234,8 @@ export async function runEntityExtractionStage(
         if (spacyResults.meta) {
           classifierRejected += spacyResults.meta.classifierRejected || 0;
           contextOnlyMentions += spacyResults.meta.contextOnlyMentions || 0;
+          durableMentions += spacyResults.meta.durableMentions || 0;
+          rejectedMentions += spacyResults.meta.rejectedMentions || 0;
         }
       }
 
@@ -426,7 +430,9 @@ export async function runEntityExtractionStage(
       entityMap,
       meta: {
         classifierRejected,
-        contextOnlyMentions
+        contextOnlyMentions,
+        durableMentions,
+        rejectedMentions
       }
     };
   } catch (error) {

@@ -2552,16 +2552,20 @@ export async function extractEntities(text: string): Promise<{
   entities: Entity[];
   spans: Array<{entity_id: string; start: number; end: number}>;
   meta?: {
-    classifierRejected: number;
+    classifierRejected: number; // entity-level rejects from mention classification
     contextOnlyMentions: number;
+    durableMentions: number;
+    rejectedMentions: number;
   };
 }> {
   const DEBUG_ENTITIES = process.env.L3_DEBUG === "1";
   if (DEBUG_ENTITIES) {
     console.log(`[EXTRACT-ENTITIES][DEBUG] Debug logging enabled`);
   }
-  let classifierRejected = 0;
   let contextOnlyMentions = 0;
+  let durableMentions = 0;
+  let rejectedMentions = 0;
+  let classifierEntityRejected = 0;
   // 1) Parse with spaCy
   const parsed = await parseWithService(text);
 
@@ -3326,18 +3330,19 @@ const mergedEntries = Array.from(mergedMap.values());
         const classification: MentionClassification = classifyMention(rawSurface, text, span.start, span.end);
         if (classification.mentionClass === 'DURABLE_NAME') {
           durableSpans.push(span);
+          durableMentions += 1;
         } else if (classification.mentionClass === 'CONTEXT_ONLY') {
           contextOnlyMentions += 1;
           entryContext += 1;
         } else {
-          classifierRejected += 1;
+          rejectedMentions += 1;
           entryRejected += 1;
         }
       }
 
       if (durableSpans.length === 0) {
         if (entryRejected > 0 || entryContext > 0) {
-          classifierRejected += 1;
+          classifierEntityRejected += 1;
         }
         continue;
       }
@@ -4093,8 +4098,10 @@ const mergedEntries = Array.from(mergedMap.values());
     entities: finalEntities,
     spans: finalSpans,
     meta: {
-      classifierRejected,
-      contextOnlyMentions
+      classifierRejected: classifierEntityRejected,
+      contextOnlyMentions,
+      durableMentions,
+      rejectedMentions
     }
   };
 }

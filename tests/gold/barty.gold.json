@@ -1,0 +1,27 @@
+{
+  "entities": [
+    { "canonicalId": "Frederick", "type": "PERSON", "aliases": ["Freddy"] },
+    { "canonicalId": "Mr. Garrison", "type": "PERSON" },
+    { "canonicalId": "Barty Beauregard", "type": "PERSON", "aliases": ["Barty"] },
+    { "canonicalId": "Preston Farrell", "type": "PERSON", "aliases": ["Preston"] },
+    { "canonicalId": "Kelly Prescott", "type": "PERSON" },
+    { "canonicalId": "Beau Adams", "type": "PERSON", "aliases": ["Adams"] },
+    { "canonicalId": "Sarah Badeoux", "type": "PERSON", "aliases": ["Sarah"] },
+    { "canonicalId": "Principal Green", "type": "PERSON", "aliases": ["Mr. Green"] },
+    { "canonicalId": "Mont Linola Junior High", "type": "ORG" },
+    { "canonicalId": "End of School Dance", "type": "EVENT", "aliases": ["School Dance"] }
+  ],
+  "negatives": [
+    "only agree",
+    "figure something",
+    "murder someone",
+    "draw attention",
+    "with teachers",
+    "at least",
+    "Outta Here",
+    "Monster Runner cards",
+    "Monster",
+    "Gettin’ Outta Here",
+    "Gettin' Outta Here"
+  ]
+}
