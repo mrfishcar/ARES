@@ -119,6 +119,10 @@ In your Vercel dashboard:
    - **Name**: `VITE_GRAPHQL_URL`
    - **Value**: `https://your-app.up.railway.app/graphql`
    - **Environments**: Production, Preview
+4. Add BookNLP proxy target:
+   - **Name**: `VITE_API_URL`
+   - **Value**: `https://your-app.up.railway.app` (the Railway Node backend)
+   - **Environments**: Production, Preview
 
 Or use the Vercel CLI:
 ```bash
@@ -135,6 +139,12 @@ git push
 ```
 
 **Done! Your app is live.**
+
+### Backend BookNLP wiring (Railway/Render/Fly)
+- The Node backend must be able to reach the Python BookNLP service.
+- Set `BOOKNLP_SERVICE_URL` on the Node service (e.g., `http://booknlp-service:8100` if running as a sibling service).
+- The Python service should be deployed separately (can be another Railway service) and must expose `POST /booknlp`.
+- The UI never calls BookNLP directly; it always hits `${VITE_API_URL}/booknlp`, which the Node backend proxies to `BOOKNLP_SERVICE_URL`.
 
 ## Option 2: Render
 
