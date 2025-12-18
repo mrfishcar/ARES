@@ -38,6 +38,13 @@ export function DocumentsSidebar({
       {/* ARES branding */}
       <div className="sidebar-header">
         <div className="sidebar-brand">ARES</div>
+        <a
+          href="/booknlp"
+          className="sidebar-link"
+          style={{ marginTop: '8px', display: 'inline-block' }}
+        >
+          BookNLP Test
+        </a>
       </div>
 
       <div className="sidebar-content">

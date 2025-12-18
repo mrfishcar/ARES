@@ -14,6 +14,7 @@ import { RelationsPage } from './pages/RelationsPage';
 import { GraphPage } from './pages/GraphPage';
 import { UnifiedHomePage } from './pages/UnifiedHomePage';
 import { ExtractionLab } from './pages/ExtractionLab';
+import { BookNLPPage } from './pages/BookNLPPage';
 import { loadState, saveState } from './lib/storage';
 import { initializeClientErrorLogger } from './lib/errorLogger';
 
@@ -201,6 +202,7 @@ function AppShell() {
             <Route path="/entities" element={<EntitiesPage project={project} toast={toast} />} />
             <Route path="/relations" element={<RelationsPage project={project} toast={toast} />} />
             <Route path="/graph" element={<GraphPage project={project} toast={toast} />} />
+            <Route path="/booknlp" element={<BookNLPPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
