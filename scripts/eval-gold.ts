@@ -1,3 +1,18 @@
+#!/usr/bin/env npx tsx
+/**
+ * Gold Standard Evaluation Script
+ *
+ * Evaluates entity extraction against gold standard files.
+ *
+ * Usage:
+ *   npx tsx scripts/eval-gold.ts [options]
+ *
+ * Options:
+ *   --pipeline    Use new grammar-first pipeline (recommended)
+ *   --legacy      Use legacy extraction (default if ARES_PIPELINE not set)
+ *   --verbose     Show detailed output
+ */
+
 import fs from 'fs';
 import path from 'path';
 import { extractFromSegments } from '../app/engine/extract/orchestrator';
@@ -6,23 +21,52 @@ type GoldEntity = {
   canonicalId: string;
   type: string;
   aliases?: string[];
+  required?: boolean;
 };
 
 type GoldFile = {
   entities: GoldEntity[];
   negatives: string[];
+  statsRequirements?: {
+    rejectedMentions_min?: number;
+    contextOnlyMentions_min?: number;
+  };
+  description?: string;
 };
 
 function canonicalize(s: string): string {
   return s.trim().toLowerCase();
 }
 
+// Parse CLI args
+const args = process.argv.slice(2);
+const usePipeline = args.includes('--pipeline') || process.env.ARES_PIPELINE === 'true';
+const verbose = args.includes('--verbose');
+
+if (usePipeline) {
+  process.env.ARES_PIPELINE = 'true';
+  console.log('🔧 Using NEW grammar-first pipeline\n');
+} else {
+  console.log('🔧 Using legacy extraction\n');
+}
+
 async function main() {
   const goldPath = path.resolve(__dirname, '../tests/gold/barty.gold.json');
   const fixturePath = path.resolve(__dirname, '../Barty Beauregard and the Fabulous Fraud PLAIN TEXT.txt');
 
+  // Check if fixture exists
+  if (!fs.existsSync(fixturePath)) {
+    console.error(`ERROR: Fixture not found: ${fixturePath}`);
+    console.log('Please ensure the Barty text file is in the project root.');
+    process.exit(1);
+  }
+
   const gold: GoldFile = JSON.parse(fs.readFileSync(goldPath, 'utf-8'));
   const text = fs.readFileSync(fixturePath, 'utf-8');
+
+  console.log(`📄 Text length: ${text.length} characters`);
+  console.log(`📋 Gold entities: ${gold.entities.length}`);
+  console.log(`🚫 Negatives: ${gold.negatives.length}\n`);
 
   const result = await extractFromSegments('barty-gold', text);
 
