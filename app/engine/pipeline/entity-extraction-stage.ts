@@ -198,6 +198,8 @@ export async function runEntityExtractionStage(
     const allEntities: Entity[] = [];
     const allSpans: Span[] = [];
     const entityMap = new Map<string, Entity>(); // type::canonical_lower -> entity
+    let classifierRejected = 0;
+    let contextOnlyMentions = 0;
 
     for (let segIndex = 0; segIndex < input.segments.length; segIndex++) {
       const seg = input.segments[segIndex];
@@ -227,6 +229,10 @@ export async function runEntityExtractionStage(
         const spacyResults = await extractEntities(window);
         entities = spacyResults.entities;
         spans = spacyResults.spans;
+        if (spacyResults.meta) {
+          classifierRejected += spacyResults.meta.classifierRejected || 0;
+          contextOnlyMentions += spacyResults.meta.contextOnlyMentions || 0;
+        }
       }
 
       // Filter and remap entities/spans that fall within the actual segment bounds
@@ -417,7 +423,11 @@ export async function runEntityExtractionStage(
     return {
       entities: allEntities,
       spans: allSpans,
-      entityMap
+      entityMap,
+      meta: {
+        classifierRejected,
+        contextOnlyMentions
+      }
     };
   } catch (error) {
     const duration = Date.now() - startTime;
