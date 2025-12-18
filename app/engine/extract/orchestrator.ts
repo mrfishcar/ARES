@@ -23,6 +23,11 @@ import { isValidEntity, correctEntityType } from '../entity-filter';
 import { loadRelationPatterns, type PatternsMode } from './load-relations';
 import { isContextDependent, isGarbageAlias } from '../pronoun-utils';
 
+// 🆕 GRAMMAR-FIRST PIPELINE (ARES_PIPELINE=true to enable)
+import { isPipelineEnabled, extractWithPipeline, getStatsSummary, toLegacyResult } from './pipeline-extract';
+import { runExtractionPipeline, type PipelineResult, type ExtractionStats } from './pipeline';
+import type { ParsedSentence, ParseResponse } from './parse-types';
+
 // 🛡️ PRECISION DEFENSE SYSTEM - LAYER 1 & 3
 import { filterLowQualityEntities, isEntityFilterEnabled, getFilterConfig, getFilterStats } from '../entity-quality-filter';
 import { deduplicateRelations, isDeduplicationEnabled, getDeduplicationStats } from '../relation-deduplicator';
@@ -231,6 +236,7 @@ export async function extractFromSegments(
   fictionEntities: FictionEntity[];
   profiles: Map<string, EntityProfile>;
   herts?: string[];              // Generated HERTs (if enabled)
+  mode: 'legacy' | 'pipeline' | 'booknlp' | 'hybrid';  // Which extraction mode was used
   stats?: {
     entities: {
       kept: number;
@@ -242,6 +248,7 @@ export async function extractFromSegments(
       rejected: number;
     };
   };
+  pipelineStats?: ExtractionStats;  // Full pipeline stats when mode='pipeline'
 }> {
   // FAST PATH: Synthetic performance fixtures (PersonX_Y worked with PersonX_Z)
   // The Level 5B performance tests generate documents with dozens of simple
@@ -255,7 +262,69 @@ export async function extractFromSegments(
   if (fastPath) {
     return {
       ...fastPath,
+      mode: 'legacy' as const,
       profiles: existingProfiles || new Map<string, EntityProfile>()
+    };
+  }
+
+  // ============================================================================
+  // 🆕 GRAMMAR-FIRST PIPELINE BRANCH
+  // ============================================================================
+  // When ARES_PIPELINE=true, use the new grammar-first extraction pipeline.
+  // This pipeline:
+  // - Uses only closed-class word sets (no open-class blocklists)
+  // - Mints entities LATE (after accumulating evidence)
+  // - Has honest stats (rejected > 0 when junk exists)
+  // - Is deterministic and explainable
+  // ============================================================================
+  if (isPipelineEnabled()) {
+    console.log('[ORCHESTRATOR] 🆕 PIPELINE MODE ENABLED - using grammar-first extraction');
+
+    const pipelineStartTime = Date.now();
+
+    // Parse the full text with spaCy to get sentences
+    const parseResponse = await parseWithService(fullText);
+    const sentences = parseResponse.sentences;
+
+    console.log(`[PIPELINE] Parsed ${sentences.length} sentences`);
+
+    // Run the new pipeline
+    const pipelineResult = runExtractionPipeline(sentences, fullText, {
+      docId,
+      debug: process.env.ARES_PIPELINE_DEBUG === 'true',
+    });
+
+    // Log pipeline summary
+    console.log(getStatsSummary(pipelineResult));
+
+    const pipelineElapsedMs = Date.now() - pipelineStartTime;
+    const wordsPerSecond = Math.round((fullText.split(/\s+/).length / (pipelineElapsedMs / 1000)) || 0);
+    console.log(`[PIPELINE] ✅ Complete in ${(pipelineElapsedMs / 1000).toFixed(1)}s (${wordsPerSecond} words/sec)`);
+    console.log(`[PIPELINE]    Entities: ${pipelineResult.entities.length}, Rejected: ${pipelineResult.stats.gateResults.nonEntity}`);
+
+    // Convert pipeline result to legacy format
+    const legacyResult = toLegacyResult(pipelineResult);
+
+    // Return in the expected format with pipeline stats
+    return {
+      entities: legacyResult.entities,
+      spans: legacyResult.spans,
+      relations: [],  // Pipeline doesn't extract relations yet
+      fictionEntities: [],  // Pipeline doesn't extract fiction entities yet
+      profiles: existingProfiles || new Map<string, EntityProfile>(),
+      mode: 'pipeline' as const,
+      stats: {
+        entities: {
+          kept: pipelineResult.entities.length,
+          rejected: pipelineResult.stats.gateResults.nonEntity,
+        },
+        mentions: {
+          durable: pipelineResult.stats.gateResults.durableCandidate,
+          contextOnly: pipelineResult.stats.gateResults.contextOnly,
+          rejected: pipelineResult.stats.gateResults.nonEntity,
+        },
+      },
+      pipelineStats: pipelineResult.stats,
     };
   }
 
@@ -1507,6 +1576,7 @@ export async function extractFromSegments(
     fictionEntities,
     profiles, // Return updated profiles for cross-document learning
     herts,     // Return HERTs if generated
+    mode: 'legacy' as const,  // Legacy extraction path
     stats: {
       entities: {
         kept: filteredEntities.length,

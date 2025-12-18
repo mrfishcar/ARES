@@ -70,6 +70,12 @@ async function main() {
 
   const result = await extractFromSegments('barty-gold', text);
 
+  // ✅ RUNTIME ASSERTION: Verify correct mode was used
+  console.log(`\n📊 Extraction Mode: ${result.mode}`);
+  if (usePipeline && result.mode !== 'pipeline') {
+    throw new Error(`CRITICAL BUG: --pipeline flag set but extraction used mode='${result.mode}' instead of 'pipeline'. The pipeline wiring is broken.`);
+  }
+
   const extracted = result.entities.map(e => ({
     canonical: canonicalize(e.canonical),
     type: e.type,
@@ -119,35 +125,90 @@ async function main() {
   const recall = tp / (tp + fn || 1);
   const f1 = precision + recall === 0 ? 0 : (2 * precision * recall) / (precision + recall);
 
-  const negativesHit = extracted.filter(ex => gold.negatives.map(canonicalize).includes(ex.canonical));
+  // 🚫 GOLD-NEGATIVE ENFORCEMENT
+  const negativesHit = extracted.filter(ex =>
+    gold.negatives.map(canonicalize).includes(ex.canonical)
+  );
 
-  const report = {
+  const report: Record<string, unknown> = {
+    mode: result.mode,
     totals: { tp, fp, fn, precision, recall, f1 },
     falsePos,
     falseNeg,
     typeErrors,
     negativesHit: negativesHit.map(n => n.canonical),
-    stats: result.stats
+    stats: result.stats,
   };
+
+  // Include pipeline stats if available
+  if (result.pipelineStats) {
+    report.pipelineStats = result.pipelineStats;
+  }
 
   const outPath = path.resolve(__dirname, '../tmp/barty-gold-report.json');
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, JSON.stringify(report, null, 2));
 
-  console.log('--- Barty Gold Evaluation ---');
+  console.log('\n--- Barty Gold Evaluation ---');
+  console.log(`Mode: ${result.mode}`);
   console.log(`Precision: ${precision.toFixed(3)} Recall: ${recall.toFixed(3)} F1: ${f1.toFixed(3)}`);
   console.log(`TP: ${tp} FP: ${fp} FN: ${fn}`);
   console.log(`Negatives hit: ${negativesHit.length}`);
-  if (result.stats?.entities.rejected !== undefined) {
-    console.log(`Entities rejected: ${result.stats.entities.rejected}`);
+
+  if (result.stats?.entities) {
+    console.log(`Entities: kept=${result.stats.entities.kept} rejected=${result.stats.entities.rejected}`);
   }
   if (result.stats?.mentions) {
-    console.log(`Mentions -> durable: ${result.stats.mentions.durable}, contextOnly: ${result.stats.mentions.contextOnly}, rejected: ${result.stats.mentions.rejected}`);
+    console.log(`Mentions: durable=${result.stats.mentions.durable} contextOnly=${result.stats.mentions.contextOnly} rejected=${result.stats.mentions.rejected}`);
+  }
+
+  // Show pipeline-specific stats if available
+  if (result.pipelineStats) {
+    const ps = result.pipelineStats;
+    console.log('\n--- Pipeline Stats ---');
+    console.log(`Nominations: ${ps.totalNominations} (NER: ${ps.nominationsBySource.NER}, DEP: ${ps.nominationsBySource.DEP})`);
+    console.log(`Gate Results: NON_ENTITY=${ps.gateResults.nonEntity}, CONTEXT_ONLY=${ps.gateResults.contextOnly}, DURABLE=${ps.gateResults.durableCandidate}`);
+    console.log(`Clusters: ${ps.clustersFormed} (promoted: ${ps.clustersPromoted}, deferred: ${ps.clustersDeferred})`);
+
+    // Show top rejection reasons
+    const reasons = Object.entries(ps.rejectReasons as Record<string, number>)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10);
+    if (reasons.length > 0) {
+      console.log('\nTop Rejection Reasons:');
+      for (const [reason, count] of reasons) {
+        console.log(`  ${reason}: ${count}`);
+      }
+    }
+  }
+
+  // Show verbose output if requested
+  if (verbose) {
+    console.log('\n--- False Positives ---');
+    for (const fp of falsePos.slice(0, 20)) {
+      console.log(`  ❌ ${fp}`);
+    }
+    if (falsePos.length > 20) {
+      console.log(`  ... and ${falsePos.length - 20} more`);
+    }
+
+    console.log('\n--- False Negatives ---');
+    for (const fn of falseNeg) {
+      console.log(`  ⚠️ ${fn}`);
+    }
+
+    if (negativesHit.length > 0) {
+      console.log('\n--- Negatives Hit (CRITICAL) ---');
+      for (const n of negativesHit) {
+        console.log(`  🚫 ${n.canonical}`);
+      }
+    }
   }
 
   const minPrecision = parseFloat(process.env.GOLD_MIN_PRECISION || '0.15');
   const maxFalsePos = parseInt(process.env.GOLD_MAX_FP || '20', 10);
 
+  // ✅ GOLD-NEGATIVE ENFORCEMENT: Any negative in output = FAIL
   if (negativesHit.length > 0) {
     throw new Error(`Gold check failed: negatives present -> ${negativesHit.map(n => n.canonical).join(', ')}`);
   }
@@ -157,14 +218,20 @@ async function main() {
   if (fp > maxFalsePos) {
     throw new Error(`Gold check failed: FP ${fp} > ${maxFalsePos}`);
   }
-  if ((result.stats?.entities.rejected || 0) === 0 && (falsePos.length > 0)) {
-    throw new Error('Gold check failed: rejected count is zero but junk exists');
+
+  // ✅ HONEST STATS CHECK: rejected must be > 0 if junk exists
+  const rejectedCount = result.stats?.entities?.rejected ??
+                        result.stats?.mentions?.rejected ??
+                        result.pipelineStats?.gateResults?.nonEntity ?? 0;
+  if (rejectedCount === 0 && falsePos.length > 0) {
+    throw new Error(`Gold check failed: rejected count is zero but ${falsePos.length} junk entities exist. Stats are lying.`);
   }
 
+  console.log('\n✅ Gold evaluation passed!');
   process.exit(0);
 }
 
 main().catch(err => {
-  console.error(err instanceof Error ? err.message : err);
+  console.error('\n❌ ' + (err instanceof Error ? err.message : err));
   process.exit(1);
 });
