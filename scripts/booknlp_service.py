@@ -106,7 +106,7 @@ def run_booknlp(req: BookNLPRequest) -> Dict[str, Any]:
 
         started = time.time()
         try:
-            booknlp.process(str(input_path), job_id, str(output_dir))
+            booknlp.process(str(input_path), str(output_dir), job_id)
         except Exception as exc:
             raise HTTPException(status_code=500, detail=f"BookNLP failed: {exc}") from exc
         elapsed = time.time() - started
