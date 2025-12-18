@@ -148,6 +148,7 @@ export function VirtualizedExtractionEditor({
   const isUpdatingWindowRef = useRef(false); // Track programmatic window updates
   const lastWindowStartRef = useRef(windowStart);
   const pendingNavigationRef = useRef<NavigateToRange | null>(null);
+  const lastHandledRequestIdRef = useRef<number | null>(null);
   const [localNavigateTarget, setLocalNavigateTarget] = useState<NavigateToRange | null>(null);
 
   // Cleanup timeout on unmount
@@ -240,6 +241,7 @@ export function VirtualizedExtractionEditor({
 
   useEffect(() => {
     if (!navigateToRange) return;
+    if (navigateToRange.requestId === lastHandledRequestIdRef.current) return;
 
     const normalizedFrom = clampToDoc(Math.min(navigateToRange.from, navigateToRange.to));
     const normalizedTo = clampToDoc(Math.max(navigateToRange.from, navigateToRange.to));
@@ -264,6 +266,7 @@ export function VirtualizedExtractionEditor({
       from: normalizedTarget.from - effectiveBaseOffset,
       to: normalizedTarget.to - effectiveBaseOffset,
     });
+    lastHandledRequestIdRef.current = normalizedTarget.requestId;
     pendingNavigationRef.current = null;
   }, [
     navigateToRange,
@@ -294,6 +297,7 @@ export function VirtualizedExtractionEditor({
       from: pending.from - effectiveBaseOffset,
       to: pending.to - effectiveBaseOffset,
     });
+    lastHandledRequestIdRef.current = pending.requestId;
     pendingNavigationRef.current = null;
   }, [
     shouldVirtualize,
