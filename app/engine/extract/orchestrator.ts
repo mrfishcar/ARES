@@ -231,6 +231,12 @@ export async function extractFromSegments(
   fictionEntities: FictionEntity[];
   profiles: Map<string, EntityProfile>;
   herts?: string[];              // Generated HERTs (if enabled)
+  stats?: {
+    entities: {
+      kept: number;
+      rejected: number;
+    };
+  };
 }> {
   // FAST PATH: Synthetic performance fixtures (PersonX_Y worked with PersonX_Z)
   // The Level 5B performance tests generate documents with dozens of simple
@@ -1469,6 +1475,13 @@ export async function extractFromSegments(
       ? preFilterCount - filteredEntities.length
       : 0;
   const rejectedTotal = rejectedByFilter + classifierRejected;
+
+  // Final type correction for event-ish names missed earlier
+  for (const e of filteredEntities) {
+    if (/\b(dance|reunion|festival|party|ball)\b/i.test(e.canonical) && e.type !== 'EVENT') {
+      e.type = 'EVENT';
+    }
+  }
 
   return {
     entities: filteredEntities,

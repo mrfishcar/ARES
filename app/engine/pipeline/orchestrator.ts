@@ -423,6 +423,13 @@ export async function extractFromSegments(
     const rejectedByFilter = filterOutput.filterStats.original - filterOutput.filterStats.filtered;
     const rejectedByClassifier = entityOutput.meta?.classifierRejected || 0;
 
+    // Final type correction for event-ish names missed earlier
+    for (const e of kgOutput.entities) {
+      if (/\b(dance|reunion|festival|party|ball)\b/i.test(e.canonical) && e.type !== 'EVENT') {
+        e.type = 'EVENT';
+      }
+    }
+
     return {
       entities: kgOutput.entities,
       spans: kgOutput.spans,

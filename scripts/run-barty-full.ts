@@ -122,6 +122,7 @@ async function run() {
     chunkCount: segments.length,
     entityCount: entities.length,
     relationCount: relations.length,
+    entityStats: results.stats?.entities,
     entitiesByType: countBy(entitySummaries.map(e => e.type)),
     topEntities: sortedEntities.slice(0, 30),
     relations: relationsOut

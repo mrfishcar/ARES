@@ -43,6 +43,83 @@ describe('mention classifier heuristics', () => {
     const cls = classifyMention('Jersey', text, start, start + 6);
     expect(cls.mentionClass).toBe('NON_ENTITY');
   });
+
+  it('rejects verb-object fragment "only agree"', () => {
+    const text = 'Frederick could only agree.';
+    const start = text.indexOf('only');
+    const cls = classifyMention('only agree', text, start, start + 'only agree'.length);
+    expect(cls.mentionClass).toBe('NON_ENTITY');
+  });
+
+  it('rejects item fragment "figure something"', () => {
+    const text = 'He hoped he could figure something out.';
+    const start = text.indexOf('figure');
+    const cls = classifyMention('figure something', text, start, start + 'figure something'.length);
+    expect(cls.mentionClass).toBe('NON_ENTITY');
+  });
+
+  it('rejects capital + lower tail in "Monster Runner cards"', () => {
+    const text = 'He loved collecting Monster Runner cards.';
+    const start = text.indexOf('Monster');
+    const cls = classifyMention('Monster Runner cards', text, start, start + 'Monster Runner cards'.length);
+    expect(cls.mentionClass).toBe('NON_ENTITY');
+  });
+
+  it('treats slogan/theme "Outta Here" as context-only', () => {
+    const text = 'The dance’s theme, Gettin’ Outta Here, was printed on posters.';
+    const start = text.indexOf('Outta');
+    const cls = classifyMention('Outta Here', text, start, start + 'Outta Here'.length);
+    expect(cls.mentionClass).not.toBe('DURABLE_NAME');
+  });
+
+  it('rejects interjection "Yeah"', () => {
+    const text = 'Yeah, that makes sense.';
+    const start = text.indexOf('Yeah');
+    const cls = classifyMention('Yeah', text, start, start + 4);
+    expect(cls.mentionClass).toBe('NON_ENTITY');
+  });
+
+  it('rejects repeated-letter cry "Aggggghhhh"', () => {
+    const text = 'Aggggghhhh! He shouted in fear.';
+    const start = text.indexOf('Aggggghhhh');
+    const cls = classifyMention('Aggggghhhh', text, start, start + 'Aggggghhhh'.length);
+    expect(cls.mentionClass).toBe('NON_ENTITY');
+  });
+
+  it('rejects chapter heading style', () => {
+    const text = 'CHAPTER SEVEN The Geezerly Ghosts';
+    const start = 0;
+    const cls = classifyMention('CHAPTER SEVEN', text, start, start + 'CHAPTER SEVEN'.length);
+    expect(cls.mentionClass).toBe('NON_ENTITY');
+  });
+
+  it('rejects determiner + lowercase phrase', () => {
+    const text = 'The professional family arrived together.';
+    const start = text.indexOf('The');
+    const cls = classifyMention('The professional family', text, start, start + 'The professional family'.length);
+    expect(cls.mentionClass).toBe('NON_ENTITY');
+  });
+
+  it('rejects death token', () => {
+    const text = 'Dead, dead, dead, she whispered.';
+    const start = text.indexOf('Dead');
+    const cls = classifyMention('Dead', text, start, start + 4);
+    expect(cls.mentionClass).toBe('NON_ENTITY');
+  });
+
+  it('rejects EMT as profession acronym', () => {
+    const text = 'An EMT arrived with the ambulance.';
+    const start = text.indexOf('EMT');
+    const cls = classifyMention('EMT', text, start, start + 3);
+    expect(cls.mentionClass).toBe('NON_ENTITY');
+  });
+
+  it('rejects advert fragment', () => {
+    const text = 'Ad written by the marketing team was catchy.';
+    const start = text.indexOf('Ad');
+    const cls = classifyMention('Ad written', text, start, start + 'Ad written'.length);
+    expect(cls.mentionClass).toBe('NON_ENTITY');
+  });
 });
 
 describe('integration: extraction respects mention classification', () => {
@@ -55,6 +132,23 @@ describe('integration: extraction respects mention classification', () => {
 
     expect(hasListen).toBe(false);
     expect(hasFreddy).toBe(true);
+    expect(result.stats?.entities.rejected).toBeGreaterThan(0);
+  });
+
+  it('drops junk fragments while keeping real names', async () => {
+    const text = [
+      'Frederick could only agree.',
+      'He tried to figure something out.',
+      'He collected Monster Runner cards.',
+      'The dance’s theme, Gettin’ Outta Here, was printed on posters.'
+    ].join(' ');
+
+    const result = await extractFromSegments('junk-filter', text);
+    const names = result.entities.map(e => e.canonical.toLowerCase());
+    expect(names).not.toContain('only agree');
+    expect(names).not.toContain('figure something');
+    expect(names).not.toContain('monster runner cards');
+    expect(names).not.toContain('outta here');
     expect(result.stats?.entities.rejected).toBeGreaterThan(0);
   });
 });
