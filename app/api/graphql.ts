@@ -660,6 +660,26 @@ export async function startGraphQLServer(port: number = 4000, storagePath?: stri
     }
 
     // BookNLP proxy - forwards to Python BookNLP service
+    if (req.url === '/booknlp/health' && req.method === 'GET') {
+      if (!BOOKNLP_SERVICE_URL) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'BOOKNLP_SERVICE_URL is not configured' }));
+        return;
+      }
+
+      try {
+        const response = await fetch(`${BOOKNLP_SERVICE_URL}/health`);
+        const textBody = await response.text();
+        res.writeHead(response.ok ? 200 : response.status, { 'Content-Type': 'application/json' });
+        res.end(textBody);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        res.writeHead(502, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: `BookNLP health check failed: ${message}` }));
+      }
+      return;
+    }
+
     if (req.url === '/booknlp' && req.method === 'POST') {
       let body = '';
       req.on('data', chunk => {

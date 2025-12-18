@@ -24,7 +24,7 @@ export function BookNLPPage() {
           const json = JSON.parse(bodyText);
           throw new Error(json.error || bodyText || 'Request failed');
         } catch {
-          throw new Error(bodyText || 'Request failed');
+          throw new Error(`${res.status}: ${bodyText || 'Request failed'}`);
         }
       }
       const json = JSON.parse(bodyText);

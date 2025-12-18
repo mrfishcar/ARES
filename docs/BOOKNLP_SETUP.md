@@ -26,6 +26,10 @@
    cd scripts
    uvicorn booknlp_service:app --host 0.0.0.0 --port 8100
    ```
+   Quick health check (from your machine or inside the container):
+   ```bash
+   curl http://localhost:8100/health
+   ```
 6. Start the Node backend (so it can proxy `/booknlp`):
    ```bash
    npm install
