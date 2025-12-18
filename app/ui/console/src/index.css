@@ -2577,3 +2577,84 @@ body.modal-open {
  * 4) Type in the editor for 30+ seconds; ensure cursor stays stable and editor never flickers.
  * 5) Increase system/browser text size; confirm toolbar, dropdown, menus, and editor UI all scale together.
  */
+
+.booknlp-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.booknlp-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.booknlp-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.booknlp-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.booknlp-input textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  resize: vertical;
+  min-height: 260px;
+}
+
+.booknlp-output-box {
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  padding: 12px;
+  min-height: 260px;
+  max-height: 480px;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
+.booknlp-output-box pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+}
+
+.booknlp-output label,
+.booknlp-input label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.booknlp-output .error {
+  color: #b91c1c;
+}
+
+@media (max-width: 960px) {
+  .booknlp-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sidebar-link {
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.sidebar-link:hover {
+  text-decoration: underline;
+}

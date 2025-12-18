@@ -43,10 +43,16 @@ import { invalidateProjectCache } from './cache-layer';
 import { handleUpload, handleMediaServe } from './upload';
 import { handleWikiEntity } from './wiki-entity';
 import { buildEntityWikiFromGraph } from '../generate/wiki';
+import { runBookNlpProxy } from './booknlp-proxy';
 
 // Load schema
 const schemaPath = path.join(__dirname, 'schema.graphql');
 const typeDefs = fs.readFileSync(schemaPath, 'utf-8');
+
+const BOOKNLP_SERVICE_URL =
+  process.env.BOOKNLP_SERVICE_URL || (process.env.NODE_ENV !== 'production' ? 'http://localhost:8100' : '');
+const BOOKNLP_MAX_CHARS = parseInt(process.env.BOOKNLP_MAX_CHARS || '50000', 10);
+const BOOKNLP_TIMEOUT_MS = parseInt(process.env.BOOKNLP_TIMEOUT_MS || '60000', 10);
 
 interface GraphQLContext {
   graph?: KnowledgeGraph | null;
@@ -650,6 +656,38 @@ export async function startGraphQLServer(port: number = 4000, storagePath?: stri
       const content = buildEntityWikiFromGraph(targetEntity.id, graph);
       res.writeHead(200, { 'Content-Type': 'text/markdown; charset=utf-8' });
       res.end(content);
+      return;
+    }
+
+    // BookNLP proxy - forwards to Python BookNLP service
+    if (req.url === '/booknlp' && req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => {
+        body += chunk;
+        if (body.length > BOOKNLP_MAX_CHARS + 1024) {
+          res.writeHead(413, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Request body too large' }));
+          req.destroy();
+        }
+      });
+      req.on('end', async () => {
+        try {
+          const parsed = JSON.parse(body || '{}');
+          const text = parsed.text || '';
+
+          const result = await runBookNlpProxy(text, {
+            serviceUrl: BOOKNLP_SERVICE_URL,
+            maxChars: BOOKNLP_MAX_CHARS,
+            timeoutMs: BOOKNLP_TIMEOUT_MS
+          });
+
+          res.writeHead(result.status, { 'Content-Type': 'application/json' });
+          res.end(result.body);
+        } catch (error) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Invalid JSON body' }));
+        }
+      });
       return;
     }
 
