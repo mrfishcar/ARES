@@ -20,7 +20,12 @@ export function BookNLPPage() {
       });
       const bodyText = await res.text();
       if (!res.ok) {
-        throw new Error(bodyText || 'Request failed');
+        try {
+          const json = JSON.parse(bodyText);
+          throw new Error(json.error || bodyText || 'Request failed');
+        } catch {
+          throw new Error(bodyText || 'Request failed');
+        }
       }
       const json = JSON.parse(bodyText);
       setResult(json);
