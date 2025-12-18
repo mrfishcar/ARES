@@ -420,13 +420,22 @@ export async function extractFromSegments(
     }
     console.log('='.repeat(80));
 
+    const rejectedByFilter = filterOutput.filterStats.original - filterOutput.filterStats.filtered;
+    const rejectedByClassifier = entityOutput.meta?.classifierRejected || 0;
+
     return {
       entities: kgOutput.entities,
       spans: kgOutput.spans,
       relations: kgOutput.relations,
       fictionEntities: kgOutput.fictionEntities,
       profiles: profilingOutput.profiles,
-      herts
+      herts,
+      stats: {
+        entities: {
+          kept: kgOutput.entities.length,
+          rejected: rejectedByFilter + rejectedByClassifier
+        }
+      }
     };
   } catch (error) {
     const pipelineDuration = Date.now() - pipelineStartTime;

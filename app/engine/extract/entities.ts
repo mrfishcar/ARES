@@ -39,6 +39,7 @@ import {
   isViableSingleTokenPerson,
   VERB_LEADS
 } from "../linguistics/entity-heuristics";
+import { classifyMention, type MentionClassification } from "../linguistics/mention-classifier";
 
 const TRACE_SPANS = process.env.L3_TRACE === "1";
 const CAMELCASE_ALLOWED_PREFIXES = [
@@ -2550,11 +2551,17 @@ function applyLinguisticFilters(
 export async function extractEntities(text: string): Promise<{
   entities: Entity[];
   spans: Array<{entity_id: string; start: number; end: number}>;
+  meta?: {
+    classifierRejected: number;
+    contextOnlyMentions: number;
+  };
 }> {
   const DEBUG_ENTITIES = process.env.L3_DEBUG === "1";
   if (DEBUG_ENTITIES) {
     console.log(`[EXTRACT-ENTITIES][DEBUG] Debug logging enabled`);
   }
+  let classifierRejected = 0;
+  let contextOnlyMentions = 0;
   // 1) Parse with spaCy
   const parsed = await parseWithService(text);
 
@@ -3308,11 +3315,46 @@ const mergedEntries = Array.from(mergedMap.values());
     console.log(`[EXTRACT-ENTITIES][DEBUG] mergedEntries=${mergedEntries.length}`);
   }
 
+  const classifyAndFilterEntries = (entries: EntityEntry[]): EntityEntry[] => {
+    const kept: EntityEntry[] = [];
+    for (const entry of entries) {
+      const durableSpans: Array<{ start: number; end: number }> = [];
+      let entryRejected = 0;
+      let entryContext = 0;
+      for (const span of entry.spanList) {
+        const rawSurface = text.slice(span.start, span.end);
+        const classification: MentionClassification = classifyMention(rawSurface, text, span.start, span.end);
+        if (classification.mentionClass === 'DURABLE_NAME') {
+          durableSpans.push(span);
+        } else if (classification.mentionClass === 'CONTEXT_ONLY') {
+          contextOnlyMentions += 1;
+          entryContext += 1;
+        } else {
+          classifierRejected += 1;
+          entryRejected += 1;
+        }
+      }
+
+      if (durableSpans.length === 0) {
+        if (entryRejected > 0 || entryContext > 0) {
+          classifierRejected += 1;
+        }
+        continue;
+      }
+
+      entry.spanList = durableSpans;
+      kept.push(entry);
+    }
+    return kept;
+  };
+
+  const mentionFilteredEntries = classifyAndFilterEntries(mergedEntries);
+
   // Merge acronym/expansion pairs into a single ORG entry (canonical = acronym, expansion as alias)
   if (acronymPairs.length) {
     const mergedOut = new Set<EntityEntry>();
     const entryByCanonical = new Map<string, EntityEntry>();
-    for (const entry of mergedEntries) {
+    for (const entry of mentionFilteredEntries) {
       entryByCanonical.set(entry.entity.canonical.toLowerCase(), entry);
     }
 
@@ -3357,18 +3399,18 @@ const mergedEntries = Array.from(mergedMap.values());
 
     if (mergedOut.size) {
       for (const entry of mergedOut) {
-        const idx = mergedEntries.indexOf(entry);
+        const idx = mentionFilteredEntries.indexOf(entry);
         if (idx >= 0) {
-          mergedEntries.splice(idx, 1);
+          mentionFilteredEntries.splice(idx, 1);
         }
       }
     }
   }
 
   // Heuristic alias merging for PERSON entities: fold surname-only and quoted nicknames into their full-name anchor
-  const personEntries = mergedEntries.filter(entry => entry.entity.type === 'PERSON');
+  const personEntries = mentionFilteredEntries.filter(entry => entry.entity.type === 'PERSON');
   const mergedPersonIds = new Set<string>();
-  const mentionTimeline = mergedEntries.flatMap(entry =>
+  const mentionTimeline = mentionFilteredEntries.flatMap(entry =>
     entry.spanList.map(span => ({ entry, start: span.start }))
   );
   mentionTimeline.sort((a, b) => a.start - b.start || a.entry.entity.id.localeCompare(b.entry.entity.id));
@@ -3395,7 +3437,7 @@ const mergedEntries = Array.from(mergedMap.values());
     const resolvedEid = resolveAliasWithContext(aliasKey, candidates, mentionIndex, lastMentionIndexByEid);
     if (!resolvedEid || resolvedEid === entry.entity.id) return;
 
-    const target = mergedEntries.find(candidate => candidate.entity.id === resolvedEid);
+    const target = mentionFilteredEntries.find(candidate => candidate.entity.id === resolvedEid);
     if (!target) return;
 
     const seenSpanKeys = new Set(target.spanList.map(span => `${span.start}:${span.end}`));
@@ -3490,18 +3532,18 @@ const mergedEntries = Array.from(mergedMap.values());
     }
   }
 
-  const mergedEntriesFiltered = mergedEntries.filter(entry => !mergedPersonIds.has(entry.entity.id));
+  const mergedEntriesFiltered = mentionFilteredEntries.filter(entry => !mergedPersonIds.has(entry.entity.id));
 
   // Debug Chilion in merged entries
   if (process.env.L4_DEBUG === '1') {
-    const chilionInMerged = mergedEntries.filter(e => e.entity.canonical === 'Chilion');
+    const chilionInMerged = mentionFilteredEntries.filter(e => e.entity.canonical === 'Chilion');
     if (chilionInMerged.length > 0) {
       console.log(`[EXTRACT-ENTITIES] Chilion in mergedEntries: ${chilionInMerged.length}`);
-    } else if (mergedEntries.some(e => e.entity.canonical.toLowerCase() === 'chilion')) {
-      const chilionVariant = mergedEntries.find(e => e.entity.canonical.toLowerCase() === 'chilion');
+    } else if (mentionFilteredEntries.some(e => e.entity.canonical.toLowerCase() === 'chilion')) {
+      const chilionVariant = mentionFilteredEntries.find(e => e.entity.canonical.toLowerCase() === 'chilion');
       console.log(`[EXTRACT-ENTITIES] Found variant: "${chilionVariant?.entity.canonical}"`);
     } else {
-      console.log(`[EXTRACT-ENTITIES] NO Chilion in mergedEntries (${mergedEntries.length} total): ${mergedEntries.map(e => e.entity.canonical).slice(0, 10).join(', ')}`);
+      console.log(`[EXTRACT-ENTITIES] NO Chilion in mergedEntries (${mentionFilteredEntries.length} total): ${mentionFilteredEntries.map(e => e.entity.canonical).slice(0, 10).join(', ')}`);
     }
   }
 
@@ -3574,7 +3616,7 @@ const mergedEntries = Array.from(mergedMap.values());
     }
 
     const score = nameScore(entry.entity.canonical);
-    const filteredOutByPrefix = mergedEntries.some(other => {
+    const filteredOutByPrefix = mergedEntriesFiltered.some(other => {
       if (other === entry) return false;
       const otherLower = other.entity.canonical.toLowerCase();
       if (!otherLower.startsWith(canonicalLower + ' ')) return false;
@@ -4047,5 +4089,12 @@ const mergedEntries = Array.from(mergedMap.values());
     const removedCount = entities.length - finalEntities.length;
     console.log(`[EXTRACT-ENTITIES][DEBUG] returning ${finalEntities.length} entities (${dateCount} DATEs, ${removedCount} filtered): ${finalEntities.map(e => `${e.type}:${e.canonical}`).slice(0, 20).join(', ')}`);
   }
-  return { entities: finalEntities, spans: finalSpans };
+  return {
+    entities: finalEntities,
+    spans: finalSpans,
+    meta: {
+      classifierRejected,
+      contextOnlyMentions
+    }
+  };
 }
