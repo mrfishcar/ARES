@@ -28,6 +28,36 @@ import { isPipelineEnabled, extractWithPipeline, getStatsSummary, toLegacyResult
 import { runExtractionPipeline, type PipelineResult, type ExtractionStats } from './pipeline';
 import type { ParsedSentence, ParseResponse } from './parse-types';
 
+// 🆕 BOOKNLP INTEGRATION (ARES_MODE=booknlp|hybrid to enable)
+import {
+  runBookNLPAndAdapt,
+  isBookNLPAvailable,
+  getBookNLPConfig,
+  type BookNLPResult,
+  type ARESEntity,
+} from '../booknlp';
+
+// ============================================================================
+// MODE DETECTION
+// ============================================================================
+
+export type ExtractionMode = 'legacy' | 'pipeline' | 'booknlp' | 'hybrid';
+
+/**
+ * Determine which extraction mode to use based on environment/config
+ */
+export function getExtractionMode(): ExtractionMode {
+  const mode = process.env.ARES_MODE?.toLowerCase();
+
+  if (mode === 'booknlp') return 'booknlp';
+  if (mode === 'hybrid') return 'hybrid';
+
+  // Legacy check for ARES_PIPELINE
+  if (isPipelineEnabled()) return 'pipeline';
+
+  return 'legacy';
+}
+
 // 🛡️ PRECISION DEFENSE SYSTEM - LAYER 1 & 3
 import { filterLowQualityEntities, isEntityFilterEnabled, getFilterConfig, getFilterStats } from '../entity-quality-filter';
 import { deduplicateRelations, isDeduplicationEnabled, getDeduplicationStats } from '../relation-deduplicator';
@@ -249,6 +279,13 @@ export async function extractFromSegments(
     };
   };
   pipelineStats?: ExtractionStats;  // Full pipeline stats when mode='pipeline'
+  booknlpStats?: {  // BookNLP stats when mode='booknlp' or 'hybrid'
+    characters: number;
+    mentions: number;
+    quotes: number;
+    corefLinks: number;
+    processingTimeSeconds: number;
+  };
 }> {
   // FAST PATH: Synthetic performance fixtures (PersonX_Y worked with PersonX_Z)
   // The Level 5B performance tests generate documents with dozens of simple
@@ -326,6 +363,88 @@ export async function extractFromSegments(
       },
       pipelineStats: pipelineResult.stats,
     };
+  }
+
+  // ============================================================================
+  // 🆕 BOOKNLP MODE BRANCH
+  // ============================================================================
+  // When ARES_MODE=booknlp or ARES_MODE=hybrid, use BookNLP as the baseline.
+  // BookNLP provides: character clustering, coreference, quote attribution.
+  // In hybrid mode, we can layer ARES refinements on top.
+  // ============================================================================
+  const extractionMode = getExtractionMode();
+
+  if (extractionMode === 'booknlp' || extractionMode === 'hybrid') {
+    console.log(`[ORCHESTRATOR] 📚 BOOKNLP MODE (${extractionMode}) - using BookNLP baseline`);
+
+    const booknlpStartTime = Date.now();
+
+    try {
+      // Run BookNLP and get adapted results
+      const booknlpResult = await runBookNLPAndAdapt(fullText, docId);
+
+      const booknlpElapsedMs = Date.now() - booknlpStartTime;
+      const wordsPerSecond = Math.round((fullText.split(/\s+/).length / (booknlpElapsedMs / 1000)) || 0);
+      console.log(`[BOOKNLP] ✅ Complete in ${(booknlpElapsedMs / 1000).toFixed(1)}s (${wordsPerSecond} words/sec)`);
+      console.log(`[BOOKNLP]    Characters: ${booknlpResult.entities.length}, Quotes: ${booknlpResult.quotes.length}`);
+
+      // Convert BookNLP entities to ARES Entity type
+      const entities: Entity[] = booknlpResult.entities.map(e => ({
+        id: e.id,
+        canonical: e.canonical,
+        type: e.type,
+        aliases: e.aliases,
+        confidence: e.confidence,
+        source: e.source,
+      }));
+
+      // Convert BookNLP spans to ARES span format
+      const spans = booknlpResult.spans.map(s => ({
+        entity_id: s.entity_id,
+        start: s.start,
+        end: s.end,
+      }));
+
+      // For hybrid mode, we could layer additional ARES processing here
+      // (e.g., entity type refinement, relation extraction, etc.)
+      if (extractionMode === 'hybrid') {
+        console.log(`[HYBRID] TODO: Layer ARES refinements on top of BookNLP baseline`);
+        // Future: Run pipeline meaning gate, add non-character entities, extract relations
+      }
+
+      return {
+        entities,
+        spans,
+        relations: [],  // TODO: Extract relations in hybrid mode
+        fictionEntities: [],
+        profiles: existingProfiles || new Map<string, EntityProfile>(),
+        mode: extractionMode,
+        stats: {
+          entities: {
+            kept: entities.length,
+            rejected: 0,  // BookNLP doesn't report rejections the same way
+          },
+          mentions: {
+            durable: booknlpResult.spans.length,
+            contextOnly: 0,
+            rejected: 0,
+          },
+        },
+        booknlpStats: {
+          characters: booknlpResult.entities.length,
+          mentions: booknlpResult.spans.length,
+          quotes: booknlpResult.quotes.length,
+          corefLinks: booknlpResult.coref_links.length,
+          processingTimeSeconds: booknlpResult.metadata.processing_time_seconds,
+        },
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`[BOOKNLP] ❌ Failed: ${message}`);
+
+      // Fall back to legacy mode
+      console.log(`[ORCHESTRATOR] Falling back to legacy extraction`);
+    }
   }
 
   // Validate and resolve LLM config

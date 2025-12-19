@@ -40,13 +40,24 @@ function canonicalize(s: string): string {
 
 // Parse CLI args
 const args = process.argv.slice(2);
-const usePipeline = args.includes('--pipeline') || process.env.ARES_PIPELINE === 'true';
 const verbose = args.includes('--verbose');
 
-if (usePipeline) {
+// Determine extraction mode
+let expectedMode: string;
+if (args.includes('--booknlp')) {
+  process.env.ARES_MODE = 'booknlp';
+  expectedMode = 'booknlp';
+  console.log('🔧 Using BOOKNLP mode (BookNLP baseline)\n');
+} else if (args.includes('--hybrid')) {
+  process.env.ARES_MODE = 'hybrid';
+  expectedMode = 'hybrid';
+  console.log('🔧 Using HYBRID mode (BookNLP + ARES refinement)\n');
+} else if (args.includes('--pipeline') || process.env.ARES_PIPELINE === 'true') {
   process.env.ARES_PIPELINE = 'true';
+  expectedMode = 'pipeline';
   console.log('🔧 Using NEW grammar-first pipeline\n');
 } else {
+  expectedMode = 'legacy';
   console.log('🔧 Using legacy extraction\n');
 }
 
@@ -72,8 +83,8 @@ async function main() {
 
   // ✅ RUNTIME ASSERTION: Verify correct mode was used
   console.log(`\n📊 Extraction Mode: ${result.mode}`);
-  if (usePipeline && result.mode !== 'pipeline') {
-    throw new Error(`CRITICAL BUG: --pipeline flag set but extraction used mode='${result.mode}' instead of 'pipeline'. The pipeline wiring is broken.`);
+  if (expectedMode !== 'legacy' && result.mode !== expectedMode) {
+    throw new Error(`CRITICAL BUG: Expected mode='${expectedMode}' but extraction used mode='${result.mode}'. The wiring is broken.`);
   }
 
   const extracted = result.entities.map(e => ({
@@ -180,6 +191,17 @@ async function main() {
         console.log(`  ${reason}: ${count}`);
       }
     }
+  }
+
+  // Show BookNLP-specific stats if available
+  if ((result as any).booknlpStats) {
+    const bs = (result as any).booknlpStats;
+    console.log('\n--- BookNLP Stats ---');
+    console.log(`Characters: ${bs.characters}`);
+    console.log(`Mentions: ${bs.mentions}`);
+    console.log(`Quotes: ${bs.quotes}`);
+    console.log(`Coref Links: ${bs.corefLinks}`);
+    console.log(`Processing Time: ${bs.processingTimeSeconds?.toFixed(2)}s`);
   }
 
   // Show verbose output if requested
