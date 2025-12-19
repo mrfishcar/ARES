@@ -412,7 +412,7 @@ export async function extractFromSegments(
         // Future: Run pipeline meaning gate, add non-character entities, extract relations
       }
 
-      return {
+      const booknlpResponse: any = {
         entities,
         spans,
         relations: [],  // TODO: Extract relations in hybrid mode
@@ -438,6 +438,7 @@ export async function extractFromSegments(
           processingTimeSeconds: booknlpResult.metadata.processing_time_seconds,
         },
       };
+      return booknlpResponse;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(`[BOOKNLP] ❌ Failed: ${message}`);

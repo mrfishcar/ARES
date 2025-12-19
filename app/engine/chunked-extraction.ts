@@ -21,7 +21,9 @@ import type { BookNLPResult, ARESEntity, ARESSpan } from './booknlp/types';
 import { extractFromSegments } from './pipeline/orchestrator';
 import { DEFAULT_LLM_CONFIG } from './llm-config';
 import { runBookNLPAndAdapt } from './booknlp/runner';
+import { toBookNLPEID } from './booknlp/identity';
 import { mergeEntitiesAcrossDocs, rewireRelationsToGlobal } from './merge';
+import { logDebugIdentity } from './identity-debug';
 
 // ============================================================================
 // Configuration
@@ -572,6 +574,7 @@ function toSchemaEntities(booknlpEntities: ARESEntity[]): Entity[] {
     booknlp_id: entity.booknlp_id,
     mention_count: entity.mention_count,
     gender: entity.gender,
+    eid: entity.eid ?? (entity.booknlp_id ? toBookNLPEID(entity.booknlp_id) : undefined),
     created_at,
     centrality: 1,
   }));
@@ -581,9 +584,18 @@ async function attachBookNLPBaseline(
   docId: string,
   fullText: string,
   baseResult: ExtractionResult,
+  precomputedResult?: BookNLPResult,
+  baselineRequired: boolean = false,
+  debugRunId?: string,
 ): Promise<ExtractionResult> {
   try {
-    const booknlpResult: BookNLPResult = await runBookNLPAndAdapt(fullText, docId);
+    const booknlpResult: BookNLPResult =
+      precomputedResult || await runBookNLPAndAdapt(fullText, docId);
+    logDebugIdentity(debugRunId, 'booknlp_result', {
+      entities: booknlpResult.entities.length,
+      mentions: booknlpResult.spans.length,
+      uniqueClusterIds: new Set(booknlpResult.entities.map(e => e.booknlp_id)).size,
+    });
     const bookEntities = toSchemaEntities(booknlpResult.entities);
     const mergedEntities = mergeBookNLPCharacters(baseResult.entities, bookEntities);
     const mergedSpans = [...(baseResult.spans || []), ...mapBookNLPSpans(booknlpResult.spans)];
@@ -596,6 +608,9 @@ async function attachBookNLPBaseline(
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    if (baselineRequired) {
+      throw new Error(`[EXTRACT-STRATEGY] BookNLP baseline required but unavailable: ${message}`);
+    }
     console.warn(`[EXTRACT-STRATEGY] BookNLP baseline unavailable: ${message}`);
     return baseResult;
   }
@@ -614,11 +629,25 @@ export async function extractWithOptimalStrategy(
   options?: {
     generateHERTs?: boolean;
     autoSaveHERTs?: boolean;
+    debugIdentity?: boolean;
+    debugRunId?: string;
   },
   chunkedConfig?: Partial<ChunkedExtractionConfig>
 ): Promise<ExtractionResult> {
   const totalWords = countWords(fullText);
   const config = { ...DEFAULT_CHUNKED_CONFIG, ...chunkedConfig };
+  const debugEnabled = options?.debugIdentity === true;
+  const debugRunId = debugEnabled ? options?.debugRunId : undefined;
+  const extractionMode = (process.env.ARES_MODE || '').toLowerCase();
+  const isLegacyMode = extractionMode === 'legacy';
+  const baselineRequired = !isLegacyMode;
+
+  // Run BookNLP first when baseline is required (default) so cluster IDs exist
+  // before the rest of the pipeline executes.
+  let booknlpResult: BookNLPResult | undefined;
+  if (baselineRequired) {
+    booknlpResult = await runBookNLPAndAdapt(fullText, docId);
+  }
 
   // Use chunked mode if:
   // 1. Explicitly enabled via env var, OR
@@ -662,5 +691,21 @@ export async function extractWithOptimalStrategy(
     };
   }
 
-  return attachBookNLPBaseline(docId, fullText, baseResult);
+  if (debugEnabled) {
+    const byType: Record<string, number> = {};
+    for (const e of baseResult.entities) {
+      byType[e.type] = (byType[e.type] || 0) + 1;
+    }
+    logDebugIdentity(debugRunId, 'local_extraction_result', {
+      entityCount: baseResult.entities.length,
+      byType,
+    });
+  }
+
+  if (isLegacyMode) {
+    return baseResult;
+  }
+
+  // Attach BookNLP baseline (required if mode is not legacy)
+  return attachBookNLPBaseline(docId, fullText, baseResult, booknlpResult, baselineRequired, debugRunId);
 }

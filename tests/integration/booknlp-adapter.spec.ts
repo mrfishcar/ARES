@@ -18,6 +18,7 @@ import {
   parseBookNLPContract,
 } from '../../app/engine/booknlp/adapter';
 import type { BookNLPContract, BookNLPCharacter } from '../../app/engine/booknlp/types';
+import { toBookNLPEID, toBookNLPStableEntityId } from '../../app/engine/booknlp/identity';
 
 // Load fixtures
 const FIXTURE_PATH = path.resolve(__dirname, '../fixtures/booknlp/barty-excerpt-contract.json');
@@ -152,9 +153,21 @@ describe('BookNLP Adapter', () => {
         expect(entities[i].id).toBe(entities2[i].id);
       }
 
-      // IDs should contain a slug of the canonical name
       const barty = entities.find(e => e.canonical === 'Barty Beauregard');
-      expect(barty?.id).toMatch(/barty/i);
+      expect(barty?.id).toBe(toBookNLPStableEntityId('char_0'));
+    });
+
+    it('uses deterministic cluster-derived IDs and EIDs', () => {
+      const contract = loadFixture();
+      const entities = adaptCharacters(contract.characters);
+
+      for (const char of contract.characters) {
+        const expectedId = toBookNLPStableEntityId(char.id);
+        const expectedEID = toBookNLPEID(char.id);
+        const entity = entities.find(e => e.booknlp_id === char.id);
+        expect(entity?.id).toBe(expectedId);
+        expect(entity?.eid).toBe(expectedEID);
+      }
     });
   });
 
