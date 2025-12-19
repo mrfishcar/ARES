@@ -169,14 +169,7 @@ export async function extractFromSegments(
     autoSaveHERTs?: boolean;
     debugCallback?: DebugCallback;
   }
-): Promise<{
-  entities: Entity[];
-  spans: Array<{ entity_id: string; start: number; end: number }>;
-  relations: Relation[];
-  fictionEntities: FictionEntity[];
-  profiles: Map<string, EntityProfile>;
-  herts?: string[];
-}> {
+): Promise<PipelineOutput> {
   const pipelineStartTime = Date.now();
   const wordCount = Math.round(fullText.split(/\s+/).length);
 

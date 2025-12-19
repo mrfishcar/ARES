@@ -12,6 +12,7 @@ import { extractRelations } from '../engine/extract/relations';
 import { extractFromSegments } from '../engine/pipeline/orchestrator';
 import { extractWithOptimalStrategy } from '../engine/chunked-extraction';
 import { mergeEntitiesAcrossDocs } from '../engine/merge';
+import { logDebugIdentity } from '../engine/identity-debug';
 import { detectConflicts } from '../engine/conflicts';
 import { ingestTotal, extractLatencyMs } from '../infra/metrics';
 import type { FictionEntity } from '../engine/fiction-extraction';
@@ -196,6 +197,7 @@ export function loadGraph(
 
   const data = fs.readFileSync(filePath, 'utf-8');
   const serialized: SerializedGraph = JSON.parse(data);
+  const booknlpData: any = (serialized as any).booknlp;
 
   // Convert object back to Map
   return {
@@ -204,7 +206,7 @@ export function loadGraph(
     conflicts: serialized.conflicts,
     provenance: new Map(Object.entries(serialized.provenance)),
     profiles: serialized.profiles ? deserializeProfiles(serialized.profiles) : new Map(),  // Deserialize profiles (backward compatible)
-    booknlp: serialized.booknlp || { quotes: [], characters: [], mentions: [], metadata: serialized.booknlp?.metadata },
+    booknlp: booknlpData || { quotes: [], characters: [], mentions: [], metadata: booknlpData?.metadata || {} },
     metadata: serialized.metadata
   };
 }
@@ -233,10 +235,18 @@ export function createEmptyGraph(): KnowledgeGraph {
  * Append a new document to the knowledge graph
  * This performs incremental merge while preserving existing global IDs
  */
+export interface AppendOptions {
+  debugIdentity?: boolean;
+  debugRunId?: string;
+  generateHERTs?: boolean;
+  autoSaveHERTs?: boolean;
+}
+
 export async function appendDoc(
   docId: string,
   text: string,
-  filePath: string = DEFAULT_STORAGE_PATH
+  filePath: string = DEFAULT_STORAGE_PATH,
+  options: AppendOptions = {}
 ): Promise<{
   entities: Entity[];
   relations: Relation[];
@@ -275,7 +285,14 @@ export async function appendDoc(
 
     // Use smart extraction strategy that chooses between chunked and legacy modes
     // For large documents, this provides better progress tracking and responsiveness
-    ({ entities: newEntities, spans, relations: newRelations, fictionEntities, profiles: updatedProfiles, booknlp } = await extractWithOptimalStrategy(docId, text, graph.profiles, DEFAULT_LLM_CONFIG, patternLibrary));
+    ({ entities: newEntities, spans, relations: newRelations, fictionEntities, profiles: updatedProfiles, booknlp } = await extractWithOptimalStrategy(
+      docId,
+      text,
+      graph.profiles,
+      DEFAULT_LLM_CONFIG,
+      patternLibrary,
+      { generateHERTs: options.generateHERTs, autoSaveHERTs: options.autoSaveHERTs, debugIdentity: options.debugIdentity, debugRunId: options.debugRunId }
+    ));
   } finally {
     end();
   }
@@ -286,12 +303,17 @@ export async function appendDoc(
   // Create unique local IDs for new entities
   const localEntitiesRaw = newEntities.map((e, idx) => ({
     ...e,
-    id: `${docId}_entity_${idx}`
+    id: e.source === 'booknlp' && (e as any).booknlp_id
+      ? e.id // Preserve stable BookNLP-derived IDs
+      : `${docId}_entity_${idx}`
   }));
   if (Array.isArray(spans)) {
     spans = spans.map((span: any) => {
       const idx = newEntities.findIndex(e => e.id === span.entity_id);
-      const localId = idx !== -1 ? `${docId}_entity_${idx}` : span.entity_id;
+      const isBookNLP = idx !== -1 && newEntities[idx].source === 'booknlp';
+      const localId = idx !== -1
+        ? (isBookNLP ? newEntities[idx].id : `${docId}_entity_${idx}`)
+        : span.entity_id;
       return { ...span, entity_id: localId };
     });
   }
@@ -316,6 +338,17 @@ export async function appendDoc(
     if (!existing) {
       localMap.set(key, entity);
     } else {
+      // Prefer BookNLP-sourced entities for stability when available
+      const isBook = (entity as any).source === 'booknlp';
+      const existingIsBook = (existing as any).source === 'booknlp';
+      if (isBook && !existingIsBook) {
+        localMap.set(key, entity);
+        continue;
+      }
+      if (existingIsBook && !isBook) {
+        continue;
+      }
+
       const existingScore = scoreName(existing.canonical);
       const newScore = scoreName(entity.canonical);
       if (
@@ -335,6 +368,20 @@ export async function appendDoc(
   // DEBUG: Log entities after local dedup with confidence
   console.log(`[STORAGE] After local dedup: ${localEntities.length} entities:`);
   localEntities.forEach(e => console.log(`  - ${e.type}::${e.canonical} (confidence: ${e.confidence?.toFixed(3) || 'N/A'})`));
+  if (options.debugIdentity) {
+    const countBySource = (entities: Entity[]) => entities.reduce<Record<string, number>>((acc, ent) => {
+      const src = (ent as any).source || 'unknown';
+      acc[src] = (acc[src] || 0) + 1;
+      return acc;
+    }, {});
+    logDebugIdentity(options.debugRunId, 'local_dedup', {
+      rawCount: localEntitiesRaw.length,
+      dedupedCount: localEntities.length,
+      removed: localEntitiesRaw.length - localEntities.length,
+      bySourceRaw: countBySource(localEntitiesRaw),
+      bySourceDeduped: countBySource(localEntities),
+    });
+  }
 
   // Merge new entities with existing globals
   // To preserve determinism, we need to merge in a stable order
@@ -350,7 +397,6 @@ export async function appendDoc(
   console.log(`[STORAGE] Merge result: ${allLocalEntities.length} entities → ${globals.length} globals`);
   console.log(`[STORAGE] Globals after merge:`);
   globals.forEach(g => console.log(`  - ${g.type}::${g.canonical} (confidence: ${g.confidence?.toFixed(3) || 'N/A'})`));
-
   // Log merge statistics for debugging
   if (process.env.DEBUG_MERGE === '1') {
     console.log('[merge] stats:', stats);
@@ -417,6 +463,14 @@ export async function appendDoc(
 
   // Detect conflicts
   const conflicts = detectConflicts(filteredRelations);
+  if (options.debugIdentity) {
+    const globalBookCount = globals.filter(g => g.id.startsWith('global_booknlp_')).length;
+    logDebugIdentity(options.debugRunId, 'global_merge', {
+      globals: globals.length,
+      relations: filteredRelations.length,
+      booknlpGlobals: globalBookCount,
+    });
+  }
 
   // Count how many entities were merged (not new)
   const mergeCount = localEntities.length - (globals.length - graph.entities.length);
@@ -436,13 +490,13 @@ export async function appendDoc(
       graph.booknlp = { quotes: [], characters: [], mentions: [], metadata: {} };
     }
     graph.booknlp.quotes.push(
-      ...booknlp.quotes.map(q => ({ ...q, doc_id: docId }))
+      ...booknlp.quotes.map((q: any) => ({ ...q, doc_id: docId }))
     );
     graph.booknlp.characters.push(
-      ...booknlp.entities.map(e => ({ ...e, doc_id: docId }))
+      ...booknlp.entities.map((e: any) => ({ ...e, doc_id: docId }))
     );
     graph.booknlp.mentions.push(
-      ...booknlp.spans.map(s => ({ ...s, doc_id: docId }))
+      ...booknlp.spans.map((s: any) => ({ ...s, doc_id: docId }))
     );
     graph.booknlp.metadata = {
       ...(graph.booknlp.metadata || {}),
