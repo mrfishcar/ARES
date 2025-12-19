@@ -4,6 +4,18 @@ export interface VisibleSpan {
   from: number;
   to: number;
   type: EntityType;
+  start: number;
+  end: number;
+  text: string;
+  displayText?: string;
+  canonicalName?: string;
+  entityId?: string;
+  mentionId?: string;
+  mentionType?: string;
+  confidence: number;
+  source: string;
+  notes?: string | null;
+  rejected?: boolean;
 }
 
 export interface VisibleSpanPlan {
@@ -40,7 +52,23 @@ export function projectEntitiesToVisibleRanges(
     const hitsViewport = expanded.some(range => end > range.from && start < range.to);
     if (!hitsViewport) continue;
 
-    spans.push({ from: start, to: end, type: ent.type });
+    spans.push({
+      from: start,
+      to: end,
+      type: ent.type,
+      start: ent.start,
+      end: ent.end,
+      text: ent.text,
+      displayText: ent.displayText,
+      canonicalName: ent.canonicalName,
+      entityId: ent.entityId,
+      mentionId: ent.mentionId,
+      mentionType: ent.mentionType,
+      confidence: ent.confidence,
+      source: ent.source,
+      notes: ent.notes,
+      rejected: ent.rejected,
+    });
     scannedBytes += end - start;
   }
 

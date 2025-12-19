@@ -6,7 +6,7 @@
  * Clean architecture with extracted components and hooks
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Menu } from 'lucide-react';
 import { LabToolbar } from '../components/LabToolbar';
