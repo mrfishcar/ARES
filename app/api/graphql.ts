@@ -44,6 +44,8 @@ import { handleUpload, handleMediaServe } from './upload';
 import { handleWikiEntity } from './wiki-entity';
 import { buildEntityWikiFromGraph } from '../generate/wiki';
 import { runBookNlpProxy } from './booknlp-proxy';
+import { buildIdentityDebugReport } from './debug/identity-report';
+import { logDebugIdentity } from '../engine/identity-debug';
 
 // Load schema
 const schemaPath = path.join(__dirname, 'schema.graphql');
@@ -1059,7 +1061,11 @@ No additional information is available at this time.
 
       req.on('end', async () => {
         try {
-          const { text } = JSON.parse(body);
+          const parsedUrl = new URL(req.url || '', `http://${req.headers.host}`);
+          const bodyJson = JSON.parse(body);
+          const text = bodyJson.text;
+          const debugIdentity = bodyJson.debugIdentity === true || parsedUrl.searchParams.get('debugIdentity') === 'true';
+          const debugRunId = debugIdentity ? `${Date.now()}-${Math.random().toString(36).slice(2, 8)}` : undefined;
 
           if (!text || typeof text !== 'string') {
             res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -1067,7 +1073,7 @@ No additional information is available at this time.
             return;
           }
 
-          logger.info({ msg: 'extract_entities_request', length: text.length });
+          logger.info({ msg: 'extract_entities_request', length: text.length, debugIdentity, runId: debugRunId });
 
           // Use temp storage for processing
           const timestamp = Date.now();
@@ -1079,14 +1085,15 @@ No additional information is available at this time.
 
           // Extract entities and relations using the FULL ARES engine
           const startTime = Date.now();
-          const appendResult = await appendDoc(`extract-${timestamp}`, text, tempPath);
+          const appendResult = await appendDoc(`extract-${timestamp}`, text, tempPath, { debugIdentity, debugRunId });
           const extractTime = Date.now() - startTime;
 
           logger.info({
             msg: 'extract_entities_complete',
             entities: appendResult.entities.length,
             relations: appendResult.relations.length,
-            time: extractTime
+            time: extractTime,
+            debugRunId,
           });
 
           // Cleanup temp storage
@@ -1125,6 +1132,7 @@ No additional information is available at this time.
               source: (entity as any).source || 'ares',
               booknlp_id: (entity as any).booknlp_id,
               mentionCount: (entity as any).mention_count,
+              eid: (entity as any).eid,
             };
           });
 
@@ -1149,6 +1157,16 @@ No additional information is available at this time.
             objCanonical: entityMap.get(rel.obj)?.canonical || 'UNKNOWN',
           }));
 
+          let debugIdentityBlock: any;
+          if (debugIdentity) {
+            debugIdentityBlock = buildIdentityDebugReport(rawEntities, appendResult.spans);
+            logDebugIdentity(debugRunId, 'response_final', {
+              entityCount: entitySpans.length,
+              relationCount: relations.length,
+              topGroupKey: debugIdentityBlock.groups[0]?.groupKey,
+            });
+          }
+
           // Send response
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({
@@ -1172,6 +1190,7 @@ No additional information is available at this time.
               quotes: appendResult.booknlp.quotes,
               metadata: appendResult.booknlp.metadata,
             } : undefined,
+            debugIdentity: debugIdentity ? debugIdentityBlock : undefined,
           }));
 
         } catch (error) {

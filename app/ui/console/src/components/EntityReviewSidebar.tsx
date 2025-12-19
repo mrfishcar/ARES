@@ -13,6 +13,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { X, Pin, PinOff, GripVertical } from 'lucide-react';
 import type { EntitySpan, EntityType } from '../types/entities';
+import { collapseEntitiesForUI, type AggregatedEntityRow } from './entity-review-utils';
 import './EntityReviewSidebar.css';
 
 interface EntityReviewSidebarProps {
@@ -61,6 +62,39 @@ export function EntityReviewSidebar({
   const displayEntities = showRejected
     ? entities
     : entities.filter(e => !e.rejected);
+
+  const entityIndexMap = new Map<EntitySpan, number>();
+  entities.forEach((e, i) => entityIndexMap.set(e, i));
+
+  const groupedEntities: AggregatedEntityRow[] = collapseEntitiesForUI(displayEntities, entityIndexMap);
+
+  if (process.env.NODE_ENV !== 'production') {
+    const sample = groupedEntities.slice(0, 25).map(row => ({
+      rowKey: row.rowKey,
+      id: row.entity.entityId,
+      globalId: row.entity.entityId,
+      eid: (row.entity as any).eid,
+      text: row.entity.text || row.entity.displayText || row.entity.canonicalName,
+      type: row.entity.type,
+      source: row.sources.join(','),
+    }));
+    const uniqueGlobalIds = new Set(groupedEntities.map(r => r.entity.entityId || r.rowKey));
+    const duplicateCounts: Record<string, number> = {};
+    groupedEntities.forEach(r => {
+      const key = r.entity.entityId || r.rowKey;
+      duplicateCounts[key] = (duplicateCounts[key] || 0) + 1;
+    });
+    const topDuplicates = Object.entries(duplicateCounts)
+      .filter(([, count]) => count > 1)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+    console.debug('[EntityReviewSidebar][DEBUG_IDENTITY_UI]', {
+      totalRows: groupedEntities.length,
+      uniqueGlobalIds: uniqueGlobalIds.size,
+      topDuplicates,
+      sample,
+    });
+  }
 
   // Drag handlers for overlay mode
   const handleDragStart = useCallback((e: React.MouseEvent) => {
@@ -143,8 +177,8 @@ export function EntityReviewSidebar({
     onEntityUpdate(index, { notes });
   }, [onEntityUpdate]);
 
-  const keptCount = entities.filter(e => !e.rejected).length;
-  const rejectedCount = entities.filter(e => e.rejected).length;
+  const keptCount = groupedEntities.filter(({ entity }) => !entity.rejected).length;
+  const rejectedCount = groupedEntities.filter(({ entity }) => entity.rejected).length;
 
   const handleRowClick = useCallback((entity: EntitySpan, event: React.MouseEvent) => {
     if (!onNavigateEntity) return;
@@ -182,7 +216,7 @@ export function EntityReviewSidebar({
       {/* Header */}
       <div className="review-sidebar-header">
         <div className="review-sidebar-title">
-          <h2>Entities ({displayEntities.length})</h2>
+          <h2>Entities ({groupedEntities.length})</h2>
           <p className="review-sidebar-subtitle">
             Review detected entities, adjust types, and capture notes.
           </p>
@@ -238,7 +272,7 @@ export function EntityReviewSidebar({
 
       {/* Entity table */}
       <div className="review-sidebar-body">
-        {displayEntities.length === 0 ? (
+        {groupedEntities.length === 0 ? (
           <div className="review-sidebar-empty">
             <p>No entities to review</p>
           </div>
@@ -253,28 +287,41 @@ export function EntityReviewSidebar({
             </div>
 
             {/* Table rows */}
-            {displayEntities.map((entity, idx) => {
-              // Find original index in full entities array
-              const originalIndex = entities.indexOf(entity);
+            {groupedEntities.map((row) => {
+              const entity = row.entity;
               const entityName = entity.canonicalName || entity.displayText || entity.text;
               const isRejected = entity.rejected;
+              const rowKey = row.rowKey;
 
               return (
                 <div
-                  key={`${entity.text}-${entity.start}-${idx}`}
+                  key={rowKey}
                   className={`entity-row ${isRejected ? 'entity-row--rejected' : ''}`}
                   onClick={(event) => handleRowClick(entity, event)}
                 >
                   {/* Column 1: Entity Name */}
                   <div className="col-name">
                     <div className="entity-name-primary">{entityName}</div>
+                    {row.duplicateCount > 1 && (
+                      <span style={{ marginLeft: '6px', fontSize: '12px', color: '#6b7280' }}>
+                        x{row.duplicateCount}
+                      </span>
+                    )}
+                    {row.typeConflicts.length > 1 && (
+                      <span style={{ marginLeft: '6px', fontSize: '12px', color: '#b45309' }}>
+                        Types: {row.typeConflicts.join(', ')}
+                      </span>
+                    )}
                   </div>
 
                   {/* Column 2: Type Dropdown */}
                   <div className="col-type">
                     <select
                       value={entity.type}
-                      onChange={(e) => handleTypeChange(originalIndex, e.target.value as EntityType)}
+                      onChange={(e) => {
+                        const newType = e.target.value as EntityType;
+                        row.indices.forEach(i => handleTypeChange(i, newType));
+                      }}
                       className="type-select"
                       disabled={isRejected}
                     >
@@ -289,7 +336,7 @@ export function EntityReviewSidebar({
                   {/* Column 3: Reject Button */}
                   <div className="col-reject">
                     <button
-                      onClick={() => handleReject(originalIndex)}
+                      onClick={() => row.indices.forEach(i => handleReject(i))}
                       className={`reject-btn ${isRejected ? 'reject-btn--active' : ''}`}
                       title={isRejected ? 'Restore entity' : 'Reject entity'}
                     >
@@ -302,7 +349,7 @@ export function EntityReviewSidebar({
                     <input
                       type="text"
                       value={entity.notes || ''}
-                      onChange={(e) => handleNotesChange(originalIndex, e.target.value)}
+                      onChange={(e) => row.indices.forEach(i => handleNotesChange(i, e.target.value))}
                       placeholder="Add notes..."
                       className="notes-input"
                       disabled={isRejected}

@@ -104,6 +104,7 @@ export interface ARESEntity {
   booknlp_id?: string;  // Original BookNLP character ID
   mention_count?: number;
   gender?: string;
+  eid?: number;
 }
 
 export interface ARESSpan {

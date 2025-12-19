@@ -16,6 +16,7 @@ import type {
   ARESQuote,
   ARESCorefLink,
 } from './types';
+import { toBookNLPEID, toBookNLPStableEntityId } from './identity';
 
 // ============================================================================
 // TYPE MAPPING
@@ -48,20 +49,6 @@ function mapEntityType(
   return typeMap[upper] || 'PERSON';  // Default to PERSON for characters
 }
 
-/**
- * Generate a stable ARES entity ID from BookNLP character ID
- */
-function generateARESId(booknlpId: string, canonical: string): string {
-  // Create a stable ID that incorporates both the BookNLP cluster ID
-  // and a hash of the canonical name for uniqueness
-  const prefix = booknlpId.replace('char_', 'ent_');
-  const nameSlug = canonical
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '_')
-    .slice(0, 20);
-  return `${prefix}_${nameSlug}`;
-}
-
 // ============================================================================
 // ADAPTER FUNCTIONS
 // ============================================================================
@@ -73,7 +60,7 @@ export function adaptCharacters(
   characters: BookNLPCharacter[]
 ): ARESEntity[] {
   return characters.map(char => ({
-    id: generateARESId(char.id, char.canonical_name),
+    id: toBookNLPStableEntityId(char.id),
     canonical: char.canonical_name,
     type: 'PERSON',  // BookNLP characters are always PERSON
     aliases: char.aliases.map(a => a.text),
@@ -82,6 +69,7 @@ export function adaptCharacters(
     booknlp_id: char.id,
     mention_count: char.mention_count,
     gender: char.gender || undefined,
+    eid: toBookNLPEID(char.id),
   }));
 }
 
@@ -95,7 +83,7 @@ export function adaptMentions(
   return mentions
     .filter(m => m.character_id)  // Only include resolved mentions
     .map(mention => ({
-      entity_id: characterIdMap.get(mention.character_id!) || mention.character_id!,
+      entity_id: characterIdMap.get(mention.character_id!) || toBookNLPStableEntityId(mention.character_id!),
       start: mention.start_char,
       end: mention.end_char,
       text: mention.text,
@@ -179,7 +167,7 @@ export function adaptBookNLPContract(
   // Build ID mapping
   const characterIdMap = new Map<string, string>();
   for (const char of filteredCharacters) {
-    const aresId = generateARESId(char.id, char.canonical_name);
+    const aresId = toBookNLPStableEntityId(char.id);
     characterIdMap.set(char.id, aresId);
   }
 
