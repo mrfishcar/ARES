@@ -1,0 +1,214 @@
+{
+  "schema_version": "1.0",
+  "document_id": "barty-test-001",
+  "metadata": {
+    "booknlp_version": "1.0.7",
+    "text_length": 312,
+    "text_hash": "abc123def456",
+    "processing_time_seconds": 2.5,
+    "token_count": 58,
+    "sentence_count": 5,
+    "character_count": 4,
+    "mention_count": 12,
+    "quote_count": 2
+  },
+  "characters": [
+    {
+      "id": "char_0",
+      "canonical_name": "Barty Beauregard",
+      "aliases": [
+        { "text": "Barty", "count": 5 },
+        { "text": "Beauregard", "count": 2 }
+      ],
+      "mention_count": 7,
+      "gender": "male",
+      "agent_score": 0.95
+    },
+    {
+      "id": "char_1",
+      "canonical_name": "Preston Farrell",
+      "aliases": [
+        { "text": "Preston", "count": 3 }
+      ],
+      "mention_count": 4,
+      "gender": "male",
+      "agent_score": 0.72
+    },
+    {
+      "id": "char_2",
+      "canonical_name": "Kelly Prescott",
+      "aliases": [
+        { "text": "Kelly", "count": 2 }
+      ],
+      "mention_count": 3,
+      "gender": "female",
+      "agent_score": 0.65
+    },
+    {
+      "id": "char_3",
+      "canonical_name": "Principal Green",
+      "aliases": [
+        { "text": "Mr. Green", "count": 1 },
+        { "text": "Green", "count": 1 }
+      ],
+      "mention_count": 2,
+      "gender": "male",
+      "agent_score": 0.40
+    }
+  ],
+  "mentions": [
+    {
+      "id": "mention_0",
+      "character_id": "char_0",
+      "text": "Barty Beauregard",
+      "start_token": 0,
+      "end_token": 2,
+      "start_char": 0,
+      "end_char": 16,
+      "sentence_idx": 0,
+      "mention_type": "PROP",
+      "entity_type": "PER"
+    },
+    {
+      "id": "mention_1",
+      "character_id": "char_0",
+      "text": "He",
+      "start_token": 8,
+      "end_token": 9,
+      "start_char": 45,
+      "end_char": 47,
+      "sentence_idx": 1,
+      "mention_type": "PRON",
+      "entity_type": "PER"
+    },
+    {
+      "id": "mention_2",
+      "character_id": "char_1",
+      "text": "Preston Farrell",
+      "start_token": 12,
+      "end_token": 14,
+      "start_char": 75,
+      "end_char": 90,
+      "sentence_idx": 2,
+      "mention_type": "PROP",
+      "entity_type": "PER"
+    },
+    {
+      "id": "mention_3",
+      "character_id": "char_0",
+      "text": "Barty",
+      "start_token": 18,
+      "end_token": 19,
+      "start_char": 115,
+      "end_char": 120,
+      "sentence_idx": 2,
+      "mention_type": "PROP",
+      "entity_type": "PER"
+    },
+    {
+      "id": "mention_4",
+      "character_id": "char_2",
+      "text": "Kelly Prescott",
+      "start_token": 22,
+      "end_token": 24,
+      "start_char": 140,
+      "end_char": 154,
+      "sentence_idx": 3,
+      "mention_type": "PROP",
+      "entity_type": "PER"
+    },
+    {
+      "id": "mention_5",
+      "character_id": "char_2",
+      "text": "she",
+      "start_token": 26,
+      "end_token": 27,
+      "start_char": 160,
+      "end_char": 163,
+      "sentence_idx": 3,
+      "mention_type": "PRON",
+      "entity_type": "PER"
+    },
+    {
+      "id": "mention_6",
+      "character_id": "char_3",
+      "text": "Principal Green",
+      "start_token": 35,
+      "end_token": 37,
+      "start_char": 200,
+      "end_char": 215,
+      "sentence_idx": 4,
+      "mention_type": "PROP",
+      "entity_type": "PER"
+    },
+    {
+      "id": "mention_7",
+      "character_id": "char_0",
+      "text": "Barty",
+      "start_token": 42,
+      "end_token": 43,
+      "start_char": 250,
+      "end_char": 255,
+      "sentence_idx": 4,
+      "mention_type": "PROP",
+      "entity_type": "PER"
+    },
+    {
+      "id": "mention_8",
+      "character_id": null,
+      "text": "Mont Linola Junior High",
+      "start_token": 5,
+      "end_token": 9,
+      "start_char": 20,
+      "end_char": 43,
+      "sentence_idx": 0,
+      "mention_type": "PROP",
+      "entity_type": "FAC"
+    }
+  ],
+  "coref_chains": [
+    {
+      "chain_id": "coref_0",
+      "character_id": "char_0",
+      "mentions": ["mention_0", "mention_1", "mention_3", "mention_7"]
+    },
+    {
+      "chain_id": "coref_1",
+      "character_id": "char_2",
+      "mentions": ["mention_4", "mention_5"]
+    }
+  ],
+  "quotes": [
+    {
+      "id": "quote_0",
+      "text": "I saw the whole thing!",
+      "start_token": 28,
+      "end_token": 34,
+      "start_char": 165,
+      "end_char": 187,
+      "speaker_id": "char_2",
+      "speaker_name": "Kelly Prescott",
+      "addressee_id": null,
+      "quote_type": "explicit"
+    },
+    {
+      "id": "quote_1",
+      "text": "This is a serious matter.",
+      "start_token": 38,
+      "end_token": 43,
+      "start_char": 220,
+      "end_char": 245,
+      "speaker_id": "char_3",
+      "speaker_name": "Principal Green",
+      "addressee_id": "char_0",
+      "quote_type": "explicit"
+    }
+  ],
+  "tokens": [
+    { "idx": 0, "text": "Barty", "lemma": "barty", "pos": "PROPN", "ner": "PERSON", "start_char": 0, "end_char": 5, "sentence_idx": 0, "paragraph_idx": 0 },
+    { "idx": 1, "text": "Beauregard", "lemma": "beauregard", "pos": "PROPN", "ner": "PERSON", "start_char": 6, "end_char": 16, "sentence_idx": 0, "paragraph_idx": 0 },
+    { "idx": 2, "text": "walked", "lemma": "walk", "pos": "VERB", "ner": "O", "start_char": 17, "end_char": 23, "sentence_idx": 0, "paragraph_idx": 0 },
+    { "idx": 3, "text": "into", "lemma": "into", "pos": "ADP", "ner": "O", "start_char": 24, "end_char": 28, "sentence_idx": 0, "paragraph_idx": 0 },
+    { "idx": 4, "text": "Mont", "lemma": "mont", "pos": "PROPN", "ner": "FAC", "start_char": 29, "end_char": 33, "sentence_idx": 0, "paragraph_idx": 0 }
+  ]
+}
