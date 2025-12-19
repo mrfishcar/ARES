@@ -20,9 +20,20 @@ export interface GraphEdge {
   symmetric?: boolean;
 }
 
+export interface QuoteEdge {
+  id?: string;
+  speakerId: string | null;
+  text: string;
+  confidence?: number;
+  start?: number;
+  end?: number;
+  docId?: string;
+}
+
 export interface GraphData {
   nodes: GraphNode[];
   edges: GraphEdge[];
+  quotes?: QuoteEdge[];
 }
 
 export interface UseGraphDataOptions {
@@ -44,40 +55,58 @@ export interface UseGraphDataResult {
 
 const GRAPHQL_NEIGHBORHOOD = `
   query GraphNeighborhood($project: String!, $centerId: ID!, $depth: Int!, $limit: Int!) {
-    graphNeighborhood(project: $project, centerId: $centerId, depth: $depth, limit: $limit) {
-      nodes {
-        id
-        name
-        types
-      }
-      edges {
-        id
-        subject
-        object
-        predicate
-        symmetric
-      }
+  graphNeighborhood(project: $project, centerId: $centerId, depth: $depth, limit: $limit) {
+    nodes {
+      id
+      name
+      types
+    }
+    edges {
+      id
+      subject
+      object
+      predicate
+      symmetric
+    }
+    quotes {
+      id
+      speakerId
+      text
+      confidence
+      start
+      end
+      docId
     }
   }
+}
 `;
 
 const GRAPHQL_PREDICATE = `
   query GraphByPredicate($project: String!, $predicate: String!, $limit: Int!) {
-    graphByPredicate(project: $project, predicate: $predicate, limit: $limit) {
-      nodes {
-        id
-        name
-        types
-      }
-      edges {
-        id
-        subject
-        object
-        predicate
-        symmetric
-      }
+  graphByPredicate(project: $project, predicate: $predicate, limit: $limit) {
+    nodes {
+      id
+      name
+      types
+    }
+    edges {
+      id
+      subject
+      object
+      predicate
+      symmetric
+    }
+    quotes {
+      id
+      speakerId
+      text
+      confidence
+      start
+      end
+      docId
     }
   }
+}
 `;
 
 /**

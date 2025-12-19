@@ -20,6 +20,8 @@ import type { PatternLibrary } from '../engine/pattern-library';
 import { createPatternLibrary, addPatterns } from '../engine/pattern-library';
 import type { Pattern } from '../engine/bootstrap';
 import { DEFAULT_LLM_CONFIG } from '../engine/llm-config';
+import type { Span as PipelineSpan } from '../engine/pipeline/types';
+import type { BookNLPResult } from '../engine/booknlp/types';
 
 export interface ProvenanceEntry {
   global_id: string;
@@ -28,12 +30,20 @@ export interface ProvenanceEntry {
   local_canonical: string;
 }
 
+interface BookNLPStore {
+  quotes: any[];
+  characters: any[];
+  mentions: any[];
+  metadata?: any;
+}
+
 export interface KnowledgeGraph {
   entities: Entity[];
   relations: Relation[];
   conflicts: Conflict[];
   provenance: Map<string, ProvenanceEntry>;  // local_id -> entry
   profiles: Map<string, EntityProfile>;      // entity_id -> profile (adaptive learning)
+  booknlp?: BookNLPStore;
   metadata: {
     created_at: string;
     updated_at: string;
@@ -48,6 +58,7 @@ export interface SerializedGraph {
   conflicts: Conflict[];
   provenance: Record<string, ProvenanceEntry>;
   profiles?: any;  // Serialized profiles (optional for backward compatibility)
+  booknlp?: BookNLPStore;
   metadata: {
     created_at: string;
     updated_at: string;
@@ -166,6 +177,7 @@ export function saveGraph(
     conflicts: graph.conflicts,
     provenance: Object.fromEntries(graph.provenance),
     profiles: graph.profiles ? serializeProfiles(graph.profiles) : {},  // Serialize profiles (handle undefined)
+    booknlp: graph.booknlp,
     metadata: graph.metadata
   };
 
@@ -192,6 +204,7 @@ export function loadGraph(
     conflicts: serialized.conflicts,
     provenance: new Map(Object.entries(serialized.provenance)),
     profiles: serialized.profiles ? deserializeProfiles(serialized.profiles) : new Map(),  // Deserialize profiles (backward compatible)
+    booknlp: serialized.booknlp || { quotes: [], characters: [], mentions: [], metadata: serialized.booknlp?.metadata },
     metadata: serialized.metadata
   };
 }
@@ -206,6 +219,7 @@ export function createEmptyGraph(): KnowledgeGraph {
     conflicts: [],
     provenance: new Map(),
     profiles: new Map(),  // Empty profiles for adaptive learning
+    booknlp: { quotes: [], characters: [], mentions: [], metadata: {} },
     metadata: {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -230,6 +244,8 @@ export async function appendDoc(
   mergeCount: number;
   fictionEntities: FictionEntity[];
   localEntities: Entity[];
+  spans?: PipelineSpan[];
+  booknlp?: BookNLPResult;
 }> {
   // Load existing graph or create new
   let graph = loadGraph(filePath);
@@ -252,13 +268,14 @@ export async function appendDoc(
   let newRelations: Relation[];
   let fictionEntities: FictionEntity[] = [];
   let updatedProfiles: Map<string, EntityProfile>;
+  let booknlp: any;
   try {
     // Load or create pattern library for new entity types
     const patternLibrary = await loadFantasyEntityPatterns();
 
     // Use smart extraction strategy that chooses between chunked and legacy modes
     // For large documents, this provides better progress tracking and responsiveness
-    ({ entities: newEntities, spans, relations: newRelations, fictionEntities, profiles: updatedProfiles } = await extractWithOptimalStrategy(docId, text, graph.profiles, DEFAULT_LLM_CONFIG, patternLibrary));
+    ({ entities: newEntities, spans, relations: newRelations, fictionEntities, profiles: updatedProfiles, booknlp } = await extractWithOptimalStrategy(docId, text, graph.profiles, DEFAULT_LLM_CONFIG, patternLibrary));
   } finally {
     end();
   }
@@ -271,6 +288,13 @@ export async function appendDoc(
     ...e,
     id: `${docId}_entity_${idx}`
   }));
+  if (Array.isArray(spans)) {
+    spans = spans.map((span: any) => {
+      const idx = newEntities.findIndex(e => e.id === span.entity_id);
+      const localId = idx !== -1 ? `${docId}_entity_${idx}` : span.entity_id;
+      return { ...span, entity_id: localId };
+    });
+  }
 
   // DEBUG: Log entities before filtering
   console.log(`[STORAGE] Received ${newEntities.length} entities from orchestrator:`, newEntities.map(e => `${e.type}::${e.canonical}`).join(', '));
@@ -407,6 +431,25 @@ export async function appendDoc(
   graph.metadata.updated_at = new Date().toISOString();
   graph.metadata.doc_count += 1;
   graph.metadata.doc_ids.push(docId);
+  if (booknlp) {
+    if (!graph.booknlp) {
+      graph.booknlp = { quotes: [], characters: [], mentions: [], metadata: {} };
+    }
+    graph.booknlp.quotes.push(
+      ...booknlp.quotes.map(q => ({ ...q, doc_id: docId }))
+    );
+    graph.booknlp.characters.push(
+      ...booknlp.entities.map(e => ({ ...e, doc_id: docId }))
+    );
+    graph.booknlp.mentions.push(
+      ...booknlp.spans.map(s => ({ ...s, doc_id: docId }))
+    );
+    graph.booknlp.metadata = {
+      ...(graph.booknlp.metadata || {}),
+      last_run: new Date().toISOString(),
+      ...booknlp.metadata,
+    };
+  }
 
   // Save updated graph
   saveGraph(graph, filePath);
@@ -419,8 +462,10 @@ export async function appendDoc(
     relations: filteredRelations,
     conflicts,
     mergeCount,
-    fictionEntities,
-    localEntities
+  fictionEntities,
+  localEntities,
+  spans,
+  booknlp
   };
 }
 

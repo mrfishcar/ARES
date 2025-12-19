@@ -111,6 +111,7 @@ export interface ARESSpan {
   start: number;
   end: number;
   text: string;
+  mention_id?: string;
   mention_type?: string;
 }
 

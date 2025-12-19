@@ -236,6 +236,10 @@ export interface Entity {
     surnameKey?: string;
     nameSuffix?: string;
   };
+  source?: string;
+  booknlp_id?: string;
+  mention_count?: number;
+  gender?: string;
   attrs?: Record<string, string | number | boolean>;
   created_at: string;
   centrality?: number;

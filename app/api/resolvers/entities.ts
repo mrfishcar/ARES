@@ -35,7 +35,8 @@ function toEntityLite(entity: any) {
     name: entity.canonical,
     types: Array.isArray(entity.type) ? entity.type : [entity.type],
     aliases: entity.aliases || [],
-    mentionCount: entity.mention_count || 0
+    mentionCount: entity.mention_count || 0,
+    source: entity.source || 'ares'
   };
 }
 

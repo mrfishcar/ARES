@@ -29,6 +29,7 @@ interface EditorPaneProps {
   onResizeEntity?: (entity: EntitySpan, newStart: number, newEnd: number) => void | Promise<void>;
   enableLongTextOptimization?: boolean;
   navigateToRange?: NavigateToRange;
+  colorForSpan?: (span: EntitySpan) => string | undefined;
 }
 
 export function EditorPane({
@@ -48,6 +49,7 @@ export function EditorPane({
   onResizeEntity,
   enableLongTextOptimization,
   navigateToRange,
+  colorForSpan,
 }: EditorPaneProps) {
   const editorHeight = Math.max(400, typeof window !== 'undefined' ? window.innerHeight - 380 : 400);
 
@@ -82,6 +84,7 @@ export function EditorPane({
               onResizeEntity={onResizeEntity}
               enableLongTextOptimization={enableLongTextOptimization}
               navigateToRange={navigateToRange}
+              colorForSpan={colorForSpan}
             />
           </div>
         </div>

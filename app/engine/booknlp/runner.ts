@@ -37,6 +37,12 @@ export interface BookNLPConfig {
 
   /** Minimum mention count for character inclusion */
   minMentionCount: number;
+
+  /**
+   * Optional path to a pre-generated BookNLP contract (JSON).
+   * Useful for tests/fixtures or environments without BookNLP installed.
+   */
+  contractPath?: string;
 }
 
 const DEFAULT_CONFIG: BookNLPConfig = {
@@ -47,10 +53,18 @@ const DEFAULT_CONFIG: BookNLPConfig = {
   timeoutMs: parseInt(process.env.BOOKNLP_TIMEOUT || '300000', 10),
   serviceUrl: process.env.BOOKNLP_SERVICE_URL,
   minMentionCount: parseInt(process.env.BOOKNLP_MIN_MENTIONS || '2', 10),
+  contractPath: process.env.BOOKNLP_CONTRACT_PATH,
 };
 
 export function getBookNLPConfig(overrides: Partial<BookNLPConfig> = {}): BookNLPConfig {
-  return { ...DEFAULT_CONFIG, ...overrides };
+  const envContract = process.env.BOOKNLP_CONTRACT_PATH;
+  const envServiceUrl = process.env.BOOKNLP_SERVICE_URL;
+  return {
+    ...DEFAULT_CONFIG,
+    ...overrides,
+    contractPath: overrides.contractPath ?? envContract ?? DEFAULT_CONFIG.contractPath,
+    serviceUrl: overrides.serviceUrl ?? envServiceUrl ?? DEFAULT_CONFIG.serviceUrl,
+  };
 }
 
 // ============================================================================
@@ -246,6 +260,18 @@ export async function runBookNLP(
   config: Partial<BookNLPConfig> = {}
 ): Promise<BookNLPContract> {
   const fullConfig = getBookNLPConfig(config);
+
+  // Fixture mode: load a pre-generated BookNLP contract from disk.
+  if (fullConfig.contractPath) {
+    const resolved = path.resolve(fullConfig.contractPath);
+    if (!fs.existsSync(resolved)) {
+      throw new Error(`BookNLP contractPath not found: ${resolved}`);
+    }
+    const json = fs.readFileSync(resolved, 'utf-8');
+    console.log(`[BookNLP] Using contract fixture at ${resolved}`);
+    return parseBookNLPContract(json);
+  }
+
   const textHash = getTextHash(text);
 
   // Check cache

@@ -45,9 +45,12 @@ export interface EntitySpan {
   text: string;
   displayText?: string;
   canonicalName?: string;
+  entityId?: string;
+  mentionId?: string;
+  mentionType?: string;
   type: EntityType;
   confidence: number;
-  source: 'tag' | 'natural' | 'alias' | 'manual';
+  source: string;
   // Review sidebar fields
   notes?: string | null;
   rejected?: boolean;
@@ -208,25 +211,7 @@ export async function highlightEntities(
       throw new Error(data.error || 'Extraction failed');
     }
 
-    // Transform ARES engine output to EntitySpan format with validation
-    const spans: EntitySpan[] = data.entities.flatMap((entity: any) => {
-      // Validate entity type before processing
-      if (!isValidEntityType(entity.type)) {
-        console.warn(`[EntityHighlighter] Skipping entity with invalid type: ${entity.type}, text: ${entity.text}`);
-        return [];
-      }
-
-      return entity.spans.map((span: any) => ({
-        start: span.start,
-        end: span.end,
-        text: entity.text,
-        displayText: entity.text,
-        canonicalName: entity.canonical || entity.text,
-        type: entity.type as EntityType,
-        confidence: entity.confidence || 1,
-        source: 'natural' as const,
-      }));
-    });
+    const spans = mapExtractionResponseToSpans(data, text);
 
     console.log('[EntityHighlighter] Detection complete. Found', spans.length, 'entities:', spans);
 
@@ -278,4 +263,75 @@ function detectTagsOnly(text: string): EntitySpan[] {
  */
 export function clearHighlightCache(): void {
   // No cache in frontend-only version
+}
+
+/**
+ * Map extraction API response to EntitySpan records used by the editor/highlighter.
+ * Supports the new { entities, spans, booknlp } envelope while remaining
+ * backward compatible with the legacy { entities: [{ spans: [] }] } shape.
+ */
+export function mapExtractionResponseToSpans(
+  data: any,
+  fullText?: string
+): EntitySpan[] {
+  if (!data) return [];
+
+  const entityLookup = new Map<string, any>();
+  if (Array.isArray(data.entities)) {
+    for (const entity of data.entities) {
+      if (entity?.id) {
+        entityLookup.set(entity.id, entity);
+      }
+    }
+  }
+
+  const pushSpan = (span: any, entity?: any, sourceOverride?: string): EntitySpan | null => {
+    const type = (entity?.type || span?.type) as EntityType | undefined;
+    if (!type || !isValidEntityType(type)) {
+      return null;
+    }
+
+    const text =
+      span?.text ??
+      (fullText ? fullText.slice(span.start, span.end) : undefined) ??
+      entity?.text ??
+      entity?.canonical ??
+      '';
+
+    return {
+      start: span.start,
+      end: span.end,
+      text,
+      displayText: text,
+      canonicalName: entity?.canonical || entity?.text,
+      entityId: entity?.id || span.entityId || span.entity_id,
+      mentionId: span.mentionId || span.mention_id,
+      mentionType: span.mentionType || span.mention_type,
+      type,
+      confidence: entity?.confidence || span?.confidence || 1,
+      source: sourceOverride || span.source || entity?.source || 'natural',
+    };
+  };
+
+  const rawSpans: any[] = Array.isArray(data.spans) ? data.spans : [];
+  const spans: EntitySpan[] = [];
+
+  if (rawSpans.length > 0) {
+    for (const span of rawSpans) {
+      const entity = entityLookup.get(span.entityId || span.entity_id);
+      const mapped = pushSpan(span, entity);
+      if (mapped) spans.push(mapped);
+    }
+  } else if (Array.isArray(data.entities)) {
+    // Legacy shape: spans nested under each entity
+    for (const entity of data.entities) {
+      if (!Array.isArray(entity.spans)) continue;
+      for (const span of entity.spans) {
+        const mapped = pushSpan(span, entity);
+        if (mapped) spans.push(mapped);
+      }
+    }
+  }
+
+  return spans;
 }

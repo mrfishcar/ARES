@@ -621,6 +621,51 @@ export function GraphPage({ project, toast }: GraphPageProps) {
           >
             {data.nodes.length} nodes • {data.edges.length} edges
           </div>
+
+          {data.quotes && data.quotes.length > 0 && (
+            <div
+              style={{
+                marginTop: '16px',
+                padding: '12px',
+                background: '#f9fafb',
+                borderRadius: '10px',
+                border: '1px solid #e5e7eb',
+              }}
+            >
+              <div style={{ fontWeight: 600, marginBottom: '8px' }}>
+                BookNLP Quotes ({data.quotes.length})
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '8px' }}>
+                {data.quotes.map((quote, idx) => {
+                  const speakerName =
+                    (quote.speakerId && data.nodes.find(n => n.id === quote.speakerId)?.name) ||
+                    'Unknown speaker';
+                  return (
+                    <div
+                      key={quote.id || idx}
+                      style={{
+                        padding: '10px',
+                        borderRadius: '8px',
+                        background: '#fff',
+                        border: '1px solid #e5e7eb',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '4px',
+                      }}
+                    >
+                      <div style={{ fontStyle: 'italic', color: '#111827' }}>“{quote.text}”</div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#6b7280', fontSize: '12px' }}>
+                        <span>{speakerName}</span>
+                        {typeof quote.confidence === 'number' && (
+                          <span>{Math.round(quote.confidence * 100)}%</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

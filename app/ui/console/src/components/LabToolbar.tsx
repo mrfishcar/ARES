@@ -24,6 +24,7 @@ interface LabToolbarProps {
   editorMargin: number;
   showEntityIndicators: boolean;
   enableLongTextOptimization: boolean;
+  highlightChains: boolean;
 
   // Actions
   onExtractStart: () => void;
@@ -39,6 +40,7 @@ interface LabToolbarProps {
   onMarginChange: (margin: number) => void;
   onEntityIndicatorsToggle: () => void;
   onLongTextOptimizationToggle: () => void;
+  onHighlightChainsToggle: () => void;
 
   // State checks
   canExtract: boolean;
@@ -57,6 +59,7 @@ export function LabToolbar({
   highlightOpacity,
   showEntityIndicators,
   enableLongTextOptimization,
+  highlightChains,
   editorMargin,
   onExtractStart,
   onThemeToggle,
@@ -69,6 +72,7 @@ export function LabToolbar({
   onMarginChange,
   onEntityIndicatorsToggle,
   onLongTextOptimizationToggle,
+  onHighlightChainsToggle,
   canExtract,
   isExtracting,
   saveStatus,
@@ -311,6 +315,31 @@ export function LabToolbar({
                       aria-label="Highlight transparency"
                     />
                     <span className="settings-slider-value">{Math.round(highlightOpacity * 100)}%</span>
+                  </div>
+                </div>
+
+                {/* Coreference chains */}
+                <div className="settings-dropdown-section">
+                  <div className="settings-dropdown-label">Coreference</div>
+                  <div
+                    className="settings-dropdown-toggle"
+                    onClick={onHighlightChainsToggle}
+                    role="switch"
+                    aria-checked={highlightChains}
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onHighlightChainsToggle();
+                      }
+                    }}
+                  >
+                    <span className="settings-dropdown-toggle-label">
+                      Color BookNLP chains
+                    </span>
+                    <div className={`settings-toggle-switch ${highlightChains ? 'active' : ''}`}>
+                      <div className="settings-toggle-knob" />
+                    </div>
                   </div>
                 </div>
 
