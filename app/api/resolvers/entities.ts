@@ -26,14 +26,68 @@ interface GetEntityArgs {
   id: string;
 }
 
+// Allowed GraphQL enum values
+const CANONICAL_ENTITY_TYPES = new Set([
+  'PERSON',
+  'PLACE',
+  'ORG',
+  'EVENT',
+  'CONCEPT',
+  'OBJECT',
+  'RACE',
+  'CREATURE',
+  'ARTIFACT',
+  'TECHNOLOGY',
+  'MAGIC',
+  'LANGUAGE',
+  'CURRENCY',
+  'MATERIAL',
+  'DRUG',
+  'DEITY',
+  'ABILITY',
+  'SKILL',
+  'POWER',
+  'TECHNIQUE',
+  'SPELL',
+  'DATE',
+  'TIME',
+  'WORK',
+  'ITEM',
+  'MISC',
+  'SPECIES',
+  'HOUSE',
+  'TRIBE',
+  'TITLE'
+]);
+
+const TYPE_SYNONYMS: Record<string, string> = {
+  LOCATION: 'PLACE',
+  ORGANIZATION: 'ORG',
+  ORGANISATION: 'ORG'
+};
+
+function normalizeEntityType(type: string | undefined): string {
+  if (!type) return 'MISC';
+
+  const upper = type.toString().trim().toUpperCase();
+  const mapped = TYPE_SYNONYMS[upper] || upper;
+
+  return CANONICAL_ENTITY_TYPES.has(mapped) ? mapped : 'MISC';
+}
+
 /**
  * Convert storage entity to EntityLite
  */
 function toEntityLite(entity: any) {
+  const rawTypes = Array.isArray(entity.type) ? entity.type : [entity.type];
+  const normalizedTypes = Array.from(
+    new Set(rawTypes.map((t: string | undefined) => normalizeEntityType(t)))
+  );
+
   return {
     id: entity.id,
     name: entity.canonical,
-    types: Array.isArray(entity.type) ? entity.type : [entity.type],
+    types: normalizedTypes,
     aliases: entity.aliases || [],
     mentionCount: entity.mention_count || 0,
     source: entity.source || 'ares'
@@ -74,9 +128,13 @@ function filterEntities(entities: any[], filter?: EntityFilter): any[] {
 
   return entities.filter(entity => {
     // Type filter (exact match)
-    if (filter.type) {
-      const types = Array.isArray(entity.type) ? entity.type : [entity.type];
-      if (!types.includes(filter.type)) {
+    if (filter.type && filter.type.trim() !== '') {
+      const targetType = normalizeEntityType(filter.type);
+      const entityTypes = (Array.isArray(entity.type) ? entity.type : [entity.type]).map((t: string) =>
+        normalizeEntityType(t)
+      );
+
+      if (!entityTypes.includes(targetType)) {
         return false;
       }
     }
