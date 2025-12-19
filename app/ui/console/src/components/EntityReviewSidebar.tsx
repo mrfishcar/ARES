@@ -68,7 +68,7 @@ export function EntityReviewSidebar({
 
   const groupedEntities: AggregatedEntityRow[] = collapseEntitiesForUI(displayEntities, entityIndexMap);
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
     const sample = groupedEntities.slice(0, 25).map(row => ({
       rowKey: row.rowKey,
       id: row.entity.entityId,
