@@ -15,6 +15,7 @@ interface Entity {
   name: string;
   types: string[];
   aliases: string[];
+  source?: string;
 }
 
 interface RelationLite {
@@ -52,6 +53,7 @@ const LIST_ENTITIES_QUERY = `
         name
         types
         aliases
+        source
       }
       pageInfo {
         endCursor
@@ -70,6 +72,7 @@ const GET_ENTITY_QUERY = `
         name
         types
         aliases
+        source
       }
       inbound {
         id
@@ -354,11 +357,44 @@ export function EntitiesPage({ project, toast }: EntitiesPageProps) {
                   }}
                 >
                   <div style={{ fontSize: '14px', fontWeight: '600', color: '#111827', marginBottom: '4px' }}>
-                    {entity.name}
+                    {entity.name}{' '}
+                    {entity.source && (
+                      <span
+                        style={{
+                          marginLeft: '8px',
+                          padding: '2px 6px',
+                          borderRadius: '6px',
+                          background: entity.source === 'booknlp' ? '#ecfeff' : '#eef2ff',
+                          color: entity.source === 'booknlp' ? '#0e7490' : '#4338ca',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                        }}
+                      >
+                        {entity.source}
+                      </span>
+                    )}
                   </div>
                   <div style={{ fontSize: '12px', color: '#6b7280' }}>
                     {entity.types.join(', ')} • {entity.aliases.length} aliases
                   </div>
+                  {entity.aliases.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '6px' }}>
+                      {entity.aliases.slice(0, 6).map((alias) => (
+                        <span
+                          key={alias}
+                          style={{
+                            padding: '4px 8px',
+                            background: '#f3f4f6',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            color: '#374151',
+                          }}
+                        >
+                          {alias}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
 
@@ -403,8 +439,24 @@ export function EntitiesPage({ project, toast }: EntitiesPageProps) {
             overflow: 'auto',
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '16px' }}>
-            <h3 style={{ fontSize: '20px', fontWeight: '600' }}>{detailEntity.entity.name}</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '16px', gap: '12px' }}>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <h3 style={{ fontSize: '20px', fontWeight: '600', margin: 0 }}>{detailEntity.entity.name}</h3>
+              {detailEntity.entity.source && (
+                <span
+                  style={{
+                    padding: '4px 8px',
+                    borderRadius: '8px',
+                    background: detailEntity.entity.source === 'booknlp' ? '#ecfeff' : '#eef2ff',
+                    color: detailEntity.entity.source === 'booknlp' ? '#0e7490' : '#4338ca',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                  }}
+                >
+                  {detailEntity.entity.source}
+                </span>
+              )}
+            </div>
             <button
               onClick={() => {
                 setDetailEntity(null);
@@ -488,7 +540,25 @@ export function EntitiesPage({ project, toast }: EntitiesPageProps) {
 
               <div style={{ marginBottom: '16px' }}>
                 <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Aliases</div>
-                <div style={{ fontSize: '14px' }}>{detailEntity.entity.aliases.join(', ') || 'None'}</div>
+                {detailEntity.entity.aliases.length === 0 ? (
+                  <div style={{ fontSize: '14px', color: '#9ca3af' }}>None</div>
+                ) : (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {detailEntity.entity.aliases.map((alias) => (
+                      <span
+                        key={alias}
+                        style={{
+                          padding: '6px 10px',
+                          borderRadius: '8px',
+                          background: '#f3f4f6',
+                          fontSize: '13px',
+                        }}
+                      >
+                        {alias}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div style={{ marginBottom: '16px' }}>

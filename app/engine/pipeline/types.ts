@@ -11,6 +11,7 @@ import type { EntityProfile } from '../entity-profiler';
 import type { FictionEntity } from '../fiction-extraction';
 import type { PatternLibrary } from '../pattern-library';
 import type { ParsedSentence } from '../extract/parse-types';
+import type { BookNLPResult } from '../booknlp/types';
 
 // ============================================================================
 // CORE PIPELINE TYPES
@@ -55,6 +56,10 @@ export interface Span {
   entity_id: string;
   start: number;
   end: number;
+  text?: string;
+  mention_id?: string;
+  mention_type?: string;
+  source?: string;
 }
 
 /**
@@ -420,6 +425,7 @@ export interface PipelineOutput {
   fictionEntities: FictionEntity[];
   profiles: Map<string, EntityProfile>;
   herts?: string[];
+  booknlp?: BookNLPResult;
   stats?: {
     entities: {
       kept: number;

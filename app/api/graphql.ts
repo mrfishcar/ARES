@@ -1094,28 +1094,37 @@ No additional information is available at this time.
 
           const rawEntities = appendResult.localEntities?.length ? appendResult.localEntities : appendResult.entities;
           const rawRelations = appendResult.relations;
+          const spans = (appendResult.spans || []).map(span => ({
+            entityId: span.entity_id,
+            start: span.start,
+            end: span.end,
+            text: span.text ?? text.slice(span.start, span.end),
+            source: span.source || 'ares',
+            mentionId: span.mention_id,
+            mentionType: span.mention_type,
+          }));
+
+          const spansByEntity = new Map<string, Array<typeof spans[number]>>();
+          for (const span of spans) {
+            if (!spansByEntity.has(span.entityId)) {
+              spansByEntity.set(span.entityId, []);
+            }
+            spansByEntity.get(span.entityId)!.push(span);
+          }
 
           // Transform entities to frontend format with spans
           const entitySpans = rawEntities.map(entity => {
-            // Find all occurrences of this entity in the text
-            const escapedCanonical = entity.canonical.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const regex = new RegExp(`\\b${escapedCanonical}\\b`, 'gi');
-            const matches = [];
-            let match;
-            while ((match = regex.exec(text)) !== null) {
-              matches.push({
-                start: match.index,
-                end: match.index + match[0].length,
-              });
-            }
-
             return {
               id: entity.id,
               text: entity.canonical,
+              canonical: entity.canonical,
               type: entity.type,
               confidence: entity.confidence || 0.5,
-              spans: matches,
+              spans: spansByEntity.get(entity.id) || [],
               aliases: entity.aliases || [],
+              source: (entity as any).source || 'ares',
+              booknlp_id: (entity as any).booknlp_id,
+              mentionCount: (entity as any).mention_count,
             };
           });
 
@@ -1145,14 +1154,24 @@ No additional information is available at this time.
           res.end(JSON.stringify({
             success: true,
             entities: entitySpans,
+            spans,
             relations,
             stats: {
               extractionTime: extractTime,
               entityCount: rawEntities.length,
               relationCount: rawRelations.length,
               conflictCount: appendResult.conflicts?.length ?? 0,
+              booknlpCharacters: appendResult.booknlp?.entities?.length || 0,
             },
             fictionEntities: appendResult.fictionEntities.slice(0, 15),
+            booknlp: appendResult.booknlp ? {
+              characters: appendResult.booknlp.entities,
+              mentions: appendResult.booknlp.spans,
+              coref_links: appendResult.booknlp.coref_links,
+              coref_chains: appendResult.booknlp.coref_links,
+              quotes: appendResult.booknlp.quotes,
+              metadata: appendResult.booknlp.metadata,
+            } : undefined,
           }));
 
         } catch (error) {

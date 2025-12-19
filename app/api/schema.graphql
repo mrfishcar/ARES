@@ -249,7 +249,7 @@ type ReviewHeartbeat {
 type SearchResult {
   id: ID!
   name: String!
-  type: EntityType!
+  type: String!
   snippet: String
 }
 
@@ -290,6 +290,7 @@ type EntityLite {
   types: [EntityType!]!
   aliases: [String!]!
   mentionCount: Int
+  source: String
 }
 
 """Lightweight relation type for list views"""
@@ -345,7 +346,7 @@ type RelationConnectionR4 {
 
 """Filter for entity queries"""
 input EntityFilter {
-  type: EntityType
+  type: String
   nameContains: String
 }
 
@@ -434,10 +435,21 @@ type GraphEdge {
   symmetric: Boolean
 }
 
+type QuoteEdge {
+  id: ID
+  speakerId: ID
+  text: String!
+  confidence: Float
+  start: Int
+  end: Int
+  docId: String
+}
+
 """Graph slice (subgraph)"""
 type GraphSlice {
   nodes: [GraphNode!]!
   edges: [GraphEdge!]!
+  quotes: [QuoteEdge!]!
 }
 
 extend type Query {

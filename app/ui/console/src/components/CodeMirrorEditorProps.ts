@@ -43,4 +43,5 @@ export interface CodeMirrorEditorProps {
 
   /** NEW: Navigate to a range (e.g., when clicking an entity in the sidebar) */
   navigateToRange?: NavigateToRange;
+  colorForSpan?: (span: EntitySpan) => string | undefined;
 }

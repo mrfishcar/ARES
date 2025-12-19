@@ -25,6 +25,7 @@ interface GraphEdge {
 interface GraphSlice {
   nodes: GraphNode[];
   edges: GraphEdge[];
+  quotes?: any[];
 }
 
 interface NeighborhoodArgs {
@@ -38,6 +39,21 @@ interface PredicateArgs {
   project: string;
   predicate: string;
   limit?: number;
+}
+
+function selectQuotesForNodes(booknlp: any, nodeIds: Set<string>): any[] {
+  if (!booknlp || !Array.isArray(booknlp.quotes)) return [];
+  return booknlp.quotes
+    .filter((q: any) => !q.speaker_id || nodeIds.has(q.speaker_id))
+    .map((q: any) => ({
+      id: q.id || `${q.doc_id || 'quote'}:${q.start || 0}`,
+      speakerId: q.speaker_id || q.speakerId || null,
+      text: q.text,
+      confidence: q.confidence,
+      start: q.start,
+      end: q.end,
+      docId: q.doc_id || q.docId,
+    }));
 }
 
 /**
@@ -226,11 +242,13 @@ export const graphVizResolvers = {
 
       // Explore neighborhood
       const result = exploreNeighborhood(centerId, depth, limit, entityMap, graph.relations);
+      const quotes = selectQuotesForNodes(graph.booknlp, new Set(result.nodes.map(n => n.id)));
+      const withQuotes = { ...result, quotes };
 
       // Cache result
-      graphCache.set(cacheKey, result);
+      graphCache.set(cacheKey, withQuotes);
 
-      return result;
+      return withQuotes;
     },
 
     /**
@@ -270,11 +288,13 @@ export const graphVizResolvers = {
 
       // Filter by predicate
       const result = filterByPredicate(predicate, limit, entityMap, graph.relations);
+      const quotes = selectQuotesForNodes(graph.booknlp, new Set(result.nodes.map(n => n.id)));
+      const withQuotes = { ...result, quotes };
 
       // Cache result
-      graphCache.set(cacheKey, result);
+      graphCache.set(cacheKey, withQuotes);
 
-      return result;
+      return withQuotes;
     },
   },
 };

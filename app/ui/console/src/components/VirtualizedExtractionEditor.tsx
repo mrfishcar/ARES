@@ -33,6 +33,7 @@ interface VirtualizedExtractionEditorProps {
   onResizeEntity?: (entity: EntitySpan, newStart: number, newEnd: number) => void | Promise<void>;
   enableLongTextOptimization?: boolean;
   navigateToRange?: NavigateToRange;
+  colorForSpan?: (span: EntitySpan) => string | undefined;
 }
 
 // Configurable window parameters
@@ -127,6 +128,7 @@ export function VirtualizedExtractionEditor({
   onResizeEntity,
   enableLongTextOptimization = false,
   navigateToRange,
+  colorForSpan,
 }: VirtualizedExtractionEditorProps) {
   const chunkingEnabled = useMemo(
     () => enableLongTextOptimization,
@@ -440,6 +442,7 @@ export function VirtualizedExtractionEditor({
       onResizeEntity={onResizeEntity}
       onCursorChange={handleCursorChange}
       navigateToRange={localNavigateTarget || undefined}
+      colorForSpan={colorForSpan}
     />
   );
 }

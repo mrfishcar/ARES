@@ -99,6 +99,7 @@ export function adaptMentions(
       start: mention.start_char,
       end: mention.end_char,
       text: mention.text,
+      mention_id: mention.id,
       mention_type: mention.mention_type,
     }));
 }

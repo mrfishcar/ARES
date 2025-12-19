@@ -526,6 +526,18 @@ export function mergeEntitiesAcrossDocs(
         centrality: Math.max(...cluster.map(e => e.centrality || 0)),
         confidence: Math.max(...cluster.map(e => e.confidence || 0.5))  // Preserve max confidence from cluster
       };
+      const source = cluster.find(e => (e as any).source === 'booknlp')?.source || cluster.find(e => (e as any).source)?.source;
+      if (source) {
+        (globalEntity as any).source = source;
+      }
+      const booknlpId = cluster.find(e => (e as any).booknlp_id)?.booknlp_id;
+      if (booknlpId) {
+        (globalEntity as any).booknlp_id = booknlpId;
+      }
+      const mentionCount = cluster.reduce((sum, e) => sum + ((e as any).mention_count || 0), 0);
+      if (mentionCount > 0) {
+        (globalEntity as any).mention_count = mentionCount;
+      }
 
       globals.push(globalEntity);
 

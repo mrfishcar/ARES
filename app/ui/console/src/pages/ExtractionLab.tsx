@@ -17,7 +17,7 @@ import { WikiModal } from '../components/WikiModal';
 import { FloatingActionButton } from '../components/FloatingActionButton';
 import { EntityReviewSidebar } from '../components/EntityReviewSidebar';
 import type { NavigateToRange } from '../components/CodeMirrorEditorProps';
-import { isValidEntityType, type EntitySpan, type EntityType } from '../types/entities';
+import { isValidEntityType, mapExtractionResponseToSpans, type EntitySpan, type EntityType } from '../types/entities';
 import { initializeTheme, toggleTheme, loadThemePreference, getEffectiveTheme } from '../utils/darkMode';
 import { useLabLayoutState } from '../hooks/useLabLayoutState';
 import { useExtractionSettings } from '../hooks/useExtractionSettings';
@@ -64,11 +64,22 @@ interface ExtractionResponse {
   success: boolean;
   entities: Array<{
     id: string;
-    text: string;
+    text?: string;
+    canonical?: string;
     type: string;
-    confidence: number;
-    spans: Array<{ start: number; end: number }>;
+    confidence?: number;
+    spans?: Array<{ start: number; end: number; text?: string; source?: string; mentionId?: string; mentionType?: string }>;
     aliases?: string[];
+    source?: string;
+  }>;
+  spans?: Array<{
+    entityId: string;
+    start: number;
+    end: number;
+    text?: string;
+    source?: string;
+    mentionId?: string;
+    mentionType?: string;
   }>;
   relations: Array<{
     id: string;
@@ -83,8 +94,17 @@ interface ExtractionResponse {
     extractionTime?: number;
     entityCount?: number;
     relationCount?: number;
+    booknlpCharacters?: number;
   };
   fictionEntities?: any[];
+  booknlp?: {
+    characters: any[];
+    mentions: any[];
+    quotes: any[];
+    coref_chains: any[];
+    coref_links?: any[];
+    metadata?: any;
+  };
 }
 
 interface StoredDocument {
@@ -105,6 +125,15 @@ function estimateJobDurationMs(textLength: number): number {
   const extraMs = Math.floor(textLength / 5000) * 1000;
   const estimated = baseMs + extraMs;
   return Math.min(90000, Math.max(10000, estimated));
+}
+
+function colorFromId(id: string): string {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+  }
+  const hue = hash % 360;
+  return `hsl(${hue}, 65%, 70%)`;
 }
 
 interface JobProgressBarProps {
@@ -440,6 +469,9 @@ function mergeManualAndAutoEntities(
 function deduplicateEntities(entities: EntitySpan[]): EntitySpan[] {
   if (entities.length === 0) return entities;
 
+  const overlaps = (a: EntitySpan, b: EntitySpan) =>
+    !(a.end <= b.start || b.end <= a.start);
+
   // Group by type
   const byType = new Map<string, EntitySpan[]>();
   for (const entity of entities) {
@@ -471,7 +503,7 @@ function deduplicateEntities(entities: EntitySpan[]): EntitySpan[] {
         const otherLower = other.text.toLowerCase().trim();
 
         // If longer contains this one, skip this entity
-        if (otherLower.includes(longerLower)) {
+        if (otherLower.includes(longerLower) && overlaps(longer, other)) {
           merged.add(i);
           kept = false;
           break;
@@ -485,7 +517,7 @@ function deduplicateEntities(entities: EntitySpan[]): EntitySpan[] {
           const shorterLower = shorter.text.toLowerCase().trim();
 
           // If this contains the shorter one, mark shorter as merged
-          if (longerLower.includes(shorterLower)) {
+          if (longerLower.includes(shorterLower) && overlaps(longer, shorter)) {
             merged.add(j);
           }
         }
@@ -679,6 +711,8 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [relations, setRelations] = useState<Relation[]>([]);
   const [processing, setProcessing] = useState(false);
   const [stats, setStats] = useState<ExtractionStats>({ time: 0, confidence: 0, count: 0, relationCount: 0 });
+  const [booknlpResult, setBooknlpResult] = useState<ExtractionResponse['booknlp'] | null>(null);
+  const [highlightChains, setHighlightChains] = useState(false);
 
   // Job state
   const [jobId, setJobId] = useState<string | null>(null);
@@ -722,6 +756,14 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [renderMarkdown, setRenderMarkdown] = useState(true);
   const [liveExtractionEnabled, setLiveExtractionEnabled] = useState(true);
   const navigateRequestIdRef = useRef(0);
+  const colorForSpan = useCallback(
+    (span: EntitySpan) => {
+      if (!highlightChains) return undefined;
+      const key = span.entityId || span.canonicalName || span.text;
+      return key ? colorFromId(key) : undefined;
+    },
+    [highlightChains]
+  );
 
   const resetEntityOverrides = useCallback(() => {
     setEntityOverrides({
@@ -763,10 +805,37 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     });
   }, []);
 
+  const handleQuoteNavigate = useCallback((quote: any) => {
+    const start = typeof quote?.start === 'number' ? quote.start : 0;
+    const end = typeof quote?.end === 'number' ? quote.end : start + (quote?.text?.length || 0);
+    navigateRequestIdRef.current += 1;
+    setNavigateRequest({
+      from: start,
+      to: end,
+      requestId: navigateRequestIdRef.current,
+    });
+  }, []);
+
   const requiresBackground = text.length > SYNC_EXTRACTION_CHAR_LIMIT;
   const hasActiveJob = jobStatus === 'queued' || jobStatus === 'running';
   const isUpdating = processing && !requiresBackground && !hasActiveJob;
   const displayEntities = applyEntityOverrides(entities, entityOverrides, settings.entityHighlightMode);
+  const speakerLookup = useMemo(() => {
+    const map = new Map<string, string>();
+    if (booknlpResult?.characters) {
+      booknlpResult.characters.forEach((c: any) => {
+        if (c?.id) {
+          map.set(c.id, c.canonical || c.canonical_name || c.text || c.name || c.id);
+        }
+      });
+    }
+    entities.forEach((e) => {
+      if (e.entityId && e.canonicalName && !map.has(e.entityId)) {
+        map.set(e.entityId, e.canonicalName);
+      }
+    });
+    return map;
+  }, [booknlpResult, entities]);
   const entityHighlightingEnabled = settings.showHighlighting;
   const editorDisableHighlighting = !entityHighlightingEnabled;
   const effectiveTheme = getEffectiveTheme(theme);
@@ -784,29 +853,8 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
   const applyExtractionResults = useCallback(
     (data: ExtractionResponse, rawText: string, elapsedMs?: number) => {
-      const extractedEntities: EntitySpan[] = data.entities.flatMap((entity: any) => {
-        try {
-          if (!isValidEntityType(entity.type)) {
-            console.warn(`[ExtractionLab] Skipping entity with invalid type: ${entity.type}, text: ${entity.text}`);
-            return [];
-          }
-
-          return entity.spans.map((span: any) => ({
-            start: span.start,
-            end: span.end,
-            text: entity.text,
-            displayText: entity.text,
-            type: entity.type as EntityType,
-            confidence: entity.confidence,
-            source: 'natural' as const,
-          }));
-        } catch (entityError) {
-          console.error('[ExtractionLab] Error processing entity:', { entity, error: entityError });
-          return [];
-        }
-      });
-
-      const deduplicated = deduplicateEntities(extractedEntities);
+      const mappedSpans = mapExtractionResponseToSpans(data, rawText);
+      const deduplicated = deduplicateEntities(mappedSpans);
       const { entities: manualTags, rejections } = parseManualTags(rawText);
       const mergedEntities = mergeManualAndAutoEntities(deduplicated, manualTags, rejections, rawText);
 
@@ -818,6 +866,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
       setEntities(mergedEntities);
       setRelations(data.relations || []);
+      setBooknlpResult(data.booknlp || null);
       setStats({
         time: Math.round(time),
         confidence: Math.round(avgConfidence * 100),
@@ -837,6 +886,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         setEntities([]);
         setRelations([]);
         setStats({ time: 0, confidence: 0, count: 0, relationCount: 0 });
+        setBooknlpResult(null);
         return;
       }
 
@@ -877,6 +927,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         toast.error(`Extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
         setEntities([]);
         setRelations([]);
+        setBooknlpResult(null);
       } finally {
         setProcessing(false);
       }
@@ -2011,6 +2062,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     setEntities([]);
     setRelations([]);
     setStats({ time: 0, confidence: 0, count: 0, relationCount: 0 });
+    setBooknlpResult(null);
     setLastSavedId(null);
     setSaveStatus('idle');
     resetEntityOverrides();
@@ -2054,6 +2106,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         editorMargin={settings.editorMargin}
         showEntityIndicators={settings.showEntityIndicators}
         enableLongTextOptimization={settings.enableLongTextOptimization}
+        highlightChains={highlightChains}
         onExtractStart={startBackgroundJob}
         onThemeToggle={handleThemeToggle}
         onEntityHighlightToggle={settings.toggleEntityHighlightMode}
@@ -2064,6 +2117,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         onMarginChange={settings.setEditorMargin}
         onEntityIndicatorsToggle={settings.toggleEntityIndicators}
         onLongTextOptimizationToggle={settings.toggleLongTextOptimization}
+        onHighlightChainsToggle={() => setHighlightChains(prev => !prev)}
         canExtract={text.trim().length > 0 && !hasActiveJob}
         isExtracting={backgroundProcessing || hasActiveJob}
         onNewDocument={handleNewDocument}
@@ -2100,6 +2154,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           onResizeEntity={handleResizeEntity}
           enableLongTextOptimization={settings.enableLongTextOptimization}
           navigateToRange={navigateRequest ?? undefined}
+          colorForSpan={colorForSpan}
         />
 
         {/* Pinned sidebar mode - integrated into layout */}
@@ -2115,6 +2170,87 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
               onCopyReport={handleCopyReport}
               onNavigateEntity={handleNavigateToEntity}
             />
+          </div>
+        )}
+
+        {booknlpResult && (
+          <div
+            className="booknlp-panel"
+            style={{
+              marginTop: '16px',
+              padding: '16px',
+              border: '1px solid var(--border-color, #e5e7eb)',
+              borderRadius: '12px',
+              background: 'var(--bg-secondary, #fff)',
+              width: '100%',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '16px' }}>
+                  BookNLP Quotes {booknlpResult.quotes ? `(${booknlpResult.quotes.length})` : ''}
+                </h3>
+                <div style={{ color: '#6b7280', fontSize: '12px' }}>
+                  Speakers are resolved to BookNLP characters; enable “Color BookNLP chains” in settings to see clusters.
+                </div>
+              </div>
+              {booknlpResult.metadata && (
+                <div style={{ color: '#6b7280', fontSize: '12px' }}>
+                  {booknlpResult.characters?.length ?? 0} characters · {booknlpResult.metadata.processing_time_seconds}s
+                </div>
+              )}
+            </div>
+
+            {booknlpResult.quotes && booknlpResult.quotes.length > 0 ? (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px', marginTop: '12px' }}>
+                {booknlpResult.quotes.map((quote: any, idx: number) => {
+                  const speakerName = quote.speaker_id
+                    ? speakerLookup.get(quote.speaker_id) || quote.speaker_name || 'Unknown speaker'
+                    : quote.speaker_name || 'Unknown speaker';
+                  const confidence = Math.round(((quote.confidence ?? 0.5) || 0.5) * 100);
+
+                  return (
+                    <div
+                      key={quote.id || idx}
+                      style={{
+                        padding: '12px',
+                        borderRadius: '10px',
+                        border: '1px solid var(--border-subtle, #e5e7eb)',
+                        background: 'var(--bg-tertiary, #f9fafb)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '6px',
+                      }}
+                    >
+                      <div style={{ fontStyle: 'italic', color: '#111827' }}>“{quote.text}”</div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <span style={{ fontWeight: 600, color: '#111827' }}>{speakerName}</span>
+                          <span style={{ color: '#6b7280', fontSize: '12px' }}>Confidence {confidence}%</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleQuoteNavigate(quote)}
+                          style={{
+                            border: '1px solid #d1d5db',
+                            background: '#fff',
+                            borderRadius: '8px',
+                            padding: '6px 10px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Jump
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div style={{ color: '#6b7280', marginTop: '8px' }}>
+                No quotes detected for this passage yet.
+              </div>
+            )}
           </div>
         )}
       </div>

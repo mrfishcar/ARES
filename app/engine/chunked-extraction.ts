@@ -12,12 +12,15 @@
  */
 
 import type { Entity, Relation } from './schema';
-import type { EntityProfile } from './entity-profiles';
-import type { LLMConfig } from './llm-providers/types';
-import type { FictionEntity } from './fiction-entity-types';
-import type { PatternLibrary } from './patterns/pattern-library';
+import type { EntityProfile } from './entity-profiler';
+import type { LLMConfig } from './llm-config';
+import type { FictionEntity } from './fiction-extraction';
+import type { PatternLibrary } from './pattern-library';
+import type { PipelineOutput, Span as PipelineSpan } from './pipeline/types';
+import type { BookNLPResult, ARESEntity, ARESSpan } from './booknlp/types';
 import { extractFromSegments } from './pipeline/orchestrator';
 import { DEFAULT_LLM_CONFIG } from './llm-config';
+import { runBookNLPAndAdapt } from './booknlp/runner';
 import { mergeEntitiesAcrossDocs, rewireRelationsToGlobal } from './merge';
 
 // ============================================================================
@@ -50,6 +53,17 @@ const DEFAULT_CHUNKED_CONFIG: ChunkedExtractionConfig = {
   overlapChars: parseInt(process.env.ARES_CHUNK_OVERLAP_CHARS || '500', 10),
   minChunkWords: 1000,
 };
+
+interface ChunkStats {
+  totalChunks: number;
+  totalWords: number;
+  processingTimeMs: number;
+  wordsPerSecond: number;
+}
+
+interface ExtractionResult extends PipelineOutput {
+  chunkStats?: ChunkStats;
+}
 
 // ============================================================================
 // Macro-Chunk Splitter
@@ -208,7 +222,7 @@ export function splitIntoMacroChunks(
 interface ChunkResult {
   chunk: MacroChunk;
   entities: Entity[];
-  spans: Array<{ entity_id: string; start: number; end: number }>;
+  spans: PipelineSpan[];
   relations: Relation[];
   fictionEntities: FictionEntity[];
   profiles: Map<string, EntityProfile>;
@@ -219,9 +233,9 @@ interface ChunkResult {
  * Also handles overlap regions to avoid double-counting
  */
 function adjustSpansToGlobal(
-  spans: Array<{ entity_id: string; start: number; end: number }>,
+  spans: PipelineSpan[],
   chunk: MacroChunk
-): Array<{ entity_id: string; start: number; end: number }> {
+): PipelineSpan[] {
   return spans.map(span => {
     // Spans are relative to chunk.text, but chunk.text may include overlap prefix
     // The actual document position is: chunk.globalStart + span.start
@@ -229,6 +243,7 @@ function adjustSpansToGlobal(
     const globalEnd = chunk.globalStart + span.end;
 
     return {
+      ...span,
       entity_id: span.entity_id,
       start: globalStart,
       end: globalEnd,
@@ -241,9 +256,9 @@ function adjustSpansToGlobal(
  * This prevents double-counting entities in overlap regions
  */
 function dedupeOverlapSpans(
-  allSpans: Array<{ entity_id: string; start: number; end: number }>,
+  allSpans: PipelineSpan[],
   chunks: MacroChunk[]
-): Array<{ entity_id: string; start: number; end: number }> {
+): PipelineSpan[] {
   // Build a set of overlap regions
   const overlapRegions: Array<{ start: number; end: number }> = [];
   for (let i = 1; i < chunks.length; i++) {
@@ -258,7 +273,7 @@ function dedupeOverlapSpans(
 
   // For spans in overlap regions, prefer the one from the earlier chunk
   // (which will have lower globalStart before overlap adjustment)
-  const seen = new Map<string, { entity_id: string; start: number; end: number }>();
+  const seen = new Map<string, PipelineSpan>();
 
   for (const span of allSpans) {
     // Check if this span is in an overlap region
@@ -267,7 +282,7 @@ function dedupeOverlapSpans(
     );
 
     // Create a key for deduplication
-    const key = `${span.start}-${span.end}`;
+    const key = `${span.entity_id}-${span.start}-${span.end}`;
 
     if (inOverlap) {
       // If we already have this span from an earlier chunk, skip
@@ -288,13 +303,7 @@ function dedupeOverlapSpans(
 function mergeChunkResults(
   chunkResults: ChunkResult[],
   chunks: MacroChunk[]
-): {
-  entities: Entity[];
-  spans: Array<{ entity_id: string; start: number; end: number }>;
-  relations: Relation[];
-  fictionEntities: FictionEntity[];
-  profiles: Map<string, EntityProfile>;
-} {
+): PipelineOutput {
   // 1. Collect all entities
   const allEntities: Entity[] = [];
   for (const result of chunkResults) {
@@ -309,7 +318,7 @@ function mergeChunkResults(
   console.log(`[CHUNKED-MERGE] Stats: avg_confidence=${mergeResult.stats.avg_confidence.toFixed(3)}, low_confidence=${mergeResult.stats.low_confidence_count}`);
 
   // 3. Collect and adjust all spans
-  let allSpans: Array<{ entity_id: string; start: number; end: number }> = [];
+  let allSpans: PipelineSpan[] = [];
   for (const result of chunkResults) {
     const adjustedSpans = adjustSpansToGlobal(result.spans, result.chunk);
     // Remap entity IDs to global IDs
@@ -408,20 +417,7 @@ export async function extractFromLongDocument(
     autoSaveHERTs?: boolean;
   },
   chunkedConfig?: Partial<ChunkedExtractionConfig>
-): Promise<{
-  entities: Entity[];
-  spans: Array<{ entity_id: string; start: number; end: number }>;
-  relations: Relation[];
-  fictionEntities: FictionEntity[];
-  profiles: Map<string, EntityProfile>;
-  herts?: string[];
-  chunkStats?: {
-    totalChunks: number;
-    totalWords: number;
-    processingTimeMs: number;
-    wordsPerSecond: number;
-  };
-}> {
+): Promise<ExtractionResult> {
   const startTime = Date.now();
   const config = { ...DEFAULT_CHUNKED_CONFIG, ...chunkedConfig };
   const totalWords = countWords(fullText);
@@ -527,6 +523,84 @@ export async function extractFromLongDocument(
   };
 }
 
+function mergeBookNLPCharacters(
+  pipelineEntities: Entity[],
+  bookEntities: Entity[],
+): Entity[] {
+  const byKey = new Map<string, Entity>();
+  const keyFor = (e: Entity) => `${e.type}::${e.canonical.toLowerCase()}`;
+
+  for (const entity of bookEntities) {
+    byKey.set(keyFor(entity), entity);
+  }
+
+  for (const entity of pipelineEntities) {
+    const key = keyFor(entity);
+    if (entity.type === 'PERSON' && byKey.has(key)) {
+      // Prefer BookNLP cluster for person entities to avoid duplicates
+      continue;
+    }
+    if (!byKey.has(key)) {
+      byKey.set(key, entity);
+    }
+  }
+
+  return Array.from(byKey.values());
+}
+
+function mapBookNLPSpans(spans: ARESSpan[]): PipelineSpan[] {
+  return spans.map(span => ({
+    entity_id: span.entity_id,
+    start: span.start,
+    end: span.end,
+    text: span.text,
+    mention_id: span.mention_id,
+    mention_type: span.mention_type,
+    source: 'booknlp',
+  }));
+}
+
+function toSchemaEntities(booknlpEntities: ARESEntity[]): Entity[] {
+  const created_at = new Date().toISOString();
+  return booknlpEntities.map(entity => ({
+    id: entity.id,
+    canonical: entity.canonical,
+    type: entity.type as Entity['type'],
+    aliases: entity.aliases,
+    confidence: entity.confidence,
+    source: entity.source,
+    booknlp_id: entity.booknlp_id,
+    mention_count: entity.mention_count,
+    gender: entity.gender,
+    created_at,
+    centrality: 1,
+  }));
+}
+
+async function attachBookNLPBaseline(
+  docId: string,
+  fullText: string,
+  baseResult: ExtractionResult,
+): Promise<ExtractionResult> {
+  try {
+    const booknlpResult: BookNLPResult = await runBookNLPAndAdapt(fullText, docId);
+    const bookEntities = toSchemaEntities(booknlpResult.entities);
+    const mergedEntities = mergeBookNLPCharacters(baseResult.entities, bookEntities);
+    const mergedSpans = [...(baseResult.spans || []), ...mapBookNLPSpans(booknlpResult.spans)];
+
+    return {
+      ...baseResult,
+      entities: mergedEntities,
+      spans: mergedSpans,
+      booknlp: booknlpResult,
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn(`[EXTRACT-STRATEGY] BookNLP baseline unavailable: ${message}`);
+    return baseResult;
+  }
+}
+
 /**
  * Smart extraction entry point that chooses between chunked and legacy modes
  * based on document size and configuration
@@ -542,20 +616,7 @@ export async function extractWithOptimalStrategy(
     autoSaveHERTs?: boolean;
   },
   chunkedConfig?: Partial<ChunkedExtractionConfig>
-): Promise<{
-  entities: Entity[];
-  spans: Array<{ entity_id: string; start: number; end: number }>;
-  relations: Relation[];
-  fictionEntities: FictionEntity[];
-  profiles: Map<string, EntityProfile>;
-  herts?: string[];
-  chunkStats?: {
-    totalChunks: number;
-    totalWords: number;
-    processingTimeMs: number;
-    wordsPerSecond: number;
-  };
-}> {
+): Promise<ExtractionResult> {
   const totalWords = countWords(fullText);
   const config = { ...DEFAULT_CHUNKED_CONFIG, ...chunkedConfig };
 
@@ -564,9 +625,11 @@ export async function extractWithOptimalStrategy(
   // 2. Document is large enough to benefit from chunking (> chunkSizeWords * 1.5)
   const useChunked = isChunkedModeEnabled() || totalWords > config.chunkSizeWords * 1.5;
 
+  let baseResult: ExtractionResult;
+
   if (useChunked && totalWords > config.chunkSizeWords) {
     console.log(`[EXTRACT-STRATEGY] Using CHUNKED mode for ${totalWords} words`);
-    return extractFromLongDocument(
+    baseResult = await extractFromLongDocument(
       docId,
       fullText,
       existingProfiles,
@@ -588,7 +651,7 @@ export async function extractWithOptimalStrategy(
     );
 
     const elapsedMs = Date.now() - startTime;
-    return {
+    baseResult = {
       ...result,
       chunkStats: {
         totalChunks: 1,
@@ -598,4 +661,6 @@ export async function extractWithOptimalStrategy(
       },
     };
   }
+
+  return attachBookNLPBaseline(docId, fullText, baseResult);
 }

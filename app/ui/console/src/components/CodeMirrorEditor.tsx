@@ -158,6 +158,7 @@ function entityHighlighterExtension(
   isDisabled: () => boolean,
   getOpacity: () => number,
   getBaseOffset: () => number,
+  getColorForSpan?: () => ((span: EntitySpan) => string | undefined) | undefined,
 ) {
   return ViewPlugin.fromClass(
     class {
@@ -187,6 +188,7 @@ function entityHighlighterExtension(
         const backgroundAlpha = toAlphaHex(32 * opacity);
         const borderAlpha = toAlphaHex(64 * opacity);
         const doc = view.state.doc;
+        const colorForSpan = getColorForSpan ? getColorForSpan() : undefined;
         const { spans, scannedBytes } = projectEntitiesToVisibleRanges(
           entities,
           base,
@@ -200,7 +202,8 @@ function entityHighlighterExtension(
           const builder = new RangeSetBuilder<Decoration>();
 
           for (const span of spans) {
-            const color = getEntityTypeColor(span.type);
+            const color = (colorForSpan ? colorForSpan(span) : undefined) || getEntityTypeColor(span.type);
+            const title = span.canonicalName || span.displayText || span.text;
 
             builder.add(
               span.from,
@@ -214,6 +217,7 @@ function entityHighlighterExtension(
                     border-radius: 3px;
                     padding: 0 1px;
                   `,
+                  ...(title ? { title } : {}),
                 },
               }),
             );
@@ -647,6 +651,7 @@ export function CodeMirrorEditor({
   onTextSelected,
   onResizeEntity,
   navigateToRange,
+  colorForSpan,
 }: CodeMirrorEditorProps) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
@@ -655,6 +660,7 @@ export function CodeMirrorEditor({
   const baseOffsetRef = useRef(baseOffset);
   const disableHighlightingRef = useRef(disableHighlighting);
   const highlightOpacityRef = useRef(highlightOpacity);
+  const colorForSpanRef = useRef<CodeMirrorEditorProps['colorForSpan']>(colorForSpan);
   const onCursorChangeRef = useRef(onCursorChange);
   const entityHighlightModeRef = useRef(entityHighlightMode);
   const onTextSelectedRef = useRef(onTextSelected);
@@ -699,6 +705,15 @@ export function CodeMirrorEditor({
   }, [highlightOpacity]);
 
   useEffect(() => {
+    colorForSpanRef.current = colorForSpan;
+    if (viewRef.current) {
+      viewRef.current.dispatch({
+        effects: ForceDecorationUpdate.of(undefined),
+      });
+    }
+  }, [colorForSpan]);
+
+  useEffect(() => {
     onCursorChangeRef.current = onCursorChange;
   }, [onCursorChange]);
 
@@ -738,6 +753,7 @@ export function CodeMirrorEditor({
           () => disableHighlightingRef.current,
           () => highlightOpacityRef.current,
           () => baseOffsetRef.current,
+          () => colorForSpanRef.current,
         ),
         flashEntityField,
         contextMenuExtension(setContextMenu, entitiesRef, baseOffsetRef, entityHighlightModeRef, onTextSelectedRef),
