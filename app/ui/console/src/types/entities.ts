@@ -51,6 +51,7 @@ export interface EntitySpan {
   type: EntityType;
   confidence: number;
   source: string;
+  phase?: string;
   // Review sidebar fields
   notes?: string | null;
   rejected?: boolean;
