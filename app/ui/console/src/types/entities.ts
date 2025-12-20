@@ -51,6 +51,7 @@ export interface EntitySpan {
   type: EntityType;
   confidence: number;
   source: string;
+  phase?: string;
   // Review sidebar fields
   notes?: string | null;
   rejected?: boolean;
@@ -310,6 +311,7 @@ export function mapExtractionResponseToSpans(
       type,
       confidence: entity?.confidence || span?.confidence || 1,
       source: sourceOverride || span.source || entity?.source || 'natural',
+      phase: span.phase || entity?.phase || sourceOverride || span.source || entity?.source,
     };
   };
 

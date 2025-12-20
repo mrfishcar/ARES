@@ -27,7 +27,7 @@ import time
 import uuid
 import hashlib
 from pathlib import Path
-from typing import Dict, Any, List, Optional, TypedDict
+from typing import Dict, Any, List, Optional, TypedDict, Tuple
 from dataclasses import dataclass, asdict
 from collections import defaultdict
 
@@ -105,27 +105,35 @@ class BookNLPContract(TypedDict):
 # BOOKNLP OUTPUT PARSING
 # ============================================================================
 
-def parse_tsv_file(path: Path) -> List[Dict[str, str]]:
-    """Parse a TSV file into a list of dicts keyed by header names."""
+def parse_tsv_file(path: Path) -> Tuple[List[str], List[Dict[str, str]]]:
+    """Parse a TSV file into (headers, rows) keyed by header names."""
     if not path.exists():
-        return []
+        return [], []
 
     rows: List[Dict[str, str]] = []
     lines = path.read_text(encoding="utf-8").strip().split("\n")
     if not lines:
-        return rows
+        return [], []
 
     headers = lines[0].split("\t")
     for line in lines[1:]:
         parts = line.split("\t")
         row = {headers[i]: parts[i] if i < len(parts) else "" for i in range(len(headers))}
         rows.append(row)
-    return rows
+    return headers, rows
+
+
+def log_tsv_preview(label: str, headers: List[str], rows: List[Dict[str, str]]) -> None:
+    """Log TSV headers and the first row for debugging/traceability."""
+    print(f"[BookNLP][TSV] {label} headers: {headers}")
+    if rows:
+        print(f"[BookNLP][TSV] {label} sample row: {rows[0]}")
 
 
 def build_token_index(tokens_file: Path, text: str) -> List[Token]:
     """Build token list with character offsets from BookNLP .tokens file."""
-    rows = parse_tsv_file(tokens_file)
+    headers, rows = parse_tsv_file(tokens_file)
+    log_tsv_preview("tokens", headers, rows)
     tokens: List[Token] = []
 
     # BookNLP tokens file columns:
@@ -167,7 +175,8 @@ def build_characters_and_mentions(
     - entity_type (PER/LOC/ORG/etc.)
     - name (canonical name for the cluster)
     """
-    rows = parse_tsv_file(entities_file)
+    headers, rows = parse_tsv_file(entities_file)
+    log_tsv_preview("entities", headers, rows)
 
     # Group mentions by cluster ID
     cluster_mentions: Dict[int, List[Dict]] = defaultdict(list)
@@ -288,7 +297,8 @@ def build_quotes(
     - char_id (speaker cluster ID)
     - quote text
     """
-    rows = parse_tsv_file(quotes_file)
+    headers, rows = parse_tsv_file(quotes_file)
+    log_tsv_preview("quotes", headers, rows)
     quotes: List[Quote] = []
 
     # Build lookup for character names
@@ -372,9 +382,15 @@ def build_contract(
     tokens_file = output_dir / f"{prefix}.tokens"
     entities_file = output_dir / f"{prefix}.entities"
     quotes_file = output_dir / f"{prefix}.quotes"
+    coref_file = output_dir / f"{prefix}.coref"
 
     # Build token index first
     tokens = build_token_index(tokens_file, original_text)
+
+    # Log coref TSV (if present) even though we build chains from mentions
+    coref_headers, coref_rows = parse_tsv_file(coref_file)
+    if coref_headers or coref_rows:
+        log_tsv_preview("coref", coref_headers, coref_rows)
 
     # Build characters and mentions
     characters, mentions, cluster_to_char_id = build_characters_and_mentions(
