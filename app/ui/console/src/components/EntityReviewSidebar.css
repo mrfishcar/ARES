@@ -13,6 +13,7 @@
   transform: translateZ(0);
   border-radius: 12px;
   overflow: hidden;
+  contain: layout paint;
 }
 
 /* Overlay mode - floating, draggable, resizable */
@@ -288,6 +289,11 @@
 
 .entity-row--rejected:hover {
   background: rgba(239, 68, 68, 0.1);
+}
+
+.entity-row--loading {
+  opacity: 0.7;
+  font-style: italic;
 }
 
 /* Column 1: Entity Name */
