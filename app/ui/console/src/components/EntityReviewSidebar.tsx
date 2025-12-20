@@ -58,14 +58,6 @@ export function EntityReviewSidebar({
   const sidebarRef = useRef<HTMLDivElement>(null);
   const latestDimsRef = useRef({ innerWidth: window.innerWidth, innerHeight: window.innerHeight });
 
-  useEffect(() => {
-    const handleResize = () => {
-      latestDimsRef.current = { innerWidth: window.innerWidth, innerHeight: window.innerHeight };
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   // Display all entities (no layout-shifting filters)
   const displayEntities = useMemo(() => entities, [entities]);
 
@@ -172,6 +164,23 @@ export function EntityReviewSidebar({
     if (!state.active) return;
     state.active = false;
     setSize({ width: state.baseWidth, height: state.baseHeight });
+  }, []);
+
+  // Keep overlay within viewport on resize
+  useEffect(() => {
+    const handleResize = () => {
+      setSize(prev => {
+        const maxWidth = Math.max(320, window.innerWidth - 32);
+        const maxHeight = Math.max(320, window.innerHeight - 96);
+        return {
+          width: Math.min(prev.width, maxWidth),
+          height: Math.min(prev.height, maxHeight),
+        };
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // Keep overlay within viewport on resize
@@ -534,28 +543,33 @@ export function EntityReviewSidebar({
             </div>
 
             {/* Table rows */}
-            {groupedEntities.slice(0, visibleCount).map((row) => (
-              <div
-                key={row.rowKey}
-                className={`entity-row ${row.entity.rejected ? 'entity-row--rejected' : ''}`}
-                onClick={(event) => handleRowClick(row.entity, event)}
-              >
-                {/* Column 1: Entity Name */}
-                <div className="col-name">
-                  <div className="entity-name-primary">
-                    {row.entity.canonicalName || row.entity.displayText || row.entity.text}
-                  </div>
-                  <div className="entity-meta">
-                    {row.duplicateCount > 1 && (
-                      <span className="entity-meta-badge entity-meta-duplicate">
-                        x{row.duplicateCount}
-                      </span>
-                    )}
-                    {row.typeConflicts.length > 1 && (
-                      <span className="entity-meta-badge entity-meta-conflict">
-                        Types: {row.typeConflicts.join(', ')}
-                      </span>
-                    )}
+            {groupedEntities.slice(0, visibleCount).map((row) => {
+              const entity = row.entity;
+              const entityName = entity.canonicalName || entity.displayText || entity.text;
+              const isRejected = entity.rejected;
+              const rowKey = row.rowKey;
+
+              return (
+                <div
+                  key={rowKey}
+                  className={`entity-row ${isRejected ? 'entity-row--rejected' : ''}`}
+                  onClick={(event) => handleRowClick(entity, event)}
+                >
+                  {/* Column 1: Entity Name */}
+                  <div className="col-name">
+                    <div className="entity-name-primary">{entityName}</div>
+                    <div className="entity-meta">
+                      {row.duplicateCount > 1 && (
+                        <span className="entity-meta-badge entity-meta-duplicate">
+                          x{row.duplicateCount}
+                        </span>
+                      )}
+                      {row.typeConflicts.length > 1 && (
+                        <span className="entity-meta-badge entity-meta-conflict">
+                          Types: {row.typeConflicts.join(', ')}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
