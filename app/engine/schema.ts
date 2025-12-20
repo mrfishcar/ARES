@@ -495,3 +495,179 @@ export function passesGuard(pred: Predicate, subj: Entity, obj: Entity): boolean
   if (!guard) return true;
   return guard.subj.includes(subj.type) && guard.obj.includes(obj.type);
 }
+
+// ============================================================================
+// USER OVERRIDE SYSTEM (Phase 2 - 2025-12-20)
+// ============================================================================
+
+/**
+ * Types of corrections a user can make to the knowledge graph
+ */
+export type CorrectionType =
+  | 'entity_type'     // Change entity type (PERSON → ORG)
+  | 'entity_merge'    // Merge two entities into one
+  | 'entity_split'    // Split one entity into multiple
+  | 'entity_reject'   // Mark entity as invalid
+  | 'entity_restore'  // Restore a rejected entity
+  | 'relation_add'    // Add a new relation
+  | 'relation_remove' // Remove an existing relation
+  | 'relation_edit'   // Modify relation predicate or confidence
+  | 'alias_add'       // Add alias to entity
+  | 'alias_remove'    // Remove alias from entity
+  | 'canonical_change'; // Change canonical name
+
+/**
+ * User correction record - first-class delta for the meaning layer
+ *
+ * These corrections are preserved across reprocessing and applied
+ * after extraction to maintain user edits.
+ */
+export interface Correction {
+  id: string;
+  type: CorrectionType;
+  timestamp: string;  // ISO date string
+  author?: string;    // User/system that made the correction
+
+  // Target of the correction
+  entityId?: string;       // Entity being corrected
+  relationId?: string;     // Relation being corrected
+  entityIds?: string[];    // For merge operations
+
+  // Before/after snapshots for rollback
+  before: {
+    entityType?: EntityType;
+    canonical?: string;
+    aliases?: string[];
+    predicate?: Predicate;
+    confidence?: number;
+    rejected?: boolean;
+    snapshot?: Partial<Entity | Relation>;
+  };
+  after: {
+    entityType?: EntityType;
+    canonical?: string;
+    aliases?: string[];
+    predicate?: Predicate;
+    confidence?: number;
+    rejected?: boolean;
+    mergedEntityId?: string;  // For merge: the resulting entity ID
+    splitEntityIds?: string[]; // For split: the resulting entity IDs
+    snapshot?: Partial<Entity | Relation>;
+  };
+
+  // Context for learning
+  context?: {
+    sourceText?: string;      // Text that triggered correction
+    extractionMethod?: string; // How the entity was originally extracted
+    originalConfidence?: number;
+  };
+
+  // User-provided reason
+  reason?: string;
+
+  // Learning metadata
+  learned?: {
+    patternExtracted?: boolean;  // Did we learn from this correction?
+    patternId?: string;          // ID of learned pattern
+    appliedToCount?: number;     // How many times pattern was applied
+  };
+
+  // Status flags
+  rolledBack?: boolean;
+  rolledBackAt?: string;
+  rolledBackBy?: string;
+}
+
+/**
+ * Version snapshot for rollback capability
+ */
+export interface VersionSnapshot {
+  id: string;
+  timestamp: string;
+  correctionId: string;  // Correction that triggered this snapshot
+  description?: string;
+
+  // Changed IDs for efficient diffing
+  changedEntities: string[];
+  changedRelations: string[];
+
+  // Full state snapshot (for complete rollback)
+  snapshot: {
+    entities: Entity[];
+    relations: Relation[];
+  };
+}
+
+/**
+ * Learned pattern from user corrections
+ */
+export interface LearnedPattern {
+  id: string;
+  type: 'entity_type' | 'entity_name' | 'relation' | 'confidence';
+
+  // Pattern matching
+  pattern: string;  // Regex or rule
+  condition: {
+    textPattern?: string;    // e.g., "Kingdom of *"
+    contextPattern?: string; // e.g., "ruled by"
+    entityType?: EntityType;
+    predicate?: Predicate;
+  };
+
+  // Action to take when pattern matches
+  action: {
+    setType?: EntityType;
+    setConfidence?: number;
+    setPredicate?: Predicate;
+    merge?: boolean;
+    reject?: boolean;
+  };
+
+  // Statistics
+  stats: {
+    timesApplied: number;
+    timesValidated: number;  // User confirmed pattern was correct
+    timesRejected: number;   // User overrode pattern
+    lastApplied?: string;
+  };
+
+  // Derived from correction
+  sourceCorrections: string[];  // IDs of corrections that created this pattern
+
+  // Status
+  active: boolean;
+  confidence: number;  // Pattern confidence (higher = more reliable)
+}
+
+/**
+ * Extended Entity with manual override tracking
+ */
+export interface EntityWithOverrides extends Entity {
+  manualOverride?: {
+    hasOverride: boolean;
+    overrideType?: CorrectionType;
+    correctionId?: string;
+    overrideAt?: string;
+    originalType?: EntityType;
+    originalCanonical?: string;
+  };
+  rejected?: boolean;
+  rejectedAt?: string;
+  rejectedBy?: string;
+  rejectionReason?: string;
+}
+
+/**
+ * Extended Relation with manual override tracking
+ */
+export interface RelationWithOverrides extends Relation {
+  manualOverride?: {
+    hasOverride: boolean;
+    overrideType?: CorrectionType;
+    correctionId?: string;
+    overrideAt?: string;
+    originalPredicate?: Predicate;
+  };
+  rejected?: boolean;
+  rejectedAt?: string;
+}
