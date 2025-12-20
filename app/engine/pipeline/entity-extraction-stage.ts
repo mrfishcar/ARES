@@ -25,7 +25,7 @@ import { v4 as uuid } from 'uuid';
 import { extractEntities, normalizeName } from '../extract/entities';
 import { hybridExtraction } from '../llm-extractor';
 import { applyPatterns, type Pattern } from '../bootstrap';
-import { isValidEntity, correctEntityType } from '../entity-filter';
+import { isValidEntity, correctEntityType } from '../entity-quality-filter';
 import { getLLMConfig, validateLLMConfig, DEFAULT_LLM_CONFIG } from '../llm-config';
 import type { Entity, EntityType } from '../schema';
 import type {

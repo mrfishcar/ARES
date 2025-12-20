@@ -19,7 +19,7 @@ import { chooseBestCanonical } from '../global-graph';
 import { getLLMConfig, validateLLMConfig, DEFAULT_LLM_CONFIG, type LLMConfig } from '../llm-config';
 import { applyPatterns, type Pattern } from '../bootstrap';
 import type { PatternLibrary } from '../pattern-library';
-import { isValidEntity, correctEntityType } from '../entity-filter';
+import { isValidEntity, correctEntityType } from '../entity-quality-filter';
 import { loadRelationPatterns, type PatternsMode } from './load-relations';
 import { isContextDependent, isGarbageAlias } from '../pronoun-utils';
 
