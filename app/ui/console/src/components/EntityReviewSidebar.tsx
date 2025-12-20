@@ -113,39 +113,6 @@ export function EntityReviewSidebar({
     });
   }
 
-  const entityIndexMap = new Map<EntitySpan, number>();
-  entities.forEach((e, i) => entityIndexMap.set(e, i));
-
-  const groupedEntities: AggregatedEntityRow[] = collapseEntitiesForUI(displayEntities, entityIndexMap);
-
-  if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
-    const sample = groupedEntities.slice(0, 25).map(row => ({
-      rowKey: row.rowKey,
-      id: row.entity.entityId,
-      globalId: row.entity.entityId,
-      eid: (row.entity as any).eid,
-      text: row.entity.text || row.entity.displayText || row.entity.canonicalName,
-      type: row.entity.type,
-      source: row.sources.join(','),
-    }));
-    const uniqueGlobalIds = new Set(groupedEntities.map(r => r.entity.entityId || r.rowKey));
-    const duplicateCounts: Record<string, number> = {};
-    groupedEntities.forEach(r => {
-      const key = r.entity.entityId || r.rowKey;
-      duplicateCounts[key] = (duplicateCounts[key] || 0) + 1;
-    });
-    const topDuplicates = Object.entries(duplicateCounts)
-      .filter(([, count]) => count > 1)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5);
-    console.debug('[EntityReviewSidebar][DEBUG_IDENTITY_UI]', {
-      totalRows: groupedEntities.length,
-      uniqueGlobalIds: uniqueGlobalIds.size,
-      topDuplicates,
-      sample,
-    });
-  }
-
   // Drag handlers for overlay mode
   const handleDragStart = useCallback((e: React.MouseEvent) => {
     if (mode !== 'overlay') return;
