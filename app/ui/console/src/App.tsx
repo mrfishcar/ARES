@@ -4,7 +4,7 @@
  */
 
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useToast, ToastContainer } from './components/Toast';
 import { ThemeProvider } from './context/ThemeContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -108,6 +108,8 @@ function AppShell() {
   const [project] = useState<string>(() => loadState('project', 'default'));
   const toast = useToast();
   const location = useLocation();
+  const motionRootRef = useRef<HTMLDivElement>(null);
+  const motionTimerRef = useRef<number | null>(null);
 
   // Global focus/selection debugging - helps track caret interruption issues on iPad
   useEffect(() => {
@@ -191,8 +193,41 @@ function AppShell() {
     ? location.pathname
     : '/notes';
 
+  useEffect(() => {
+    const root = motionRootRef.current ?? document.documentElement;
+    if (!root) return;
+    root.setAttribute('data-motion', 'idle');
+
+    const activateMotion = () => {
+      root.setAttribute('data-motion', 'active');
+      if (motionTimerRef.current) {
+        clearTimeout(motionTimerRef.current);
+      }
+      motionTimerRef.current = window.setTimeout(() => {
+        root.setAttribute('data-motion', 'idle');
+      }, 150);
+    };
+
+    const listeners: Array<[keyof WindowEventMap, EventListenerOrEventListenerObject]> = [
+      ['scroll', activateMotion],
+      ['wheel', activateMotion],
+      ['pointermove', activateMotion],
+      ['touchmove', activateMotion],
+      ['keydown', activateMotion],
+    ];
+
+    listeners.forEach(([event, handler]) => window.addEventListener(event, handler, { passive: true }));
+
+    return () => {
+      listeners.forEach(([event, handler]) => window.removeEventListener(event, handler));
+      if (motionTimerRef.current) {
+        clearTimeout(motionTimerRef.current);
+      }
+    };
+  }, []);
+
   return (
-    <div className="app-root">
+    <div className="app-root" ref={motionRootRef} data-motion="idle">
       <div className="app-shell">
         <main className="app-main app-scroll-root">
           <Routes>

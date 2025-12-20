@@ -123,7 +123,23 @@ export function LabToolbar({
       ? 'Saved'
       : saveStatus === 'error'
         ? 'Save failed'
-        : null;
+        : 'Ready';
+
+  const saveStatusClass =
+    saveStatus === 'saving'
+      ? 'save-status--saving'
+      : saveStatus === 'saved'
+        ? 'save-status--saved'
+        : saveStatus === 'error'
+          ? 'save-status--error'
+          : 'save-status--idle';
+
+  const showPerfGauntlet = typeof import.meta !== 'undefined' && import.meta.env.DEV;
+
+  const handleRunPerfGauntlet = async () => {
+    const { runPerfGauntlet } = await import('../perf/perfGauntlet');
+    runPerfGauntlet();
+  };
 
   return (
     <>
@@ -141,28 +157,30 @@ export function LabToolbar({
         >
           {statusLabel}
         </div>
-        {/* Save status indicator */}
-        {saveStatusLabel && (
-          <div
-            className={`save-status-indicator ${
-              saveStatus === 'saving'
-                ? 'save-status--saving'
-                : saveStatus === 'saved'
-                  ? 'save-status--saved'
-                  : saveStatus === 'error'
-                    ? 'save-status--error'
-                    : ''
-            }`}
+        {/* Save status indicator - always rendered to avoid layout shifts */}
+        <div className={`save-status-indicator ${saveStatusClass}`}>
+          {saveStatus === 'saving' ? (
+            <Cloud size={12} strokeWidth={2} className="saving-icon" />
+          ) : saveStatus === 'saved' ? (
+            <Cloud size={12} strokeWidth={2} />
+          ) : saveStatus === 'error' ? (
+            <CloudOff size={12} strokeWidth={2} />
+          ) : (
+            <Cloud size={12} strokeWidth={2} style={{ opacity: 0.35 }} />
+          )}
+          <span>{saveStatusLabel}</span>
+        </div>
+
+        {showPerfGauntlet && (
+          <button
+            type="button"
+            onClick={handleRunPerfGauntlet}
+            className="control-btn"
+            title="Run Perf Gauntlet (DEV)"
+            style={{ width: 'auto', padding: '6px 10px', fontSize: '11px' }}
           >
-            {saveStatus === 'saving' ? (
-              <Cloud size={12} strokeWidth={2} className="saving-icon" />
-            ) : saveStatus === 'saved' ? (
-              <Cloud size={12} strokeWidth={2} />
-            ) : saveStatus === 'error' ? (
-              <CloudOff size={12} strokeWidth={2} />
-            ) : null}
-            <span>{saveStatusLabel}</span>
-          </div>
+            Run Perf Gauntlet
+          </button>
         )}
       </div>
 
