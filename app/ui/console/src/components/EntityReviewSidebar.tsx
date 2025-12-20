@@ -10,22 +10,12 @@
  * - Pinned mode integrates into layout
  */
 
-import { useState, useCallback, useRef, useEffect, useMemo, memo } from 'react';
-import type React from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { X, Pin, PinOff, GripVertical } from 'lucide-react';
 import type { EntitySpan, EntityType } from '../types/entities';
 import { collapseEntitiesForUI, type AggregatedEntityRow } from './entity-review-utils';
 import './EntityReviewSidebar.css';
 import { requestIdleChunk } from '../utils/scheduler';
-
-type PhaseKey = 'booknlp' | 'pipeline' | 'manual' | 'editor' | 'unknown';
-const DEFAULT_PHASE_FILTERS: Record<PhaseKey, boolean> = {
-  booknlp: true,
-  pipeline: true,
-  manual: true,
-  editor: true,
-  unknown: true,
-};
 
 interface EntityReviewSidebarProps {
   mode: 'overlay' | 'pinned';
@@ -57,28 +47,15 @@ export function EntityReviewSidebar({
   onCopyReport,
   onNavigateEntity,
 }: EntityReviewSidebarProps) {
-  // Filter state
-  const [showRejected, setShowRejected] = useState(false);
-  const [phaseFilters, setPhaseFilters] = useState<Record<PhaseKey, boolean>>(DEFAULT_PHASE_FILTERS);
-
   // Draggable/resizable state for overlay mode
-  const [position, setPosition] = useState({ x: window.innerWidth - 620, y: 80 });
-  const [size, setSize] = useState({ width: 600, height: window.innerHeight - 160 });
-  const dragStateRef = useRef({
-    active: false,
-    offsetX: 0,
-    offsetY: 0,
-    nextX: position.x,
-    nextY: position.y,
-  });
-  const resizeStateRef = useRef({
-    active: false,
-    startX: 0,
-    startY: 0,
-    baseWidth: size.width,
-    baseHeight: size.height,
-  });
-  const rafRef = useRef<number | null>(null);
+  const baseWidth = Math.min(640, window.innerWidth - 48);
+  const baseHeight = Math.max(420, window.innerHeight - 160);
+  const [position, setPosition] = useState({ x: Math.max(16, window.innerWidth - baseWidth - 24), y: 72 });
+  const [size, setSize] = useState({ width: baseWidth, height: baseHeight });
+  const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const sidebarRef = useRef<HTMLDivElement>(null);
   const latestDimsRef = useRef({ innerWidth: window.innerWidth, innerHeight: window.innerHeight });
 
@@ -107,17 +84,8 @@ export function EntityReviewSidebar({
     }
   }, [mode]);
 
-  // Display entities based on filter
-  const isPhaseEnabled = (entity: EntitySpan) => {
-    const phase = (entity.source || 'unknown').toLowerCase();
-    if (phase.includes('booknlp')) return phaseFilters.booknlp;
-    if (phase.includes('manual')) return phaseFilters.manual;
-    if (phase.includes('editor')) return phaseFilters.editor;
-    if (phase.includes('pipeline')) return phaseFilters.pipeline;
-    return phaseFilters.unknown;
-  };
-
-  const displayEntities = (showRejected ? entities : entities.filter(e => !e.rejected)).filter(isPhaseEnabled);
+  // Display all entities (no layout-shifting filters)
+  const displayEntities = useMemo(() => entities, [entities]);
 
   const entityIndexMap = useMemo(() => {
     const map = new Map<EntitySpan, number>();
@@ -129,33 +97,7 @@ export function EntityReviewSidebar({
     () => collapseEntitiesForUI(displayEntities, entityIndexMap),
     [displayEntities, entityIndexMap]
   );
-  const [visibleRows, setVisibleRows] = useState<AggregatedEntityRow[]>(() =>
-    groupedEntities.slice(0, 200)
-  );
-  const [isChunkLoading, setIsChunkLoading] = useState(false);
-
-  useEffect(() => {
-    if (groupedEntities.length <= 200) {
-      setVisibleRows(groupedEntities);
-      setIsChunkLoading(false);
-      return;
-    }
-
-    setVisibleRows(groupedEntities.slice(0, 60));
-    setIsChunkLoading(true);
-    const CHUNK_SIZE = 80;
-    const startIndex = 60;
-
-    return requestIdleChunk(() => groupedEntities, {
-      initialIndex: startIndex,
-      chunkSize: CHUNK_SIZE,
-      maxChunkDurationMs: 8,
-      onChunk: (rows) => {
-        setVisibleRows((prev) => [...prev, ...rows]);
-      },
-      onComplete: () => setIsChunkLoading(false),
-    });
-  }, [groupedEntities]);
+  const totalRows = groupedEntities.length;
 
   if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
     const sample = groupedEntities.slice(0, 25).map(row => ({
@@ -235,26 +177,13 @@ export function EntityReviewSidebar({
   }, [mode, size]);
 
   const handleResizeMove = useCallback((e: MouseEvent) => {
-    const state = resizeStateRef.current;
-    if (!state.active) return;
-    const { innerWidth, innerHeight } = latestDimsRef.current;
-    const deltaX = e.clientX - state.startX;
-    const deltaY = e.clientY - state.startY;
-    const newWidth = Math.max(400, Math.min(innerWidth - position.x, state.baseWidth - deltaX));
-    const newHeight = Math.max(300, Math.min(innerHeight - position.y, state.baseHeight + deltaY));
-    state.baseWidth = newWidth;
-    state.baseHeight = newHeight;
-    if (rafRef.current == null) {
-      rafRef.current = requestAnimationFrame(() => {
-        rafRef.current = null;
-        const el = sidebarRef.current;
-        if (el) {
-          el.style.width = `${state.baseWidth}px`;
-          el.style.height = `${state.baseHeight}px`;
-        }
-      });
-    }
-  }, [position.x, position.y]);
+    if (!isResizing) return;
+    const deltaX = e.clientX - resizeStart.x;
+    const deltaY = e.clientY - resizeStart.y;
+    const newWidth = Math.max(360, Math.min(window.innerWidth - position.x, resizeStart.width - deltaX));
+    const newHeight = Math.max(320, Math.min(window.innerHeight - position.y, resizeStart.height + deltaY));
+    setSize({ width: newWidth, height: newHeight });
+  }, [isResizing, resizeStart, position]);
 
   const handleResizeEnd = useCallback(() => {
     const state = resizeStateRef.current;
@@ -262,6 +191,34 @@ export function EntityReviewSidebar({
     state.active = false;
     setSize({ width: state.baseWidth, height: state.baseHeight });
   }, []);
+
+  // Keep overlay within viewport on resize
+  useEffect(() => {
+    const handleResize = () => {
+      setSize(prev => {
+        const maxWidth = Math.max(320, window.innerWidth - 32);
+        const maxHeight = Math.max(320, window.innerHeight - 96);
+        return {
+          width: Math.min(prev.width, maxWidth),
+          height: Math.min(prev.height, maxHeight),
+        };
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    setPosition(prev => {
+      const maxX = Math.max(16, window.innerWidth - size.width - 16);
+      const maxY = Math.max(48, window.innerHeight - size.height - 16);
+      return {
+        x: Math.min(Math.max(16, prev.x), maxX),
+        y: Math.min(Math.max(48, prev.y), maxY),
+      };
+    });
+  }, [size]);
 
   // Mouse event listeners
   useEffect(() => {
@@ -302,6 +259,46 @@ export function EntityReviewSidebar({
 
   const keptCount = groupedEntities.filter(({ entity }) => !entity.rejected).length;
   const rejectedCount = groupedEntities.filter(({ entity }) => entity.rejected).length;
+  const [visibleCount, setVisibleCount] = useState(totalRows);
+  const [showProgressHint, setShowProgressHint] = useState(false);
+
+  // Progressive rendering for large lists (keeps UI responsive)
+  useEffect(() => {
+    const total = totalRows;
+    if (total === 0) {
+      setVisibleCount(0);
+      setShowProgressHint(false);
+      return;
+    }
+
+    const initial = Math.min(total, 120);
+    setVisibleCount(initial);
+    setShowProgressHint(false);
+
+    let rafId: number;
+    let hintTimer: number;
+
+    const step = () => {
+      setVisibleCount(prev => {
+        if (prev >= total) return prev;
+        const next = Math.min(total, prev + 100);
+        if (next < total) {
+          rafId = requestAnimationFrame(step);
+        }
+        return next;
+      });
+    };
+
+    if (initial < total) {
+      hintTimer = window.setTimeout(() => setShowProgressHint(true), 200);
+      rafId = requestAnimationFrame(step);
+    }
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      clearTimeout(hintTimer);
+    };
+  }, [totalRows]);
 
   const handleRowClick = useCallback((entity: EntitySpan, event: React.MouseEvent) => {
     if (!onNavigateEntity) return;
@@ -436,16 +433,17 @@ export function EntityReviewSidebar({
       {/* Header */}
       <div className="review-sidebar-header">
         <div className="review-sidebar-title">
-          <h2>Entities ({groupedEntities.length})</h2>
+          <div className="review-sidebar-eyebrow">Entity review</div>
+          <h2>Entities ({totalRows})</h2>
           <p className="review-sidebar-subtitle">
             Review detected entities, adjust types, and capture notes.
           </p>
-          <div style={{ fontWeight: 700, color: '#2563eb', marginTop: '4px' }}>
-            Filters: ENABLED (temporary)
-          </div>
           <div className="review-sidebar-stats">
             <span className="stat-badge stat-kept">{keptCount} kept</span>
             <span className="stat-badge stat-rejected">{rejectedCount} rejected</span>
+          </div>
+          <div className="review-sidebar-progress" aria-live="polite">
+            {showProgressHint && visibleCount < totalRows ? `Loading ${totalRows - visibleCount} more…` : ''}
           </div>
         </div>
 
@@ -481,47 +479,6 @@ export function EntityReviewSidebar({
         </div>
       </div>
 
-      {/* Filter toggle */}
-      <div className="review-sidebar-filter">
-        <label>
-          <input
-            type="checkbox"
-            checked={showRejected}
-            onChange={(e) => setShowRejected(e.target.checked)}
-          />
-          Show rejected entities
-        </label>
-        <div className="review-sidebar-filters" style={{ marginTop: '8px', padding: '8px', border: '1px solid #e5e7eb', borderRadius: '8px' }}>
-          <div style={{ fontWeight: 600, marginBottom: '6px' }}>Filters</div>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {(Object.keys(DEFAULT_PHASE_FILTERS) as PhaseKey[]).map(key => (
-              <label key={key} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <input
-                  type="checkbox"
-                  checked={phaseFilters[key]}
-                  onChange={(e) => setPhaseFilters(prev => ({ ...prev, [key]: e.target.checked }))}
-                />
-                {key}
-              </label>
-            ))}
-          </div>
-          <div style={{ marginTop: '6px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <button className="action-btn" onClick={() => setPhaseFilters({ ...DEFAULT_PHASE_FILTERS, booknlp: true, pipeline: false, manual: false, editor: false, unknown: false })}>
-              BookNLP Only
-            </button>
-            <button className="action-btn" onClick={() => setPhaseFilters({ ...DEFAULT_PHASE_FILTERS, booknlp: false, pipeline: true, manual: false, editor: false, unknown: false })}>
-              Pipeline Only
-            </button>
-            <button className="action-btn" onClick={() => setPhaseFilters({ ...DEFAULT_PHASE_FILTERS, booknlp: false, pipeline: false, manual: true, editor: true, unknown: false })}>
-              Manual Only
-            </button>
-            <button className="action-btn" onClick={() => setPhaseFilters(DEFAULT_PHASE_FILTERS)}>
-              Everything
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Entity table */}
       <div className="review-sidebar-body">
         {groupedEntities.length === 0 ? (
@@ -539,20 +496,74 @@ export function EntityReviewSidebar({
             </div>
 
             {/* Table rows */}
-            {renderRows.map((row) => (
-              <EntityRow
-                key={row.rowKey}
-                row={row}
-                onRowClick={handleRowClick}
-                onTypeChangeRow={handleTypeDropdownChange}
-                onRejectRow={handleRejectRow}
-                onNotesChangeRow={handleNotesRow}
-              />
-            ))}
-            {isChunkLoading && (
-              <div className="entity-row entity-row--loading">
-                <div className="col-name">
-                  <div className="entity-name-primary">Loading more…</div>
+            {groupedEntities.slice(0, visibleCount).map((row) => {
+              const entity = row.entity;
+              const entityName = entity.canonicalName || entity.displayText || entity.text;
+              const isRejected = entity.rejected;
+              const rowKey = row.rowKey;
+
+              return (
+                <div
+                  key={rowKey}
+                  className={`entity-row ${isRejected ? 'entity-row--rejected' : ''}`}
+                  onClick={(event) => handleRowClick(entity, event)}
+                >
+                  {/* Column 1: Entity Name */}
+                  <div className="col-name">
+                    <div className="entity-name-primary">{entityName}</div>
+                    {row.duplicateCount > 1 && (
+                      <span style={{ marginLeft: '6px', fontSize: '12px', color: '#6b7280' }}>
+                        x{row.duplicateCount}
+                      </span>
+                    )}
+                    {row.typeConflicts.length > 1 && (
+                      <span style={{ marginLeft: '6px', fontSize: '12px', color: '#b45309' }}>
+                        Types: {row.typeConflicts.join(', ')}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Column 2: Type Dropdown */}
+                  <div className="col-type">
+                    <select
+                      value={entity.type}
+                      onChange={(e) => {
+                        const newType = e.target.value as EntityType;
+                        row.indices.forEach(i => handleTypeChange(i, newType));
+                      }}
+                      className="type-select"
+                      disabled={isRejected}
+                    >
+                      {ENTITY_TYPES.map(type => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Column 3: Reject Button */}
+                  <div className="col-reject">
+                    <button
+                      onClick={() => row.indices.forEach(i => handleReject(i))}
+                      className={`reject-btn ${isRejected ? 'reject-btn--active' : ''}`}
+                      title={isRejected ? 'Restore entity' : 'Reject entity'}
+                    >
+                      {isRejected ? 'Restore' : 'Reject'}
+                    </button>
+                  </div>
+
+                  {/* Column 4: Notes */}
+                  <div className="col-notes">
+                    <input
+                      type="text"
+                      value={entity.notes || ''}
+                      onChange={(e) => row.indices.forEach(i => handleNotesChange(i, e.target.value))}
+                      placeholder="Add notes..."
+                      className="notes-input"
+                      disabled={isRejected}
+                    />
+                  </div>
                 </div>
                 <div className="col-type" />
                 <div className="col-reject" />

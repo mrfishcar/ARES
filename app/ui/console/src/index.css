@@ -28,6 +28,25 @@ body {
   --app-bg-dark: #050713;
   --app-bg-light: #f5f6fa;
 
+  /* Note app baseline: spacing, radii, typography */
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 20px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  --font-size-sm: 13px;
+  --font-size-base: 15px;
+  --font-size-lg: 17px;
+  --line-height-base: 1.6;
+
   /* shared tokens that don't really change with theme */
   --accent-color: #38bdf8;
   --accent-hover: #0ea5e9;
@@ -351,9 +370,9 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-size: 0.9375rem;
+  font-size: var(--font-size-base);
   font-weight: 400;
-  line-height: 1.6;
+  line-height: var(--line-height-base);
   background-color: var(--app-surface);
   color: var(--text-primary);
   position: relative;
