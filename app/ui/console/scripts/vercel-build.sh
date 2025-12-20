@@ -17,8 +17,21 @@ export npm_config_fund="false"
 export npm_config_audit="false"
 export npm_config_progress="false"
 
+echo "=== npm diagnostics ==="
+echo "npm version: $(npm -v)"
+echo "node version: $(node -v)"
+echo "npm registry: $(npm config get registry)"
+echo "npm userconfig: $(npm config get userconfig)"
+echo "npm globalconfig: $(npm config get globalconfig)"
+
 # Add a few retries to handle transient network hiccups
-npm ci --fetch-retries=5 --fetch-retry-factor=2 --fetch-retry-mintimeout=1000 --fetch-retry-maxtimeout=20000
+set -x
+if ! npm ci --fetch-retries=5 --fetch-retry-factor=2 --fetch-retry-mintimeout=1000 --fetch-retry-maxtimeout=20000 --registry="https://registry.npmjs.org/" ; then
+  echo "npm ci failed; retrying with fresh cache and legacy peer deps as a fallback"
+  npm cache clean --force || true
+  npm install --legacy-peer-deps --fetch-retries=5 --fetch-retry-factor=2 --fetch-retry-mintimeout=1000 --fetch-retry-maxtimeout=20000 --registry="https://registry.npmjs.org/"
+fi
+set +x
 
 # Build the console
 npm run build
