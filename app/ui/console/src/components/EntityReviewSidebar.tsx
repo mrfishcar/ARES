@@ -571,51 +571,51 @@ export function EntityReviewSidebar({
                       )}
                     </div>
                   </div>
-                </div>
 
-                {/* Column 2: Type Dropdown */}
-                <div className="col-type">
-                  <select
-                    value={row.entity.type}
-                    onChange={(e) => {
-                      const newType = e.target.value as EntityType;
-                      row.indices.forEach(i => handleTypeChange(i, newType));
-                    }}
-                    className="type-select"
-                    disabled={row.entity.rejected}
-                  >
-                    {ENTITY_TYPES.map(type => (
-                      <option key={type} value={type}>
-                        {type}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                  {/* Column 2: Type Dropdown */}
+                  <div className="col-type">
+                    <select
+                      value={row.entity.type}
+                      onChange={(e) => {
+                        const newType = e.target.value as EntityType;
+                        row.indices.forEach(i => handleTypeChange(i, newType));
+                      }}
+                      className="type-select"
+                      disabled={row.entity.rejected}
+                    >
+                      {ENTITY_TYPES.map(type => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-                {/* Column 3: Reject Button */}
-                <div className="col-reject">
-                  <button
-                    onClick={() => row.indices.forEach(i => handleReject(i))}
-                    className={`reject-btn ${row.entity.rejected ? 'reject-btn--active' : ''}`}
-                    title={row.entity.rejected ? 'Restore entity' : 'Reject entity'}
-                  >
-                    {row.entity.rejected ? 'Restore' : 'Reject'}
-                  </button>
-                </div>
+                  {/* Column 3: Reject Button */}
+                  <div className="col-reject">
+                    <button
+                      onClick={() => row.indices.forEach(i => handleReject(i))}
+                      className={`reject-btn ${row.entity.rejected ? 'reject-btn--active' : ''}`}
+                      title={row.entity.rejected ? 'Restore entity' : 'Reject entity'}
+                    >
+                      {row.entity.rejected ? 'Restore' : 'Reject'}
+                    </button>
+                  </div>
 
-                {/* Column 4: Notes */}
-                <div className="col-notes">
-                  <input
-                    type="text"
-                    value={row.entity.notes || ''}
-                    onChange={(e) => row.indices.forEach(i => handleNotesChange(i, e.target.value))}
-                    placeholder="Add notes..."
-                    className="notes-input"
-                    disabled={row.entity.rejected}
-                  />
+                  {/* Column 4: Notes */}
+                  <div className="col-notes">
+                    <input
+                      type="text"
+                      value={row.entity.notes || ''}
+                      onChange={(e) => row.indices.forEach(i => handleNotesChange(i, e.target.value))}
+                      placeholder="Add notes..."
+                      className="notes-input"
+                      disabled={row.entity.rejected}
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
