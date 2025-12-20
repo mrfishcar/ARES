@@ -1043,7 +1043,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     debounceMs: LONG_TEXT_IDLE_DEBOUNCE_MS,
     documentVisible: typeof document === 'undefined' ? true : document.visibilityState === 'visible',
     hasActiveJob,
-    startJob: (revision) => startBackgroundJob({ revision, textSnapshot: text, silent: true }),
+    startJob: (revision, textSnapshot) => startBackgroundJob({ revision, textSnapshot, silent: true }),
   });
 
   // localStorage backup helpers (for when Railway backend loses documents)

@@ -2,9 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { AutoLongExtractionScheduler } from './useAutoLongExtraction';
 
 const makeEnv = () => {
-  const setTimeoutSpy = vi.fn<(cb: () => void, ms: number) => number>((cb, ms) => {
-    return window.setTimeout(cb, ms);
-  });
+  const setTimeoutSpy = vi.fn<(cb: () => void, ms: number) => number>((cb, ms) => window.setTimeout(cb, ms));
   const clearTimeoutSpy = vi.fn(window.clearTimeout);
   return { setTimeout: setTimeoutSpy, clearTimeout: clearTimeoutSpy };
 };
@@ -36,6 +34,7 @@ describe('AutoLongExtractionScheduler', () => {
     vi.advanceTimersByTime(DEBOUNCE * 2);
 
     expect(startJob).toHaveBeenCalledTimes(1);
+    expect(startJob).toHaveBeenCalledWith(expect.any(Number), 'long enough content');
   });
 
   it('does not apply stale jobs after edits (supersedes previous schedule)', () => {
@@ -54,6 +53,7 @@ describe('AutoLongExtractionScheduler', () => {
     vi.advanceTimersByTime(DEBOUNCE * 2);
 
     expect(startJob).toHaveBeenCalledTimes(1);
+    expect(startJob).toHaveBeenCalledWith(expect.any(Number), 'updated long text exceeding threshold again');
   });
 
   it('does not schedule when document is hidden', () => {
