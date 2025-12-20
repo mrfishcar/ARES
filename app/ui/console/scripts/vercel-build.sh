@@ -27,8 +27,10 @@ echo "npm globalconfig: $(npm config get globalconfig)"
 # Add a few retries to handle transient network hiccups
 set -x
 if ! npm ci --fetch-retries=5 --fetch-retry-factor=2 --fetch-retry-mintimeout=1000 --fetch-retry-maxtimeout=20000 --registry="https://registry.npmjs.org/" ; then
-  echo "npm ci failed; retrying with fresh cache and legacy peer deps as a fallback"
+  echo "npm ci failed; retrying with fresh cache and legacy peer deps as a fallback (will regenerate lock locally if needed)"
   npm cache clean --force || true
+  # If the lockfile is out of sync, let npm recreate it in the build environment.
+  rm -f package-lock.json
   npm install --legacy-peer-deps --fetch-retries=5 --fetch-retry-factor=2 --fetch-retry-mintimeout=1000 --fetch-retry-maxtimeout=20000 --registry="https://registry.npmjs.org/"
 fi
 set +x
