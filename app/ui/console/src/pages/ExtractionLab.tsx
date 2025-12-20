@@ -968,6 +968,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const startBackgroundJob = useCallback(
     async (options: { silent?: boolean; revision: number; textSnapshot: string }) => {
       const { silent = true, revision, textSnapshot } = options;
+      const isDev = typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production';
 
       if (!textSnapshot.trim()) {
         if (!silent) {
@@ -1010,7 +1011,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         setEntities([]);
         setRelations([]);
         setStats({ time: 0, confidence: 0, count: 0, relationCount: 0 });
-        if (process.env.NODE_ENV !== 'production') {
+        if (isDev) {
           console.debug('[ExtractionLab][auto-long] scheduled', { revision });
         }
         if (!silent) {
@@ -1019,7 +1020,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       } catch (error) {
         if (!silent) {
           toast.error(`Failed to start job: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        } else if (process.env.NODE_ENV !== 'production') {
+        } else if (isDev) {
           console.warn('[ExtractionLab] Background job failed to start', error);
         }
         setJobId(null);
@@ -1497,23 +1498,24 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
             relations: resultJson.relations,
             stats: resultJson.stats,
           });
+          const isDev = typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production';
 
           if (jobRevision !== null && jobRevision === currentRevision) {
             const isNewResult =
               lastAppliedRevisionRef.current !== jobRevision ||
               lastAppliedSignatureRef.current !== signature;
 
-            if (isNewResult) {
-              setJobResult(resultJson as ExtractionResponse);
-              applyExtractionResults(resultJson as ExtractionResponse, targetText, resultJson?.stats?.extractionTime);
-              lastAppliedRevisionRef.current = jobRevision;
-              lastAppliedSignatureRef.current = signature;
-            } else if (process.env.NODE_ENV !== 'production') {
-              console.debug('[ExtractionLab][auto-long] skipping duplicate result', { jobRevision });
+              if (isNewResult) {
+                setJobResult(resultJson as ExtractionResponse);
+                applyExtractionResults(resultJson as ExtractionResponse, targetText, resultJson?.stats?.extractionTime);
+                lastAppliedRevisionRef.current = jobRevision;
+                lastAppliedSignatureRef.current = signature;
+              } else if (isDev) {
+                console.debug('[ExtractionLab][auto-long] skipping duplicate result', { jobRevision });
+              }
+            } else if (isDev) {
+              console.debug('[ExtractionLab][auto-long] stale result ignored', { jobRevision, currentRevision });
             }
-          } else if (process.env.NODE_ENV !== 'production') {
-            console.debug('[ExtractionLab][auto-long] stale result ignored', { jobRevision, currentRevision });
-          }
           setBackgroundProcessing(false);
           jobRevisionRef.current = null;
           jobTextRef.current = null;
@@ -2137,7 +2139,6 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     setJobResult(null);
     setJobProgress(0);
     setJobEtaSeconds(null);
-    lastBackgroundTextRef.current = null;
   }, [resetEntityOverrides]);
 
   console.debug('[ExtractionLab] Editor props', {
