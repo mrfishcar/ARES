@@ -56,6 +56,23 @@ export function EntityReviewSidebar({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const latestDimsRef = useRef({ innerWidth: window.innerWidth, innerHeight: window.innerHeight });
+
+  useEffect(() => {
+    const handleResize = () => {
+      latestDimsRef.current = { innerWidth: window.innerWidth, innerHeight: window.innerHeight };
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (rafRef.current != null) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, []);
 
   // Display all entities (no layout-shifting filters)
   const displayEntities = useMemo(() => entities, [entities]);
@@ -103,32 +120,50 @@ export function EntityReviewSidebar({
   // Drag handlers for overlay mode
   const handleDragStart = useCallback((e: React.MouseEvent) => {
     if (mode !== 'overlay') return;
-    setIsDragging(true);
-    setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
+    dragStateRef.current = {
+      active: true,
+      offsetX: e.clientX - position.x,
+      offsetY: e.clientY - position.y,
+      nextX: position.x,
+      nextY: position.y,
+    };
   }, [mode, position]);
 
   const handleDragMove = useCallback((e: MouseEvent) => {
-    if (!isDragging) return;
-    const newX = Math.max(0, Math.min(window.innerWidth - size.width, e.clientX - dragStart.x));
-    const newY = Math.max(0, Math.min(window.innerHeight - size.height, e.clientY - dragStart.y));
-    setPosition({ x: newX, y: newY });
-  }, [isDragging, dragStart, size]);
+    const state = dragStateRef.current;
+    if (!state.active) return;
+    const { innerWidth, innerHeight } = latestDimsRef.current;
+    state.nextX = Math.max(0, Math.min(innerWidth - size.width, e.clientX - state.offsetX));
+    state.nextY = Math.max(0, Math.min(innerHeight - size.height, e.clientY - state.offsetY));
+    if (rafRef.current == null) {
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = null;
+        const el = sidebarRef.current;
+        if (el) {
+          el.style.transform = `translate3d(${state.nextX}px, ${state.nextY}px, 0)`;
+        }
+      });
+    }
+  }, [size.width, size.height]);
 
   const handleDragEnd = useCallback(() => {
-    setIsDragging(false);
+    const state = dragStateRef.current;
+    if (!state.active) return;
+    state.active = false;
+    setPosition({ x: state.nextX, y: state.nextY });
   }, []);
 
   // Resize handlers for overlay mode
   const handleResizeStart = useCallback((e: React.MouseEvent) => {
     if (mode !== 'overlay') return;
     e.stopPropagation();
-    setIsResizing(true);
-    setResizeStart({
-      x: e.clientX,
-      y: e.clientY,
-      width: size.width,
-      height: size.height
-    });
+    resizeStateRef.current = {
+      active: true,
+      startX: e.clientX,
+      startY: e.clientY,
+      baseWidth: size.width,
+      baseHeight: size.height,
+    };
   }, [mode, size]);
 
   const handleResizeMove = useCallback((e: MouseEvent) => {
@@ -141,7 +176,10 @@ export function EntityReviewSidebar({
   }, [isResizing, resizeStart, position]);
 
   const handleResizeEnd = useCallback(() => {
-    setIsResizing(false);
+    const state = resizeStateRef.current;
+    if (!state.active) return;
+    state.active = false;
+    setSize({ width: state.baseWidth, height: state.baseHeight });
   }, []);
 
   // Keep overlay within viewport on resize
@@ -174,26 +212,54 @@ export function EntityReviewSidebar({
 
   // Mouse event listeners
   useEffect(() => {
-    if (isDragging) {
-      document.addEventListener('mousemove', handleDragMove);
-      document.addEventListener('mouseup', handleDragEnd);
-      return () => {
-        document.removeEventListener('mousemove', handleDragMove);
-        document.removeEventListener('mouseup', handleDragEnd);
-      };
-    }
-  }, [isDragging, handleDragMove, handleDragEnd]);
+    const handleResize = () => {
+      setSize(prev => {
+        const maxWidth = Math.max(320, window.innerWidth - 32);
+        const maxHeight = Math.max(320, window.innerHeight - 96);
+        return {
+          width: Math.min(prev.width, maxWidth),
+          height: Math.min(prev.height, maxHeight),
+        };
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
-    if (isResizing) {
-      document.addEventListener('mousemove', handleResizeMove);
-      document.addEventListener('mouseup', handleResizeEnd);
-      return () => {
-        document.removeEventListener('mousemove', handleResizeMove);
-        document.removeEventListener('mouseup', handleResizeEnd);
+    setPosition(prev => {
+      const maxX = Math.max(16, window.innerWidth - size.width - 16);
+      const maxY = Math.max(48, window.innerHeight - size.height - 16);
+      return {
+        x: Math.min(Math.max(16, prev.x), maxX),
+        y: Math.min(Math.max(48, prev.y), maxY),
       };
-    }
-  }, [isResizing, handleResizeMove, handleResizeEnd]);
+    });
+  }, [size]);
+
+  // Mouse event listeners
+  useEffect(() => {
+    const move = (e: MouseEvent) => handleDragMove(e);
+    const up = () => handleDragEnd();
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', up);
+    return () => {
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', up);
+    };
+  }, [handleDragEnd, handleDragMove]);
+
+  useEffect(() => {
+    const move = (e: MouseEvent) => handleResizeMove(e);
+    const up = () => handleResizeEnd();
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', up);
+    return () => {
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', up);
+    };
+  }, [handleResizeMove, handleResizeEnd]);
 
   // Entity update handlers
   const handleTypeChange = useCallback((index: number, newType: EntityType) => {
@@ -260,13 +326,110 @@ export function EntityReviewSidebar({
   }, [onNavigateEntity]);
 
   // Apply position and size for overlay mode
-  const overlayStyle = mode === 'overlay' ? {
-    position: 'fixed' as const,
-    top: position.y,
-    left: position.x,
-    width: size.width,
-    height: size.height,
-  } : {};
+  const overlayStyle = mode === 'overlay'
+    ? {
+        position: 'fixed' as const,
+        top: 0,
+        left: 0,
+        transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
+        width: size.width,
+        height: size.height,
+      }
+    : {};
+
+  const renderRows = visibleRows.length ? visibleRows : groupedEntities;
+
+  const handleTypeDropdownChange = useCallback((row: AggregatedEntityRow, newType: EntityType) => {
+    row.indices.forEach(i => handleTypeChange(i, newType));
+  }, [handleTypeChange]);
+
+  const handleRejectRow = useCallback((row: AggregatedEntityRow) => {
+    row.indices.forEach(i => handleReject(i));
+  }, [handleReject]);
+
+  const handleNotesRow = useCallback((row: AggregatedEntityRow, value: string) => {
+    row.indices.forEach(i => handleNotesChange(i, value));
+  }, [handleNotesChange]);
+
+  const EntityRow = useMemo(() => {
+    return memo(function EntityRowMemo({
+      row,
+      onRowClick,
+      onTypeChangeRow,
+      onRejectRow,
+      onNotesChangeRow,
+    }: {
+      row: AggregatedEntityRow;
+      onRowClick: (entity: EntitySpan, event: React.MouseEvent) => void;
+      onTypeChangeRow: (row: AggregatedEntityRow, newType: EntityType) => void;
+      onRejectRow: (row: AggregatedEntityRow) => void;
+      onNotesChangeRow: (row: AggregatedEntityRow, value: string) => void;
+    }) {
+      const { entity } = row;
+      const entityName = entity.canonicalName || entity.displayText || entity.text || 'Untitled';
+      const isRejected = entity.rejected;
+      const rowKey = row.rowKey;
+
+      return (
+        <div
+          key={rowKey}
+          className={`entity-row ${isRejected ? 'entity-row--rejected' : ''}`}
+          onClick={(event) => onRowClick(entity, event)}
+        >
+          <div className="col-name">
+            <div className="entity-name-primary">{entityName}</div>
+            {row.duplicateCount > 1 && (
+              <span style={{ marginLeft: '6px', fontSize: '12px', color: '#6b7280' }}>
+                x{row.duplicateCount}
+              </span>
+            )}
+            {row.typeConflicts.length > 1 && (
+              <span style={{ marginLeft: '6px', fontSize: '12px', color: '#b45309' }}>
+                Types: {row.typeConflicts.join(', ')}
+              </span>
+            )}
+          </div>
+
+          <div className="col-type">
+            <select
+              value={entity.type}
+              onChange={(e) => onTypeChangeRow(row, e.target.value as EntityType)}
+              className="type-select"
+              disabled={isRejected}
+            >
+              {ENTITY_TYPES.map(type => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="col-reject">
+            <button
+              onClick={() => onRejectRow(row)}
+              className={`reject-btn ${isRejected ? 'reject-btn--active' : ''}`}
+              title={isRejected ? 'Restore entity' : 'Reject entity'}
+              type="button"
+            >
+              {isRejected ? 'Restore' : 'Reject'}
+            </button>
+          </div>
+
+          <div className="col-notes">
+            <input
+              type="text"
+              value={entity.notes || ''}
+              onChange={(e) => onNotesChangeRow(row, e.target.value)}
+              placeholder="Add notes..."
+              className="notes-input"
+              disabled={isRejected}
+            />
+          </div>
+        </div>
+      );
+    });
+  }, []);
 
   return (
     <div
@@ -422,8 +585,11 @@ export function EntityReviewSidebar({
                     />
                   </div>
                 </div>
-              );
-            })}
+                <div className="col-type" />
+                <div className="col-reject" />
+                <div className="col-notes" />
+              </div>
+            )}
           </div>
         )}
       </div>
