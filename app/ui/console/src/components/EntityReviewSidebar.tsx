@@ -15,7 +15,6 @@ import { X, Pin, PinOff, GripVertical } from 'lucide-react';
 import type { EntitySpan, EntityType } from '../types/entities';
 import { collapseEntitiesForUI, type AggregatedEntityRow } from './entity-review-utils';
 import './EntityReviewSidebar.css';
-import { requestIdleChunk } from '../utils/scheduler';
 
 interface EntityReviewSidebarProps {
   mode: 'overlay' | 'pinned';
@@ -74,15 +73,6 @@ export function EntityReviewSidebar({
       }
     };
   }, []);
-
-  useEffect(() => {
-    if (mode !== 'overlay' && sidebarRef.current) {
-      const el = sidebarRef.current;
-      el.style.transform = '';
-      el.style.width = '';
-      el.style.height = '';
-    }
-  }, [mode]);
 
   // Display all entities (no layout-shifting filters)
   const displayEntities = useMemo(() => entities, [entities]);
@@ -193,6 +183,34 @@ export function EntityReviewSidebar({
   }, []);
 
   // Keep overlay within viewport on resize
+  useEffect(() => {
+    const handleResize = () => {
+      setSize(prev => {
+        const maxWidth = Math.max(320, window.innerWidth - 32);
+        const maxHeight = Math.max(320, window.innerHeight - 96);
+        return {
+          width: Math.min(prev.width, maxWidth),
+          height: Math.min(prev.height, maxHeight),
+        };
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    setPosition(prev => {
+      const maxX = Math.max(16, window.innerWidth - size.width - 16);
+      const maxY = Math.max(48, window.innerHeight - size.height - 16);
+      return {
+        x: Math.min(Math.max(16, prev.x), maxX),
+        y: Math.min(Math.max(48, prev.y), maxY),
+      };
+    });
+  }, [size]);
+
+  // Mouse event listeners
   useEffect(() => {
     const handleResize = () => {
       setSize(prev => {
@@ -511,16 +529,18 @@ export function EntityReviewSidebar({
                   {/* Column 1: Entity Name */}
                   <div className="col-name">
                     <div className="entity-name-primary">{entityName}</div>
-                    {row.duplicateCount > 1 && (
-                      <span style={{ marginLeft: '6px', fontSize: '12px', color: '#6b7280' }}>
-                        x{row.duplicateCount}
-                      </span>
-                    )}
-                    {row.typeConflicts.length > 1 && (
-                      <span style={{ marginLeft: '6px', fontSize: '12px', color: '#b45309' }}>
-                        Types: {row.typeConflicts.join(', ')}
-                      </span>
-                    )}
+                    <div className="entity-meta">
+                      {row.duplicateCount > 1 && (
+                        <span className="entity-meta-badge entity-meta-duplicate">
+                          x{row.duplicateCount}
+                        </span>
+                      )}
+                      {row.typeConflicts.length > 1 && (
+                        <span className="entity-meta-badge entity-meta-conflict">
+                          Types: {row.typeConflicts.join(', ')}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Column 2: Type Dropdown */}
