@@ -5,7 +5,7 @@
 
 import { createPortal } from 'react-dom';
 import { useRef, useState, useEffect } from 'react';
-import { Settings, Sun, Moon, Zap, Highlighter, FilePlus, Cloud, CloudOff } from 'lucide-react';
+import { Settings, Sun, Moon, Highlighter, FilePlus, Cloud, CloudOff } from 'lucide-react';
 
 interface LabToolbarProps {
   // Status
@@ -27,7 +27,6 @@ interface LabToolbarProps {
   highlightChains: boolean;
 
   // Actions
-  onExtractStart: () => void;
   onThemeToggle: () => void;
   onEntityHighlightToggle: () => void;
   onSettingsToggle: () => void;
@@ -41,10 +40,6 @@ interface LabToolbarProps {
   onEntityIndicatorsToggle: () => void;
   onLongTextOptimizationToggle: () => void;
   onHighlightChainsToggle: () => void;
-
-  // State checks
-  canExtract: boolean;
-  isExtracting: boolean;
 
   // Save status
   saveStatus: 'idle' | 'saving' | 'saved' | 'error';
@@ -61,7 +56,6 @@ export function LabToolbar({
   enableLongTextOptimization,
   highlightChains,
   editorMargin,
-  onExtractStart,
   onThemeToggle,
   onEntityHighlightToggle,
   onSettingsToggle,
@@ -73,8 +67,6 @@ export function LabToolbar({
   onEntityIndicatorsToggle,
   onLongTextOptimizationToggle,
   onHighlightChainsToggle,
-  canExtract,
-  isExtracting,
   saveStatus,
 }: LabToolbarProps) {
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
@@ -183,16 +175,6 @@ export function LabToolbar({
           type="button"
         >
           <FilePlus size={16} strokeWidth={2} />
-        </button>
-
-        <button
-          onClick={onExtractStart}
-          disabled={!canExtract || isExtracting}
-          className="control-btn"
-          title="Start background extraction"
-          type="button"
-        >
-          <Zap size={16} strokeWidth={2} />
         </button>
 
         <button
