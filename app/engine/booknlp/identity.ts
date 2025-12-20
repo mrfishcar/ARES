@@ -54,3 +54,52 @@ export function toBookNLPEID(rawId: string, offset: number = 1_000_000): number 
   }
   return offset + (hash % offset);
 }
+
+// ============================================================================
+// NON-CHARACTER ENTITY IDS (LOC, ORG, FAC, GPE, VEH)
+// ============================================================================
+
+/**
+ * Generate stable entity ID for non-character entities extracted from BookNLP mentions.
+ * These are entities like locations, organizations, etc. that BookNLP identifies
+ * via NER but doesn't cluster into characters.
+ *
+ * Format: booknlp_{type}_{normalized_text}
+ * Example: booknlp_loc_hogwarts, booknlp_org_ministry_of_magic
+ */
+export function toBookNLPNonCharEntityId(entityType: string, text: string): string {
+  const typeCode = entityType.toLowerCase().slice(0, 3);  // loc, org, fac, gpe, veh
+  const normalized = text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 50);  // Limit length
+  return `booknlp_${typeCode}_${normalized}`;
+}
+
+/**
+ * Generate global ID for non-character entities.
+ * Used for cross-document merging.
+ */
+export function toBookNLPNonCharGlobalId(entityType: string, text: string): string {
+  const typeCode = entityType.toLowerCase().slice(0, 3);
+  const normalized = text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 50);
+  return `global_booknlp_${typeCode}_${normalized}`;
+}
+
+/**
+ * Generate EID for non-character entities.
+ * Uses a different offset range (2_000_000) to avoid collisions with character EIDs.
+ */
+export function toBookNLPNonCharEID(entityType: string, text: string, offset: number = 2_000_000): number {
+  const key = `${entityType}:${text}`.toLowerCase();
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+    hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+  }
+  return offset + (hash % 1_000_000);  // Stay in 2M-3M range
+}

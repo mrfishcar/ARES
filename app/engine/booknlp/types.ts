@@ -114,6 +114,7 @@ export interface ARESSpan {
   text: string;
   mention_id?: string;
   mention_type?: string;
+  entity_type?: string;  // Original BookNLP entity type (PER, LOC, ORG, etc.)
 }
 
 export interface ARESQuote {
