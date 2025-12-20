@@ -22,8 +22,21 @@ export function collapseEntitiesForUI(
     ids: Set<string>;
   }>();
 
-  const keyFor = (entity: EntitySpan) =>
-    entity.entityId || `${entity.text.toLowerCase()}::${entity.type}`;
+  const keyFor = (entity: EntitySpan) => {
+    if (entity.entityId) return entity.entityId;
+
+    const normalizedText = (entity.canonicalName || entity.displayText || entity.text || '')
+      .trim()
+      .toLowerCase();
+
+    if (normalizedText.length === 0) {
+      const start = typeof entity.start === 'number' ? entity.start : 'u';
+      const end = typeof entity.end === 'number' ? entity.end : 'u';
+      return `${entity.type || 'unknown'}::${start}-${end}`;
+    }
+
+    return `${normalizedText}::${entity.type}`;
+  };
 
   for (const entity of displayEntities) {
     const key = keyFor(entity);
@@ -50,19 +63,23 @@ export function collapseEntitiesForUI(
   const rows: AggregatedEntityRow[] = [];
   for (const [groupKey, bucket] of groups.entries()) {
     const representative = bucket.entities[0];
-    const pickedType = Array.from(bucket.types.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] || representative.type;
+    const sortedTypes = Array.from(bucket.types.entries()).sort((a, b) => {
+      if (b[1] === a[1]) return a[0].localeCompare(b[0]);
+      return b[1] - a[1];
+    });
+    const pickedType = sortedTypes[0]?.[0] || representative.type;
     const mergedEntity: EntitySpan = {
       ...representative,
       type: pickedType as EntityType,
       displayText: representative.canonicalName || representative.displayText || representative.text,
     };
     rows.push({
-      rowKey: `${groupKey}-${bucket.indices.length}`,
+      rowKey: groupKey,
       entity: mergedEntity,
       indices: bucket.indices,
       duplicateCount: bucket.indices.length,
       sources: Array.from(bucket.sources),
-      typeConflicts: Array.from(bucket.types.keys()),
+      typeConflicts: sortedTypes.map(([key]) => key),
       ids: Array.from(bucket.ids),
     });
   }
