@@ -21,6 +21,7 @@ import { isValidEntityType, mapExtractionResponseToSpans, type EntitySpan, type 
 import { initializeTheme, toggleTheme, loadThemePreference, getEffectiveTheme } from '../utils/darkMode';
 import { useLabLayoutState } from '../hooks/useLabLayoutState';
 import { useExtractionSettings } from '../hooks/useExtractionSettings';
+import { useAutoLongExtraction } from '../hooks/useAutoLongExtraction';
 import '../styles/darkMode.css';
 import '../styles/extraction-lab.css';
 
@@ -119,6 +120,8 @@ interface StoredDocument {
 
 const JOB_POLL_INTERVAL_MS = 1500;
 const SYNC_EXTRACTION_CHAR_LIMIT = 20000;
+const LONG_TEXT_AUTO_THRESHOLD = 20000;
+const LONG_TEXT_IDLE_DEBOUNCE_MS = 1200;
 
 function estimateJobDurationMs(textLength: number): number {
   const baseMs = 8000;
@@ -723,6 +726,10 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [jobExpectedDurationMs, setJobExpectedDurationMs] = useState<number | null>(null);
   const [jobProgress, setJobProgress] = useState<number>(0);
   const [jobEtaSeconds, setJobEtaSeconds] = useState<number | null>(null);
+  const jobRevisionRef = useRef<number | null>(null);
+  const jobTextRef = useRef<string | null>(null);
+  const lastAppliedRevisionRef = useRef<number | null>(null);
+  const lastAppliedSignatureRef = useRef<string | null>(null);
   const [backgroundProcessing, setBackgroundProcessing] = useState(false);
 
   // Document state
@@ -947,11 +954,6 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   useEffect(() => {
     if (requiresBackground) {
       setProcessing(false);
-      if (!hasActiveJob && jobStatus !== 'done' && jobStatus !== 'failed') {
-        setEntities([]);
-        setRelations([]);
-        setStats({ time: 0, confidence: 0, count: 0, relationCount: 0 });
-      }
       return;
     }
 
@@ -963,53 +965,85 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     extractEntities(text);
   }, [text, extractEntities, requiresBackground, hasActiveJob, liveExtractionEnabled, jobStatus, settings.entityHighlightMode]);
 
-  const startBackgroundJob = async () => {
-    if (!text.trim()) {
-      toast.error('Please paste text before starting extraction.');
-      return;
-    }
+  const startBackgroundJob = useCallback(
+    async (options: { silent?: boolean; revision: number; textSnapshot: string }) => {
+      const { silent = true, revision, textSnapshot } = options;
 
-    setBackgroundProcessing(true);
-    setJobError(null);
-    setJobResult(null);
-
-    try {
-      const apiUrl = resolveApiUrl();
-      const payload = { text: stripIncompleteTagsForExtraction(text) };
-      const response = await fetch(`${apiUrl}/jobs/start`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data?.error || 'Failed to start job');
+      if (!textSnapshot.trim()) {
+        if (!silent) {
+          toast.error('Please paste text before starting extraction.');
+        }
+        return;
       }
 
-      setJobId(data.jobId);
-      setJobStatus('queued');
-      const expectedDuration = estimateJobDurationMs(text.length);
-      setJobStartedAt(Date.now());
-      setJobExpectedDurationMs(expectedDuration);
-      setJobProgress(0);
-      setJobEtaSeconds(null);
-      setEntities([]);
-      setRelations([]);
-      setStats({ time: 0, confidence: 0, count: 0, relationCount: 0 });
-      toast.success('Background extraction started.');
-    } catch (error) {
-      toast.error(`Failed to start job: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      setJobId(null);
-      setJobStatus(null);
-      setJobStartedAt(null);
-      setJobExpectedDurationMs(null);
-      setJobProgress(0);
-      setJobEtaSeconds(null);
-    } finally {
-      setBackgroundProcessing(false);
-    }
-  };
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+        return;
+      }
+
+      setBackgroundProcessing(true);
+      setJobError(null);
+      setJobResult(null);
+      jobRevisionRef.current = revision;
+      jobTextRef.current = textSnapshot;
+
+      try {
+        const apiUrl = resolveApiUrl();
+        const payload = { text: stripIncompleteTagsForExtraction(textSnapshot) };
+        const response = await fetch(`${apiUrl}/jobs/start`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data?.error || 'Failed to start job');
+        }
+
+        setJobId(data.jobId);
+        setJobStatus('queued');
+        const expectedDuration = estimateJobDurationMs(textSnapshot.length);
+        setJobStartedAt(Date.now());
+        setJobExpectedDurationMs(expectedDuration);
+        setJobProgress(0);
+        setJobEtaSeconds(null);
+        setEntities([]);
+        setRelations([]);
+        setStats({ time: 0, confidence: 0, count: 0, relationCount: 0 });
+        if (process.env.NODE_ENV !== 'production') {
+          console.debug('[ExtractionLab][auto-long] scheduled', { revision });
+        }
+        if (!silent) {
+          toast.success('Background extraction started.');
+        }
+      } catch (error) {
+        if (!silent) {
+          toast.error(`Failed to start job: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        } else if (process.env.NODE_ENV !== 'production') {
+          console.warn('[ExtractionLab] Background job failed to start', error);
+        }
+        setJobId(null);
+        setJobStatus(null);
+        setJobStartedAt(null);
+        setJobExpectedDurationMs(null);
+        setJobProgress(0);
+        setJobEtaSeconds(null);
+        jobRevisionRef.current = null;
+      } finally {
+        setBackgroundProcessing(false);
+      }
+    },
+    [toast]
+  );
+
+  const { revisionRef } = useAutoLongExtraction({
+    text,
+    threshold: LONG_TEXT_AUTO_THRESHOLD,
+    debounceMs: LONG_TEXT_IDLE_DEBOUNCE_MS,
+    documentVisible: typeof document === 'undefined' ? true : document.visibilityState === 'visible',
+    hasActiveJob,
+    startJob: (revision) => startBackgroundJob({ revision, textSnapshot: text, silent: true }),
+  });
 
   // localStorage backup helpers (for when Railway backend loses documents)
   const getLocalStorageDocuments = useCallback((): StoredDocument[] => {
@@ -1438,6 +1472,9 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           setJobEtaSeconds(null);
           setJobStartedAt(null);
           setJobExpectedDurationMs(null);
+          setBackgroundProcessing(false);
+          jobRevisionRef.current = null;
+          jobTextRef.current = null;
           clearInterval(interval);
           return;
         }
@@ -1452,8 +1489,34 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
             throw new Error(resultJson?.error || 'Failed to load job result');
           }
 
-          setJobResult(resultJson as ExtractionResponse);
-          applyExtractionResults(resultJson as ExtractionResponse, text, resultJson?.stats?.extractionTime);
+          const jobRevision = jobRevisionRef.current;
+          const currentRevision = revisionRef.current;
+          const targetText = jobTextRef.current ?? text;
+          const signature = JSON.stringify({
+            entities: resultJson.entities,
+            relations: resultJson.relations,
+            stats: resultJson.stats,
+          });
+
+          if (jobRevision !== null && jobRevision === currentRevision) {
+            const isNewResult =
+              lastAppliedRevisionRef.current !== jobRevision ||
+              lastAppliedSignatureRef.current !== signature;
+
+            if (isNewResult) {
+              setJobResult(resultJson as ExtractionResponse);
+              applyExtractionResults(resultJson as ExtractionResponse, targetText, resultJson?.stats?.extractionTime);
+              lastAppliedRevisionRef.current = jobRevision;
+              lastAppliedSignatureRef.current = signature;
+            } else if (process.env.NODE_ENV !== 'production') {
+              console.debug('[ExtractionLab][auto-long] skipping duplicate result', { jobRevision });
+            }
+          } else if (process.env.NODE_ENV !== 'production') {
+            console.debug('[ExtractionLab][auto-long] stale result ignored', { jobRevision, currentRevision });
+          }
+          setBackgroundProcessing(false);
+          jobRevisionRef.current = null;
+          jobTextRef.current = null;
           setTimeout(() => {
             setJobProgress(0);
             setJobEtaSeconds(null);
@@ -2074,6 +2137,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     setJobResult(null);
     setJobProgress(0);
     setJobEtaSeconds(null);
+    lastBackgroundTextRef.current = null;
   }, [resetEntityOverrides]);
 
   console.debug('[ExtractionLab] Editor props', {
@@ -2107,7 +2171,6 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         showEntityIndicators={settings.showEntityIndicators}
         enableLongTextOptimization={settings.enableLongTextOptimization}
         highlightChains={highlightChains}
-        onExtractStart={startBackgroundJob}
         onThemeToggle={handleThemeToggle}
         onEntityHighlightToggle={settings.toggleEntityHighlightMode}
         onSettingsToggle={layout.toggleSettingsDropdown}
@@ -2118,8 +2181,6 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         onEntityIndicatorsToggle={settings.toggleEntityIndicators}
         onLongTextOptimizationToggle={settings.toggleLongTextOptimization}
         onHighlightChainsToggle={() => setHighlightChains(prev => !prev)}
-        canExtract={text.trim().length > 0 && !hasActiveJob}
-        isExtracting={backgroundProcessing || hasActiveJob}
         onNewDocument={handleNewDocument}
         saveStatus={saveStatus}
       />
