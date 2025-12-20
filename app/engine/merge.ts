@@ -4,6 +4,7 @@
  */
 
 import type { Entity, Relation, EntityType } from './schema';
+import { toBookNLPGlobalId, toBookNLPEID } from './booknlp/identity';
 
 /**
  * Merge decision with confidence and provenance
@@ -516,7 +517,10 @@ export function mergeEntitiesAcrossDocs(
       ));
 
       // Create global entity
-      const globalId = `global_${type.toLowerCase()}_${globals.length}`;
+      const bookSource = cluster.find(e => (e as any).booknlp_id);
+      const globalId = bookSource && (bookSource as any).booknlp_id
+        ? toBookNLPGlobalId((bookSource as any).booknlp_id)
+        : `global_${type.toLowerCase()}_${globals.length}`;
       const globalEntity: Entity = {
         id: globalId,
         type: type as EntityType,
@@ -533,6 +537,12 @@ export function mergeEntitiesAcrossDocs(
       const booknlpId = cluster.find(e => (e as any).booknlp_id)?.booknlp_id;
       if (booknlpId) {
         (globalEntity as any).booknlp_id = booknlpId;
+      }
+      const eidCandidate = cluster.find(e => (e as any).eid)?.eid;
+      if (eidCandidate) {
+        (globalEntity as any).eid = eidCandidate;
+      } else if (booknlpId) {
+        (globalEntity as any).eid = toBookNLPEID(booknlpId);
       }
       const mentionCount = cluster.reduce((sum, e) => sum + ((e as any).mention_count || 0), 0);
       if (mentionCount > 0) {
