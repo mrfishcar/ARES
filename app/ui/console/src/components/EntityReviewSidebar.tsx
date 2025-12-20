@@ -70,7 +70,7 @@ export function EntityReviewSidebar({
 
   // Display entities based on filter
   const isPhaseEnabled = (entity: EntitySpan) => {
-    const phase = (entity.phase || entity.source || 'unknown').toLowerCase();
+    const phase = (entity.source || 'unknown').toLowerCase();
     if (phase.includes('booknlp')) return phaseFilters.booknlp;
     if (phase.includes('manual')) return phaseFilters.manual;
     if (phase.includes('editor')) return phaseFilters.editor;

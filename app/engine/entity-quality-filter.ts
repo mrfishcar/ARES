@@ -1367,3 +1367,174 @@ export function logTieredFilterStats(result: TieredFilterResult, label = ''): vo
   console.log(`    TIER_C (candidate): ${result.stats.tierC}`);
   console.log(`  Rejected: ${result.stats.rejected}`);
 }
+
+// ============================================================================
+// CONSOLIDATED FROM entity-filter.ts (2025-12-20)
+// These functions provide quick validation checks for use in extraction loops
+// ============================================================================
+
+/**
+ * Bad patterns for entity names that are likely false positives
+ * (Consolidated from entity-filter.ts)
+ */
+const BAD_NAME_PATTERNS = [
+  // Leading conjunctions/articles/prepositions
+  /^(and|or|but|the|a|an|when|where|seeing|meeting|before|after|if|take|gather|located)\s+/i,
+  // Trailing verbs
+  /\s+(said|asked|replied|moved|came|went|told)$/i,
+  // Trailing location words (e.g., "magic there", "something here")
+  /\s+(there|here)$/i,
+  // Just punctuation/numbers (except for DATE)
+  /^[^a-z]+$/i,
+  // Single letters (unless well-known acronyms)
+  /^[a-z]$/i,
+  // Chapter/section markers
+  /chapter|section|part\s+\d+|epilogue|prologue/i,
+  // All caps shouted text (dialogue)
+  /^[A-Z\s]{4,}$/,
+  // Sentence fragments with verbs
+  /^(you|i|they|we)\s+(dared|use|my|your|their|our)/i,
+];
+
+/**
+ * Well-known short entities that are valid despite being 2 letters
+ */
+const VALID_SHORT_ENTITIES = new Set([
+  'nyc', 'usa', 'uk', 'eu', 'un', 'fbi', 'cia', 'nsa',
+  'nasa', 'mit', 'ucla', 'nyu', 'usc', 'uva',
+  'ibm', 'hp', 'ge', 'gm', 'at&t',
+  'dr', 'mr', 'mrs', 'ms', 'prof',
+  'id', 'pm', 'am'
+]);
+
+/**
+ * Type-specific blocklists for known false positives
+ */
+const TYPE_SPECIFIC_BLOCKLIST: Partial<Record<EntityType, Set<string>>> = {
+  PERSON: new Set([
+    'meeting', 'chapter', 'gallery', 'track', 'island school',
+    'opening', 'complications', 'crisis', 'reflection',
+    'six months later', 'epilogue', 'turn', 'choice',
+    'resolution', 'fragility', 'end', 'emergency', 'visit',
+    'stable', 'seizure', 'surgery', 'holidays', 'teaching',
+    'department', 'associate professor', 'neurologist', 'divorced',
+    'academia', 'times', 'fine arts', 'medicine',
+    // Fantasy/magical false positives (common nouns, not people)
+    'magic', 'potions', 'slytherin', 'ravenclaw', 'hufflepuff', 'gryffindor',
+    'platform', 'quidditch', 'wand', 'spell', 'charm', 'transfiguration',
+    'divination', 'herbology', 'astronomy', 'defense'
+  ]),
+  PLACE: new Set([
+    'nothing', 'everything', 'back', 'part'
+  ]),
+  ORG: new Set([
+    'goon squad', 'visit', 'academia'
+  ])
+};
+
+/**
+ * Quick validation check for entity names
+ * Use in extraction loops where speed matters
+ *
+ * (Consolidated from entity-filter.ts)
+ */
+export function isValidEntity(
+  canonical: string,
+  entityType: EntityType
+): boolean {
+  if (!canonical || canonical.trim() === '') {
+    return false;
+  }
+
+  const normalized = canonical.toLowerCase().trim();
+
+  // 1. Check against global stopwords (uses GLOBAL_ENTITY_STOPWORDS from this file)
+  if (GLOBAL_ENTITY_STOPWORDS.has(normalized)) {
+    return false;
+  }
+
+  // 2. Filter type-specific blocklist
+  const typeBlocklist = TYPE_SPECIFIC_BLOCKLIST[entityType];
+  if (typeBlocklist && typeBlocklist.has(normalized)) {
+    return false;
+  }
+
+  // 3. Check bad patterns
+  for (const pattern of BAD_NAME_PATTERNS) {
+    // Allow numeric-only for DATE entities
+    if (entityType === 'DATE' && pattern.source === '^[^a-z]+$') {
+      continue;
+    }
+    if (pattern.test(canonical)) {
+      return false;
+    }
+  }
+
+  // 4. Length checks
+  if (normalized.length < 2) {
+    return false;
+  }
+
+  if (normalized.length === 2 && !VALID_SHORT_ENTITIES.has(normalized)) {
+    if (entityType !== 'PERSON') {
+      return false;
+    }
+  }
+
+  // 5. Must contain at least one letter (except DATE)
+  if (entityType !== 'DATE' && !/[a-z]/i.test(canonical)) {
+    return false;
+  }
+
+  // 6. For PERSON entities, filter chapter/section markers
+  if (entityType === 'PERSON') {
+    if (/^(chapter|section|part|volume|book)\s+\d+/i.test(canonical)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Force-correct entity type based on strong lexical markers
+ * This overrides spaCy classifications when we have high confidence
+ *
+ * (Consolidated from entity-filter.ts)
+ */
+export function correctEntityType(
+  canonical: string,
+  currentType: EntityType
+): EntityType {
+  const normalized = canonical.toLowerCase();
+
+  // Geographic markers - MUST be PLACE
+  if (/(river|creek|stream|mountain|mount|peak|hill|hillside|valley|lake|sea|ocean|island|isle|forest|wood|desert|plain|prairie|city|town|village|kingdom|realm|land|cliff|ridge|canyon|gorge|fjord|haven|harbor|bay|cove|grove|glade|dale|moor|heath|marsh|swamp|waste|wild|reach|highland|lowland|borderland)s?\b/i.test(canonical)) {
+    return 'PLACE';
+  }
+
+  // Educational/organizational markers
+  if (/(school|university|academy|college|ministry|department|company|corporation|inc|llc|corp|ltd|bank|institute)\b/i.test(canonical)) {
+    return 'ORG';
+  }
+
+  // House/Order markers
+  if (/\b(house|order|clan|tribe|dynasty)\b/i.test(canonical)) {
+    return 'HOUSE';
+  }
+
+  // Event markers
+  if (/\b(battle|war|treaty|accord|council|conference|summit)\s+of\b/i.test(canonical)) {
+    return 'EVENT';
+  }
+  if (/\b(dance|reunion|festival|party|ball|show)\b/i.test(canonical) && canonical.split(/\s+/).length >= 2) {
+    return 'EVENT';
+  }
+
+  // Demonymic race markers
+  if (/\bnative american(s)?\b/i.test(canonical)) {
+    return 'RACE';
+  }
+
+  return currentType;
+}

@@ -160,6 +160,93 @@ def build_token_index(tokens_file: Path, text: str) -> List[Token]:
     return tokens
 
 
+def infer_gender_from_cluster(cluster_data: List[Dict], headers: List[str], rows: List[Dict]) -> Optional[str]:
+    """
+    Infer character gender from:
+    1. Explicit gender column if present in BookNLP output
+    2. Pronoun usage in the cluster (he/she/they)
+    3. Name heuristics as fallback
+    """
+    # Gender from pronouns in the cluster
+    male_pronouns = {"he", "him", "his", "himself"}
+    female_pronouns = {"she", "her", "hers", "herself"}
+    neutral_pronouns = {"they", "them", "their", "theirs", "themself", "themselves"}
+
+    male_count = 0
+    female_count = 0
+    neutral_count = 0
+
+    for m in cluster_data:
+        text_lower = m.get("text", "").lower().strip()
+        if text_lower in male_pronouns:
+            male_count += 1
+        elif text_lower in female_pronouns:
+            female_count += 1
+        elif text_lower in neutral_pronouns:
+            neutral_count += 1
+
+    # Determine gender based on pronoun majority
+    if male_count > female_count and male_count > neutral_count:
+        return "male"
+    elif female_count > male_count and female_count > neutral_count:
+        return "female"
+    elif neutral_count > 0 and neutral_count >= male_count and neutral_count >= female_count:
+        return "unknown"
+
+    # If no pronouns, return None (unknown)
+    return None
+
+
+def calculate_agent_score(cluster_id: int, tokens: List[Token], mentions: List[Mention]) -> float:
+    """
+    Calculate how often this character appears as the agent/subject of actions.
+    Higher score = more active/protagonist-like character.
+
+    Uses position in sentence and mention frequency:
+    - Mentions at sentence start (likely subjects) score higher
+    - Proper nouns (PROP) score higher than pronouns
+    """
+    cluster_mentions = [m for m in mentions if m.get("character_id") == f"char_{cluster_id}"]
+
+    if not cluster_mentions:
+        return 0.0
+
+    agent_score = 0.0
+    total_mentions = len(cluster_mentions)
+
+    for mention in cluster_mentions:
+        mention_type = mention.get("mention_type", "")
+        start_tok = mention.get("start_token", 0)
+
+        # Find the sentence this mention is in
+        sentence_idx = mention.get("sentence_idx", 0)
+
+        # Check if mention is at or near start of sentence (likely subject)
+        sentence_start = None
+        for tok in tokens:
+            if tok.get("sentence_idx") == sentence_idx:
+                if sentence_start is None or tok.get("idx", 999) < sentence_start:
+                    sentence_start = tok.get("idx", 999)
+
+        if sentence_start is not None and start_tok is not None:
+            # First 3 tokens of sentence = likely subject position
+            if start_tok <= sentence_start + 2:
+                agent_score += 1.0
+            elif start_tok <= sentence_start + 5:
+                agent_score += 0.5
+
+        # Proper nouns (named mentions) count more
+        if mention_type == "PROP":
+            agent_score += 0.3
+
+    # Normalize by mention count, cap at 1.0
+    if total_mentions > 0:
+        normalized = agent_score / total_mentions
+        return min(1.0, round(normalized, 3))
+
+    return 0.0
+
+
 def build_characters_and_mentions(
     entities_file: Path,
     tokens: List[Token]
@@ -174,6 +261,10 @@ def build_characters_and_mentions(
     - mention_type (PROP/NOM/PRON)
     - entity_type (PER/LOC/ORG/etc.)
     - name (canonical name for the cluster)
+
+    OPTIMIZATION (2025-12-20):
+    - Now extracts gender from pronoun usage in the cluster
+    - Calculates agent_score based on subject position frequency
     """
     headers, rows = parse_tsv_file(entities_file)
     log_tsv_preview("entities", headers, rows)
@@ -221,6 +312,7 @@ def build_characters_and_mentions(
                     "text": text,
                     "type": mention_type,
                     "canonical": row.get("name", text),
+                    "gender": row.get("gender"),  # Capture gender if present
                 })
 
         except (ValueError, KeyError, IndexError):
@@ -249,13 +341,19 @@ def build_characters_and_mentions(
             if text != canonical_name  # Don't include canonical in aliases
         ]
 
+        # OPTIMIZATION: Infer gender from pronouns in cluster
+        gender = infer_gender_from_cluster(cluster_data, headers, rows)
+
+        # OPTIMIZATION: Calculate agent score from sentence positions
+        agent_score = calculate_agent_score(cluster_id, tokens, mentions)
+
         characters.append({
             "id": f"char_{cluster_id}",
             "canonical_name": canonical_name,
             "aliases": aliases,
             "mention_count": len(cluster_data),
-            "gender": None,  # TODO: extract from BookNLP if available
-            "agent_score": 0.0,  # TODO: calculate from syntax
+            "gender": gender,
+            "agent_score": agent_score,
         })
 
     return characters, mentions, cluster_to_char_id

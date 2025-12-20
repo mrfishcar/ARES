@@ -3,6 +3,11 @@
  *
  * Transforms BookNLP contract output into ARES internal representations.
  * This is the primary integration point between BookNLP and ARES.
+ *
+ * OPTIMIZATION (2025-12-20):
+ * - Now extracts ALL entity types from mentions (LOC, ORG, FAC, GPE, VEH)
+ * - Previously only extracted PERSON entities from character clusters
+ * - Adds token-based paragraph and sentence structure
  */
 
 import type {
@@ -10,13 +15,14 @@ import type {
   BookNLPCharacter,
   BookNLPMention,
   BookNLPQuote,
+  BookNLPToken,
   BookNLPResult,
   ARESEntity,
   ARESSpan,
   ARESQuote,
   ARESCorefLink,
 } from './types';
-import { toBookNLPEID, toBookNLPStableEntityId } from './identity';
+import { toBookNLPEID, toBookNLPStableEntityId, toBookNLPNonCharEntityId, toBookNLPNonCharEID } from './identity';
 
 // ============================================================================
 // TYPE MAPPING
@@ -75,21 +81,146 @@ export function adaptCharacters(
 
 /**
  * Convert BookNLP mentions to ARES spans
+ * Now handles BOTH character mentions AND non-character entity mentions
  */
 export function adaptMentions(
   mentions: BookNLPMention[],
-  characterIdMap: Map<string, string>  // BookNLP char ID -> ARES entity ID
+  characterIdMap: Map<string, string>,  // BookNLP char ID -> ARES entity ID
+  nonCharEntityMap?: Map<string, string>  // canonical text -> ARES entity ID
 ): ARESSpan[] {
   return mentions
-    .filter(m => m.character_id)  // Only include resolved mentions
-    .map(mention => ({
-      entity_id: characterIdMap.get(mention.character_id!) || toBookNLPStableEntityId(mention.character_id!),
-      start: mention.start_char,
-      end: mention.end_char,
-      text: mention.text,
-      mention_id: mention.id,
-      mention_type: mention.mention_type,
-    }));
+    .map(mention => {
+      // For character-linked mentions, use the character entity ID
+      if (mention.character_id) {
+        return {
+          entity_id: characterIdMap.get(mention.character_id) || toBookNLPStableEntityId(mention.character_id),
+          start: mention.start_char,
+          end: mention.end_char,
+          text: mention.text,
+          mention_id: mention.id,
+          mention_type: mention.mention_type,
+          entity_type: mention.entity_type,
+        };
+      }
+
+      // For non-character mentions (LOC, ORG, etc.), look up in the non-char map
+      if (nonCharEntityMap) {
+        const nonCharId = nonCharEntityMap.get(mention.text.toLowerCase());
+        if (nonCharId) {
+          return {
+            entity_id: nonCharId,
+            start: mention.start_char,
+            end: mention.end_char,
+            text: mention.text,
+            mention_id: mention.id,
+            mention_type: mention.mention_type,
+            entity_type: mention.entity_type,
+          };
+        }
+      }
+
+      // Skip mentions that aren't linked to any entity
+      return null;
+    })
+    .filter((span): span is ARESSpan => span !== null);
+}
+
+// ============================================================================
+// NON-CHARACTER ENTITY EXTRACTION (OPTIMIZATION 2025-12-20)
+// ============================================================================
+
+/**
+ * Entity types from BookNLP that should be extracted as non-character entities
+ */
+const NON_CHAR_ENTITY_TYPES = new Set(['LOC', 'ORG', 'FAC', 'GPE', 'VEH', 'WORK_OF_ART', 'EVENT']);
+
+/**
+ * Extract non-character entities (locations, organizations, etc.) from BookNLP mentions.
+ * These are entities that BookNLP identifies via NER but doesn't cluster into characters.
+ *
+ * Groups mentions by normalized text to create stable entities with accurate counts.
+ */
+export function adaptNonCharacterEntities(
+  mentions: BookNLPMention[],
+  options: { minMentionCount?: number } = {}
+): { entities: ARESEntity[]; entityMap: Map<string, string> } {
+  const { minMentionCount = 1 } = options;
+
+  // Group mentions by (entity_type, normalized_text)
+  const mentionGroups = new Map<string, {
+    entityType: string;
+    canonicalText: string;
+    texts: string[];
+    mentionCount: number;
+  }>();
+
+  for (const mention of mentions) {
+    // Skip character-linked mentions (they're handled by adaptCharacters)
+    if (mention.character_id) continue;
+
+    // Skip PERSON types (handled by character clustering)
+    if (mention.entity_type === 'PER' || mention.entity_type === 'PERSON') continue;
+
+    // Skip types we don't extract
+    if (!NON_CHAR_ENTITY_TYPES.has(mention.entity_type)) continue;
+
+    // Skip short or likely-junk mentions
+    if (mention.text.length < 2) continue;
+    if (mention.mention_type === 'PRON') continue;  // Skip pronouns
+
+    const key = `${mention.entity_type}:${mention.text.toLowerCase()}`;
+
+    const existing = mentionGroups.get(key);
+    if (existing) {
+      existing.mentionCount++;
+      if (!existing.texts.includes(mention.text)) {
+        existing.texts.push(mention.text);
+      }
+    } else {
+      mentionGroups.set(key, {
+        entityType: mention.entity_type,
+        canonicalText: mention.text,  // Use first occurrence as canonical
+        texts: [mention.text],
+        mentionCount: 1,
+      });
+    }
+  }
+
+  // Convert groups to entities
+  const entities: ARESEntity[] = [];
+  const entityMap = new Map<string, string>();  // normalized text -> entity ID
+
+  for (const [key, group] of mentionGroups) {
+    if (group.mentionCount < minMentionCount) continue;
+
+    // Pick the most informative canonical form (longest, or most common)
+    const canonical = group.texts.reduce((best, current) =>
+      current.length > best.length ? current : best
+    );
+
+    const entityId = toBookNLPNonCharEntityId(group.entityType, canonical);
+    const aresType = mapEntityType(group.entityType, 'PROP');
+
+    entities.push({
+      id: entityId,
+      canonical: canonical,
+      type: aresType,
+      aliases: group.texts.filter(t => t !== canonical),
+      confidence: 0.85,  // Slightly lower than character clusters
+      source: 'booknlp' as const,
+      booknlp_id: key,
+      mention_count: group.mentionCount,
+      eid: toBookNLPNonCharEID(group.entityType, canonical),
+    });
+
+    // Map all text variations to this entity ID
+    for (const text of group.texts) {
+      entityMap.set(text.toLowerCase(), entityId);
+    }
+  }
+
+  console.log(`[BOOKNLP] Extracted ${entities.length} non-character entities (LOC, ORG, FAC, etc.)`);
+  return { entities, entityMap };
 }
 
 /**
@@ -146,33 +277,63 @@ export function adaptCorefChains(
 
 /**
  * Adapt a full BookNLP contract to ARES internal representations
+ *
+ * OPTIMIZATION (2025-12-20):
+ * Now extracts ALL entity types, not just PERSON characters.
+ * - Characters → PERSON entities (high-quality clusters)
+ * - LOC/GPE/FAC mentions → PLACE entities
+ * - ORG mentions → ORG entities
+ * - VEH mentions → ITEM entities
+ * - EVENT mentions → EVENT entities
  */
 export function adaptBookNLPContract(
   contract: BookNLPContract,
   options: {
     includeRawContract?: boolean;
     minMentionCount?: number;
+    extractNonCharacterEntities?: boolean;  // NEW: enable non-char extraction
   } = {}
 ): BookNLPResult {
-  const { includeRawContract = false, minMentionCount = 1 } = options;
+  const {
+    includeRawContract = false,
+    minMentionCount = 1,
+    extractNonCharacterEntities = true,  // Enabled by default
+  } = options;
 
   // Filter characters by minimum mention count
   const filteredCharacters = contract.characters.filter(
     c => c.mention_count >= minMentionCount
   );
 
-  // Convert characters to entities
-  const entities = adaptCharacters(filteredCharacters);
+  // Convert characters to PERSON entities
+  const characterEntities = adaptCharacters(filteredCharacters);
 
-  // Build ID mapping
+  // Build character ID mapping
   const characterIdMap = new Map<string, string>();
   for (const char of filteredCharacters) {
     const aresId = toBookNLPStableEntityId(char.id);
     characterIdMap.set(char.id, aresId);
   }
 
-  // Convert mentions to spans
-  const spans = adaptMentions(contract.mentions, characterIdMap);
+  // NEW: Extract non-character entities (LOC, ORG, FAC, GPE, VEH, etc.)
+  let nonCharEntities: ARESEntity[] = [];
+  let nonCharEntityMap = new Map<string, string>();
+
+  if (extractNonCharacterEntities) {
+    const nonCharResult = adaptNonCharacterEntities(contract.mentions, { minMentionCount });
+    nonCharEntities = nonCharResult.entities;
+    nonCharEntityMap = nonCharResult.entityMap;
+  }
+
+  // Combine all entities: characters + non-characters
+  const entities = [...characterEntities, ...nonCharEntities];
+
+  console.log(`[BOOKNLP] Adapted ${characterEntities.length} PERSON entities (characters)`);
+  console.log(`[BOOKNLP] Adapted ${nonCharEntities.length} non-PERSON entities (LOC, ORG, etc.)`);
+  console.log(`[BOOKNLP] Total entities: ${entities.length}`);
+
+  // Convert mentions to spans (now includes non-character entities)
+  const spans = adaptMentions(contract.mentions, characterIdMap, nonCharEntityMap);
 
   // Convert quotes
   const quotes = adaptQuotes(contract.quotes, characterIdMap);

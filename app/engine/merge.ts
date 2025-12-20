@@ -5,6 +5,7 @@
 
 import type { Entity, Relation, EntityType } from './schema';
 import { toBookNLPGlobalId, toBookNLPEID } from './booknlp/identity';
+import { isValidEntity } from './entity-quality-filter';
 
 /**
  * Merge decision with confidence and provenance
@@ -19,7 +20,7 @@ export interface MergeDecision {
 }
 
 /**
- * Merge result with confidence tracking
+ * Merge result with confidence tracking and quality validation
  */
 export interface MergeResult {
   globals: Entity[];
@@ -30,6 +31,11 @@ export interface MergeResult {
     merged_clusters: number;
     avg_confidence: number;
     low_confidence_count: number;  // confidence < 0.7
+    quality_validation: {
+      passed: number;
+      failed: number;
+      failed_entities: string[];  // IDs of entities that failed validation after merge
+    };
   };
 }
 
@@ -549,6 +555,14 @@ export function mergeEntitiesAcrossDocs(
         (globalEntity as any).mention_count = mentionCount;
       }
 
+      // FEEDBACK VALIDATION (Phase 1.3): Re-validate merged entity
+      // This ensures merged entities still pass quality criteria
+      if (!isValidEntity(canonical, type as EntityType)) {
+        console.warn(`[MERGE][QUALITY] ⚠️ Merged entity "${canonical}" (${type}) failed quality validation - flagging for review`);
+        (globalEntity as any).qualityValidationFailed = true;
+        (globalEntity as any).qualityFailReason = 'merged_entity_failed_filter';
+      }
+
       globals.push(globalEntity);
 
       // Map all local IDs to this global ID and record decisions
@@ -579,6 +593,18 @@ export function mergeEntitiesAcrossDocs(
     : 1.0;
   const lowConfidenceCount = decisions.filter(d => d.confidence < 0.7).length;
 
+  // Calculate quality validation stats
+  const failedQualityValidation = globals.filter(e => (e as any).qualityValidationFailed);
+  const qualityValidation = {
+    passed: globals.length - failedQualityValidation.length,
+    failed: failedQualityValidation.length,
+    failed_entities: failedQualityValidation.map(e => e.id),
+  };
+
+  if (qualityValidation.failed > 0) {
+    console.warn(`[MERGE][QUALITY] ${qualityValidation.failed}/${globals.length} merged entities failed quality validation`);
+  }
+
   return {
     globals,
     idMap,
@@ -587,7 +613,8 @@ export function mergeEntitiesAcrossDocs(
       total_entities: totalEntities,
       merged_clusters: mergedClusters,
       avg_confidence: avgConfidence,
-      low_confidence_count: lowConfidenceCount
+      low_confidence_count: lowConfidenceCount,
+      quality_validation: qualityValidation,
     }
   };
 }

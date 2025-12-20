@@ -19,7 +19,7 @@ import { chooseBestCanonical } from '../global-graph';
 import { getLLMConfig, validateLLMConfig, DEFAULT_LLM_CONFIG, type LLMConfig } from '../llm-config';
 import { applyPatterns, type Pattern } from '../bootstrap';
 import type { PatternLibrary } from '../pattern-library';
-import { isValidEntity, correctEntityType } from '../entity-filter';
+import { isValidEntity, correctEntityType } from '../entity-quality-filter';
 import { loadRelationPatterns, type PatternsMode } from './load-relations';
 import { isContextDependent, isGarbageAlias } from '../pronoun-utils';
 
@@ -36,6 +36,7 @@ import {
   type BookNLPResult,
   type ARESEntity,
 } from '../booknlp';
+import { projectToGraph } from '../booknlp/graph-projection';
 
 // ============================================================================
 // MODE DETECTION
@@ -405,17 +406,46 @@ export async function extractFromSegments(
         end: s.end,
       }));
 
-      // For hybrid mode, we could layer additional ARES processing here
-      // (e.g., entity type refinement, relation extraction, etc.)
+      // 🆕 OPTIMIZATION (2025-12-20): Generate relations using graph projection
+      // This extracts dialogue relations (spoke_to) and co-occurrence relations (met)
+      // from BookNLP's quote and mention data
+      const graphProjection = projectToGraph(booknlpResult, {
+        docId,
+        text: fullText,
+        generateSpeakerRelations: true,
+        generateCoOccurrenceRelations: true,
+        minSpeakerConfidence: 0.7,
+        minMentionCount: 1,
+      });
+
+      let relations: Relation[] = graphProjection.relations;
+
+      console.log(`[BOOKNLP] 📊 Graph projection: ${relations.length} relations`);
+      console.log(`[BOOKNLP]    - Dialogue (spoke_to): ${graphProjection.stats.relationsFromQuotes}`);
+      console.log(`[BOOKNLP]    - Co-occurrence (met): ${graphProjection.stats.relationsFromCoref}`);
+
+      // For hybrid mode, layer additional ARES relation extraction
       if (extractionMode === 'hybrid') {
-        console.log(`[HYBRID] TODO: Layer ARES refinements on top of BookNLP baseline`);
-        // Future: Run pipeline meaning gate, add non-character entities, extract relations
+        console.log(`[HYBRID] 🔀 Layering ARES relation extraction on BookNLP entities...`);
+
+        // Run narrative relation extraction on the text using BookNLP entities
+        try {
+          const narrativeRelations = extractAllNarrativeRelations(
+            fullText,
+            entities,
+            { maxRelationsPerSentence: 5 }
+          );
+          console.log(`[HYBRID]    + ${narrativeRelations.length} narrative relations extracted`);
+          relations = [...relations, ...narrativeRelations];
+        } catch (err) {
+          console.warn(`[HYBRID] Narrative extraction failed: ${err}`);
+        }
       }
 
       const booknlpResponse: any = {
         entities,
         spans,
-        relations: [],  // TODO: Extract relations in hybrid mode
+        relations,  // Now populated with graph projection + hybrid extraction
         fictionEntities: [],
         profiles: existingProfiles || new Map<string, EntityProfile>(),
         mode: extractionMode,
@@ -431,10 +461,12 @@ export async function extractFromSegments(
           },
         },
         booknlpStats: {
-          characters: booknlpResult.entities.length,
+          characters: booknlpResult.entities.filter(e => e.type === 'PERSON').length,
+          nonCharacters: booknlpResult.entities.filter(e => e.type !== 'PERSON').length,
           mentions: booknlpResult.spans.length,
           quotes: booknlpResult.quotes.length,
           corefLinks: booknlpResult.coref_links.length,
+          relationsGenerated: relations.length,
           processingTimeSeconds: booknlpResult.metadata.processing_time_seconds,
         },
       };

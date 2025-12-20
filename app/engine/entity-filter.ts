@@ -1,6 +1,16 @@
 /**
  * Entity Quality Filter
  *
+ * @deprecated This file has been consolidated into entity-quality-filter.ts (2025-12-20)
+ *
+ * Key functions (isValidEntity, correctEntityType) are now exported from
+ * entity-quality-filter.ts. Import from there instead:
+ *
+ *   import { isValidEntity, correctEntityType } from './entity-quality-filter';
+ *
+ * This file is kept for backward compatibility but will be removed in a future version.
+ *
+ * Original description:
  * Filters false positive entities extracted by spaCy/LLM.
  * Removes pronouns, common words, and low-quality extractions.
  */
