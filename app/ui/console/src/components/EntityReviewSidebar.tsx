@@ -66,14 +66,6 @@ export function EntityReviewSidebar({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  useEffect(() => {
-    return () => {
-      if (rafRef.current != null) {
-        cancelAnimationFrame(rafRef.current);
-      }
-    };
-  }, []);
-
   // Display all entities (no layout-shifting filters)
   const displayEntities = useMemo(() => entities, [entities]);
 
@@ -183,6 +175,34 @@ export function EntityReviewSidebar({
   }, []);
 
   // Keep overlay within viewport on resize
+  useEffect(() => {
+    const handleResize = () => {
+      setSize(prev => {
+        const maxWidth = Math.max(320, window.innerWidth - 32);
+        const maxHeight = Math.max(320, window.innerHeight - 96);
+        return {
+          width: Math.min(prev.width, maxWidth),
+          height: Math.min(prev.height, maxHeight),
+        };
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    setPosition(prev => {
+      const maxX = Math.max(16, window.innerWidth - size.width - 16);
+      const maxY = Math.max(48, window.innerHeight - size.height - 16);
+      return {
+        x: Math.min(Math.max(16, prev.x), maxX),
+        y: Math.min(Math.max(48, prev.y), maxY),
+      };
+    });
+  }, [size]);
+
+  // Mouse event listeners
   useEffect(() => {
     const handleResize = () => {
       setSize(prev => {
@@ -514,82 +534,74 @@ export function EntityReviewSidebar({
             </div>
 
             {/* Table rows */}
-            {groupedEntities.slice(0, visibleCount).map((row) => {
-              const entity = row.entity;
-              const entityName = entity.canonicalName || entity.displayText || entity.text;
-              const isRejected = entity.rejected;
-              const rowKey = row.rowKey;
-
-              return (
-                <div
-                  key={rowKey}
-                  className={`entity-row ${isRejected ? 'entity-row--rejected' : ''}`}
-                  onClick={(event) => handleRowClick(entity, event)}
-                >
-                  {/* Column 1: Entity Name */}
-                  <div className="col-name">
-                    <div className="entity-name-primary">{entityName}</div>
-                    <div className="entity-meta">
-                      {row.duplicateCount > 1 && (
-                        <span className="entity-meta-badge entity-meta-duplicate">
-                          x{row.duplicateCount}
-                        </span>
-                      )}
-                      {row.typeConflicts.length > 1 && (
-                        <span className="entity-meta-badge entity-meta-conflict">
-                          Types: {row.typeConflicts.join(', ')}
-                        </span>
-                      )}
-                    </div>
+            {groupedEntities.slice(0, visibleCount).map((row) => (
+              <div
+                key={row.rowKey}
+                className={`entity-row ${row.entity.rejected ? 'entity-row--rejected' : ''}`}
+                onClick={(event) => handleRowClick(row.entity, event)}
+              >
+                {/* Column 1: Entity Name */}
+                <div className="col-name">
+                  <div className="entity-name-primary">
+                    {row.entity.canonicalName || row.entity.displayText || row.entity.text}
                   </div>
-
-                  {/* Column 2: Type Dropdown */}
-                  <div className="col-type">
-                    <select
-                      value={entity.type}
-                      onChange={(e) => {
-                        const newType = e.target.value as EntityType;
-                        row.indices.forEach(i => handleTypeChange(i, newType));
-                      }}
-                      className="type-select"
-                      disabled={isRejected}
-                    >
-                      {ENTITY_TYPES.map(type => (
-                        <option key={type} value={type}>
-                          {type}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Column 3: Reject Button */}
-                  <div className="col-reject">
-                    <button
-                      onClick={() => row.indices.forEach(i => handleReject(i))}
-                      className={`reject-btn ${isRejected ? 'reject-btn--active' : ''}`}
-                      title={isRejected ? 'Restore entity' : 'Reject entity'}
-                    >
-                      {isRejected ? 'Restore' : 'Reject'}
-                    </button>
-                  </div>
-
-                  {/* Column 4: Notes */}
-                  <div className="col-notes">
-                    <input
-                      type="text"
-                      value={entity.notes || ''}
-                      onChange={(e) => row.indices.forEach(i => handleNotesChange(i, e.target.value))}
-                      placeholder="Add notes..."
-                      className="notes-input"
-                      disabled={isRejected}
-                    />
+                  <div className="entity-meta">
+                    {row.duplicateCount > 1 && (
+                      <span className="entity-meta-badge entity-meta-duplicate">
+                        x{row.duplicateCount}
+                      </span>
+                    )}
+                    {row.typeConflicts.length > 1 && (
+                      <span className="entity-meta-badge entity-meta-conflict">
+                        Types: {row.typeConflicts.join(', ')}
+                      </span>
+                    )}
                   </div>
                 </div>
-                <div className="col-type" />
-                <div className="col-reject" />
-                <div className="col-notes" />
+
+                {/* Column 2: Type Dropdown */}
+                <div className="col-type">
+                  <select
+                    value={row.entity.type}
+                    onChange={(e) => {
+                      const newType = e.target.value as EntityType;
+                      row.indices.forEach(i => handleTypeChange(i, newType));
+                    }}
+                    className="type-select"
+                    disabled={row.entity.rejected}
+                  >
+                    {ENTITY_TYPES.map(type => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Column 3: Reject Button */}
+                <div className="col-reject">
+                  <button
+                    onClick={() => row.indices.forEach(i => handleReject(i))}
+                    className={`reject-btn ${row.entity.rejected ? 'reject-btn--active' : ''}`}
+                    title={row.entity.rejected ? 'Restore entity' : 'Reject entity'}
+                  >
+                    {row.entity.rejected ? 'Restore' : 'Reject'}
+                  </button>
+                </div>
+
+                {/* Column 4: Notes */}
+                <div className="col-notes">
+                  <input
+                    type="text"
+                    value={row.entity.notes || ''}
+                    onChange={(e) => row.indices.forEach(i => handleNotesChange(i, e.target.value))}
+                    placeholder="Add notes..."
+                    className="notes-input"
+                    disabled={row.entity.rejected}
+                  />
+                </div>
               </div>
-            )}
+            ))}
           </div>
         )}
       </div>
