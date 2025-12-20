@@ -16,6 +16,15 @@ import type { EntitySpan, EntityType } from '../types/entities';
 import { collapseEntitiesForUI, type AggregatedEntityRow } from './entity-review-utils';
 import './EntityReviewSidebar.css';
 
+type PhaseKey = 'booknlp' | 'pipeline' | 'manual' | 'editor' | 'unknown';
+const DEFAULT_PHASE_FILTERS: Record<PhaseKey, boolean> = {
+  booknlp: true,
+  pipeline: true,
+  manual: true,
+  editor: true,
+  unknown: true,
+};
+
 interface EntityReviewSidebarProps {
   mode: 'overlay' | 'pinned';
   entities: EntitySpan[];
@@ -48,6 +57,7 @@ export function EntityReviewSidebar({
 }: EntityReviewSidebarProps) {
   // Filter state
   const [showRejected, setShowRejected] = useState(false);
+  const [phaseFilters, setPhaseFilters] = useState<Record<PhaseKey, boolean>>(DEFAULT_PHASE_FILTERS);
 
   // Draggable/resizable state for overlay mode
   const [position, setPosition] = useState({ x: window.innerWidth - 620, y: 80 });
@@ -59,9 +69,49 @@ export function EntityReviewSidebar({
   const sidebarRef = useRef<HTMLDivElement>(null);
 
   // Display entities based on filter
-  const displayEntities = showRejected
-    ? entities
-    : entities.filter(e => !e.rejected);
+  const isPhaseEnabled = (entity: EntitySpan) => {
+    const phase = (entity.phase || entity.source || 'unknown').toLowerCase();
+    if (phase.includes('booknlp')) return phaseFilters.booknlp;
+    if (phase.includes('manual')) return phaseFilters.manual;
+    if (phase.includes('editor')) return phaseFilters.editor;
+    if (phase.includes('pipeline')) return phaseFilters.pipeline;
+    return phaseFilters.unknown;
+  };
+
+  const displayEntities = (showRejected ? entities : entities.filter(e => !e.rejected)).filter(isPhaseEnabled);
+
+  const entityIndexMap = new Map<EntitySpan, number>();
+  entities.forEach((e, i) => entityIndexMap.set(e, i));
+
+  const groupedEntities: AggregatedEntityRow[] = collapseEntitiesForUI(displayEntities, entityIndexMap);
+
+  if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
+    const sample = groupedEntities.slice(0, 25).map(row => ({
+      rowKey: row.rowKey,
+      id: row.entity.entityId,
+      globalId: row.entity.entityId,
+      eid: (row.entity as any).eid,
+      text: row.entity.text || row.entity.displayText || row.entity.canonicalName,
+      type: row.entity.type,
+      source: row.sources.join(','),
+    }));
+    const uniqueGlobalIds = new Set(groupedEntities.map(r => r.entity.entityId || r.rowKey));
+    const duplicateCounts: Record<string, number> = {};
+    groupedEntities.forEach(r => {
+      const key = r.entity.entityId || r.rowKey;
+      duplicateCounts[key] = (duplicateCounts[key] || 0) + 1;
+    });
+    const topDuplicates = Object.entries(duplicateCounts)
+      .filter(([, count]) => count > 1)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+    console.debug('[EntityReviewSidebar][DEBUG_IDENTITY_UI]', {
+      totalRows: groupedEntities.length,
+      uniqueGlobalIds: uniqueGlobalIds.size,
+      topDuplicates,
+      sample,
+    });
+  }
 
   const entityIndexMap = new Map<EntitySpan, number>();
   entities.forEach((e, i) => entityIndexMap.set(e, i));
@@ -220,6 +270,9 @@ export function EntityReviewSidebar({
           <p className="review-sidebar-subtitle">
             Review detected entities, adjust types, and capture notes.
           </p>
+          <div style={{ fontWeight: 700, color: '#2563eb', marginTop: '4px' }}>
+            Filters: ENABLED (temporary)
+          </div>
           <div className="review-sidebar-stats">
             <span className="stat-badge stat-kept">{keptCount} kept</span>
             <span className="stat-badge stat-rejected">{rejectedCount} rejected</span>
@@ -268,6 +321,35 @@ export function EntityReviewSidebar({
           />
           Show rejected entities
         </label>
+        <div className="review-sidebar-filters" style={{ marginTop: '8px', padding: '8px', border: '1px solid #e5e7eb', borderRadius: '8px' }}>
+          <div style={{ fontWeight: 600, marginBottom: '6px' }}>Filters</div>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {(Object.keys(DEFAULT_PHASE_FILTERS) as PhaseKey[]).map(key => (
+              <label key={key} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <input
+                  type="checkbox"
+                  checked={phaseFilters[key]}
+                  onChange={(e) => setPhaseFilters(prev => ({ ...prev, [key]: e.target.checked }))}
+                />
+                {key}
+              </label>
+            ))}
+          </div>
+          <div style={{ marginTop: '6px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <button className="action-btn" onClick={() => setPhaseFilters({ ...DEFAULT_PHASE_FILTERS, booknlp: true, pipeline: false, manual: false, editor: false, unknown: false })}>
+              BookNLP Only
+            </button>
+            <button className="action-btn" onClick={() => setPhaseFilters({ ...DEFAULT_PHASE_FILTERS, booknlp: false, pipeline: true, manual: false, editor: false, unknown: false })}>
+              Pipeline Only
+            </button>
+            <button className="action-btn" onClick={() => setPhaseFilters({ ...DEFAULT_PHASE_FILTERS, booknlp: false, pipeline: false, manual: true, editor: true, unknown: false })}>
+              Manual Only
+            </button>
+            <button className="action-btn" onClick={() => setPhaseFilters(DEFAULT_PHASE_FILTERS)}>
+              Everything
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Entity table */}
