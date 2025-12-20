@@ -6,10 +6,10 @@ type IdleDeadline = {
 type IdleHandle = number;
 
 const fallbackRequestIdleCallback = (cb: (deadline: IdleDeadline) => void): IdleHandle =>
-  setTimeout(() => cb({ didTimeout: false, timeRemaining: () => 16 }), 0);
+  window.setTimeout(() => cb({ didTimeout: false, timeRemaining: () => 16 }), 0) as unknown as number;
 
 const fallbackCancelIdleCallback = (id: IdleHandle) => {
-  clearTimeout(id as unknown as number);
+  window.clearTimeout(id);
 };
 
 export function requestIdleChunk<T>(
