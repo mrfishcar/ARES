@@ -16,7 +16,7 @@ import { EntityModal } from '../components/EntityModal';
 import { WikiModal } from '../components/WikiModal';
 import { FloatingActionButton } from '../components/FloatingActionButton';
 import { EntityReviewSidebar } from '../components/EntityReviewSidebar';
-import type { NavigateToRange } from '../components/CodeMirrorEditorProps';
+import type { FormattingActions, NavigateToRange } from '../components/CodeMirrorEditorProps';
 import { isValidEntityType, mapExtractionResponseToSpans, type EntitySpan, type EntityType } from '../types/entities';
 import { initializeTheme, toggleTheme, loadThemePreference, getEffectiveTheme } from '../utils/darkMode';
 import { useLabLayoutState } from '../hooks/useLabLayoutState';
@@ -757,6 +757,12 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     position?: { x: number; y: number; flip?: boolean }; // Position for menu
   } | null>(null);
   const [navigateRequest, setNavigateRequest] = useState<NavigateToRange | null>(null);
+  const [editorFocused, setEditorFocused] = useState(false);
+  const [hasActiveSelection, setHasActiveSelection] = useState(false);
+  const [formatActions, setFormatActions] = useState<FormattingActions | null>(null);
+  const [showFormatToolbar, setShowFormatToolbar] = useState(false);
+  const formatHideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [formatToolbarEnabled, setFormatToolbarEnabled] = useState(true);
 
   // Theme state
   const [theme, setTheme] = useState(loadThemePreference());
@@ -771,6 +777,31 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     },
     [highlightChains]
   );
+
+  // Ghost formatting toolbar visibility (focus or selection with debounce hide)
+  useEffect(() => {
+    const shouldShow = editorFocused || hasActiveSelection;
+    if (shouldShow) {
+      if (formatHideTimeoutRef.current) {
+        clearTimeout(formatHideTimeoutRef.current);
+        formatHideTimeoutRef.current = null;
+      }
+      setShowFormatToolbar(true);
+    } else {
+      if (formatHideTimeoutRef.current) {
+        clearTimeout(formatHideTimeoutRef.current);
+      }
+      formatHideTimeoutRef.current = setTimeout(() => {
+        setShowFormatToolbar(false);
+      }, 180);
+    }
+    return () => {
+      if (formatHideTimeoutRef.current) {
+        clearTimeout(formatHideTimeoutRef.current);
+        formatHideTimeoutRef.current = null;
+      }
+    };
+  }, [editorFocused, hasActiveSelection]);
 
   const resetEntityOverrides = useCallback(() => {
     setEntityOverrides({
@@ -2184,6 +2215,10 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         onHighlightChainsToggle={() => setHighlightChains(prev => !prev)}
         onNewDocument={handleNewDocument}
         saveStatus={saveStatus}
+        showFormatToolbar={showFormatToolbar}
+        formatToolbarEnabled={formatToolbarEnabled}
+        formatActions={formatActions}
+        onToggleFormatToolbar={() => setFormatToolbarEnabled(prev => !prev)}
       />
 
       {/* Documents sidebar */}
@@ -2217,6 +2252,9 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           enableLongTextOptimization={settings.enableLongTextOptimization}
           navigateToRange={navigateRequest ?? undefined}
           colorForSpan={colorForSpan}
+          onEditorFocusChange={setEditorFocused}
+          onSelectionChange={setHasActiveSelection}
+          onFormatActionsReady={setFormatActions}
         />
 
         {/* Pinned sidebar mode - integrated into layout */}
