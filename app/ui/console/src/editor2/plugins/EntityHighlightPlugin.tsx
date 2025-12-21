@@ -64,6 +64,16 @@ export function EntityHighlightPlugin({ spans, onHighlightClick }: Props) {
     const root = editor.getRootElement();
     if (!root) return;
 
+    // TEMPORARILY DISABLED: Direct DOM manipulation breaks Lexical's contentEditable
+    // This plugin needs to be rewritten using Lexical's decorator API
+    // For now, entity highlighting is disabled to restore editor functionality
+
+    // TODO: Rewrite using Lexical TextNode decorators or mark nodes
+    // See: https://lexical.dev/docs/concepts/nodes#mark-nodes
+
+    return; // Early return - no highlighting for now
+
+    /*
     // Clear previous highlights
     root.querySelectorAll('.rich-entity-highlight').forEach(el => {
       const parent = el.parentElement;
@@ -89,6 +99,7 @@ export function EntityHighlightPlugin({ spans, onHighlightClick }: Props) {
       }
       range.surroundContents(wrapper);
     });
+    */
   }, [editor, spans]);
 
   return null;

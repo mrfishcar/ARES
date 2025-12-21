@@ -129,6 +129,7 @@ export function RichTextEditor({
         console.error('Lexical error', error);
       },
       theme: lexicalTheme,
+      editable: true, // CRITICAL: Must be true for editing to work
     }),
     [initialState],
   );
@@ -196,7 +197,14 @@ export function RichTextEditor({
         />
         <div className="rich-editor-surface" aria-label="Document editor">
           <RichTextPlugin
-            contentEditable={<ContentEditable className="rich-content" />}
+            contentEditable={
+              <ContentEditable
+                className="rich-content"
+                aria-label="Text editor"
+                role="textbox"
+                aria-multiline="true"
+              />
+            }
             placeholder={<div className="rich-placeholder">Write or paste text…</div>}
             ErrorBoundary={() => null}
           />
