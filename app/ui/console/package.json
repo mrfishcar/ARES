@@ -36,7 +36,6 @@
     "stream-browserify": "^3.0.0"
   },
   "devDependencies": {
-    "@testing-library/react": "^14.3.0",
     "@types/node": "^24.10.1",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
