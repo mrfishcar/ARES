@@ -1,7 +1,7 @@
 import './styles.css';
 import { useEffect, useMemo, useState, useRef } from 'react';
 import type { SerializedEditorState } from 'lexical';
-import { FORMAT_ELEMENT_COMMAND, FORMAT_TEXT_COMMAND, INSERT_HORIZONTAL_RULE_COMMAND } from 'lexical';
+import { FORMAT_ELEMENT_COMMAND, FORMAT_TEXT_COMMAND } from 'lexical';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
@@ -11,7 +11,7 @@ import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { CheckListPlugin } from '@lexical/react/LexicalCheckListPlugin';
 import { HorizontalRulePlugin } from '@lexical/react/LexicalHorizontalRulePlugin';
-import { HeadingNode, QuoteNode } from '@lexical/rich-text';
+import { HeadingNode, QuoteNode, INSERT_HORIZONTAL_RULE_COMMAND } from '@lexical/rich-text';
 import { ListItemNode, ListNode, INSERT_UNORDERED_LIST_COMMAND, INSERT_ORDERED_LIST_COMMAND, INSERT_CHECK_LIST_COMMAND } from '@lexical/list';
 import { HorizontalRuleNode } from '@lexical/react/LexicalHorizontalRuleNode';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
