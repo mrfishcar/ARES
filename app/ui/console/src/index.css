@@ -16,12 +16,12 @@ html {
 html,
 body {
   background: var(--bg-primary);
-  /* Prevent pull-to-refresh without position:fixed (which breaks iOS focus) */
+  /* Lock height to viewport, prevent pull-to-refresh */
   height: var(--app-viewport-height, 100vh);
   min-height: var(--app-viewport-height, 100vh);
   overflow: hidden;
   overscroll-behavior: none;
-  /* REMOVED position:fixed - it prevents iOS keyboard/focus from working properly */
+  position: fixed;
   width: 100%;
   margin: 0;
   padding: 0;
