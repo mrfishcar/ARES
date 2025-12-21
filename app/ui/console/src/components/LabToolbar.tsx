@@ -269,6 +269,20 @@ export function LabToolbar({
       <span>{saveStatusLabel}</span>
     </div>
 
+    {/* Save status pill (floated to avoid toolbar width changes) */}
+    <div className={`save-status-pill ${saveStatusClass}`}>
+      {saveStatus === 'saving' ? (
+        <Cloud size={12} strokeWidth={2} className="saving-icon" />
+      ) : saveStatus === 'saved' ? (
+        <Cloud size={12} strokeWidth={2} />
+      ) : saveStatus === 'error' ? (
+        <CloudOff size={12} strokeWidth={2} />
+      ) : (
+        <Cloud size={12} strokeWidth={2} style={{ opacity: 0.35 }} />
+      )}
+      <span>{saveStatusLabel}</span>
+    </div>
+
     {/* Portal: Render dropdown outside toolbar to escape transform context */}
     {showSettingsDropdown && typeof document !== 'undefined' && createPortal(
       <>
