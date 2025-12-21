@@ -39,7 +39,7 @@ export function RichEditorPane({
           )}
           <div
             className="editor-with-indicators"
-            style={{ flex: 1, width: '100%', minHeight: 'max(100vh, 600px)' }}
+            style={{ flex: 1, width: '100%', height: '100%' }}
           >
             <RichTextEditor
               initialDocJSON={richDoc ?? undefined}
