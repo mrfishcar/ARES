@@ -1350,6 +1350,7 @@ a:hover {
   flex: 1;
   min-width: 0;
   background-color: var(--app-surface);
+  min-height: 100vh;
 }
 
 .results-wrapper {
@@ -2061,7 +2062,7 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   flex: 1;
   gap: 0;
   min-width: 0;
-  min-height: 0;
+  min-height: max(100vh, 600px);
 }
 
 /* Entity indicators container on left side */
@@ -2081,7 +2082,7 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   display: flex;
   flex: 1;
   min-width: 0;
-  min-height: 0;
+  min-height: max(100vh, 600px);
   position: relative;
 }
 

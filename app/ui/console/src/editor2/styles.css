@@ -6,7 +6,7 @@
   background: var(--bg-primary, #0f1115);
   color: var(--text-primary, #e5e7eb);
   border-radius: 12px;
-  min-height: 70vh;
+  min-height: max(100vh, 600px);
   border: 1px solid var(--border-color, #1f2937);
   overflow: hidden;
   --rich-horizontal-padding: 96px;
@@ -18,19 +18,20 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  min-height: 70vh;
+  min-height: max(100vh, 600px);
   flex: 1;
 }
 
 .rich-content {
   flex: 1;
-  min-height: 70vh;
+  min-height: max(100vh, 600px);
   width: 100%;
   padding: calc(var(--rich-toolbar-height) + 16px) var(--rich-horizontal-padding) 64px var(--rich-horizontal-padding);
   line-height: 1.7;
   font-size: 1rem;
   outline: none;
   color: var(--text-primary, #e5e7eb);
+  background: var(--bg-primary, #0f1115);
 }
 
 .rich-placeholder {
