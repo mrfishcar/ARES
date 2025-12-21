@@ -1,7 +1,7 @@
 import './styles.css';
 import { useEffect, useMemo, useState, useRef } from 'react';
 import type { SerializedEditorState } from 'lexical';
-import { FORMAT_ELEMENT_COMMAND, FORMAT_TEXT_COMMAND } from 'lexical';
+import { FORMAT_ELEMENT_COMMAND, FORMAT_TEXT_COMMAND, INSERT_HORIZONTAL_RULE_COMMAND } from 'lexical';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
@@ -10,14 +10,14 @@ import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { CheckListPlugin } from '@lexical/react/LexicalCheckListPlugin';
-import { HorizontalRulePlugin, INSERT_HORIZONTAL_RULE_COMMAND } from '@lexical/react/LexicalHorizontalRulePlugin';
+import { HorizontalRulePlugin } from '@lexical/react/LexicalHorizontalRulePlugin';
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { ListItemNode, ListNode, INSERT_UNORDERED_LIST_COMMAND, INSERT_ORDERED_LIST_COMMAND, INSERT_CHECK_LIST_COMMAND } from '@lexical/list';
 import { HorizontalRuleNode } from '@lexical/react/LexicalHorizontalRuleNode';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import type { EntitySpan } from '../types/entities';
 import { EntityHighlightPlugin } from './plugins/EntityHighlightPlugin';
-import { snapshotRichDoc } from './flattenRichDoc';
+import { snapshotRichDoc, mapPlainOffsetToRich } from './flattenRichDoc';
 import type { RichDocSnapshot, UIMode } from './types';
 import { importPlainText } from './importers';
 import type { NavigateToRange } from '../components/CodeMirrorEditorProps';
@@ -205,7 +205,7 @@ export function RichTextEditor({
               });
             }}
           />
-          <EntityHighlightPlugin spans={entities} posMap={lastSnapshot.posMap} onHighlightClick={onEntityPress} />
+          <EntityHighlightPlugin spans={entities} onHighlightClick={onEntityPress} />
         </div>
       </div>
     </LexicalComposer>
