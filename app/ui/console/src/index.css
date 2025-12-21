@@ -17,7 +17,8 @@ html,
 body {
   background: var(--bg-primary);
   /* Lock height to viewport, prevent pull-to-refresh */
-  height: 100%;
+  height: var(--app-viewport-height, 100vh);
+  min-height: var(--app-viewport-height, 100vh);
   overflow: hidden;
   overscroll-behavior: none;
   position: fixed;
@@ -25,6 +26,7 @@ body {
 }
 
 :root {
+  --app-viewport-height: 100vh;
   --app-bg-dark: #050713;
   --app-bg-light: #f5f6fa;
 
@@ -160,9 +162,8 @@ body {
 html,
 body,
 #root {
-  height: 100%;
-  /* Use ONLY dynamic viewport height to fix iOS keyboard white space */
-  min-height: 100dvh;
+  height: var(--app-viewport-height, 100vh);
+  min-height: var(--app-viewport-height, 100vh);
   /* Prevent scrolling to fix white bar and white space issues */
   overflow: hidden;
   overscroll-behavior: none;
@@ -195,9 +196,8 @@ body,
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  min-height: 100dvh; /* Dynamic viewport height for iOS keyboard */
-  height: 100%;
+  min-height: var(--app-viewport-height, 100vh);
+  height: var(--app-viewport-height, 100vh);
   flex: 1;
   background-color: var(--app-surface);
   color: var(--text-primary);
@@ -418,8 +418,7 @@ body::before {
   background-color: var(--app-surface);
   background-image: var(--app-background-gradient);
   /* Ensure it covers viewport even when keyboard appears */
-  min-height: 100vh;
-  min-height: 100dvh; /* Use dynamic viewport height on supporting browsers */
+  min-height: var(--app-viewport-height, 100vh);
 }
 
 #root {
@@ -429,9 +428,8 @@ body::before {
 
 .app-root {
   position: relative;
-  min-height: 100vh;
-  min-height: 100dvh; /* Dynamic viewport height for iOS keyboard */
-  height: 100%;
+  min-height: var(--app-viewport-height, 100vh);
+  height: var(--app-viewport-height, 100vh);
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -486,13 +484,13 @@ a:hover {
 .extraction-lab {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  height: 100dvh;
+  height: var(--app-viewport-height, 100vh);
+  min-height: var(--app-viewport-height, 100vh);
   background: var(--bg-primary);
   /*
    * Safari/iPad blur + keyboard guard: removing full overflow clipping prevents
-   * backdrop-filter surfaces (toolbar + dropdown) from losing blur and allows
-   * the viewport to resize when the software keyboard appears.
+   * backdrop-filter surfaces (toolbar + dropdown) from losing blur while the
+   * viewport height stays locked to a CSS variable to avoid keyboard jumps.
    */
   overflow-x: hidden;
   overflow-y: auto;
