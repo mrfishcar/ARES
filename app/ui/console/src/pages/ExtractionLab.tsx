@@ -762,6 +762,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [formatActions, setFormatActions] = useState<FormattingActions | null>(null);
   const [showFormatToolbar, setShowFormatToolbar] = useState(false);
   const formatHideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [formatToolbarEnabled, setFormatToolbarEnabled] = useState(true);
 
   // Theme state
   const [theme, setTheme] = useState(loadThemePreference());
@@ -2215,7 +2216,9 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         onNewDocument={handleNewDocument}
         saveStatus={saveStatus}
         showFormatToolbar={showFormatToolbar}
+        formatToolbarEnabled={formatToolbarEnabled}
         formatActions={formatActions}
+        onToggleFormatToolbar={() => setFormatToolbarEnabled(prev => !prev)}
       />
 
       {/* Documents sidebar */}

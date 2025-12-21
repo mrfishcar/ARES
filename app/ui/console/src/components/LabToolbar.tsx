@@ -5,7 +5,7 @@
 
 import { createPortal } from 'react-dom';
 import { useRef, useState, useEffect } from 'react';
-import { Settings, Sun, Moon, Highlighter, FilePlus, Cloud, CloudOff, Bold, Italic, Code2, Heading, Quote, Minus } from 'lucide-react';
+import { Settings, Sun, Moon, Highlighter, FilePlus, Cloud, CloudOff, Bold, Italic, Code2, Heading, Quote, Minus, Type } from 'lucide-react';
 import type { FormattingActions } from './CodeMirrorEditorProps';
 
 interface LabToolbarProps {
@@ -45,7 +45,9 @@ interface LabToolbarProps {
   // Save status
   saveStatus: 'idle' | 'saving' | 'saved' | 'error';
   showFormatToolbar: boolean;
+  formatToolbarEnabled: boolean;
   formatActions?: FormattingActions | null;
+  onToggleFormatToolbar: () => void;
 }
 
 export function LabToolbar({
@@ -72,7 +74,9 @@ export function LabToolbar({
   onHighlightChainsToggle,
   saveStatus,
   showFormatToolbar,
+  formatToolbarEnabled,
   formatActions,
+  onToggleFormatToolbar,
 }: LabToolbarProps) {
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
   const dropdownPanelRef = useRef<HTMLDivElement>(null);
@@ -146,7 +150,7 @@ export function LabToolbar({
     runPerfGauntlet();
   };
 
-  const ghostVisible = showFormatToolbar && Boolean(formatActions);
+  const ghostVisible = formatToolbarEnabled && showFormatToolbar && Boolean(formatActions);
   const formatButtons: Array<{
     key: string;
     label: string;
@@ -221,6 +225,15 @@ export function LabToolbar({
           {theme === 'dark' ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
         </button>
 
+        <button
+          onClick={onToggleFormatToolbar}
+          className={`control-btn ${formatToolbarEnabled ? 'control-btn--active' : ''}`}
+          title="Toggle formatting toolbar"
+          type="button"
+        >
+          <Type size={16} strokeWidth={2} />
+        </button>
+
         {/* Settings dropdown */}
         <div className="settings-dropdown-container">
           <button
@@ -253,20 +266,6 @@ export function LabToolbar({
           </button>
         ))}
       </div>
-    </div>
-
-    {/* Save status pill (floated to avoid toolbar width changes) */}
-    <div className={`save-status-pill ${saveStatusClass}`}>
-      {saveStatus === 'saving' ? (
-        <Cloud size={12} strokeWidth={2} className="saving-icon" />
-      ) : saveStatus === 'saved' ? (
-        <Cloud size={12} strokeWidth={2} />
-      ) : saveStatus === 'error' ? (
-        <CloudOff size={12} strokeWidth={2} />
-      ) : (
-        <Cloud size={12} strokeWidth={2} style={{ opacity: 0.35 }} />
-      )}
-      <span>{saveStatusLabel}</span>
     </div>
 
     {/* Save status pill (floated to avoid toolbar width changes) */}
