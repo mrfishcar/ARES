@@ -144,7 +144,7 @@ export function LabToolbar({
   return (
     <>
     <div className="lab-control-bar liquid-glass">
-      {/* Status indicators */}
+      {/* Status indicator (save status is floated separately to avoid shifting buttons) */}
       <div className="status-group">
         <div
           className={`status-indicator ${
@@ -156,19 +156,6 @@ export function LabToolbar({
           }`}
         >
           {statusLabel}
-        </div>
-        {/* Save status indicator - always rendered to avoid layout shifts */}
-        <div className={`save-status-indicator ${saveStatusClass}`}>
-          {saveStatus === 'saving' ? (
-            <Cloud size={12} strokeWidth={2} className="saving-icon" />
-          ) : saveStatus === 'saved' ? (
-            <Cloud size={12} strokeWidth={2} />
-          ) : saveStatus === 'error' ? (
-            <CloudOff size={12} strokeWidth={2} />
-          ) : (
-            <Cloud size={12} strokeWidth={2} style={{ opacity: 0.35 }} />
-          )}
-          <span>{saveStatusLabel}</span>
         </div>
 
         {showPerfGauntlet && (
@@ -228,6 +215,20 @@ export function LabToolbar({
           </button>
         </div>
       </div>
+    </div>
+
+    {/* Save status pill (floated to avoid toolbar width changes) */}
+    <div className={`save-status-pill ${saveStatusClass}`}>
+      {saveStatus === 'saving' ? (
+        <Cloud size={12} strokeWidth={2} className="saving-icon" />
+      ) : saveStatus === 'saved' ? (
+        <Cloud size={12} strokeWidth={2} />
+      ) : saveStatus === 'error' ? (
+        <CloudOff size={12} strokeWidth={2} />
+      ) : (
+        <Cloud size={12} strokeWidth={2} style={{ opacity: 0.35 }} />
+      )}
+      <span>{saveStatusLabel}</span>
     </div>
 
     {/* Portal: Render dropdown outside toolbar to escape transform context */}
