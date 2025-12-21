@@ -22,6 +22,11 @@ import { initializeTheme, toggleTheme, loadThemePreference, getEffectiveTheme } 
 import { useLabLayoutState } from '../hooks/useLabLayoutState';
 import { useExtractionSettings } from '../hooks/useExtractionSettings';
 import { useAutoLongExtraction } from '../hooks/useAutoLongExtraction';
+import type { SerializedEditorState } from 'lexical';
+import { RichEditorPane } from '../editor2/RichEditorPane';
+import type { BlockIndexEntry, PosMapEntry, RichDocSnapshot } from '../editor2/types';
+import { snapshotRichDoc } from '../editor2/flattenRichDoc';
+import { computeDocVersion } from '../editor2/hash';
 import '../styles/darkMode.css';
 import '../styles/extraction-lab.css';
 
@@ -112,6 +117,10 @@ interface StoredDocument {
   id: string;
   title: string;
   text: string;
+  richDoc?: SerializedEditorState | null;
+  posMap?: PosMapEntry[];
+  docVersion?: string;
+  blockIndex?: BlockIndexEntry[];
   extractionJson?: any;
   extraction?: any;
   createdAt: string;
@@ -710,6 +719,10 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
   // Extraction state
   const [text, setText] = useState('');
+  const [richDoc, setRichDoc] = useState<SerializedEditorState | null>(null);
+  const [posMap, setPosMap] = useState<PosMapEntry[]>([]);
+  const [docVersion, setDocVersion] = useState<string>('');
+  const [blockIndex, setBlockIndex] = useState<BlockIndexEntry[]>([]);
   const [entities, setEntities] = useState<EntitySpan[]>([]);
   const [relations, setRelations] = useState<Relation[]>([]);
   const [processing, setProcessing] = useState(false);
@@ -854,6 +867,22 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     });
   }, []);
 
+  const handleRichChange = useCallback((snapshot: RichDocSnapshot) => {
+    setRichDoc(snapshot.docJSON);
+    setText(snapshot.plainText);
+    setPosMap(snapshot.posMap);
+    setBlockIndex(snapshot.blocks);
+    setDocVersion(snapshot.docVersion);
+  }, []);
+
+  const handleLegacyTextChange = useCallback((value: string) => {
+    setRichDoc(null);
+    setText(value);
+    setPosMap([]);
+    setBlockIndex([]);
+    setDocVersion(computeDocVersion(value));
+  }, []);
+
   const requiresBackground = text.length > SYNC_EXTRACTION_CHAR_LIMIT;
   const hasActiveJob = jobStatus === 'queued' || jobStatus === 'running';
   const isUpdating = processing && !requiresBackground && !hasActiveJob;
@@ -930,6 +959,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
       setProcessing(true);
       const start = performance.now();
+      const version = docVersion || computeDocVersion(text, blockIndex);
 
       try {
         // Strip incomplete tags before sending to backend
@@ -943,7 +973,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ text: textForExtraction }),
+          body: JSON.stringify({ text: textForExtraction, docVersion: version, blocks: blockIndex }),
         });
 
         if (!response.ok) {
@@ -970,7 +1000,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         setProcessing(false);
       }
     }, 1000), // Increased debounce for heavier ARES processing
-    [toast, applyExtractionResults]
+    [toast, applyExtractionResults, docVersion, blockIndex]
   );
 
   const runExtractionNow = useCallback(() => {
@@ -1000,6 +1030,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     async (options: { silent?: boolean; revision: number; textSnapshot: string }) => {
       const { silent = true, revision, textSnapshot } = options;
       const isDev = typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production';
+      const version = docVersion || computeDocVersion(textSnapshot, blockIndex);
 
       if (!textSnapshot.trim()) {
         if (!silent) {
@@ -1020,7 +1051,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
       try {
         const apiUrl = resolveApiUrl();
-        const payload = { text: stripIncompleteTagsForExtraction(textSnapshot) };
+        const payload = { text: stripIncompleteTagsForExtraction(textSnapshot), docVersion: version, blocks: blockIndex };
         const response = await fetch(`${apiUrl}/jobs/start`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1065,7 +1096,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         setBackgroundProcessing(false);
       }
     },
-    [toast]
+    [toast, docVersion, blockIndex]
   );
 
   const { revisionRef } = useAutoLongExtraction({
@@ -1136,7 +1167,20 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const applyDocumentToState = useCallback(
     (document: StoredDocument) => {
       setLastSavedId(document.id);
-      setText(document.text || '');
+      if (document.richDoc) {
+        const snap = snapshotRichDoc(document.richDoc);
+        setRichDoc(document.richDoc);
+        setText(snap.plainText);
+        setPosMap(document.posMap || snap.posMap);
+        setBlockIndex(snap.blocks);
+        setDocVersion(document.docVersion || snap.docVersion);
+      } else {
+        setRichDoc(null);
+        setText(document.text || '');
+        setPosMap([]);
+        setBlockIndex([]);
+        setDocVersion(computeDocVersion(document.text || ''));
+      }
 
       const extraction = document.extractionJson ?? document.extraction;
       if (extraction) {
@@ -1302,9 +1346,14 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         typeOverrides: entityOverrides.typeOverrides,
       };
 
+      const version = docVersion || computeDocVersion(text, blockIndex);
       const payload = {
         title: text.trim().split('\n')[0]?.slice(0, 80) || 'Untitled Document',
         text,
+        richDoc,
+        posMap,
+        blockIndex,
+        docVersion: version,
         extraction: {
           entities,
           relations,
@@ -1361,6 +1410,10 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         id: lastSavedId || `local_${Date.now()}`,
         title: text.trim().split('\n')[0]?.slice(0, 80) || 'Untitled Document',
         text,
+        richDoc,
+        posMap,
+        blockIndex,
+        docVersion: docVersion || computeDocVersion(text, blockIndex),
         extractionJson: {
           entities,
           relations,
@@ -1378,7 +1431,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       }
       return localDoc.id;
     }
-  }, [entities, relations, stats, text, toast, layout.showDocumentSidebar, refreshDocumentList, lastSavedId, saveToLocalStorage, entityOverrides]);
+  }, [entities, relations, stats, text, toast, layout.showDocumentSidebar, refreshDocumentList, lastSavedId, saveToLocalStorage, entityOverrides, richDoc, posMap, blockIndex, docVersion]);
 
   // Manual save (shows toast on error)
   const handleSaveDocument = useCallback(async () => {
@@ -2155,6 +2208,10 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const handleNewDocument = useCallback(() => {
     // Clear current document state
     setText('');
+    setRichDoc(null);
+    setPosMap([]);
+    setBlockIndex([]);
+    setDocVersion('');
     setEntities([]);
     setRelations([]);
     setStats({ time: 0, confidence: 0, count: 0, relationCount: 0 });
@@ -2203,6 +2260,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         showEntityIndicators={settings.showEntityIndicators}
         enableLongTextOptimization={settings.enableLongTextOptimization}
         highlightChains={highlightChains}
+        useRichEditor={settings.useRichEditor}
         onThemeToggle={handleThemeToggle}
         onEntityHighlightToggle={settings.toggleEntityHighlightMode}
         onSettingsToggle={layout.toggleSettingsDropdown}
@@ -2213,6 +2271,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         onEntityIndicatorsToggle={settings.toggleEntityIndicators}
         onLongTextOptimizationToggle={settings.toggleLongTextOptimization}
         onHighlightChainsToggle={() => setHighlightChains(prev => !prev)}
+        onRichEditorToggle={settings.toggleRichEditor}
         onNewDocument={handleNewDocument}
         saveStatus={saveStatus}
         showFormatToolbar={showFormatToolbar}
@@ -2234,28 +2293,40 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       {/* Main Content */}
       <div className="lab-content">
         {/* Editor */}
-        <EditorPane
-          text={text}
-          entities={displayEntities}
-          onTextChange={setText}
-          disableHighlighting={editorDisableHighlighting}
-          highlightOpacity={settings.highlightOpacity}
-          renderMarkdown={renderMarkdown}
-          entityHighlightMode={settings.entityHighlightMode}
-          showEntityIndicators={settings.showEntityIndicators}
-          onChangeType={handleChangeType}
-          onCreateNew={handleCreateNew}
-          onReject={handleReject}
-          onTagEntity={handleTagEntity}
-          onTextSelected={handleTextSelected}
-          onResizeEntity={handleResizeEntity}
-          enableLongTextOptimization={settings.enableLongTextOptimization}
-          navigateToRange={navigateRequest ?? undefined}
-          colorForSpan={colorForSpan}
-          onEditorFocusChange={setEditorFocused}
-          onSelectionChange={setHasActiveSelection}
-          onFormatActionsReady={setFormatActions}
-        />
+        {settings.useRichEditor ? (
+          <RichEditorPane
+            richDoc={richDoc}
+            plainText={text}
+            entities={displayEntities}
+            onChange={handleRichChange}
+            onEntityFocus={handleNavigateToEntity}
+            showEntityIndicators={settings.showEntityIndicators}
+            navigateToRange={navigateRequest}
+          />
+        ) : (
+          <EditorPane
+            text={text}
+            entities={displayEntities}
+            onTextChange={handleLegacyTextChange}
+            disableHighlighting={editorDisableHighlighting}
+            highlightOpacity={settings.highlightOpacity}
+            renderMarkdown={renderMarkdown}
+            entityHighlightMode={settings.entityHighlightMode}
+            showEntityIndicators={settings.showEntityIndicators}
+            onChangeType={handleChangeType}
+            onCreateNew={handleCreateNew}
+            onReject={handleReject}
+            onTagEntity={handleTagEntity}
+            onTextSelected={handleTextSelected}
+            onResizeEntity={handleResizeEntity}
+            enableLongTextOptimization={settings.enableLongTextOptimization}
+            navigateToRange={navigateRequest ?? undefined}
+            colorForSpan={colorForSpan}
+            onEditorFocusChange={setEditorFocused}
+            onSelectionChange={setHasActiveSelection}
+            onFormatActionsReady={setFormatActions}
+          />
+        )}
 
         {/* Pinned sidebar mode - integrated into layout */}
         {layout.entityPanelMode === 'pinned' && (
