@@ -110,6 +110,8 @@ function AppShell() {
   const location = useLocation();
   const motionRootRef = useRef<HTMLDivElement>(null);
   const motionTimerRef = useRef<number | null>(null);
+  const viewportBaseHeightRef = useRef<number | null>(null);
+  const viewportBaseWidthRef = useRef<number | null>(null);
 
   // Global focus/selection debugging - helps track caret interruption issues on iPad
   useEffect(() => {
@@ -167,6 +169,57 @@ function AppShell() {
       document.removeEventListener('selectionchange', onSelectionChange);
       document.removeEventListener('focus', onFocus, true);
       document.removeEventListener('blur', onBlur, true);
+    };
+  }, []);
+
+  // Lock viewport height to avoid keyboard-induced layout jumps (esp. iPad Safari)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const docEl = document.documentElement;
+    const viewport = window.visualViewport;
+    const setViewportHeight = (height: number) => {
+      docEl.style.setProperty('--app-viewport-height', `${height}px`);
+    };
+
+    const initialHeight = viewport?.height ?? window.innerHeight;
+    const initialWidth = viewport?.width ?? window.innerWidth;
+    viewportBaseHeightRef.current = initialHeight;
+    viewportBaseWidthRef.current = initialWidth;
+    setViewportHeight(initialHeight);
+
+    const handleResize = () => {
+      const nextHeight = viewport?.height ?? window.innerHeight;
+      const nextWidth = viewport?.width ?? window.innerWidth;
+      const baseHeight = viewportBaseHeightRef.current ?? nextHeight;
+      const baseWidth = viewportBaseWidthRef.current ?? nextWidth;
+
+      const widthChanged = Math.abs(nextWidth - baseWidth) > 32;
+      const keyboardLikely = !widthChanged && nextHeight < baseHeight - 80;
+
+      if (widthChanged) {
+        viewportBaseWidthRef.current = nextWidth;
+        viewportBaseHeightRef.current = nextHeight;
+        setViewportHeight(nextHeight);
+        return;
+      }
+
+      if (keyboardLikely) {
+        return;
+      }
+
+      if (nextHeight > baseHeight) {
+        viewportBaseHeightRef.current = nextHeight;
+        setViewportHeight(nextHeight);
+      }
+    };
+
+    viewport?.addEventListener('resize', handleResize);
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      viewport?.removeEventListener('resize', handleResize);
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 

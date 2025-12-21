@@ -14,7 +14,7 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { CodeMirrorEditor } from './CodeMirrorEditor';
-import type { NavigateToRange } from './CodeMirrorEditorProps';
+import type { FormattingActions, NavigateToRange } from './CodeMirrorEditorProps';
 import type { EntitySpan, EntityType } from '../types/entities';
 
 interface VirtualizedExtractionEditorProps {
@@ -34,6 +34,9 @@ interface VirtualizedExtractionEditorProps {
   enableLongTextOptimization?: boolean;
   navigateToRange?: NavigateToRange;
   colorForSpan?: (span: EntitySpan) => string | undefined;
+  onEditorFocusChange?: (focused: boolean) => void;
+  onSelectionChange?: (hasSelection: boolean) => void;
+  onFormatActionsReady?: (actions: FormattingActions | null) => void;
 }
 
 // Configurable window parameters
@@ -129,6 +132,9 @@ export function VirtualizedExtractionEditor({
   enableLongTextOptimization = false,
   navigateToRange,
   colorForSpan,
+  onEditorFocusChange,
+  onSelectionChange,
+  onFormatActionsReady,
 }: VirtualizedExtractionEditorProps) {
   const chunkingEnabled = useMemo(
     () => enableLongTextOptimization,
@@ -443,6 +449,9 @@ export function VirtualizedExtractionEditor({
       onCursorChange={handleCursorChange}
       navigateToRange={localNavigateTarget || undefined}
       colorForSpan={colorForSpan}
+      onFocusChange={onEditorFocusChange}
+      onSelectionChange={onSelectionChange}
+      registerFormatActions={onFormatActionsReady}
     />
   );
 }

@@ -5,7 +5,8 @@
 
 import { createPortal } from 'react-dom';
 import { useRef, useState, useEffect } from 'react';
-import { Settings, Sun, Moon, Highlighter, FilePlus, Cloud, CloudOff } from 'lucide-react';
+import { Settings, Sun, Moon, Highlighter, FilePlus, Cloud, CloudOff, Bold, Italic, Code2, Heading, Quote, Minus, Type } from 'lucide-react';
+import type { FormattingActions } from './CodeMirrorEditorProps';
 
 interface LabToolbarProps {
   // Status
@@ -43,6 +44,10 @@ interface LabToolbarProps {
 
   // Save status
   saveStatus: 'idle' | 'saving' | 'saved' | 'error';
+  showFormatToolbar: boolean;
+  formatToolbarEnabled: boolean;
+  formatActions?: FormattingActions | null;
+  onToggleFormatToolbar: () => void;
 }
 
 export function LabToolbar({
@@ -68,6 +73,10 @@ export function LabToolbar({
   onLongTextOptimizationToggle,
   onHighlightChainsToggle,
   saveStatus,
+  showFormatToolbar,
+  formatToolbarEnabled,
+  formatActions,
+  onToggleFormatToolbar,
 }: LabToolbarProps) {
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
   const dropdownPanelRef = useRef<HTMLDivElement>(null);
@@ -141,10 +150,26 @@ export function LabToolbar({
     runPerfGauntlet();
   };
 
+  const ghostVisible = formatToolbarEnabled && showFormatToolbar && Boolean(formatActions);
+  const formatButtons: Array<{
+    key: string;
+    label: string;
+    icon: React.ReactNode;
+    action?: () => void;
+  }> = [
+    { key: 'bold', label: 'Bold', icon: <Bold size={14} />, action: formatActions?.toggleBold },
+    { key: 'italic', label: 'Italic', icon: <Italic size={14} />, action: formatActions?.toggleItalic },
+    { key: 'mono', label: 'Monospace', icon: <Code2 size={14} />, action: formatActions?.toggleMonospace },
+    { key: 'heading', label: 'Cycle heading', icon: <Heading size={14} />, action: formatActions?.cycleHeading },
+    { key: 'quote', label: 'Quote block', icon: <Quote size={14} />, action: formatActions?.toggleQuote },
+    { key: 'divider', label: 'Insert divider', icon: <Minus size={14} />, action: formatActions?.insertDivider },
+  ];
+
   return (
     <>
-    <div className="lab-control-bar liquid-glass">
-      {/* Status indicators */}
+    <div className="lab-toolbar-stack">
+      <div className="lab-control-bar liquid-glass">
+      {/* Status indicator (save status is floated separately to avoid shifting buttons) */}
       <div className="status-group">
         <div
           className={`status-indicator ${
@@ -156,19 +181,6 @@ export function LabToolbar({
           }`}
         >
           {statusLabel}
-        </div>
-        {/* Save status indicator - always rendered to avoid layout shifts */}
-        <div className={`save-status-indicator ${saveStatusClass}`}>
-          {saveStatus === 'saving' ? (
-            <Cloud size={12} strokeWidth={2} className="saving-icon" />
-          ) : saveStatus === 'saved' ? (
-            <Cloud size={12} strokeWidth={2} />
-          ) : saveStatus === 'error' ? (
-            <CloudOff size={12} strokeWidth={2} />
-          ) : (
-            <Cloud size={12} strokeWidth={2} style={{ opacity: 0.35 }} />
-          )}
-          <span>{saveStatusLabel}</span>
         </div>
 
         {showPerfGauntlet && (
@@ -213,6 +225,15 @@ export function LabToolbar({
           {theme === 'dark' ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
         </button>
 
+        <button
+          onClick={onToggleFormatToolbar}
+          className={`control-btn ${formatToolbarEnabled ? 'control-btn--active' : ''}`}
+          title="Toggle formatting toolbar"
+          type="button"
+        >
+          <Type size={16} strokeWidth={2} />
+        </button>
+
         {/* Settings dropdown */}
         <div className="settings-dropdown-container">
           <button
@@ -228,6 +249,37 @@ export function LabToolbar({
           </button>
         </div>
       </div>
+      </div>
+
+      <div className={`ghost-toolbar liquid-glass ${ghostVisible ? '' : 'ghost-toolbar--hidden'}`}>
+        {formatButtons.map(btn => (
+          <button
+            key={btn.key}
+            type="button"
+            className="ghost-format-btn"
+            onClick={btn.action}
+            title={btn.label}
+            aria-label={btn.label}
+            disabled={!btn.action}
+          >
+            {btn.icon}
+          </button>
+        ))}
+      </div>
+    </div>
+
+    {/* Save status pill (floated to avoid toolbar width changes) */}
+    <div className={`save-status-pill ${saveStatusClass}`}>
+      {saveStatus === 'saving' ? (
+        <Cloud size={12} strokeWidth={2} className="saving-icon" />
+      ) : saveStatus === 'saved' ? (
+        <Cloud size={12} strokeWidth={2} />
+      ) : saveStatus === 'error' ? (
+        <CloudOff size={12} strokeWidth={2} />
+      ) : (
+        <Cloud size={12} strokeWidth={2} style={{ opacity: 0.35 }} />
+      )}
+      <span>{saveStatusLabel}</span>
     </div>
 
     {/* Portal: Render dropdown outside toolbar to escape transform context */}
