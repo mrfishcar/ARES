@@ -10,7 +10,7 @@
  * - Pinned mode integrates into layout
  */
 
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useRef, useEffect, useMemo, memo } from 'react';
 import { X, Pin, PinOff, GripVertical } from 'lucide-react';
 import type { EntitySpan, EntityType } from '../types/entities';
 import { collapseEntitiesForUI, type AggregatedEntityRow } from './entity-review-utils';
@@ -57,6 +57,21 @@ export function EntityReviewSidebar({
   const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const sidebarRef = useRef<HTMLDivElement>(null);
   const latestDimsRef = useRef({ innerWidth: window.innerWidth, innerHeight: window.innerHeight });
+  const dragStateRef = useRef({
+    active: false,
+    offsetX: 0,
+    offsetY: 0,
+    nextX: Math.max(16, window.innerWidth - baseWidth - 24),
+    nextY: 72,
+  });
+  const rafRef = useRef<number | null>(null);
+  const resizeStateRef = useRef({
+    active: false,
+    startX: 0,
+    startY: 0,
+    baseWidth,
+    baseHeight,
+  });
 
   // Display all entities (no layout-shifting filters)
   const displayEntities = useMemo(() => entities, [entities]);
@@ -366,7 +381,7 @@ export function EntityReviewSidebar({
       }
     : {};
 
-  const renderRows = visibleRows.length ? visibleRows : groupedEntities;
+  const renderRows = groupedEntities;
 
   const handleTypeDropdownChange = useCallback((row: AggregatedEntityRow, newType: EntityType) => {
     row.indices.forEach(i => handleTypeChange(i, newType));
@@ -571,51 +586,51 @@ export function EntityReviewSidebar({
                       )}
                     </div>
                   </div>
-                </div>
 
-                {/* Column 2: Type Dropdown */}
-                <div className="col-type">
-                  <select
-                    value={row.entity.type}
-                    onChange={(e) => {
-                      const newType = e.target.value as EntityType;
-                      row.indices.forEach(i => handleTypeChange(i, newType));
-                    }}
-                    className="type-select"
-                    disabled={row.entity.rejected}
-                  >
-                    {ENTITY_TYPES.map(type => (
-                      <option key={type} value={type}>
-                        {type}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                  {/* Column 2: Type Dropdown */}
+                  <div className="col-type">
+                    <select
+                      value={row.entity.type}
+                      onChange={(e) => {
+                        const newType = e.target.value as EntityType;
+                        row.indices.forEach(i => handleTypeChange(i, newType));
+                      }}
+                      className="type-select"
+                      disabled={row.entity.rejected}
+                    >
+                      {ENTITY_TYPES.map(type => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-                {/* Column 3: Reject Button */}
-                <div className="col-reject">
-                  <button
-                    onClick={() => row.indices.forEach(i => handleReject(i))}
-                    className={`reject-btn ${row.entity.rejected ? 'reject-btn--active' : ''}`}
-                    title={row.entity.rejected ? 'Restore entity' : 'Reject entity'}
-                  >
-                    {row.entity.rejected ? 'Restore' : 'Reject'}
-                  </button>
-                </div>
+                  {/* Column 3: Reject Button */}
+                  <div className="col-reject">
+                    <button
+                      onClick={() => row.indices.forEach(i => handleReject(i))}
+                      className={`reject-btn ${row.entity.rejected ? 'reject-btn--active' : ''}`}
+                      title={row.entity.rejected ? 'Restore entity' : 'Reject entity'}
+                    >
+                      {row.entity.rejected ? 'Restore' : 'Reject'}
+                    </button>
+                  </div>
 
-                {/* Column 4: Notes */}
-                <div className="col-notes">
-                  <input
-                    type="text"
-                    value={row.entity.notes || ''}
-                    onChange={(e) => row.indices.forEach(i => handleNotesChange(i, e.target.value))}
-                    placeholder="Add notes..."
-                    className="notes-input"
-                    disabled={row.entity.rejected}
-                  />
+                  {/* Column 4: Notes */}
+                  <div className="col-notes">
+                    <input
+                      type="text"
+                      value={row.entity.notes || ''}
+                      onChange={(e) => row.indices.forEach(i => handleNotesChange(i, e.target.value))}
+                      placeholder="Add notes..."
+                      className="notes-input"
+                      disabled={row.entity.rejected}
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
