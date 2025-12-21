@@ -339,8 +339,9 @@ html[data-theme="dark"] {
   will-change: transform, backdrop-filter;
   -webkit-will-change: transform, backdrop-filter;
   transform: translateZ(0);
-  -webkit-transform: translateZ(0);
+  -webkit-transform: translateZ(0.001px);
   isolation: isolate;
+  backface-visibility: hidden;
 }
 
 /* Strong variant - for full-screen overlay panels with heavier presence */
@@ -356,8 +357,9 @@ html[data-theme="dark"] {
   will-change: transform, backdrop-filter;
   -webkit-will-change: transform, backdrop-filter;
   transform: translateZ(0);
-  -webkit-transform: translateZ(0);
+  -webkit-transform: translateZ(0.001px);
   isolation: isolate;
+  backface-visibility: hidden;
 }
 
 /* Subtle variant - for docked/integrated surfaces (sidebar, pinned panels) */
@@ -373,8 +375,9 @@ html[data-theme="dark"] {
   will-change: transform, backdrop-filter;
   -webkit-will-change: transform, backdrop-filter;
   transform: translateZ(0);
-  -webkit-transform: translateZ(0);
+  -webkit-transform: translateZ(0.001px);
   isolation: isolate;
+  backface-visibility: hidden;
 }
 
 /* ===== END LIQUID GLASS MATERIAL SYSTEM ===== */
