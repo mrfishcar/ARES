@@ -30,6 +30,7 @@ interface ToolbarProps {
 
 function FormattingToolbar({ uiMode, onToggleMode, onCloseFormat }: ToolbarProps) {
   const [editor] = useLexicalComposerContext();
+  const toolbarOpen = uiMode === 'format';
 
   const run = (command: any, payload?: any) => {
     editor.dispatchCommand(command, payload);
@@ -46,29 +47,27 @@ function FormattingToolbar({ uiMode, onToggleMode, onCloseFormat }: ToolbarProps
   };
 
   return (
-    <div className={`rich-toolbar ${uiMode === 'format' ? 'rich-toolbar--open' : ''}`}>
+    <div className={`rich-toolbar ${toolbarOpen ? 'rich-toolbar--open' : ''}`}>
       <button type="button" className="pill" onClick={onToggleMode} aria-label="Toggle format toolbar">
-        {uiMode === 'write' ? 'Format' : 'Write'}
+        {toolbarOpen ? 'Write' : 'Format'}
       </button>
-      {uiMode === 'format' && (
-        <div className="rich-toolbar__controls" role="toolbar">
-          <div className="rich-toolbar__row">
-            <button type="button" onClick={() => run(FORMAT_TEXT_COMMAND, 'bold')}>B</button>
-            <button type="button" onClick={() => run(FORMAT_TEXT_COMMAND, 'italic')}>I</button>
-            <button type="button" onClick={() => run(FORMAT_TEXT_COMMAND, 'underline')}>U</button>
-            <button type="button" onClick={() => run(FORMAT_TEXT_COMMAND, 'strikethrough')}>S</button>
-            <button type="button" onClick={() => run(INSERT_HORIZONTAL_RULE_COMMAND)}>―</button>
-          </div>
-          <div className="rich-toolbar__row">
-            <button type="button" onClick={toggleHeading}>Title</button>
-            <button type="button" onClick={() => toggleList('bullet')}>• List</button>
-            <button type="button" onClick={() => toggleList('number')}>1. List</button>
-            <button type="button" onClick={() => toggleList('check')}>☐</button>
-            <button type="button" onClick={() => run(FORMAT_ELEMENT_COMMAND, 'blockquote')}>“Quote”</button>
-            <button type="button" onClick={onCloseFormat}>Done</button>
-          </div>
+      <div className="rich-toolbar__controls" role="toolbar" aria-hidden={!toolbarOpen}>
+        <div className="rich-toolbar__row">
+          <button type="button" onClick={() => run(FORMAT_TEXT_COMMAND, 'bold')}>B</button>
+          <button type="button" onClick={() => run(FORMAT_TEXT_COMMAND, 'italic')}>I</button>
+          <button type="button" onClick={() => run(FORMAT_TEXT_COMMAND, 'underline')}>U</button>
+          <button type="button" onClick={() => run(FORMAT_TEXT_COMMAND, 'strikethrough')}>S</button>
+          <button type="button" onClick={() => run(INSERT_HORIZONTAL_RULE_COMMAND)}>―</button>
         </div>
-      )}
+        <div className="rich-toolbar__row">
+          <button type="button" onClick={toggleHeading}>Title</button>
+          <button type="button" onClick={() => toggleList('bullet')}>• List</button>
+          <button type="button" onClick={() => toggleList('number')}>1. List</button>
+          <button type="button" onClick={() => toggleList('check')}>☐</button>
+          <button type="button" onClick={() => run(FORMAT_ELEMENT_COMMAND, 'blockquote')}>“Quote”</button>
+          <button type="button" onClick={onCloseFormat}>Done</button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -111,6 +110,7 @@ export function RichTextEditor({
   navigateToRange,
 }: RichTextEditorProps) {
   const [uiMode, setMode] = useState<UIMode>('write');
+  const toolbarOpen = uiMode === 'format';
   const initialState = useMemo<SerializedEditorState>(() => {
     if (initialDocJSON) return initialDocJSON;
     return importPlainText(initialPlainText || '');
@@ -172,7 +172,7 @@ export function RichTextEditor({
 
   return (
     <LexicalComposer initialConfig={initialConfig as any}>
-      <div className="rich-editor-shell">
+      <div className={`rich-editor-shell ${toolbarOpen ? 'rich-editor-shell--format' : ''}`}>
         <FormattingToolbar
           uiMode={uiMode}
           onToggleMode={() => setMode(uiMode === 'write' ? 'format' : 'write')}

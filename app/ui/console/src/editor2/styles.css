@@ -9,8 +9,8 @@
   min-height: max(100vh, 600px);
   border: 1px solid var(--border-color, #1f2937);
   overflow: hidden;
-  --rich-horizontal-padding: 96px;
-  --rich-toolbar-height: 56px;
+  --rich-horizontal-padding: clamp(28px, 6vw, 96px);
+  --rich-toolbar-height: 104px;
 }
 
 .rich-editor-surface {
@@ -48,20 +48,24 @@
 .rich-toolbar {
   position: absolute;
   top: 0;
-  left: var(--rich-horizontal-padding);
-  right: var(--rich-horizontal-padding);
-  height: var(--rich-toolbar-height);
+  left: 0;
+  right: 0;
+  height: auto;
+  min-height: var(--rich-toolbar-height);
   z-index: 5;
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 0;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px var(--rich-horizontal-padding) 8px;
   background: var(--bg-primary, #0f1115);
+  box-sizing: border-box;
 }
 
 .rich-toolbar .pill {
   border-radius: 999px;
-  padding: 8px 12px;
+  padding: 10px 14px;
+  min-height: 38px;
+  min-width: 78px;
   border: 1px solid var(--border-color, #1f2937);
   background: rgba(255, 255, 255, 0.04);
   color: inherit;
@@ -69,21 +73,43 @@
 
 .rich-toolbar__controls {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  row-gap: 8px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+.rich-toolbar--open .rich-toolbar__controls {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .rich-toolbar__row {
   display: flex;
-  gap: 6px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .rich-toolbar button {
   border: 1px solid var(--border-color, #1f2937);
   background: rgba(255, 255, 255, 0.03);
   color: inherit;
-  border-radius: 8px;
-  padding: 6px 10px;
+  border-radius: 10px;
+  padding: 8px 12px;
+  min-height: 38px;
+  min-width: 38px;
+  touch-action: manipulation;
+}
+
+.rich-toolbar--open .rich-toolbar button {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .rich-h1 {
