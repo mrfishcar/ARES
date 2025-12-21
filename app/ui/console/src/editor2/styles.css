@@ -13,6 +13,8 @@
   overflow: hidden;
   --rich-horizontal-padding: clamp(28px, 6vw, 96px);
   --rich-toolbar-height: 104px;
+  /* Ensure shell allows interactions */
+  pointer-events: auto;
 }
 
 .rich-editor-surface {
@@ -25,6 +27,8 @@
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+  /* Ensure surface allows interactions */
+  pointer-events: auto;
 }
 
 .rich-content {
@@ -38,13 +42,16 @@
   outline: none;
   color: var(--text-primary, #e5e7eb);
   background: var(--bg-primary, #0f1115);
-  /* FIXED: Ensure editor is interactive and shows proper cursor */
+  /* CRITICAL: Ensure editor is interactive and accessible */
   cursor: text;
   user-select: text;
   -webkit-user-select: text;
-  /* Ensure taps work on iOS */
-  -webkit-tap-highlight-color: transparent;
+  pointer-events: auto !important; /* Force interactivity */
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  /* Ensure contentEditable is accessible */
+  position: relative;
+  z-index: 1; /* Above toolbar but below overlays */
 }
 
 .rich-placeholder {
@@ -72,6 +79,13 @@
   padding: 12px var(--rich-horizontal-padding) 8px;
   background: var(--bg-primary, #0f1115);
   box-sizing: border-box;
+  /* Allow clicks to pass through toolbar background to editor below */
+  pointer-events: none;
+}
+
+.rich-toolbar * {
+  /* Re-enable pointer events for toolbar buttons/controls */
+  pointer-events: auto;
 }
 
 .rich-toolbar .pill {
