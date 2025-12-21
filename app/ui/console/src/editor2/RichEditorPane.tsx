@@ -13,6 +13,7 @@ interface Props {
   onEntityFocus?: (span: EntitySpan) => void;
   showEntityIndicators?: boolean;
   navigateToRange?: NavigateToRange | null;
+  showFormatToolbar?: boolean; // Controlled by T button in LabToolbar
 }
 
 export function RichEditorPane({
@@ -23,6 +24,7 @@ export function RichEditorPane({
   onEntityFocus,
   navigateToRange,
   showEntityIndicators = true,
+  showFormatToolbar = false,
 }: Props) {
   const editorHeight = Math.max(400, typeof window !== 'undefined' ? window.innerHeight - 380 : 400);
 
@@ -48,6 +50,7 @@ export function RichEditorPane({
               onChange={onChange}
               onEntityPress={onEntityFocus}
               navigateToRange={navigateToRange}
+              showFormatToolbar={showFormatToolbar}
             />
           </div>
         </div>

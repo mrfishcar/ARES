@@ -25,6 +25,7 @@ interface RichTextEditorProps {
   onChange: (snapshot: RichDocSnapshot) => void;
   onEntityPress?: (span: EntitySpan) => void;
   navigateToRange?: NavigateToRange | null;
+  showFormatToolbar?: boolean; // Controlled by external T button
 }
 
 // Simple plugin to load initial content
@@ -67,126 +68,128 @@ function OnChangeAdapter({ onChange }: { onChange: (snapshot: RichDocSnapshot) =
   );
 }
 
-// Formatting Toolbar - lives inside LexicalComposer context
-function FormattingToolbar({ isOpen, onToggle, onClose }: { isOpen: boolean; onToggle: () => void; onClose: () => void }) {
+// Formatting Toolbar - iOS Notes style (controlled from outside)
+function FormattingToolbar({ isOpen }: { isOpen: boolean }) {
   const [editor] = useLexicalComposerContext();
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsAnimating(true);
+    } else {
+      // Delay removing animation class to allow exit animation
+      const timer = setTimeout(() => setIsAnimating(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
 
   const format = (command: any, payload?: any) => {
     editor.dispatchCommand(command, payload);
   };
 
+  if (!isOpen && !isAnimating) return null;
+
   return (
-    <div className={`rich-toolbar ${isOpen ? 'rich-toolbar--open' : ''}`}>
-      {/* Toggle button */}
-      <button
-        type="button"
-        className="pill"
-        onClick={onToggle}
-        aria-label={isOpen ? 'Close formatting' : 'Open formatting'}
-      >
-        {isOpen ? 'Write' : 'Format'}
-      </button>
+    <div className={`rich-formatting-toolbar ${isOpen ? 'rich-formatting-toolbar--open' : 'rich-formatting-toolbar--closing'}`}>
+      {/* Text formatting row */}
+      <div className="rich-formatting-row" style={{ '--delay': '0.05s' } as React.CSSProperties}>
+        <button
+          type="button"
+          className="rich-format-btn"
+          onClick={() => format(FORMAT_TEXT_COMMAND, 'bold')}
+          title="Bold"
+        >
+          <strong>B</strong>
+        </button>
+        <button
+          type="button"
+          className="rich-format-btn"
+          onClick={() => format(FORMAT_TEXT_COMMAND, 'italic')}
+          title="Italic"
+        >
+          <em>I</em>
+        </button>
+        <button
+          type="button"
+          className="rich-format-btn"
+          onClick={() => format(FORMAT_TEXT_COMMAND, 'underline')}
+          title="Underline"
+        >
+          <u>U</u>
+        </button>
+        <button
+          type="button"
+          className="rich-format-btn"
+          onClick={() => format(FORMAT_TEXT_COMMAND, 'strikethrough')}
+          title="Strikethrough"
+        >
+          <s>S</s>
+        </button>
+      </div>
 
-      {/* Formatting controls - only visible when open */}
-      {isOpen && (
-        <div className="rich-toolbar__controls">
-          {/* Text formatting */}
-          <div className="rich-toolbar__row">
-            <button
-              type="button"
-              onClick={() => format(FORMAT_TEXT_COMMAND, 'bold')}
-              title="Bold"
-            >
-              <strong>B</strong>
-            </button>
-            <button
-              type="button"
-              onClick={() => format(FORMAT_TEXT_COMMAND, 'italic')}
-              title="Italic"
-            >
-              <em>I</em>
-            </button>
-            <button
-              type="button"
-              onClick={() => format(FORMAT_TEXT_COMMAND, 'underline')}
-              title="Underline"
-            >
-              <u>U</u>
-            </button>
-            <button
-              type="button"
-              onClick={() => format(FORMAT_TEXT_COMMAND, 'strikethrough')}
-              title="Strikethrough"
-            >
-              <s>S</s>
-            </button>
-          </div>
+      {/* Block formatting row */}
+      <div className="rich-formatting-row" style={{ '--delay': '0.1s' } as React.CSSProperties}>
+        <button
+          type="button"
+          className="rich-format-btn"
+          onClick={() => format(FORMAT_ELEMENT_COMMAND, 'h1')}
+          title="Heading 1"
+        >
+          H1
+        </button>
+        <button
+          type="button"
+          className="rich-format-btn"
+          onClick={() => format(FORMAT_ELEMENT_COMMAND, 'h2')}
+          title="Heading 2"
+        >
+          H2
+        </button>
+        <button
+          type="button"
+          className="rich-format-btn"
+          onClick={() => format(FORMAT_ELEMENT_COMMAND, 'h3')}
+          title="Heading 3"
+        >
+          H3
+        </button>
+        <button
+          type="button"
+          className="rich-format-btn"
+          onClick={() => format(FORMAT_ELEMENT_COMMAND, 'quote')}
+          title="Quote"
+        >
+          "
+        </button>
+      </div>
 
-          {/* Block formatting */}
-          <div className="rich-toolbar__row">
-            <button
-              type="button"
-              onClick={() => format(FORMAT_ELEMENT_COMMAND, 'h1')}
-              title="Heading 1"
-            >
-              H1
-            </button>
-            <button
-              type="button"
-              onClick={() => format(FORMAT_ELEMENT_COMMAND, 'h2')}
-              title="Heading 2"
-            >
-              H2
-            </button>
-            <button
-              type="button"
-              onClick={() => format(FORMAT_ELEMENT_COMMAND, 'h3')}
-              title="Heading 3"
-            >
-              H3
-            </button>
-            <button
-              type="button"
-              onClick={() => format(INSERT_UNORDERED_LIST_COMMAND, undefined)}
-              title="Bullet list"
-            >
-              • List
-            </button>
-            <button
-              type="button"
-              onClick={() => format(INSERT_ORDERED_LIST_COMMAND, undefined)}
-              title="Numbered list"
-            >
-              1. List
-            </button>
-            <button
-              type="button"
-              onClick={() => format(INSERT_CHECK_LIST_COMMAND, undefined)}
-              title="Checklist"
-            >
-              ☐ List
-            </button>
-            <button
-              type="button"
-              onClick={() => format(FORMAT_ELEMENT_COMMAND, 'quote')}
-              title="Quote"
-            >
-              " Quote
-            </button>
-          </div>
-
-          {/* Close button */}
-          <div className="rich-toolbar__row">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rich-toolbar__done"
-            >
-              Done
-            </button>
-          </div>
-        </div>
-      )}
+      {/* List formatting row */}
+      <div className="rich-formatting-row" style={{ '--delay': '0.15s' } as React.CSSProperties}>
+        <button
+          type="button"
+          className="rich-format-btn"
+          onClick={() => format(INSERT_UNORDERED_LIST_COMMAND, undefined)}
+          title="Bullet list"
+        >
+          •
+        </button>
+        <button
+          type="button"
+          className="rich-format-btn"
+          onClick={() => format(INSERT_ORDERED_LIST_COMMAND, undefined)}
+          title="Numbered list"
+        >
+          1.
+        </button>
+        <button
+          type="button"
+          className="rich-format-btn"
+          onClick={() => format(INSERT_CHECK_LIST_COMMAND, undefined)}
+          title="Checklist"
+        >
+          ☐
+        </button>
+      </div>
     </div>
   );
 }
@@ -198,13 +201,13 @@ export function RichTextEditor({
   onChange,
   onEntityPress,
   navigateToRange,
+  showFormatToolbar = false,
 }: RichTextEditorProps) {
-  const [formatToolbarOpen, setFormatToolbarOpen] = useState(false);
-
   console.log('[RichTextEditor] Rendering with:', {
     hasInitialDoc: !!initialDocJSON,
     initialTextLength: initialPlainText.length,
     entitiesCount: entities.length,
+    showFormatToolbar,
   });
 
   // Lexical config with rich text nodes
@@ -241,12 +244,8 @@ export function RichTextEditor({
   return (
     <LexicalComposer initialConfig={initialConfig}>
       <div className="rich-editor-shell">
-        {/* Formatting toolbar - inside Lexical context */}
-        <FormattingToolbar
-          isOpen={formatToolbarOpen}
-          onToggle={() => setFormatToolbarOpen(!formatToolbarOpen)}
-          onClose={() => setFormatToolbarOpen(false)}
-        />
+        {/* Formatting toolbar - controlled by external T button */}
+        <FormattingToolbar isOpen={showFormatToolbar} />
 
         {/* Main editor surface */}
         <div className="rich-editor-surface">
