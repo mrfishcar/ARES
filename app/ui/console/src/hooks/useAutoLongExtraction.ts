@@ -10,14 +10,14 @@ export interface AutoLongSchedulerEnv {
 export interface AutoLongSchedulerOptions {
   threshold: number;
   debounceMs: number;
-  startJob: (revision: number) => void;
+  startJob: (revision: number, textSnapshot: string) => void;
   env: AutoLongSchedulerEnv;
 }
 
 export class AutoLongExtractionScheduler {
   private threshold: number;
   private debounceMs: number;
-  private startJob: (revision: number) => void;
+  private startJob: (revision: number, textSnapshot: string) => void;
   private env: AutoLongSchedulerEnv;
   private debounceHandle: number | null = null;
   private idleHandle: number | null = null;
@@ -34,6 +34,7 @@ export class AutoLongExtractionScheduler {
   notify(text: string, documentVisible: boolean, hasActiveJob: boolean) {
     this.revisionRef.current += 1;
     const revision = this.revisionRef.current;
+    const snapshot = text;
 
     this.clearTimers();
 
@@ -43,7 +44,7 @@ export class AutoLongExtractionScheduler {
 
     this.debounceHandle = this.env.setTimeout(() => {
       if (!documentVisible || hasActiveJob) return;
-      const runJob = () => this.startJob(revision);
+      const runJob = () => this.startJob(revision, snapshot);
 
       if (this.env.requestIdleCallback) {
         this.idleHandle = this.env.requestIdleCallback(runJob, { timeout: this.debounceMs });
@@ -75,7 +76,7 @@ interface UseAutoLongExtractionOptions {
   debounceMs: number;
   documentVisible: boolean;
   hasActiveJob: boolean;
-  startJob: (revision: number) => void;
+  startJob: (revision: number, textSnapshot: string) => void;
 }
 
 export function useAutoLongExtraction({
