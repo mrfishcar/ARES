@@ -1,75 +1,18 @@
 import './styles.css';
 import { useEffect, useMemo, useState, useRef } from 'react';
 import type { SerializedEditorState } from 'lexical';
-import { FORMAT_ELEMENT_COMMAND, FORMAT_TEXT_COMMAND } from 'lexical';
+import { $getRoot, $createParagraphNode, $createTextNode } from 'lexical';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
-import { ListPlugin } from '@lexical/react/LexicalListPlugin';
-import { CheckListPlugin } from '@lexical/react/LexicalCheckListPlugin';
-import { HorizontalRulePlugin } from '@lexical/react/LexicalHorizontalRulePlugin';
-import { HorizontalRuleNode, INSERT_HORIZONTAL_RULE_COMMAND } from '@lexical/react/LexicalHorizontalRuleNode';
-import { HeadingNode, QuoteNode } from '@lexical/rich-text';
-import { ListItemNode, ListNode, INSERT_UNORDERED_LIST_COMMAND, INSERT_ORDERED_LIST_COMMAND, INSERT_CHECK_LIST_COMMAND } from '@lexical/list';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
 import type { EntitySpan } from '../types/entities';
-import { EntityHighlightPlugin } from './plugins/EntityHighlightPlugin';
 import { snapshotRichDoc, mapPlainOffsetToRich } from './flattenRichDoc';
-import type { RichDocSnapshot, UIMode } from './types';
-import { importPlainText } from './importers';
+import type { RichDocSnapshot } from './types';
 import type { NavigateToRange } from '../components/CodeMirrorEditorProps';
-
-interface ToolbarProps {
-  uiMode: UIMode;
-  onToggleMode: () => void;
-  onCloseFormat: () => void;
-}
-
-function FormattingToolbar({ uiMode, onToggleMode, onCloseFormat }: ToolbarProps) {
-  const [editor] = useLexicalComposerContext();
-  const toolbarOpen = uiMode === 'format';
-
-  const run = (command: any, payload?: any) => {
-    editor.dispatchCommand(command, payload);
-  };
-
-  const toggleHeading = () => {
-    run(FORMAT_ELEMENT_COMMAND, 'h1');
-  };
-
-  const toggleList = (type: 'bullet' | 'number' | 'check') => {
-    if (type === 'bullet') run(INSERT_UNORDERED_LIST_COMMAND);
-    else if (type === 'number') run(INSERT_ORDERED_LIST_COMMAND);
-    else run(INSERT_CHECK_LIST_COMMAND);
-  };
-
-  return (
-    <div className={`rich-toolbar ${toolbarOpen ? 'rich-toolbar--open' : ''}`}>
-      <button type="button" className="pill" onClick={onToggleMode} aria-label="Toggle format toolbar">
-        {toolbarOpen ? 'Write' : 'Format'}
-      </button>
-      <div className="rich-toolbar__controls" role="toolbar" aria-hidden={!toolbarOpen}>
-        <div className="rich-toolbar__row">
-          <button type="button" onClick={() => run(FORMAT_TEXT_COMMAND, 'bold')}>B</button>
-          <button type="button" onClick={() => run(FORMAT_TEXT_COMMAND, 'italic')}>I</button>
-          <button type="button" onClick={() => run(FORMAT_TEXT_COMMAND, 'underline')}>U</button>
-          <button type="button" onClick={() => run(FORMAT_TEXT_COMMAND, 'strikethrough')}>S</button>
-          <button type="button" onClick={() => run(INSERT_HORIZONTAL_RULE_COMMAND)}>―</button>
-        </div>
-        <div className="rich-toolbar__row">
-          <button type="button" onClick={toggleHeading}>Title</button>
-          <button type="button" onClick={() => toggleList('bullet')}>• List</button>
-          <button type="button" onClick={() => toggleList('number')}>1. List</button>
-          <button type="button" onClick={() => toggleList('check')}>☐</button>
-          <button type="button" onClick={() => run(FORMAT_ELEMENT_COMMAND, 'blockquote')}>“Quote”</button>
-          <button type="button" onClick={onCloseFormat}>Done</button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 interface RichTextEditorProps {
   initialDocJSON?: SerializedEditorState | null;
@@ -80,156 +23,106 @@ interface RichTextEditorProps {
   navigateToRange?: NavigateToRange | null;
 }
 
-const lexicalTheme = {
-  text: {
-    bold: 'rich-bold',
-    italic: 'rich-italic',
-    underline: 'rich-underline',
-    strikethrough: 'rich-strike',
-  },
-  paragraph: 'rich-paragraph',
-  quote: 'rich-quote',
-  heading: {
-    h1: 'rich-h1',
-    h2: 'rich-h2',
-    h3: 'rich-h3',
-    h4: 'rich-h4',
-  },
-  list: {
-    listitem: 'rich-list-item',
-  },
-};
+// Simple plugin to load initial content
+function InitialContentPlugin({ content }: { content: string }) {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    if (!content) return;
+
+    editor.update(() => {
+      const root = $getRoot();
+      root.clear();
+
+      const paragraph = $createParagraphNode();
+      const textNode = $createTextNode(content);
+      paragraph.append(textNode);
+      root.append(paragraph);
+    });
+  }, []); // Only run once on mount
+
+  return null;
+}
+
+// Plugin to sync changes back to parent
+function OnChangeAdapter({ onChange }: { onChange: (snapshot: RichDocSnapshot) => void }) {
+  const [editor] = useLexicalComposerContext();
+
+  return (
+    <OnChangePlugin
+      onChange={(editorState) => {
+        editorState.read(() => {
+          const json = editorState.toJSON();
+          const flattened = snapshotRichDoc(json);
+          const snapshot: RichDocSnapshot = {
+            ...flattened,
+            docJSON: json,
+          };
+          onChange(snapshot);
+        });
+      }}
+    />
+  );
+}
 
 export function RichTextEditor({
   initialDocJSON,
-  initialPlainText,
+  initialPlainText = '',
   entities,
   onChange,
   onEntityPress,
   navigateToRange,
 }: RichTextEditorProps) {
-  const [uiMode, setMode] = useState<UIMode>('write');
-  const toolbarOpen = uiMode === 'format';
-  const initialState = useMemo<SerializedEditorState>(() => {
-    if (initialDocJSON) return initialDocJSON;
-    return importPlainText(initialPlainText || '');
-  }, [initialDocJSON, initialPlainText]);
+  console.log('[RichTextEditor] Rendering with:', {
+    hasInitialDoc: !!initialDocJSON,
+    initialTextLength: initialPlainText.length,
+    entitiesCount: entities.length,
+  });
 
-  const [lastSnapshot, setLastSnapshot] = useState<RichDocSnapshot>(() => ({
-    ...snapshotRichDoc(initialState),
-    docJSON: initialState,
-  }));
-
-  const initialConfig = useMemo(
-    () => ({
-      namespace: 'ares-rich-editor',
-      editorState: null,
-      nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode, HorizontalRuleNode],
-      onError: (error: Error) => {
-        console.error('Lexical error', error);
-      },
-      theme: lexicalTheme,
-      editable: true, // CRITICAL: Must be true for editing to work
-    }),
-    [initialState],
-  );
-
-  function InitialStateLoader() {
-    const [editor] = useLexicalComposerContext();
-    useEffect(() => {
-      const parsed = editor.parseEditorState(initialState as any);
-      editor.setEditorState(parsed);
-    }, [editor]);
-    return null;
-  }
-
-  useEffect(() => {
-    onChange(lastSnapshot);
-  }, []);
-
-  function NavigateToRangePlugin({ target, posMap }: { target?: NavigateToRange | null; posMap: ReturnType<typeof snapshotRichDoc>['posMap'] }) {
-    const [editor] = useLexicalComposerContext();
-    const lastHandled = useRef<number | null>(null);
-
-    useEffect(() => {
-      if (!target) return;
-      if (lastHandled.current === target.requestId) return;
-      const anchor = mapPlainOffsetToRich(posMap, target.from);
-      if (!anchor) return;
-      lastHandled.current = target.requestId;
-      editor.getEditorState().read(() => {
-        const el = editor.getElementByKey(anchor.key);
-        if (el) {
-          // FIXED: Use safe scroll instead of scrollIntoView to prevent viewport bounce
-          // scrollIntoView causes issues with nested scroll containers + iOS Safari
-          const rect = el.getBoundingClientRect();
-          const editorContainer = el.closest('.rich-editor-surface');
-
-          if (editorContainer && (rect.top < 100 || rect.bottom > window.innerHeight - 100)) {
-            // Only scroll if element is not already visible with margin
-            // Use manual scroll to avoid iOS viewport bounce
-            const containerRect = editorContainer.getBoundingClientRect();
-            const scrollTop = editorContainer.scrollTop;
-            const targetScrollTop = scrollTop + (rect.top - containerRect.top) - window.innerHeight / 2;
-
-            editorContainer.scrollTo({
-              top: Math.max(0, targetScrollTop),
-              behavior: 'smooth'
-            });
-          }
-
-          el.classList.add('rich-flash');
-          window.setTimeout(() => el.classList.remove('rich-flash'), 800);
-        }
-      });
-    }, [target, posMap, editor]);
-
-    return null;
-  }
+  // Minimal Lexical config - bare bones for testing
+  const initialConfig = {
+    namespace: 'ares-rich-editor',
+    theme: {
+      paragraph: 'rich-paragraph',
+    },
+    onError: (error: Error) => {
+      console.error('[Lexical] Error:', error);
+    },
+    editable: true,
+  };
 
   return (
-    <LexicalComposer initialConfig={initialConfig as any}>
-      <div className={`rich-editor-shell ${toolbarOpen ? 'rich-editor-shell--format' : ''}`}>
-        <FormattingToolbar
-          uiMode={uiMode}
-          onToggleMode={() => setMode(uiMode === 'write' ? 'format' : 'write')}
-          onCloseFormat={() => setMode('write')}
-        />
-        <div className="rich-editor-surface" aria-label="Document editor">
+    <LexicalComposer initialConfig={initialConfig}>
+      <div className="rich-editor-shell">
+        {/* Simple toolbar placeholder */}
+        <div className="rich-toolbar">
+          <div className="pill">Rich Text Editor</div>
+        </div>
+
+        {/* Main editor surface */}
+        <div className="rich-editor-surface">
           <RichTextPlugin
             contentEditable={
               <ContentEditable
                 className="rich-content"
                 aria-label="Text editor"
-                role="textbox"
-                aria-multiline="true"
+                spellCheck={true}
               />
             }
-            placeholder={<div className="rich-placeholder">Write or paste text…</div>}
-            ErrorBoundary={() => null}
+            placeholder={
+              <div className="rich-placeholder">
+                Start typing...
+              </div>
+            }
+            ErrorBoundary={LexicalErrorBoundary}
           />
-          <InitialStateLoader />
+
+          {/* Load initial content if provided */}
+          {initialPlainText && <InitialContentPlugin content={initialPlainText} />}
+
+          {/* Basic plugins */}
           <HistoryPlugin />
-          <ListPlugin />
-          <CheckListPlugin />
-          <HorizontalRulePlugin />
-          {/* REMOVED AutoFocusPlugin - causes iOS keyboard popup and viewport bounce on mount */}
-          <NavigateToRangePlugin target={navigateToRange} posMap={lastSnapshot.posMap} />
-          <OnChangePlugin
-            onChange={(editorState) => {
-              editorState.read(() => {
-                const json = editorState.toJSON();
-                const flattened = snapshotRichDoc(json);
-                const snapshot: RichDocSnapshot = {
-                  ...flattened,
-                  docJSON: json,
-                };
-                setLastSnapshot(snapshot);
-                onChange(snapshot);
-              });
-            }}
-          />
-          <EntityHighlightPlugin spans={entities} onHighlightClick={onEntityPress} />
+          <OnChangeAdapter onChange={onChange} />
         </div>
       </div>
     </LexicalComposer>

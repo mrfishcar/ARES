@@ -1,203 +1,104 @@
+/* Minimal, clean editor styles - rebuilt from scratch */
+
 .rich-editor-shell {
   position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
+  min-height: 600px;
+  height: 100%;
   background: var(--bg-primary, #0f1115);
   color: var(--text-primary, #e5e7eb);
   border-radius: 12px;
-  /* FIXED: Only set min-height on top-level container, not all nested children */
-  min-height: 600px;
-  height: 100%;
   border: 1px solid var(--border-color, #1f2937);
   overflow: hidden;
-  --rich-horizontal-padding: clamp(28px, 6vw, 96px);
-  --rich-toolbar-height: 104px;
-  /* Ensure shell allows interactions */
-  pointer-events: auto;
+}
+
+.rich-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 16px 24px;
+  background: var(--bg-primary, #0f1115);
+  border-bottom: 1px solid var(--border-color, #1f2937);
+}
+
+.rich-toolbar .pill {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color, #1f2937);
 }
 
 .rich-editor-surface {
   position: relative;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  width: 100%;
-  /* FIXED: Removed redundant min-height, use flex:1 instead */
-  flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  /* Ensure surface allows interactions */
-  pointer-events: auto;
 }
 
+/* The actual contentEditable element */
 .rich-content {
+  position: relative;
   flex: 1;
-  /* FIXED: Removed min-height to prevent layout cascade issues */
-  min-height: 600px; /* Enough for comfortable editing */
-  width: 100%;
-  padding: calc(var(--rich-toolbar-height) + 16px) var(--rich-horizontal-padding) 64px var(--rich-horizontal-padding);
-  line-height: 1.7;
-  font-size: 1rem;
+  min-height: 500px;
+  padding: 24px;
   outline: none;
-  color: var(--text-primary, #e5e7eb);
-  background: var(--bg-primary, #0f1115);
 
-  /* CRITICAL: Ensure editor is interactive and accessible */
+  /* Typography */
+  line-height: 1.6;
+  font-size: 16px;
+  color: var(--text-primary, #e5e7eb);
+
+  /* CRITICAL: Make it editable and interactive */
   cursor: text;
   user-select: text;
   -webkit-user-select: text;
-  pointer-events: auto !important; /* Force interactivity */
+  caret-color: var(--text-primary, #e5e7eb);
 
-  /* iOS-specific touch handling */
+  /* iOS specific */
+  -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
   touch-action: manipulation;
-  -webkit-tap-highlight-color: rgba(255, 255, 255, 0.05);
-  -webkit-touch-callout: default;
-
-  /* Ensure contentEditable is accessible */
-  position: relative;
-  z-index: 1; /* Above toolbar but below overlays */
-
-  /* Force contentEditable to be interactive */
-  -webkit-user-modify: read-write;
-  word-wrap: break-word;
-  white-space: pre-wrap;
+  -webkit-user-modify: read-write-plaintext-only;
 }
 
-/* Ensure all contentEditable children are editable */
+/* Ensure contentEditable is actually editable */
 .rich-content[contenteditable="true"] {
   -webkit-user-modify: read-write-plaintext-only;
 }
 
-/* Make sure text in contentEditable is selectable */
-.rich-content * {
-  user-select: text;
-  -webkit-user-select: text;
-}
-
+/* Placeholder */
 .rich-placeholder {
   position: absolute;
-  top: calc(var(--rich-toolbar-height) + 16px);
-  left: 0;
-  right: 0;
+  top: 24px;
+  left: 24px;
+  right: 24px;
+  color: var(--text-secondary, #9ca3af);
   opacity: 0.6;
   pointer-events: none;
-  padding: 0 var(--rich-horizontal-padding);
-  color: var(--text-primary, #e5e7eb);
+  user-select: none;
 }
 
-.rich-toolbar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: auto;
-  min-height: var(--rich-toolbar-height);
-  z-index: 5;
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  padding: 12px var(--rich-horizontal-padding) 8px;
-  background: var(--bg-primary, #0f1115);
-  box-sizing: border-box;
-  /* Allow clicks to pass through toolbar background to editor below */
-  pointer-events: none;
-}
-
-.rich-toolbar * {
-  /* Re-enable pointer events for toolbar buttons/controls */
-  pointer-events: auto;
-}
-
-.rich-toolbar .pill {
-  border-radius: 999px;
-  padding: 10px 14px;
-  min-height: 38px;
-  min-width: 78px;
-  border: 1px solid var(--border-color, #1f2937);
-  background: rgba(255, 255, 255, 0.04);
-  color: inherit;
-}
-
-.rich-toolbar__controls {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  flex: 1;
-  min-width: 0;
-  align-items: center;
-  row-gap: 8px;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: opacity 120ms ease;
-}
-
-.rich-toolbar--open .rich-toolbar__controls {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-}
-
-.rich-toolbar__row {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.rich-toolbar button {
-  border: 1px solid var(--border-color, #1f2937);
-  background: rgba(255, 255, 255, 0.03);
-  color: inherit;
-  border-radius: 10px;
-  padding: 8px 12px;
-  min-height: 38px;
-  min-width: 38px;
-  touch-action: manipulation;
-}
-
-.rich-toolbar--open .rich-toolbar button {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.rich-h1 {
-  font-size: 1.9rem;
-  font-weight: 700;
-  margin: 0.4em 0;
-}
-
-.rich-h2 {
-  font-size: 1.6rem;
-  font-weight: 650;
-  margin: 0.35em 0;
-}
-
-.rich-h3 {
-  font-size: 1.3rem;
-  font-weight: 600;
-  margin: 0.3em 0;
-}
-
+/* Basic paragraph styling */
 .rich-paragraph {
-  margin: 0.35em 0;
+  margin: 0.5em 0;
 }
 
-.rich-quote {
-  border-left: 3px solid var(--border-color, #1f2937);
-  padding-left: 12px;
-  opacity: 0.9;
+/* Ensure paragraphs don't have extra padding */
+.rich-content p {
+  margin: 0.5em 0;
 }
 
-.rich-bold { font-weight: 700; }
-.rich-italic { font-style: italic; }
-.rich-underline { text-decoration: underline; }
-.rich-strike { text-decoration: line-through; }
-
-.rich-flash {
-  animation: rich-flash 0.9s ease;
+/* First paragraph */
+.rich-content p:first-child {
+  margin-top: 0;
 }
 
-@keyframes rich-flash {
-  0% { background: rgba(255, 215, 0, 0.3); }
-  100% { background: transparent; }
+/* Last paragraph */
+.rich-content p:last-child {
+  margin-bottom: 0;
 }
