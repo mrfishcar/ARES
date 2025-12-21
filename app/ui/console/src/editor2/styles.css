@@ -1,4 +1,4 @@
-/* Clean editor styles with formatting toolbar */
+/* Clean editor styles with iOS Notes-style formatting toolbar */
 
 .rich-editor-shell {
   position: relative;
@@ -14,110 +14,98 @@
   overflow: hidden;
 }
 
-/* Toolbar */
-.rich-toolbar {
+/* iOS Notes-style Formatting Toolbar */
+.rich-formatting-toolbar {
   position: sticky;
   top: 0;
   z-index: 10;
-  padding: 16px 24px;
+  padding: 0 20px;
   background: var(--bg-primary, #0f1115);
   border-bottom: 1px solid var(--border-color, #1f2937);
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  transition: padding 0.2s ease;
+  gap: 10px;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.4s cubic-bezier(0.34, 1.25, 0.64, 1); /* iOS spring curve */
 }
 
-.rich-toolbar--open {
-  padding-bottom: 20px;
-}
-
-.rich-toolbar .pill {
-  display: inline-block;
-  padding: 10px 20px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid var(--border-color, #1f2937);
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  align-self: flex-start;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.rich-toolbar .pill:hover {
-  background: rgba(255, 255, 255, 0.12);
-  transform: translateY(-1px);
-}
-
-.rich-toolbar .pill:active {
+.rich-formatting-toolbar--open {
+  max-height: 300px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  opacity: 1;
   transform: translateY(0);
 }
 
-/* Toolbar controls */
-.rich-toolbar__controls {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  animation: slideDown 0.2s ease;
+.rich-formatting-toolbar--closing {
+  transition: all 0.3s cubic-bezier(0.32, 0, 0.67, 0); /* Ease out */
 }
 
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.rich-toolbar__row {
+/* Formatting rows with staggered animation */
+.rich-formatting-row {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: all 0.3s cubic-bezier(0.34, 1.25, 0.64, 1);
+  transition-delay: var(--delay, 0s);
 }
 
-.rich-toolbar__row button {
-  padding: 8px 14px;
-  min-height: 38px;
-  min-width: 38px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color, #1f2937);
-  background: rgba(255, 255, 255, 0.04);
+.rich-formatting-toolbar--open .rich-formatting-row {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.rich-formatting-toolbar--closing .rich-formatting-row {
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: all 0.2s ease-out;
+  transition-delay: 0s;
+}
+
+/* Format buttons - iOS style */
+.rich-format-btn {
+  padding: 10px 14px;
+  min-height: 42px;
+  min-width: 42px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
   color: var(--text-primary, #e5e7eb);
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.34, 1.25, 0.64, 1);
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.rich-toolbar__row button:hover {
-  background: rgba(255, 255, 255, 0.08);
+.rich-format-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
 }
 
-.rich-toolbar__row button:active {
-  transform: scale(0.96);
-  background: rgba(255, 255, 255, 0.12);
+.rich-format-btn:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.15);
+  transition: all 0.1s ease;
 }
 
-.rich-toolbar__done {
-  background: rgba(59, 130, 246, 0.15) !important;
-  border-color: rgba(59, 130, 246, 0.3) !important;
-  color: rgb(96, 165, 250) !important;
-  font-weight: 500;
-}
-
-.rich-toolbar__done:hover {
-  background: rgba(59, 130, 246, 0.25) !important;
-  border-color: rgba(59, 130, 246, 0.5) !important;
+/* Active state for buttons */
+.rich-format-btn[data-active="true"] {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: rgb(96, 165, 250);
 }
 
 /* Editor surface */
@@ -286,4 +274,47 @@
 .rich-content ul ul ul,
 .rich-content ol ul ul {
   list-style-type: square;
+}
+
+/* iPad-specific refinements */
+@media (max-width: 1024px) {
+  .rich-format-btn {
+    min-height: 44px; /* iOS recommended touch target */
+    min-width: 44px;
+    padding: 12px 16px;
+  }
+
+  .rich-formatting-row {
+    gap: 10px;
+  }
+
+  .rich-formatting-toolbar {
+    padding: 0 16px;
+  }
+
+  .rich-formatting-toolbar--open {
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+}
+
+/* Smooth animations for iOS */
+@media (prefers-reduced-motion: no-preference) {
+  .rich-formatting-toolbar,
+  .rich-formatting-row,
+  .rich-format-btn {
+    transition-timing-function: cubic-bezier(0.34, 1.25, 0.64, 1);
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .rich-formatting-toolbar,
+  .rich-formatting-row {
+    transition-duration: 0.1s;
+  }
+
+  .rich-formatting-toolbar {
+    transition-timing-function: ease;
+  }
 }
