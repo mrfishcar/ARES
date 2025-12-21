@@ -42,16 +42,37 @@
   outline: none;
   color: var(--text-primary, #e5e7eb);
   background: var(--bg-primary, #0f1115);
+
   /* CRITICAL: Ensure editor is interactive and accessible */
   cursor: text;
   user-select: text;
   -webkit-user-select: text;
   pointer-events: auto !important; /* Force interactivity */
+
+  /* iOS-specific touch handling */
   touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
+  -webkit-tap-highlight-color: rgba(255, 255, 255, 0.05);
+  -webkit-touch-callout: default;
+
   /* Ensure contentEditable is accessible */
   position: relative;
   z-index: 1; /* Above toolbar but below overlays */
+
+  /* Force contentEditable to be interactive */
+  -webkit-user-modify: read-write;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+/* Ensure all contentEditable children are editable */
+.rich-content[contenteditable="true"] {
+  -webkit-user-modify: read-write-plaintext-only;
+}
+
+/* Make sure text in contentEditable is selectable */
+.rich-content * {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .rich-placeholder {
