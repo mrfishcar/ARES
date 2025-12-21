@@ -652,7 +652,7 @@ a:hover {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-width: 220px;
+  min-width: 140px;
 }
 
 /* Save status indicator */
@@ -667,6 +667,25 @@ a:hover {
   min-width: 110px;
   justify-content: flex-start;
   transition: opacity var(--dur-fast) var(--ease-in-out), color var(--dur-fast) var(--ease-in-out);
+}
+
+.save-status-pill {
+  position: fixed;
+  top: 12px;
+  right: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface-strong) 92%, transparent);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(10px);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  pointer-events: none;
+  z-index: 60;
 }
 
 .save-status--saving {
