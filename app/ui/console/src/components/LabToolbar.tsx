@@ -26,6 +26,7 @@ interface LabToolbarProps {
   showEntityIndicators: boolean;
   enableLongTextOptimization: boolean;
   highlightChains: boolean;
+  useRichEditor: boolean;
 
   // Actions
   onThemeToggle: () => void;
@@ -41,6 +42,7 @@ interface LabToolbarProps {
   onEntityIndicatorsToggle: () => void;
   onLongTextOptimizationToggle: () => void;
   onHighlightChainsToggle: () => void;
+  onRichEditorToggle: () => void;
 
   // Save status
   saveStatus: 'idle' | 'saving' | 'saved' | 'error';
@@ -60,6 +62,7 @@ export function LabToolbar({
   showEntityIndicators,
   enableLongTextOptimization,
   highlightChains,
+  useRichEditor,
   editorMargin,
   onThemeToggle,
   onEntityHighlightToggle,
@@ -72,6 +75,7 @@ export function LabToolbar({
   onEntityIndicatorsToggle,
   onLongTextOptimizationToggle,
   onHighlightChainsToggle,
+  onRichEditorToggle,
   saveStatus,
   showFormatToolbar,
   formatToolbarEnabled,
@@ -347,6 +351,29 @@ export function LabToolbar({
                   >
                     <span className="settings-dropdown-toggle-label">Highlight Entities</span>
                     <div className={`settings-toggle-switch ${showHighlighting ? 'active' : ''}`}>
+                      <div className="settings-toggle-knob" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Editor engine */}
+                <div className="settings-dropdown-section">
+                  <div className="settings-dropdown-label">Editor Engine</div>
+                  <div
+                    className="settings-dropdown-toggle"
+                    onClick={onRichEditorToggle}
+                    role="switch"
+                    aria-checked={useRichEditor}
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onRichEditorToggle();
+                      }
+                    }}
+                  >
+                    <span className="settings-dropdown-toggle-label">Use rich text editor (Lexical)</span>
+                    <div className={`settings-toggle-switch ${useRichEditor ? 'active' : ''}`}>
                       <div className="settings-toggle-knob" />
                     </div>
                   </div>
