@@ -99,8 +99,8 @@ export class EntityHighlightNode extends ElementNode {
     return false;
   }
 
-  getFormatType(): ElementFormatType | null {
-    return null;
+  getFormatType(): ElementFormatType {
+    return '' as ElementFormatType;
   }
 }
 

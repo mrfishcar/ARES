@@ -46,7 +46,7 @@ function collectFromChildren(
       const end = start + childText.length;
       entries.push({
         kind: 'text',
-        key: child.key,
+        key: (child as any).key,
         textStart: 0,
         textEnd: childText.length,
         plainStart: start,
@@ -56,7 +56,7 @@ function collectFromChildren(
       plainOffset.current = end;
     } else if (child.type === 'linebreak') {
       text += '\n';
-      appendSeparator(entries, plainOffset.current, 1, child.key, child.key);
+      appendSeparator(entries, plainOffset.current, 1, (child as any).key, (child as any).key);
       plainOffset.current += 1;
     } else if (Array.isArray((child as any).children)) {
       const nested = collectFromChildren((child as any).children, plainOffset);
@@ -72,7 +72,7 @@ function collectBlockText(
   block: SerializedLexicalNode,
   plainOffset: { current: number },
 ): { text: string; entries: PosMapEntry[]; blockKey: string } {
-  const blockKey = block.key || `block-${Math.random().toString(36).slice(2)}`;
+  const blockKey = (block as any).key || `block-${Math.random().toString(36).slice(2)}`;
 
   if (block.type === 'horizontalrule') {
     // Represent divider as blank line for deterministic spacing
@@ -90,7 +90,7 @@ function collectBlockText(
         entries.push(...collected.entries);
         if (idx < items.length - 1) {
           text += '\n';
-          appendSeparator(entries, plainOffset.current, 1, item.key, items[idx + 1]?.key);
+          appendSeparator(entries, plainOffset.current, 1, (item as any).key, (items[idx + 1] as any)?.key);
           plainOffset.current += 1;
         }
       });
@@ -142,7 +142,12 @@ export function flattenRichDoc(docJSON: SerializedEditorState): FlattenResult {
     const isLast = idx === children.length - 1;
     if (!isLast) {
       plainText += '\n\n';
-      blockSeparatorGap(plainOffset, entries, block.key, children[idx + 1]?.key);
+      blockSeparatorGap(
+        plainOffset,
+        entries,
+        (block as any).key,
+        (children[idx + 1] as any)?.key,
+      );
     }
   });
 

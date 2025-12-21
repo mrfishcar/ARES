@@ -120,6 +120,7 @@ interface StoredDocument {
   richDoc?: SerializedEditorState | null;
   posMap?: PosMapEntry[];
   docVersion?: string;
+  blockIndex?: BlockIndexEntry[];
   extractionJson?: any;
   extraction?: any;
   createdAt: string;

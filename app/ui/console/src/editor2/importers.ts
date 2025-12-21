@@ -83,7 +83,6 @@ export function importPlainText(text: string): SerializedEditorState {
       version: 1,
       direction: null,
       children,
-      key: 'root',
     },
   };
 }

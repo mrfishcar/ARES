@@ -1,12 +1,7 @@
 import { useEffect } from 'react';
-import { $createRangeSelection, $getSelection, $isRangeSelection, $nodesOfType, $setSelection } from 'lexical';
-import { $wrapSelectionInElement } from '@lexical/selection';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import type { EntitySpan } from '../../types/entities';
 import { getEntityTypeColor } from '../../types/entities';
-import { mapPlainOffsetToRich } from '../flattenRichDoc';
-import { $createEntityHighlightNode, EntityHighlightNode } from '../nodes/EntityHighlightNode';
-import type { PosMapEntry } from '../types';
 
 export interface HighlightSpan extends EntitySpan {
   color?: string;
@@ -14,11 +9,37 @@ export interface HighlightSpan extends EntitySpan {
 
 interface Props {
   spans: HighlightSpan[];
-  posMap: PosMapEntry[];
   onHighlightClick?: (span: HighlightSpan) => void;
 }
 
-export function EntityHighlightPlugin({ spans, posMap, onHighlightClick }: Props) {
+function getTextNodes(root: HTMLElement): Array<{ node: Text; start: number; end: number }> {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+  const nodes: Array<{ node: Text; start: number; end: number }> = [];
+  let offset = 0;
+  let current: Node | null;
+  while ((current = walker.nextNode())) {
+    const textNode = current as Text;
+    const len = textNode.textContent?.length ?? 0;
+    nodes.push({ node: textNode, start: offset, end: offset + len });
+    offset += len;
+  }
+  return nodes;
+}
+
+function findRangeForOffsets(root: HTMLElement, from: number, to: number): Range | null {
+  const textNodes = getTextNodes(root);
+  const range = document.createRange();
+
+  const startInfo = textNodes.find(n => from >= n.start && from <= n.end);
+  const endInfo = textNodes.find(n => to >= n.start && to <= n.end);
+  if (!startInfo || !endInfo) return null;
+
+  range.setStart(startInfo.node, Math.max(0, from - startInfo.start));
+  range.setEnd(endInfo.node, Math.max(0, to - endInfo.start));
+  return range;
+}
+
+export function EntityHighlightPlugin({ spans, onHighlightClick }: Props) {
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
@@ -40,35 +61,35 @@ export function EntityHighlightPlugin({ spans, posMap, onHighlightClick }: Props
   }, [editor, spans, onHighlightClick]);
 
   useEffect(() => {
-    editor.update(() => {
-      const selection = $getSelection();
-      const currentSelection = $isRangeSelection(selection) ? selection.clone() : null;
+    const root = editor.getRootElement();
+    if (!root) return;
 
-      $nodesOfType(EntityHighlightNode).forEach(node => node.unwrap());
-
-      spans.forEach(span => {
-        const anchor = mapPlainOffsetToRich(posMap, span.start);
-        const focus = mapPlainOffsetToRich(posMap, span.end);
-        if (!anchor || !focus) return;
-        const selection = $createRangeSelection();
-        selection.anchor.set(anchor.key, anchor.offset, 'text');
-        selection.focus.set(focus.key, focus.offset, 'text');
-        $setSelection(selection);
-        const color = span.color || getEntityTypeColor(span.type);
-        $wrapSelectionInElement(() =>
-          $createEntityHighlightNode({
-            color,
-            id: span.entityId,
-            start: span.start,
-            end: span.end,
-            title: span.canonicalName || span.displayText || span.text,
-          }),
-        );
-      });
-
-      $setSelection(currentSelection);
+    // Clear previous highlights
+    root.querySelectorAll('.rich-entity-highlight').forEach(el => {
+      const parent = el.parentElement;
+      if (!parent) return;
+      while (el.firstChild) parent.insertBefore(el.firstChild, el);
+      parent.removeChild(el);
     });
-  }, [editor, spans, posMap]);
+
+    spans.forEach(span => {
+      const range = findRangeForOffsets(root, span.start, span.end);
+      if (!range) return;
+      const wrapper = document.createElement('span');
+      const color = span.color || getEntityTypeColor(span.type);
+      wrapper.className = 'rich-entity-highlight';
+      wrapper.dataset.start = String(span.start);
+      wrapper.dataset.end = String(span.end);
+      wrapper.style.backgroundColor = `${color}22`;
+      wrapper.style.boxShadow = `0 0 0 1px ${color}55`;
+      wrapper.style.borderRadius = '3px';
+      wrapper.style.padding = '0 1px';
+      if (span.canonicalName || span.displayText || span.text) {
+        wrapper.title = span.canonicalName || span.displayText || span.text;
+      }
+      range.surroundContents(wrapper);
+    });
+  }, [editor, spans]);
 
   return null;
 }
