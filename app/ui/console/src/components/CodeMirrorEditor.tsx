@@ -43,7 +43,7 @@ import type { EntitySpan, EntityType } from '../types/entities';
 import { getEntityTypeColor } from '../types/entities';
 import { projectEntitiesToVisibleRanges } from '../editor/entityVisibility';
 import { EntityContextMenu } from './EntityContextMenu';
-import type { CodeMirrorEditorProps } from './CodeMirrorEditorProps';
+import type { CodeMirrorEditorProps, FormattingActions } from './CodeMirrorEditorProps';
 import { measureDecorationBuild } from '../utils/perf';
 
 // -------------------- MARKDOWN STYLES --------------------
@@ -632,6 +632,32 @@ function iosCalloutBlockerExtension(
   });
 }
 
+// -------------------- FOCUS & SELECTION NOTIFIER --------------------
+
+function focusAndSelectionNotifierExtension(
+  onFocusChangeRef: React.MutableRefObject<((focused: boolean) => void) | undefined>,
+  onSelectionChangeRef: React.MutableRefObject<((hasSelection: boolean) => void) | undefined>,
+) {
+  return [
+    EditorView.domEventHandlers({
+      focus: () => {
+        onFocusChangeRef.current?.(true);
+        return false;
+      },
+      blur: () => {
+        onFocusChangeRef.current?.(false);
+        return false;
+      },
+    }),
+    EditorView.updateListener.of((update: ViewUpdate) => {
+      if (update.selectionSet && onSelectionChangeRef.current) {
+        const selection = update.state.selection.main;
+        onSelectionChangeRef.current(!selection.empty);
+      }
+    }),
+  ];
+}
+
 // -------------------- MAIN COMPONENT --------------------
 
 export function CodeMirrorEditor({
@@ -652,6 +678,9 @@ export function CodeMirrorEditor({
   onResizeEntity,
   navigateToRange,
   colorForSpan,
+  onFocusChange,
+  onSelectionChange,
+  registerFormatActions,
 }: CodeMirrorEditorProps) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
@@ -662,6 +691,8 @@ export function CodeMirrorEditor({
   const highlightOpacityRef = useRef(highlightOpacity);
   const colorForSpanRef = useRef<CodeMirrorEditorProps['colorForSpan']>(colorForSpan);
   const onCursorChangeRef = useRef(onCursorChange);
+  const onFocusChangeRef = useRef<CodeMirrorEditorProps['onFocusChange']>();
+  const onSelectionChangeRef = useRef<CodeMirrorEditorProps['onSelectionChange']>();
   const entityHighlightModeRef = useRef(entityHighlightMode);
   const onTextSelectedRef = useRef(onTextSelected);
   const onResizeEntityRef = useRef(onResizeEntity);
@@ -718,6 +749,14 @@ export function CodeMirrorEditor({
   }, [onCursorChange]);
 
   useEffect(() => {
+    onFocusChangeRef.current = onFocusChange;
+  }, [onFocusChange]);
+
+  useEffect(() => {
+    onSelectionChangeRef.current = onSelectionChange;
+  }, [onSelectionChange]);
+
+  useEffect(() => {
     entityHighlightModeRef.current = entityHighlightMode;
   }, [entityHighlightMode]);
 
@@ -766,12 +805,19 @@ export function CodeMirrorEditor({
             onChange(nextValue);
           }
 
-          if (update.selectionSet && onCursorChangeRef.current) {
-            const head = update.state.selection.main.head;
-            const globalPos = baseOffsetRef.current + head;
-            onCursorChangeRef.current(globalPos);
+          if (update.selectionSet) {
+            if (onCursorChangeRef.current) {
+              const head = update.state.selection.main.head;
+              const globalPos = baseOffsetRef.current + head;
+              onCursorChangeRef.current(globalPos);
+            }
+            if (onSelectionChangeRef.current) {
+              const selection = update.state.selection.main;
+              onSelectionChangeRef.current(!selection.empty);
+            }
           }
         }),
+        ...focusAndSelectionNotifierExtension(onFocusChangeRef, onSelectionChangeRef),
       ],
     });
 
@@ -798,9 +844,122 @@ export function CodeMirrorEditor({
 
     viewRef.current = view;
 
+    if (registerFormatActions) {
+      const toggleInlineWrapper = (wrapper: string) => {
+        const v = viewRef.current;
+        if (!v) return;
+        const { state } = v;
+        const selection = state.selection.main;
+        const from = selection.from;
+        const to = selection.to;
+        const selectedText = state.doc.sliceString(from, to);
+        const prefix = from - wrapper.length >= 0 ? state.doc.sliceString(from - wrapper.length, from) : '';
+        const suffix = state.doc.sliceString(to, to + wrapper.length);
+        const hasWrapped = prefix === wrapper && suffix === wrapper;
+
+        if (hasWrapped) {
+          const newFrom = from - wrapper.length;
+          const newTo = to + wrapper.length;
+          v.dispatch({
+            changes: { from: newFrom, to: newTo, insert: selectedText },
+            selection: { anchor: newFrom, head: newFrom + selectedText.length },
+            userEvent: 'input',
+          });
+        } else {
+          const insertText = `${wrapper}${selectedText}${wrapper}`;
+          const cursorPos = from + insertText.length;
+          v.dispatch({
+            changes: { from, to, insert: insertText },
+            selection: { anchor: cursorPos, head: cursorPos },
+            userEvent: 'input',
+          });
+        }
+      };
+
+      const cycleHeading = () => {
+        const v = viewRef.current;
+        if (!v) return;
+        const { state } = v;
+        const selection = state.selection.main;
+        const line = state.doc.lineAt(selection.head);
+        const text = line.text.trimStart();
+        const leadingSpaces = line.text.length - text.length;
+        const currentPrefix = text.startsWith('#') ? text.match(/^#+/)?.[0] ?? '' : '';
+        const nextPrefix =
+          currentPrefix === '' ? '#' :
+          currentPrefix === '#' ? '##' :
+          currentPrefix === '##' ? '###' : '';
+        const body = text.replace(/^#+\s*/, '');
+        const newText = nextPrefix
+          ? `${' '.repeat(leadingSpaces)}${nextPrefix} ${body}`
+          : `${' '.repeat(leadingSpaces)}${body}`;
+        v.dispatch({
+          changes: { from: line.from, to: line.to, insert: newText },
+          selection: { anchor: line.from, head: line.from },
+          userEvent: 'input',
+        });
+      };
+
+      const toggleQuote = () => {
+        const v = viewRef.current;
+        if (!v) return;
+        const { state } = v;
+        const selection = state.selection.main;
+        const fromLine = state.doc.lineAt(selection.from);
+        const toLine = state.doc.lineAt(selection.to);
+        const lines = [];
+        for (let i = fromLine.number; i <= toLine.number; i++) {
+          lines.push(state.doc.line(i));
+        }
+        const allQuoted = lines.every(l => l.text.trimStart().startsWith('> '));
+        const newText = lines
+          .map(line => {
+            const trimmed = line.text.trimStart();
+            const leadingSpaces = line.text.length - trimmed.length;
+            if (allQuoted) {
+              return line.text.replace(/^\s*>\s?/, '');
+            }
+            return `${' '.repeat(leadingSpaces)}> ${trimmed}`;
+          })
+          .join('\n');
+        v.dispatch({
+          changes: { from: fromLine.from, to: toLine.to, insert: newText },
+          selection: { anchor: fromLine.from, head: fromLine.from },
+          userEvent: 'input',
+        });
+      };
+
+      const insertDivider = () => {
+        const v = viewRef.current;
+        if (!v) return;
+        const { state } = v;
+        const selection = state.selection.main;
+        const line = state.doc.lineAt(selection.head);
+        const insertText = `${line.text ? '\n' : ''}---\n`;
+        const insertPos = line.to;
+        v.dispatch({
+          changes: { from: insertPos, to: insertPos, insert: insertText },
+          selection: { anchor: insertPos + insertText.length, head: insertPos + insertText.length },
+          userEvent: 'input',
+        });
+      };
+
+      const actions: FormattingActions = {
+        toggleBold: () => toggleInlineWrapper('**'),
+        toggleItalic: () => toggleInlineWrapper('*'),
+        toggleMonospace: () => toggleInlineWrapper('`'),
+        cycleHeading,
+        toggleQuote,
+        insertDivider,
+      };
+
+      registerFormatActions(actions);
+    }
+
     return () => {
       view.destroy();
       viewRef.current = null;
+      registerFormatActions?.(null);
     };
   }, []);
 
