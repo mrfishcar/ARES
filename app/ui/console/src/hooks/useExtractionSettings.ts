@@ -9,6 +9,16 @@ export function useExtractionSettings() {
   const [showHighlighting, setShowHighlighting] = useState(true);
   const [highlightOpacity, setHighlightOpacity] = useState(1.0);
   const [entityHighlightMode, setEntityHighlightMode] = useState(false);
+  const envDefaultRich =
+    typeof import.meta !== 'undefined'
+      ? import.meta.env.VITE_USE_RICH_EDITOR !== 'false'
+      : true;
+  const [useRichEditor, setUseRichEditor] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return envDefaultRich;
+    const saved = localStorage.getItem('ares.useRichEditor');
+    if (saved != null) return saved === 'true';
+    return envDefaultRich;
+  });
   const [showEntityIndicators, setShowEntityIndicators] = useState<boolean>(() => {
     if (typeof window === 'undefined') return true;
     const saved = localStorage.getItem('ares.showEntityIndicators');
@@ -34,6 +44,11 @@ export function useExtractionSettings() {
     );
     localStorage.setItem('ares.editorMargin', String(editorMargin));
   }, [editorMargin]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem('ares.useRichEditor', String(useRichEditor));
+  }, [useRichEditor]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -67,11 +82,16 @@ export function useExtractionSettings() {
     setEnableLongTextOptimization(prev => !prev);
   }, []);
 
+  const toggleRichEditor = useCallback(() => {
+    setUseRichEditor(prev => !prev);
+  }, []);
+
   return {
     // State
     showHighlighting,
     highlightOpacity,
     entityHighlightMode,
+    useRichEditor,
     showEntityIndicators,
     enableLongTextOptimization,
     editorMargin,
@@ -85,5 +105,7 @@ export function useExtractionSettings() {
     setEnableLongTextOptimization,
     toggleLongTextOptimization,
     setEditorMargin,
+    toggleRichEditor,
+    setUseRichEditor,
   };
 }
