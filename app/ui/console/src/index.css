@@ -16,13 +16,15 @@ html {
 html,
 body {
   background: var(--bg-primary);
-  /* Lock height to viewport, prevent pull-to-refresh */
+  /* Prevent pull-to-refresh without position:fixed (which breaks iOS focus) */
   height: var(--app-viewport-height, 100vh);
   min-height: var(--app-viewport-height, 100vh);
   overflow: hidden;
   overscroll-behavior: none;
-  position: fixed;
+  /* REMOVED position:fixed - it prevents iOS keyboard/focus from working properly */
   width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 :root {
@@ -1350,7 +1352,8 @@ a:hover {
   flex: 1;
   min-width: 0;
   background-color: var(--app-surface);
-  min-height: 100vh;
+  /* FIXED: Removed min-height: 100vh to prevent layout cascade */
+  height: 100%;
 }
 
 .results-wrapper {
@@ -2062,7 +2065,8 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   flex: 1;
   gap: 0;
   min-width: 0;
-  min-height: max(100vh, 600px);
+  /* FIXED: Removed min-height to prevent layout cascade */
+  height: 100%;
 }
 
 /* Entity indicators container on left side */
@@ -2082,7 +2086,8 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   display: flex;
   flex: 1;
   min-width: 0;
-  min-height: max(100vh, 600px);
+  /* FIXED: Removed min-height to prevent layout cascade */
+  height: 100%;
   position: relative;
 }
 

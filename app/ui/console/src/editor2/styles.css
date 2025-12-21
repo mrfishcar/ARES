@@ -6,7 +6,9 @@
   background: var(--bg-primary, #0f1115);
   color: var(--text-primary, #e5e7eb);
   border-radius: 12px;
-  min-height: max(100vh, 600px);
+  /* FIXED: Only set min-height on top-level container, not all nested children */
+  min-height: 600px;
+  height: 100%;
   border: 1px solid var(--border-color, #1f2937);
   overflow: hidden;
   --rich-horizontal-padding: clamp(28px, 6vw, 96px);
@@ -18,13 +20,17 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  min-height: max(100vh, 600px);
+  /* FIXED: Removed redundant min-height, use flex:1 instead */
   flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .rich-content {
   flex: 1;
-  min-height: max(100vh, 600px);
+  /* FIXED: Removed min-height to prevent layout cascade issues */
+  min-height: 600px; /* Enough for comfortable editing */
   width: 100%;
   padding: calc(var(--rich-toolbar-height) + 16px) var(--rich-horizontal-padding) 64px var(--rich-horizontal-padding);
   line-height: 1.7;
@@ -32,6 +38,13 @@
   outline: none;
   color: var(--text-primary, #e5e7eb);
   background: var(--bg-primary, #0f1115);
+  /* FIXED: Ensure editor is interactive and shows proper cursor */
+  cursor: text;
+  user-select: text;
+  -webkit-user-select: text;
+  /* Ensure taps work on iOS */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .rich-placeholder {

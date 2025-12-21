@@ -5,7 +5,6 @@ import { FORMAT_ELEMENT_COMMAND, FORMAT_TEXT_COMMAND } from 'lexical';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
-import { AutoFocusPlugin } from '@lexical/react/LexicalAutoFocusPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
@@ -160,7 +159,24 @@ export function RichTextEditor({
       editor.getEditorState().read(() => {
         const el = editor.getElementByKey(anchor.key);
         if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // FIXED: Use safe scroll instead of scrollIntoView to prevent viewport bounce
+          // scrollIntoView causes issues with nested scroll containers + iOS Safari
+          const rect = el.getBoundingClientRect();
+          const editorContainer = el.closest('.rich-editor-surface');
+
+          if (editorContainer && (rect.top < 100 || rect.bottom > window.innerHeight - 100)) {
+            // Only scroll if element is not already visible with margin
+            // Use manual scroll to avoid iOS viewport bounce
+            const containerRect = editorContainer.getBoundingClientRect();
+            const scrollTop = editorContainer.scrollTop;
+            const targetScrollTop = scrollTop + (rect.top - containerRect.top) - window.innerHeight / 2;
+
+            editorContainer.scrollTo({
+              top: Math.max(0, targetScrollTop),
+              behavior: 'smooth'
+            });
+          }
+
           el.classList.add('rich-flash');
           window.setTimeout(() => el.classList.remove('rich-flash'), 800);
         }
@@ -189,7 +205,7 @@ export function RichTextEditor({
           <ListPlugin />
           <CheckListPlugin />
           <HorizontalRulePlugin />
-          <AutoFocusPlugin />
+          {/* REMOVED AutoFocusPlugin - causes iOS keyboard popup and viewport bounce on mount */}
           <NavigateToRangePlugin target={navigateToRange} posMap={lastSnapshot.posMap} />
           <OnChangePlugin
             onChange={(editorState) => {
