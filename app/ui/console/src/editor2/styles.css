@@ -1,4 +1,4 @@
-/* Minimal, clean editor styles - rebuilt from scratch */
+/* Clean editor styles with formatting toolbar */
 
 .rich-editor-shell {
   position: relative;
@@ -14,6 +14,7 @@
   overflow: hidden;
 }
 
+/* Toolbar */
 .rich-toolbar {
   position: sticky;
   top: 0;
@@ -21,16 +22,105 @@
   padding: 16px 24px;
   background: var(--bg-primary, #0f1115);
   border-bottom: 1px solid var(--border-color, #1f2937);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: padding 0.2s ease;
+}
+
+.rich-toolbar--open {
+  padding-bottom: 20px;
 }
 
 .rich-toolbar .pill {
   display: inline-block;
-  padding: 8px 16px;
+  padding: 10px 20px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.08);
   border: 1px solid var(--border-color, #1f2937);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  align-self: flex-start;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
+.rich-toolbar .pill:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
+}
+
+.rich-toolbar .pill:active {
+  transform: translateY(0);
+}
+
+/* Toolbar controls */
+.rich-toolbar__controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rich-toolbar__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.rich-toolbar__row button {
+  padding: 8px 14px;
+  min-height: 38px;
+  min-width: 38px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #1f2937);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary, #e5e7eb);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.rich-toolbar__row button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.rich-toolbar__row button:active {
+  transform: scale(0.96);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.rich-toolbar__done {
+  background: rgba(59, 130, 246, 0.15) !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+  color: rgb(96, 165, 250) !important;
+  font-weight: 500;
+}
+
+.rich-toolbar__done:hover {
+  background: rgba(59, 130, 246, 0.25) !important;
+  border-color: rgba(59, 130, 246, 0.5) !important;
+}
+
+/* Editor surface */
 .rich-editor-surface {
   position: relative;
   flex: 1;
@@ -54,7 +144,7 @@
   font-size: 16px;
   color: var(--text-primary, #e5e7eb);
 
-  /* CRITICAL: Make it editable and interactive */
+  /* Make it editable and interactive */
   cursor: text;
   user-select: text;
   -webkit-user-select: text;
@@ -66,7 +156,6 @@
   -webkit-user-modify: read-write-plaintext-only;
 }
 
-/* Ensure contentEditable is actually editable */
 .rich-content[contenteditable="true"] {
   -webkit-user-modify: read-write-plaintext-only;
 }
@@ -83,22 +172,118 @@
   user-select: none;
 }
 
-/* Basic paragraph styling */
+/* Text formatting styles */
+.rich-bold {
+  font-weight: 700;
+}
+
+.rich-italic {
+  font-style: italic;
+}
+
+.rich-underline {
+  text-decoration: underline;
+}
+
+.rich-strikethrough {
+  text-decoration: line-through;
+}
+
+/* Paragraph */
 .rich-paragraph {
   margin: 0.5em 0;
 }
 
-/* Ensure paragraphs don't have extra padding */
 .rich-content p {
   margin: 0.5em 0;
 }
 
-/* First paragraph */
 .rich-content p:first-child {
   margin-top: 0;
 }
 
-/* Last paragraph */
 .rich-content p:last-child {
   margin-bottom: 0;
+}
+
+/* Headings */
+.rich-h1 {
+  font-size: 2em;
+  font-weight: 700;
+  margin: 0.67em 0;
+  line-height: 1.2;
+}
+
+.rich-h2 {
+  font-size: 1.5em;
+  font-weight: 600;
+  margin: 0.75em 0;
+  line-height: 1.3;
+}
+
+.rich-h3 {
+  font-size: 1.25em;
+  font-weight: 600;
+  margin: 0.83em 0;
+  line-height: 1.4;
+}
+
+/* Quote */
+.rich-quote {
+  margin: 1em 0;
+  padding-left: 16px;
+  border-left: 3px solid var(--border-color, #1f2937);
+  opacity: 0.9;
+  font-style: italic;
+}
+
+/* Lists */
+.rich-ul {
+  margin: 0.5em 0;
+  padding-left: 24px;
+  list-style-type: disc;
+}
+
+.rich-ol {
+  margin: 0.5em 0;
+  padding-left: 24px;
+  list-style-type: decimal;
+}
+
+.rich-listitem {
+  margin: 0.25em 0;
+}
+
+.rich-checklist {
+  margin: 0.5em 0;
+  padding-left: 24px;
+  list-style-type: none;
+}
+
+.rich-checklist li {
+  position: relative;
+  padding-left: 24px;
+}
+
+.rich-checklist li::before {
+  content: '☐';
+  position: absolute;
+  left: 0;
+  color: var(--text-secondary, #9ca3af);
+}
+
+.rich-checklist li[data-checked="true"]::before {
+  content: '☑';
+  color: rgb(34, 197, 94);
+}
+
+/* Ensure nested lists work */
+.rich-content ul ul,
+.rich-content ol ul {
+  list-style-type: circle;
+}
+
+.rich-content ul ul ul,
+.rich-content ol ul ul {
+  list-style-type: square;
 }
