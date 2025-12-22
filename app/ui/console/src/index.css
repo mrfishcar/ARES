@@ -583,22 +583,15 @@ a:hover {
   align-items: center;
   gap: 8px;
   z-index: 50;
-  pointer-events: none;
-  opacity: 1;
+  pointer-events: auto;
   transform-origin: right center;
-  /* iOS Notes sequential shrink-to-right transition:
-     - Toolbar A shrinks to right edge FIRST (0.3s transform)
-     - Opacity fades near end (0.2s, delayed 0.15s) for smooth disappear
-     - Toolbar B expands from right AFTER (delay 0.3s)
-     - Creates sequential morphing effect, not simultaneous fade */
-  transition: opacity 0.2s cubic-bezier(0.32, 0, 0.67, 0) 0.15s,
-              transform 0.3s cubic-bezier(0.32, 0, 0.67, 0) 0s;
+  /* iOS Notes morph: horizontal compression ONLY, NO opacity on container */
+  transition: transform 0.25s cubic-bezier(0.32, 0, 0.67, 0) 0s;
 }
 
 .lab-toolbar-stack--hidden {
-  opacity: 0;
-  transform: translateX(-50%) scaleX(0.1);
-  pointer-events: none;
+  transform: translateX(-50%) scaleX(0.05);
+  /* Container stays visible, just compressed. Content visibility handled separately. */
 }
 
 .lab-control-bar {

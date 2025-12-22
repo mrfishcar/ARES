@@ -25,22 +25,15 @@
   position: absolute;
   top: 16px;
   left: 50%;
-  transform: translateX(-50%) scaleX(0.1);
+  transform: translateX(-50%) scaleX(0.05);
   transform-origin: right center;
-  opacity: 0;
   pointer-events: none;
   z-index: 100;
-  /* iOS Notes sequential expand-from-right transition:
-     - Waits for Toolbar A to shrink (delay 0.3s)
-     - THEN expands from right edge (0.3s transform)
-     - Opacity fades in early (0.2s, delayed 0.3s) for smooth appear
-     - Creates sequential morphing: A shrinks → B expands */
-  transition: opacity 0.2s cubic-bezier(0.32, 0, 0.67, 0) 0.3s,
-              transform 0.3s cubic-bezier(0.32, 0, 0.67, 0) 0.3s;
+  /* iOS Notes morph: horizontal expansion ONLY, waits for normal toolbar to compress */
+  transition: transform 0.25s cubic-bezier(0.32, 0, 0.67, 0) 0.25s;
 }
 
 .formatting-palette--open {
-  opacity: 1;
   transform: translateX(-50%) scaleX(1);
   pointer-events: auto;
 }
