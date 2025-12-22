@@ -25,17 +25,18 @@
   position: absolute;
   top: 16px;
   left: 50%;
-  transform: translateX(-50%) translateY(-12px);
+  transform: translateX(-50%) translateY(-16px) scale(0.94);
   opacity: 0;
   pointer-events: none;
   z-index: 100;
-  transition: opacity 0.25s cubic-bezier(0.32, 0.72, 0, 1),
-              transform 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+  /* iOS Notes boomerang effect matching toolbar */
+  transition: opacity 0.38s cubic-bezier(0.42, 0, 0.58, 1),
+              transform 0.38s cubic-bezier(0.42, 0, 0.58, 1);
 }
 
 .formatting-palette--open {
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
+  transform: translateX(-50%) translateY(0) scale(1);
   pointer-events: auto;
 }
 

@@ -169,7 +169,8 @@
   background: var(--bg-primary, #0f1115);
   color: var(--text-primary, #e5e7eb);
   border-radius: 12px;
-  border: 1px solid var(--border-color, #1f2937);
+  /* Remove border for clean iOS Notes look */
+  border: none;
   overflow: hidden;
 }
 
