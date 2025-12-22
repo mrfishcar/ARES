@@ -22,6 +22,7 @@ import { initializeTheme, toggleTheme, loadThemePreference, getEffectiveTheme } 
 import { useLabLayoutState } from '../hooks/useLabLayoutState';
 import { useExtractionSettings } from '../hooks/useExtractionSettings';
 import { useAutoLongExtraction } from '../hooks/useAutoLongExtraction';
+import { initializeIOSViewportFix } from '../utils/iosViewportFix';
 import type { SerializedEditorState } from 'lexical';
 import { RichEditorPane } from '../editor2/RichEditorPane';
 import type { BlockIndexEntry, PosMapEntry, RichDocSnapshot } from '../editor2/types';
@@ -826,6 +827,8 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   // Initialize theme on mount
   useEffect(() => {
     initializeTheme();
+    // Initialize iOS viewport height fix
+    initializeIOSViewportFix();
   }, []);
 
   // iOS: Prevent body scroll when modals are open

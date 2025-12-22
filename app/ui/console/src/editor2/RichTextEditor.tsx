@@ -17,6 +17,7 @@ import type { EntitySpan } from '../types/entities';
 import { snapshotRichDoc } from './flattenRichDoc';
 import type { RichDocSnapshot } from './types';
 import type { NavigateToRange } from '../components/CodeMirrorEditorProps';
+import { FocusDebugPlugin } from './plugins/FocusDebugPlugin';
 
 interface RichTextEditorProps {
   initialDocJSON?: SerializedEditorState | null;
@@ -273,6 +274,7 @@ export function RichTextEditor({
           <ListPlugin />
           <CheckListPlugin />
           <OnChangeAdapter onChange={onChange} />
+          <FocusDebugPlugin />
         </div>
       </div>
     </LexicalComposer>
