@@ -23,7 +23,7 @@ import {
   REMOVE_LIST_COMMAND,
   $isListNode
 } from '@lexical/list';
-import { $getNearestNodeOfType, $setBlocksType } from '@lexical/selection';
+import { $setBlocksType } from '@lexical/selection';
 import { 
   $isHeadingNode, 
   $createQuoteNode, 
