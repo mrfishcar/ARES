@@ -1,3 +1,4 @@
+import { useState, useCallback } from 'react';
 import type { SerializedEditorState } from 'lexical';
 import type { EntitySpan } from '../types/entities';
 import { EntityIndicators } from '../components/EntityIndicators';
@@ -17,7 +18,8 @@ interface Props {
   navigateToRange?: NavigateToRange | null;
   showFormatToolbar?: boolean; // Controlled by T button in LabToolbar
   formatToolbarEnabled?: boolean; // NEW: Whether formatting mode is active
-  formatActions?: FormattingActions | null; // NEW: Formatting action callbacks
+  formatActions?: FormattingActions | null; // NEW: Formatting action callbacks (legacy)
+  onFormatModeExit?: () => void; // NEW: Callback to exit formatting mode
 }
 
 export function RichEditorPane({
@@ -30,9 +32,18 @@ export function RichEditorPane({
   showEntityIndicators = true,
   showFormatToolbar = false,
   formatToolbarEnabled = false,
-  formatActions,
+  formatActions: legacyFormatActions,
+  onFormatModeExit,
 }: Props) {
   const editorHeight = Math.max(400, typeof window !== 'undefined' ? window.innerHeight - 380 : 400);
+  const [lexicalFormatActions, setLexicalFormatActions] = useState<FormattingActions | null>(null);
+
+  const handleActionsReady = useCallback((actions: FormattingActions) => {
+    setLexicalFormatActions(actions);
+  }, []);
+
+  // Use Lexical actions if available, otherwise fallback to legacy
+  const formatActions = lexicalFormatActions || legacyFormatActions;
 
   return (
     <div className="editor-wrapper">
@@ -55,6 +66,7 @@ export function RichEditorPane({
               onModeChange={(mode) => {
                 console.log('[RichEditorPane] Mode changed to:', mode);
               }}
+              onRequestExit={onFormatModeExit}
             >
               <RichTextEditor
                 initialDocJSON={richDoc ?? undefined}
@@ -64,6 +76,7 @@ export function RichEditorPane({
                 onEntityPress={onEntityFocus}
                 navigateToRange={navigateToRange}
                 showFormatToolbar={false} // Always false - EditorShell handles formatting palette
+                onFormatActionsReady={handleActionsReady}
               />
             </EditorShell>
           </div>

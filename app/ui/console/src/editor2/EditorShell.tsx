@@ -7,7 +7,7 @@
  * - Editor sizing and mount
  */
 
-import { useEffect, ReactNode } from 'react';
+import { useEffect, useRef, ReactNode } from 'react';
 import { FormattingPalette } from './FormattingPalette';
 import type { FormattingActions } from '../components/CodeMirrorEditorProps';
 
@@ -20,30 +20,57 @@ interface EditorShellProps {
   formatActions?: FormattingActions | null;
   formatToolbarEnabled?: boolean; // Controlled from parent
   onModeChange?: (mode: 'normal' | 'formatting') => void;
+  onRequestExit?: () => void; // Request to exit formatting mode
 }
 
 export function EditorShell({
   children,
   formatActions,
   formatToolbarEnabled = false,
-  onModeChange
+  onModeChange,
+  onRequestExit
 }: EditorShellProps) {
+  const paletteRef = useRef<HTMLDivElement>(null);
+
   // Notify parent of mode changes
   useEffect(() => {
     onModeChange?.(formatToolbarEnabled ? 'formatting' : 'normal');
   }, [formatToolbarEnabled, onModeChange]);
 
+  // Click outside to exit formatting mode
+  useEffect(() => {
+    if (!formatToolbarEnabled) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      // Check if click is outside the palette
+      if (paletteRef.current && !paletteRef.current.contains(e.target as Node)) {
+        onRequestExit?.();
+      }
+    };
+
+    // Add delay to avoid immediate closure on mode activation
+    const timer = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [formatToolbarEnabled, onRequestExit]);
+
   return (
     <div className="editor-shell">
       {/* Formatting palette - floats above editor */}
-      <FormattingPalette
-        isOpen={formatToolbarEnabled}
-        formatActions={formatActions}
-        onClose={() => {
-          // Parent controls the state, so this is just a signal
-          onModeChange?.('normal');
-        }}
-      />
+      {formatToolbarEnabled && (
+        <div ref={paletteRef}>
+          <FormattingPalette
+            isOpen={formatToolbarEnabled}
+            formatActions={formatActions}
+            onClose={() => onRequestExit?.()}
+          />
+        </div>
+      )}
 
       {/* Editor content */}
       <div className="editor-shell__content">

@@ -2308,6 +2308,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
             showFormatToolbar={false}
             formatToolbarEnabled={formatToolbarEnabled}
             formatActions={formatActions}
+            onFormatModeExit={() => setFormatToolbarEnabled(false)}
           />
         ) : (
           <EditorPane

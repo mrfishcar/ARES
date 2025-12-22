@@ -51,8 +51,18 @@ export function FormattingPalette({
     setShowStyleDropdown(false);
     
     // Apply style via formatActions
-    if (formatActions && style !== 'mono') {
-      formatActions.cycleHeading?.(); // Temporary - needs proper implementation
+    if (formatActions) {
+      if (style === 'h1') {
+        formatActions.formatHeading?.('h1');
+      } else if (style === 'h2') {
+        formatActions.formatHeading?.('h2');
+      } else if (style === 'h3') {
+        formatActions.formatHeading?.('h3');
+      } else if (style === 'mono') {
+        formatActions.toggleMonospace?.();
+      } else if (style === 'p') {
+        formatActions.formatParagraph?.();
+      }
     }
   };
 
@@ -121,8 +131,8 @@ export function FormattingPalette({
             <button
               type="button"
               className="format-control"
-              onClick={() => {/* TODO: underline */}}
-              disabled
+              onClick={formatActions?.toggleUnderline}
+              disabled={!formatActions?.toggleUnderline}
               title="Underline"
               aria-label="Underline"
             >
@@ -132,8 +142,8 @@ export function FormattingPalette({
             <button
               type="button"
               className="format-control"
-              onClick={() => {/* TODO: strikethrough */}}
-              disabled
+              onClick={formatActions?.toggleStrikethrough}
+              disabled={!formatActions?.toggleStrikethrough}
               title="Strikethrough"
               aria-label="Strikethrough"
             >
@@ -145,8 +155,8 @@ export function FormattingPalette({
             <button
               type="button"
               className="format-control"
-              onClick={() => {/* TODO: bullet list */}}
-              disabled
+              onClick={formatActions?.insertBulletList}
+              disabled={!formatActions?.insertBulletList}
               title="Bullet list"
               aria-label="Bullet list"
             >
@@ -156,8 +166,8 @@ export function FormattingPalette({
             <button
               type="button"
               className="format-control"
-              onClick={() => {/* TODO: numbered list */}}
-              disabled
+              onClick={formatActions?.insertNumberedList}
+              disabled={!formatActions?.insertNumberedList}
               title="Numbered list"
               aria-label="Numbered list"
             >
@@ -169,7 +179,7 @@ export function FormattingPalette({
             <button
               type="button"
               className="format-control"
-              onClick={() => {/* TODO: outdent */}}
+              onClick={() => {/* TODO: outdent - needs Lexical implementation */}}
               disabled
               title="Decrease indent"
               aria-label="Decrease indent"
@@ -180,7 +190,7 @@ export function FormattingPalette({
             <button
               type="button"
               className="format-control"
-              onClick={() => {/* TODO: indent */}}
+              onClick={() => {/* TODO: indent - needs Lexical implementation */}}
               disabled
               title="Increase indent"
               aria-label="Increase indent"

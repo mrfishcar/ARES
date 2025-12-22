@@ -190,7 +190,7 @@
   position: relative;
   flex: 1;
   min-height: 500px;
-  padding: 24px;
+  padding: 80px 24px 24px 24px; /* Top padding to avoid toolbar overlap */
   outline: none;
 
   /* Typography */
@@ -213,7 +213,7 @@
 /* Placeholder */
 .rich-placeholder {
   position: absolute;
-  top: 24px;
+  top: 80px; /* Match content top padding */
   left: 24px;
   right: 24px;
   color: var(--text-secondary, #9ca3af);
