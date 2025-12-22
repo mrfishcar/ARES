@@ -30,12 +30,12 @@
   opacity: 0;
   pointer-events: none;
   z-index: 100;
-  /* iOS Notes horizontal expand-from-right transition:
-     - Starts compressed at scaleX(0.1) 
-     - Expands horizontally from right (scaleX 0.1 → 1)
-     - Transform origin at right creates mirrored morph effect */
-  transition: opacity 0.35s cubic-bezier(0.32, 0, 0.67, 0),
-              transform 0.35s cubic-bezier(0.32, 0, 0.67, 0);
+  /* iOS Notes sequential expand-from-right transition:
+     - Waits for Toolbar A to shrink (delay 0.25s)
+     - THEN expands from right edge (0.25s)
+     - Creates sequential morphing: A shrinks → B expands */
+  transition: opacity 0.25s cubic-bezier(0.32, 0, 0.67, 0) 0.25s,
+              transform 0.25s cubic-bezier(0.32, 0, 0.67, 0) 0.25s;
 }
 
 .formatting-palette--open {
