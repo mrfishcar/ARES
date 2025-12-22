@@ -69,128 +69,6 @@ function OnChangeAdapter({ onChange }: { onChange: (snapshot: RichDocSnapshot) =
   );
 }
 
-// iOS Notes-style Formatting Toolbar - transforms into view when T button is toggled
-function TransformingFormatToolbar({ isOpen }: { isOpen: boolean }) {
-  const [editor] = useLexicalComposerContext();
-
-  const format = (command: any, payload?: any) => {
-    editor.dispatchCommand(command, payload);
-  };
-
-  return (
-    <div className={`transforming-format-toolbar ${isOpen ? 'transforming-format-toolbar--open' : ''}`}>
-      {/* Title row */}
-      <div className="format-toolbar-section">
-        <span className="format-toolbar-label">Text Style</span>
-        <div className="format-toolbar-buttons">
-          <button
-            type="button"
-            className="format-toolbar-btn format-toolbar-btn--text"
-            onClick={() => format(FORMAT_ELEMENT_COMMAND, 'h1')}
-            title="Title"
-          >
-            Title
-          </button>
-          <button
-            type="button"
-            className="format-toolbar-btn format-toolbar-btn--text"
-            onClick={() => format(FORMAT_ELEMENT_COMMAND, 'h2')}
-            title="Heading"
-          >
-            Heading
-          </button>
-          <button
-            type="button"
-            className="format-toolbar-btn format-toolbar-btn--text"
-            onClick={() => format(FORMAT_ELEMENT_COMMAND, 'h3')}
-            title="Subheading"
-          >
-            Subheading
-          </button>
-          <button
-            type="button"
-            className="format-toolbar-btn format-toolbar-btn--text"
-            onClick={() => format(FORMAT_ELEMENT_COMMAND, 'p')}
-            title="Body"
-          >
-            Body
-          </button>
-        </div>
-      </div>
-
-      {/* Formatting row */}
-      <div className="format-toolbar-section">
-        <span className="format-toolbar-label">Format</span>
-        <div className="format-toolbar-buttons">
-          <button
-            type="button"
-            className="format-toolbar-btn"
-            onClick={() => format(FORMAT_TEXT_COMMAND, 'bold')}
-            title="Bold"
-          >
-            <strong>B</strong>
-          </button>
-          <button
-            type="button"
-            className="format-toolbar-btn"
-            onClick={() => format(FORMAT_TEXT_COMMAND, 'italic')}
-            title="Italic"
-          >
-            <em>I</em>
-          </button>
-          <button
-            type="button"
-            className="format-toolbar-btn"
-            onClick={() => format(FORMAT_TEXT_COMMAND, 'underline')}
-            title="Underline"
-          >
-            <u>U</u>
-          </button>
-          <button
-            type="button"
-            className="format-toolbar-btn"
-            onClick={() => format(FORMAT_TEXT_COMMAND, 'strikethrough')}
-            title="Strikethrough"
-          >
-            <s>S</s>
-          </button>
-        </div>
-      </div>
-
-      {/* Lists row */}
-      <div className="format-toolbar-section">
-        <span className="format-toolbar-label">Lists</span>
-        <div className="format-toolbar-buttons">
-          <button
-            type="button"
-            className="format-toolbar-btn"
-            onClick={() => format(INSERT_UNORDERED_LIST_COMMAND, undefined)}
-            title="Bullet List"
-          >
-            <span style={{ fontSize: '18px' }}>•</span>
-          </button>
-          <button
-            type="button"
-            className="format-toolbar-btn"
-            onClick={() => format(INSERT_ORDERED_LIST_COMMAND, undefined)}
-            title="Numbered List"
-          >
-            <span style={{ fontSize: '14px', fontWeight: 600 }}>1.</span>
-          </button>
-          <button
-            type="button"
-            className="format-toolbar-btn"
-            onClick={() => format(INSERT_CHECK_LIST_COMMAND, undefined)}
-            title="Checklist"
-          >
-            <span style={{ fontSize: '16px' }}>☐</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function RichTextEditor({
   initialDocJSON,
   initialPlainText = '',
@@ -241,9 +119,6 @@ export function RichTextEditor({
   return (
     <LexicalComposer initialConfig={initialConfig}>
       <div className="rich-editor-shell">
-        {/* Transforming format toolbar - appears when T button is toggled */}
-        <TransformingFormatToolbar isOpen={showFormatToolbar} />
-
         {/* Main editor surface */}
         <div className="rich-editor-surface">
           <RichTextPlugin
