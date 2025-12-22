@@ -577,7 +577,7 @@ a:hover {
   position: fixed;
   top: 16px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) scaleY(1);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -585,19 +585,18 @@ a:hover {
   z-index: 50;
   pointer-events: none;
   opacity: 1;
-  /* iOS Notes boomerang effect: 
-     - Quick acceleration out (0.42 start)
-     - Smooth deceleration in (0.58 end)
-     - Creates elastic "snap" feel */
-  transition: opacity 0.38s cubic-bezier(0.42, 0, 0.58, 1),
-              transform 0.38s cubic-bezier(0.42, 0, 0.58, 1),
-              scale 0.38s cubic-bezier(0.42, 0, 0.58, 1);
+  transform-origin: top center;
+  /* iOS Notes shrink/expand transition:
+     - Shrinks down to scaleY(0.1) with opacity fade
+     - Expands from scaleY(0.1) to scaleY(1)
+     - Creates "boomerang" shrink/expand effect */
+  transition: opacity 0.35s cubic-bezier(0.32, 0, 0.67, 0),
+              transform 0.35s cubic-bezier(0.32, 0, 0.67, 0);
 }
 
 .lab-toolbar-stack--hidden {
   opacity: 0;
-  transform: translateX(-50%) translateY(-12px);
-  scale: 0.94;
+  transform: translateX(-50%) scaleY(0.1);
   pointer-events: none;
 }
 

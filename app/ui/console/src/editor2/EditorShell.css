@@ -25,18 +25,19 @@
   position: absolute;
   top: 16px;
   left: 50%;
-  transform: translateX(-50%) translateY(-16px) scale(0.94);
+  transform: translateX(-50%) scaleY(0.1);
+  transform-origin: top center;
   opacity: 0;
   pointer-events: none;
   z-index: 100;
-  /* iOS Notes boomerang effect matching toolbar */
-  transition: opacity 0.38s cubic-bezier(0.42, 0, 0.58, 1),
-              transform 0.38s cubic-bezier(0.42, 0, 0.58, 1);
+  /* iOS Notes shrink/expand transition matching toolbar */
+  transition: opacity 0.35s cubic-bezier(0.32, 0, 0.67, 0),
+              transform 0.35s cubic-bezier(0.32, 0, 0.67, 0);
 }
 
 .formatting-palette--open {
   opacity: 1;
-  transform: translateX(-50%) translateY(0) scale(1);
+  transform: translateX(-50%) scaleY(1);
   pointer-events: auto;
 }
 

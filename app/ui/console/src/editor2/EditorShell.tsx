@@ -45,14 +45,19 @@ export function EditorShell({
     if (!formatToolbarEnabled) return;
 
     const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as Node;
+      const target = e.target as HTMLElement;
       
-      // Only stay open if click is inside the palette itself
+      // Stay open if click is inside palette
       if (paletteRef.current && paletteRef.current.contains(target)) {
-        return; // Click inside palette, don't close
+        return;
       }
       
-      // Any click outside the palette closes it (including editor)
+      // Stay open if clicking dropdown menu (which may be portaled outside)
+      if (target.closest('.format-style-menu') || target.closest('.format-style-dropdown')) {
+        return;
+      }
+      
+      // Any other click closes formatting mode
       onRequestExit?.();
     };
 
