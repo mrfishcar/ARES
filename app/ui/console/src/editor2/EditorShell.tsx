@@ -10,6 +10,7 @@
 import { useEffect, useRef, ReactNode } from 'react';
 import { FormattingPalette } from './FormattingPalette';
 import type { FormattingActions } from '../components/CodeMirrorEditorProps';
+import type { FormatState } from './plugins/FormatActionsPlugin';
 
 export interface EditorMode {
   mode: 'normal' | 'formatting';
@@ -18,6 +19,7 @@ export interface EditorMode {
 interface EditorShellProps {
   children: ReactNode;
   formatActions?: FormattingActions | null;
+  formatState?: FormatState | null;
   formatToolbarEnabled?: boolean; // Controlled from parent
   onModeChange?: (mode: 'normal' | 'formatting') => void;
   onRequestExit?: () => void; // Request to exit formatting mode
@@ -26,6 +28,7 @@ interface EditorShellProps {
 export function EditorShell({
   children,
   formatActions,
+  formatState,
   formatToolbarEnabled = false,
   onModeChange,
   onRequestExit
@@ -67,6 +70,7 @@ export function EditorShell({
           <FormattingPalette
             isOpen={formatToolbarEnabled}
             formatActions={formatActions}
+            formatState={formatState}
             onClose={() => onRequestExit?.()}
           />
         </div>

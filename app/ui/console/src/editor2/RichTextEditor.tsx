@@ -18,7 +18,7 @@ import { snapshotRichDoc } from './flattenRichDoc';
 import type { RichDocSnapshot } from './types';
 import type { NavigateToRange, FormattingActions } from '../components/CodeMirrorEditorProps';
 import { FocusDebugPlugin } from './plugins/FocusDebugPlugin';
-import { FormatActionsPlugin } from './plugins/FormatActionsPlugin';
+import { FormatActionsPlugin, type FormatState } from './plugins/FormatActionsPlugin';
 
 interface RichTextEditorProps {
   initialDocJSON?: SerializedEditorState | null;
@@ -29,6 +29,7 @@ interface RichTextEditorProps {
   navigateToRange?: NavigateToRange | null;
   showFormatToolbar?: boolean; // Controlled by T button in LabToolbar
   onFormatActionsReady?: (actions: FormattingActions) => void; // NEW: Callback for format actions
+  onFormatStateChange?: (state: FormatState) => void; // NEW: Callback for format state changes
 }
 
 // Simple plugin to load initial content
@@ -80,6 +81,7 @@ export function RichTextEditor({
   navigateToRange,
   showFormatToolbar = false,
   onFormatActionsReady,
+  onFormatStateChange,
 }: RichTextEditorProps) {
   console.log('[RichTextEditor] Rendering with:', {
     hasInitialDoc: !!initialDocJSON,
@@ -144,7 +146,12 @@ export function RichTextEditor({
           {initialPlainText && <InitialContentPlugin content={initialPlainText} />}
 
           {/* Format actions plugin */}
-          {onFormatActionsReady && <FormatActionsPlugin onActionsReady={onFormatActionsReady} />}
+          {onFormatActionsReady && (
+            <FormatActionsPlugin 
+              onActionsReady={onFormatActionsReady}
+              onFormatStateChange={onFormatStateChange}
+            />
+          )}
 
           {/* Plugins */}
           <HistoryPlugin />

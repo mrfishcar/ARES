@@ -6,6 +6,7 @@ import type { RichDocSnapshot } from './types';
 import { RichTextEditor } from './RichTextEditor';
 import type { NavigateToRange, FormattingActions } from '../components/CodeMirrorEditorProps';
 import { EditorShell } from './EditorShell';
+import type { FormatState } from './plugins/FormatActionsPlugin';
 import './EditorShell.css';
 
 interface Props {
@@ -37,9 +38,14 @@ export function RichEditorPane({
 }: Props) {
   const editorHeight = Math.max(400, typeof window !== 'undefined' ? window.innerHeight - 380 : 400);
   const [lexicalFormatActions, setLexicalFormatActions] = useState<FormattingActions | null>(null);
+  const [formatState, setFormatState] = useState<FormatState | null>(null);
 
   const handleActionsReady = useCallback((actions: FormattingActions) => {
     setLexicalFormatActions(actions);
+  }, []);
+
+  const handleFormatStateChange = useCallback((state: FormatState) => {
+    setFormatState(state);
   }, []);
 
   // Use Lexical actions if available, otherwise fallback to legacy
@@ -62,6 +68,7 @@ export function RichEditorPane({
           >
             <EditorShell
               formatActions={formatActions}
+              formatState={formatState}
               formatToolbarEnabled={formatToolbarEnabled}
               onModeChange={(mode) => {
                 console.log('[RichEditorPane] Mode changed to:', mode);
@@ -77,6 +84,7 @@ export function RichEditorPane({
                 navigateToRange={navigateToRange}
                 showFormatToolbar={false} // Always false - EditorShell handles formatting palette
                 onFormatActionsReady={handleActionsReady}
+                onFormatStateChange={handleFormatStateChange}
               />
             </EditorShell>
           </div>

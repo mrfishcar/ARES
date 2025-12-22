@@ -52,8 +52,18 @@ export interface CodeMirrorEditorProps {
 export interface FormattingActions {
   toggleBold: () => void;
   toggleItalic: () => void;
+  toggleUnderline?: () => void;
+  toggleStrikethrough?: () => void;
   toggleMonospace: () => void;
   cycleHeading: () => void;
   toggleQuote: () => void;
   insertDivider: () => void;
+  formatHeading?: (level: 'h1' | 'h2' | 'h3') => void;
+  formatParagraph?: () => void;
+  insertBulletList?: () => void;
+  insertNumberedList?: () => void;
+  insertCheckList?: () => void;
+  removeList?: () => void;
+  indent?: () => void;
+  outdent?: () => void;
 }

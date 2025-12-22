@@ -3,15 +3,19 @@
  * Two-row layout:
  * - Row 1: Style selector dropdown
  * - Row 2: Format controls (bold, italic, etc.)
+ * 
+ * Features active state tracking and keyboard shortcuts
  */
 
 import { ChevronDown, Bold, Italic, Underline, Strikethrough, List, ListOrdered, IndentDecrease, IndentIncrease, Quote } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import type { FormattingActions } from '../components/CodeMirrorEditorProps';
+import type { FormatState } from './plugins/FormatActionsPlugin';
 
 interface FormattingPaletteProps {
   isOpen: boolean;
   formatActions?: FormattingActions | null;
+  formatState?: FormatState | null;
   onClose: () => void;
 }
 
@@ -26,11 +30,23 @@ const STYLE_OPTIONS = [
 export function FormattingPalette({
   isOpen,
   formatActions,
+  formatState,
   onClose
 }: FormattingPaletteProps) {
   const [showStyleDropdown, setShowStyleDropdown] = useState(false);
   const [currentStyle, setCurrentStyle] = useState<string>('p');
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Update current style from format state
+  useEffect(() => {
+    if (formatState) {
+      if (formatState.blockType === 'h1') setCurrentStyle('h1');
+      else if (formatState.blockType === 'h2') setCurrentStyle('h2');
+      else if (formatState.blockType === 'h3') setCurrentStyle('h3');
+      else if (formatState.isCode) setCurrentStyle('mono');
+      else setCurrentStyle('p');
+    }
+  }, [formatState]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -45,6 +61,42 @@ export function FormattingPalette({
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, [showStyleDropdown]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const modKey = isMac ? e.metaKey : e.ctrlKey;
+
+      if (!modKey) return;
+
+      switch (e.key.toLowerCase()) {
+        case 'b':
+          e.preventDefault();
+          formatActions?.toggleBold();
+          break;
+        case 'i':
+          e.preventDefault();
+          formatActions?.toggleItalic();
+          break;
+        case 'u':
+          e.preventDefault();
+          formatActions?.toggleUnderline();
+          break;
+        case 'd':
+          if (e.shiftKey) {
+            e.preventDefault();
+            formatActions?.toggleStrikethrough();
+          }
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, formatActions]);
 
   const handleStyleChange = (style: string) => {
     setCurrentStyle(style);
@@ -108,10 +160,10 @@ export function FormattingPalette({
           <div className="formatting-palette__section formatting-palette__section--controls">
             <button
               type="button"
-              className="format-control"
+              className={`format-control ${formatState?.isBold ? 'format-control--active' : ''}`}
               onClick={formatActions?.toggleBold}
               disabled={!formatActions?.toggleBold}
-              title="Bold"
+              title="Bold (⌘B)"
               aria-label="Bold"
             >
               <Bold size={18} />
@@ -119,10 +171,10 @@ export function FormattingPalette({
 
             <button
               type="button"
-              className="format-control"
+              className={`format-control ${formatState?.isItalic ? 'format-control--active' : ''}`}
               onClick={formatActions?.toggleItalic}
               disabled={!formatActions?.toggleItalic}
-              title="Italic"
+              title="Italic (⌘I)"
               aria-label="Italic"
             >
               <Italic size={18} />
@@ -130,10 +182,10 @@ export function FormattingPalette({
 
             <button
               type="button"
-              className="format-control"
+              className={`format-control ${formatState?.isUnderline ? 'format-control--active' : ''}`}
               onClick={formatActions?.toggleUnderline}
               disabled={!formatActions?.toggleUnderline}
-              title="Underline"
+              title="Underline (⌘U)"
               aria-label="Underline"
             >
               <Underline size={18} />
@@ -141,10 +193,10 @@ export function FormattingPalette({
 
             <button
               type="button"
-              className="format-control"
+              className={`format-control ${formatState?.isStrikethrough ? 'format-control--active' : ''}`}
               onClick={formatActions?.toggleStrikethrough}
               disabled={!formatActions?.toggleStrikethrough}
-              title="Strikethrough"
+              title="Strikethrough (⌘⇧D)"
               aria-label="Strikethrough"
             >
               <Strikethrough size={18} />
@@ -179,9 +231,9 @@ export function FormattingPalette({
             <button
               type="button"
               className="format-control"
-              onClick={() => {/* TODO: outdent - needs Lexical implementation */}}
-              disabled
-              title="Decrease indent"
+              onClick={formatActions?.outdent}
+              disabled={!formatActions?.outdent}
+              title="Decrease indent (⇧Tab)"
               aria-label="Decrease indent"
             >
               <IndentDecrease size={18} />
@@ -190,9 +242,9 @@ export function FormattingPalette({
             <button
               type="button"
               className="format-control"
-              onClick={() => {/* TODO: indent - needs Lexical implementation */}}
-              disabled
-              title="Increase indent"
+              onClick={formatActions?.indent}
+              disabled={!formatActions?.indent}
+              title="Increase indent (Tab)"
               aria-label="Increase indent"
             >
               <IndentIncrease size={18} />
@@ -200,7 +252,7 @@ export function FormattingPalette({
 
             <button
               type="button"
-              className="format-control"
+              className={`format-control ${formatState?.isQuote ? 'format-control--active' : ''}`}
               onClick={formatActions?.toggleQuote}
               disabled={!formatActions?.toggleQuote}
               title="Quote block"
