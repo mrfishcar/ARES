@@ -776,7 +776,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [formatActions, setFormatActions] = useState<FormattingActions | null>(null);
   const [showFormatToolbar, setShowFormatToolbar] = useState(false);
   const formatHideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [formatToolbarEnabled, setFormatToolbarEnabled] = useState(true);
+  const [formatToolbarEnabled, setFormatToolbarEnabled] = useState(false);
 
   // Theme state
   const [theme, setTheme] = useState(loadThemePreference());

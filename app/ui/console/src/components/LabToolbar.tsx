@@ -173,102 +173,120 @@ export function LabToolbar({
     <>
     <div className="lab-toolbar-stack">
       <div className="lab-control-bar liquid-glass">
-      {/* Status indicator (save status is floated separately to avoid shifting buttons) */}
-      <div className="status-group">
-        <div
-          className={`status-indicator ${
-            jobStatus === 'running'
-              ? 'status-indicator--running'
-              : jobStatus === 'failed'
-                ? 'status-indicator--failed'
-                : ''
-          }`}
-        >
-          {statusLabel}
-        </div>
+      {/* Show regular toolbar or formatting toolbar based on formatToolbarEnabled */}
+      {!formatToolbarEnabled ? (
+        <>
+          {/* Status indicator (save status is floated separately to avoid shifting buttons) */}
+          <div className="status-group">
+            <div
+              className={`status-indicator ${
+                jobStatus === 'running'
+                  ? 'status-indicator--running'
+                  : jobStatus === 'failed'
+                    ? 'status-indicator--failed'
+                    : ''
+              }`}
+            >
+              {statusLabel}
+            </div>
 
-        {showPerfGauntlet && (
-          <button
-            type="button"
-            onClick={handleRunPerfGauntlet}
-            className="control-btn"
-            title="Run Perf Gauntlet (DEV)"
-            style={{ width: 'auto', padding: '6px 10px', fontSize: '11px' }}
-          >
-            Run Perf Gauntlet
-          </button>
-        )}
-      </div>
+            {showPerfGauntlet && (
+              <button
+                type="button"
+                onClick={handleRunPerfGauntlet}
+                className="control-btn"
+                title="Run Perf Gauntlet (DEV)"
+                style={{ width: 'auto', padding: '6px 10px', fontSize: '11px' }}
+              >
+                Run Perf Gauntlet
+              </button>
+            )}
+          </div>
 
-      {/* Icon controls */}
-      <div className="toolbar-actions">
-        <button
-          onClick={onNewDocument}
-          className="control-btn"
-          title="New document"
-          type="button"
-        >
-          <FilePlus size={16} strokeWidth={2} />
-        </button>
+          {/* Icon controls */}
+          <div className="toolbar-actions">
+            <button
+              onClick={onNewDocument}
+              className="control-btn"
+              title="New document"
+              type="button"
+            >
+              <FilePlus size={16} strokeWidth={2} />
+            </button>
 
-        <button
-          onClick={onEntityHighlightToggle}
-          className={`control-btn ${entityHighlightMode ? 'control-btn--active' : ''}`}
-          title="Toggle Entity Highlight Mode (tap entities to edit)"
-          type="button"
-        >
-          <Highlighter size={16} strokeWidth={2} />
-        </button>
+            <button
+              onClick={onEntityHighlightToggle}
+              className={`control-btn ${entityHighlightMode ? 'control-btn--active' : ''}`}
+              title="Toggle Entity Highlight Mode (tap entities to edit)"
+              type="button"
+            >
+              <Highlighter size={16} strokeWidth={2} />
+            </button>
 
-        <button
-          onClick={onThemeToggle}
-          className="control-btn"
-          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-          type="button"
-        >
-          {theme === 'dark' ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
-        </button>
+            <button
+              onClick={onThemeToggle}
+              className="control-btn"
+              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              type="button"
+            >
+              {theme === 'dark' ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
+            </button>
 
-        <button
-          onClick={onToggleFormatToolbar}
-          className={`control-btn ${formatToolbarEnabled ? 'control-btn--active' : ''}`}
-          title="Toggle formatting toolbar"
-          type="button"
-        >
-          <Type size={16} strokeWidth={2} />
-        </button>
+            <button
+              onClick={onToggleFormatToolbar}
+              className={`control-btn ${formatToolbarEnabled ? 'control-btn--active' : ''}`}
+              title="Toggle formatting toolbar"
+              type="button"
+            >
+              <Type size={16} strokeWidth={2} />
+            </button>
 
-        {/* Settings dropdown */}
-        <div className="settings-dropdown-container">
-          <button
-            ref={settingsButtonRef}
-            onClick={onSettingsToggle}
-            className="control-btn"
-            title="Settings"
-            type="button"
-            aria-expanded={showSettingsDropdown}
-            aria-label="Settings menu"
-          >
-            <Settings size={16} strokeWidth={2} />
-          </button>
-        </div>
-      </div>
-      </div>
-
-      <div className={`ghost-toolbar liquid-glass ${ghostVisible ? '' : 'ghost-toolbar--hidden'}`}>
-        {formatButtons.map(btn => (
-          <button
-            key={btn.key}
-            type="button"
-            className="ghost-format-btn"
-            onClick={btn.action}
-            title={btn.label}
-            aria-label={btn.label}
-            disabled={!btn.action}
-          >
-            {btn.icon}
-          </button>
-        ))}
+            {/* Settings dropdown */}
+            <div className="settings-dropdown-container">
+              <button
+                ref={settingsButtonRef}
+                onClick={onSettingsToggle}
+                className="control-btn"
+                title="Settings"
+                type="button"
+                aria-expanded={showSettingsDropdown}
+                aria-label="Settings menu"
+              >
+                <Settings size={16} strokeWidth={2} />
+              </button>
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Formatting toolbar - replaces regular controls */}
+          <div className="formatting-toolbar-content">
+            {formatButtons.map(btn => (
+              <button
+                key={btn.key}
+                type="button"
+                className="format-control-btn"
+                onClick={btn.action}
+                title={btn.label}
+                aria-label={btn.label}
+                disabled={!btn.action}
+              >
+                {btn.icon}
+              </button>
+            ))}
+            
+            {/* Exit formatting mode button */}
+            <button
+              onClick={onToggleFormatToolbar}
+              className="control-btn format-exit-btn"
+              title="Exit formatting mode"
+              type="button"
+            >
+              <Type size={16} strokeWidth={2} />
+            </button>
+          </div>
+        </>
+      )}
       </div>
     </div>
 

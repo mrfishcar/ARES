@@ -787,6 +787,47 @@ a:hover {
   stroke: white;
 }
 
+/* ===== FORMATTING TOOLBAR CONTENT ===== */
+.formatting-toolbar-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 4px;
+}
+
+.format-control-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid var(--border-soft);
+  background: color-mix(in srgb, var(--surface-strong) 85%, transparent);
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.16s var(--ease-in-out);
+}
+
+.format-control-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+}
+
+.format-control-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.format-control-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.format-exit-btn {
+  margin-left: 8px;
+  border-left: 1px solid var(--border-soft);
+  padding-left: 16px;
+}
+
 /* ===== DOCUMENTS SIDEBAR ===== */
 .sidebar-header {
   padding: 20px 16px;
