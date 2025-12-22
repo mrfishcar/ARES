@@ -47,28 +47,12 @@ export function EditorShell({
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Node;
       
-      // Check if click is inside the palette
+      // Only stay open if click is inside the palette itself
       if (paletteRef.current && paletteRef.current.contains(target)) {
         return; // Click inside palette, don't close
       }
       
-      // Check if click is inside the editor (contenteditable or any parent with role=textbox)
-      let element = target as HTMLElement;
-      while (element) {
-        if (
-          element.isContentEditable ||
-          element.getAttribute('contenteditable') === 'true' ||
-          element.getAttribute('role') === 'textbox' ||
-          element.classList?.contains('ContentEditable__root') ||
-          element.classList?.contains('rich-editor-wrapper') ||
-          element.classList?.contains('editor-shell__content')
-        ) {
-          return; // Click inside editor, don't close
-        }
-        element = element.parentElement as HTMLElement;
-      }
-      
-      // Click outside both palette and editor - close formatting mode
+      // Any click outside the palette closes it (including editor)
       onRequestExit?.();
     };
 
