@@ -1,5 +1,164 @@
 /* Clean editor styles with iOS Notes-style formatting toolbar */
 
+/* ========================================
+   TRANSFORMING FORMAT TOOLBAR - iOS Notes Style
+   Slides down from toolbar area when T button is toggled
+   ======================================== */
+
+.transforming-format-toolbar {
+  position: relative;
+  width: 100%;
+  max-height: 0;
+  overflow: hidden;
+  background: var(--bg-primary, #0f1115);
+  border-bottom: 1px solid transparent;
+  opacity: 0;
+  transition: max-height 0.35s cubic-bezier(0.32, 0.72, 0, 1),
+              opacity 0.25s ease-out,
+              border-color 0.25s ease-out;
+}
+
+.transforming-format-toolbar--open {
+  max-height: 300px;
+  opacity: 1;
+  border-bottom-color: var(--border-color, #1f2937);
+}
+
+/* Section container */
+.format-toolbar-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.format-toolbar-section:last-child {
+  border-bottom: none;
+}
+
+/* Section label - iOS Notes style */
+.format-toolbar-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary, #9ca3af);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+/* Button container */
+.format-toolbar-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Format buttons - iOS style */
+.format-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary, #e5e7eb);
+  font-size: 17px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.format-toolbar-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.format-toolbar-btn:active {
+  background: rgba(255, 255, 255, 0.12);
+  transform: scale(0.96);
+  transition: all 0.08s ease;
+}
+
+/* Text-style buttons (Title, Heading, etc.) */
+.format-toolbar-btn--text {
+  font-size: 15px;
+  font-weight: 500;
+  padding: 0 16px;
+  min-width: auto;
+}
+
+/* Active state */
+.format-toolbar-btn--active {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: rgb(96, 165, 250);
+  font-weight: 600;
+}
+
+/* iPad refinements */
+@media (max-width: 1024px) {
+  .format-toolbar-btn {
+    min-width: 44px; /* iOS recommended touch target */
+    height: 44px;
+    font-size: 18px;
+  }
+  
+  .format-toolbar-btn--text {
+    font-size: 16px;
+    padding: 0 18px;
+  }
+  
+  .format-toolbar-section {
+    padding: 12px 16px;
+  }
+  
+  .format-toolbar-label {
+    font-size: 12px;
+    min-width: 70px;
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .format-toolbar-btn {
+    border-color: rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.03);
+  }
+  
+  .format-toolbar-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .format-toolbar-btn:active {
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .transforming-format-toolbar {
+    transition-duration: 0.15s;
+  }
+  
+  .format-toolbar-btn:active {
+    transform: none;
+  }
+}
+
+/* ========================================
+   EDITOR SHELL
+   ======================================== */
+
 .rich-editor-shell {
   position: relative;
   display: flex;
@@ -12,102 +171,6 @@
   border-radius: 12px;
   border: 1px solid var(--border-color, #1f2937);
   overflow: hidden;
-}
-
-/* iOS Notes-style Formatting Toolbar */
-.rich-formatting-toolbar {
-  /* Use sticky instead of fixed to avoid creating new stacking context */
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  padding: 0 20px;
-  background: var(--bg-primary, #0f1115);
-  border-bottom: 1px solid var(--border-color, #1f2937);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  /* Remove transform from toolbar - use margin instead for animation */
-  margin-top: 0;
-  transition: all 0.4s cubic-bezier(0.34, 1.25, 0.64, 1); /* iOS spring curve */
-}
-
-.rich-formatting-toolbar--open {
-  max-height: 300px;
-  padding-top: 16px;
-  padding-bottom: 16px;
-  opacity: 1;
-  margin-top: 0;
-}
-
-.rich-formatting-toolbar--closing {
-  transition: all 0.3s cubic-bezier(0.32, 0, 0.67, 0); /* Ease out */
-}
-
-/* Formatting rows with staggered animation */
-.rich-formatting-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  opacity: 0;
-  /* Remove transform, use margin for animation */
-  margin-top: 0;
-  transition: all 0.3s cubic-bezier(0.34, 1.25, 0.64, 1);
-  transition-delay: var(--delay, 0s);
-}
-
-.rich-formatting-toolbar--open .rich-formatting-row {
-  opacity: 1;
-  margin-top: 0;
-}
-
-.rich-formatting-toolbar--closing .rich-formatting-row {
-  opacity: 0;
-  margin-top: 0;
-  transition: all 0.2s ease-out;
-  transition-delay: 0s;
-}
-
-/* Format buttons - iOS style */
-.rich-format-btn {
-  padding: 10px 14px;
-  min-height: 42px;
-  min-width: 42px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-primary, #e5e7eb);
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
-  /* Remove transform animations that can break focus on iOS */
-  transition: all 0.2s ease;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.rich-format-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.rich-format-btn:active {
-  background: rgba(255, 255, 255, 0.15);
-  transition: all 0.1s ease;
-}
-
-/* Active state for buttons */
-.rich-format-btn[data-active="true"] {
-  background: rgba(59, 130, 246, 0.2);
-  border-color: rgba(59, 130, 246, 0.4);
-  color: rgb(96, 165, 250);
 }
 
 /* Editor surface */
@@ -277,51 +340,15 @@
 
 /* iPad-specific refinements */
 @media (max-width: 1024px) {
-  .rich-format-btn {
-    min-height: 44px; /* iOS recommended touch target */
-    min-width: 44px;
-    padding: 12px 16px;
-  }
-
-  .rich-formatting-row {
-    gap: 10px;
-  }
-
-  .rich-formatting-toolbar {
-    padding: 0 16px;
-  }
-
-  .rich-formatting-toolbar--open {
-    padding-top: 14px;
-    padding-bottom: 14px;
-  }
-  
   /* Ensure editor is properly scrollable on iPad */
   .rich-editor-surface {
     -webkit-overflow-scrolling: auto; /* Use native scrolling on iPad */
   }
 }
 
-/* Smooth animations for iOS - but avoid transforms */
-@media (prefers-reduced-motion: no-preference) {
-  .rich-formatting-toolbar,
-  .rich-formatting-row {
-    transition-timing-function: cubic-bezier(0.34, 1.25, 0.64, 1);
-  }
-  
-  .rich-format-btn {
-    transition-timing-function: ease-out;
-  }
-}
-
 /* Reduce motion for accessibility */
 @media (prefers-reduced-motion: reduce) {
-  .rich-formatting-toolbar,
-  .rich-formatting-row {
+  .floating-format-toolbar {
     transition-duration: 0.1s;
-  }
-
-  .rich-formatting-toolbar {
-    transition-timing-function: ease;
   }
 }
