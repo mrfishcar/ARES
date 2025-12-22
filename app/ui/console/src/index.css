@@ -587,11 +587,12 @@ a:hover {
   opacity: 1;
   transform-origin: right center;
   /* iOS Notes sequential shrink-to-right transition:
-     - Toolbar A shrinks to right edge FIRST (0.25s)
-     - Toolbar B expands from right AFTER (delay 0.25s)
+     - Toolbar A shrinks to right edge FIRST (0.3s transform)
+     - Opacity fades near end (0.2s, delayed 0.15s) for smooth disappear
+     - Toolbar B expands from right AFTER (delay 0.3s)
      - Creates sequential morphing effect, not simultaneous fade */
-  transition: opacity 0.25s cubic-bezier(0.32, 0, 0.67, 0) 0s,
-              transform 0.25s cubic-bezier(0.32, 0, 0.67, 0) 0s;
+  transition: opacity 0.2s cubic-bezier(0.32, 0, 0.67, 0) 0.15s,
+              transform 0.3s cubic-bezier(0.32, 0, 0.67, 0) 0s;
 }
 
 .lab-toolbar-stack--hidden {
