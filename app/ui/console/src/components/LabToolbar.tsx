@@ -154,7 +154,6 @@ export function LabToolbar({
     runPerfGauntlet();
   };
 
-  const ghostVisible = formatToolbarEnabled && showFormatToolbar && Boolean(formatActions);
   const formatButtons: Array<{
     key: string;
     label: string;

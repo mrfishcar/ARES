@@ -2305,7 +2305,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
             onEntityFocus={handleNavigateToEntity}
             showEntityIndicators={settings.showEntityIndicators}
             navigateToRange={navigateRequest}
-            showFormatToolbar={formatToolbarEnabled}
+            showFormatToolbar={false}
           />
         ) : (
           <EditorPane
