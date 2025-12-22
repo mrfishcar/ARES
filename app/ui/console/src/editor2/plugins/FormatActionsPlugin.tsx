@@ -23,8 +23,14 @@ import {
   REMOVE_LIST_COMMAND,
   $isListNode
 } from '@lexical/list';
-import { $getNearestNodeOfType } from '@lexical/utils';
-import { $isHeadingNode, $createQuoteNode, $isQuoteNode } from '@lexical/rich-text';
+import { $getNearestNodeOfType, $setBlocksType } from '@lexical/selection';
+import { 
+  $isHeadingNode, 
+  $createQuoteNode, 
+  $isQuoteNode, 
+  $createHeadingNode 
+} from '@lexical/rich-text';
+import { $createParagraphNode } from 'lexical';
 import type { FormattingActions } from '../../components/CodeMirrorEditorProps';
 
 export interface FormatState {
@@ -131,11 +137,11 @@ export function FormatActionsPlugin({ onActionsReady, onFormatStateChange }: For
             const parent = firstNode.getParent();
             
             if ($isQuoteNode(parent)) {
-              // Remove quote
-              editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'paragraph');
+              // Remove quote - convert back to paragraph
+              $setBlocksType(selection, () => $createParagraphNode());
             } else {
               // Add quote
-              editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'quote');
+              $setBlocksType(selection, () => $createQuoteNode());
             }
           }
         });
@@ -150,21 +156,19 @@ export function FormatActionsPlugin({ onActionsReady, onFormatStateChange }: For
               ? anchorNode
               : anchorNode.getTopLevelElementOrThrow();
             
-            const headingNode = $getNearestNodeOfType(element, $isHeadingNode);
-            
-            if (headingNode) {
-              const tag = headingNode.getTag();
+            if ($isHeadingNode(element)) {
+              const tag = element.getTag();
               // Cycle: h1 -> h2 -> h3 -> p
               if (tag === 'h1') {
-                editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'h2');
+                $setBlocksType(selection, () => $createHeadingNode('h2'));
               } else if (tag === 'h2') {
-                editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'h3');
+                $setBlocksType(selection, () => $createHeadingNode('h3'));
               } else {
-                editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'paragraph');
+                $setBlocksType(selection, () => $createParagraphNode());
               }
             } else {
               // Not a heading, make it h1
-              editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'h1');
+              $setBlocksType(selection, () => $createHeadingNode('h1'));
             }
           }
         });
@@ -176,11 +180,21 @@ export function FormatActionsPlugin({ onActionsReady, onFormatStateChange }: For
       },
       
       formatHeading: (level: 'h1' | 'h2' | 'h3') => {
-        editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, level);
+        editor.update(() => {
+          const selection = $getSelection();
+          if ($isRangeSelection(selection)) {
+            $setBlocksType(selection, () => $createHeadingNode(level));
+          }
+        });
       },
       
       formatParagraph: () => {
-        editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'paragraph');
+        editor.update(() => {
+          const selection = $getSelection();
+          if ($isRangeSelection(selection)) {
+            $setBlocksType(selection, () => $createParagraphNode());
+          }
+        });
       },
       
       insertBulletList: () => {

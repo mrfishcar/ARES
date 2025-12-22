@@ -83,12 +83,12 @@ export function FormattingPalette({
           break;
         case 'u':
           e.preventDefault();
-          formatActions?.toggleUnderline();
+          formatActions?.toggleUnderline?.();
           break;
         case 'd':
           if (e.shiftKey) {
             e.preventDefault();
-            formatActions?.toggleStrikethrough();
+            formatActions?.toggleStrikethrough?.();
           }
           break;
       }
