@@ -3,7 +3,9 @@ import type { EntitySpan } from '../types/entities';
 import { EntityIndicators } from '../components/EntityIndicators';
 import type { RichDocSnapshot } from './types';
 import { RichTextEditor } from './RichTextEditor';
-import type { NavigateToRange } from '../components/CodeMirrorEditorProps';
+import type { NavigateToRange, FormattingActions } from '../components/CodeMirrorEditorProps';
+import { EditorShell } from './EditorShell';
+import './EditorShell.css';
 
 interface Props {
   richDoc: SerializedEditorState | null;
@@ -14,6 +16,8 @@ interface Props {
   showEntityIndicators?: boolean;
   navigateToRange?: NavigateToRange | null;
   showFormatToolbar?: boolean; // Controlled by T button in LabToolbar
+  formatToolbarEnabled?: boolean; // NEW: Whether formatting mode is active
+  formatActions?: FormattingActions | null; // NEW: Formatting action callbacks
 }
 
 export function RichEditorPane({
@@ -25,6 +29,8 @@ export function RichEditorPane({
   navigateToRange,
   showEntityIndicators = true,
   showFormatToolbar = false,
+  formatToolbarEnabled = false,
+  formatActions,
 }: Props) {
   const editorHeight = Math.max(400, typeof window !== 'undefined' ? window.innerHeight - 380 : 400);
 
@@ -43,15 +49,23 @@ export function RichEditorPane({
             className="editor-with-indicators"
             style={{ flex: 1, width: '100%', height: '100%' }}
           >
-            <RichTextEditor
-              initialDocJSON={richDoc ?? undefined}
-              initialPlainText={plainText}
-              entities={entities}
-              onChange={onChange}
-              onEntityPress={onEntityFocus}
-              navigateToRange={navigateToRange}
-              showFormatToolbar={showFormatToolbar}
-            />
+            <EditorShell
+              formatActions={formatActions}
+              formatToolbarEnabled={formatToolbarEnabled}
+              onModeChange={(mode) => {
+                console.log('[RichEditorPane] Mode changed to:', mode);
+              }}
+            >
+              <RichTextEditor
+                initialDocJSON={richDoc ?? undefined}
+                initialPlainText={plainText}
+                entities={entities}
+                onChange={onChange}
+                onEntityPress={onEntityFocus}
+                navigateToRange={navigateToRange}
+                showFormatToolbar={false} // Always false - EditorShell handles formatting palette
+              />
+            </EditorShell>
           </div>
         </div>
       </div>

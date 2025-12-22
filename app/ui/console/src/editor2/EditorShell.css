@@ -1,0 +1,309 @@
+/* ========================================
+   EDITOR SHELL - Mode Management Container
+   ======================================== */
+
+.editor-shell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-shell__content {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ========================================
+   FORMATTING PALETTE - iOS Notes Style
+   Floating palette with smooth animations
+   ======================================== */
+
+.formatting-palette {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-12px);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 100;
+  transition: opacity 0.25s cubic-bezier(0.32, 0.72, 0, 1),
+              transform 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.formatting-palette--open {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+.formatting-palette__inner {
+  background: var(--surface-strong, rgba(30, 30, 30, 0.95));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.24),
+              0 2px 8px rgba(0, 0, 0, 0.12);
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  min-width: 480px;
+  isolation: isolate;
+}
+
+.formatting-palette__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.formatting-palette__row:not(:last-child) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 8px;
+  margin-bottom: 4px;
+}
+
+.formatting-palette__section {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+}
+
+.formatting-palette__section--controls {
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+/* ========================================
+   STYLE DROPDOWN - Notes-style selector
+   ======================================== */
+
+.format-style-dropdown {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary, #e5e7eb);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  min-width: 140px;
+  justify-content: space-between;
+}
+
+.format-style-dropdown:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.format-style-dropdown:active {
+  background: rgba(255, 255, 255, 0.12);
+  transform: scale(0.98);
+}
+
+/* Style dropdown menu */
+.format-style-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  background: var(--surface-strong, rgba(30, 30, 30, 0.98));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 6px;
+  min-width: 160px;
+  z-index: 110;
+  animation: slideInDown 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.format-style-option {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary, #e5e7eb);
+  font-size: 15px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  text-align: left;
+}
+
+.format-style-option:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.format-style-option--active {
+  background: rgba(59, 130, 246, 0.15);
+  color: rgb(96, 165, 250);
+  font-weight: 500;
+}
+
+/* ========================================
+   FORMAT CONTROLS - Action buttons
+   ======================================== */
+
+.format-control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary, #e5e7eb);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.format-control:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.format-control:active:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  transform: scale(0.96);
+  transition: all 0.08s ease;
+}
+
+.format-control:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.format-control-divider {
+  width: 1px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0 4px;
+}
+
+/* ========================================
+   RESPONSIVE - iPad optimizations
+   ======================================== */
+
+@media (max-width: 1024px) {
+  .formatting-palette__inner {
+    min-width: 420px;
+  }
+
+  .format-control {
+    width: 44px; /* iOS recommended touch target */
+    height: 44px;
+  }
+
+  .format-style-dropdown {
+    min-width: 150px;
+    padding: 8px 14px;
+    font-size: 16px;
+  }
+
+  .format-style-option {
+    padding: 10px 14px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .formatting-palette__inner {
+    min-width: calc(100vw - 32px);
+    max-width: 480px;
+  }
+
+  .formatting-palette__section--controls {
+    justify-content: space-between;
+  }
+}
+
+/* ========================================
+   DARK MODE ADJUSTMENTS
+   ======================================== */
+
+@media (prefers-color-scheme: light) {
+  .formatting-palette__inner {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+
+  .format-style-dropdown,
+  .format-control {
+    border-color: rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  .format-style-dropdown:hover,
+  .format-control:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.08);
+    border-color: rgba(0, 0, 0, 0.15);
+  }
+
+  .format-style-menu {
+    background: rgba(255, 255, 255, 0.98);
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+
+  .format-control-divider {
+    background: rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* ========================================
+   ACCESSIBILITY
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .formatting-palette {
+    transition-duration: 0.1s;
+  }
+
+  .format-control:active:not(:disabled),
+  .format-style-dropdown:active {
+    transform: none;
+  }
+
+  @keyframes slideInDown {
+    from, to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* Focus visible for keyboard navigation */
+.format-control:focus-visible,
+.format-style-dropdown:focus-visible,
+.format-style-option:focus-visible {
+  outline: 2px solid rgb(96, 165, 250);
+  outline-offset: 2px;
+}

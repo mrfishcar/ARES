@@ -584,6 +584,15 @@ a:hover {
   gap: 8px;
   z-index: 50;
   pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.25s cubic-bezier(0.32, 0.72, 0, 1),
+              transform 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.lab-toolbar-stack--hidden {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-8px);
+  pointer-events: none;
 }
 
 .lab-control-bar {

@@ -170,122 +170,88 @@ export function LabToolbar({
 
   return (
     <>
-    <div className="lab-toolbar-stack">
+    <div className={`lab-toolbar-stack ${formatToolbarEnabled ? 'lab-toolbar-stack--hidden' : ''}`}>
       <div className="lab-control-bar liquid-glass">
-      {/* Show regular toolbar or formatting toolbar based on formatToolbarEnabled */}
-      {!formatToolbarEnabled ? (
-        <>
-          {/* Status indicator (save status is floated separately to avoid shifting buttons) */}
-          <div className="status-group">
-            <div
-              className={`status-indicator ${
-                jobStatus === 'running'
-                  ? 'status-indicator--running'
-                  : jobStatus === 'failed'
-                    ? 'status-indicator--failed'
-                    : ''
-              }`}
-            >
-              {statusLabel}
-            </div>
-
-            {showPerfGauntlet && (
-              <button
-                type="button"
-                onClick={handleRunPerfGauntlet}
-                className="control-btn"
-                title="Run Perf Gauntlet (DEV)"
-                style={{ width: 'auto', padding: '6px 10px', fontSize: '11px' }}
-              >
-                Run Perf Gauntlet
-              </button>
-            )}
+        {/* Status indicator (save status is floated separately to avoid shifting buttons) */}
+        <div className="status-group">
+          <div
+            className={`status-indicator ${
+              jobStatus === 'running'
+                ? 'status-indicator--running'
+                : jobStatus === 'failed'
+                  ? 'status-indicator--failed'
+                  : ''
+            }`}
+          >
+            {statusLabel}
           </div>
 
-          {/* Icon controls */}
-          <div className="toolbar-actions">
+          {showPerfGauntlet && (
             <button
-              onClick={onNewDocument}
+              type="button"
+              onClick={handleRunPerfGauntlet}
               className="control-btn"
-              title="New document"
-              type="button"
+              title="Run Perf Gauntlet (DEV)"
+              style={{ width: 'auto', padding: '6px 10px', fontSize: '11px' }}
             >
-              <FilePlus size={16} strokeWidth={2} />
+              Run Perf Gauntlet
             </button>
+          )}
+        </div>
 
-            <button
-              onClick={onEntityHighlightToggle}
-              className={`control-btn ${entityHighlightMode ? 'control-btn--active' : ''}`}
-              title="Toggle Entity Highlight Mode (tap entities to edit)"
-              type="button"
-            >
-              <Highlighter size={16} strokeWidth={2} />
-            </button>
+        {/* Icon controls */}
+        <div className="toolbar-actions">
+          <button
+            onClick={onNewDocument}
+            className="control-btn"
+            title="New document"
+            type="button"
+          >
+            <FilePlus size={16} strokeWidth={2} />
+          </button>
 
+          <button
+            onClick={onEntityHighlightToggle}
+            className={`control-btn ${entityHighlightMode ? 'control-btn--active' : ''}`}
+            title="Toggle Entity Highlight Mode (tap entities to edit)"
+            type="button"
+          >
+            <Highlighter size={16} strokeWidth={2} />
+          </button>
+
+          <button
+            onClick={onThemeToggle}
+            className="control-btn"
+            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            type="button"
+          >
+            {theme === 'dark' ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
+          </button>
+
+          <button
+            onClick={onToggleFormatToolbar}
+            className={`control-btn ${formatToolbarEnabled ? 'control-btn--active' : ''}`}
+            title="Toggle formatting mode"
+            type="button"
+          >
+            <Type size={16} strokeWidth={2} />
+          </button>
+
+          {/* Settings dropdown */}
+          <div className="settings-dropdown-container">
             <button
-              onClick={onThemeToggle}
+              ref={settingsButtonRef}
+              onClick={onSettingsToggle}
               className="control-btn"
-              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              title="Settings"
               type="button"
+              aria-expanded={showSettingsDropdown}
+              aria-label="Settings menu"
             >
-              {theme === 'dark' ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
-            </button>
-
-            <button
-              onClick={onToggleFormatToolbar}
-              className={`control-btn ${formatToolbarEnabled ? 'control-btn--active' : ''}`}
-              title="Toggle formatting toolbar"
-              type="button"
-            >
-              <Type size={16} strokeWidth={2} />
-            </button>
-
-            {/* Settings dropdown */}
-            <div className="settings-dropdown-container">
-              <button
-                ref={settingsButtonRef}
-                onClick={onSettingsToggle}
-                className="control-btn"
-                title="Settings"
-                type="button"
-                aria-expanded={showSettingsDropdown}
-                aria-label="Settings menu"
-              >
-                <Settings size={16} strokeWidth={2} />
-              </button>
-            </div>
-          </div>
-        </>
-      ) : (
-        <>
-          {/* Formatting toolbar - replaces regular controls */}
-          <div className="formatting-toolbar-content">
-            {formatButtons.map(btn => (
-              <button
-                key={btn.key}
-                type="button"
-                className="format-control-btn"
-                onClick={btn.action}
-                title={btn.label}
-                aria-label={btn.label}
-                disabled={!btn.action}
-              >
-                {btn.icon}
-              </button>
-            ))}
-            
-            {/* Exit formatting mode button */}
-            <button
-              onClick={onToggleFormatToolbar}
-              className="control-btn format-exit-btn"
-              title="Exit formatting mode"
-              type="button"
-            >
-              <Type size={16} strokeWidth={2} />
+              <Settings size={16} strokeWidth={2} />
             </button>
           </div>
-        </>
-      )}
+        </div>
       </div>
     </div>
 
