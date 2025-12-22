@@ -772,6 +772,10 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   } | null>(null);
   const [navigateRequest, setNavigateRequest] = useState<NavigateToRange | null>(null);
   const [editorFocused, setEditorFocused] = useState(false);
+  
+  // Track extraction errors to prevent spam
+  const [lastExtractionError, setLastExtractionError] = useState<string | null>(null);
+  const lastExtractionErrorTimeRef = useRef<number>(0);
   const [hasActiveSelection, setHasActiveSelection] = useState(false);
   const [formatActions, setFormatActions] = useState<FormattingActions | null>(null);
   const [showFormatToolbar, setShowFormatToolbar] = useState(false);
@@ -994,8 +998,28 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
         console.log(`[ARES ENGINE] Extracted ${data.entities.length} entities, ${data.relations?.length || 0} relations`);
       } catch (error) {
-        console.error('Extraction failed:', error);
-        toast.error(`Extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        const now = Date.now();
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        
+        // Silently handle connection refused (expected when backend not running)
+        if (errorMessage.includes('Failed to fetch') || errorMessage.includes('ECONNREFUSED')) {
+          // Only show error once per session or every 60 seconds
+          if (!lastExtractionError || (now - lastExtractionErrorTimeRef.current) > 60000) {
+            console.warn('[Extraction] Backend unavailable (extraction disabled)');
+            setLastExtractionError(errorMessage);
+            lastExtractionErrorTimeRef.current = now;
+            // Don't show toast - this is expected in dev mode
+          }
+        } else {
+          // Real errors - deduplicate and rate limit
+          if (lastExtractionError !== errorMessage || (now - lastExtractionErrorTimeRef.current) > 5000) {
+            console.error('Extraction failed:', error);
+            toast.error(`Extraction failed: ${errorMessage}`);
+            setLastExtractionError(errorMessage);
+            lastExtractionErrorTimeRef.current = now;
+          }
+        }
+        
         setEntities([]);
         setRelations([]);
         setBooknlpResult(null);
