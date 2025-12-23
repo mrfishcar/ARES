@@ -1,5 +1,5 @@
 import './styles.css';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import type { SerializedEditorState } from 'lexical';
 import { $getRoot, $createParagraphNode, $createTextNode, FORMAT_TEXT_COMMAND, FORMAT_ELEMENT_COMMAND } from 'lexical';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
@@ -83,6 +83,13 @@ export function RichTextEditor({
   onFormatActionsReady,
   onFormatStateChange,
 }: RichTextEditorProps) {
+  // Track initial content to avoid re-initialization on re-renders
+  // This ref captures the initial value ONCE and never changes
+  const initialContentRef = useRef<string | null>(null);
+  if (initialContentRef.current === null) {
+    initialContentRef.current = initialPlainText;
+  }
+
   console.log('[RichTextEditor] Rendering with:', {
     hasInitialDoc: !!initialDocJSON,
     initialTextLength: initialPlainText.length,
@@ -142,8 +149,8 @@ export function RichTextEditor({
             ErrorBoundary={LexicalErrorBoundary}
           />
 
-          {/* Load initial content if provided */}
-          {initialPlainText && <InitialContentPlugin content={initialPlainText} />}
+          {/* Load initial content ONLY if there was content on first mount */}
+          {initialContentRef.current && <InitialContentPlugin content={initialContentRef.current} />}
 
           {/* Format actions plugin */}
           {onFormatActionsReady && (
