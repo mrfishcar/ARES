@@ -2,44 +2,78 @@
  * iOS Viewport Height Fix
  * 
  * Dynamically updates --app-viewport-height CSS variable to handle iOS Safari's
- * collapsing/expanding address bar and keyboard behavior.
+ * collapsing/expanding address bar behavior.
+ * 
+ * IMPORTANT: We do NOT update viewport height when the keyboard opens/closes
+ * because that causes jarring layout shifts. Instead, we only update on:
+ * - Initial load
+ * - Orientation changes
+ * - Window resize when keyboard is NOT open
  * 
  * This prevents layout jumps and ensures proper editor behavior on iPad.
  */
+
+// Track the initial viewport height (before keyboard)
+let initialViewportHeight: number | null = null;
 
 export function initializeIOSViewportFix() {
   // Only run in browser
   if (typeof window === 'undefined') return;
 
-  const setViewportHeight = () => {
-    // Try visualViewport first (most accurate for iOS with keyboard)
+  const getFullViewportHeight = () => {
+    // Use window.innerHeight as the "full" height (without keyboard)
+    return window.innerHeight;
+  };
+
+  const isKeyboardLikelyOpen = () => {
     if ('visualViewport' in window && window.visualViewport) {
-      const vh = window.visualViewport.height;
-      document.documentElement.style.setProperty('--app-viewport-height', `${vh}px`);
-    } else {
-      // Fallback to window.innerHeight
-      const vh = window.innerHeight;
-      document.documentElement.style.setProperty('--app-viewport-height', `${vh}px`);
+      // If visualViewport is significantly smaller than window, keyboard is likely open
+      const ratio = window.visualViewport.height / window.innerHeight;
+      return ratio < 0.85; // Keyboard typically takes >15% of screen
     }
+    return false;
+  };
+
+  const setViewportHeight = (forceUpdate = false) => {
+    // Don't update viewport height when keyboard is open (causes layout shift)
+    // Only update when keyboard is closed or on forced updates (init, orientation)
+    if (!forceUpdate && isKeyboardLikelyOpen()) {
+      return;
+    }
+
+    const vh = getFullViewportHeight();
+    
+    // Store initial height for reference
+    if (initialViewportHeight === null) {
+      initialViewportHeight = vh;
+    }
+
+    document.documentElement.style.setProperty('--app-viewport-height', `${vh}px`);
   };
 
   // Set initial value
-  setViewportHeight();
+  setViewportHeight(true);
 
-  // Update on resize (includes keyboard open/close on iOS)
-  window.addEventListener('resize', setViewportHeight);
+  // Update on window resize only when keyboard is closed
+  window.addEventListener('resize', () => setViewportHeight(false));
 
-  // Update on visualViewport changes (more reliable for iOS keyboard)
-  if ('visualViewport' in window && window.visualViewport) {
-    window.visualViewport.addEventListener('resize', setViewportHeight);
-    window.visualViewport.addEventListener('scroll', setViewportHeight);
-  }
-
-  // Update on orientation change
+  // Update on orientation change (force update after delay)
   window.addEventListener('orientationchange', () => {
     // Delay to let the orientation change complete
-    setTimeout(setViewportHeight, 100);
+    setTimeout(() => setViewportHeight(true), 150);
   });
+
+  // Listen to visualViewport scroll to handle address bar show/hide
+  // but NOT resize (which happens when keyboard opens)
+  if ('visualViewport' in window && window.visualViewport) {
+    // Only update on scroll (address bar changes), not resize (keyboard)
+    window.visualViewport.addEventListener('scroll', () => {
+      // Only update if keyboard is not open
+      if (!isKeyboardLikelyOpen()) {
+        setViewportHeight(false);
+      }
+    });
+  }
 
   console.log('[iOS Viewport] Initialized viewport height fix');
 }
