@@ -27,10 +27,14 @@ body {
   min-height: var(--app-viewport-height);
   overflow: hidden;
   overscroll-behavior: none;
-  position: fixed;
+  /* Remove position: fixed - can cause issues with iOS keyboard scrolling */
+  /* Instead use overflow: hidden to prevent body scroll */
+  position: relative;
   width: 100%;
   margin: 0;
   padding: 0;
+  /* Ensure background extends beyond viewport for iOS keyboard scenarios */
+  background-attachment: fixed;
 }
 
 :root {
@@ -509,6 +513,9 @@ a:hover {
   /* Use native scrolling instead */
   /* Position relative to body's fixed positioning */
   position: relative;
+  /* Prevent iOS from auto-scrolling when keyboard opens */
+  scroll-padding-top: 0;
+  scroll-padding-bottom: 0;
 }
 
 /* Hamburger Button - ChatGPT style */

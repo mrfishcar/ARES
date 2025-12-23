@@ -75,6 +75,24 @@ export function initializeIOSViewportFix() {
     });
   }
 
+  // Prevent iOS from auto-scrolling to focused elements (causes UI shift)
+  // This allows the app to handle scrolling manually
+  document.addEventListener('focusin', (e) => {
+    const target = e.target as HTMLElement;
+    
+    // Only prevent on contentEditable elements or textareas in the editor
+    if (target.contentEditable === 'true' || 
+        target.classList.contains('rich-content') ||
+        target.closest('.rich-editor-surface')) {
+      // Prevent the default scroll-into-view behavior
+      // The editor will handle its own scrolling
+      e.preventDefault();
+      
+      // Optionally, manually scroll just the editor container if needed
+      // but don't move the entire page
+    }
+  }, { capture: true });
+
   console.log('[iOS Viewport] Initialized viewport height fix');
 }
 
