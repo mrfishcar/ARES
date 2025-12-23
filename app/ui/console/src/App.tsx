@@ -110,8 +110,6 @@ function AppShell() {
   const location = useLocation();
   const motionRootRef = useRef<HTMLDivElement>(null);
   const motionTimerRef = useRef<number | null>(null);
-  const viewportBaseHeightRef = useRef<number | null>(null);
-  const viewportBaseWidthRef = useRef<number | null>(null);
 
   // Global focus/selection debugging - helps track caret interruption issues on iPad
   useEffect(() => {
@@ -172,54 +170,44 @@ function AppShell() {
     };
   }, []);
 
-  // Lock viewport height to avoid keyboard-induced layout jumps (esp. iPad Safari)
+  // Update visual viewport height for iOS keyboard handling
+  // This ensures the editor container shrinks when keyboard appears
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const docEl = document.documentElement;
     const viewport = window.visualViewport;
-    const setViewportHeight = (height: number) => {
-      docEl.style.setProperty('--app-viewport-height', `${height}px`);
-    };
-
-    const initialHeight = viewport?.height ?? window.innerHeight;
-    const initialWidth = viewport?.width ?? window.innerWidth;
-    viewportBaseHeightRef.current = initialHeight;
-    viewportBaseWidthRef.current = initialWidth;
-    setViewportHeight(initialHeight);
-
-    const handleResize = () => {
-      const nextHeight = viewport?.height ?? window.innerHeight;
-      const nextWidth = viewport?.width ?? window.innerWidth;
-      const baseHeight = viewportBaseHeightRef.current ?? nextHeight;
-      const baseWidth = viewportBaseWidthRef.current ?? nextWidth;
-
-      const widthChanged = Math.abs(nextWidth - baseWidth) > 32;
-      const keyboardLikely = !widthChanged && nextHeight < baseHeight - 80;
-
-      if (widthChanged) {
-        viewportBaseWidthRef.current = nextWidth;
-        viewportBaseHeightRef.current = nextHeight;
-        setViewportHeight(nextHeight);
-        return;
-      }
-
-      if (keyboardLikely) {
-        return;
-      }
-
-      if (nextHeight > baseHeight) {
-        viewportBaseHeightRef.current = nextHeight;
-        setViewportHeight(nextHeight);
+    
+    // Set visual viewport height as CSS variable
+    const updateVisualViewport = () => {
+      const height = viewport?.height ?? window.innerHeight;
+      docEl.style.setProperty('--visual-viewport-height', `${height}px`);
+      
+      // Debug logging for iOS keyboard behavior
+      if (viewport) {
+        console.log('[Viewport] Visual viewport update:', {
+          height: viewport.height,
+          offsetTop: viewport.offsetTop,
+          scale: viewport.scale,
+          innerHeight: window.innerHeight
+        });
       }
     };
 
-    viewport?.addEventListener('resize', handleResize);
-    window.addEventListener('resize', handleResize);
+    // Initial set
+    updateVisualViewport();
+
+    // Update on visual viewport resize (keyboard show/hide)
+    viewport?.addEventListener('resize', updateVisualViewport);
+    viewport?.addEventListener('scroll', updateVisualViewport);
+    
+    // Fallback for window resize
+    window.addEventListener('resize', updateVisualViewport);
 
     return () => {
-      viewport?.removeEventListener('resize', handleResize);
-      window.removeEventListener('resize', handleResize);
+      viewport?.removeEventListener('resize', updateVisualViewport);
+      viewport?.removeEventListener('scroll', updateVisualViewport);
+      window.removeEventListener('resize', updateVisualViewport);
     };
   }, []);
 
