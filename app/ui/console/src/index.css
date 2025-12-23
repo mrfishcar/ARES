@@ -595,24 +595,24 @@ a:hover {
   position: relative;
   min-height: 44px;
   display: inline-flex;
-  justify-content: flex-end; /* Right-align contents for right-anchored morph */
+  justify-content: center; /* Keep toolbar centered */
 }
 
 /* Both toolbars share right edge for iOS Notes-style morph */
 .toolbar-slot .lab-control-bar {
-  transform-origin: 100% 50%; /* Right edge anchor point */
+  transform-origin: 100% 50%; /* Right edge anchor point for morph animation */
   will-change: transform, opacity;
   transition: transform 240ms cubic-bezier(0.2, 0.9, 0.2, 1),
               opacity 85ms linear,
               visibility 0ms linear;
 }
 
-/* Formatting toolbar - absolutely positioned, aligned to right edge */
+/* Formatting toolbar - absolutely positioned, centered via left+right+transform */
 .toolbar-slot .lab-control-bar--formatting {
   position: absolute;
   top: 0;
-  right: 0; /* Anchor to right edge, NOT left */
-  /* Do NOT set left - let width be determined by content */
+  left: 50%;
+  transform: translateX(-50%) scaleX(1); /* Center + scale */
 }
 
 /* ========== NORMAL MODE ========== */
@@ -624,7 +624,7 @@ a:hover {
 }
 
 .toolbar-slot[data-mode="normal"] .lab-control-bar--formatting {
-  transform: scaleX(0);
+  transform: translateX(-50%) scaleX(0); /* Collapse to right while staying centered */
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
@@ -633,7 +633,7 @@ a:hover {
 
 /* ========== FORMATTING MODE ========== */
 .toolbar-slot[data-mode="formatting"] .lab-control-bar:not(.lab-control-bar--formatting) {
-  transform: scaleX(0);
+  transform: scaleX(0); /* Collapse to right */
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
@@ -641,7 +641,7 @@ a:hover {
 }
 
 .toolbar-slot[data-mode="formatting"] .lab-control-bar--formatting {
-  transform: scaleX(1);
+  transform: translateX(-50%) scaleX(1); /* Expand from right while centered */
   opacity: 1;
   pointer-events: auto;
   visibility: visible;
