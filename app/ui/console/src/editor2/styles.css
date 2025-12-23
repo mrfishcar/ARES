@@ -172,6 +172,8 @@
   /* Remove border for clean iOS Notes look */
   border: none;
   overflow: hidden;
+  /* Prevent scroll chaining to viewport */
+  overscroll-behavior: contain;
 }
 
 /* Editor surface */
@@ -182,8 +184,10 @@
   flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
-  /* Remove -webkit-overflow-scrolling: touch - can cause issues with focus */
-  /* Use native scrolling instead */
+  /* Use native momentum scrolling on iOS - smooth and natural */
+  -webkit-overflow-scrolling: touch;
+  /* Allow smooth scrolling for programmatic scrolls */
+  scroll-behavior: smooth;
 }
 
 /* The actual contentEditable element */
@@ -349,9 +353,9 @@
 
 /* iPad-specific refinements */
 @media (max-width: 1024px) {
-  /* Ensure editor is properly scrollable on iPad */
+  /* Ensure editor uses momentum scrolling on iPad */
   .rich-editor-surface {
-    -webkit-overflow-scrolling: auto; /* Use native scrolling on iPad */
+    -webkit-overflow-scrolling: touch; /* Enable momentum scrolling */
   }
 }
 

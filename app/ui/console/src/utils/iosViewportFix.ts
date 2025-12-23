@@ -1,47 +1,22 @@
 /**
  * iOS Viewport Height Fix
  * 
- * Dynamically updates --app-viewport-height CSS variable to handle iOS Safari's
- * collapsing/expanding address bar and keyboard behavior.
+ * IMPORTANT: We use 100dvh in CSS for root containers.
+ * The editor scroll container handles its own scrolling naturally.
  * 
- * This prevents layout jumps and ensures proper editor behavior on iPad.
+ * This is a minimal setup - let iOS handle most keyboard behavior natively.
+ * The ScrollIntoViewPlugin handles cursor visibility within the editor.
  */
 
 export function initializeIOSViewportFix() {
   // Only run in browser
   if (typeof window === 'undefined') return;
 
-  const setViewportHeight = () => {
-    // Try visualViewport first (most accurate for iOS with keyboard)
-    if ('visualViewport' in window && window.visualViewport) {
-      const vh = window.visualViewport.height;
-      document.documentElement.style.setProperty('--app-viewport-height', `${vh}px`);
-    } else {
-      // Fallback to window.innerHeight
-      const vh = window.innerHeight;
-      document.documentElement.style.setProperty('--app-viewport-height', `${vh}px`);
-    }
-  };
-
-  // Set initial value
-  setViewportHeight();
-
-  // Update on resize (includes keyboard open/close on iOS)
-  window.addEventListener('resize', setViewportHeight);
-
-  // Update on visualViewport changes (more reliable for iOS keyboard)
-  if ('visualViewport' in window && window.visualViewport) {
-    window.visualViewport.addEventListener('resize', setViewportHeight);
-    window.visualViewport.addEventListener('scroll', setViewportHeight);
-  }
-
-  // Update on orientation change
-  window.addEventListener('orientationchange', () => {
-    // Delay to let the orientation change complete
-    setTimeout(setViewportHeight, 100);
-  });
-
-  console.log('[iOS Viewport] Initialized viewport height fix');
+  // Note: We intentionally do NOT prevent focusin events or lock window scroll.
+  // iOS Safari naturally handles the keyboard viewport with 100dvh.
+  // The ScrollIntoViewPlugin handles smooth scrolling within the editor.
+  
+  console.log('[iOS Viewport] Initialized - using 100dvh, native scroll behavior');
 }
 
 /**
