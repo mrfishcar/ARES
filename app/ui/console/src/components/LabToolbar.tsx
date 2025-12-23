@@ -170,14 +170,10 @@ export function LabToolbar({
 
   return (
     <>
-    {/* Wrapper with data-mode for two-toolbar morph animation */}
-    <div className="lab-toolbar-stack">
-      <div className="toolbar-slot" data-mode={formatToolbarEnabled ? 'formatting' : 'normal'}>
-        {/* Normal toolbar - always rendered */}
-        <div className="lab-control-bar liquid-glass">
-          <div className="lab-control-bar__content">
-            {/* Status indicator (save status is floated separately to avoid shifting buttons) */}
-            <div className="status-group">
+    <div className={`lab-toolbar-stack ${formatToolbarEnabled ? 'lab-toolbar-stack--hidden' : ''}`}>
+      <div className="lab-control-bar liquid-glass">
+        {/* Status indicator (save status is floated separately to avoid shifting buttons) */}
+        <div className="status-group">
           <div
             className={`status-indicator ${
               jobStatus === 'running'
@@ -255,34 +251,7 @@ export function LabToolbar({
               <Settings size={16} strokeWidth={2} />
             </button>
           </div>
-          </div>
         </div>
-        
-        {/* Formatting toolbar - always rendered, positioned absolutely */}
-        {showFormatToolbar && (
-          <div className="lab-control-bar lab-control-bar--formatting liquid-glass">
-            <div className="lab-control-bar__content">
-              <div className="toolbar-actions">
-                {formatButtons.map((btn) => (
-                  btn.key === 'divider' ? (
-                    <div key={btn.key} className="toolbar-divider" />
-                  ) : (
-                    <button
-                      key={btn.key}
-                      onClick={btn.action}
-                      className="control-btn control-btn--format"
-                      title={btn.label}
-                      type="button"
-                      disabled={!btn.action}
-                    >
-                      {btn.icon}
-                    </button>
-                  )
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
 
@@ -495,10 +464,10 @@ export function LabToolbar({
                     </div>
                   </div>
                 </div>
-              </div>
-            </>,
-            document.body
-          )}
-      </>
-    );
-  }
+        </div>
+      </>,
+      document.body
+    )}
+    </>
+  );
+}
