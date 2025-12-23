@@ -353,9 +353,9 @@
 
 /* iPad-specific refinements */
 @media (max-width: 1024px) {
-  /* Ensure editor is properly scrollable on iPad */
+  /* Ensure editor uses momentum scrolling on iPad */
   .rich-editor-surface {
-    -webkit-overflow-scrolling: auto; /* Use native scrolling on iPad */
+    -webkit-overflow-scrolling: touch; /* Enable momentum scrolling */
   }
 }
 
