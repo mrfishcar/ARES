@@ -428,12 +428,16 @@ body {
 body::before {
   content: "";
   position: fixed;
-  inset: 0;
+  /* iOS FIX: Extend beyond visual viewport to cover keyboard area */
+  top: 0;
+  left: 0;
+  right: 0;
+  /* Use layout viewport height to ensure coverage behind keyboard */
+  bottom: -100vh;
+  min-height: 200vh; /* Ensure it covers even when scrolled */
   z-index: -1;
   background-color: var(--app-surface);
   background-image: var(--app-background-gradient);
-  /* iOS FIX: Use height 100% with fixed positioning to cover viewport */
-  height: 100%;
   width: 100%;
 }
 
