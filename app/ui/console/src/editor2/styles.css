@@ -165,7 +165,8 @@
   flex-direction: column;
   width: 100%;
   min-height: 600px;
-  height: 100%;
+  /* iOS FIX: Use max-height instead of height to prevent expansion beyond viewport */
+  max-height: 100%;
   background: var(--bg-primary, #0f1115);
   color: var(--text-primary, #e5e7eb);
   border-radius: 12px;
@@ -184,10 +185,17 @@
   flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
+  /* CRITICAL iOS FIX: Constrain height to viewport to prevent viewport-level scrolling */
+  /* With interactive-widget=overlays-content, the layout viewport stays fixed */
+  /* and the keyboard overlays the content, so we need to ensure scrolling happens here */
+  max-height: 100vh;
+  max-height: 100dvh; /* Dynamic viewport height - stays constant with overlays-content */
   /* Use native momentum scrolling on iOS - smooth and natural */
   -webkit-overflow-scrolling: touch;
   /* Allow smooth scrolling for programmatic scrolls */
   scroll-behavior: smooth;
+  /* Prevent scroll chaining - scroll stops at this container */
+  overscroll-behavior: contain;
 }
 
 /* The actual contentEditable element */
@@ -356,6 +364,14 @@
   /* Ensure editor uses momentum scrolling on iPad */
   .rich-editor-surface {
     -webkit-overflow-scrolling: touch; /* Enable momentum scrolling */
+    /* iOS FIX: Further constrain height on mobile to ensure scrolling within container */
+    /* Account for toolbars and keyboard - use calc to leave room */
+    max-height: calc(100dvh - 80px); /* 80px for toolbar/chrome */
+  }
+  
+  /* Ensure editor shell doesn't expand beyond viewport on mobile */
+  .rich-editor-shell {
+    max-height: calc(100dvh - 80px);
   }
 }
 

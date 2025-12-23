@@ -1,17 +1,16 @@
 /**
  * ScrollIntoViewPlugin
  * 
- * Minimal plugin that assists with cursor visibility.
+ * Ensures cursor visibility on iOS by scrolling content within the editor container.
  * 
- * With `interactive-widget=resizes-content` in the viewport meta tag,
- * iOS Safari will resize BOTH the visual and layout viewports when the
- * keyboard appears. This means the browser handles auto-scrolling to
- * keep focused inputs visible - we just need to assist for edge cases.
+ * Works with `interactive-widget=overlays-content` which keeps the keyboard as an overlay
+ * rather than resizing the viewport. This prevents the entire UI from shifting.
  * 
- * This is the recommended approach for editors because:
- * 1. Browser handles most scroll-to-focus behavior natively
- * 2. No fighting against native iOS behavior
- * 3. Minimal JavaScript intervention = less jank
+ * Key behaviors:
+ * 1. Scrolls content UP when cursor approaches keyboard area (bottom of viewport)
+ * 2. Scrolls content DOWN when cursor is near top and needs to be visible
+ * 3. Keeps cursor ~1 line above keyboard (like Apple Notes)
+ * 4. Uses visual viewport API to detect keyboard position
  */
 import { useEffect } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
@@ -31,7 +30,7 @@ export function ScrollIntoViewPlugin() {
 
     /**
      * Scroll the cursor into view within the editor container
-     * This is a backup for cases where browser auto-scroll doesn't work
+     * This ensures the cursor stays visible when the iOS keyboard appears
      */
     const scrollCursorIntoView = () => {
       const selection = window.getSelection();
@@ -40,27 +39,58 @@ export function ScrollIntoViewPlugin() {
       const range = selection.getRangeAt(0);
       if (!editorElement.contains(range.commonAncestorContainer)) return;
 
-      // Get cursor position
+      // Get cursor position relative to viewport
       const rangeRect = range.getBoundingClientRect();
       if (rangeRect.height === 0 && rangeRect.width === 0) return;
+      
+      // iOS Fix: Use visual viewport to detect keyboard
+      // When keyboard is open, visualViewport.height < window.innerHeight
+      const visualViewport = window.visualViewport;
+      const viewportHeight = visualViewport?.height ?? window.innerHeight;
+      const viewportOffsetTop = visualViewport?.offsetTop ?? 0;
+      
+      // Calculate visible area accounting for keyboard
+      // The keyboard covers the bottom portion of the layout viewport
+      const visibleBottom = viewportOffsetTop + viewportHeight;
+      
+      // Padding to keep cursor comfortably visible above keyboard
+      // Larger padding for iOS to ensure cursor stays ~1 line above keyboard
+      const BOTTOM_PADDING = 100; // ~1.5 lines above keyboard
+      const TOP_PADDING = 60;     // Comfortable margin at top
       
       // Get container bounds
       const containerRect = scrollContainer.getBoundingClientRect();
       
-      // Simple check: is cursor below visible area?
-      // Add some padding (60px) to keep cursor comfortably visible
-      const PADDING = 60;
-      
-      if (rangeRect.bottom > containerRect.bottom - PADDING) {
-        // Cursor is near/below bottom - scroll down
-        const scrollAmount = rangeRect.bottom - (containerRect.bottom - PADDING);
+      // Check if cursor is below visible area (near/behind keyboard)
+      // rangeRect.bottom is in viewport coordinates
+      if (rangeRect.bottom > visibleBottom - BOTTOM_PADDING) {
+        // Cursor is near/below bottom - scroll DOWN to bring cursor up
+        const scrollAmount = rangeRect.bottom - (visibleBottom - BOTTOM_PADDING);
+        
+        console.log('[ScrollIntoView] Scrolling DOWN', {
+          cursorBottom: rangeRect.bottom,
+          visibleBottom,
+          scrollAmount,
+          containerScrollTop: scrollContainer.scrollTop
+        });
+        
         scrollContainer.scrollBy({ 
           top: scrollAmount, 
           behavior: 'smooth' 
         });
-      } else if (rangeRect.top < containerRect.top + PADDING) {
-        // Cursor is near/above top - scroll up
-        const scrollAmount = (containerRect.top + PADDING) - rangeRect.top;
+      } 
+      // Check if cursor is above visible area
+      else if (rangeRect.top < containerRect.top + TOP_PADDING) {
+        // Cursor is near/above top - scroll UP to bring cursor down
+        const scrollAmount = (containerRect.top + TOP_PADDING) - rangeRect.top;
+        
+        console.log('[ScrollIntoView] Scrolling UP', {
+          cursorTop: rangeRect.top,
+          containerTop: containerRect.top,
+          scrollAmount,
+          containerScrollTop: scrollContainer.scrollTop
+        });
+        
         scrollContainer.scrollBy({ 
           top: -scrollAmount, 
           behavior: 'smooth' 
@@ -73,7 +103,7 @@ export function ScrollIntoViewPlugin() {
      */
     const debouncedScroll = () => {
       if (scrollTimer) clearTimeout(scrollTimer);
-      scrollTimer = setTimeout(scrollCursorIntoView, 100);
+      scrollTimer = setTimeout(scrollCursorIntoView, 50); // Reduced delay for more responsive scrolling
     };
 
     // Listen for text changes (typing, enter, delete)
@@ -81,9 +111,33 @@ export function ScrollIntoViewPlugin() {
       debouncedScroll();
     });
 
+    // Also listen for selection changes (arrow keys, click)
+    const handleSelectionChange = () => {
+      debouncedScroll();
+    };
+
+    document.addEventListener('selectionchange', handleSelectionChange);
+
+    // iOS specific: listen for visual viewport resize (keyboard show/hide)
+    const handleViewportResize = () => {
+      // When keyboard shows/hides, re-check cursor position
+      console.log('[ScrollIntoView] Viewport resize', {
+        visualHeight: window.visualViewport?.height,
+        innerHeight: window.innerHeight,
+        offsetTop: window.visualViewport?.offsetTop
+      });
+      debouncedScroll();
+    };
+
+    window.visualViewport?.addEventListener('resize', handleViewportResize);
+    window.visualViewport?.addEventListener('scroll', handleViewportResize);
+
     return () => {
       if (scrollTimer) clearTimeout(scrollTimer);
       removeTextListener();
+      document.removeEventListener('selectionchange', handleSelectionChange);
+      window.visualViewport?.removeEventListener('resize', handleViewportResize);
+      window.visualViewport?.removeEventListener('scroll', handleViewportResize);
     };
   }, [editor]);
 
