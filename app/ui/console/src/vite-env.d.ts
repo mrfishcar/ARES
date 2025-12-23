@@ -6,6 +6,10 @@ interface ImportMetaEnv {
   readonly PROD: boolean;
   readonly DEV: boolean;
   readonly SSR: boolean;
+  readonly VITE_API_URL?: string;
+  readonly VITE_ARES_PERF?: string;
+  readonly ARES_PERF?: string;
+  readonly VITE_DEBUG_EDITOR_FOCUS?: string;
 }
 
 interface ImportMeta {

@@ -1,22 +1,26 @@
-import processModule from 'process';
-import { Buffer as BufferClass } from 'buffer';
+/**
+ * Browser polyfills for Node.js compatibility
+ * 
+ * These polyfills are needed for libraries that expect Node.js globals.
+ * They're loaded early in the app lifecycle via main.tsx.
+ */
 
-type GlobalWithPolyfills = typeof globalThis & {
-  Buffer?: typeof BufferClass;
-  process?: typeof processModule;
-  global?: typeof globalThis;
-};
+import { Buffer as BufferPolyfill } from 'buffer';
 
-const globalWithPolyfills = globalThis as GlobalWithPolyfills;
+// Use type assertion for setting globals to avoid TypeScript conflicts
+const g = globalThis as Record<string, unknown>;
 
-if (!globalWithPolyfills.Buffer) {
-  globalWithPolyfills.Buffer = BufferClass;
+// Polyfill Buffer (needed for some crypto/encoding libraries)
+if (typeof g.Buffer === 'undefined') {
+  g.Buffer = BufferPolyfill;
 }
 
-if (!globalWithPolyfills.process) {
-  globalWithPolyfills.process = processModule;
+// Polyfill process.env (minimal shim for libraries checking environment)
+if (typeof g.process === 'undefined') {
+  g.process = { env: {} };
 }
 
-if (!globalWithPolyfills.global) {
-  globalWithPolyfills.global = globalWithPolyfills;
+// Polyfill global (Node.js global reference)
+if (typeof g.global === 'undefined') {
+  g.global = globalThis;
 }
