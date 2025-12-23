@@ -2,15 +2,12 @@
  * ScrollIntoViewPlugin
  * 
  * Ensures cursor visibility on iOS by scrolling content within the editor container.
- * 
- * Works with `interactive-widget=resizes-visual` which shrinks the visual viewport
- * when keyboard appears. The editor max-height is constrained via CSS to the
- * visual viewport height, ensuring proper scroll containment.
+ * Uses scrollIntoView API with proper block positioning to keep cursor above keyboard.
  * 
  * Key behaviors:
- * 1. Scrolls content when cursor approaches viewport edges
- * 2. Keeps cursor ~1 line above keyboard (via padding)
- * 3. Uses visual viewport API to detect keyboard state
+ * 1. Scrolls cursor into view when typing
+ * 2. Uses 'center' block to keep cursor away from keyboard
+ * 3. Accounts for keyboard height via scroll-padding-bottom in CSS
  * 4. Smooth scrolling for natural feel
  */
 import { useEffect } from 'react';
@@ -23,14 +20,12 @@ export function ScrollIntoViewPlugin() {
     const editorElement = editor.getRootElement();
     if (!editorElement) return;
 
-    const scrollContainer = editorElement.closest('.rich-editor-surface') as HTMLElement | null;
-    if (!scrollContainer) return;
-
     // Debounce timer
     let scrollTimer: ReturnType<typeof setTimeout> | null = null;
 
     /**
      * Scroll the cursor into view within the editor container
+     * Uses native scrollIntoView with 'center' to keep cursor visible above keyboard
      */
     const scrollCursorIntoView = () => {
       const selection = window.getSelection();
@@ -39,33 +34,29 @@ export function ScrollIntoViewPlugin() {
       const range = selection.getRangeAt(0);
       if (!editorElement.contains(range.commonAncestorContainer)) return;
 
-      // Get cursor position relative to viewport
-      const rangeRect = range.getBoundingClientRect();
-      if (rangeRect.height === 0 && rangeRect.width === 0) return;
+      // Create a temporary span at cursor position for scrollIntoView
+      const tempSpan = document.createElement('span');
+      tempSpan.style.position = 'absolute';
+      tempSpan.style.visibility = 'hidden';
       
-      // Get container bounds
-      const containerRect = scrollContainer.getBoundingClientRect();
-      
-      // Padding to keep cursor comfortably visible
-      // Bottom padding is larger to keep cursor above keyboard area
-      const BOTTOM_PADDING = 100; // ~1.5 lines above keyboard
-      const TOP_PADDING = 60;     // Comfortable margin at top
-      
-      // Check if cursor is below visible area
-      if (rangeRect.bottom > containerRect.bottom - BOTTOM_PADDING) {
-        const scrollAmount = rangeRect.bottom - (containerRect.bottom - BOTTOM_PADDING);
-        scrollContainer.scrollBy({ 
-          top: scrollAmount, 
-          behavior: 'smooth' 
+      try {
+        range.insertNode(tempSpan);
+        
+        // Scroll the cursor into view with 'center' positioning
+        // This keeps the cursor comfortably visible, away from keyboard
+        tempSpan.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+          inline: 'nearest'
         });
-      } 
-      // Check if cursor is above visible area
-      else if (rangeRect.top < containerRect.top + TOP_PADDING) {
-        const scrollAmount = (containerRect.top + TOP_PADDING) - rangeRect.top;
-        scrollContainer.scrollBy({ 
-          top: -scrollAmount, 
-          behavior: 'smooth' 
-        });
+        
+        // Clean up
+        tempSpan.remove();
+      } catch (e) {
+        // Silently handle any DOM errors
+        if (tempSpan.parentNode) {
+          tempSpan.remove();
+        }
       }
     };
 

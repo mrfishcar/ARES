@@ -21,16 +21,10 @@ html {
 html,
 body {
   background: var(--bg-primary);
-  /* iOS FIX: Use fixed positioning to prevent window scroll when keyboard appears */
-  /* This is the ONLY way to prevent iOS from scrolling the page on input focus */
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
+  /* iOS FIX: Use standard positioning - let browser handle keyboard naturally */
   height: 100%;
-  /* Prevent scrolling */
+  width: 100%;
+  /* Prevent page-level scrolling */
   overflow: hidden;
   overscroll-behavior: none;
   margin: 0;

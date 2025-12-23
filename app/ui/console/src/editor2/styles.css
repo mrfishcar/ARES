@@ -185,11 +185,11 @@
   flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
-  /* CRITICAL iOS FIX: Use visual viewport height for proper keyboard handling */
-  /* With interactive-widget=resizes-visual, visual viewport shrinks with keyboard */
-  /* We dynamically update --visual-viewport-height via JS */
-  max-height: 100vh;
-  max-height: var(--visual-viewport-height, 100vh);
+  /* CRITICAL iOS FIX: Use dvh which adapts to keyboard */
+  /* dvh (dynamic viewport height) automatically accounts for keyboard */
+  max-height: 100dvh;
+  /* Scroll padding keeps cursor visible above keyboard */
+  scroll-padding-bottom: 150px;
   /* Use native momentum scrolling on iOS - smooth and natural */
   -webkit-overflow-scrolling: touch;
   /* Allow smooth scrolling for programmatic scrolls */

@@ -170,57 +170,35 @@ function AppShell() {
     };
   }, []);
 
-  // Update visual viewport height for iOS keyboard handling
-  // This ensures the editor container shrinks when keyboard appears
+  // Minimal iOS viewport tracking for debugging
+  // With dvh units and scroll-padding, iOS handles keyboard naturally
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const docEl = document.documentElement;
     const viewport = window.visualViewport;
     
-    // Set visual viewport height as CSS variable
-    const updateVisualViewport = () => {
-      const height = viewport?.height ?? window.innerHeight;
-      const offsetTop = viewport?.offsetTop ?? 0;
-      
-      // Set the visual viewport height
-      docEl.style.setProperty('--visual-viewport-height', `${height}px`);
-      
-      // CRITICAL: Adjust body position to account for visual viewport offset
-      // When keyboard appears, visual viewport may have offsetTop > 0
-      // We need to offset the body to stay aligned with visual viewport
-      if (offsetTop > 0) {
-        document.body.style.top = `-${offsetTop}px`;
-      } else {
-        document.body.style.top = '0px';
-      }
-      
-      // Debug logging for iOS keyboard behavior
+    // Debug logging only - no manipulation needed with dvh approach
+    const logViewport = () => {
       if (viewport) {
-        console.log('[Viewport] Visual viewport update:', {
+        console.log('[Viewport] State:', {
           height: viewport.height,
           offsetTop: viewport.offsetTop,
           scale: viewport.scale,
-          innerHeight: window.innerHeight,
-          bodyTop: document.body.style.top
+          innerHeight: window.innerHeight
         });
       }
     };
 
-    // CRITICAL: Set immediately and synchronously to prevent initial UI shift
-    updateVisualViewport();
+    // Log initial state
+    logViewport();
 
-    // Update on visual viewport resize (keyboard show/hide)
-    viewport?.addEventListener('resize', updateVisualViewport);
-    viewport?.addEventListener('scroll', updateVisualViewport);
-    
-    // Fallback for window resize
-    window.addEventListener('resize', updateVisualViewport);
+    // Log on changes for debugging
+    viewport?.addEventListener('resize', logViewport);
+    viewport?.addEventListener('scroll', logViewport);
 
     return () => {
-      viewport?.removeEventListener('resize', updateVisualViewport);
-      viewport?.removeEventListener('scroll', updateVisualViewport);
-      window.removeEventListener('resize', updateVisualViewport);
+      viewport?.removeEventListener('resize', logViewport);
+      viewport?.removeEventListener('scroll', logViewport);
     };
   }, []);
 
