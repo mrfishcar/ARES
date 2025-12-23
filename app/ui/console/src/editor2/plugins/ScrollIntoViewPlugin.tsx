@@ -28,16 +28,22 @@ export function ScrollIntoViewPlugin() {
     // Debounce timer
     let scrollTimer: ReturnType<typeof setTimeout> | null = null;
     
-    // One line height in pixels (approximately)
-    const LINE_HEIGHT = 28;
-    // Padding above keyboard to keep cursor visible
-    const BOTTOM_PADDING = LINE_HEIGHT * 2; // Keep cursor 2 lines above keyboard
+    // Get computed line height from editor styles
+    const getLineHeight = (): number => {
+      const computed = window.getComputedStyle(editorElement);
+      const lineHeight = parseFloat(computed.lineHeight);
+      // Fallback if lineHeight is 'normal' or NaN
+      return isNaN(lineHeight) ? 28 : lineHeight;
+    };
 
     /**
      * Scroll the cursor into view within the editor container
      * Uses smooth scrolling for natural feel like Apple Notes
      */
     const scrollCursorIntoView = () => {
+      const LINE_HEIGHT = getLineHeight();
+      // Padding above keyboard to keep cursor visible (2 lines)
+      const BOTTOM_PADDING = LINE_HEIGHT * 2;
       const selection = window.getSelection();
       if (!selection || selection.rangeCount === 0) return;
 
@@ -93,7 +99,9 @@ export function ScrollIntoViewPlugin() {
     });
 
     // Also scroll on selection changes (cursor movement)
-    const removeSelectionListener = editor.registerUpdateListener(({ tags }: { tags: Set<string> }) => {
+    // Using inline type to avoid importing full Lexical types
+    const removeSelectionListener = editor.registerUpdateListener((payload) => {
+      const { tags } = payload as { tags: Set<string> };
       // Only scroll on user interactions, not programmatic updates
       if (tags.has('history-merge') || tags.has('skip-scroll')) return;
       debouncedScroll();
