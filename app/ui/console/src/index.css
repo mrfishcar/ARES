@@ -21,18 +21,21 @@ html {
 html,
 body {
   background: var(--bg-primary);
-  /* Lock height to viewport, prevent pull-to-refresh */
+  /* iOS FIX: Use fixed positioning to prevent window scroll when keyboard appears */
+  /* This is the ONLY way to prevent iOS from scrolling the page on input focus */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
   height: 100%;
-  /* iOS FIX: Don't use min-height with dvh - causes white space with keyboard */
-  /* The visual viewport height CSS variable will handle dynamic sizing */
+  /* Prevent scrolling */
   overflow: hidden;
   overscroll-behavior: none;
-  /* Use relative positioning - fixed causes iOS keyboard issues */
-  position: relative;
-  width: 100%;
   margin: 0;
   padding: 0;
-  /* Ensure background extends to cover any gaps */
+  /* Ensure background covers everything */
   background-attachment: fixed;
 }
 
@@ -428,17 +431,13 @@ body {
 body::before {
   content: "";
   position: fixed;
-  /* iOS FIX: Extend beyond visual viewport to cover keyboard area */
-  top: 0;
-  left: 0;
-  right: 0;
-  /* Use layout viewport height to ensure coverage behind keyboard */
-  bottom: -100vh;
-  min-height: 200vh; /* Ensure it covers even when scrolled */
+  inset: 0;
   z-index: -1;
   background-color: var(--app-surface);
   background-image: var(--app-background-gradient);
+  /* With body fixed, this covers the entire viewport */
   width: 100%;
+  height: 100%;
 }
 
 #root {
