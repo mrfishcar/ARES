@@ -4,9 +4,9 @@
  * IMPORTANT: We use 100dvh in CSS instead of dynamically updating viewport height.
  * Dynamically updating --app-viewport-height causes layout shifts when typing.
  * 
- * This module only handles:
+ * This module handles:
  * - Preventing auto-scroll-to-focus behavior that causes UI shifts
- * - Orientation change handling (if needed)
+ * - Preventing window scroll when typing in the editor (iOS keyboard issue)
  */
 
 export function initializeIOSViewportFix() {
@@ -27,6 +27,34 @@ export function initializeIOSViewportFix() {
       // The editor will handle its own scrolling
       e.preventDefault();
     }
+  }, { capture: true });
+
+  // Prevent window scroll events when keyboard is active
+  // This prevents the "dragging UI above keyboard" issue when pressing Enter
+  let windowScrollLocked = false;
+  let lastScrollY = 0;
+  
+  // Lock window scroll position when editing
+  document.addEventListener('beforeinput', () => {
+    if (!windowScrollLocked) {
+      windowScrollLocked = true;
+      lastScrollY = window.scrollY;
+    }
+  }, { capture: true });
+  
+  // Reset scroll position if window was scrolled
+  window.addEventListener('scroll', () => {
+    if (windowScrollLocked && window.scrollY !== lastScrollY) {
+      // Reset to prevent viewport shift
+      window.scrollTo(0, lastScrollY);
+    }
+  }, { passive: false });
+  
+  // Unlock after a short delay to allow legitimate scrolls
+  document.addEventListener('input', () => {
+    setTimeout(() => {
+      windowScrollLocked = false;
+    }, 100);
   }, { capture: true });
 
   console.log('[iOS Viewport] Initialized - using 100dvh, disabled auto-scroll-to-focus');

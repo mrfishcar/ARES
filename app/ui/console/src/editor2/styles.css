@@ -172,6 +172,8 @@
   /* Remove border for clean iOS Notes look */
   border: none;
   overflow: hidden;
+  /* Prevent scroll chaining to viewport */
+  overscroll-behavior: contain;
 }
 
 /* Editor surface */
@@ -182,8 +184,10 @@
   flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
-  /* Remove -webkit-overflow-scrolling: touch - can cause issues with focus */
-  /* Use native scrolling instead */
+  /* Prevent scroll chaining to parent elements - keeps scroll contained */
+  overscroll-behavior: contain;
+  /* iOS: Prevent the viewport from shifting when typing */
+  -webkit-overflow-scrolling: auto;
 }
 
 /* The actual contentEditable element */

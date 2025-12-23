@@ -1479,6 +1479,8 @@ a:hover {
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  /* Prevent scroll chaining to viewport */
+  overscroll-behavior: contain;
   align-items: stretch;
   background: transparent;
   /* ✅ No padding by default; will be added by media query when sidebar is open */
@@ -1492,6 +1494,9 @@ a:hover {
   background-color: var(--app-surface);
   /* FIXED: Removed min-height: 100vh to prevent layout cascade */
   height: 100%;
+  overflow: hidden;
+  /* Prevent scroll chaining to viewport */
+  overscroll-behavior: contain;
 }
 
 .results-wrapper {
@@ -1518,6 +1523,8 @@ a:hover {
   border-radius: 0;
   box-shadow: none;
   overflow: hidden;
+  /* Prevent scroll chaining to viewport */
+  overscroll-behavior: contain;
   transition: background-color 0.3s ease;
   pointer-events: auto;
 }
