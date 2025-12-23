@@ -595,7 +595,7 @@ a:hover {
   position: relative;
   min-height: 44px;
   display: inline-flex;
-  /* No overflow:hidden - let toolbars extend naturally */
+  /* Allow morphing toolbars to scale without clipping during animation */
 }
 
 /* Both toolbars - normal one takes up space, formatting is overlaid */
