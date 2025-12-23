@@ -495,10 +495,10 @@ export function LabToolbar({
                     </div>
                   </div>
                 </div>
-        </div>
-      </>,
-      document.body
-    )}
-    </>
-  );
-}
+              </div>
+            </>,
+            document.body
+          )}
+      </>
+    );
+  }
