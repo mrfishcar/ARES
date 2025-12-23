@@ -16,8 +16,9 @@ import { ListItemNode, ListNode, INSERT_UNORDERED_LIST_COMMAND, INSERT_ORDERED_L
 import type { EntitySpan } from '../types/entities';
 import { snapshotRichDoc } from './flattenRichDoc';
 import type { RichDocSnapshot } from './types';
-import type { NavigateToRange } from '../components/CodeMirrorEditorProps';
+import type { NavigateToRange, FormattingActions } from '../components/CodeMirrorEditorProps';
 import { FocusDebugPlugin } from './plugins/FocusDebugPlugin';
+import { FormatActionsPlugin, type FormatState } from './plugins/FormatActionsPlugin';
 
 interface RichTextEditorProps {
   initialDocJSON?: SerializedEditorState | null;
@@ -27,6 +28,8 @@ interface RichTextEditorProps {
   onEntityPress?: (span: EntitySpan) => void;
   navigateToRange?: NavigateToRange | null;
   showFormatToolbar?: boolean; // Controlled by T button in LabToolbar
+  onFormatActionsReady?: (actions: FormattingActions) => void; // NEW: Callback for format actions
+  onFormatStateChange?: (state: FormatState) => void; // NEW: Callback for format state changes
 }
 
 // Simple plugin to load initial content
@@ -69,128 +72,6 @@ function OnChangeAdapter({ onChange }: { onChange: (snapshot: RichDocSnapshot) =
   );
 }
 
-// iOS Notes-style Formatting Toolbar - transforms into view when T button is toggled
-function TransformingFormatToolbar({ isOpen }: { isOpen: boolean }) {
-  const [editor] = useLexicalComposerContext();
-
-  const format = (command: any, payload?: any) => {
-    editor.dispatchCommand(command, payload);
-  };
-
-  return (
-    <div className={`transforming-format-toolbar ${isOpen ? 'transforming-format-toolbar--open' : ''}`}>
-      {/* Title row */}
-      <div className="format-toolbar-section">
-        <span className="format-toolbar-label">Text Style</span>
-        <div className="format-toolbar-buttons">
-          <button
-            type="button"
-            className="format-toolbar-btn format-toolbar-btn--text"
-            onClick={() => format(FORMAT_ELEMENT_COMMAND, 'h1')}
-            title="Title"
-          >
-            Title
-          </button>
-          <button
-            type="button"
-            className="format-toolbar-btn format-toolbar-btn--text"
-            onClick={() => format(FORMAT_ELEMENT_COMMAND, 'h2')}
-            title="Heading"
-          >
-            Heading
-          </button>
-          <button
-            type="button"
-            className="format-toolbar-btn format-toolbar-btn--text"
-            onClick={() => format(FORMAT_ELEMENT_COMMAND, 'h3')}
-            title="Subheading"
-          >
-            Subheading
-          </button>
-          <button
-            type="button"
-            className="format-toolbar-btn format-toolbar-btn--text"
-            onClick={() => format(FORMAT_ELEMENT_COMMAND, 'p')}
-            title="Body"
-          >
-            Body
-          </button>
-        </div>
-      </div>
-
-      {/* Formatting row */}
-      <div className="format-toolbar-section">
-        <span className="format-toolbar-label">Format</span>
-        <div className="format-toolbar-buttons">
-          <button
-            type="button"
-            className="format-toolbar-btn"
-            onClick={() => format(FORMAT_TEXT_COMMAND, 'bold')}
-            title="Bold"
-          >
-            <strong>B</strong>
-          </button>
-          <button
-            type="button"
-            className="format-toolbar-btn"
-            onClick={() => format(FORMAT_TEXT_COMMAND, 'italic')}
-            title="Italic"
-          >
-            <em>I</em>
-          </button>
-          <button
-            type="button"
-            className="format-toolbar-btn"
-            onClick={() => format(FORMAT_TEXT_COMMAND, 'underline')}
-            title="Underline"
-          >
-            <u>U</u>
-          </button>
-          <button
-            type="button"
-            className="format-toolbar-btn"
-            onClick={() => format(FORMAT_TEXT_COMMAND, 'strikethrough')}
-            title="Strikethrough"
-          >
-            <s>S</s>
-          </button>
-        </div>
-      </div>
-
-      {/* Lists row */}
-      <div className="format-toolbar-section">
-        <span className="format-toolbar-label">Lists</span>
-        <div className="format-toolbar-buttons">
-          <button
-            type="button"
-            className="format-toolbar-btn"
-            onClick={() => format(INSERT_UNORDERED_LIST_COMMAND, undefined)}
-            title="Bullet List"
-          >
-            <span style={{ fontSize: '18px' }}>•</span>
-          </button>
-          <button
-            type="button"
-            className="format-toolbar-btn"
-            onClick={() => format(INSERT_ORDERED_LIST_COMMAND, undefined)}
-            title="Numbered List"
-          >
-            <span style={{ fontSize: '14px', fontWeight: 600 }}>1.</span>
-          </button>
-          <button
-            type="button"
-            className="format-toolbar-btn"
-            onClick={() => format(INSERT_CHECK_LIST_COMMAND, undefined)}
-            title="Checklist"
-          >
-            <span style={{ fontSize: '16px' }}>☐</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function RichTextEditor({
   initialDocJSON,
   initialPlainText = '',
@@ -199,6 +80,8 @@ export function RichTextEditor({
   onEntityPress,
   navigateToRange,
   showFormatToolbar = false,
+  onFormatActionsReady,
+  onFormatStateChange,
 }: RichTextEditorProps) {
   console.log('[RichTextEditor] Rendering with:', {
     hasInitialDoc: !!initialDocJSON,
@@ -241,9 +124,6 @@ export function RichTextEditor({
   return (
     <LexicalComposer initialConfig={initialConfig}>
       <div className="rich-editor-shell">
-        {/* Transforming format toolbar - appears when T button is toggled */}
-        <TransformingFormatToolbar isOpen={showFormatToolbar} />
-
         {/* Main editor surface */}
         <div className="rich-editor-surface">
           <RichTextPlugin
@@ -264,6 +144,14 @@ export function RichTextEditor({
 
           {/* Load initial content if provided */}
           {initialPlainText && <InitialContentPlugin content={initialPlainText} />}
+
+          {/* Format actions plugin */}
+          {onFormatActionsReady && (
+            <FormatActionsPlugin 
+              onActionsReady={onFormatActionsReady}
+              onFormatStateChange={onFormatStateChange}
+            />
+          )}
 
           {/* Plugins */}
           <HistoryPlugin />

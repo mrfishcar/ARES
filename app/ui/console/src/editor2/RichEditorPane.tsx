@@ -1,9 +1,13 @@
+import { useState, useCallback } from 'react';
 import type { SerializedEditorState } from 'lexical';
 import type { EntitySpan } from '../types/entities';
 import { EntityIndicators } from '../components/EntityIndicators';
 import type { RichDocSnapshot } from './types';
 import { RichTextEditor } from './RichTextEditor';
-import type { NavigateToRange } from '../components/CodeMirrorEditorProps';
+import type { NavigateToRange, FormattingActions } from '../components/CodeMirrorEditorProps';
+import { EditorShell } from './EditorShell';
+import type { FormatState } from './plugins/FormatActionsPlugin';
+import './EditorShell.css';
 
 interface Props {
   richDoc: SerializedEditorState | null;
@@ -14,6 +18,9 @@ interface Props {
   showEntityIndicators?: boolean;
   navigateToRange?: NavigateToRange | null;
   showFormatToolbar?: boolean; // Controlled by T button in LabToolbar
+  formatToolbarEnabled?: boolean; // NEW: Whether formatting mode is active
+  formatActions?: FormattingActions | null; // NEW: Formatting action callbacks (legacy)
+  onFormatModeExit?: () => void; // NEW: Callback to exit formatting mode
 }
 
 export function RichEditorPane({
@@ -25,8 +32,24 @@ export function RichEditorPane({
   navigateToRange,
   showEntityIndicators = true,
   showFormatToolbar = false,
+  formatToolbarEnabled = false,
+  formatActions: legacyFormatActions,
+  onFormatModeExit,
 }: Props) {
   const editorHeight = Math.max(400, typeof window !== 'undefined' ? window.innerHeight - 380 : 400);
+  const [lexicalFormatActions, setLexicalFormatActions] = useState<FormattingActions | null>(null);
+  const [formatState, setFormatState] = useState<FormatState | null>(null);
+
+  const handleActionsReady = useCallback((actions: FormattingActions) => {
+    setLexicalFormatActions(actions);
+  }, []);
+
+  const handleFormatStateChange = useCallback((state: FormatState) => {
+    setFormatState(state);
+  }, []);
+
+  // Use Lexical actions if available, otherwise fallback to legacy
+  const formatActions = lexicalFormatActions || legacyFormatActions;
 
   return (
     <div className="editor-wrapper">
@@ -43,15 +66,27 @@ export function RichEditorPane({
             className="editor-with-indicators"
             style={{ flex: 1, width: '100%', height: '100%' }}
           >
-            <RichTextEditor
-              initialDocJSON={richDoc ?? undefined}
-              initialPlainText={plainText}
-              entities={entities}
-              onChange={onChange}
-              onEntityPress={onEntityFocus}
-              navigateToRange={navigateToRange}
-              showFormatToolbar={showFormatToolbar}
-            />
+            <EditorShell
+              formatActions={formatActions}
+              formatState={formatState}
+              formatToolbarEnabled={formatToolbarEnabled}
+              onModeChange={(mode) => {
+                console.log('[RichEditorPane] Mode changed to:', mode);
+              }}
+              onRequestExit={onFormatModeExit}
+            >
+              <RichTextEditor
+                initialDocJSON={richDoc ?? undefined}
+                initialPlainText={plainText}
+                entities={entities}
+                onChange={onChange}
+                onEntityPress={onEntityFocus}
+                navigateToRange={navigateToRange}
+                showFormatToolbar={false} // Always false - EditorShell handles formatting palette
+                onFormatActionsReady={handleActionsReady}
+                onFormatStateChange={handleFormatStateChange}
+              />
+            </EditorShell>
           </div>
         </div>
       </div>

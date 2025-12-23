@@ -169,7 +169,8 @@
   background: var(--bg-primary, #0f1115);
   color: var(--text-primary, #e5e7eb);
   border-radius: 12px;
-  border: 1px solid var(--border-color, #1f2937);
+  /* Remove border for clean iOS Notes look */
+  border: none;
   overflow: hidden;
 }
 
@@ -190,13 +191,15 @@
   position: relative;
   flex: 1;
   min-height: 500px;
-  padding: 24px;
+  padding: 80px 24px 24px 24px; /* Top padding to avoid toolbar overlap */
   outline: none;
 
-  /* Typography */
-  line-height: 1.6;
-  font-size: 16px;
+  /* Typography - iOS Notes style */
+  line-height: 1.7;
+  font-size: 17px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
   color: var(--text-primary, #e5e7eb);
+  letter-spacing: -0.01em; /* Subtle tightening for better readability */
 
   /* Make it editable and interactive */
   cursor: text;
@@ -213,7 +216,7 @@
 /* Placeholder */
 .rich-placeholder {
   position: absolute;
-  top: 24px;
+  top: 80px; /* Match content top padding */
   left: 24px;
   right: 24px;
   color: var(--text-secondary, #9ca3af);
@@ -241,11 +244,12 @@
 
 /* Paragraph */
 .rich-paragraph {
-  margin: 0.5em 0;
+  margin: 0.8em 0;
 }
 
 .rich-content p {
-  margin: 0.5em 0;
+  margin: 0.8em 0;
+  line-height: 1.7;
 }
 
 .rich-content p:first-child {
@@ -256,52 +260,57 @@
   margin-bottom: 0;
 }
 
-/* Headings */
+/* Headings - iOS Notes style */
 .rich-h1 {
-  font-size: 2em;
+  font-size: 28px;
   font-weight: 700;
-  margin: 0.67em 0;
-  line-height: 1.2;
+  margin: 0.9em 0 0.4em 0;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
 }
 
 .rich-h2 {
-  font-size: 1.5em;
+  font-size: 22px;
   font-weight: 600;
-  margin: 0.75em 0;
-  line-height: 1.3;
+  margin: 0.85em 0 0.4em 0;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
 }
 
 .rich-h3 {
-  font-size: 1.25em;
+  font-size: 20px;
   font-weight: 600;
-  margin: 0.83em 0;
+  margin: 0.8em 0 0.35em 0;
   line-height: 1.4;
+  letter-spacing: -0.01em;
 }
 
-/* Quote */
+/* Quote - iOS Notes style */
 .rich-quote {
-  margin: 1em 0;
-  padding-left: 16px;
-  border-left: 3px solid var(--border-color, #1f2937);
+  margin: 1.2em 0;
+  padding: 12px 0 12px 20px;
+  border-left: 4px solid rgba(59, 130, 246, 0.5);
   opacity: 0.9;
   font-style: italic;
+  color: rgba(229, 231, 235, 0.85);
 }
 
-/* Lists */
+/* Lists - iOS Notes style */
 .rich-ul {
-  margin: 0.5em 0;
-  padding-left: 24px;
+  margin: 0.8em 0;
+  padding-left: 28px;
   list-style-type: disc;
 }
 
 .rich-ol {
-  margin: 0.5em 0;
-  padding-left: 24px;
+  margin: 0.8em 0;
+  padding-left: 28px;
   list-style-type: decimal;
 }
 
 .rich-listitem {
-  margin: 0.25em 0;
+  margin: 0.4em 0;
+  line-height: 1.7;
 }
 
 .rich-checklist {
