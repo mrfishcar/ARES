@@ -74,17 +74,9 @@ export function EditorShell({
 
   return (
     <div className="editor-shell">
-      {/* Formatting palette - floats above editor */}
-      {formatToolbarEnabled && (
-        <div ref={paletteRef}>
-          <FormattingPalette
-            isOpen={formatToolbarEnabled}
-            formatActions={formatActions}
-            formatState={formatState}
-            onClose={() => onRequestExit?.()}
-          />
-        </div>
-      )}
+      {/* Formatting palette - DISABLED: LabToolbar now handles formatting mode
+       * The toolbar morph animation shows formatting controls in the morphed toolbar
+       */}
 
       {/* Editor content */}
       <div className="editor-shell__content">
