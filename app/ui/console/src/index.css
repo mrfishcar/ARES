@@ -573,25 +573,98 @@ a:hover {
   transform: translateX(0);
 }
 
+/* =========================================================
+   iOS Notes-style right-anchored toolbar morph
+   Two toolbars occupy same fixed space, morph horizontally
+   ========================================================= */
+
 .lab-toolbar-stack {
   position: fixed;
   top: 16px;
   left: 50%;
-  transform: translateX(-50%) scaleX(1);
+  transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
   z-index: 50;
-  pointer-events: auto;
-  transform-origin: right center;
-  /* iOS Notes morph: horizontal compression ONLY, NO opacity on container */
-  transition: transform 0.25s cubic-bezier(0.32, 0, 0.67, 0) 0s;
 }
 
-.lab-toolbar-stack--hidden {
-  transform: translateX(-50%) scaleX(0.05);
-  /* Container stays visible, just compressed. Content visibility handled separately. */
+/* Toolbar slot holds both normal and formatting toolbars */
+.toolbar-slot {
+  position: relative;
+  display: inline-block;
+  min-height: 44px;
+}
+
+/* Both toolbars positioned absolutely in same space */
+.toolbar-slot .lab-control-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: right center;
+  will-change: transform;
+  transition: transform 240ms cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+/* Formatting toolbar starts compressed */
+.toolbar-slot .lab-control-bar--formatting {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* ========== NORMAL MODE ========== */
+.toolbar-slot[data-mode="normal"] .lab-control-bar:not(.lab-control-bar--formatting) {
+  transform: translateX(0) scaleX(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.toolbar-slot[data-mode="normal"] .lab-control-bar--formatting {
+  transform: translateX(12px) scaleX(0.08);
+  opacity: 1;
+  pointer-events: none;
+}
+
+/* ========== FORMATTING MODE ========== */
+.toolbar-slot[data-mode="formatting"] .lab-control-bar:not(.lab-control-bar--formatting) {
+  transform: translateX(12px) scaleX(0.08);
+  opacity: 1;
+  pointer-events: none;
+}
+
+.toolbar-slot[data-mode="formatting"] .lab-control-bar--formatting {
+  transform: translateX(0) scaleX(1);
+  opacity: 1;
+  pointer-events: auto;
+  transition-delay: 240ms;
+}
+
+/* Content inside toolbar fades independently from pill transform */
+.lab-control-bar__content {
+  opacity: 1;
+  transition: opacity 85ms linear;
+}
+
+.toolbar-slot[data-mode="formatting"] .lab-control-bar:not(.lab-control-bar--formatting) .lab-control-bar__content {
+  opacity: 0;
+  transition-delay: 0s;
+}
+
+.toolbar-slot[data-mode="normal"] .lab-control-bar:not(.lab-control-bar--formatting) .lab-control-bar__content {
+  opacity: 1;
+  transition-delay: 140ms;
+}
+
+.toolbar-slot[data-mode="normal"] .lab-control-bar--formatting .lab-control-bar__content {
+  opacity: 0;
+  transition-delay: 0s;
+}
+
+.toolbar-slot[data-mode="formatting"] .lab-control-bar--formatting .lab-control-bar__content {
+  opacity: 1;
+  transition-delay: 300ms;
 }
 
 .lab-control-bar {
