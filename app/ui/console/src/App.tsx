@@ -181,7 +181,19 @@ function AppShell() {
     // Set visual viewport height as CSS variable
     const updateVisualViewport = () => {
       const height = viewport?.height ?? window.innerHeight;
+      const offsetTop = viewport?.offsetTop ?? 0;
+      
+      // Set the visual viewport height
       docEl.style.setProperty('--visual-viewport-height', `${height}px`);
+      
+      // CRITICAL: Adjust body position to account for visual viewport offset
+      // When keyboard appears, visual viewport may have offsetTop > 0
+      // We need to offset the body to stay aligned with visual viewport
+      if (offsetTop > 0) {
+        document.body.style.top = `-${offsetTop}px`;
+      } else {
+        document.body.style.top = '0px';
+      }
       
       // Debug logging for iOS keyboard behavior
       if (viewport) {
@@ -189,7 +201,8 @@ function AppShell() {
           height: viewport.height,
           offsetTop: viewport.offsetTop,
           scale: viewport.scale,
-          innerHeight: window.innerHeight
+          innerHeight: window.innerHeight,
+          bodyTop: document.body.style.top
         });
       }
     };
