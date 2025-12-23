@@ -194,7 +194,7 @@ function AppShell() {
       }
     };
 
-    // Initial set
+    // CRITICAL: Set immediately and synchronously to prevent initial UI shift
     updateVisualViewport();
 
     // Update on visual viewport resize (keyboard show/hide)

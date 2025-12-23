@@ -22,9 +22,9 @@ html,
 body {
   background: var(--bg-primary);
   /* Lock height to viewport, prevent pull-to-refresh */
-  /* Use 100dvh for iOS - dynamically adjusts for keyboard */
   height: 100%;
-  min-height: 100dvh;
+  /* iOS FIX: Don't use min-height with dvh - causes white space with keyboard */
+  /* The visual viewport height CSS variable will handle dynamic sizing */
   overflow: hidden;
   overscroll-behavior: none;
   /* Use relative positioning - fixed causes iOS keyboard issues */
@@ -32,12 +32,14 @@ body {
   width: 100%;
   margin: 0;
   padding: 0;
-  /* Ensure background extends beyond viewport for iOS keyboard scenarios */
+  /* Ensure background extends to cover any gaps */
   background-attachment: fixed;
 }
 
 :root {
-  /* Default to 100vh, will be updated by JS for iOS */
+  /* Visual viewport height - updated dynamically by JS when keyboard shows/hides */
+  --visual-viewport-height: 100vh;
+  /* Legacy variable - kept for compatibility */
   --app-viewport-height: 100vh;
   --app-bg-dark: #050713;
   --app-bg-light: #f5f6fa;
@@ -175,9 +177,8 @@ html,
 body,
 #root {
   height: 100%;
-  /* Use ONLY dynamic viewport height to fix iOS keyboard white space */
-  /* DO NOT use var(--app-viewport-height) - causes layout shifts when typing */
-  min-height: 100dvh;
+  /* iOS FIX: Don't use min-height with dvh - causes white space with keyboard */
+  /* Visual viewport height CSS variable handles dynamic sizing */
   /* Prevent scrolling to fix white bar and white space issues */
   overflow: hidden;
   overscroll-behavior: none;
@@ -210,7 +211,7 @@ body,
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  /* iOS FIX: Don't use min-height with dvh - use height: 100% only */
   height: 100%;
   flex: 1;
   background-color: var(--app-surface);
@@ -431,8 +432,9 @@ body::before {
   z-index: -1;
   background-color: var(--app-surface);
   background-image: var(--app-background-gradient);
-  /* Ensure it covers viewport even when keyboard appears */
-  min-height: 100dvh;
+  /* iOS FIX: Use height 100% with fixed positioning to cover viewport */
+  height: 100%;
+  width: 100%;
 }
 
 #root {
@@ -442,7 +444,7 @@ body::before {
 
 .app-root {
   position: relative;
-  min-height: 100dvh;
+  /* iOS FIX: Don't use min-height with dvh */
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -499,7 +501,7 @@ a:hover {
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 100dvh;
+  /* iOS FIX: Don't use min-height with dvh - causes white space */
   background: var(--bg-primary);
   /*
    * Safari/iPad blur + keyboard guard: Use overflow:hidden on parent containers
