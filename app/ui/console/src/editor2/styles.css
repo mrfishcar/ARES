@@ -184,14 +184,10 @@
   flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
-  /* Prevent scroll chaining to parent elements - keeps scroll contained */
-  overscroll-behavior: contain;
-  /* iOS: Prevent the viewport from shifting when typing */
-  -webkit-overflow-scrolling: auto;
-  /* Prevent automatic scroll position adjustments */
-  overflow-anchor: none;
-  /* Ensure this is the scroll container */
-  scroll-behavior: auto;
+  /* Use native momentum scrolling on iOS - smooth and natural */
+  -webkit-overflow-scrolling: touch;
+  /* Allow smooth scrolling for programmatic scrolls */
+  scroll-behavior: smooth;
 }
 
 /* The actual contentEditable element */
@@ -219,9 +215,6 @@
   -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
   touch-action: manipulation;
   /* Remove -webkit-user-modify as it's deprecated and can cause issues */
-  
-  /* Prevent this element from being scrolled into view by ancestors */
-  overflow-anchor: none;
 }
 
 /* Placeholder */
