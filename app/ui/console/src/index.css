@@ -7,46 +7,46 @@
 html {
   font-size: 100%;
   -webkit-text-size-adjust: 100%;
-  background: var(--bg-primary);
-  /* Ensure background covers all scenarios */
   background-color: var(--bg-primary);
-  /* Prevent iOS elastic scrolling/bounce */
-  overscroll-behavior: none;
-  -webkit-overflow-scrolling: touch;
-
-  /* iOS-safe viewport height - update CSS variable on resize */
-  --app-viewport-height: 100vh;
-  /* Fallback for browsers that support dvh */
-  --app-viewport-height: 100dvh;
-}
-
-html,
-body {
-  background-color: var(--bg-primary);
-  /* Allow natural height adjustment for iOS keyboard */
-  min-height: 100dvh;
-  /* Let child containers handle scrolling - don't lock overflow */
-  overflow: visible;
-  overscroll-behavior: none;
-  /* Use relative positioning - fixed causes iOS keyboard issues */
-  position: relative;
+  /* NUCLEAR OPTION: Lock html completely */
+  position: fixed;
   width: 100%;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
   margin: 0;
   padding: 0;
 }
 
-/* Ensure body always fills at least the viewport */
 body {
-  display: flex;
-  flex-direction: column;
+  background-color: var(--bg-primary);
+  /* NUCLEAR OPTION: Lock body completely */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  margin: 0;
+  padding: 0;
+  -webkit-overflow-scrolling: auto;
 }
 
-/* Root app container */
+/* Root app container - fills the locked body */
 #root {
-  flex: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
   background-color: var(--bg-primary);
 }
 
@@ -221,10 +221,16 @@ body,
 }
 
 .app-shell {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  flex: 1;
+  overflow: hidden;
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
@@ -235,9 +241,8 @@ body,
   display: flex;
   flex-direction: column;
   width: 100%;
+  overflow: hidden;
   background-color: var(--bg-primary);
-  /* Allow natural overflow - let child containers manage their own scrolling */
-  overflow: visible;
 }
 
 .app-scroll-root {
@@ -453,8 +458,14 @@ body::before {
 }
 
 .app-root {
-  position: relative;
-  flex: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -509,10 +520,11 @@ a:hover {
 .extraction-lab {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  flex: 1;
+  height: 100%;
   background: var(--bg-primary);
-  /* Allow natural scrolling behavior - editor handles its own scrolling */
-  overflow: visible;
+  /* Lock overflow - only editor scrolls */
+  overflow: hidden;
   /* Prevent iOS elastic scrolling/pull-to-refresh */
   overscroll-behavior: none;
   /* Position relative for child positioning */
@@ -1485,8 +1497,9 @@ a:hover {
   padding-top: 80px; /* Top padding for toolbar clearance */
   flex: 1;
   min-height: 0;
-  /* Allow natural overflow - editor containers handle their own scrolling */
-  overflow: visible;
+  height: 100%;
+  /* Lock overflow - only editor scrolls */
+  overflow: hidden;
   /* Prevent scroll chaining to viewport */
   overscroll-behavior: contain;
   align-items: stretch;
@@ -1500,9 +1513,10 @@ a:hover {
   flex: 1;
   min-width: 0;
   min-height: 0;
+  height: 100%;
   background-color: var(--bg-primary);
-  /* Allow natural overflow - editor panel handles scrolling */
-  overflow: visible;
+  /* Lock overflow - editor panel handles scrolling */
+  overflow: hidden;
   /* Prevent scroll chaining to viewport */
   overscroll-behavior: contain;
 }
@@ -2223,6 +2237,8 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   gap: 0;
   min-width: 0;
   min-height: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
 /* Entity indicators container on left side */
@@ -2243,6 +2259,8 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   flex: 1;
   min-width: 0;
   min-height: 0;
+  height: 100%;
+  overflow: hidden;
   position: relative;
 }
 
