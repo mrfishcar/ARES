@@ -163,14 +163,7 @@ body {
 
 /* REMOVED: Duplicate rules that conflicted with main lockdown */
 /* All html,body,#root rules consolidated into main declaration above */
-
-#root {
-  /* Root must also be locked */
-  position: fixed !important;
-  inset: 0 !important;
-  overflow: hidden !important;
-  touch-action: none !important;
-}
+/* #root rule moved to line 428 - only ONE rule for #root */
 
 @media (prefers-color-scheme: light) {
   :root,
@@ -1492,10 +1485,10 @@ a:hover {
   padding-top: 20px; /* Minimal top padding for floating bar */
   flex: 1;
   min-height: 0;
-  /* HARD LOCK: Prevent scrolling */
+  /* Prevent scrolling on this container */
   overflow: hidden !important;
   overscroll-behavior: none !important;
-  touch-action: none !important;
+  /* NO touch-action here - allows child editor to scroll */
   position: relative !important;
   align-items: stretch;
   background: transparent;
@@ -1509,10 +1502,10 @@ a:hover {
   min-width: 0;
   background-color: var(--app-surface);
   height: 100%;
-  /* HARD LOCK: Prevent scrolling on wrapper */
+  /* Prevent scrolling on wrapper */
   overflow: hidden !important;
   overscroll-behavior: none !important;
-  touch-action: none !important;
+  /* NO touch-action here - allows child editor to scroll */
   position: relative !important;
 }
 
@@ -1539,10 +1532,10 @@ a:hover {
   border: none;
   border-radius: 0;
   box-shadow: none;
-  /* HARD LOCK: Prevent scrolling on panel */
+  /* Prevent scrolling on panel */
   overflow: hidden !important;
   overscroll-behavior: none !important;
-  touch-action: none !important;
+  /* NO touch-action here - allows child editor to scroll */
   position: relative !important;
   transition: background-color 0.3s ease;
   pointer-events: auto;
