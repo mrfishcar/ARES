@@ -52,7 +52,7 @@ export function ScrollIntoViewPlugin() {
       const visibleTop = viewportTop;
       const visibleBottom = viewportTop + viewportHeight;
 
-      const PADDING = 150; // Extra padding for iOS keyboard + QuickType bar
+      const PADDING = 80; // Keep cursor just above keyboard, not centered
 
       // Use instant scroll on mobile for snappier feel
       const isTouch = 'ontouchstart' in window;
@@ -78,12 +78,12 @@ export function ScrollIntoViewPlugin() {
 
     /**
      * Debounced scroll - prevents excessive calls during rapid typing
-     * Shorter delay on touch devices for more responsive feel
+     * Longer delay to reduce jumpiness
      */
     const debouncedScroll = () => {
       if (scrollTimer) clearTimeout(scrollTimer);
       const isTouch = 'ontouchstart' in window;
-      const delay = isTouch ? 50 : 100; // Faster on mobile
+      const delay = isTouch ? 150 : 200; // Reduced frequency to prevent jumping
       scrollTimer = setTimeout(scrollCursorIntoView, delay);
     };
 
