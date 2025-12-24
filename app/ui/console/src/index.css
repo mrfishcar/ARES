@@ -16,6 +16,9 @@ html {
   --app-viewport-height: 100vh;
   /* Fallback for browsers that support dvh */
   --app-viewport-height: 100dvh;
+  
+  /* CRITICAL iOS FIX: Add padding for safe-area so body::before covers status bar */
+  padding-top: env(safe-area-inset-top);
 }
 
 html,
@@ -432,13 +435,17 @@ body {
 body::before {
   content: "";
   position: fixed;
-  inset: 0;
+  /* CRITICAL iOS FIX: Extend into safe-area-inset to cover white status bar */
+  top: calc(-1 * env(safe-area-inset-top, 0px));
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: -1;
   background-color: var(--app-surface);
   background-image: var(--app-background-gradient);
-  /* With body fixed, this covers the entire viewport */
+  /* Cover entire viewport including safe-area */
   width: 100%;
-  height: 100%;
+  height: calc(100% + env(safe-area-inset-top, 0px));
 }
 
 #root {
@@ -565,7 +572,6 @@ a:hover {
 .documents-sidebar {
   position: fixed;
   top: 0;
-  left: 0;
   bottom: 0;
   width: 280px;
   border: 1px solid var(--border-soft);
@@ -575,14 +581,16 @@ a:hover {
   padding: 22px 18px 18px;
   z-index: 100;
   overflow-y: auto;
-  /* ✅ Start off-screen by default */
-  transform: translateX(-100%);
-  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  /* CRITICAL iOS FIX: NO transform! Use left positioning to avoid creating containing block */
+  /* transform: translateX(-100%); ← BREAKS iOS SCROLL ANCHORING */
+  left: -280px;
+  transition: left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ✅ Slide in when parent has sidebar-open class */
 .extraction-lab.sidebar-open .documents-sidebar {
-  transform: translateX(0);
+  /* iOS FIX: Use left positioning instead of transform */
+  left: 0;
 }
 
 /* =========================================================
@@ -2806,15 +2814,15 @@ html[data-theme="light"] .overlay-backdrop {
 
 /* Safe area insets for notched devices */
 @supports (padding: env(safe-area-inset-top)) {
-  .extraction-lab {
-    padding-top: env(safe-area-inset-top);
-  }
-
-  .lab-control-bar {
+  /* REMOVED: .extraction-lab padding-top - now handled by html padding */
+  
+  .lab-toolbar-stack {
+    /* Toolbar needs to account for html's safe-area padding */
     top: calc(16px + env(safe-area-inset-top));
   }
 
   .hamburger-btn {
+    /* Hamburger needs to account for html's safe-area padding */
     top: calc(20px + env(safe-area-inset-top));
   }
 }
