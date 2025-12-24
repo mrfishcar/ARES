@@ -4,36 +4,17 @@
   padding: 0;
 }
 
-html {
-  font-size: 100%;
-  -webkit-text-size-adjust: 100%;
-  background: var(--bg-primary);
-  /* Prevent iOS elastic scrolling/bounce */
-  overscroll-behavior: none;
-  -webkit-overflow-scrolling: touch;
-  
-  /* iOS-safe viewport height - update CSS variable on resize */
-  --app-viewport-height: 100vh;
-  /* Fallback for browsers that support dvh */
-  --app-viewport-height: 100dvh;
-  
-  /* CRITICAL iOS FIX: Add padding for safe-area so body::before covers status bar */
-  padding-top: env(safe-area-inset-top);
-}
-
+/* ULTIMATE LOCKDOWN: Single consolidated rule for html,body */
 html,
 body {
-  background: var(--bg-primary);
-  /* NUCLEAR LOCKDOWN: Position fixed to prevent ANY movement */
+  /* CRITICAL: Position fixed prevents ANY movement */
   position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  margin: 0;
-  padding: 0;
+  inset: 0 !important; /* top:0, right:0, bottom:0, left:0 */
+  width: 100vw !important;
+  height: 100vh !important;
+  /* CRITICAL: NO padding/margin - prevents iOS from finding draggable space */
+  margin: 0 !important;
+  padding: 0 !important;
   /* HARD LOCK: Prevent ALL scrolling */
   overflow: hidden !important;
   overscroll-behavior: none !important;
@@ -41,8 +22,15 @@ body {
   touch-action: none !important;
   /* Disable iOS momentum scrolling */
   -webkit-overflow-scrolling: auto !important;
-  /* Ensure background covers everything */
+  /* Visual */
+  background: var(--bg-primary);
   background-attachment: fixed;
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
+  
+  /* iOS-safe viewport height - CSS variables */
+  --app-viewport-height: 100vh;
+  --app-viewport-height: 100dvh;
 }
 
 :root {
@@ -174,26 +162,15 @@ body {
   background-color: var(--app-surface);
 }
 
-html,
-body {
-  margin: 0;
-  padding: 0;
-  background-color: var(--app-surface);
-  /* color-scheme is set by media queries and theme classes */
-}
+/* REMOVED: Duplicate rules that conflicted with main lockdown */
+/* All html,body,#root rules consolidated into main declaration above */
 
-html,
-body,
 #root {
-  height: 100%;
-  /* iOS FIX: Use 100dvh which adapts to keyboard */
-  min-height: 100dvh;
-  /* Prevent scrolling to fix white bar and white space issues */
-  overflow: hidden;
-  overscroll-behavior: none;
-  /* iOS FIX: Prevent touch scrolling */
-  touch-action: none;
-  -webkit-overflow-scrolling: touch;
+  /* Root must also be locked */
+  position: fixed !important;
+  inset: 0 !important;
+  overflow: hidden !important;
+  touch-action: none !important;
 }
 
 @media (prefers-color-scheme: light) {
@@ -286,10 +263,7 @@ html {
   }
 }
 
-html,
-body {
-  background-color: var(--app-surface);
-}
+/* REMOVED: Duplicate background rule - handled in main declaration */
 
 /* Light mode – "paper" */
 html[data-theme="light"] {
@@ -533,7 +507,8 @@ a:hover {
 /* Hamburger Button - ChatGPT style */
 .hamburger-btn {
   position: fixed;
-  top: 20px;
+  /* iOS FIX: Account for safe-area-inset directly since html has no padding */
+  top: calc(20px + env(safe-area-inset-top, 0px));
   left: 20px;
   border: none;
   background: none; /* Safari blur fix - use 'none' instead of 'transparent' */
@@ -600,7 +575,8 @@ a:hover {
 
 .lab-toolbar-stack {
   position: fixed;
-  top: 16px;
+  /* iOS FIX: Account for safe-area-inset directly since html has no padding */
+  top: calc(16px + env(safe-area-inset-top, 0px));
   left: 0;
   right: 0;
   /* iOS FIX: NO transform! Use flexbox centering to avoid creating containing block */
