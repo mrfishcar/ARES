@@ -51,11 +51,16 @@ body {
   width: 100%;
   /* Use visual viewport height - adjusts when keyboard appears */
   height: var(--visual-viewport-height, 100%);
+  min-height: 100%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   background-color: var(--bg-primary);
-  /* NO transition - instant resize for responsive feel */
+  /* GPU acceleration + performance optimization */
+  will-change: height;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  contain: layout style paint;
 }
 
 :root {
@@ -240,11 +245,16 @@ body,
   bottom: 0;
   width: 100%;
   height: var(--visual-viewport-height, 100%);
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   background-color: var(--bg-primary);
   color: var(--text-primary);
+  /* GPU acceleration */
+  will-change: height;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 .app-main {
@@ -477,6 +487,7 @@ body::before {
   bottom: 0;
   width: 100%;
   height: var(--visual-viewport-height, 100%);
+  min-height: 100%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -484,6 +495,10 @@ body::before {
   background-color: var(--bg-primary);
   background-image: var(--app-background-gradient);
   color: var(--text-primary);
+  /* GPU acceleration */
+  will-change: height;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 .app-loader {
@@ -534,6 +549,7 @@ a:hover {
   flex-direction: column;
   flex: 1;
   height: 100%;
+  min-height: 100%;
   background: var(--bg-primary);
   /* Lock overflow - only editor scrolls */
   overflow: hidden;
@@ -541,6 +557,9 @@ a:hover {
   overscroll-behavior: none;
   /* Position relative for child positioning */
   position: relative;
+  /* GPU acceleration */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 /* Hamburger Button - ChatGPT style */
