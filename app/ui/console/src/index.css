@@ -1529,8 +1529,8 @@ a:hover {
 .lab-content {
   display: flex;
   gap: 0;
-  padding: 0;
-  /* No top padding - let editor fill full height, content padding handles toolbar clearance */
+  /* Add padding to create distinct boundary - editor is INSIDE page, not IS page */
+  padding: 12px;
   flex: 1;
   min-height: 0;
   height: 100%;
