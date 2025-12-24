@@ -24,19 +24,23 @@ html {
 html,
 body {
   background: var(--bg-primary);
-  /* iOS FIX: Use 100dvh which adapts to keyboard naturally */
-  height: 100%;
-  min-height: 100dvh;
-  /* Prevent page-level scrolling */
-  overflow: hidden;
-  overscroll-behavior: none;
-  /* iOS FIX: Prevent touch scrolling on parent containers */
-  touch-action: none;
-  /* Use relative positioning - NOT fixed */
-  position: relative;
-  width: 100%;
+  /* NUCLEAR LOCKDOWN: Position fixed to prevent ANY movement */
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
   margin: 0;
   padding: 0;
+  /* HARD LOCK: Prevent ALL scrolling */
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  /* HARD LOCK: Block ALL touch interactions */
+  touch-action: none !important;
+  /* Disable iOS momentum scrolling */
+  -webkit-overflow-scrolling: auto !important;
   /* Ensure background covers everything */
   background-attachment: fixed;
 }
@@ -512,22 +516,18 @@ a:hover {
 /* ===== Extraction Lab Styles ===== */
 
 .extraction-lab {
+  /* NUCLEAR LOCKDOWN: Fixed positioning prevents movement */
+  position: fixed !important;
+  inset: 0 !important;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  /* iOS FIX: Don't use min-height with dvh - causes white space */
+  height: 100% !important;
+  width: 100% !important;
   background: var(--bg-primary);
-  /*
-   * Safari/iPad blur + keyboard guard: Use overflow:hidden on parent containers
-   * and allow scrolling only in the editor surface to prevent keyboard jumps.
-   */
-  overflow: hidden;
-  /* Prevent iOS elastic scrolling/pull-to-refresh */
-  overscroll-behavior: none;
-  /* iOS FIX: Prevent touch scrolling on this container */
-  touch-action: none;
-  /* Position relative for child positioning */
-  position: relative;
+  /* HARD LOCK: Block ALL scrolling and touch */
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  touch-action: none !important;
 }
 
 /* Hamburger Button - ChatGPT style */
@@ -1515,11 +1515,11 @@ a:hover {
   padding-top: 20px; /* Minimal top padding for floating bar */
   flex: 1;
   min-height: 0;
-  overflow: hidden;
-  /* Prevent scroll chaining to viewport */
-  overscroll-behavior: contain;
-  /* iOS FIX: Prevent touch scrolling on this container */
-  touch-action: none;
+  /* HARD LOCK: Prevent scrolling */
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  touch-action: none !important;
+  position: relative !important;
   align-items: stretch;
   background: transparent;
   /* ✅ No padding by default; will be added by media query when sidebar is open */
@@ -1531,13 +1531,12 @@ a:hover {
   flex: 1;
   min-width: 0;
   background-color: var(--app-surface);
-  /* FIXED: Removed min-height: 100vh to prevent layout cascade */
   height: 100%;
-  overflow: hidden;
-  /* Prevent scroll chaining to viewport */
-  overscroll-behavior: contain;
-  /* iOS FIX: Removed touch-action: none to allow child scrolling */
-  /* touch-action: none; ← This blocked .rich-editor-surface from scrolling! */
+  /* HARD LOCK: Prevent scrolling on wrapper */
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  touch-action: none !important;
+  position: relative !important;
 }
 
 .results-wrapper {
@@ -1563,11 +1562,11 @@ a:hover {
   border: none;
   border-radius: 0;
   box-shadow: none;
-  overflow: hidden;
-  /* Prevent scroll chaining to viewport */
-  overscroll-behavior: contain;
-  /* iOS FIX: Removed touch-action: none to allow child scrolling */
-  /* touch-action: none; ← This blocked .rich-editor-surface from scrolling! */
+  /* HARD LOCK: Prevent scrolling on panel */
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  touch-action: none !important;
+  position: relative !important;
   transition: background-color 0.3s ease;
   pointer-events: auto;
 }

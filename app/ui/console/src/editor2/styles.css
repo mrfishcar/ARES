@@ -183,18 +183,19 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  overflow-x: hidden;
+  /* ALLOW SCROLLING: This is the ONLY element that should scroll */
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
   /* iOS FIX: Scroll padding keeps cursor visible above keyboard */
   scroll-padding-bottom: 150px;
   /* Use native momentum scrolling on iOS - smooth and natural */
-  -webkit-overflow-scrolling: touch;
+  -webkit-overflow-scrolling: touch !important;
   /* Allow smooth scrolling for programmatic scrolls */
   scroll-behavior: smooth;
   /* Prevent scroll chaining - scroll stops at this container */
-  overscroll-behavior: contain;
+  overscroll-behavior: contain !important;
   /* iOS FIX: ALLOW touch scrolling ONLY on this container */
-  touch-action: pan-y;
+  touch-action: pan-y !important;
 }
 
 /* The actual contentEditable element */
