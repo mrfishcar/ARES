@@ -220,6 +220,7 @@
   flex: 1;
   overflow-y: auto;
   padding: var(--space-lg) var(--space-xl);
+  padding-bottom: calc(var(--keyboard-height, 0px) + var(--space-xl));
   min-height: 0;
 }
 
