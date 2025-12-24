@@ -198,8 +198,8 @@
   position: relative;
   flex: 1;
   min-height: 500px;
-  /* Dynamic padding: top for toolbar, bottom for keyboard */
-  padding: 80px 24px calc(var(--keyboard-height, 0px) + 24px) 24px;
+  /* Dynamic padding: top for toolbar, bottom for keyboard + QuickType bar */
+  padding: 80px 24px calc(var(--keyboard-height, 0px) + 60px) 24px;
   outline: none;
 
   /* Typography - iOS Notes style */

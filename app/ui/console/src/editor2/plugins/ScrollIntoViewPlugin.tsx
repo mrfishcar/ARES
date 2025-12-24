@@ -52,7 +52,7 @@ export function ScrollIntoViewPlugin() {
       const visibleTop = viewportTop;
       const visibleBottom = viewportTop + viewportHeight;
 
-      const PADDING = 100; // Increased padding for better visibility on mobile
+      const PADDING = 150; // Extra padding for iOS keyboard + QuickType bar
 
       // Use instant scroll on mobile for snappier feel
       const isTouch = 'ontouchstart' in window;
