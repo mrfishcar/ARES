@@ -24,56 +24,60 @@ export function ScrollIntoViewPlugin() {
     const scrollContainer = editorElement.closest('.rich-editor-surface') as HTMLElement | null;
     if (!scrollContainer) return;
 
-    // Debounce timer
+    // Debounce timer and rAF handle
     let scrollTimer: ReturnType<typeof setTimeout> | null = null;
+    let rafId: number | null = null;
 
     /**
      * Scroll the cursor into view within the VISUAL viewport
+     * Production pattern: Always use requestAnimationFrame for scroll timing
      * IMPORTANT: On iOS with keyboard, visual viewport shrinks but layout viewport stays same
      * We need to check cursor position against visual viewport, not container bounds
      */
     const scrollCursorIntoView = () => {
-      const selection = window.getSelection();
-      if (!selection || selection.rangeCount === 0) return;
+      // Cancel any pending animation frame
+      if (rafId) cancelAnimationFrame(rafId);
 
-      const range = selection.getRangeAt(0);
-      if (!editorElement.contains(range.commonAncestorContainer)) return;
+      // Schedule scroll for next animation frame (production pattern)
+      rafId = requestAnimationFrame(() => {
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) return;
 
-      // Get cursor position
-      const rangeRect = range.getBoundingClientRect();
-      if (rangeRect.height === 0 && rangeRect.width === 0) return;
+        const range = selection.getRangeAt(0);
+        if (!editorElement.contains(range.commonAncestorContainer)) return;
 
-      // Use visual viewport if available (iOS keyboard support), otherwise use window
-      const visualViewport = window.visualViewport;
-      const viewportHeight = visualViewport?.height ?? window.innerHeight;
-      const viewportTop = visualViewport?.offsetTop ?? 0;
+        // Get cursor position
+        const rangeRect = range.getBoundingClientRect();
+        if (rangeRect.height === 0 && rangeRect.width === 0) return;
 
-      // Calculate visible area boundaries (accounting for keyboard)
-      const visibleTop = viewportTop;
-      const visibleBottom = viewportTop + viewportHeight;
+        // Use visual viewport if available (iOS keyboard support), otherwise use window
+        const visualViewport = window.visualViewport;
+        const viewportHeight = visualViewport?.height ?? window.innerHeight;
+        const viewportTop = visualViewport?.offsetTop ?? 0;
 
-      const PADDING = 80; // Keep cursor just above keyboard, not centered
+        // Calculate visible area boundaries (accounting for keyboard)
+        const visibleTop = viewportTop;
+        const visibleBottom = viewportTop + viewportHeight;
 
-      // Use instant scroll on mobile for snappier feel
-      const isTouch = 'ontouchstart' in window;
-      const scrollBehavior = isTouch ? 'auto' : 'smooth';
+        const PADDING = 80; // Keep cursor just above keyboard, not centered
 
-      // Check if cursor is below the visible area (behind keyboard)
-      if (rangeRect.bottom > visibleBottom - PADDING) {
-        // Cursor is below visible area - scroll down to bring it into view
-        const scrollAmount = rangeRect.bottom - (visibleBottom - PADDING);
-        scrollContainer.scrollBy({
-          top: scrollAmount,
-          behavior: scrollBehavior
-        });
-      } else if (rangeRect.top < visibleTop + PADDING) {
-        // Cursor is above visible area - scroll up
-        const scrollAmount = (visibleTop + PADDING) - rangeRect.top;
-        scrollContainer.scrollBy({
-          top: -scrollAmount,
-          behavior: scrollBehavior
-        });
-      }
+        // Check if cursor is below the visible area (behind keyboard)
+        if (rangeRect.bottom > visibleBottom - PADDING) {
+          // Cursor is below visible area - scroll down to bring it into view
+          const scrollAmount = rangeRect.bottom - (visibleBottom - PADDING);
+          scrollContainer.scrollBy({
+            top: scrollAmount,
+            behavior: 'instant'  // rAF provides smoothness, instant prevents jank
+          });
+        } else if (rangeRect.top < visibleTop + PADDING) {
+          // Cursor is above visible area - scroll up
+          const scrollAmount = (visibleTop + PADDING) - rangeRect.top;
+          scrollContainer.scrollBy({
+            top: -scrollAmount,
+            behavior: 'instant'
+          });
+        }
+      });
     };
 
     /**
@@ -95,6 +99,7 @@ export function ScrollIntoViewPlugin() {
 
     return () => {
       if (scrollTimer) clearTimeout(scrollTimer);
+      if (rafId) cancelAnimationFrame(rafId);
       removeTextListener();
       visualViewport?.removeEventListener('resize', scrollCursorIntoView);
     };

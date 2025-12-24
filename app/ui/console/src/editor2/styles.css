@@ -182,26 +182,30 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  /* Constrain to visual viewport - critical for iOS keyboard handling */
-  max-height: var(--visual-viewport-height, 100vh);
+  /* STABLE HEIGHT - never changes, following production editor pattern */
+  height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
   /* Use native momentum scrolling on iOS - smooth and natural */
   -webkit-overflow-scrolling: touch;
-  /* Allow smooth scrolling for programmatic scrolls */
-  scroll-behavior: smooth;
+  /* JS controls scroll timing via rAF - browser handles physics */
+  scroll-behavior: auto;
   /* ALLOW touch scrolling on editor surface */
   touch-action: pan-y;
   overscroll-behavior: contain;
+  /* Performance optimizations */
+  contain: layout style paint;
+  will-change: scroll-position;
 }
 
 /* The actual contentEditable element */
 .rich-content {
   position: relative;
   flex: 1;
-  min-height: 500px;
-  /* Dynamic padding: top for toolbar, bottom for keyboard + QuickType bar */
-  padding: 80px 24px calc(var(--keyboard-height, 0px) + 60px) 24px;
+  min-height: 100%;
+  /* STATIC PADDING - production pattern, no dynamic keyboard compensation */
+  /* Extra bottom padding provides space for keyboard - scroll handles visibility */
+  padding: 80px 24px 120px 24px;
   outline: none;
 
   /* Typography - iOS Notes style */
