@@ -182,6 +182,8 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  /* Constrain to visual viewport - critical for iOS keyboard handling */
+  max-height: var(--visual-viewport-height, 100vh);
   overflow-y: auto;
   overflow-x: hidden;
   /* Use native momentum scrolling on iOS - smooth and natural */
