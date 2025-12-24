@@ -1529,11 +1529,11 @@ a:hover {
 .lab-content {
   display: flex;
   gap: 0;
-  /* Add padding to create distinct boundary - editor is INSIDE page, not IS page */
-  padding: 12px;
+  padding: 0;
   flex: 1;
   min-height: 0;
-  height: 100%;
+  /* Use visual viewport height instead of 100% - responds to keyboard */
+  height: var(--visual-viewport-height, 100%);
   /* Lock overflow - only editor scrolls */
   overflow: hidden;
   /* Prevent scroll chaining to viewport */
