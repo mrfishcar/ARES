@@ -4,24 +4,23 @@
   padding: 0;
 }
 
-/* ULTIMATE LOCKDOWN: Single consolidated rule for html,body */
+/* PROVEN iOS FIX: position:relative + 100dvh + overflow:hidden */
 html,
 body {
-  /* CRITICAL: Position fixed prevents ANY movement */
-  position: fixed !important;
-  inset: 0 !important; /* top:0, right:0, bottom:0, left:0 */
-  width: 100vw !important;
-  height: 100vh !important;
-  /* CRITICAL: NO padding/margin - prevents iOS from finding draggable space */
-  margin: 0 !important;
-  padding: 0 !important;
-  /* HARD LOCK: Prevent ALL scrolling */
-  overflow: hidden !important;
-  overscroll-behavior: none !important;
-  /* HARD LOCK: Block ALL touch interactions */
-  touch-action: none !important;
-  /* Disable iOS momentum scrolling */
-  -webkit-overflow-scrolling: auto !important;
+  /* Use relative positioning - maintains layout flow for flex */
+  position: relative;
+  /* Lock to viewport with dvh (adapts to keyboard on iOS 15.4+) */
+  height: 100%;
+  min-height: 100dvh;
+  width: 100%;
+  /* CRITICAL: NO padding/margin - prevents iOS dragging */
+  margin: 0;
+  padding: 0;
+  /* Prevent page-level scrolling */
+  overflow: hidden;
+  overscroll-behavior: none;
+  /* Block touch manipulation at page level */
+  touch-action: none;
   /* Visual */
   background: var(--bg-primary);
   background-attachment: fixed;
@@ -427,7 +426,10 @@ body::before {
 }
 
 #root {
+  position: relative;
   height: 100%;
+  overflow: hidden;
+  touch-action: none;
   background-color: var(--app-surface);
 }
 
@@ -490,18 +492,17 @@ a:hover {
 /* ===== Extraction Lab Styles ===== */
 
 .extraction-lab {
-  /* NUCLEAR LOCKDOWN: Fixed positioning prevents movement */
-  position: fixed !important;
-  inset: 0 !important;
+  /* iOS FIX: Use relative positioning for flex layout */
+  position: relative;
   display: flex;
   flex-direction: column;
-  height: 100% !important;
-  width: 100% !important;
+  height: 100%;
+  width: 100%;
   background: var(--bg-primary);
-  /* HARD LOCK: Block ALL scrolling and touch */
-  overflow: hidden !important;
-  overscroll-behavior: none !important;
-  touch-action: none !important;
+  /* Prevent scrolling on lab container */
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
 }
 
 /* Hamburger Button - ChatGPT style */
