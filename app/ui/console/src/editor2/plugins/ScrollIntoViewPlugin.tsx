@@ -28,8 +28,9 @@ export function ScrollIntoViewPlugin() {
     let scrollTimer: ReturnType<typeof setTimeout> | null = null;
 
     /**
-     * Scroll the cursor into view within the editor container
-     * IMPORTANT: Use instant scroll on iOS/touch devices for responsive feel
+     * Scroll the cursor into view within the VISUAL viewport
+     * IMPORTANT: On iOS with keyboard, visual viewport shrinks but layout viewport stays same
+     * We need to check cursor position against visual viewport, not container bounds
      */
     const scrollCursorIntoView = () => {
       const selection = window.getSelection();
@@ -42,26 +43,32 @@ export function ScrollIntoViewPlugin() {
       const rangeRect = range.getBoundingClientRect();
       if (rangeRect.height === 0 && rangeRect.width === 0) return;
 
-      // Get container bounds
-      const containerRect = scrollContainer.getBoundingClientRect();
+      // Use visual viewport if available (iOS keyboard support), otherwise use window
+      const visualViewport = window.visualViewport;
+      const viewportHeight = visualViewport?.height ?? window.innerHeight;
+      const viewportTop = visualViewport?.offsetTop ?? 0;
 
-      // Check if cursor is below visible area
+      // Calculate visible area boundaries (accounting for keyboard)
+      const visibleTop = viewportTop;
+      const visibleBottom = viewportTop + viewportHeight;
+
       const PADDING = 100; // Increased padding for better visibility on mobile
 
       // Use instant scroll on mobile for snappier feel
       const isTouch = 'ontouchstart' in window;
       const scrollBehavior = isTouch ? 'auto' : 'smooth';
 
-      if (rangeRect.bottom > containerRect.bottom - PADDING) {
-        // Cursor is near/below bottom - scroll down
-        const scrollAmount = rangeRect.bottom - (containerRect.bottom - PADDING);
+      // Check if cursor is below the visible area (behind keyboard)
+      if (rangeRect.bottom > visibleBottom - PADDING) {
+        // Cursor is below visible area - scroll down to bring it into view
+        const scrollAmount = rangeRect.bottom - (visibleBottom - PADDING);
         scrollContainer.scrollBy({
           top: scrollAmount,
           behavior: scrollBehavior
         });
-      } else if (rangeRect.top < containerRect.top + PADDING) {
-        // Cursor is near/above top - scroll up
-        const scrollAmount = (containerRect.top + PADDING) - rangeRect.top;
+      } else if (rangeRect.top < visibleTop + PADDING) {
+        // Cursor is above visible area - scroll up
+        const scrollAmount = (visibleTop + PADDING) - rangeRect.top;
         scrollContainer.scrollBy({
           top: -scrollAmount,
           behavior: scrollBehavior
