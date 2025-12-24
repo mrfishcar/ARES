@@ -29,7 +29,7 @@ export function ScrollIntoViewPlugin() {
 
     /**
      * Scroll the cursor into view within the editor container
-     * This is a backup for cases where browser auto-scroll doesn't work
+     * IMPORTANT: Use instant scroll on iOS/touch devices for responsive feel
      */
     const scrollCursorIntoView = () => {
       const selection = window.getSelection();
@@ -41,37 +41,43 @@ export function ScrollIntoViewPlugin() {
       // Get cursor position
       const rangeRect = range.getBoundingClientRect();
       if (rangeRect.height === 0 && rangeRect.width === 0) return;
-      
+
       // Get container bounds
       const containerRect = scrollContainer.getBoundingClientRect();
-      
-      // Simple check: is cursor below visible area?
-      // Add some padding (60px) to keep cursor comfortably visible
-      const PADDING = 60;
-      
+
+      // Check if cursor is below visible area
+      const PADDING = 100; // Increased padding for better visibility on mobile
+
+      // Use instant scroll on mobile for snappier feel
+      const isTouch = 'ontouchstart' in window;
+      const scrollBehavior = isTouch ? 'auto' : 'smooth';
+
       if (rangeRect.bottom > containerRect.bottom - PADDING) {
         // Cursor is near/below bottom - scroll down
         const scrollAmount = rangeRect.bottom - (containerRect.bottom - PADDING);
-        scrollContainer.scrollBy({ 
-          top: scrollAmount, 
-          behavior: 'smooth' 
+        scrollContainer.scrollBy({
+          top: scrollAmount,
+          behavior: scrollBehavior
         });
       } else if (rangeRect.top < containerRect.top + PADDING) {
         // Cursor is near/above top - scroll up
         const scrollAmount = (containerRect.top + PADDING) - rangeRect.top;
-        scrollContainer.scrollBy({ 
-          top: -scrollAmount, 
-          behavior: 'smooth' 
+        scrollContainer.scrollBy({
+          top: -scrollAmount,
+          behavior: scrollBehavior
         });
       }
     };
 
     /**
      * Debounced scroll - prevents excessive calls during rapid typing
+     * Shorter delay on touch devices for more responsive feel
      */
     const debouncedScroll = () => {
       if (scrollTimer) clearTimeout(scrollTimer);
-      scrollTimer = setTimeout(scrollCursorIntoView, 100);
+      const isTouch = 'ontouchstart' in window;
+      const delay = isTouch ? 50 : 100; // Faster on mobile
+      scrollTimer = setTimeout(scrollCursorIntoView, delay);
     };
 
     // Listen for text changes (typing, enter, delete)
