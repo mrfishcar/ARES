@@ -170,9 +170,7 @@ function AppShell() {
     };
   }, []);
 
-  // iOS viewport height tracking - let iOS handle keyboard naturally
-  // We use 100dvh in CSS which automatically adjusts for keyboard
-  // This just sets the CSS variable for components that need it
+  // iOS viewport height tracking
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -184,16 +182,65 @@ function AppShell() {
       docEl.style.setProperty('--app-viewport-height', `${height}px`);
     };
 
-    // Set initial value
     updateViewportHeight();
-
-    // Update on resize - let iOS adjust naturally
     viewport?.addEventListener('resize', updateViewportHeight);
     window.addEventListener('resize', updateViewportHeight);
 
     return () => {
       viewport?.removeEventListener('resize', updateViewportHeight);
       window.removeEventListener('resize', updateViewportHeight);
+    };
+  }, []);
+
+  // NUCLEAR: Prevent ALL page scrolling
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // Lock scroll position at 0,0
+    const preventScroll = (e: Event) => {
+      window.scrollTo(0, 0);
+      e.preventDefault();
+    };
+
+    // Prevent scroll events
+    const preventScrollEvent = () => {
+      window.scrollTo(0, 0);
+    };
+
+    // Prevent touch scrolling on document
+    const preventTouchMove = (e: TouchEvent) => {
+      // Allow scrolling within editor, block everywhere else
+      const target = e.target as HTMLElement;
+      const isEditorScroll = target.closest('.editor-panel') || target.closest('.rich-editor-surface');
+      if (!isEditorScroll) {
+        e.preventDefault();
+      }
+    };
+
+    // Lock scroll position
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+
+    // Prevent all scroll attempts
+    window.addEventListener('scroll', preventScrollEvent, { passive: false });
+    window.addEventListener('touchmove', preventTouchMove, { passive: false });
+    document.addEventListener('scroll', preventScrollEvent, { passive: false });
+    document.addEventListener('touchmove', preventTouchMove, { passive: false });
+
+    // Re-lock every 100ms as backup
+    const lockInterval = setInterval(() => {
+      if (window.scrollY !== 0 || window.scrollX !== 0) {
+        window.scrollTo(0, 0);
+      }
+    }, 100);
+
+    return () => {
+      window.removeEventListener('scroll', preventScrollEvent);
+      window.removeEventListener('touchmove', preventTouchMove);
+      document.removeEventListener('scroll', preventScrollEvent);
+      document.removeEventListener('touchmove', preventTouchMove);
+      clearInterval(lockInterval);
     };
   }, []);
 

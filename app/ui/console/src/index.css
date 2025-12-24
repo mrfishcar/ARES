@@ -16,6 +16,9 @@ html {
   overscroll-behavior: none;
   margin: 0;
   padding: 0;
+  /* Prevent ALL touch scrolling */
+  touch-action: none;
+  -webkit-touch-callout: none;
 }
 
 body {
@@ -33,6 +36,9 @@ body {
   margin: 0;
   padding: 0;
   -webkit-overflow-scrolling: auto;
+  /* Prevent ALL touch scrolling */
+  touch-action: none;
+  -webkit-touch-callout: none;
 }
 
 /* Root app container - fills the locked body */
@@ -1553,6 +1559,8 @@ a:hover {
   overscroll-behavior: contain;
   transition: background-color 0.3s ease;
   pointer-events: auto;
+  /* ALLOW touch scrolling on editor */
+  touch-action: pan-y;
 }
 
 /* Desktop sidebar for entities */

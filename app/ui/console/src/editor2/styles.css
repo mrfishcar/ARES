@@ -188,6 +188,9 @@
   -webkit-overflow-scrolling: touch;
   /* Allow smooth scrolling for programmatic scrolls */
   scroll-behavior: smooth;
+  /* ALLOW touch scrolling on editor surface */
+  touch-action: pan-y;
+  overscroll-behavior: contain;
 }
 
 /* The actual contentEditable element */

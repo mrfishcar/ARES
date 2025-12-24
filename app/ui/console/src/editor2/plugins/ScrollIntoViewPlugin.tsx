@@ -1,17 +1,15 @@
 /**
  * ScrollIntoViewPlugin
- * 
- * Minimal plugin that assists with cursor visibility.
- * 
- * With `interactive-widget=resizes-content` in the viewport meta tag,
- * iOS Safari will resize BOTH the visual and layout viewports when the
- * keyboard appears. This means the browser handles auto-scrolling to
- * keep focused inputs visible - we just need to assist for edge cases.
- * 
- * This is the recommended approach for editors because:
- * 1. Browser handles most scroll-to-focus behavior natively
- * 2. No fighting against native iOS behavior
- * 3. Minimal JavaScript intervention = less jank
+ *
+ * Scrolls cursor into view within the editor container.
+ *
+ * With `interactive-widget=resizes-visual` in the viewport meta tag,
+ * iOS Safari will only resize the visual viewport (not layout viewport)
+ * when the keyboard appears. This prevents page shifting but requires
+ * us to handle scrolling the cursor into view manually.
+ *
+ * This plugin scrolls only the .rich-editor-surface container, never
+ * the page/window (which is locked with position:fixed).
  */
 import { useEffect } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
