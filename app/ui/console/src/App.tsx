@@ -1,103 +1,17 @@
 /**
- * Minimal ARES Console Shell
- * Focused on Notes + Entities workflows
+ * ARES Console Shell
+ * Extraction Lab - Mobile-optimized text editor for entity/relation extraction
  */
 
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
 import { useToast, ToastContainer } from './components/Toast';
 import { ThemeProvider } from './context/ThemeContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { NotesPage } from './pages/NotesPage';
-import { EntitiesPage } from './pages/EntitiesPage';
-import { RelationsPage } from './pages/RelationsPage';
-import { GraphPage } from './pages/GraphPage';
-import { UnifiedHomePage } from './pages/UnifiedHomePage';
 import { ExtractionLab } from './pages/ExtractionLab';
-import { BookNLPPage } from './pages/BookNLPPage';
 import { loadState, saveState } from './lib/storage';
 import { initializeClientErrorLogger } from './lib/errorLogger';
 
-type NavItem = {
-  path: string;
-  label: string;
-};
-
-function _Navigation({
-  items,
-  activePath,
-  onNavigate,
-  project,
-  onProjectChange,
-}: {
-  items: NavItem[];
-  activePath: string;
-  onNavigate: (path: string) => void;
-  project: string;
-  onProjectChange: (value: string) => void;
-}) {
-  return (
-    <header
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '16px 28px',
-        borderBottom: '1px solid var(--border-soft)',
-        background: 'var(--bg-secondary)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 20,
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <span style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)' }}>
-          ARES Workspace
-        </span>
-        <nav style={{ display: 'flex', gap: '8px' }}>
-          {items.map(item => {
-            const isActive = activePath === item.path;
-            return (
-              <button
-                key={item.path}
-                onClick={() => onNavigate(item.path)}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '20px',
-                  border: 'none',
-                  background: isActive ? '#1d4ed8' : 'var(--bg-tertiary)',
-                  color: isActive ? '#ffffff' : 'var(--text-secondary)',
-                  fontWeight: isActive ? 600 : 500,
-                  cursor: 'pointer',
-                }}
-              >
-                {item.label}
-              </button>
-            );
-          })}
-        </nav>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <label style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Project</label>
-        <input
-          type="text"
-          value={project}
-          onChange={e => onProjectChange(e.target.value)}
-          style={{
-            padding: '6px 12px',
-            borderRadius: '8px',
-            border: '1px solid var(--border-soft)',
-            fontSize: '14px',
-            width: '140px',
-            background: 'var(--bg-secondary)',
-            color: 'var(--text-primary)',
-          }}
-        />
-      </div>
-    </header>
-  );
-}
 
 // Global focus/selection debug instrumentation
 const DEBUG_EDITOR_FOCUS =
@@ -107,7 +21,6 @@ const DEBUG_EDITOR_FOCUS =
 function AppShell() {
   const [project] = useState<string>(() => loadState('project', 'default'));
   const toast = useToast();
-  const location = useLocation();
   const motionRootRef = useRef<HTMLDivElement>(null);
   const motionTimerRef = useRef<number | null>(null);
 
@@ -255,14 +168,6 @@ function AppShell() {
     };
   }, []);
 
-  const navItems = useMemo<NavItem[]>(
-    () => [
-      { path: '/notes', label: 'Notes' },
-      { path: '/entities', label: 'Entities' },
-    ],
-    []
-  );
-
   useEffect(() => {
     saveState('project', project);
   }, [project]);
@@ -273,10 +178,6 @@ function AppShell() {
       if (cleanup) cleanup();
     };
   }, [project]);
-
-  const _activePath = navItems.some(item => item.path === location.pathname)
-    ? location.pathname
-    : '/notes';
 
   useEffect(() => {
     const root = motionRootRef.current ?? document.documentElement;
@@ -317,12 +218,6 @@ function AppShell() {
         <main className="app-main app-scroll-root">
           <Routes>
             <Route path="/" element={<ExtractionLab project={project} toast={toast} />} />
-            <Route path="/lab" element={<UnifiedHomePage project={project} toast={toast} />} />
-            <Route path="/notes" element={<NotesPage project={project} toast={toast} />} />
-            <Route path="/entities" element={<EntitiesPage project={project} toast={toast} />} />
-            <Route path="/relations" element={<RelationsPage project={project} toast={toast} />} />
-            <Route path="/graph" element={<GraphPage project={project} toast={toast} />} />
-            <Route path="/booknlp" element={<BookNLPPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

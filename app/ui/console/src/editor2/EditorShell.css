@@ -203,8 +203,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  /* iOS HIG: 44px minimum touch target for all devices */
+  width: 44px;
+  height: 44px;
   border-radius: 10px;
   border: 1px solid var(--liquid-glass-border);
   background: rgba(255, 255, 255, 0.04);
@@ -252,11 +253,6 @@
 @media (max-width: 1024px) {
   .formatting-palette__inner {
     min-width: 420px;
-  }
-
-  .format-control {
-    width: 44px; /* iOS recommended touch target */
-    height: 44px;
   }
 
   .format-style-dropdown {
