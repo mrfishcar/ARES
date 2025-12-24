@@ -170,7 +170,7 @@ function AppShell() {
     };
   }, []);
 
-  // iOS viewport height tracking
+  // iOS viewport height tracking + visual viewport adjustment
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -179,15 +179,26 @@ function AppShell() {
 
     const updateViewportHeight = () => {
       const height = viewport?.height ?? window.innerHeight;
+      const fullHeight = window.innerHeight;
+
+      // Set both actual viewport height and visual viewport height
       docEl.style.setProperty('--app-viewport-height', `${height}px`);
+      docEl.style.setProperty('--visual-viewport-height', `${height}px`);
+      docEl.style.setProperty('--full-viewport-height', `${fullHeight}px`);
+
+      // Calculate keyboard height for debugging
+      const keyboardHeight = fullHeight - height;
+      docEl.style.setProperty('--keyboard-height', `${keyboardHeight}px`);
     };
 
     updateViewportHeight();
     viewport?.addEventListener('resize', updateViewportHeight);
+    viewport?.addEventListener('scroll', updateViewportHeight);
     window.addEventListener('resize', updateViewportHeight);
 
     return () => {
       viewport?.removeEventListener('resize', updateViewportHeight);
+      viewport?.removeEventListener('scroll', updateViewportHeight);
       window.removeEventListener('resize', updateViewportHeight);
     };
   }, []);

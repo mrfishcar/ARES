@@ -49,16 +49,22 @@ body {
   right: 0;
   bottom: 0;
   width: 100%;
-  height: 100%;
+  /* Use visual viewport height - adjusts when keyboard appears */
+  height: var(--visual-viewport-height, 100%);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   background-color: var(--bg-primary);
+  /* NO transition - instant resize for responsive feel */
 }
 
 :root {
-  /* Default to 100vh, will be updated by JS for iOS */
+  /* Viewport height variables - updated by JS for iOS */
   --app-viewport-height: 100vh;
+  --visual-viewport-height: 100vh;
+  --full-viewport-height: 100vh;
+  --keyboard-height: 0px;
+
   --app-bg-dark: #050713;
   --app-bg-light: #f5f6fa;
 
@@ -233,7 +239,7 @@ body,
   right: 0;
   bottom: 0;
   width: 100%;
-  height: 100%;
+  height: var(--visual-viewport-height, 100%);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -470,7 +476,7 @@ body::before {
   right: 0;
   bottom: 0;
   width: 100%;
-  height: 100%;
+  height: var(--visual-viewport-height, 100%);
   overflow: hidden;
   display: flex;
   flex-direction: column;
