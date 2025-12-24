@@ -24,13 +24,14 @@ export function ScrollIntoViewPlugin() {
     const scrollContainer = editorElement.closest('.rich-editor-surface') as HTMLElement | null;
     if (!scrollContainer) return;
 
-    // Debounce timer and rAF handle
-    let scrollTimer: ReturnType<typeof setTimeout> | null = null;
+    // Timers for debouncing
+    let textScrollTimer: ReturnType<typeof setTimeout> | null = null;
+    let selectionScrollTimer: ReturnType<typeof setTimeout> | null = null;
     let rafId: number | null = null;
 
     /**
      * Scroll the cursor into view within the VISUAL viewport
-     * Production pattern: Always use requestAnimationFrame for scroll timing
+     * Production pattern: Keep caret one line above keyboard
      * IMPORTANT: On iOS with keyboard, visual viewport shrinks but layout viewport stays same
      * We need to check cursor position against visual viewport, not container bounds
      */
@@ -59,19 +60,20 @@ export function ScrollIntoViewPlugin() {
         const visibleTop = viewportTop;
         const visibleBottom = viewportTop + viewportHeight;
 
-        const PADDING = 80; // Keep cursor just above keyboard, not centered
+        // "One line above keyboard" = line height (28px) + small buffer (22px) = 50px
+        const ONE_LINE_ABOVE_KEYBOARD = 50;
 
         // Check if cursor is below the visible area (behind keyboard)
-        if (rangeRect.bottom > visibleBottom - PADDING) {
+        if (rangeRect.bottom > visibleBottom - ONE_LINE_ABOVE_KEYBOARD) {
           // Cursor is below visible area - scroll down to bring it into view
-          const scrollAmount = rangeRect.bottom - (visibleBottom - PADDING);
+          const scrollAmount = rangeRect.bottom - (visibleBottom - ONE_LINE_ABOVE_KEYBOARD);
           scrollContainer.scrollBy({
             top: scrollAmount,
             behavior: 'instant'  // rAF provides smoothness, instant prevents jank
           });
-        } else if (rangeRect.top < visibleTop + PADDING) {
-          // Cursor is above visible area - scroll up
-          const scrollAmount = (visibleTop + PADDING) - rangeRect.top;
+        } else if (rangeRect.top < visibleTop + 40) {
+          // Cursor is above visible area - scroll up (smaller buffer at top)
+          const scrollAmount = (visibleTop + 40) - rangeRect.top;
           scrollContainer.scrollBy({
             top: -scrollAmount,
             behavior: 'instant'
@@ -81,26 +83,51 @@ export function ScrollIntoViewPlugin() {
     };
 
     /**
-     * Debounced scroll - moderate debounce for smooth typing without bounce
+     * Text changes (typing) - minimal debounce to batch rapid keystrokes
+     * Production pattern: 20-30ms is imperceptible but batches 60fps input
      */
-    const debouncedScroll = () => {
-      if (scrollTimer) clearTimeout(scrollTimer);
-      scrollTimer = setTimeout(scrollCursorIntoView, 100); // Moderate debounce to prevent bounce
+    const debouncedTextScroll = () => {
+      if (textScrollTimer) clearTimeout(textScrollTimer);
+      textScrollTimer = setTimeout(scrollCursorIntoView, 30);
     };
 
-    // Listen for text changes (typing) - debounced to handle line wrapping smoothly
+    /**
+     * Selection changes (cursor movement) - light debounce to catch arrow keys, clicks
+     * Batches multiple selection updates but feels instant
+     */
+    const debouncedSelectionScroll = () => {
+      if (selectionScrollTimer) clearTimeout(selectionScrollTimer);
+      selectionScrollTimer = setTimeout(scrollCursorIntoView, 50);
+    };
+
+    // Listen for text changes (typing)
     const removeTextListener = editor.registerTextContentListener(() => {
-      debouncedScroll();
+      debouncedTextScroll();
     });
 
-    // Listen for viewport resize (keyboard appear/disappear) - immediate
+    // Listen for selection changes (cursor movement without typing)
+    // This catches: arrow keys, mouse clicks, touch selection
+    const handleSelectionChange = () => {
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        if (editorElement.contains(range.commonAncestorContainer)) {
+          debouncedSelectionScroll();
+        }
+      }
+    };
+    document.addEventListener('selectionchange', handleSelectionChange);
+
+    // Listen for viewport resize (keyboard appear/disappear) - immediate, no debounce
     const visualViewport = window.visualViewport;
     visualViewport?.addEventListener('resize', scrollCursorIntoView);
 
     return () => {
-      if (scrollTimer) clearTimeout(scrollTimer);
+      if (textScrollTimer) clearTimeout(textScrollTimer);
+      if (selectionScrollTimer) clearTimeout(selectionScrollTimer);
       if (rafId) cancelAnimationFrame(rafId);
       removeTextListener();
+      document.removeEventListener('selectionchange', handleSelectionChange);
       visualViewport?.removeEventListener('resize', scrollCursorIntoView);
     };
   }, [editor]);
