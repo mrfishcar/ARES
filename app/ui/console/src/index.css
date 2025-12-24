@@ -1530,7 +1530,7 @@ a:hover {
   display: flex;
   gap: 0;
   padding: 0;
-  padding-top: 80px; /* Top padding for toolbar clearance */
+  /* No top padding - let editor fill full height, content padding handles toolbar clearance */
   flex: 1;
   min-height: 0;
   height: 100%;
