@@ -77,24 +77,40 @@ export function ScrollIntoViewPlugin() {
     };
 
     /**
-     * Debounced scroll - prevents excessive calls during rapid typing
-     * Longer delay to reduce jumpiness
+     * Debounced scroll - light debounce for rapid typing
      */
     const debouncedScroll = () => {
       if (scrollTimer) clearTimeout(scrollTimer);
-      const isTouch = 'ontouchstart' in window;
-      const delay = isTouch ? 150 : 200; // Reduced frequency to prevent jumping
-      scrollTimer = setTimeout(scrollCursorIntoView, delay);
+      scrollTimer = setTimeout(scrollCursorIntoView, 50); // Light debounce
     };
 
-    // Listen for text changes (typing, enter, delete)
+    // Listen for text changes (typing) - light debounce
     const removeTextListener = editor.registerTextContentListener(() => {
       debouncedScroll();
     });
 
+    // Listen for selection changes (cursor movement) - immediate, no debounce
+    const handleSelectionChange = () => {
+      // Only scroll if selection is in this editor
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        if (editorElement.contains(range.commonAncestorContainer)) {
+          scrollCursorIntoView();
+        }
+      }
+    };
+    document.addEventListener('selectionchange', handleSelectionChange);
+
+    // Listen for viewport resize (keyboard appear/disappear) - immediate
+    const visualViewport = window.visualViewport;
+    visualViewport?.addEventListener('resize', scrollCursorIntoView);
+
     return () => {
       if (scrollTimer) clearTimeout(scrollTimer);
       removeTextListener();
+      document.removeEventListener('selectionchange', handleSelectionChange);
+      visualViewport?.removeEventListener('resize', scrollCursorIntoView);
     };
   }, [editor]);
 
