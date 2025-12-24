@@ -1536,8 +1536,8 @@ a:hover {
   overflow: hidden;
   /* Prevent scroll chaining to viewport */
   overscroll-behavior: contain;
-  /* iOS FIX: Prevent touch scrolling on this container */
-  touch-action: none;
+  /* iOS FIX: Removed touch-action: none to allow child scrolling */
+  /* touch-action: none; ← This blocked .rich-editor-surface from scrolling! */
 }
 
 .results-wrapper {
@@ -1566,8 +1566,8 @@ a:hover {
   overflow: hidden;
   /* Prevent scroll chaining to viewport */
   overscroll-behavior: contain;
-  /* iOS FIX: Prevent touch scrolling on this container */
-  touch-action: none;
+  /* iOS FIX: Removed touch-action: none to allow child scrolling */
+  /* touch-action: none; ← This blocked .rich-editor-surface from scrolling! */
   transition: background-color 0.3s ease;
   pointer-events: auto;
 }
