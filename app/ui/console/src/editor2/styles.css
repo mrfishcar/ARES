@@ -193,6 +193,8 @@
   scroll-behavior: smooth;
   /* Prevent scroll chaining - scroll stops at this container */
   overscroll-behavior: contain;
+  /* iOS FIX: ALLOW touch scrolling ONLY on this container */
+  touch-action: pan-y;
 }
 
 /* The actual contentEditable element */
@@ -216,6 +218,9 @@
   -webkit-user-select: text;
   /* iOS FIX: Use bright accent color for better cursor visibility */
   caret-color: var(--accent-color, #38bdf8);
+
+  /* iOS FIX: Allow touch interaction for typing */
+  touch-action: manipulation;
 
   /* iOS specific - ensure tap targets work properly */
   -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);

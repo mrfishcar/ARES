@@ -27,6 +27,8 @@ body {
   /* Prevent page-level scrolling */
   overflow: hidden;
   overscroll-behavior: none;
+  /* iOS FIX: Prevent touch scrolling on parent containers */
+  touch-action: none;
   /* Use relative positioning - NOT fixed */
   position: relative;
   width: 100%;
@@ -182,6 +184,8 @@ body,
   /* Prevent scrolling to fix white bar and white space issues */
   overflow: hidden;
   overscroll-behavior: none;
+  /* iOS FIX: Prevent touch scrolling */
+  touch-action: none;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -452,6 +456,9 @@ body::before {
   background-color: var(--app-surface);
   background-image: var(--app-background-gradient);
   color: var(--text-primary);
+  /* iOS FIX: Prevent touch scrolling on containers */
+  touch-action: none;
+  overflow: hidden;
 }
 
 .app-loader {
@@ -510,6 +517,8 @@ a:hover {
   overflow: hidden;
   /* Prevent iOS elastic scrolling/pull-to-refresh */
   overscroll-behavior: none;
+  /* iOS FIX: Prevent touch scrolling on this container */
+  touch-action: none;
   /* Position relative for child positioning */
   position: relative;
 }
@@ -1483,6 +1492,8 @@ a:hover {
   overflow: hidden;
   /* Prevent scroll chaining to viewport */
   overscroll-behavior: contain;
+  /* iOS FIX: Prevent touch scrolling on this container */
+  touch-action: none;
   align-items: stretch;
   background: transparent;
   /* ✅ No padding by default; will be added by media query when sidebar is open */
@@ -1499,6 +1510,8 @@ a:hover {
   overflow: hidden;
   /* Prevent scroll chaining to viewport */
   overscroll-behavior: contain;
+  /* iOS FIX: Prevent touch scrolling on this container */
+  touch-action: none;
 }
 
 .results-wrapper {
@@ -1527,6 +1540,8 @@ a:hover {
   overflow: hidden;
   /* Prevent scroll chaining to viewport */
   overscroll-behavior: contain;
+  /* iOS FIX: Prevent touch scrolling on this container */
+  touch-action: none;
   transition: background-color 0.3s ease;
   pointer-events: auto;
 }
