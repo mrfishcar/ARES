@@ -171,7 +171,10 @@ export function RichTextEditor({
           <CheckListPlugin />
           <OnChangeAdapter onChange={onChange} />
           <FocusDebugPlugin />
-          <ScrollIntoViewPlugin />
+          {/* DISABLED: Let browser handle native scroll-into-view for contentEditable */}
+          {/* Our CSS fixes (100dvh, max-height, no flex:1) prevent layout shift */}
+          {/* Native behavior is smoother and more reliable than custom scroll */}
+          {/* <ScrollIntoViewPlugin /> */}
         </div>
       </div>
     </LexicalComposer>
