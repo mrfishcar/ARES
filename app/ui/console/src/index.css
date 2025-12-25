@@ -2718,33 +2718,33 @@ body.modal-open {
   transform: translateZ(0); /* Force GPU acceleration for stability */
 }
 
-  /* iOS: Prevent layout shift when keyboard appears */
-  @media (max-width: 768px) {
-    .lab-content {
-      /* Allow content to scroll instead of hiding overflow */
-      overflow-y: auto;
-      overflow-x: hidden;
-      /* Prevent momentum scroll issues */
-      -webkit-overflow-scrolling: touch;
-    }
+/* iOS: Prevent layout shift when keyboard appears */
+@media (max-width: 768px) {
+  .lab-content {
+    /* Allow content to scroll instead of hiding overflow */
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* Prevent momentum scroll issues */
+    -webkit-overflow-scrolling: touch;
+  }
 
-    .editor-wrapper,
-    .editor-panel {
-      height: auto;
-      min-height: 0;
-    }
+  .editor-wrapper,
+  .editor-panel {
+    height: auto;
+    min-height: 0;
+  }
 
-    .editor-panel {
-      overflow: visible;
-    }
+  .editor-panel {
+    overflow: visible;
+  }
 
-    .editor-with-indicators-wrapper,
-    .editor-with-indicators {
-      height: auto;
-    }
+  .editor-with-indicators-wrapper,
+  .editor-with-indicators {
+    height: auto;
+  }
 
-    /* Keep toolbar visible above keyboard */
-    .lab-control-bar {
+  /* Keep toolbar visible above keyboard */
+  .lab-control-bar {
     /* Switch to top positioning that doesn't shift with keyboard */
     position: fixed;
     top: 16px;
