@@ -176,37 +176,30 @@
   overscroll-behavior: contain;
 }
 
-/* Editor surface - PHASE 2A: Visual viewport aware (Notion pattern) */
+/* Editor surface - Flexible layout allowing natural scrolling */
 .rich-editor-surface {
   position: relative;
-  /* REMOVED flex: 1 - was causing container to shrink with parent */
-  /* Now uses explicit height only - maintains scroll space */
+  /* Use flex: 1 to naturally fill available space without explicit height constraints */
+  flex: 1;
   display: flex;
   flex-direction: column;
-  /* Fallback: throttled JS updates via --vvh (older browsers) */
-  height: var(--vvh, 100vh);
-  /* CRITICAL: max-height prevents parent from constraining us */
-  max-height: var(--vvh, 100vh);
   overflow-y: auto;
   overflow-x: hidden;
   /* Use native momentum scrolling on iOS - smooth and natural */
   -webkit-overflow-scrolling: touch;
-  /* JS controls scroll timing via rAF - browser handles physics */
+  /* Native browser scroll behavior - allows caret tracking */
   scroll-behavior: auto;
   /* ALLOW touch scrolling on editor surface */
   touch-action: pan-y;
   overscroll-behavior: contain;
-  /* Performance optimizations */
-  contain: layout style paint;
+  /* Minimal containment - removed 'layout' to avoid breaking scroll context */
+  contain: style paint;
   will-change: scroll-position;
 }
 
-/* Native dynamic viewport - zero JS overhead (iOS 15.4+, Safari 15.4+) */
+/* Native dynamic viewport - use for fallback height calculations if needed */
 @supports (height: 100dvh) {
-  .rich-editor-surface {
-    height: 100dvh;  /* Override fallback - native wins */
-    max-height: 100dvh;
-  }
+  /* No override needed - flex: 1 naturally adapts to viewport changes */
 }
 
 /* The actual contentEditable element */
