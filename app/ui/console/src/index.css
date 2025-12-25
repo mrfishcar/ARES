@@ -4,65 +4,40 @@
   padding: 0;
 }
 
+/* Clean, minimal root styles - trust the browser */
 html {
   font-size: 100%;
   -webkit-text-size-adjust: 100%;
   background-color: var(--bg-primary);
-  /* NUCLEAR OPTION: Lock html completely */
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  overscroll-behavior: none;
   margin: 0;
   padding: 0;
-  /* Allow pan scrolling, disable pinch-zoom - production pattern */
-  touch-action: pan-x pan-y;
-  -webkit-touch-callout: none;
+  min-height: 100dvh;
+  /* NO position: fixed - let natural scrolling work */
+  /* NO overflow: hidden - browser handles this */
 }
 
 body {
   background-color: var(--bg-primary);
-  /* NUCLEAR OPTION: Lock body completely */
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  overscroll-behavior: none;
   margin: 0;
   padding: 0;
-  -webkit-overflow-scrolling: auto;
-  /* Allow pan scrolling, disable pinch-zoom - production pattern */
-  touch-action: pan-x pan-y;
-  -webkit-touch-callout: none;
+  min-height: 100dvh;
+  /* NO position: fixed - prevents natural keyboard handling */
+  /* NO overflow: hidden - let editor handle scrolling */
 }
 
-/* Root app container - fills the locked body */
+/* Root app container - flex layout, natural flow */
 #root {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  /* Use visual viewport height - adjusts when keyboard appears */
-  height: var(--visual-viewport-height, 100%);
-  min-height: 100%;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
+  min-height: 100dvh;
   background-color: var(--bg-primary);
   /* Add padding for iOS safe areas (status bar, notch) */
   padding-top: env(safe-area-inset-top, 0);
   padding-left: env(safe-area-inset-left, 0);
   padding-right: env(safe-area-inset-right, 0);
   padding-bottom: env(safe-area-inset-bottom, 0);
-  /* Performance optimization - height is stable (100vh), only hint containment */
-  contain: layout style paint;
+  /* NO contain - causes rendering issues with iOS keyboard */
+  /* NO overflow: hidden - not needed at root level */
 }
 
 :root {
@@ -203,32 +178,7 @@ body {
   }
 }
 
-:root {
-  margin: 0;
-  padding: 0;
-  background-color: var(--app-surface);
-}
-
-html,
-body {
-  margin: 0;
-  padding: 0;
-  background-color: var(--app-surface);
-  /* color-scheme is set by media queries and theme classes */
-}
-
-html,
-body,
-#root {
-  height: 100%;
-  /* Use ONLY dynamic viewport height to fix iOS keyboard white space */
-  /* DO NOT use var(--app-viewport-height) - causes layout shifts when typing */
-  min-height: 100dvh;
-  /* Prevent scrolling to fix white bar and white space issues */
-  overflow: hidden;
-  overscroll-behavior: none;
-  -webkit-overflow-scrolling: touch;
-}
+/* Remove duplicate/conflicting rules - already defined above */
 
 @media (prefers-color-scheme: light) {
   :root,
@@ -253,17 +203,11 @@ body,
 }
 
 .app-shell {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: var(--visual-viewport-height, 100%);
-  min-height: 100%;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  min-height: 0; /* Allow flex children to shrink */
+  overflow: hidden; /* ONLY place overflow is hidden */
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
@@ -274,18 +218,16 @@ body,
   display: flex;
   flex-direction: column;
   width: 100%;
-  overflow: hidden;
+  /* NO overflow: hidden - let children handle scrolling */
   background-color: var(--bg-primary);
 }
 
 .app-scroll-root {
   flex: 1;
-  height: 100%;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  overscroll-behavior: contain;
+  /* NO overflow: hidden - natural flow */
   background-color: transparent;
   color: var(--text-primary);
 }
@@ -312,22 +254,7 @@ body,
   background-color: rgba(5, 7, 19, 0.7);
 }
 
-html {
-  font-size: 100%;
-  -webkit-text-size-adjust: 100%;
-  background-color: var(--app-surface);
-}
-
-@media (prefers-color-scheme: light) {
-  html {
-    background-color: var(--app-bg-light);
-  }
-}
-
-html,
-body {
-  background-color: var(--app-surface);
-}
+/* Theme-specific overrides are already handled above */
 
 /* Light mode – "paper" */
 html[data-theme="light"] {
@@ -491,25 +418,17 @@ body::before {
 }
 
 .app-root {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: var(--visual-viewport-height, 100%);
-  min-height: 100%;
-  overflow: hidden;
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  min-height: 0; /* Allow flex children to shrink */
   background-color: var(--bg-primary);
   background-image: var(--app-background-gradient);
   color: var(--text-primary);
-  /* GPU acceleration */
-  will-change: height;
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
+  /* NO will-change: height - causes repaints */
+  /* NO position: absolute - let it flow naturally */
+  /* NO overflow: hidden - not needed here */
 }
 
 .app-loader {
@@ -559,18 +478,10 @@ a:hover {
   display: flex;
   flex-direction: column;
   flex: 1;
-  height: 100%;
-  min-height: 100%;
+  min-height: 0; /* Allow flex children to shrink */
   background: var(--bg-primary);
-  /* Lock overflow - only editor scrolls */
-  overflow: hidden;
-  /* Prevent iOS elastic scrolling/pull-to-refresh */
-  overscroll-behavior: none;
-  /* Position relative for child positioning */
+  /* NO overflow: hidden here - let children handle scrolling */
   position: relative;
-  /* GPU acceleration */
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
 }
 
 /* Hamburger Button - ChatGPT style */
@@ -1538,15 +1449,9 @@ a:hover {
   padding: 0;
   flex: 1;
   min-height: 0;
-  /* Use visual viewport height instead of 100% - responds to keyboard */
-  height: var(--visual-viewport-height, 100%);
-  /* Lock overflow - only editor scrolls */
-  overflow: hidden;
-  /* Prevent scroll chaining to viewport */
-  overscroll-behavior: contain;
+  /* NO overflow: hidden - let children handle scrolling naturally */
   align-items: stretch;
   background: transparent;
-  /* ✅ No padding by default; will be added by media query when sidebar is open */
   transition: padding-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1555,12 +1460,8 @@ a:hover {
   flex: 1;
   min-width: 0;
   min-height: 0;
-  height: 100%;
   background-color: var(--bg-primary);
-  /* Lock overflow - editor panel handles scrolling */
-  overflow: hidden;
-  /* Prevent scroll chaining to viewport */
-  overscroll-behavior: contain;
+  /* NO overflow: hidden - editor panel handles scrolling */
 }
 
 .results-wrapper {
