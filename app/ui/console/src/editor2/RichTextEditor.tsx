@@ -171,9 +171,12 @@ export function RichTextEditor({
           <CheckListPlugin />
           <OnChangeAdapter onChange={onChange} />
           <FocusDebugPlugin />
-          {/* DISABLED: Let browser handle native scroll-into-view for contentEditable */}
+          {/* ScrollIntoViewPlugin: Enhanced with iOS debugging (Dec 2025) */}
+          {/* Enable diagnostics: window.ARES_DEBUG_SCROLL = true */}
+          {/* See docs/iOS-EDITOR-DEBUGGING.md for usage guide */}
+          {/* CURRENTLY DISABLED: Native browser scroll-into-view is more reliable */}
           {/* Our CSS fixes (100dvh, max-height, no flex:1) prevent layout shift */}
-          {/* Native behavior is smoother and more reliable than custom scroll */}
+          {/* Re-enable if iOS keyboard issues persist: <ScrollIntoViewPlugin /> */}
           {/* <ScrollIntoViewPlugin /> */}
         </div>
       </div>
