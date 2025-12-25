@@ -419,16 +419,7 @@ body {
   min-height: 100%;
 }
 
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background-color: var(--app-surface);
-  background-image: var(--app-background-gradient);
-  /* Ensure it covers viewport even when keyboard appears */
-  min-height: var(--app-viewport-height, 100vh);
-}
+/* Removed body::before gradient - .extraction-lab has its own solid background */
 
 #root {
   height: 100%;
