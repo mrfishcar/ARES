@@ -179,11 +179,14 @@
 /* Editor surface - PHASE 2A: Visual viewport aware (Notion pattern) */
 .rich-editor-surface {
   position: relative;
-  flex: 1;
+  /* REMOVED flex: 1 - was causing container to shrink with parent */
+  /* Now uses explicit height only - maintains scroll space */
   display: flex;
   flex-direction: column;
   /* Fallback: throttled JS updates via --vvh (older browsers) */
   height: var(--vvh, 100vh);
+  /* CRITICAL: max-height prevents parent from constraining us */
+  max-height: var(--vvh, 100vh);
   overflow-y: auto;
   overflow-x: hidden;
   /* Use native momentum scrolling on iOS - smooth and natural */
@@ -202,6 +205,7 @@
 @supports (height: 100dvh) {
   .rich-editor-surface {
     height: 100dvh;  /* Override fallback - native wins */
+    max-height: 100dvh;
   }
 }
 
