@@ -4,16 +4,17 @@
   padding: 0;
 }
 
+/* CRITICAL: Root element scroll prevention - fixes overscroll issues on iOS/macOS */
 html {
   font-size: 100%;
   -webkit-text-size-adjust: 100%;
   background-color: var(--bg-primary);
-  /* NUCLEAR OPTION: Lock html completely */
+  /* NUCLEAR OPTION: Lock html completely to prevent viewport overscroll */
   position: fixed;
   width: 100%;
   height: 100%;
   overflow: hidden;
-  overscroll-behavior: none;
+  overscroll-behavior: none; /* Prevent bounce/elastic scroll above viewport */
   margin: 0;
   padding: 0;
   /* Allow pan scrolling, disable pinch-zoom - production pattern */
@@ -23,7 +24,7 @@ html {
 
 body {
   background-color: var(--bg-primary);
-  /* NUCLEAR OPTION: Lock body completely */
+  /* NUCLEAR OPTION: Lock body completely to prevent viewport overscroll */
   position: fixed;
   top: 0;
   left: 0;
@@ -32,7 +33,7 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  overscroll-behavior: none;
+  overscroll-behavior: none; /* Prevent bounce/elastic scroll above viewport */
   margin: 0;
   padding: 0;
   -webkit-overflow-scrolling: auto;
@@ -209,22 +210,26 @@ body {
   background-color: var(--app-surface);
 }
 
+/* CONSOLIDATED: html, body, #root rules - no duplicates
+ * This prevents overscroll-behavior conflicts and ensures proper iOS handling */
 html,
 body {
   margin: 0;
   padding: 0;
   background-color: var(--app-surface);
+  height: 100%;
+  /* Use ONLY dynamic viewport height to fix iOS keyboard white space */
+  min-height: 100dvh;
+  /* CRITICAL: Prevent viewport overscroll on iOS/macOS */
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
   /* color-scheme is set by media queries and theme classes */
 }
 
-html,
-body,
 #root {
   height: 100%;
-  /* Use ONLY dynamic viewport height to fix iOS keyboard white space */
-  /* DO NOT use var(--app-viewport-height) - causes layout shifts when typing */
   min-height: 100dvh;
-  /* Prevent scrolling to fix white bar and white space issues */
   overflow: hidden;
   overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
@@ -312,22 +317,7 @@ body,
   background-color: rgba(5, 7, 19, 0.7);
 }
 
-html {
-  font-size: 100%;
-  -webkit-text-size-adjust: 100%;
-  background-color: var(--app-surface);
-}
-
-@media (prefers-color-scheme: light) {
-  html {
-    background-color: var(--app-bg-light);
-  }
-}
-
-html,
-body {
-  background-color: var(--app-surface);
-}
+/* REMOVED: Duplicate html/body rules - consolidated above at lines 212-232 */
 
 /* Light mode – "paper" */
 html[data-theme="light"] {
