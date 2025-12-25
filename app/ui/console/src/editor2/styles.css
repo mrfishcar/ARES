@@ -176,37 +176,18 @@
   overscroll-behavior: contain;
 }
 
-/* Editor surface - PHASE 2A: Visual viewport aware (Notion pattern) */
+/* Editor surface - scrollable container */
 .rich-editor-surface {
   position: relative;
-  /* REMOVED flex: 1 - was causing container to shrink with parent */
-  /* Now uses explicit height only - maintains scroll space */
+  flex: 1;
   display: flex;
   flex-direction: column;
-  /* Fallback: throttled JS updates via --vvh (older browsers) */
-  height: var(--vvh, 100vh);
-  /* CRITICAL: max-height prevents parent from constraining us */
-  max-height: var(--vvh, 100vh);
+  height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  /* Use native momentum scrolling on iOS - smooth and natural */
+  /* iOS momentum scrolling */
   -webkit-overflow-scrolling: touch;
-  /* JS controls scroll timing via rAF - browser handles physics */
-  scroll-behavior: auto;
-  /* ALLOW touch scrolling on editor surface */
-  touch-action: pan-y;
   overscroll-behavior: contain;
-  /* Performance optimizations */
-  contain: layout style paint;
-  will-change: scroll-position;
-}
-
-/* Native dynamic viewport - zero JS overhead (iOS 15.4+, Safari 15.4+) */
-@supports (height: 100dvh) {
-  .rich-editor-surface {
-    height: 100dvh;  /* Override fallback - native wins */
-    max-height: 100dvh;
-  }
 }
 
 /* The actual contentEditable element */
@@ -214,37 +195,31 @@
   position: relative;
   flex: 1;
   min-height: 100%;
-  /* STATIC PADDING - production pattern, no dynamic keyboard compensation */
-  padding: 80px 24px 24px 24px;  /* Reduced bottom - spacer handles scroll slack */
+  padding: 80px 24px 24px 24px;
   outline: none;
 
-  /* Typography - iOS Notes style */
+  /* Typography */
   line-height: 1.7;
   font-size: 17px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
   color: var(--text-primary, #e5e7eb);
-  letter-spacing: -0.01em; /* Subtle tightening for better readability */
-}
-
-/* PHASE 2B: Bottom spacer for scroll slack (Google Docs pattern) */
-/* Ensures short documents have scroll room when keyboard is open */
-.editor-bottom-spacer {
-  flex-shrink: 0;
-  height: var(--scroll-slack, 120px);  /* Keyboard-aware, throttled updates */
-  pointer-events: none;  /* Don't interfere with selection */
-  user-select: none;
-}
+  letter-spacing: -0.01em;
 
   /* Make it editable and interactive */
   cursor: text;
   user-select: text;
   -webkit-user-select: text;
   caret-color: var(--text-primary, #e5e7eb);
-
-  /* iOS specific - ensure tap targets work properly */
   -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
   touch-action: manipulation;
-  /* Remove -webkit-user-modify as it's deprecated and can cause issues */
+}
+
+/* Bottom spacer - extra scroll room for keyboard */
+.editor-bottom-spacer {
+  flex-shrink: 0;
+  height: 120px;
+  pointer-events: none;
+  user-select: none;
 }
 
 /* Placeholder */
