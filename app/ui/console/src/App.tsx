@@ -83,7 +83,7 @@ function AppShell() {
     };
   }, []);
 
-  // Simple viewport height tracking - let 100dvh in CSS handle iOS keyboard
+  // Simple viewport height tracking - updates when keyboard appears/disappears
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
