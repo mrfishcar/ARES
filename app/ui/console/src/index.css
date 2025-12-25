@@ -27,8 +27,6 @@ body {
   min-height: var(--app-viewport-height);
   overflow: hidden;
   overscroll-behavior: none;
-  position: fixed;
-  width: 100%;
   margin: 0;
   padding: 0;
 }
@@ -492,8 +490,7 @@ a:hover {
    * backdrop-filter surfaces (toolbar + dropdown) from losing blur while the
    * viewport height stays locked to a CSS variable to avoid keyboard jumps.
    */
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
   /* Prevent iOS elastic scrolling/pull-to-refresh */
   overscroll-behavior-y: none;
   /* Remove -webkit-overflow-scrolling: touch - can cause focus issues on iOS */
@@ -2609,6 +2606,8 @@ html[data-theme="light"] .overlay-backdrop {
   .lab-content {
     padding-top: 48px;
     padding-left: 0; /* ✅ Remove sidebar padding on mobile; documents-sidebar is hidden */
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .lab-header-status-row {
@@ -2659,8 +2658,7 @@ html[data-theme="light"] .overlay-backdrop {
 
 /* Smooth scrolling on iOS */
 .documents-sidebar,
-.overlay-panel,
-.editor-panel {
+.overlay-panel {
   -webkit-overflow-scrolling: touch;
 }
 
@@ -2720,18 +2718,33 @@ body.modal-open {
   transform: translateZ(0); /* Force GPU acceleration for stability */
 }
 
-/* iOS: Prevent layout shift when keyboard appears */
-@media (max-width: 768px) {
-  .lab-content {
-    /* Allow content to scroll instead of hiding overflow */
-    overflow-y: auto;
-    overflow-x: hidden;
-    /* Prevent momentum scroll issues */
-    -webkit-overflow-scrolling: touch;
-  }
+  /* iOS: Prevent layout shift when keyboard appears */
+  @media (max-width: 768px) {
+    .lab-content {
+      /* Allow content to scroll instead of hiding overflow */
+      overflow-y: auto;
+      overflow-x: hidden;
+      /* Prevent momentum scroll issues */
+      -webkit-overflow-scrolling: touch;
+    }
 
-  /* Keep toolbar visible above keyboard */
-  .lab-control-bar {
+    .editor-wrapper,
+    .editor-panel {
+      height: auto;
+      min-height: 0;
+    }
+
+    .editor-panel {
+      overflow: visible;
+    }
+
+    .editor-with-indicators-wrapper,
+    .editor-with-indicators {
+      height: auto;
+    }
+
+    /* Keep toolbar visible above keyboard */
+    .lab-control-bar {
     /* Switch to top positioning that doesn't shift with keyboard */
     position: fixed;
     top: 16px;
