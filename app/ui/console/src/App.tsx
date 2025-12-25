@@ -83,18 +83,27 @@ function AppShell() {
     };
   }, []);
 
-  // Simple viewport height tracking - let 100dvh in CSS handle iOS keyboard
+  // Track MAXIMUM viewport height to prevent container shrinking when keyboard appears
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const docEl = document.documentElement;
+    let maxHeight = window.visualViewport?.height ?? window.innerHeight;
 
     const updateViewportHeight = () => {
-      const height = window.visualViewport?.height ?? window.innerHeight;
-      docEl.style.setProperty('--app-viewport-height', `${height}px`);
+      const currentHeight = window.visualViewport?.height ?? window.innerHeight;
+
+      // Only update if viewport GROWS (orientation change, keyboard closes)
+      // Never shrink when keyboard opens - this prevents container from moving up
+      if (currentHeight > maxHeight) {
+        maxHeight = currentHeight;
+        docEl.style.setProperty('--app-viewport-height', `${maxHeight}px`);
+      }
     };
 
-    updateViewportHeight();
+    // Set initial height
+    docEl.style.setProperty('--app-viewport-height', `${maxHeight}px`);
+
     window.visualViewport?.addEventListener('resize', updateViewportHeight);
     window.addEventListener('resize', updateViewportHeight);
 
