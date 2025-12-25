@@ -72,6 +72,10 @@ body {
   --full-viewport-height: 100vh;
   --keyboard-height: 0px;
 
+  /* PHASE 2: Production mobile editor variables (Notion pattern) */
+  --vvh: 100vh;           /* Visual viewport height - keyboard-aware, throttled updates */
+  --scroll-slack: 120px;  /* Bottom spacer height - ensures scroll room for short docs */
+
   /* Responsive breakpoints - consistent across all components */
   --breakpoint-xs: 0px;      /* Phone portrait */
   --breakpoint-sm: 640px;    /* Phone landscape */

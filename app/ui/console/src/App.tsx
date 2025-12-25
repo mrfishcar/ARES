@@ -83,33 +83,62 @@ function AppShell() {
     };
   }, []);
 
-  // iOS viewport height tracking + visual viewport adjustment
+  // iOS viewport height tracking with throttling (PHASE 2A)
+  // Production pattern: Only update layout-affecting CSS vars when values change meaningfully
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const docEl = document.documentElement;
     const viewport = window.visualViewport;
 
+    let rafId: number | null = null;
+    let lastCommittedVVH = viewport?.height ?? window.innerHeight;
+    let lastCommittedSlack = 120;
+
     const updateViewportHeight = () => {
-      const height = viewport?.height ?? window.innerHeight;
-      const fullHeight = window.innerHeight;
+      // Cancel pending updates
+      if (rafId) cancelAnimationFrame(rafId);
 
-      // Set both actual viewport height and visual viewport height
-      docEl.style.setProperty('--app-viewport-height', `${height}px`);
-      docEl.style.setProperty('--visual-viewport-height', `${height}px`);
-      docEl.style.setProperty('--full-viewport-height', `${fullHeight}px`);
+      // Batch updates via requestAnimationFrame
+      rafId = requestAnimationFrame(() => {
+        const vvHeight = viewport?.height ?? window.innerHeight;
+        const fullHeight = window.innerHeight;
+        const keyboardHeight = fullHeight - vvHeight;
 
-      // Calculate keyboard height for debugging
-      const keyboardHeight = fullHeight - height;
-      docEl.style.setProperty('--keyboard-height', `${keyboardHeight}px`);
+        // Only update --vvh if it changed meaningfully (>= 8px threshold)
+        if (Math.abs(vvHeight - lastCommittedVVH) >= 8) {
+          docEl.style.setProperty('--vvh', `${vvHeight}px`);
+          lastCommittedVVH = vvHeight;
+        }
+
+        // Calculate scroll slack: max(120px, keyboardHeight + 80px)
+        // This ensures short documents have scroll room when keyboard is open
+        const scrollSlack = Math.max(120, keyboardHeight + 80);
+
+        // Only update --scroll-slack if it changed meaningfully (>= 8px threshold)
+        if (Math.abs(scrollSlack - lastCommittedSlack) >= 8) {
+          docEl.style.setProperty('--scroll-slack', `${scrollSlack}px`);
+          lastCommittedSlack = scrollSlack;
+        }
+
+        // Keep these for backwards compatibility and debugging (cheap updates)
+        docEl.style.setProperty('--app-viewport-height', `${vvHeight}px`);
+        docEl.style.setProperty('--visual-viewport-height', `${vvHeight}px`);
+        docEl.style.setProperty('--full-viewport-height', `${fullHeight}px`);
+        docEl.style.setProperty('--keyboard-height', `${keyboardHeight}px`);
+      });
     };
 
+    // Initial update
     updateViewportHeight();
+
+    // Listen for viewport changes
     viewport?.addEventListener('resize', updateViewportHeight);
     viewport?.addEventListener('scroll', updateViewportHeight);
     window.addEventListener('resize', updateViewportHeight);
 
     return () => {
+      if (rafId) cancelAnimationFrame(rafId);
       viewport?.removeEventListener('resize', updateViewportHeight);
       viewport?.removeEventListener('scroll', updateViewportHeight);
       window.removeEventListener('resize', updateViewportHeight);

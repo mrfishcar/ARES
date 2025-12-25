@@ -150,6 +150,10 @@ export function RichTextEditor({
             ErrorBoundary={LexicalErrorBoundary}
           />
 
+          {/* PHASE 2B: Bottom spacer for scroll slack (Google Docs pattern) */}
+          {/* Ensures short documents have scroll room when keyboard is open */}
+          <div className="editor-bottom-spacer" aria-hidden="true" />
+
           {/* Load initial content ONLY if there was content on first mount */}
           {initialContentRef.current && <InitialContentPlugin content={initialContentRef.current} />}
 
