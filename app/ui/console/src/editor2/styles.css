@@ -182,11 +182,8 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  /* Prefer 100dvh (native dynamic viewport), fallback to throttled --vvh */
-  /* 100dvh: Modern browsers (iOS 15.4+) respond to visual viewport automatically */
-  /* var(--vvh): Fallback for older browsers, throttled JS updates (>= 8px) */
-  height: 100dvh;
-  height: var(--vvh, 100dvh);
+  /* Fallback: throttled JS updates via --vvh (older browsers) */
+  height: var(--vvh, 100vh);
   overflow-y: auto;
   overflow-x: hidden;
   /* Use native momentum scrolling on iOS - smooth and natural */
@@ -199,6 +196,13 @@
   /* Performance optimizations */
   contain: layout style paint;
   will-change: scroll-position;
+}
+
+/* Native dynamic viewport - zero JS overhead (iOS 15.4+, Safari 15.4+) */
+@supports (height: 100dvh) {
+  .rich-editor-surface {
+    height: 100dvh;  /* Override fallback - native wins */
+  }
 }
 
 /* The actual contentEditable element */
