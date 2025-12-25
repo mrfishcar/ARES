@@ -1,0 +1,441 @@
+================================================================================
+ARES iOS Editor Debugging - Example Console Logs
+================================================================================
+
+These are real examples of what you'll see when window.ARES_DEBUG_SCROLL = true
+
+================================================================================
+1. PLUGIN INITIALIZATION (Page Load)
+================================================================================
+
+[ScrollPlugin 18:42:15.234] Debug mode disabled. To enable: window.ARES_DEBUG_SCROLL = true
+[ScrollPlugin 18:42:15.235] ✅ Initialized successfully {
+  editorElement: {
+    className: 'rich-content',
+    rect: { top: 80, left: 24, right: 776, bottom: 1200 }
+  },
+  scrollContainer: {
+    className: 'rich-editor-surface',
+    scrollHeight: 1500,
+    clientHeight: 600,
+    scrollTop: 0,
+    maxScroll: 900,
+    rect: { top: 60, left: 0, right: 800, bottom: 660 }
+  },
+  viewport: {
+    visualHeight: 667,
+    innerHeight: 667,
+    layoutHeight: 667,
+    offsetTop: 0,
+    scale: 1
+  },
+  toolbar: {
+    exists: true,
+    rect: { top: 16, left: 200, right: 600, bottom: 60 },
+    zIndex: '50',
+    position: 'fixed'
+  }
+}
+
+================================================================================
+2. TEXT CHANGE (User Typing)
+================================================================================
+
+[ScrollPlugin 18:42:16.123] 📝 Text change detected {
+  viewportHeight: 667,
+  keyboardOpen: false,
+  scrollTop: 0,
+  timestamp: 12345.678
+}
+
+[ScrollPlugin 18:42:16.140] 📊 Text changed {
+  viewport: {
+    height: 667,
+    offsetTop: 0,
+    scale: 1,
+    layoutHeight: 667,
+    keyboardHeight: 0,
+    keyboardOpen: false
+  },
+  scrollContainer: {
+    scrollTop: 0,
+    scrollHeight: 1500,
+    clientHeight: 600,
+    scrollRange: 900,
+    hasScrollRoom: true,
+    scrollPercent: 0,
+    rect: { top: 60, bottom: 660, height: 600 }
+  },
+  toolbar: {
+    toolbarBottom: 60,
+    contentTop: 60,
+    overlapping: false,
+    overlapAmount: 0
+  },
+  potentialIssues: {
+    toolbarScrollLeakage: false,
+    contentBehindToolbar: false
+  }
+}
+
+================================================================================
+3. CARET POSITION CHECK (Cursor Visible)
+================================================================================
+
+[ScrollPlugin 18:42:16.145] 🎯 Caret position check {
+  caretRect: {
+    top: 320,
+    bottom: 348,
+    left: 24,
+    height: 28,
+    width: 2
+  },
+  visibleRegion: {
+    top: 60,
+    bottom: 667,
+    threshold: 587,
+    height: 607
+  },
+  toolbar: {
+    bottom: 60,
+    height: 44,
+    blocking: false
+  },
+  keyboard: {
+    height: 0,
+    open: false,
+    blocking: false
+  },
+  scrollContainer: {
+    scrollTop: 0,
+    scrollHeight: 1500,
+    clientHeight: 600,
+    maxScroll: 900
+  },
+  caretStatus: '✅ Visible'
+}
+
+[ScrollPlugin 18:42:16.147] ✅ Caret in visible area, no scroll needed {
+  caretTop: 320,
+  caretBottom: 348,
+  visibleTop: 60,
+  visibleBottom: 667,
+  clearanceTop: 260,
+  clearanceBottom: 239
+}
+
+================================================================================
+4. KEYBOARD OPENS (iOS)
+================================================================================
+
+[ScrollPlugin 18:42:20.456] ⌨️ Viewport resized (keyboard state change) {
+  viewportHeight: 400,
+  innerHeight: 667,
+  keyboardHeight: 267,
+  keyboardOpen: true,
+  offsetTop: 0,
+  scale: 1
+}
+
+[ScrollPlugin 18:42:20.460] 📊 Viewport resized {
+  viewport: {
+    height: 400,
+    offsetTop: 0,
+    scale: 1,
+    layoutHeight: 667,
+    keyboardHeight: 267,
+    keyboardOpen: true
+  },
+  scrollContainer: {
+    scrollTop: 45,
+    scrollHeight: 1500,
+    clientHeight: 600,
+    scrollRange: 900,
+    hasScrollRoom: true,
+    scrollPercent: 5,
+    rect: { top: 60, bottom: 660, height: 600 }
+  },
+  toolbar: {
+    toolbarBottom: 60,
+    contentTop: 60,
+    overlapping: false,
+    overlapAmount: 0
+  },
+  potentialIssues: {
+    toolbarScrollLeakage: false,
+    contentBehindToolbar: false
+  }
+}
+
+================================================================================
+5. CARET HIDDEN BEHIND KEYBOARD
+================================================================================
+
+[ScrollPlugin 18:42:21.234] 🎯 Caret position check {
+  caretRect: {
+    top: 420,
+    bottom: 448,
+    left: 24,
+    height: 28,
+    width: 2
+  },
+  visibleRegion: {
+    top: 60,
+    bottom: 400,
+    threshold: 320,
+    height: 340
+  },
+  toolbar: {
+    bottom: 60,
+    height: 44,
+    blocking: false
+  },
+  keyboard: {
+    height: 267,
+    open: true,
+    blocking: true
+  },
+  scrollContainer: {
+    scrollTop: 45,
+    scrollHeight: 1500,
+    clientHeight: 600,
+    maxScroll: 900
+  },
+  caretStatus: '❌ Behind keyboard'
+}
+
+[ScrollPlugin 18:42:21.237] 🔽 Scrolling DOWN to reveal caret from behind keyboard {
+  scrollAmount: 128,
+  beforeScrollTop: 45,
+  targetScrollTop: 173,
+  maxScrollTop: 900,
+  willHitMax: false,
+  caretBottom: 448,
+  viewportThreshold: 320,
+  overflow: 128
+}
+
+[ScrollPlugin 18:42:21.255] 🔽 Scroll DOWN completed {
+  beforeScrollTop: 45,
+  afterScrollTop: 173,
+  requestedScroll: 128,
+  actualScroll: 128,
+  scrollSuccess: true
+}
+
+[ScrollPlugin 18:42:21.260] 📊 After scroll down {
+  viewport: {
+    height: 400,
+    offsetTop: 0,
+    scale: 1,
+    layoutHeight: 667,
+    keyboardHeight: 267,
+    keyboardOpen: true
+  },
+  scrollContainer: {
+    scrollTop: 173,
+    scrollHeight: 1500,
+    clientHeight: 600,
+    scrollRange: 900,
+    hasScrollRoom: true,
+    scrollPercent: 19,
+    rect: { top: 60, bottom: 660, height: 600 }
+  },
+  toolbar: {
+    toolbarBottom: 60,
+    contentTop: 60,
+    overlapping: false,
+    overlapAmount: 0
+  },
+  potentialIssues: {
+    toolbarScrollLeakage: false,
+    contentBehindToolbar: false
+  }
+}
+
+================================================================================
+6. CARET HIDDEN BEHIND TOOLBAR (Scrolled Up)
+================================================================================
+
+[ScrollPlugin 18:42:25.789] 🎯 Caret position check {
+  caretRect: {
+    top: 45,
+    bottom: 73,
+    left: 24,
+    height: 28,
+    width: 2
+  },
+  visibleRegion: {
+    top: 60,
+    bottom: 667,
+    threshold: 587,
+    height: 607
+  },
+  toolbar: {
+    bottom: 60,
+    height: 44,
+    blocking: true
+  },
+  keyboard: {
+    height: 0,
+    open: false,
+    blocking: false
+  },
+  scrollContainer: {
+    scrollTop: 200,
+    scrollHeight: 1500,
+    clientHeight: 600,
+    maxScroll: 900
+  },
+  caretStatus: '❌ Behind toolbar'
+}
+
+[ScrollPlugin 18:42:25.792] 🔼 Scrolling UP to reveal caret from behind toolbar {
+  scrollAmount: 55,
+  beforeScrollTop: 200,
+  targetScrollTop: 145,
+  caretTop: 45,
+  visibleTop: 60,
+  toolbarBuffer: 40,
+  overflow: 55
+}
+
+[ScrollPlugin 18:42:25.810] 🔼 Scroll UP completed {
+  beforeScrollTop: 200,
+  afterScrollTop: 145,
+  requestedScroll: 55,
+  actualScroll: 55,
+  scrollSuccess: true
+}
+
+[ScrollPlugin 18:42:25.815] 📊 After scroll up {
+  viewport: {
+    height: 667,
+    offsetTop: 0,
+    scale: 1,
+    layoutHeight: 667,
+    keyboardHeight: 0,
+    keyboardOpen: false
+  },
+  scrollContainer: {
+    scrollTop: 145,
+    scrollHeight: 1500,
+    clientHeight: 600,
+    scrollRange: 900,
+    hasScrollRoom: true,
+    scrollPercent: 16,
+    rect: { top: 60, bottom: 660, height: 600 }
+  },
+  toolbar: {
+    toolbarBottom: 60,
+    contentTop: 60,
+    overlapping: false,
+    overlapAmount: 0
+  },
+  potentialIssues: {
+    toolbarScrollLeakage: false,
+    contentBehindToolbar: false
+  }
+}
+
+================================================================================
+7. PROBLEM: TOOLBAR SCROLL LEAKAGE
+================================================================================
+
+[ScrollPlugin 18:42:30.123] 📊 Scroll event {
+  viewport: {
+    height: 667,
+    offsetTop: 0,
+    scale: 1,
+    layoutHeight: 667,
+    keyboardHeight: 0,
+    keyboardOpen: false
+  },
+  scrollContainer: {
+    scrollTop: -15,  // ⚠️ NEGATIVE SCROLL!
+    scrollHeight: 1500,
+    clientHeight: 600,
+    scrollRange: 900,
+    hasScrollRoom: true,
+    scrollPercent: -2,
+    rect: { top: 45, bottom: 645, height: 600 }  // ⚠️ TOP < TOOLBAR BOTTOM
+  },
+  toolbar: {
+    toolbarBottom: 60,
+    contentTop: 45,  // ⚠️ CONTENT ABOVE TOOLBAR!
+    overlapping: true,  // ⚠️ PROBLEM DETECTED!
+    overlapAmount: 15
+  },
+  potentialIssues: {
+    toolbarScrollLeakage: true,  // ⚠️ ISSUE CONFIRMED!
+    contentBehindToolbar: true
+  }
+}
+
+================================================================================
+8. PROBLEM: SCROLL FAILED
+================================================================================
+
+[ScrollPlugin 18:42:35.456] 🔽 Scrolling DOWN to reveal caret from behind keyboard {
+  scrollAmount: 80,
+  beforeScrollTop: 800,
+  targetScrollTop: 880,
+  maxScrollTop: 900,
+  willHitMax: false,
+  caretBottom: 450,
+  viewportThreshold: 370,
+  overflow: 80
+}
+
+[ScrollPlugin 18:42:35.475] 🔽 Scroll DOWN completed {
+  beforeScrollTop: 800,
+  afterScrollTop: 800,  // ⚠️ DIDN'T CHANGE!
+  requestedScroll: 80,
+  actualScroll: 0,  // ⚠️ SCROLL FAILED!
+  scrollSuccess: false  // ⚠️ PROBLEM CONFIRMED!
+}
+
+// This indicates overflow-y: hidden or scroll container issue
+
+================================================================================
+9. SELECTION CHANGE (Cursor Movement Without Typing)
+================================================================================
+
+[ScrollPlugin 18:42:40.789] 👆 Selection change detected {
+  isCollapsed: true,
+  rangeCount: 1,
+  caretPosition: {
+    top: 250,
+    bottom: 278
+  },
+  scrollTop: 100,
+  timestamp: 23456.789
+}
+
+================================================================================
+10. RAPID TYPING (Debounced Logs)
+================================================================================
+
+[ScrollPlugin 18:42:45.123] 📝 Text change detected
+[ScrollPlugin 18:42:45.145] 📝 Text change detected
+[ScrollPlugin 18:42:45.167] 📝 Text change detected
+// Rapid events are debounced - only final caret check runs:
+[ScrollPlugin 18:42:45.185] 🎯 Caret position check
+  caretStatus: '✅ Visible'
+
+================================================================================
+
+HOW TO USE THESE LOGS:
+
+1. Enable debug mode: window.ARES_DEBUG_SCROLL = true
+2. Reproduce your issue (type, scroll, open keyboard)
+3. Look for:
+   - ❌ icons = problems detected
+   - caretStatus: "❌ Behind keyboard" or "❌ Behind toolbar"
+   - scrollSuccess: false = scroll didn't work
+   - toolbarScrollLeakage: true = toolbar overlap issue
+   - potentialIssues with true values
+
+4. Share the relevant log section when reporting issues
+
+================================================================================
