@@ -4,29 +4,23 @@
   padding: 0;
 }
 
-html {
+html,
+body {
   font-size: 100%;
   -webkit-text-size-adjust: 100%;
   background: var(--bg-primary);
-  /* Prevent iOS elastic scrolling/bounce */
-  overscroll-behavior: none;
-  -webkit-overflow-scrolling: touch;
-  /* iOS-safe viewport height */
-  --app-viewport-height: 100dvh;
-}
-
-html,
-body {
-  background: var(--bg-primary);
-  /* Lock height to viewport, prevent pull-to-refresh */
-  height: 100dvh;
-  min-height: 100dvh;
-  overflow: hidden;
-  overscroll-behavior: none;
+  /* Fixed elements use 100% not 100dvh - dvh changes with keyboard */
   position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
+  height: 100%;
   margin: 0;
   padding: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 /* Root app container */
