@@ -1,103 +1,17 @@
 /**
- * Minimal ARES Console Shell
- * Focused on Notes + Entities workflows
+ * ARES Console Shell
+ * Extraction Lab - Mobile-optimized text editor for entity/relation extraction
  */
 
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
 import { useToast, ToastContainer } from './components/Toast';
 import { ThemeProvider } from './context/ThemeContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { NotesPage } from './pages/NotesPage';
-import { EntitiesPage } from './pages/EntitiesPage';
-import { RelationsPage } from './pages/RelationsPage';
-import { GraphPage } from './pages/GraphPage';
-import { UnifiedHomePage } from './pages/UnifiedHomePage';
 import { ExtractionLab } from './pages/ExtractionLab';
-import { BookNLPPage } from './pages/BookNLPPage';
 import { loadState, saveState } from './lib/storage';
 import { initializeClientErrorLogger } from './lib/errorLogger';
 
-type NavItem = {
-  path: string;
-  label: string;
-};
-
-function _Navigation({
-  items,
-  activePath,
-  onNavigate,
-  project,
-  onProjectChange,
-}: {
-  items: NavItem[];
-  activePath: string;
-  onNavigate: (path: string) => void;
-  project: string;
-  onProjectChange: (value: string) => void;
-}) {
-  return (
-    <header
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '16px 28px',
-        borderBottom: '1px solid var(--border-soft)',
-        background: 'var(--bg-secondary)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 20,
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <span style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)' }}>
-          ARES Workspace
-        </span>
-        <nav style={{ display: 'flex', gap: '8px' }}>
-          {items.map(item => {
-            const isActive = activePath === item.path;
-            return (
-              <button
-                key={item.path}
-                onClick={() => onNavigate(item.path)}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '20px',
-                  border: 'none',
-                  background: isActive ? '#1d4ed8' : 'var(--bg-tertiary)',
-                  color: isActive ? '#ffffff' : 'var(--text-secondary)',
-                  fontWeight: isActive ? 600 : 500,
-                  cursor: 'pointer',
-                }}
-              >
-                {item.label}
-              </button>
-            );
-          })}
-        </nav>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <label style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Project</label>
-        <input
-          type="text"
-          value={project}
-          onChange={e => onProjectChange(e.target.value)}
-          style={{
-            padding: '6px 12px',
-            borderRadius: '8px',
-            border: '1px solid var(--border-soft)',
-            fontSize: '14px',
-            width: '140px',
-            background: 'var(--bg-secondary)',
-            color: 'var(--text-primary)',
-          }}
-        />
-      </div>
-    </header>
-  );
-}
 
 // Global focus/selection debug instrumentation
 const DEBUG_EDITOR_FOCUS =
@@ -107,11 +21,8 @@ const DEBUG_EDITOR_FOCUS =
 function AppShell() {
   const [project] = useState<string>(() => loadState('project', 'default'));
   const toast = useToast();
-  const location = useLocation();
   const motionRootRef = useRef<HTMLDivElement>(null);
   const motionTimerRef = useRef<number | null>(null);
-  const viewportBaseHeightRef = useRef<number | null>(null);
-  const viewportBaseWidthRef = useRef<number | null>(null);
 
   // Global focus/selection debugging - helps track caret interruption issues on iPad
   useEffect(() => {
@@ -172,64 +83,129 @@ function AppShell() {
     };
   }, []);
 
-  // Lock viewport height to avoid keyboard-induced layout jumps (esp. iPad Safari)
+  // iOS viewport height tracking with throttling (PHASE 2A)
+  // Production pattern: Only update layout-affecting CSS vars when values change meaningfully
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const docEl = document.documentElement;
     const viewport = window.visualViewport;
-    const setViewportHeight = (height: number) => {
-      docEl.style.setProperty('--app-viewport-height', `${height}px`);
+
+    let rafId: number | null = null;
+    let lastCommittedVVH = viewport?.height ?? window.innerHeight;
+    let lastCommittedSlack = 120;
+
+    const updateViewportHeight = () => {
+      // Cancel pending updates
+      if (rafId) cancelAnimationFrame(rafId);
+
+      // Batch updates via requestAnimationFrame
+      rafId = requestAnimationFrame(() => {
+        const vvHeight = viewport?.height ?? window.innerHeight;
+        const fullHeight = window.innerHeight;
+        const keyboardHeight = fullHeight - vvHeight;
+
+        // Only update --vvh if it changed meaningfully (>= 8px threshold)
+        if (Math.abs(vvHeight - lastCommittedVVH) >= 8) {
+          docEl.style.setProperty('--vvh', `${vvHeight}px`);
+          lastCommittedVVH = vvHeight;
+        }
+
+        // Calculate scroll slack: max(120px, keyboardHeight + 80px)
+        // This ensures short documents have scroll room when keyboard is open
+        const scrollSlack = Math.max(120, keyboardHeight + 80);
+
+        // Only update --scroll-slack if it changed meaningfully (>= 8px threshold)
+        if (Math.abs(scrollSlack - lastCommittedSlack) >= 8) {
+          docEl.style.setProperty('--scroll-slack', `${scrollSlack}px`);
+          lastCommittedSlack = scrollSlack;
+        }
+
+        // Keep these for backwards compatibility and debugging (cheap updates)
+        docEl.style.setProperty('--app-viewport-height', `${vvHeight}px`);
+        docEl.style.setProperty('--visual-viewport-height', `${vvHeight}px`);
+        docEl.style.setProperty('--full-viewport-height', `${fullHeight}px`);
+        docEl.style.setProperty('--keyboard-height', `${keyboardHeight}px`);
+      });
     };
 
-    const initialHeight = viewport?.height ?? window.innerHeight;
-    const initialWidth = viewport?.width ?? window.innerWidth;
-    viewportBaseHeightRef.current = initialHeight;
-    viewportBaseWidthRef.current = initialWidth;
-    setViewportHeight(initialHeight);
+    // Initial update
+    updateViewportHeight();
 
-    const handleResize = () => {
-      const nextHeight = viewport?.height ?? window.innerHeight;
-      const nextWidth = viewport?.width ?? window.innerWidth;
-      const baseHeight = viewportBaseHeightRef.current ?? nextHeight;
-      const baseWidth = viewportBaseWidthRef.current ?? nextWidth;
-
-      const widthChanged = Math.abs(nextWidth - baseWidth) > 32;
-      const keyboardLikely = !widthChanged && nextHeight < baseHeight - 80;
-
-      if (widthChanged) {
-        viewportBaseWidthRef.current = nextWidth;
-        viewportBaseHeightRef.current = nextHeight;
-        setViewportHeight(nextHeight);
-        return;
-      }
-
-      if (keyboardLikely) {
-        return;
-      }
-
-      if (nextHeight > baseHeight) {
-        viewportBaseHeightRef.current = nextHeight;
-        setViewportHeight(nextHeight);
-      }
-    };
-
-    viewport?.addEventListener('resize', handleResize);
-    window.addEventListener('resize', handleResize);
+    // Listen for viewport changes
+    viewport?.addEventListener('resize', updateViewportHeight);
+    viewport?.addEventListener('scroll', updateViewportHeight);
+    window.addEventListener('resize', updateViewportHeight);
 
     return () => {
-      viewport?.removeEventListener('resize', handleResize);
-      window.removeEventListener('resize', handleResize);
+      if (rafId) cancelAnimationFrame(rafId);
+      viewport?.removeEventListener('resize', updateViewportHeight);
+      viewport?.removeEventListener('scroll', updateViewportHeight);
+      window.removeEventListener('resize', updateViewportHeight);
     };
   }, []);
 
-  const navItems = useMemo<NavItem[]>(
-    () => [
-      { path: '/notes', label: 'Notes' },
-      { path: '/entities', label: 'Entities' },
-    ],
-    []
-  );
+  // NUCLEAR: Prevent ALL page scrolling
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // Lock scroll position at 0,0
+    const preventScroll = (e: Event) => {
+      window.scrollTo(0, 0);
+      e.preventDefault();
+    };
+
+    // Prevent scroll events
+    const preventScrollEvent = () => {
+      window.scrollTo(0, 0);
+    };
+
+    // Prevent touch scrolling on document
+    const preventTouchMove = (e: TouchEvent) => {
+      // Allow scrolling within editor, block everywhere else
+      const target = e.target as HTMLElement;
+      const isEditorScroll = target.closest('.editor-panel') || target.closest('.rich-editor-surface');
+
+      console.log('[TouchPrevention] touchmove', {
+        target: target.className,
+        isEditorScroll,
+        willPrevent: !isEditorScroll
+      });
+
+      if (!isEditorScroll) {
+        e.preventDefault();
+        console.log('[TouchPrevention] ❌ Prevented touch scroll (outside editor)');
+      } else {
+        console.log('[TouchPrevention] ✅ Allowing editor scroll');
+      }
+    };
+
+    // Lock scroll position
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+
+    // Prevent all scroll attempts
+    window.addEventListener('scroll', preventScrollEvent, { passive: false });
+    window.addEventListener('touchmove', preventTouchMove, { passive: false });
+    document.addEventListener('scroll', preventScrollEvent, { passive: false });
+    document.addEventListener('touchmove', preventTouchMove, { passive: false });
+
+    // Re-lock every 100ms as backup
+    const lockInterval = setInterval(() => {
+      if (window.scrollY !== 0 || window.scrollX !== 0) {
+        window.scrollTo(0, 0);
+      }
+    }, 100);
+
+    return () => {
+      window.removeEventListener('scroll', preventScrollEvent);
+      window.removeEventListener('touchmove', preventTouchMove);
+      document.removeEventListener('scroll', preventScrollEvent);
+      document.removeEventListener('touchmove', preventTouchMove);
+      clearInterval(lockInterval);
+    };
+  }, []);
 
   useEffect(() => {
     saveState('project', project);
@@ -241,10 +217,6 @@ function AppShell() {
       if (cleanup) cleanup();
     };
   }, [project]);
-
-  const _activePath = navItems.some(item => item.path === location.pathname)
-    ? location.pathname
-    : '/notes';
 
   useEffect(() => {
     const root = motionRootRef.current ?? document.documentElement;
@@ -285,12 +257,6 @@ function AppShell() {
         <main className="app-main app-scroll-root">
           <Routes>
             <Route path="/" element={<ExtractionLab project={project} toast={toast} />} />
-            <Route path="/lab" element={<UnifiedHomePage project={project} toast={toast} />} />
-            <Route path="/notes" element={<NotesPage project={project} toast={toast} />} />
-            <Route path="/entities" element={<EntitiesPage project={project} toast={toast} />} />
-            <Route path="/relations" element={<RelationsPage project={project} toast={toast} />} />
-            <Route path="/graph" element={<GraphPage project={project} toast={toast} />} />
-            <Route path="/booknlp" element={<BookNLPPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

@@ -220,6 +220,8 @@
   flex: 1;
   overflow-y: auto;
   padding: var(--space-lg) var(--space-xl);
+  /* STATIC PADDING - production pattern, no dynamic keyboard compensation */
+  padding-bottom: 120px;
   min-height: 0;
 }
 
@@ -361,7 +363,7 @@
   border: 1px solid var(--liquid-glass-border);
   border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-input);  /* 16px minimum prevents iOS zoom */
   font-weight: 500;
   color: var(--text-primary);
   cursor: pointer;
@@ -430,7 +432,7 @@
   border: 1px solid var(--liquid-glass-border);
   border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-input);  /* 16px minimum prevents iOS zoom */
   color: var(--text-primary);
   transition: all 0.2s;
 }

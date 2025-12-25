@@ -150,6 +150,10 @@ export function RichTextEditor({
             ErrorBoundary={LexicalErrorBoundary}
           />
 
+          {/* PHASE 2B: Bottom spacer for scroll slack (Google Docs pattern) */}
+          {/* Ensures short documents have scroll room when keyboard is open */}
+          <div className="editor-bottom-spacer" aria-hidden="true" />
+
           {/* Load initial content ONLY if there was content on first mount */}
           {initialContentRef.current && <InitialContentPlugin content={initialContentRef.current} />}
 
@@ -167,7 +171,10 @@ export function RichTextEditor({
           <CheckListPlugin />
           <OnChangeAdapter onChange={onChange} />
           <FocusDebugPlugin />
-          <ScrollIntoViewPlugin />
+          {/* DISABLED: Let browser handle native scroll-into-view for contentEditable */}
+          {/* Our CSS fixes (100dvh, max-height, no flex:1) prevent layout shift */}
+          {/* Native behavior is smoother and more reliable than custom scroll */}
+          {/* <ScrollIntoViewPlugin /> */}
         </div>
       </div>
     </LexicalComposer>
