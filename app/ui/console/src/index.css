@@ -1431,8 +1431,8 @@ a:hover {
   min-height: 0;
   height: 100%;
   background-color: var(--bg-primary);
-  /* Lock overflow - editor panel handles scrolling */
-  overflow: hidden;
+  /* Don't block scroll - let editor-panel handle it */
+  overflow: visible;
   /* Prevent scroll chaining to viewport */
   overscroll-behavior: contain;
 }
@@ -2156,7 +2156,8 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   min-width: 0;
   min-height: 0;
   height: 100%;
-  overflow: hidden;
+  /* Don't block scroll - editor-panel is the scroll container */
+  overflow: visible;
 }
 
 /* Entity indicators container on left side */
@@ -2178,7 +2179,8 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   min-width: 0;
   min-height: 0;
   height: 100%;
-  overflow: hidden;
+  /* Don't block scroll - editor-panel is the scroll container */
+  overflow: visible;
   position: relative;
 }
 

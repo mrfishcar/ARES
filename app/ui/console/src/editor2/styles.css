@@ -164,14 +164,16 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  min-height: 600px;
+  /* Remove fixed min-height to allow natural content flow */
+  /* min-height: 600px; */
   height: 100%;
   background: var(--bg-primary, #0f1115);
   color: var(--text-primary, #e5e7eb);
   border-radius: 12px;
   /* Remove border for clean iOS Notes look */
   border: none;
-  overflow: hidden;
+  /* Don't block scroll - parent .editor-panel handles scrolling */
+  overflow: visible;
   /* Prevent scroll chaining to viewport */
   overscroll-behavior: contain;
 }
