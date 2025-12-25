@@ -145,65 +145,30 @@ function AppShell() {
     };
   }, []);
 
-  // NUCLEAR: Prevent ALL page scrolling
+  // Passive scroll correction - restore if page scrolls but don't fight with browser
+  // This allows native caret tracking while preventing unwanted page-level scrolling
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Lock scroll position at 0,0
-    const preventScroll = (e: Event) => {
-      window.scrollTo(0, 0);
-      e.preventDefault();
-    };
-
-    // Prevent scroll events
-    const preventScrollEvent = () => {
-      window.scrollTo(0, 0);
-    };
-
-    // Prevent touch scrolling on document
-    const preventTouchMove = (e: TouchEvent) => {
-      // Allow scrolling within editor, block everywhere else
-      const target = e.target as HTMLElement;
-      const isEditorScroll = target.closest('.editor-panel') || target.closest('.rich-editor-surface');
-
-      console.log('[TouchPrevention] touchmove', {
-        target: target.className,
-        isEditorScroll,
-        willPrevent: !isEditorScroll
-      });
-
-      if (!isEditorScroll) {
-        e.preventDefault();
-        console.log('[TouchPrevention] ❌ Prevented touch scroll (outside editor)');
-      } else {
-        console.log('[TouchPrevention] ✅ Allowing editor scroll');
-      }
-    };
-
-    // Lock scroll position
+    // Initial lock
     window.scrollTo(0, 0);
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
 
-    // Prevent all scroll attempts
-    window.addEventListener('scroll', preventScrollEvent, { passive: false });
-    window.addEventListener('touchmove', preventTouchMove, { passive: false });
-    document.addEventListener('scroll', preventScrollEvent, { passive: false });
-    document.addEventListener('touchmove', preventTouchMove, { passive: false });
-
-    // Re-lock every 100ms as backup
-    const lockInterval = setInterval(() => {
-      if (window.scrollY !== 0 || window.scrollX !== 0) {
+    // Passive listener - observe but don't prevent default
+    // This allows browser's native caret scroll behavior to work
+    const correctScroll = () => {
+      // Only correct if significantly off (>5px threshold to avoid fighting micro-adjustments)
+      if (Math.abs(window.scrollY) > 5 || Math.abs(window.scrollX) > 5) {
         window.scrollTo(0, 0);
       }
-    }, 100);
+    };
+
+    // Use passive listener to avoid blocking native scroll behavior
+    window.addEventListener('scroll', correctScroll, { passive: true });
 
     return () => {
-      window.removeEventListener('scroll', preventScrollEvent);
-      window.removeEventListener('touchmove', preventTouchMove);
-      document.removeEventListener('scroll', preventScrollEvent);
-      document.removeEventListener('touchmove', preventTouchMove);
-      clearInterval(lockInterval);
+      window.removeEventListener('scroll', correctScroll);
     };
   }, []);
 
