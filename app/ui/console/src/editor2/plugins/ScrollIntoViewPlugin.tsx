@@ -26,10 +26,23 @@ export function ScrollIntoViewPlugin() {
 
   useEffect(() => {
     const editorElement = editor.getRootElement();
-    if (!editorElement) return;
+    if (!editorElement) {
+      console.error('[ScrollPlugin] No editor root element found');
+      return;
+    }
 
     const scrollContainer = editorElement.closest('.rich-editor-surface') as HTMLElement | null;
-    if (!scrollContainer) return;
+    if (!scrollContainer) {
+      console.error('[ScrollPlugin] No scroll container found. Editor element:', editorElement);
+      return;
+    }
+
+    console.log('[ScrollPlugin] Initialized successfully', {
+      editorElement: editorElement.className,
+      scrollContainer: scrollContainer.className,
+      scrollHeight: scrollContainer.scrollHeight,
+      clientHeight: scrollContainer.clientHeight,
+    });
 
     // Timers for debouncing
     let textScrollTimer: ReturnType<typeof setTimeout> | null = null;
@@ -103,14 +116,23 @@ export function ScrollIntoViewPlugin() {
       // Schedule scroll for next animation frame (production pattern)
       rafId = requestAnimationFrame(() => {
         const selection = window.getSelection();
-        if (!selection || selection.rangeCount === 0) return;
+        if (!selection || selection.rangeCount === 0) {
+          console.log('[ScrollPlugin] No selection');
+          return;
+        }
 
         const range = selection.getRangeAt(0);
-        if (!editorElement.contains(range.commonAncestorContainer)) return;
+        if (!editorElement.contains(range.commonAncestorContainer)) {
+          console.log('[ScrollPlugin] Selection outside editor');
+          return;
+        }
 
         // Get cursor position
         const rangeRect = range.getBoundingClientRect();
-        if (rangeRect.height === 0 && rangeRect.width === 0) return;
+        if (rangeRect.height === 0 && rangeRect.width === 0) {
+          console.log('[ScrollPlugin] Empty range rect');
+          return;
+        }
 
         // Use visual viewport if available (iOS keyboard support)
         const visualViewport = window.visualViewport;
@@ -124,7 +146,7 @@ export function ScrollIntoViewPlugin() {
         // "One line above keyboard" = line height (28px) + small buffer (22px) = 50px
         const ONE_LINE_ABOVE_KEYBOARD = 50;
 
-        debugLog('Caret check', {
+        console.log('[ScrollPlugin] Caret check', {
           caretRect: {
             top: Math.round(rangeRect.top),
             bottom: Math.round(rangeRect.bottom),
@@ -135,16 +157,27 @@ export function ScrollIntoViewPlugin() {
             bottom: Math.round(visibleBottom),
             threshold: Math.round(visibleBottom - ONE_LINE_ABOVE_KEYBOARD),
           },
+          scrollContainer: {
+            scrollTop: scrollContainer.scrollTop,
+            scrollHeight: scrollContainer.scrollHeight,
+            clientHeight: scrollContainer.clientHeight,
+          },
         });
 
         // Check if cursor is below the visible area (behind keyboard)
         if (rangeRect.bottom > visibleBottom - ONE_LINE_ABOVE_KEYBOARD) {
           // Cursor is below visible area - scroll down to bring it into view
           const scrollAmount = rangeRect.bottom - (visibleBottom - ONE_LINE_ABOVE_KEYBOARD);
-          debugLog('Scrolling down', { scrollAmount: Math.round(scrollAmount) });
+          console.log('[ScrollPlugin] 🔽 Scrolling down', {
+            scrollAmount: Math.round(scrollAmount),
+            before: scrollContainer.scrollTop
+          });
           scrollContainer.scrollBy({
             top: scrollAmount,
             behavior: 'instant'  // rAF provides smoothness, instant prevents jank
+          });
+          console.log('[ScrollPlugin] After scroll:', {
+            scrollTop: scrollContainer.scrollTop
           });
 
           // Log result
@@ -152,32 +185,44 @@ export function ScrollIntoViewPlugin() {
         } else if (rangeRect.top < visibleTop + 40) {
           // Cursor is above visible area - scroll up (smaller buffer at top)
           const scrollAmount = (visibleTop + 40) - rangeRect.top;
-          debugLog('Scrolling up', { scrollAmount: Math.round(scrollAmount) });
+          console.log('[ScrollPlugin] 🔼 Scrolling up', {
+            scrollAmount: Math.round(scrollAmount),
+            before: scrollContainer.scrollTop
+          });
           scrollContainer.scrollBy({
             top: -scrollAmount,
             behavior: 'instant'
           });
+          console.log('[ScrollPlugin] After scroll:', {
+            scrollTop: scrollContainer.scrollTop
+          });
 
           // Log result
           setTimeout(() => logDiagnostics('After scroll up'), 0);
+        } else {
+          console.log('[ScrollPlugin] ✅ Caret in visible area, no scroll needed');
         }
       });
     };
 
     /**
-     * Text changes (typing) - minimal debounce to batch rapid keystrokes
+     * Text changes (typing) - IMMEDIATE scroll for instant feedback
      */
     const debouncedTextScroll = () => {
+      console.log('[ScrollPlugin] 📝 Text change detected');
       if (textScrollTimer) clearTimeout(textScrollTimer);
-      textScrollTimer = setTimeout(scrollCursorIntoView, 30);
+      // Reduced debounce to 10ms for near-instant response
+      textScrollTimer = setTimeout(scrollCursorIntoView, 10);
     };
 
     /**
      * Selection changes (cursor movement) - light debounce
      */
     const debouncedSelectionScroll = () => {
+      console.log('[ScrollPlugin] 👆 Selection change detected');
       if (selectionScrollTimer) clearTimeout(selectionScrollTimer);
-      selectionScrollTimer = setTimeout(scrollCursorIntoView, 50);
+      // Reduced debounce to 10ms for faster response
+      selectionScrollTimer = setTimeout(scrollCursorIntoView, 10);
     };
 
     // Listen for text changes (typing)

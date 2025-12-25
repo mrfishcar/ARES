@@ -165,8 +165,18 @@ function AppShell() {
       // Allow scrolling within editor, block everywhere else
       const target = e.target as HTMLElement;
       const isEditorScroll = target.closest('.editor-panel') || target.closest('.rich-editor-surface');
+
+      console.log('[TouchPrevention] touchmove', {
+        target: target.className,
+        isEditorScroll,
+        willPrevent: !isEditorScroll
+      });
+
       if (!isEditorScroll) {
         e.preventDefault();
+        console.log('[TouchPrevention] ❌ Prevented touch scroll (outside editor)');
+      } else {
+        console.log('[TouchPrevention] ✅ Allowing editor scroll');
       }
     };
 
