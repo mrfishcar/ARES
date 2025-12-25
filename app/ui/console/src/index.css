@@ -507,11 +507,8 @@ a:hover {
   height: 100dvh;
   min-height: 100dvh;
   background: var(--bg-primary);
-  /* Allow overflow-y so children can scroll */
-  overflow-x: hidden;
-  overflow-y: auto;
-  /* Prevent iOS elastic scrolling/pull-to-refresh */
-  overscroll-behavior-y: none;
+  /* Only .editor-panel scrolls - this container is fixed */
+  overflow: hidden;
   position: relative;
 }
 

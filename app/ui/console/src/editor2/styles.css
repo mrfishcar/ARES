@@ -176,25 +176,19 @@
   overscroll-behavior: contain;
 }
 
-/* Editor surface - scrollable container */
+/* Editor surface - content wrapper (parent handles scroll) */
 .rich-editor-surface {
   position: relative;
-  flex: 1;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-  /* iOS momentum scrolling */
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
+  min-height: 100%;
+  /* NO overflow here - parent .editor-panel handles scrolling */
 }
 
 /* The actual contentEditable element */
 .rich-content {
   position: relative;
   flex: 1;
-  min-height: 100%;
   padding: 80px 24px 24px 24px;
   outline: none;
 
@@ -214,12 +208,9 @@
   touch-action: manipulation;
 }
 
-/* Bottom spacer - extra scroll room for keyboard */
+/* Bottom spacer - only visible when keyboard is open (handled by native 100dvh) */
 .editor-bottom-spacer {
-  flex-shrink: 0;
-  height: 120px;
-  pointer-events: none;
-  user-select: none;
+  display: none;
 }
 
 /* Placeholder */
