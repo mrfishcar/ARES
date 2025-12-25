@@ -2758,9 +2758,16 @@ body.modal-open {
   transform: translateZ(0); /* Force GPU acceleration for stability */
 }
 
-/* iOS: Ensure natural keyboard handling */
+/* iOS: Prevent layout shift when keyboard appears */
 @media (max-width: 768px) {
-  /* No special overflow handling needed - editor-panel handles scrolling */
+  .lab-content {
+    /* CRITICAL: Make lab-content scrollable on mobile */
+    /* This prevents Safari from scrolling the entire page when keyboard appears */
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* Prevent momentum scroll issues */
+    -webkit-overflow-scrolling: touch;
+  }
 
   /* Keep toolbar visible above keyboard */
   .lab-control-bar {
