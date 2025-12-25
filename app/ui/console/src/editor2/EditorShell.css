@@ -13,9 +13,8 @@
 .editor-shell__content {
   flex: 1;
   position: relative;
-  /* Don't block scroll - parent editor-panel handles scrolling */
+  /* Don't block scroll - .rich-editor-surface handles scrolling */
   overflow: visible;
-  /* Allow content to expand naturally for scrolling */
   min-height: 0;
 }
 

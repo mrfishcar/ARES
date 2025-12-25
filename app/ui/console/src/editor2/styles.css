@@ -164,33 +164,37 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  /* Remove fixed min-height to allow natural content flow */
-  /* min-height: 600px; */
+  min-height: 600px;
   height: 100%;
   background: var(--bg-primary, #0f1115);
   color: var(--text-primary, #e5e7eb);
   border-radius: 12px;
   /* Remove border for clean iOS Notes look */
   border: none;
-  /* Don't block scroll - parent .editor-panel handles scrolling */
-  overflow: visible;
+  /* Contain scroll - .rich-editor-surface is the scroll container */
+  overflow: hidden;
   /* Prevent scroll chaining to viewport */
   overscroll-behavior: contain;
 }
 
-/* Editor surface - content wrapper (parent handles scroll) */
+/* Editor surface - THE SCROLL CONTAINER */
 .rich-editor-surface {
   position: relative;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 100%;
-  /* NO overflow here - parent .editor-panel handles scrolling */
+  /* This is the scroll container - like iOS Notes */
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Native scrolling for iOS */
+  -webkit-overflow-scrolling: touch;
 }
 
 /* The actual contentEditable element */
 .rich-content {
   position: relative;
   flex: 1;
+  min-height: 500px; /* Ensures content can overflow and trigger scroll */
   padding: 80px 24px 24px 24px;
   outline: none;
 
