@@ -4,32 +4,19 @@
   padding: 0;
 }
 
+/* iOS Notes pattern - simple, standard mobile web */
 html,
 body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
   font-size: 100%;
   -webkit-text-size-adjust: 100%;
   background: var(--bg-primary);
-  /* Fixed elements use 100% not 100dvh - dvh changes with keyboard */
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  overscroll-behavior: none;
 }
 
-/* Root app container */
 #root {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  min-height: 100%;
-  overflow: hidden;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background-color: var(--bg-primary);
@@ -207,39 +194,7 @@ body,
   }
 }
 
-.app-shell {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  min-height: 100dvh;
-  height: 100dvh;
-  flex: 1;
-  overflow: hidden;
-  background-color: var(--app-surface);
-  color: var(--text-primary);
-}
-
-.app-main {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  overflow: hidden;
-  background-color: var(--bg-primary);
-}
-
-.app-scroll-root {
-  flex: 1;
-  height: 100%;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  overscroll-behavior: contain;
-  background-color: transparent;
-  color: var(--text-primary);
-}
+/* Removed .app-shell, .app-main, .app-scroll-root - unnecessary wrappers */
 
 .portal-root,
 .modal-root,
@@ -441,18 +396,7 @@ body::before {
   background-color: var(--app-surface);
 }
 
-.app-root {
-  position: relative;
-  min-height: 100dvh;
-  height: 100dvh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  background-color: var(--bg-primary);
-  background-image: var(--app-background-gradient);
-  color: var(--text-primary);
-}
+/* Removed .app-root - unnecessary wrapper */
 
 .app-loader {
   position: fixed;

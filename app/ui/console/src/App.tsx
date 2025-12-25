@@ -149,19 +149,14 @@ function AppShell() {
   }, []);
 
   return (
-    <div className="app-root" ref={motionRootRef} data-motion="idle">
-      <div className="app-shell">
-        <main className="app-main app-scroll-root">
-          <Routes>
-            <Route path="/" element={<ExtractionLab project={project} toast={toast} />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </main>
-
-        <ToastContainer messages={toast.messages} onClose={toast.closeToast} />
-      </div>
+    <>
+      <Routes>
+        <Route path="/" element={<ExtractionLab project={project} toast={toast} />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      <ToastContainer messages={toast.messages} onClose={toast.closeToast} />
       <div id="overlay-root" className="overlay-root" />
-    </div>
+    </>
   );
 }
 
