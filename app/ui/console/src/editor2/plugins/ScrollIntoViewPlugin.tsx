@@ -46,6 +46,10 @@ export function ScrollIntoViewPlugin() {
 
     // Animation frame ID for scroll timing
     let rafId: number | null = null;
+    // Flag to prevent concurrent scroll operations (prevents jumping)
+    let isScrolling = false;
+    // Debounce timer to batch rapid events
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
     // Track last logged state to avoid spam
     let lastLoggedState = {
@@ -108,8 +112,16 @@ export function ScrollIntoViewPlugin() {
      * Production pattern: Keep caret one line above keyboard
      */
     const scrollCursorIntoView = () => {
+      // Prevent concurrent scroll operations (fixes jumping)
+      if (isScrolling) {
+        debugLog('Scroll already in progress, skipping');
+        return;
+      }
+
       // Cancel any pending animation frame
       if (rafId) cancelAnimationFrame(rafId);
+
+      isScrolling = true;
 
       // CRITICAL FIX: Double-rAF to ensure layout is complete
       // Problem: When pressing Enter, DOM updates but layout hasn't finished
@@ -119,20 +131,23 @@ export function ScrollIntoViewPlugin() {
         requestAnimationFrame(() => {
           const selection = window.getSelection();
           if (!selection || selection.rangeCount === 0) {
-            console.log('[ScrollPlugin] No selection');
+            debugLog('No selection');
+            isScrolling = false;
             return;
           }
 
           const range = selection.getRangeAt(0);
           if (!editorElement.contains(range.commonAncestorContainer)) {
-            console.log('[ScrollPlugin] Selection outside editor');
+            debugLog('Selection outside editor');
+            isScrolling = false;
             return;
           }
 
           // Get cursor position
           const rangeRect = range.getBoundingClientRect();
           if (rangeRect.height === 0 && rangeRect.width === 0) {
-            console.log('[ScrollPlugin] Empty range rect');
+            debugLog('Empty range rect');
+            isScrolling = false;
             return;
           }
 
@@ -145,11 +160,11 @@ export function ScrollIntoViewPlugin() {
           const visibleTop = viewportTop;
           const visibleBottom = viewportTop + viewportHeight;
 
-          // INCREASED THRESHOLD: QuickType bar (40px) + two lines (56px) + buffer (24px) = 120px
-          // This ensures caret is truly visible with comfortable margin
-          const ONE_LINE_ABOVE_KEYBOARD = 120;
+          // REDUCED THRESHOLD: QuickType bar (40px) + one line (28px) + buffer (12px) = 80px
+          // Reduced from 120px to prevent over-scrolling and jumping
+          const ONE_LINE_ABOVE_KEYBOARD = 80;
 
-          console.log('[ScrollPlugin] Caret check', {
+          debugLog('Caret check', {
             caretRect: {
               top: Math.round(rangeRect.top),
               bottom: Math.round(rangeRect.bottom),
@@ -171,7 +186,7 @@ export function ScrollIntoViewPlugin() {
           if (rangeRect.bottom > visibleBottom - ONE_LINE_ABOVE_KEYBOARD) {
             // Cursor is below visible area - scroll down to bring it into view
             const scrollAmount = rangeRect.bottom - (visibleBottom - ONE_LINE_ABOVE_KEYBOARD);
-            console.log('[ScrollPlugin] 🔽 Scrolling down', {
+            debugLog('🔽 Scrolling down', {
               scrollAmount: Math.round(scrollAmount),
               before: scrollContainer.scrollTop
             });
@@ -179,7 +194,7 @@ export function ScrollIntoViewPlugin() {
               top: scrollAmount,
               behavior: 'instant'  // rAF provides smoothness, instant prevents jank
             });
-            console.log('[ScrollPlugin] After scroll:', {
+            debugLog('After scroll:', {
               scrollTop: scrollContainer.scrollTop
             });
 
@@ -188,7 +203,7 @@ export function ScrollIntoViewPlugin() {
           } else if (rangeRect.top < visibleTop + 40) {
             // Cursor is above visible area - scroll up (smaller buffer at top)
             const scrollAmount = (visibleTop + 40) - rangeRect.top;
-            console.log('[ScrollPlugin] 🔼 Scrolling up', {
+            debugLog('🔼 Scrolling up', {
               scrollAmount: Math.round(scrollAmount),
               before: scrollContainer.scrollTop
             });
@@ -196,37 +211,44 @@ export function ScrollIntoViewPlugin() {
               top: -scrollAmount,
               behavior: 'instant'
             });
-            console.log('[ScrollPlugin] After scroll:', {
+            debugLog('After scroll:', {
               scrollTop: scrollContainer.scrollTop
             });
 
             // Log result
             setTimeout(() => logDiagnostics('After scroll up'), 0);
           } else {
-            console.log('[ScrollPlugin] ✅ Caret in visible area, no scroll needed');
+            debugLog('✅ Caret in visible area, no scroll needed');
           }
+
+          // Release scroll lock
+          isScrolling = false;
         });
       });
     };
 
     /**
-     * Text changes (typing) - IMMEDIATE scroll with no debounce
-     * Double-rAF handles timing, so no need for setTimeout delay
+     * Text changes (typing) - Minimal debounce to batch rapid keystrokes
+     * Prevents jumping from concurrent scroll operations
      */
     const handleTextChange = () => {
-      console.log('[ScrollPlugin] 📝 Text change detected');
+      debugLog('📝 Text change detected');
       logDiagnostics('Text changed');
-      // No debounce - double-rAF provides timing, instant response needed
-      scrollCursorIntoView();
+
+      // 16ms debounce (1 frame) to batch rapid keystrokes
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(scrollCursorIntoView, 16);
     };
 
     /**
-     * Selection changes (cursor movement) - IMMEDIATE scroll with no debounce
+     * Selection changes (cursor movement) - Minimal debounce
      */
     const handleSelectionScroll = () => {
-      console.log('[ScrollPlugin] 👆 Selection change detected');
-      // No debounce - double-rAF provides timing
-      scrollCursorIntoView();
+      debugLog('👆 Selection change detected');
+
+      // 16ms debounce (1 frame) to batch rapid changes
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(scrollCursorIntoView, 16);
     };
 
     // Listen for text changes (typing)
@@ -266,6 +288,7 @@ export function ScrollIntoViewPlugin() {
 
     return () => {
       if (rafId) cancelAnimationFrame(rafId);
+      if (debounceTimer) clearTimeout(debounceTimer);
       removeTextListener();
       document.removeEventListener('selectionchange', handleSelectionChange);
       visualViewport?.removeEventListener('resize', handleViewportResize);
