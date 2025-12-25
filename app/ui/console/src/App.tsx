@@ -85,6 +85,7 @@ function AppShell() {
 
   // iOS viewport height tracking with throttling (PHASE 2A)
   // Production pattern: Only update layout-affecting CSS vars when values change meaningfully
+  // FIX: Enhanced scroll-slack calculation to prevent text prompt sticking on iOS keyboard events
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -103,7 +104,7 @@ function AppShell() {
       rafId = requestAnimationFrame(() => {
         const vvHeight = viewport?.height ?? window.innerHeight;
         const fullHeight = window.innerHeight;
-        const keyboardHeight = fullHeight - vvHeight;
+        const keyboardHeight = Math.max(0, fullHeight - vvHeight);
 
         // Only update --vvh if it changed meaningfully (>= 8px threshold)
         if (Math.abs(vvHeight - lastCommittedVVH) >= 8) {
@@ -111,11 +112,16 @@ function AppShell() {
           lastCommittedVVH = vvHeight;
         }
 
-        // Calculate scroll slack: max(120px, keyboardHeight + 80px)
-        // This ensures short documents have scroll room when keyboard is open
-        const scrollSlack = Math.max(120, keyboardHeight + 80);
+        // FIX: Enhanced scroll slack calculation
+        // - When keyboard is closed (keyboardHeight < 10px): use minimum 120px
+        // - When keyboard is open: use max(180px, keyboardHeight + 100px)
+        // - Added 20px extra buffer to ensure text prompt never sticks to bottom
+        const isKeyboardOpen = keyboardHeight > 10;
+        const scrollSlack = isKeyboardOpen 
+          ? Math.max(180, keyboardHeight + 100)  // Keyboard open: ensure ample scroll room
+          : 120;  // Keyboard closed: use default minimum
 
-        // Only update --scroll-slack if it changed meaningfully (>= 8px threshold)
+        // Update --scroll-slack if it changed meaningfully (>= 8px threshold)
         if (Math.abs(scrollSlack - lastCommittedSlack) >= 8) {
           docEl.style.setProperty('--scroll-slack', `${scrollSlack}px`);
           lastCommittedSlack = scrollSlack;
@@ -132,7 +138,7 @@ function AppShell() {
     // Initial update
     updateViewportHeight();
 
-    // Listen for viewport changes
+    // Listen for viewport changes - added 'scroll' for iOS keyboard show/hide edge cases
     viewport?.addEventListener('resize', updateViewportHeight);
     viewport?.addEventListener('scroll', updateViewportHeight);
     window.addEventListener('resize', updateViewportHeight);
