@@ -12,6 +12,7 @@ import { ExtractionLab } from './pages/ExtractionLab';
 import { EditorTest } from './pages/EditorTest';
 import { UltraMinimalTest } from './pages/UltraMinimalTest';
 import { WorkingCommitTest } from './pages/WorkingCommitTest';
+import { ExactWorkingReplica } from './pages/ExactWorkingReplica';
 import { loadState, saveState } from './lib/storage';
 import { initializeClientErrorLogger } from './lib/errorLogger';
 
@@ -142,8 +143,9 @@ function AppShell() {
   return (
     <>
       <Routes>
-        {/* WORKING COMMIT STRUCTURE TEST - EXACT REPLICATION */}
-        <Route path="/" element={<WorkingCommitTest />} />
+        {/* EXACT WORKING REPLICA - Complete be09094b copy with CodeMirror */}
+        <Route path="/" element={<ExactWorkingReplica />} />
+        <Route path="/test" element={<WorkingCommitTest />} />
         <Route path="/minimal" element={<UltraMinimalTest />} />
         <Route path="/editor" element={<EditorTest />} />
         <Route path="/lab" element={<ExtractionLab project={project} toast={toast} />} />
