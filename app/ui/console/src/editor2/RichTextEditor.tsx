@@ -173,11 +173,9 @@ export function RichTextEditor({
           <FocusDebugPlugin />
           {/* ScrollIntoViewPlugin: Enhanced with iOS debugging (Dec 2025) */}
           {/* Enable diagnostics: window.ARES_DEBUG_SCROLL = true */}
-          {/* See docs/iOS-EDITOR-DEBUGGING.md for usage guide */}
-          {/* CURRENTLY DISABLED: Native browser scroll-into-view is more reliable */}
-          {/* Our CSS fixes (100dvh, max-height, no flex:1) prevent layout shift */}
-          {/* Re-enable if iOS keyboard issues persist: <ScrollIntoViewPlugin /> */}
-          {/* <ScrollIntoViewPlugin /> */}
+          {/* ENABLED: Provides explicit caret tracking with correct container targeting */}
+          {/* Targets .lab-content on mobile, .rich-editor-surface on desktop */}
+          <ScrollIntoViewPlugin />
         </div>
       </div>
     </LexicalComposer>
