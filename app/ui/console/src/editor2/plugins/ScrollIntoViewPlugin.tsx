@@ -57,7 +57,14 @@ export function ScrollIntoViewPlugin() {
       return;
     }
 
-    const scrollContainer = editorElement.closest('.rich-editor-surface') as HTMLElement | null;
+    // Desktop: rich-editor-surface owns scroll. Mobile (<=768px): lab-content owns scroll.
+    let scrollContainer = editorElement.closest('.rich-editor-surface') as HTMLElement | null;
+    if (window.innerWidth <= 768) {
+      const mobileContainer = editorElement.closest('.lab-content') as HTMLElement | null;
+      if (mobileContainer) {
+        scrollContainer = mobileContainer;
+      }
+    }
     if (!scrollContainer) {
       debugError('❌ No scroll container found. Editor element:', editorElement);
       return;
