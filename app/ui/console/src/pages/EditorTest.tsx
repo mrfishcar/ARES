@@ -15,7 +15,7 @@ export function EditorTest() {
   const [richDoc, setRichDoc] = useState<SerializedEditorState | null>(null);
 
   const handleChange = (snapshot: RichDocSnapshot) => {
-    setRichDoc(snapshot.doc);
+    setRichDoc(snapshot.docJSON);
   };
 
   return (
@@ -70,8 +70,6 @@ export function EditorTest() {
           initialPlainText="Type here to test scrolling on iPad.\n\nPress Enter many times to create lots of lines.\n\nThe caret should automatically scroll into view when you type.\n\nThere is nothing else on this page - no toolbar, no sidebar, no buttons.\n\nJust the editor and the scroll container."
           onChange={handleChange}
           entities={[]}
-          onEntityFocus={() => {}}
-          showEntityIndicators={false}
         />
       </div>
     </>
