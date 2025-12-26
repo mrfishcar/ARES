@@ -115,7 +115,7 @@ export function ExactWorkingReplica() {
         /* EXACT: Line 163-170 - lab-content */
         .lab-content {
           display: grid;
-          grid-template-columns: 1fr;
+          grid-template-columns: 1fr 420px;  /* TWO columns like working commit */
           gap: 24px;
           flex: 1;
           padding: 24px;
@@ -148,6 +148,17 @@ export function ExactWorkingReplica() {
           font-size: 13px;
           color: var(--text-secondary);
           margin: 0;
+        }
+
+        /* EXACT: Results Panel - same structure as working commit */
+        .results-panel {
+          display: flex;
+          flex-direction: column;
+          background: white;
+          border-radius: var(--border-radius);
+          box-shadow: var(--shadow-soft);
+          padding: 24px;
+          overflow-y: auto;
         }
 
         /* CodeMirror container */
@@ -210,6 +221,19 @@ export function ExactWorkingReplica() {
               disableHighlighting={!showHighlighting}
               enableWYSIWYG={renderMarkdown}
             />
+          </div>
+
+          {/* Right: Results Panel - Placeholder with EXACT structure */}
+          <div className="results-panel">
+            <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '16px' }}>
+              Results Panel Placeholder
+            </h3>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+              This panel has the exact same CSS structure as the working commit's results panel.
+            </p>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
+              Testing viewport scroll behavior with two-column grid layout.
+            </p>
           </div>
         </div>
       </div>
