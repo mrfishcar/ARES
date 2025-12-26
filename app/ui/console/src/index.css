@@ -27,6 +27,8 @@ body {
   min-height: var(--app-viewport-height);
   overflow: hidden;
   overscroll-behavior: none;
+  position: fixed;
+  width: 100%;
   margin: 0;
   padding: 0;
 }
@@ -490,7 +492,8 @@ a:hover {
    * backdrop-filter surfaces (toolbar + dropdown) from losing blur while the
    * viewport height stays locked to a CSS variable to avoid keyboard jumps.
    */
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   /* Prevent iOS elastic scrolling/pull-to-refresh */
   overscroll-behavior-y: none;
   /* Remove -webkit-overflow-scrolling: touch - can cause focus issues on iOS */
@@ -1376,7 +1379,6 @@ a:hover {
   padding: 0;
   padding-top: 20px; /* Minimal top padding for floating bar */
   flex: 1;
-  height: 100%;
   min-height: 0;
   overflow: hidden;
   align-items: stretch;
@@ -2607,8 +2609,6 @@ html[data-theme="light"] .overlay-backdrop {
   .lab-content {
     padding-top: 48px;
     padding-left: 0; /* ✅ Remove sidebar padding on mobile; documents-sidebar is hidden */
-    flex-direction: column;
-    align-items: stretch;
   }
 
   .lab-header-status-row {
@@ -2659,7 +2659,8 @@ html[data-theme="light"] .overlay-backdrop {
 
 /* Smooth scrolling on iOS */
 .documents-sidebar,
-.overlay-panel {
+.overlay-panel,
+.editor-panel {
   -webkit-overflow-scrolling: touch;
 }
 
@@ -2727,21 +2728,6 @@ body.modal-open {
     overflow-x: hidden;
     /* Prevent momentum scroll issues */
     -webkit-overflow-scrolling: touch;
-  }
-
-  .editor-wrapper,
-  .editor-panel {
-    height: auto;
-    min-height: 0;
-  }
-
-  .editor-panel {
-    overflow: visible;
-  }
-
-  .editor-with-indicators-wrapper,
-  .editor-with-indicators {
-    height: auto;
   }
 
   /* Keep toolbar visible above keyboard */

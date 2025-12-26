@@ -346,20 +346,6 @@
   }
 }
 
-/* Mobile: delegate scrolling to lab-content to avoid nested scroll owners */
-@media (max-width: 768px) {
-  .rich-editor-shell {
-    height: auto;
-    min-height: 0;
-    overflow: visible;
-  }
-
-  .rich-editor-surface {
-    overflow: visible;
-    -webkit-overflow-scrolling: auto;
-  }
-}
-
 /* Reduce motion for accessibility */
 @media (prefers-reduced-motion: reduce) {
   .floating-format-toolbar {
