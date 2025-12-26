@@ -24,8 +24,10 @@ export function ExactWorkingReplica() {
         }
 
         /* TESTING: Blue background to control exposed area behind keyboard */
+        /* Layer stack: html → body → #root → .extraction-lab → editor */
+        /* ALL must be blue to prevent Safari void color from showing */
         html {
-          background: #1E40AF;  /* Blue background for entire viewport */
+          background: #1E40AF;  /* BEDROCK: Real bottom layer */
         }
 
         body {
@@ -34,8 +36,14 @@ export function ExactWorkingReplica() {
             sans-serif;
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
-          background: #1E40AF;  /* Blue - matches html */
+          background: #1E40AF;  /* Matches html */
           color: white;  /* White text */
+          margin: 0;  /* Remove default margin */
+        }
+
+        #root {
+          min-height: 100%;  /* Extend past content - NOT height: 100%! */
+          background: #1E40AF;  /* Matches html/body */
         }
 
         /* CSS Variables - TESTING with blue theme */
