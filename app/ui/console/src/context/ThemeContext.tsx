@@ -27,15 +27,15 @@ const DEFAULT_THEME: Theme = {
     primary: '#3b82f6',
     secondary: '#8b5cf6',
     accent: '#10b981',
-    background: '#ffffff',
-    surface: '#f9fafb',
-    text: '#111827',
-    textSecondary: '#6b7280',
-    border: '#e5e7eb',
+    background: '#1E40AF',  // TESTING: Blue background for iOS keyboard testing
+    surface: '#2563EB',     // Medium blue
+    text: '#ffffff',        // White text
+    textSecondary: '#E0E7FF',  // Light blue-white
+    border: '#3B82F6',      // Blue border
   },
   background: {
     type: 'solid',
-    value: '#ffffff',
+    value: '#1E40AF',  // TESTING: Blue background matches iOS test theme
   },
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
