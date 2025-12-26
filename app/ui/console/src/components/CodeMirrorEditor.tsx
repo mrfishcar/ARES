@@ -635,41 +635,163 @@ function iosCalloutBlockerExtension(
 // -------------------- iOS CURSOR TRACKING EXTENSION --------------------
 
 /**
- * Custom cursor tracking for iOS - keeps cursor consistently visible above keyboard
- * Fixes issue where cursor tracking is inconsistent (works for 2 lines, jumps too high on 3rd)
+ * SOPHISTICATED iOS CURSOR TRACKING
+ *
+ * Philosophy:
+ * - Embrace iOS page scroll when keyboard opens
+ * - Use visualViewport API to know ACTUAL visible area
+ * - Keep caret consistently positioned above keyboard
+ * - Debounced + rAF to prevent layout thrash
+ * - Single scroll owner (no competing systems)
+ *
+ * Fixes:
+ * - "Works for 2 lines, jumps on 3rd" inconsistency
+ * - Multiple scroll systems fighting
+ * - CSS smooth scroll vs JS scroll conflicts
  */
-function iosCursorTrackingExtension() {
-  return EditorView.updateListener.of((update: ViewUpdate) => {
-    // Only track cursor position changes
-    if (!update.selectionSet) return;
 
-    const view = update.view;
-    const selection = update.state.selection.main;
+// Debug flag - can be enabled via browser console:
+// window.enableCaretDebug = true
+declare global {
+  interface Window {
+    enableCaretDebug?: boolean;
+  }
+}
+
+const isDebugEnabled = () => window.enableCaretDebug === true;
+
+function iosCursorTrackingExtension() {
+  // Stable caret margin above keyboard/viewport bottom (px)
+  const CARET_MARGIN = 160;
+
+  // Re-entrancy guard
+  let isScrolling = false;
+  let rafHandle: number | null = null;
+  let debounceTimer: number | null = null;
+
+  const performCaretTracking = (view: EditorView) => {
+    // Prevent re-entrancy during same frame
+    if (isScrolling) {
+      if (isDebugEnabled()) console.log('[CaretTrack] Skipping - already scrolling');
+      return;
+    }
+
+    const selection = view.state.selection.main;
     const cursorPos = selection.head;
 
-    // Get cursor coordinates
-    const cursorCoords = view.coordsAtPos(cursorPos);
-    if (!cursorCoords) return;
+    // Get caret coordinates in viewport
+    const caretCoords = view.coordsAtPos(cursorPos);
+    if (!caretCoords) {
+      if (isDebugEnabled()) console.log('[CaretTrack] No caret coords');
+      return;
+    }
 
-    // Get viewport boundaries
-    const scroller = view.scrollDOM;
-    const scrollerRect = scroller.getBoundingClientRect();
+    // Use visualViewport API when available (iOS Safari)
+    const visualViewport = window.visualViewport;
+    let visibleBottom: number;
 
-    // CONSISTENT MARGIN: Keep cursor 150px from bottom of visible area
-    // This prevents the "jump" effect where it works for 2 lines then jumps on the 3rd
-    const BOTTOM_MARGIN = 150;
-    const bottomThreshold = scrollerRect.bottom - BOTTOM_MARGIN;
+    if (visualViewport) {
+      // ACTUAL visible area accounting for keyboard
+      visibleBottom = visualViewport.offsetTop + visualViewport.height;
 
-    // If cursor is below threshold, scroll to keep it visible
-    if (cursorCoords.bottom > bottomThreshold) {
-      const scrollAmount = cursorCoords.bottom - bottomThreshold;
+      if (isDebugEnabled()) {
+        console.log('[CaretTrack] visualViewport:', {
+          height: visualViewport.height,
+          offsetTop: visualViewport.offsetTop,
+          visibleBottom,
+          pageScrollY: window.scrollY,
+        });
+      }
+    } else {
+      // Fallback: use window inner height
+      visibleBottom = window.scrollY + window.innerHeight;
 
-      // Smooth scroll to new position
-      scroller.scrollBy({
-        top: scrollAmount,
-        behavior: 'auto',  // Instant scroll, no animation
+      if (isDebugEnabled()) {
+        console.log('[CaretTrack] Fallback viewport:', {
+          innerHeight: window.innerHeight,
+          scrollY: window.scrollY,
+          visibleBottom,
+        });
+      }
+    }
+
+    // Compute where caret should be (CARET_MARGIN above visible bottom)
+    const targetCaretBottom = visibleBottom - CARET_MARGIN;
+
+    if (isDebugEnabled()) {
+      console.log('[CaretTrack] Caret:', {
+        top: caretCoords.top,
+        bottom: caretCoords.bottom,
+        targetCaretBottom,
+        needsScroll: caretCoords.bottom > targetCaretBottom,
       });
     }
+
+    // Check if caret is below threshold
+    if (caretCoords.bottom > targetCaretBottom) {
+      const scrollDelta = caretCoords.bottom - targetCaretBottom;
+
+      // Guard: Don't scroll if document can't scroll anymore
+      const maxScrollY = document.documentElement.scrollHeight - window.innerHeight;
+      const newScrollY = window.scrollY + scrollDelta;
+
+      if (newScrollY > maxScrollY) {
+        if (isDebugEnabled()) {
+          console.log('[CaretTrack] Cannot scroll - at document bottom', {
+            maxScrollY,
+            currentScrollY: window.scrollY,
+            attemptedScrollY: newScrollY,
+          });
+        }
+        return;
+      }
+
+      if (isDebugEnabled()) {
+        console.log('[CaretTrack] SCROLLING:', {
+          delta: scrollDelta,
+          from: window.scrollY,
+          to: newScrollY,
+        });
+      }
+
+      // Set re-entrancy guard
+      isScrolling = true;
+
+      // Scroll the PAGE (not editor scroller)
+      window.scrollBy({
+        top: scrollDelta,
+        behavior: 'auto',  // INSTANT - no smooth animation
+      });
+
+      // Clear guard after frame
+      requestAnimationFrame(() => {
+        isScrolling = false;
+      });
+    }
+  };
+
+  return EditorView.updateListener.of((update: ViewUpdate) => {
+    // Only track on selection changes or doc changes (typing)
+    if (!update.selectionSet && !update.docChanged) return;
+
+    // Cancel any pending tracking
+    if (rafHandle !== null) {
+      cancelAnimationFrame(rafHandle);
+      rafHandle = null;
+    }
+    if (debounceTimer !== null) {
+      clearTimeout(debounceTimer);
+      debounceTimer = null;
+    }
+
+    // Debounce + rAF to prevent layout thrash
+    debounceTimer = window.setTimeout(() => {
+      rafHandle = requestAnimationFrame(() => {
+        performCaretTracking(update.view);
+        rafHandle = null;
+      });
+      debounceTimer = null;
+    }, 50); // 50ms debounce
   });
 }
 

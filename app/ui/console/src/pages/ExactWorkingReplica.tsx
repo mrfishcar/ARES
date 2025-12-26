@@ -142,6 +142,8 @@ export function ExactWorkingReplica() {
           border-radius: var(--border-radius);
           box-shadow: var(--shadow-soft);
           overflow: auto;
+          /* PHASE C: Bottom breathing room to prevent threshold jump */
+          padding-bottom: 250px;  /* Extra scroll cushion for iOS keyboard */
         }
 
         .panel-header {
