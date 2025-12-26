@@ -2295,9 +2295,8 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
       {/* Main Content */}
       <div className="lab-content">
-        {/* Editor-as-Document pattern: THE ONLY SCROLL CONTAINER */}
-        {/* All other UI elements (toolbar, sidebar, buttons) are position: fixed */}
-        <div className="editor-scroll-container">
+        {/* Editor panel - scrolls naturally like working commit */}
+        <div className="editor-panel">
           {/* Editor */}
           {settings.useRichEditor ? (
             <RichEditorPane

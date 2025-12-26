@@ -57,18 +57,17 @@ export function ScrollIntoViewPlugin() {
       return;
     }
 
-    // Editor-as-Document pattern: SINGLE scroll container for all viewports
-    // .editor-scroll-container is THE ONLY thing that scrolls
-    // Everything else (toolbar, sidebar, buttons) is position: fixed
-    const scrollContainer = editorElement.closest('.editor-scroll-container') as HTMLElement | null;
+    // Natural scroll pattern: .editor-panel scrolls naturally
+    // No forced "THE ONLY" scroll owner - just natural document flow
+    const scrollContainer = editorElement.closest('.editor-panel') as HTMLElement | null;
 
     if (!scrollContainer) {
-      debugError('❌ No .editor-scroll-container found. Editor element:', editorElement);
-      debugError('This means the editor is not wrapped in the scroll container div.');
+      debugError('❌ No .editor-panel found. Editor element:', editorElement);
+      debugError('This means the editor is not wrapped in the .editor-panel div.');
       return;
     }
 
-    debugLog('✅ Using .editor-scroll-container (Editor-as-Document pattern)');
+    debugLog('✅ Using .editor-panel (natural scroll pattern like working commit)');
 
     // Enhanced initialization logging
     let visualViewport = window.visualViewport;

@@ -17,8 +17,7 @@ html {
 html,
 body {
   background: var(--bg-primary);
-  height: 100vh;
-  height: 100dvh;  /* iOS fallback */
+  height: 100%;  /* Simple height, not vh/dvh */
   margin: 0;
   padding: 0;
   overflow: hidden;
@@ -26,8 +25,7 @@ body {
 }
 
 #root {
-  height: 100vh;
-  height: 100dvh;
+  height: 100%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -484,12 +482,9 @@ a:hover {
 .extraction-lab {
   display: flex;
   flex-direction: column;
-  height: 100dvh;
-  min-height: 100dvh;
+  height: 100vh;  /* Simple 100vh like working commit */
   background: var(--bg-primary);
-  /* Only .editor-panel scrolls - this container is fixed */
-  overflow: hidden;
-  position: relative;
+  overflow: hidden;  /* Lock the page */
 }
 
 /* Hamburger Button - ChatGPT style */
@@ -1452,34 +1447,25 @@ a:hover {
 }
 
 .lab-content {
-  display: flex;
-  gap: 0;
-  padding: 0;
-  padding-top: 20px; /* Minimal top padding for floating bar */
+  display: grid;  /* Grid layout like working commit */
+  grid-template-columns: 1fr;  /* Single column (will add second column for results panel later) */
+  gap: 24px;
+  padding: 80px 24px 24px;  /* Top padding for toolbar */
   flex: 1;
   min-height: 0;
-  /* REMOVED: overflow: hidden - this container doesn't scroll */
-  /* The editor-scroll-container inside it is the ONLY scroll owner */
-  overflow: visible;
-  align-items: stretch;
+  overflow: hidden;  /* Constrain children - they scroll */
   background: transparent;
   transition: padding-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Editor-as-Document pattern: THE ONLY SCROLL CONTAINER */
-/* Everything else (toolbar, sidebar, buttons) is position: fixed */
-/* This eliminates scroll container ambiguity on iPad/mobile */
-.editor-scroll-container {
-  flex: 1;
-  height: 100%;
-  /* THE scroll owner - Safari has zero ambiguity */
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  /* Prevent scroll chaining to parent */
-  overscroll-behavior: contain;
-  /* Create isolated stacking context */
-  isolation: isolate;
+/* Editor panel - scrolls naturally like working commit */
+.editor-panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  overflow: auto;  /* Scroll naturally - no forcing */
+  min-height: 0;  /* Allow flex shrinking */
 }
 
 .editor-wrapper {
