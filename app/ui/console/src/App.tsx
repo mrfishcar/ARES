@@ -11,6 +11,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { ExtractionLab } from './pages/ExtractionLab';
 import { EditorTest } from './pages/EditorTest';
 import { UltraMinimalTest } from './pages/UltraMinimalTest';
+import { WorkingCommitTest } from './pages/WorkingCommitTest';
 import { loadState, saveState } from './lib/storage';
 import { initializeClientErrorLogger } from './lib/errorLogger';
 
@@ -141,8 +142,9 @@ function AppShell() {
   return (
     <>
       <Routes>
-        {/* ULTRA MINIMAL TEST - PLAIN TEXTAREA */}
-        <Route path="/" element={<UltraMinimalTest />} />
+        {/* WORKING COMMIT STRUCTURE TEST - EXACT REPLICATION */}
+        <Route path="/" element={<WorkingCommitTest />} />
+        <Route path="/minimal" element={<UltraMinimalTest />} />
         <Route path="/editor" element={<EditorTest />} />
         <Route path="/lab" element={<ExtractionLab project={project} toast={toast} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
