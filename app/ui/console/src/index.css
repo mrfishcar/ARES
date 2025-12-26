@@ -163,15 +163,34 @@ html,
 body,
 #root {
   height: 100%;
-  /* Use ONLY dynamic viewport height to fix iOS keyboard white space */
-  /* DO NOT use var(--app-viewport-height) - causes layout shifts when typing */
+  /* Use CSS variable for viewport height (updated by JS on keyboard open) */
   min-height: 100dvh;
-  /* CRITICAL: overflow: hidden prevents viewport scrolling when keyboard opens on iPad */
-  /* Safari walks UP from editor and finds .rich-editor-surface (desktop) or .lab-content (mobile) */
-  /* before reaching html/body, so this doesn't block scroll container finding */
   overflow: hidden;
   overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
+}
+
+/* iPad Safari keyboard fix: Lock viewport scroll when editor is focused */
+/* The 'kb-open' class is added to <html> when Lexical editor receives focus */
+/* This prevents the "manual slide entire UI" issue on iPad when keyboard is open */
+html.kb-open,
+body.kb-open {
+  /* CRITICAL: position: fixed prevents page scroll on iPad */
+  position: fixed !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  touch-action: manipulation !important;
+}
+
+/* Use visualViewport height when available (iOS keyboard handling) */
+html.kb-open {
+  height: var(--vvh, 100vh) !important;
+}
+
+#root.kb-open {
+  height: var(--vvh, 100vh) !important;
 }
 
 @media (prefers-color-scheme: light) {
