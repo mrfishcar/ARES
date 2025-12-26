@@ -6,7 +6,7 @@
  *
  * Testing if scrolling works when there's literally nothing but the editor.
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { RichTextEditor } from '../editor2/RichTextEditor';
 import type { SerializedEditorState } from 'lexical';
 import type { RichDocSnapshot } from '../editor2/types';
@@ -17,6 +17,28 @@ export function EditorTest() {
   const handleChange = (snapshot: RichDocSnapshot) => {
     setRichDoc(snapshot.docJSON);
   };
+
+  // iOS Safari viewport scroll lock - NUCLEAR OPTION
+  // If position: fixed doesn't work, this will force it
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const lockScroll = () => {
+      window.scrollTo(0, 0);
+      console.log('[EditorTest] Forced scroll to 0,0 - viewport tried to drift');
+    };
+
+    // Force scroll to 0,0 whenever viewport scrolls
+    vv.addEventListener('scroll', lockScroll);
+
+    console.log('[EditorTest] Viewport scroll lock active');
+
+    return () => {
+      vv.removeEventListener('scroll', lockScroll);
+      console.log('[EditorTest] Viewport scroll lock removed');
+    };
+  }, []);
 
   return (
     <>
@@ -29,7 +51,11 @@ export function EditorTest() {
           box-sizing: border-box;
         }
 
+        /* CRITICAL: position: fixed prevents iOS from allowing viewport scroll */
+        /* overflow: hidden alone DOES NOT WORK on iOS Safari */
         html, body {
+          position: fixed;
+          inset: 0;
           width: 100%;
           height: 100%;
           overflow: hidden;
@@ -38,18 +64,21 @@ export function EditorTest() {
         }
 
         #root {
+          position: fixed;
+          inset: 0;
           width: 100%;
           height: 100%;
-          display: flex;
-          flex-direction: column;
+          overflow: hidden;
         }
 
-        /* THE ONLY SCROLL CONTAINER */
+        /* THE ONLY SCROLL CONTAINER - position: absolute within fixed parent */
         /* Using .editor-scroll-container so ScrollIntoViewPlugin finds it */
         .editor-scroll-container {
-          flex: 1;
-          width: 100%;
-          height: 100%;
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
           overflow-y: auto;
           overflow-x: hidden;
           -webkit-overflow-scrolling: touch;
