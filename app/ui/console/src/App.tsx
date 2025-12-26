@@ -10,6 +10,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ExtractionLab } from './pages/ExtractionLab';
 import { EditorTest } from './pages/EditorTest';
+import { UltraMinimalTest } from './pages/UltraMinimalTest';
 import { loadState, saveState } from './lib/storage';
 import { initializeClientErrorLogger } from './lib/errorLogger';
 
@@ -140,8 +141,9 @@ function AppShell() {
   return (
     <>
       <Routes>
-        {/* MINIMAL TEST PAGE - JUST THE EDITOR */}
-        <Route path="/" element={<EditorTest />} />
+        {/* ULTRA MINIMAL TEST - PLAIN TEXTAREA */}
+        <Route path="/" element={<UltraMinimalTest />} />
+        <Route path="/editor" element={<EditorTest />} />
         <Route path="/lab" element={<ExtractionLab project={project} toast={toast} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
