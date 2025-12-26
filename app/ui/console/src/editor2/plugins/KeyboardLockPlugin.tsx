@@ -9,35 +9,28 @@
  * - This breaks caret tracking and causes the wrong scroll container to be used
  *
  * Solution:
- * - Add 'kb-open' class to <html> and <body> when editor is focused
+ * - Add 'kb-open' class to <html> and <body> IMMEDIATELY on mount
  * - CSS sets position: fixed on html.kb-open to prevent page scroll
  * - Track visualViewport.height and set --vvh CSS variable for accurate height
- * - Remove class when editor loses focus
+ * - Lock stays active as long as editor is mounted (full-screen editor pattern)
  *
  * This ensures ONLY the editor's scroll container (.rich-editor-surface or .lab-content)
  * can scroll, preventing the "manual slide entire UI" issue.
  */
 import { useEffect } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { FOCUS_COMMAND, BLUR_COMMAND, COMMAND_PRIORITY_LOW } from 'lexical';
 
-const DEBUG_KB_LOCK = typeof window !== 'undefined' && (window as any).ARES_DEBUG_SCROLL;
-
+// ALWAYS log keyboard lock operations for debugging
 function debugLog(...args: any[]) {
-  if (DEBUG_KB_LOCK) {
-    const timestamp = new Date().toISOString().substr(11, 12);
-    console.log(`[KeyboardLock ${timestamp}]`, ...args);
-  }
+  const timestamp = new Date().toISOString().substr(11, 12);
+  console.log(`[KeyboardLock ${timestamp}]`, ...args);
 }
 
 export function KeyboardLockPlugin() {
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
-    const editorElement = editor.getRootElement();
-    if (!editorElement) {
-      return;
-    }
-
     const htmlElement = document.documentElement;
     const bodyElement = document.body;
     const rootElement = document.getElementById('root');
@@ -60,7 +53,8 @@ export function KeyboardLockPlugin() {
     }
 
     /**
-     * Lock the page scroll when editor receives focus
+     * Lock the page scroll
+     * This prevents the "slide entire UI" issue on iPad
      */
     function lockPageScroll() {
       htmlElement.classList.add('kb-open');
@@ -70,42 +64,34 @@ export function KeyboardLockPlugin() {
       // Update viewport height immediately
       updateViewportHeight();
 
-      debugLog('🔒 Page scroll LOCKED (kb-open class added)', {
+      // Verify CSS is applied
+      const htmlStyle = window.getComputedStyle(htmlElement);
+      const bodyStyle = window.getComputedStyle(bodyElement);
+
+      debugLog('🔒 Page scroll LOCKED', {
         htmlHasClass: htmlElement.classList.contains('kb-open'),
         bodyHasClass: bodyElement.classList.contains('kb-open'),
         rootHasClass: rootElement?.classList.contains('kb-open'),
+        htmlPosition: htmlStyle.position,
+        bodyPosition: bodyStyle.position,
+        htmlOverflow: htmlStyle.overflow,
+        bodyOverflow: bodyStyle.overflow,
       });
     }
 
     /**
-     * Unlock page scroll when editor loses focus
+     * Unlock page scroll
      */
     function unlockPageScroll() {
       htmlElement.classList.remove('kb-open');
       bodyElement.classList.remove('kb-open');
       if (rootElement) rootElement.classList.remove('kb-open');
 
-      debugLog('🔓 Page scroll UNLOCKED (kb-open class removed)', {
+      debugLog('🔓 Page scroll UNLOCKED', {
         htmlHasClass: htmlElement.classList.contains('kb-open'),
         bodyHasClass: bodyElement.classList.contains('kb-open'),
         rootHasClass: rootElement?.classList.contains('kb-open'),
       });
-    }
-
-    /**
-     * Handle focus event
-     */
-    function handleFocus() {
-      debugLog('👁️ Editor focused');
-      lockPageScroll();
-    }
-
-    /**
-     * Handle blur event
-     */
-    function handleBlur() {
-      debugLog('💤 Editor blurred');
-      unlockPageScroll();
     }
 
     /**
@@ -126,34 +112,59 @@ export function KeyboardLockPlugin() {
         hasKbOpenClass: htmlElement.classList.contains('kb-open'),
       });
 
-      // Update height if kb-open class is active
-      if (htmlElement.classList.contains('kb-open')) {
-        updateViewportHeight();
-      }
+      // Always update height when viewport resizes
+      updateViewportHeight();
     }
 
-    // Add event listeners
-    editorElement.addEventListener('focus', handleFocus, true);
-    editorElement.addEventListener('blur', handleBlur, true);
+    // LOCK IMMEDIATELY ON MOUNT (full-screen editor pattern)
+    // Since this is a dedicated editor view, page should NEVER scroll
+    lockPageScroll();
 
+    // Also register Lexical focus/blur commands for additional tracking
+    const unregisterFocusCommand = editor.registerCommand(
+      FOCUS_COMMAND,
+      () => {
+        debugLog('👁️ Editor focused (Lexical FOCUS_COMMAND)');
+        lockPageScroll();
+        return false; // Don't prevent other handlers
+      },
+      COMMAND_PRIORITY_LOW
+    );
+
+    const unregisterBlurCommand = editor.registerCommand(
+      BLUR_COMMAND,
+      () => {
+        debugLog('💤 Editor blurred (Lexical BLUR_COMMAND)');
+        // Don't unlock on blur - keep page locked while in editor view
+        return false;
+      },
+      COMMAND_PRIORITY_LOW
+    );
+
+    // Listen for viewport resize
     const visualViewport = window.visualViewport;
     visualViewport?.addEventListener('resize', handleViewportResize);
 
-    debugLog('✅ KeyboardLockPlugin initialized', {
-      editorElement: editorElement.className,
+    // Also listen for window resize
+    window.addEventListener('resize', handleViewportResize);
+
+    debugLog('✅ KeyboardLockPlugin initialized - PAGE LOCKED IMMEDIATELY', {
       visualViewportAvailable: !!visualViewport,
+      htmlClasses: htmlElement.className,
+      bodyClasses: bodyElement.className,
     });
 
-    // Cleanup
+    // Cleanup: unlock on unmount
     return () => {
-      editorElement.removeEventListener('focus', handleFocus, true);
-      editorElement.removeEventListener('blur', handleBlur, true);
+      unregisterFocusCommand();
+      unregisterBlurCommand();
       visualViewport?.removeEventListener('resize', handleViewportResize);
+      window.removeEventListener('resize', handleViewportResize);
 
       // Remove kb-open class on unmount
       unlockPageScroll();
 
-      debugLog('🧹 KeyboardLockPlugin cleanup');
+      debugLog('🧹 KeyboardLockPlugin cleanup - page unlocked');
     };
   }, [editor]);
 
