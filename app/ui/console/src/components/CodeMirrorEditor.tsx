@@ -91,7 +91,7 @@ const editorTheme = EditorView.theme({
     overscrollBehavior: 'contain',
     touchAction: 'pan-y',
     WebkitOverflowScrolling: 'touch',
-    scrollBehavior: 'smooth',
+    scrollBehavior: 'auto',  // Changed from 'smooth' to avoid iOS jumpiness
   },
 
   '.cm-line': {
@@ -632,6 +632,47 @@ function iosCalloutBlockerExtension(
   });
 }
 
+// -------------------- iOS CURSOR TRACKING EXTENSION --------------------
+
+/**
+ * Custom cursor tracking for iOS - keeps cursor consistently visible above keyboard
+ * Fixes issue where cursor tracking is inconsistent (works for 2 lines, jumps too high on 3rd)
+ */
+function iosCursorTrackingExtension() {
+  return EditorView.updateListener.of((update: ViewUpdate) => {
+    // Only track cursor position changes
+    if (!update.selectionSet) return;
+
+    const view = update.view;
+    const selection = update.state.selection.main;
+    const cursorPos = selection.head;
+
+    // Get cursor coordinates
+    const cursorCoords = view.coordsAtPos(cursorPos);
+    if (!cursorCoords) return;
+
+    // Get viewport boundaries
+    const scroller = view.scrollDOM;
+    const scrollerRect = scroller.getBoundingClientRect();
+
+    // CONSISTENT MARGIN: Keep cursor 150px from bottom of visible area
+    // This prevents the "jump" effect where it works for 2 lines then jumps on the 3rd
+    const BOTTOM_MARGIN = 150;
+    const bottomThreshold = scrollerRect.bottom - BOTTOM_MARGIN;
+
+    // If cursor is below threshold, scroll to keep it visible
+    if (cursorCoords.bottom > bottomThreshold) {
+      const scrollAmount = cursorCoords.bottom - bottomThreshold;
+
+      // Smooth scroll to new position
+      scroller.scrollBy({
+        top: scrollAmount,
+        behavior: 'auto',  // Instant scroll, no animation
+      });
+    }
+  });
+}
+
 // -------------------- FOCUS & SELECTION NOTIFIER --------------------
 
 function focusAndSelectionNotifierExtension(
@@ -781,6 +822,8 @@ export function CodeMirrorEditor({
         placeholder('Write or paste text...'),
         editorTheme,
         EditorView.lineWrapping,
+        // iOS cursor tracking - keeps cursor consistently visible above keyboard
+        iosCursorTrackingExtension(),
         // Block keyboard input in Entity Highlight Mode (allows text selection on iOS)
         keyboardBlockerExtension(entityHighlightModeRef),
         // Prevent iOS callout menu (Cut/Copy/Paste) from appearing during text selection

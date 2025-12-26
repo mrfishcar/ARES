@@ -23,32 +23,36 @@ export function ExactWorkingReplica() {
           padding: 0;
         }
 
-        /* Body - EXACT from be09094b index.css */
+        /* TESTING: Blue background to control exposed area behind keyboard */
+        html {
+          background: #1E40AF;  /* Blue background for entire viewport */
+        }
+
         body {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
             'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
             sans-serif;
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
-          background: #FFF9F0;
-          color: #4A403A;
+          background: #1E40AF;  /* Blue - matches html */
+          color: white;  /* White text */
         }
 
-        /* CSS Variables - EXACT from be09094b */
+        /* CSS Variables - TESTING with blue theme */
         :root {
-          --bg-primary: #FFF9F0;
-          --bg-secondary: #FFF4E6;
-          --bg-tertiary: #FFEFD5;
-          --text-primary: #4A403A;
-          --text-secondary: #8B7E77;
-          --text-muted: #B8ABA4;
-          --accent-warm: #E8A87C;
-          --accent-glow: #FFB347;
-          --accent-purple: #9B8BBF;
-          --border-soft: #E8DED5;
-          --shadow-soft: 0 2px 8px rgba(139, 126, 119, 0.08);
-          --shadow-medium: 0 4px 16px rgba(139, 126, 119, 0.12);
-          --shadow-strong: 0 8px 24px rgba(139, 126, 119, 0.18);
+          --bg-primary: #1E40AF;  /* Blue */
+          --bg-secondary: #1E3A8A;  /* Darker blue */
+          --bg-tertiary: #1D4ED8;  /* Lighter blue */
+          --text-primary: white;
+          --text-secondary: #E0E7FF;  /* Light blue-white */
+          --text-muted: #C7D2FE;  /* Muted blue-white */
+          --accent-warm: #60A5FA;  /* Light blue accent */
+          --accent-glow: #3B82F6;  /* Blue glow */
+          --accent-purple: #818CF8;  /* Purple-blue */
+          --border-soft: #3B82F6;  /* Blue border */
+          --shadow-soft: 0 2px 8px rgba(30, 64, 175, 0.3);
+          --shadow-medium: 0 4px 16px rgba(30, 64, 175, 0.4);
+          --shadow-strong: 0 8px 24px rgba(30, 64, 175, 0.5);
           --border-radius: 12px;
           --border-radius-small: 8px;
         }
@@ -68,7 +72,7 @@ export function ExactWorkingReplica() {
           align-items: center;
           justify-content: space-between;
           padding: 20px 32px;
-          background: white;
+          background: #1E3A8A;  /* Dark blue */
           border-bottom: 1px solid var(--border-soft);
           box-shadow: var(--shadow-soft);
         }
@@ -126,7 +130,7 @@ export function ExactWorkingReplica() {
         .editor-panel {
           display: flex;
           flex-direction: column;
-          background: white;
+          background: #2563EB;  /* Medium blue */
           border-radius: var(--border-radius);
           box-shadow: var(--shadow-soft);
           overflow: auto;
@@ -154,7 +158,7 @@ export function ExactWorkingReplica() {
         .results-panel {
           display: flex;
           flex-direction: column;
-          background: white;
+          background: #2563EB;  /* Medium blue */
           border-radius: var(--border-radius);
           box-shadow: var(--shadow-soft);
           padding: 24px;
