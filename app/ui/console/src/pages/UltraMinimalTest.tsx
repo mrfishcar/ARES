@@ -41,7 +41,7 @@ export function UltraMinimalTest() {
       const scrollContainer = document.querySelector('.scroll-container') as HTMLElement;
       if (!scrollContainer) return;
 
-      // Get caret position by creating a temporary span
+      // Get caret position by counting lines
       const text = textarea.value.substring(0, textarea.selectionStart);
       const lines = text.split('\n');
       const lineHeight = 28; // Approximate line height
@@ -52,12 +52,31 @@ export function UltraMinimalTest() {
       const visibleTop = scrollTop;
       const visibleBottom = scrollTop + containerHeight;
 
-      // If caret is below visible area, scroll it into view
+      // Keep caret in the lower third of viewport (like iOS Notes)
+      const targetOffset = containerHeight * 0.66; // Position caret 2/3 down the screen
+      const minOffset = 100; // Minimum padding from top
+      const maxOffset = containerHeight - 100; // Minimum padding from bottom
+
+      let needsScroll = false;
+      let newScrollTop = scrollTop;
+
+      // Caret is below visible area - scroll down
       if (caretY > visibleBottom - 100) {
-        const scrollAmount = caretY - (visibleBottom - 100);
-        scrollContainer.scrollTop = scrollTop + scrollAmount;
+        newScrollTop = caretY - targetOffset;
+        needsScroll = true;
+        addDebug(`⬇️ Caret below view (${Math.round(caretY)}px > ${Math.round(visibleBottom - 100)}px)`);
+      }
+      // Caret is above visible area - scroll up
+      else if (caretY < visibleTop + 100) {
+        newScrollTop = caretY - minOffset;
+        needsScroll = true;
+        addDebug(`⬆️ Caret above view (${Math.round(caretY)}px < ${Math.round(visibleTop + 100)}px)`);
+      }
+
+      if (needsScroll) {
+        scrollContainer.scrollTop = Math.max(0, newScrollTop);
         setCaretTrackCount(c => c + 1);
-        addDebug(`Scrolled caret into view (${Math.round(scrollAmount)}px)`);
+        addDebug(`✅ Scrolled to ${Math.round(newScrollTop)}px`);
       }
     };
 
