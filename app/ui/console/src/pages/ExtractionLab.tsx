@@ -2295,42 +2295,46 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
       {/* Main Content */}
       <div className="lab-content">
-        {/* Editor */}
-        {settings.useRichEditor ? (
-          <RichEditorPane
-            richDoc={richDoc}
-            plainText={text}
-            entities={displayEntities}
-            onChange={handleRichChange}
-            onEntityFocus={handleNavigateToEntity}
-            showEntityIndicators={settings.showEntityIndicators}
-            navigateToRange={navigateRequest}
-            showFormatToolbar={false}
-          />
-        ) : (
-          <EditorPane
-            text={text}
-            entities={displayEntities}
-            onTextChange={handleLegacyTextChange}
-            disableHighlighting={editorDisableHighlighting}
-            highlightOpacity={settings.highlightOpacity}
-            renderMarkdown={renderMarkdown}
-            entityHighlightMode={settings.entityHighlightMode}
-            showEntityIndicators={settings.showEntityIndicators}
-            onChangeType={handleChangeType}
-            onCreateNew={handleCreateNew}
-            onReject={handleReject}
-            onTagEntity={handleTagEntity}
-            onTextSelected={handleTextSelected}
-            onResizeEntity={handleResizeEntity}
-            enableLongTextOptimization={settings.enableLongTextOptimization}
-            navigateToRange={navigateRequest ?? undefined}
-            colorForSpan={colorForSpan}
-            onEditorFocusChange={setEditorFocused}
-            onSelectionChange={setHasActiveSelection}
-            onFormatActionsReady={setFormatActions}
-          />
-        )}
+        {/* Editor-as-Document pattern: THE ONLY SCROLL CONTAINER */}
+        {/* All other UI elements (toolbar, sidebar, buttons) are position: fixed */}
+        <div className="editor-scroll-container">
+          {/* Editor */}
+          {settings.useRichEditor ? (
+            <RichEditorPane
+              richDoc={richDoc}
+              plainText={text}
+              entities={displayEntities}
+              onChange={handleRichChange}
+              onEntityFocus={handleNavigateToEntity}
+              showEntityIndicators={settings.showEntityIndicators}
+              navigateToRange={navigateRequest}
+              showFormatToolbar={false}
+            />
+          ) : (
+            <EditorPane
+              text={text}
+              entities={displayEntities}
+              onTextChange={handleLegacyTextChange}
+              disableHighlighting={editorDisableHighlighting}
+              highlightOpacity={settings.highlightOpacity}
+              renderMarkdown={renderMarkdown}
+              entityHighlightMode={settings.entityHighlightMode}
+              showEntityIndicators={settings.showEntityIndicators}
+              onChangeType={handleChangeType}
+              onCreateNew={handleCreateNew}
+              onReject={handleReject}
+              onTagEntity={handleTagEntity}
+              onTextSelected={handleTextSelected}
+              onResizeEntity={handleResizeEntity}
+              enableLongTextOptimization={settings.enableLongTextOptimization}
+              navigateToRange={navigateRequest ?? undefined}
+              colorForSpan={colorForSpan}
+              onEditorFocusChange={setEditorFocused}
+              onSelectionChange={setHasActiveSelection}
+              onFormatActionsReady={setFormatActions}
+            />
+          )}
+        </div>
 
         {/* Pinned sidebar mode - integrated into layout */}
         {layout.entityPanelMode === 'pinned' && (

@@ -57,24 +57,18 @@ export function ScrollIntoViewPlugin() {
       return;
     }
 
-    // CRITICAL: Target correct scroll container based on viewport
-    // Mobile (≤768px): .lab-content owns scroll
-    // Desktop (>768px): .rich-editor-surface owns scroll
-    const isMobile = window.innerWidth <= 768;
-    let scrollContainer: HTMLElement | null;
-
-    if (isMobile) {
-      scrollContainer = editorElement.closest('.lab-content') as HTMLElement | null;
-      debugLog('Mobile viewport: targeting .lab-content for scroll');
-    } else {
-      scrollContainer = editorElement.closest('.rich-editor-surface') as HTMLElement | null;
-      debugLog('Desktop viewport: targeting .rich-editor-surface for scroll');
-    }
+    // Editor-as-Document pattern: SINGLE scroll container for all viewports
+    // .editor-scroll-container is THE ONLY thing that scrolls
+    // Everything else (toolbar, sidebar, buttons) is position: fixed
+    const scrollContainer = editorElement.closest('.editor-scroll-container') as HTMLElement | null;
 
     if (!scrollContainer) {
-      debugError('❌ No scroll container found. Editor element:', editorElement, 'isMobile:', isMobile);
+      debugError('❌ No .editor-scroll-container found. Editor element:', editorElement);
+      debugError('This means the editor is not wrapped in the scroll container div.');
       return;
     }
+
+    debugLog('✅ Using .editor-scroll-container (Editor-as-Document pattern)');
 
     // Enhanced initialization logging
     let visualViewport = window.visualViewport;

@@ -177,17 +177,16 @@
   overscroll-behavior: contain;
 }
 
-/* Editor surface - THE SCROLL CONTAINER */
+/* Editor surface - NO LONGER SCROLLS */
+/* Scroll is handled by parent .editor-scroll-container (Editor-as-Document pattern) */
 .rich-editor-surface {
   position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
-  /* This is the scroll container - like iOS Notes */
-  overflow-y: auto;
-  overflow-x: hidden;
-  /* Native scrolling for iOS */
-  -webkit-overflow-scrolling: touch;
+  /* REMOVED: overflow - parent .editor-scroll-container is the ONLY scroll owner */
+  overflow: visible;
+  -webkit-overflow-scrolling: auto;
 }
 
 /* The actual contentEditable element */
@@ -362,8 +361,8 @@
   }
 
   .rich-editor-surface {
-    /* CRITICAL: Don't create nested scroll container on mobile */
-    /* .lab-content is the scroll owner on mobile */
+    /* NO CHANGE: Already using overflow: visible */
+    /* .editor-scroll-container is the scroll owner on ALL viewports */
     overflow: visible;
     -webkit-overflow-scrolling: auto;
   }
@@ -371,10 +370,8 @@
 
 /* iPad-specific refinements (tablets in landscape) */
 @media (min-width: 769px) and (max-width: 1024px) {
-  /* Ensure editor uses momentum scrolling on iPad */
-  .rich-editor-surface {
-    -webkit-overflow-scrolling: touch; /* Enable momentum scrolling */
-  }
+  /* REMOVED: .rich-editor-surface no longer scrolls */
+  /* .editor-scroll-container handles all scrolling on iPad */
 }
 
 /* Reduce motion for accessibility */

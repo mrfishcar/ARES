@@ -1439,10 +1439,28 @@ a:hover {
   padding-top: 20px; /* Minimal top padding for floating bar */
   flex: 1;
   min-height: 0;
-  overflow: hidden;
+  /* REMOVED: overflow: hidden - this container doesn't scroll */
+  /* The editor-scroll-container inside it is the ONLY scroll owner */
+  overflow: visible;
   align-items: stretch;
   background: transparent;
   transition: padding-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Editor-as-Document pattern: THE ONLY SCROLL CONTAINER */
+/* Everything else (toolbar, sidebar, buttons) is position: fixed */
+/* This eliminates scroll container ambiguity on iPad/mobile */
+.editor-scroll-container {
+  flex: 1;
+  height: 100%;
+  /* THE scroll owner - Safari has zero ambiguity */
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  /* Prevent scroll chaining to parent */
+  overscroll-behavior: contain;
+  /* Create isolated stacking context */
+  isolation: isolate;
 }
 
 .editor-wrapper {
@@ -2781,14 +2799,8 @@ body.modal-open {
 
 /* iOS: Prevent layout shift when keyboard appears */
 @media (max-width: 768px) {
-  .lab-content {
-    /* CRITICAL: Make lab-content scrollable on mobile */
-    /* This prevents Safari from scrolling the entire page when keyboard appears */
-    overflow-y: auto;
-    overflow-x: hidden;
-    /* Prevent momentum scroll issues */
-    -webkit-overflow-scrolling: touch;
-  }
+  /* REMOVED: .lab-content scroll override */
+  /* Now using .editor-scroll-container as the ONLY scroll owner on all viewports */
 
   /* Keep toolbar visible above keyboard */
   .lab-control-bar {
