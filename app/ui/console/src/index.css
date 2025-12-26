@@ -27,8 +27,6 @@ body {
   min-height: var(--app-viewport-height);
   overflow: hidden;
   overscroll-behavior: none;
-  position: fixed;
-  width: 100%;
   margin: 0;
   padding: 0;
 }
