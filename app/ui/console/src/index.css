@@ -36,8 +36,8 @@ body {
   /* Single viewport height variable - 100dvh handles iOS keyboard natively */
   --app-viewport-height: 100dvh;
 
-  --app-bg-dark: #050713;
-  --app-bg-light: #f5f6fa;
+  --app-bg-dark: #0a0e27;  /* Night sky - matches darkMode.ts */
+  --app-bg-light: #FFF9F0;  /* Warm light - matches darkMode.ts */
 
   /* Note app baseline: spacing, radii, typography */
   --space-2xs: 4px;
@@ -115,9 +115,9 @@ body {
 
   /* Default theme variables (dark mode defaults to prevent white flash) */
   --bg-primary: var(--app-bg-dark);
-  --bg-secondary: rgba(15, 23, 42, 0.96);
-  --bg-tertiary: rgba(30, 41, 59, 0.9);
-  --bg-elevated: rgba(15, 23, 42, 0.96);
+  --bg-secondary: #141829;  /* Slightly lighter midnight - matches darkMode.ts surface */
+  --bg-tertiary: #1a1f3a;   /* Code night - consistent with night sky palette */
+  --bg-elevated: #141829;
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
@@ -134,7 +134,7 @@ body {
   /* Global background gradient for the deepest layer */
   --app-background-gradient: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.08), transparent 35%),
     radial-gradient(circle at 80% 0%, rgba(129, 140, 248, 0.06), transparent 40%),
-    linear-gradient(180deg, #050713 0%, #0b1024 55%, #050713 100%);
+    linear-gradient(180deg, #0a0e27 0%, #141829 55%, #0a0e27 100%);
 
   --app-surface: var(--app-bg-dark);
 }
