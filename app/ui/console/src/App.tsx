@@ -83,25 +83,21 @@ function AppShell() {
     };
   }, []);
 
-  // Simple viewport height tracking - updates when keyboard appears/disappears
+  // iOS Notes pattern: Container height stays FIXED, doesn't resize when keyboard appears
+  // Safari automatically handles scroll-into-view when keyboard appears
+  // Removing viewport tracking prevents container from shrinking
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const docEl = document.documentElement;
 
-    const updateViewportHeight = () => {
-      const height = window.visualViewport?.height ?? window.innerHeight;
-      docEl.style.setProperty('--app-viewport-height', `${height}px`);
-    };
+    // Set once on mount to full viewport height, never update
+    // When keyboard appears, container stays full height and keyboard overlays bottom
+    const height = window.innerHeight;
+    docEl.style.setProperty('--app-viewport-height', `${height}px`);
 
-    updateViewportHeight();
-    window.visualViewport?.addEventListener('resize', updateViewportHeight);
-    window.addEventListener('resize', updateViewportHeight);
-
-    return () => {
-      window.visualViewport?.removeEventListener('resize', updateViewportHeight);
-      window.removeEventListener('resize', updateViewportHeight);
-    };
+    // DO NOT listen to visualViewport resize - that's what causes shrinking!
+    // Safari's native scroll-into-view handles caret positioning automatically
   }, []);
 
   useEffect(() => {
