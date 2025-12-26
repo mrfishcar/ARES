@@ -166,9 +166,10 @@ body,
   /* Use ONLY dynamic viewport height to fix iOS keyboard white space */
   /* DO NOT use var(--app-viewport-height) - causes layout shifts when typing */
   min-height: 100dvh;
-  /* CRITICAL: overflow: visible lets Safari find scroll containers */
-  /* With overflow: hidden, Safari stops at html and can't reach .lab-content */
-  overflow: visible;
+  /* CRITICAL: overflow: hidden prevents viewport scrolling when keyboard opens on iPad */
+  /* Safari walks UP from editor and finds .rich-editor-surface (desktop) or .lab-content (mobile) */
+  /* before reaching html/body, so this doesn't block scroll container finding */
+  overflow: hidden;
   overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
 }
