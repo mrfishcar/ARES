@@ -193,6 +193,13 @@ html.kb-open {
   height: var(--vvh, 100vh) !important;
 }
 
+/* CRITICAL: Make .extraction-lab use visual viewport height when keyboard is open */
+/* This eliminates white space below the editor when keyboard appears on iPad */
+html.kb-open .extraction-lab {
+  height: var(--vvh, 100dvh) !important;
+  min-height: var(--vvh, 100dvh) !important;
+}
+
 @media (prefers-color-scheme: light) {
   :root,
   html,
