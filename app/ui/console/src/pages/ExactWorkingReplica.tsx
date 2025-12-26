@@ -12,33 +12,54 @@ export function ExactWorkingReplica() {
   const [showHighlighting, setShowHighlighting] = useState(true);
   const [renderMarkdown, setRenderMarkdown] = useState(false);
 
-  // CRITICAL: Override ThemeProvider's white background with inline styles
-  // ThemeProvider applies DEFAULT_THEME with background: '#ffffff' to body
-  // Inline styles have higher specificity than CSS classes/variables
+  // CRITICAL: Override ThemeProvider's white background with MutationObserver
+  // ThemeProvider runs AFTER our useEffect and does body.style.background = '#ffffff'
+  // This REMOVES the !important flag, so we need to watch for changes and re-apply
   useEffect(() => {
     const html = document.documentElement;
     const body = document.body;
     const root = document.getElementById('root');
 
-    // Save original styles
-    const originalHtmlBg = html.style.background;
-    const originalBodyBg = body.style.background;
-    const originalRootBg = root?.style.background || '';
+    // Function to apply blue theme (called initially and whenever ThemeProvider interferes)
+    const applyBlueTheme = () => {
+      html.style.setProperty('background', '#1E40AF', 'important');
+      body.style.setProperty('background', '#1E40AF', 'important');
+      body.style.setProperty('color', 'white', 'important');
+      body.style.setProperty('margin', '0', 'important');
+      if (root) {
+        root.style.setProperty('background', '#1E40AF', 'important');
+        root.style.setProperty('min-height', '100%', 'important');
+      }
+    };
 
-    // Apply blue theme with inline styles + !important (overrides ThemeProvider)
-    // ThemeProvider runs AFTER our useEffect and sets body.style.background = '#ffffff'
-    // Using setProperty with 'important' priority to override it
-    html.style.setProperty('background', '#1E40AF', 'important');
-    body.style.setProperty('background', '#1E40AF', 'important');
-    body.style.setProperty('color', 'white', 'important');
-    body.style.setProperty('margin', '0', 'important');
-    if (root) {
-      root.style.setProperty('background', '#1E40AF', 'important');
-      root.style.setProperty('min-height', '100%', 'important');
-    }
+    // Apply immediately
+    applyBlueTheme();
 
-    // Cleanup: remove !important styles on unmount
+    // Watch for ThemeProvider changing body styles back to white
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+          const target = mutation.target as HTMLElement;
+          // If body background was changed to white (ThemeProvider), re-apply blue
+          if (target === body) {
+            const currentBg = body.style.getPropertyValue('background');
+            const currentBgPriority = body.style.getPropertyPriority('background');
+            // If background is white or doesn't have !important, re-apply blue
+            if (currentBg.includes('255, 255, 255') || currentBgPriority !== 'important') {
+              applyBlueTheme();
+            }
+          }
+        }
+      }
+    });
+
+    // Observe body and html for style attribute changes
+    observer.observe(body, { attributes: true, attributeFilter: ['style'] });
+    observer.observe(html, { attributes: true, attributeFilter: ['style'] });
+
+    // Cleanup: disconnect observer and remove styles
     return () => {
+      observer.disconnect();
       html.style.removeProperty('background');
       body.style.removeProperty('background');
       body.style.removeProperty('color');
@@ -47,10 +68,6 @@ export function ExactWorkingReplica() {
         root.style.removeProperty('background');
         root.style.removeProperty('min-height');
       }
-      // Restore originals
-      if (originalHtmlBg) html.style.background = originalHtmlBg;
-      if (originalBodyBg) body.style.background = originalBodyBg;
-      if (originalRootBg && root) root.style.background = originalRootBg;
     };
   }, []);
 
