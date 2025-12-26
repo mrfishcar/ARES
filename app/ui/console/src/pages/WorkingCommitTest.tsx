@@ -27,34 +27,31 @@ export function WorkingCommitTest() {
           padding: 0;
         }
 
-        /* EXACT from working commit - simple height, no position: fixed */
-        html,
+        /* EXACT: Working commit has NO html/body/root styling! */
+        /* Only font/color on body - NO height, NO overflow, NO position */
         body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+            'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+            sans-serif;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
           background: #FFF9F0;
-          height: 100%;
-          margin: 0;
-          padding: 0;
-          overflow: hidden;
+          color: #4A403A;
         }
 
-        #root {
-          height: 100%;
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
-          background-color: #FFF9F0;
-        }
+        /* EXACT LINE-BY-LINE from be09094b index.css */
 
-        /* EXACT: extraction-lab from line 68-74 */
+        /* Line 68-74: .extraction-lab - EXACT properties */
         .extraction-lab {
           display: flex;
           flex-direction: column;
-          height: 100vh;
+          height: 100vh;  /* NOT 100%, NOT 100dvh */
           background: #FFF9F0;
           overflow: hidden;
+          /* NO position, NO transform, NO min-height */
         }
 
-        /* EXACT: lab-header from line 76-83 */
+        /* Line 76-84: .lab-header - EXACT properties */
         .lab-header {
           display: flex;
           align-items: center;
@@ -63,6 +60,7 @@ export function WorkingCommitTest() {
           background: white;
           border-bottom: 1px solid #E8DED5;
           box-shadow: 0 2px 8px rgba(139, 126, 119, 0.08);
+          /* NO position, NO height, NO overflow */
         }
 
         .lab-title {
@@ -82,24 +80,26 @@ export function WorkingCommitTest() {
           margin: 0;
         }
 
-        /* EXACT: lab-content from line 163-170 */
+        /* Line 163-170: .lab-content - EXACT properties */
         .lab-content {
           display: grid;
-          grid-template-columns: 1fr;  /* Single column for just editor */
+          grid-template-columns: 1fr;  /* Single column (original has 1fr 420px) */
           gap: 24px;
           flex: 1;
           padding: 24px;
-          overflow: hidden;  /* CRITICAL: constrains children */
+          overflow: hidden;
+          /* NO position, NO height, NO transform */
         }
 
-        /* EXACT: editor-panel from line 173-180 */
+        /* Line 173-180: .editor-panel - EXACT properties */
         .editor-panel {
           display: flex;
           flex-direction: column;
           background: white;
           border-radius: 12px;
           box-shadow: 0 2px 8px rgba(139, 126, 119, 0.08);
-          overflow: auto;  /* CRITICAL: scrolls naturally */
+          overflow: auto;
+          /* NO position, NO height, NO min-height, NO transform */
         }
 
         .panel-header {
@@ -117,17 +117,7 @@ export function WorkingCommitTest() {
         .panel-subtitle {
           font-size: 13px;
           color: #8B7E77;
-        }
-
-        /* Make the Lexical editor fill the panel */
-        .rich-editor-root {
-          flex: 1;
-          min-height: 0;
-        }
-
-        .rich-editor-surface {
-          min-height: 100%;
-          padding: 24px;
+          margin: 0;
         }
       `}</style>
 
