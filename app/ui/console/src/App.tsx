@@ -9,6 +9,10 @@ import { useToast, ToastContainer } from './components/Toast';
 import { ThemeProvider } from './context/ThemeContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ExtractionLab } from './pages/ExtractionLab';
+import { EditorTest } from './pages/EditorTest';
+import { UltraMinimalTest } from './pages/UltraMinimalTest';
+import { WorkingCommitTest } from './pages/WorkingCommitTest';
+import { ExactWorkingReplica } from './pages/ExactWorkingReplica';
 import { loadState, saveState } from './lib/storage';
 import { initializeClientErrorLogger } from './lib/errorLogger';
 
@@ -83,25 +87,13 @@ function AppShell() {
     };
   }, []);
 
-  // Simple viewport height tracking - updates when keyboard appears/disappears
+  // iOS Notes pattern: Let 100dvh handle keyboard, NO JavaScript tracking
+  // visualViewport.height changes when keyboard opens, but 100dvh stays constant
+  // This lets content extend behind keyboard instead of shrinking
+  // Safari's native scrollIntoView handles caret positioning perfectly
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const docEl = document.documentElement;
-
-    const updateViewportHeight = () => {
-      const height = window.visualViewport?.height ?? window.innerHeight;
-      docEl.style.setProperty('--app-viewport-height', `${height}px`);
-    };
-
-    updateViewportHeight();
-    window.visualViewport?.addEventListener('resize', updateViewportHeight);
-    window.addEventListener('resize', updateViewportHeight);
-
-    return () => {
-      window.visualViewport?.removeEventListener('resize', updateViewportHeight);
-      window.removeEventListener('resize', updateViewportHeight);
-    };
+    // NO-OP: Removed viewport tracking
+    // Keeping effect for documentation purposes
   }, []);
 
   useEffect(() => {
@@ -151,7 +143,12 @@ function AppShell() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<ExtractionLab project={project} toast={toast} />} />
+        {/* EXACT WORKING REPLICA - Complete be09094b copy with CodeMirror */}
+        <Route path="/" element={<ExactWorkingReplica />} />
+        <Route path="/test" element={<WorkingCommitTest />} />
+        <Route path="/minimal" element={<UltraMinimalTest />} />
+        <Route path="/editor" element={<EditorTest />} />
+        <Route path="/lab" element={<ExtractionLab project={project} toast={toast} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <ToastContainer messages={toast.messages} onClose={toast.closeToast} />

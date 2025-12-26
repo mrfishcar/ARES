@@ -91,7 +91,7 @@ const editorTheme = EditorView.theme({
     overscrollBehavior: 'contain',
     touchAction: 'pan-y',
     WebkitOverflowScrolling: 'touch',
-    scrollBehavior: 'smooth',
+    scrollBehavior: 'auto',  // Changed from 'smooth' to avoid iOS jumpiness
   },
 
   '.cm-line': {
@@ -632,6 +632,169 @@ function iosCalloutBlockerExtension(
   });
 }
 
+// -------------------- iOS CURSOR TRACKING EXTENSION --------------------
+
+/**
+ * SOPHISTICATED iOS CURSOR TRACKING
+ *
+ * Philosophy:
+ * - Embrace iOS page scroll when keyboard opens
+ * - Use visualViewport API to know ACTUAL visible area
+ * - Keep caret consistently positioned above keyboard
+ * - Debounced + rAF to prevent layout thrash
+ * - Single scroll owner (no competing systems)
+ *
+ * Fixes:
+ * - "Works for 2 lines, jumps on 3rd" inconsistency
+ * - Multiple scroll systems fighting
+ * - CSS smooth scroll vs JS scroll conflicts
+ */
+
+// Debug flag - can be enabled via browser console:
+// window.enableCaretDebug = true
+declare global {
+  interface Window {
+    enableCaretDebug?: boolean;
+  }
+}
+
+const isDebugEnabled = () => window.enableCaretDebug === true;
+
+function iosCursorTrackingExtension() {
+  // Stable caret margin above keyboard/viewport bottom (px)
+  const CARET_MARGIN = 160;
+
+  // Re-entrancy guard
+  let isScrolling = false;
+  let rafHandle: number | null = null;
+  let debounceTimer: number | null = null;
+
+  const performCaretTracking = (view: EditorView) => {
+    // Prevent re-entrancy during same frame
+    if (isScrolling) {
+      if (isDebugEnabled()) console.log('[CaretTrack] Skipping - already scrolling');
+      return;
+    }
+
+    const selection = view.state.selection.main;
+    const cursorPos = selection.head;
+
+    // Get caret coordinates in viewport
+    const caretCoords = view.coordsAtPos(cursorPos);
+    if (!caretCoords) {
+      if (isDebugEnabled()) console.log('[CaretTrack] No caret coords');
+      return;
+    }
+
+    // Use visualViewport API when available (iOS Safari)
+    const visualViewport = window.visualViewport;
+    let visibleBottom: number;
+
+    if (visualViewport) {
+      // ACTUAL visible area accounting for keyboard
+      visibleBottom = visualViewport.offsetTop + visualViewport.height;
+
+      if (isDebugEnabled()) {
+        console.log('[CaretTrack] visualViewport:', {
+          height: visualViewport.height,
+          offsetTop: visualViewport.offsetTop,
+          visibleBottom,
+          pageScrollY: window.scrollY,
+        });
+      }
+    } else {
+      // Fallback: use window inner height
+      visibleBottom = window.scrollY + window.innerHeight;
+
+      if (isDebugEnabled()) {
+        console.log('[CaretTrack] Fallback viewport:', {
+          innerHeight: window.innerHeight,
+          scrollY: window.scrollY,
+          visibleBottom,
+        });
+      }
+    }
+
+    // Compute where caret should be (CARET_MARGIN above visible bottom)
+    const targetCaretBottom = visibleBottom - CARET_MARGIN;
+
+    if (isDebugEnabled()) {
+      console.log('[CaretTrack] Caret:', {
+        top: caretCoords.top,
+        bottom: caretCoords.bottom,
+        targetCaretBottom,
+        needsScroll: caretCoords.bottom > targetCaretBottom,
+      });
+    }
+
+    // Check if caret is below threshold
+    if (caretCoords.bottom > targetCaretBottom) {
+      const scrollDelta = caretCoords.bottom - targetCaretBottom;
+
+      // Guard: Don't scroll if document can't scroll anymore
+      const maxScrollY = document.documentElement.scrollHeight - window.innerHeight;
+      const newScrollY = window.scrollY + scrollDelta;
+
+      if (newScrollY > maxScrollY) {
+        if (isDebugEnabled()) {
+          console.log('[CaretTrack] Cannot scroll - at document bottom', {
+            maxScrollY,
+            currentScrollY: window.scrollY,
+            attemptedScrollY: newScrollY,
+          });
+        }
+        return;
+      }
+
+      if (isDebugEnabled()) {
+        console.log('[CaretTrack] SCROLLING:', {
+          delta: scrollDelta,
+          from: window.scrollY,
+          to: newScrollY,
+        });
+      }
+
+      // Set re-entrancy guard
+      isScrolling = true;
+
+      // Scroll the PAGE (not editor scroller)
+      window.scrollBy({
+        top: scrollDelta,
+        behavior: 'auto',  // INSTANT - no smooth animation
+      });
+
+      // Clear guard after frame
+      requestAnimationFrame(() => {
+        isScrolling = false;
+      });
+    }
+  };
+
+  return EditorView.updateListener.of((update: ViewUpdate) => {
+    // Only track on selection changes or doc changes (typing)
+    if (!update.selectionSet && !update.docChanged) return;
+
+    // Cancel any pending tracking
+    if (rafHandle !== null) {
+      cancelAnimationFrame(rafHandle);
+      rafHandle = null;
+    }
+    if (debounceTimer !== null) {
+      clearTimeout(debounceTimer);
+      debounceTimer = null;
+    }
+
+    // Debounce + rAF to prevent layout thrash
+    debounceTimer = window.setTimeout(() => {
+      rafHandle = requestAnimationFrame(() => {
+        performCaretTracking(update.view);
+        rafHandle = null;
+      });
+      debounceTimer = null;
+    }, 50); // 50ms debounce
+  });
+}
+
 // -------------------- FOCUS & SELECTION NOTIFIER --------------------
 
 function focusAndSelectionNotifierExtension(
@@ -781,6 +944,8 @@ export function CodeMirrorEditor({
         placeholder('Write or paste text...'),
         editorTheme,
         EditorView.lineWrapping,
+        // iOS cursor tracking: DISABLED - Let Safari's native scrollIntoView handle it
+        // iosCursorTrackingExtension(),
         // Block keyboard input in Entity Highlight Mode (allows text selection on iOS)
         keyboardBlockerExtension(entityHighlightModeRef),
         // Prevent iOS callout menu (Cut/Copy/Paste) from appearing during text selection

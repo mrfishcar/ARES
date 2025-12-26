@@ -52,19 +52,47 @@ export function loadThemePreference(): ThemeMode {
 
 /**
  * Apply theme to document
+ *
+ * CRITICAL iOS FIX: Apply backgrounds with !important to html/body
+ * This prevents white Safari void from showing behind keyboard
+ * Lessons from ExactWorkingReplica blue test (commit history)
  */
 export function applyTheme(mode: ThemeMode): void {
   const effectiveTheme = getEffectiveTheme(mode);
   const htmlElement = document.documentElement;
+  const bodyElement = document.body;
+  const rootElement = document.getElementById('root');
 
   if (effectiveTheme === 'dark') {
+    // Dark theme - night sky
     htmlElement.setAttribute('data-theme', 'dark');
-    document.body.classList.add('dark-mode');
-    document.body.classList.remove('light-mode');
+    bodyElement.classList.add('dark-mode');
+    bodyElement.classList.remove('light-mode');
+
+    // Apply bedrock backgrounds with !important (iOS keyboard fix)
+    htmlElement.style.setProperty('background', NIGHT_SKY_PALETTE.dark.background, 'important');
+    bodyElement.style.setProperty('background', NIGHT_SKY_PALETTE.dark.background, 'important');
+    bodyElement.style.setProperty('color', NIGHT_SKY_PALETTE.dark.text, 'important');
+    bodyElement.style.setProperty('margin', '0', 'important');
+    if (rootElement) {
+      rootElement.style.setProperty('background', NIGHT_SKY_PALETTE.dark.background, 'important');
+      rootElement.style.setProperty('min-height', '100%', 'important');
+    }
   } else {
+    // Light theme - warm
     htmlElement.setAttribute('data-theme', 'light');
-    document.body.classList.add('light-mode');
-    document.body.classList.remove('dark-mode');
+    bodyElement.classList.add('light-mode');
+    bodyElement.classList.remove('dark-mode');
+
+    // Apply bedrock backgrounds with !important (iOS keyboard fix)
+    htmlElement.style.setProperty('background', NIGHT_SKY_PALETTE.light.background, 'important');
+    bodyElement.style.setProperty('background', NIGHT_SKY_PALETTE.light.background, 'important');
+    bodyElement.style.setProperty('color', NIGHT_SKY_PALETTE.light.text, 'important');
+    bodyElement.style.setProperty('margin', '0', 'important');
+    if (rootElement) {
+      rootElement.style.setProperty('background', NIGHT_SKY_PALETTE.light.background, 'important');
+      rootElement.style.setProperty('min-height', '100%', 'important');
+    }
   }
 }
 
@@ -123,12 +151,12 @@ export function setTheme(mode: ThemeMode): void {
  */
 export const NIGHT_SKY_PALETTE = {
   light: {
-    // Light mode - clean and bright
-    background: '#ffffff',
-    surface: '#f8f7f6',
-    border: '#e8e6e3',
-    text: '#4a403a',
-    textSecondary: '#8b7e77',
+    // Light mode - warm theme (matches ThemeContext)
+    background: '#FFF9F0',      // Warm light background
+    surface: '#FFF4E6',         // Light warm surface
+    border: '#E8DED5',          // Soft border
+    text: '#4A403A',            // Warm dark text
+    textSecondary: '#8B7E77',   // Secondary text
     textTertiary: '#c2b8af',
     heading: '#2d2420',
     accent: '#5a4d46',

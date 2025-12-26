@@ -4,36 +4,38 @@
   padding: 0;
 }
 
+/* REVERT TO WORKING APPROACH (commit be09094b) */
+/* position: fixed was BREAKING it - just use overflow: hidden! */
 html {
   font-size: 100%;
   -webkit-text-size-adjust: 100%;
   background: var(--bg-primary);
-  /* Prevent iOS elastic scrolling/bounce */
   overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
-  
-  /* iOS-safe viewport height - update CSS variable on resize */
-  --app-viewport-height: 100vh;
-  /* Fallback for browsers that support dvh */
-  --app-viewport-height: 100dvh;
 }
 
 html,
 body {
   background: var(--bg-primary);
-  /* Lock height to viewport, prevent pull-to-refresh */
-  /* Use CSS variable that's updated dynamically for iOS */
-  height: var(--app-viewport-height);
-  min-height: var(--app-viewport-height);
-  overflow: hidden;
-  overscroll-behavior: none;
+  height: 100%;  /* Simple height, not vh/dvh */
   margin: 0;
   padding: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+#root {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary);
 }
 
 :root {
-  /* Default to 100vh, will be updated by JS for iOS */
-  --app-viewport-height: 100vh;
+  /* Single viewport height variable - 100dvh handles iOS keyboard natively */
+  --app-viewport-height: 100dvh;
+
   --app-bg-dark: #050713;
   --app-bg-light: #f5f6fa;
 
@@ -54,6 +56,7 @@ body {
   --font-size-sm: 13px;
   --font-size-base: 15px;
   --font-size-lg: 17px;
+  --font-size-input: 16px;  /* Minimum 16px to prevent iOS zoom on focus */
   --line-height-base: 1.6;
 
   /* shared tokens that don't really change with theme */
@@ -169,12 +172,42 @@ body {
 html,
 body,
 #root {
-  height: var(--app-viewport-height, 100vh);
-  min-height: var(--app-viewport-height, 100vh);
-  /* Prevent scrolling to fix white bar and white space issues */
+  height: 100%;
+  /* Use CSS variable for viewport height (updated by JS on keyboard open) */
+  min-height: 100dvh;
   overflow: hidden;
   overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
+}
+
+/* iPad Safari keyboard fix: Lock viewport scroll when editor is focused */
+/* The 'kb-open' class is added to <html> when Lexical editor receives focus */
+/* This prevents the "manual slide entire UI" issue on iPad when keyboard is open */
+html.kb-open,
+body.kb-open {
+  /* CRITICAL: position: fixed prevents page scroll on iPad */
+  position: fixed !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  touch-action: manipulation !important;
+}
+
+/* Use visualViewport height when available (iOS keyboard handling) */
+html.kb-open {
+  height: var(--vvh, 100vh) !important;
+}
+
+#root.kb-open {
+  height: var(--vvh, 100vh) !important;
+}
+
+/* CRITICAL: Make .extraction-lab use visual viewport height when keyboard is open */
+/* This eliminates white space below the editor when keyboard appears on iPad */
+html.kb-open .extraction-lab {
+  height: var(--vvh, 100dvh) !important;
+  min-height: var(--vvh, 100dvh) !important;
 }
 
 @media (prefers-color-scheme: light) {
@@ -199,39 +232,7 @@ body,
   }
 }
 
-.app-shell {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  min-height: var(--app-viewport-height, 100vh);
-  height: var(--app-viewport-height, 100vh);
-  flex: 1;
-  background-color: var(--app-surface);
-  color: var(--text-primary);
-}
-
-.app-main {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  background-color: var(--app-surface);
-  /* Keep the app shell from competing with the editor scroller */
-  overflow: hidden;
-}
-
-.app-scroll-root {
-  flex: 1;
-  height: 100%;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  overscroll-behavior: contain;
-  background-color: transparent;
-  color: var(--text-primary);
-}
+/* Removed .app-shell, .app-main, .app-scroll-root - unnecessary wrappers */
 
 .portal-root,
 .modal-root,
@@ -417,24 +418,23 @@ body {
   min-height: 100%;
 }
 
-/* Removed body::before gradient - .extraction-lab has its own solid background */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--app-surface);
+  background-image: var(--app-background-gradient);
+  /* Ensure it covers viewport even when keyboard appears */
+  min-height: 100dvh;
+}
 
 #root {
   height: 100%;
   background-color: var(--app-surface);
 }
 
-.app-root {
-  position: relative;
-  min-height: var(--app-viewport-height, 100vh);
-  height: var(--app-viewport-height, 100vh);
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  background-color: var(--app-surface);
-  background-image: var(--app-background-gradient);
-  color: var(--text-primary);
-}
+/* Removed .app-root - unnecessary wrapper */
 
 .app-loader {
   position: fixed;
@@ -482,22 +482,9 @@ a:hover {
 .extraction-lab {
   display: flex;
   flex-direction: column;
-  height: var(--app-viewport-height);
-  min-height: var(--app-viewport-height);
+  height: 100vh;  /* Simple 100vh like working commit */
   background: var(--bg-primary);
-  /*
-   * Safari/iPad blur + keyboard guard: removing full overflow clipping prevents
-   * backdrop-filter surfaces (toolbar + dropdown) from losing blur while the
-   * viewport height stays locked to a CSS variable to avoid keyboard jumps.
-   */
-  overflow-x: hidden;
-  overflow-y: auto;
-  /* Prevent iOS elastic scrolling/pull-to-refresh */
-  overscroll-behavior-y: none;
-  /* Remove -webkit-overflow-scrolling: touch - can cause focus issues on iOS */
-  /* Use native scrolling instead */
-  /* Position relative to body's fixed positioning */
-  position: relative;
+  overflow: hidden;  /* Lock the page */
 }
 
 /* Hamburger Button - ChatGPT style */
@@ -562,6 +549,11 @@ a:hover {
   transform: translateX(0);
 }
 
+/* =========================================================
+   iOS Notes-style right-anchored toolbar morph
+   Two toolbars occupy same fixed space, morph horizontally
+   ========================================================= */
+
 .lab-toolbar-stack {
   position: fixed;
   top: 16px;
@@ -572,7 +564,90 @@ a:hover {
   align-items: center;
   gap: 8px;
   z-index: 50;
+}
+
+/* Toolbar slot holds both normal and formatting toolbars */
+.toolbar-slot {
+  position: relative;
+  min-height: 44px;
+  display: inline-flex;
+  justify-content: center; /* Keep toolbar centered */
+}
+
+/* Both toolbars share right edge for iOS Notes-style morph */
+.toolbar-slot .lab-control-bar {
+  transform-origin: 100% 50%; /* Right edge anchor point for morph animation */
+  will-change: transform, opacity;
+  transition: transform 240ms cubic-bezier(0.2, 0.9, 0.2, 1),
+              opacity 85ms linear,
+              visibility 0ms linear;
+}
+
+/* Formatting toolbar - absolutely positioned, centered via left+right+transform */
+.toolbar-slot .lab-control-bar--formatting {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) scaleX(1); /* Center + scale */
+}
+
+/* ========== NORMAL MODE ========== */
+.toolbar-slot[data-mode="normal"] .lab-control-bar:not(.lab-control-bar--formatting) {
+  transform: scaleX(1);
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+}
+
+.toolbar-slot[data-mode="normal"] .lab-control-bar--formatting {
+  transform: translateX(-50%) scaleX(0); /* Collapse to right while staying centered */
+  opacity: 0;
   pointer-events: none;
+  visibility: hidden;
+  transition-delay: 0ms;
+}
+
+/* ========== FORMATTING MODE ========== */
+.toolbar-slot[data-mode="formatting"] .lab-control-bar:not(.lab-control-bar--formatting) {
+  transform: scaleX(0); /* Collapse to right */
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition-delay: 0ms;
+}
+
+.toolbar-slot[data-mode="formatting"] .lab-control-bar--formatting {
+  transform: translateX(-50%) scaleX(1); /* Expand from right while centered */
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+  transition-delay: 240ms;
+}
+
+/* Content inside toolbar fades independently from pill transform */
+.lab-control-bar__content {
+  opacity: 1;
+  transition: opacity 85ms linear;
+}
+
+.toolbar-slot[data-mode="formatting"] .lab-control-bar:not(.lab-control-bar--formatting) .lab-control-bar__content {
+  opacity: 0;
+  transition-delay: 0s;
+}
+
+.toolbar-slot[data-mode="normal"] .lab-control-bar:not(.lab-control-bar--formatting) .lab-control-bar__content {
+  opacity: 1;
+  transition-delay: 140ms;
+}
+
+.toolbar-slot[data-mode="normal"] .lab-control-bar--formatting .lab-control-bar__content {
+  opacity: 0;
+  transition-delay: 0s;
+}
+
+.toolbar-slot[data-mode="formatting"] .lab-control-bar--formatting .lab-control-bar__content {
+  opacity: 1;
+  transition-delay: 300ms;
 }
 
 .lab-control-bar {
@@ -1372,26 +1447,34 @@ a:hover {
 }
 
 .lab-content {
-  display: flex;
-  gap: 0;
-  padding: 0;
-  padding-top: 20px; /* Minimal top padding for floating bar */
+  display: grid;  /* Grid layout like working commit */
+  grid-template-columns: 1fr;  /* Single column (will add second column for results panel later) */
+  gap: 24px;
+  padding: 80px 24px 24px;  /* Top padding for toolbar */
   flex: 1;
   min-height: 0;
-  overflow: hidden;
-  align-items: stretch;
+  overflow: hidden;  /* Constrain children - they scroll */
   background: transparent;
-  /* ✅ No padding by default; will be added by media query when sidebar is open */
   transition: padding-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Editor panel - scrolls naturally like working commit */
+.editor-panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  overflow: auto;  /* Scroll naturally - no forcing */
+  min-height: 0;  /* Allow flex shrinking */
 }
 
 .editor-wrapper {
   display: flex;
   flex: 1;
   min-width: 0;
-  background-color: var(--app-surface);
-  /* FIXED: Removed min-height: 100vh to prevent layout cascade */
+  min-height: 0;
   height: 100%;
+  background-color: var(--bg-primary);
 }
 
 .results-wrapper {
@@ -1413,10 +1496,11 @@ a:hover {
   flex: 1;
   min-width: 0;
   min-height: 0;
-  background-color: var(--app-surface);
+  background-color: var(--bg-primary);
   border: none;
   border-radius: 0;
   box-shadow: none;
+  /* Don't scroll here - .rich-editor-surface is the scroll container */
   overflow: hidden;
   transition: background-color 0.3s ease;
   pointer-events: auto;
@@ -2103,7 +2187,7 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   flex: 1;
   gap: 0;
   min-width: 0;
-  /* FIXED: Removed min-height to prevent layout cascade */
+  min-height: 0;
   height: 100%;
 }
 
@@ -2124,7 +2208,7 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   display: flex;
   flex: 1;
   min-width: 0;
-  /* FIXED: Removed min-height to prevent layout cascade */
+  min-height: 0;
   height: 100%;
   position: relative;
 }
@@ -2720,13 +2804,8 @@ body.modal-open {
 
 /* iOS: Prevent layout shift when keyboard appears */
 @media (max-width: 768px) {
-  .lab-content {
-    /* Allow content to scroll instead of hiding overflow */
-    overflow-y: auto;
-    overflow-x: hidden;
-    /* Prevent momentum scroll issues */
-    -webkit-overflow-scrolling: touch;
-  }
+  /* REMOVED: .lab-content scroll override */
+  /* Now using .editor-scroll-container as the ONLY scroll owner on all viewports */
 
   /* Keep toolbar visible above keyboard */
   .lab-control-bar {
