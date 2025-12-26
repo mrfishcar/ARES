@@ -143,12 +143,12 @@ function AppShell() {
   return (
     <>
       <Routes>
-        {/* EXACT WORKING REPLICA - Complete be09094b copy with CodeMirror */}
-        <Route path="/" element={<ExactWorkingReplica />} />
+        {/* ExtractionLab - Main application with Lexical editor */}
+        <Route path="/" element={<ExtractionLab project={project} toast={toast} />} />
+        <Route path="/replica" element={<ExactWorkingReplica />} />
         <Route path="/test" element={<WorkingCommitTest />} />
         <Route path="/minimal" element={<UltraMinimalTest />} />
         <Route path="/editor" element={<EditorTest />} />
-        <Route path="/lab" element={<ExtractionLab project={project} toast={toast} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <ToastContainer messages={toast.messages} onClose={toast.closeToast} />
