@@ -18,6 +18,7 @@ import { snapshotRichDoc } from './flattenRichDoc';
 import type { RichDocSnapshot } from './types';
 import type { NavigateToRange } from '../components/CodeMirrorEditorProps';
 import { FocusDebugPlugin } from './plugins/FocusDebugPlugin';
+import { ScrollIntoViewPlugin } from './plugins/ScrollIntoViewPlugin';
 
 interface RichTextEditorProps {
   initialDocJSON?: SerializedEditorState | null;
@@ -271,6 +272,7 @@ export function RichTextEditor({
           <CheckListPlugin />
           <OnChangeAdapter onChange={onChange} />
           <FocusDebugPlugin />
+          <ScrollIntoViewPlugin />
         </div>
       </div>
     </LexicalComposer>

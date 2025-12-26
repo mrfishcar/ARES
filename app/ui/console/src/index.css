@@ -21,14 +21,14 @@ html {
 html,
 body {
   background: var(--bg-primary);
-  /* Lock height to viewport, prevent pull-to-refresh */
-  /* Use CSS variable that's updated dynamically for iOS */
-  height: var(--app-viewport-height);
-  min-height: var(--app-viewport-height);
-  overflow: hidden;
-  overscroll-behavior: none;
+  /* iOS Notes pattern: Normal document flow, no height locking */
+  /* Safari's default scroll behavior works best when we don't fight it */
+  height: 100%;
   margin: 0;
   padding: 0;
+  /* Allow natural scrolling - Safari needs this to recognize scroll containers */
+  overflow: visible;
+  overscroll-behavior: none;
 }
 
 :root {
@@ -169,12 +169,12 @@ body {
 html,
 body,
 #root {
-  height: var(--app-viewport-height, 100vh);
-  min-height: var(--app-viewport-height, 100vh);
-  /* Prevent scrolling to fix white bar and white space issues */
-  overflow: hidden;
+  /* iOS Notes pattern: Use natural height, let scroll containers handle overflow */
+  height: 100%;
+  min-height: 100%;
+  /* CRITICAL: overflow must be visible for Safari to recognize scroll containers */
+  overflow: visible;
   overscroll-behavior: none;
-  -webkit-overflow-scrolling: touch;
 }
 
 @media (prefers-color-scheme: light) {
@@ -426,8 +426,8 @@ body {
 
 .app-root {
   position: relative;
-  min-height: var(--app-viewport-height, 100vh);
-  height: var(--app-viewport-height, 100vh);
+  min-height: 100dvh;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -482,21 +482,16 @@ a:hover {
 .extraction-lab {
   display: flex;
   flex-direction: column;
-  height: var(--app-viewport-height);
-  min-height: var(--app-viewport-height);
+  /* iOS Notes pattern: Full viewport height using dvh (dynamic viewport height) */
+  /* dvh accounts for browser chrome but stays constant when keyboard appears */
+  min-height: 100dvh;
+  height: 100%;
   background: var(--bg-primary);
-  /*
-   * Safari/iPad blur + keyboard guard: removing full overflow clipping prevents
-   * backdrop-filter surfaces (toolbar + dropdown) from losing blur while the
-   * viewport height stays locked to a CSS variable to avoid keyboard jumps.
-   */
-  overflow-x: hidden;
-  overflow-y: auto;
+  /* NO overflow on parent - let child scroll containers handle it */
+  overflow: visible;
   /* Prevent iOS elastic scrolling/pull-to-refresh */
   overscroll-behavior-y: none;
-  /* Remove -webkit-overflow-scrolling: touch - can cause focus issues on iOS */
-  /* Use native scrolling instead */
-  /* Position relative to body's fixed positioning */
+  /* Normal positioning in document flow */
   position: relative;
 }
 
