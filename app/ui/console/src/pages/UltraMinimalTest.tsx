@@ -9,10 +9,26 @@ export function UltraMinimalTest() {
   const [scrollLockCount, setScrollLockCount] = useState(0);
   const [caretTrackCount, setCaretTrackCount] = useState(0);
   const [debug, setDebug] = useState<string[]>([]);
+  const [diagnostics, setDiagnostics] = useState({ winY: 0, vvH: 0, vvTop: 0, innerH: 0 });
 
   const addDebug = (msg: string) => {
     setDebug(prev => [...prev.slice(-5), `${new Date().toLocaleTimeString()}: ${msg}`]);
   };
+
+  // Diagnostic logger - shows if window.scrollY is changing
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const vv = window.visualViewport;
+      setDiagnostics({
+        winY: Math.round(window.scrollY),
+        vvH: Math.round(vv?.height || 0),
+        vvTop: Math.round(vv?.offsetTop || 0),
+        innerH: Math.round(window.innerHeight),
+      });
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, []);
 
   // NUCLEAR OPTION: Prevent ALL touchmove events on html/body
   useEffect(() => {
@@ -29,24 +45,56 @@ export function UltraMinimalTest() {
     // Prevent touchmove on document to stop viewport scroll
     document.addEventListener('touchmove', preventScroll, { passive: false });
 
-    // Also lock visualViewport scroll as backup
-    const vv = window.visualViewport;
-    const lockScroll = () => {
-      window.scrollTo(0, 0);
-      setScrollLockCount(c => c + 1);
-      addDebug('Viewport tried to scroll - LOCKED');
+    // EDGE NUDGING: Prevent scroll chaining at container edges
+    const scrollContainer = document.querySelector('.scroll-container') as HTMLElement;
+    const preventChaining = () => {
+      if (!scrollContainer) return;
+
+      // If at exact top, nudge down 1px to prevent upward scroll from stealing to body
+      if (scrollContainer.scrollTop === 0) {
+        scrollContainer.scrollTop = 1;
+      }
+
+      // If at exact bottom, nudge up 1px to prevent downward scroll from stealing to body
+      const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
+      if (scrollContainer.scrollTop >= maxScroll) {
+        scrollContainer.scrollTop = maxScroll - 1;
+      }
     };
 
-    if (vv) {
-      vv.addEventListener('scroll', lockScroll);
+    if (scrollContainer) {
+      scrollContainer.addEventListener('touchstart', preventChaining, { passive: true });
     }
 
-    addDebug('Viewport scroll lock active (touchmove + visualViewport)');
+    // Lock BOTH window.scroll AND visualViewport.scroll
+    const lockWindowScroll = () => {
+      window.scrollTo(0, 0);
+      setScrollLockCount(c => c + 1);
+      addDebug('🔒 window.scrollY tried to change - LOCKED');
+    };
+
+    const vv = window.visualViewport;
+    const lockVVScroll = () => {
+      window.scrollTo(0, 0);
+      setScrollLockCount(c => c + 1);
+      addDebug('🔒 visualViewport tried to scroll - LOCKED');
+    };
+
+    window.addEventListener('scroll', lockWindowScroll, { passive: true });
+    if (vv) {
+      vv.addEventListener('scroll', lockVVScroll);
+    }
+
+    addDebug('Viewport scroll lock active (touchmove + window.scroll + visualViewport.scroll + edge nudging)');
 
     return () => {
       document.removeEventListener('touchmove', preventScroll);
+      window.removeEventListener('scroll', lockWindowScroll);
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('touchstart', preventChaining);
+      }
       if (vv) {
-        vv.removeEventListener('scroll', lockScroll);
+        vv.removeEventListener('scroll', lockVVScroll);
       }
     };
   }, []);
@@ -146,6 +194,8 @@ export function UltraMinimalTest() {
           width: 100%;
           height: 100%;
           overflow: hidden;
+          overscroll-behavior: none;
+          touch-action: none;  /* Prevent gesture scrolling */
           background: #1a1d29;
           color: #e5e7eb;
         }
@@ -154,6 +204,8 @@ export function UltraMinimalTest() {
           position: fixed;
           inset: 0;
           overflow: hidden;
+          overscroll-behavior: none;
+          touch-action: none;
           display: flex;
           flex-direction: column;
         }
@@ -180,6 +232,8 @@ export function UltraMinimalTest() {
           overflow-y: auto;
           overflow-x: hidden;
           -webkit-overflow-scrolling: touch;
+          overscroll-behavior: contain;
+          touch-action: pan-y;  /* Allow vertical scroll HERE */
           background: #1a1d29;
           padding: 20px;
         }
@@ -205,7 +259,11 @@ export function UltraMinimalTest() {
 
       {/* Debug bar - VISIBLE on screen */}
       <div className="debug-bar">
-        SCROLL LOCKS: {scrollLockCount} | CARET TRACKS: {caretTrackCount} | {debug[debug.length - 1] || 'Waiting...'}
+        <div>SCROLL LOCKS: {scrollLockCount} | CARET TRACKS: {caretTrackCount}</div>
+        <div style={{ fontSize: '10px', marginTop: '4px' }}>
+          winY:{diagnostics.winY} vvH:{diagnostics.vvH} vvTop:{diagnostics.vvTop} innerH:{diagnostics.innerH}
+        </div>
+        <div style={{ fontSize: '11px', marginTop: '2px' }}>{debug[debug.length - 1] || 'Waiting...'}</div>
       </div>
 
       {/* The scroll container */}
