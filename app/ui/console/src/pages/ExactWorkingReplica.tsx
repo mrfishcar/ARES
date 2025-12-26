@@ -25,26 +25,32 @@ export function ExactWorkingReplica() {
     const originalBodyBg = body.style.background;
     const originalRootBg = root?.style.background || '';
 
-    // Apply blue theme with inline styles (overrides ThemeProvider)
-    html.style.background = '#1E40AF';
-    body.style.background = '#1E40AF';
-    body.style.color = 'white';
-    body.style.margin = '0';
+    // Apply blue theme with inline styles + !important (overrides ThemeProvider)
+    // ThemeProvider runs AFTER our useEffect and sets body.style.background = '#ffffff'
+    // Using setProperty with 'important' priority to override it
+    html.style.setProperty('background', '#1E40AF', 'important');
+    body.style.setProperty('background', '#1E40AF', 'important');
+    body.style.setProperty('color', 'white', 'important');
+    body.style.setProperty('margin', '0', 'important');
     if (root) {
-      root.style.background = '#1E40AF';
-      root.style.minHeight = '100%';
+      root.style.setProperty('background', '#1E40AF', 'important');
+      root.style.setProperty('min-height', '100%', 'important');
     }
 
-    // Cleanup: restore original styles on unmount
+    // Cleanup: remove !important styles on unmount
     return () => {
-      html.style.background = originalHtmlBg;
-      body.style.background = originalBodyBg;
-      body.style.color = '';
-      body.style.margin = '';
+      html.style.removeProperty('background');
+      body.style.removeProperty('background');
+      body.style.removeProperty('color');
+      body.style.removeProperty('margin');
       if (root) {
-        root.style.background = originalRootBg;
-        root.style.minHeight = '';
+        root.style.removeProperty('background');
+        root.style.removeProperty('min-height');
       }
+      // Restore originals
+      if (originalHtmlBg) html.style.background = originalHtmlBg;
+      if (originalBodyBg) body.style.background = originalBodyBg;
+      if (originalRootBg && root) root.style.background = originalRootBg;
     };
   }, []);
 
