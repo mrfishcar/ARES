@@ -334,7 +334,83 @@ If iOS keyboard issues return:
 
 ---
 
-**Last Updated**: 2025-12-11
+## Layer Coverage Fix (Dec 2025) - ExtractionLab
+
+### The Problem
+White corners/edges visible behind iOS keyboard, even though ExtractionLab uses Lexical editor (not CodeMirror).
+
+**Root causes**:
+1. index.html had NO background color (browser default = white)
+2. ThemeContext DEFAULT_THEME had `background: '#ffffff'`
+3. darkMode.ts only set data attributes, didn't enforce backgrounds
+4. Missing `!important` priority on inline styles
+
+### The Solution: Complete Layer Coverage
+
+**Philosophy**: Every layer from html → body → #root needs proper backgrounds with `!important`.
+
+#### 1. index.html - First Paint Protection
+**File**: `app/ui/console/index.html`
+```html
+<html lang="en" style="background: #FFF9F0 !important;" data-theme="light">
+  <body style="background: #FFF9F0 !important; color: #4A403A !important; margin: 0 !important;">
+```
+
+#### 2. darkMode.ts - Runtime Enforcement
+**File**: `app/ui/console/src/utils/darkMode.ts`
+```typescript
+export function applyTheme(mode: ThemeMode): void {
+  // Light theme
+  htmlElement.style.setProperty('background', '#FFF9F0', 'important');
+  bodyElement.style.setProperty('background', '#FFF9F0', 'important');
+  // Dark theme
+  htmlElement.style.setProperty('background', '#0a0e27', 'important');
+  bodyElement.style.setProperty('background', '#0a0e27', 'important');
+}
+```
+
+#### 3. NIGHT_SKY_PALETTE - Aligned Colors
+**File**: `app/ui/console/src/utils/darkMode.ts`
+```typescript
+export const NIGHT_SKY_PALETTE = {
+  light: { background: '#FFF9F0' },  // Warm, not white!
+  dark: { background: '#0a0e27' },   // Night sky
+};
+```
+
+#### 4. ScrollIntoViewPlugin - Disabled Custom Tracking
+**File**: `app/ui/console/src/editor2/plugins/ScrollIntoViewPlugin.tsx`
+
+**Previous**: Complex visualViewport tracking with double-rAF, debouncing, 80px margins
+
+**Current**: Let Safari handle it natively
+```typescript
+export function ScrollIntoViewPlugin() {
+  return null;  // Safari's native scrollIntoView works perfectly now
+}
+```
+
+**Why**: Fixing layer coverage was the real solution. No JavaScript needed.
+
+### Test Results
+- ✅ Light theme: Warm background (#FFF9F0) behind keyboard, no white edges
+- ✅ Dark theme: Night sky background (#0a0e27) behind keyboard, no white edges
+- ✅ Theme switching: Smooth transition, no white flash
+- ✅ Caret tracking: Safari's native behavior works perfectly
+
+### Files Modified (Dec 2025)
+1. `app/ui/console/index.html` - First paint backgrounds
+2. `app/ui/console/src/utils/darkMode.ts` - Runtime enforcement
+3. `app/ui/console/src/context/ThemeContext.tsx` - Aligned default theme
+4. `app/ui/console/src/editor2/plugins/ScrollIntoViewPlugin.tsx` - Disabled custom tracking
+
+### Reference
+- Test page: `app/ui/console/src/pages/ExactWorkingReplica.tsx` (blue theme proof)
+- Testing guide: `docs/IOS_CARET_TRACKING_TESTING_GUIDE.md`
+
+---
+
+**Last Updated**: 2025-12-26
 **Tested On**: iPad with Safari, iOS keyboard
-**Status**: ✅ All issues resolved
+**Status**: ✅ All issues resolved (CodeMirror + Lexical)
 **Maintainer**: ARES Team
