@@ -35,17 +35,28 @@ export function ExactWorkingReplica() {
     // Apply immediately
     applyBlueTheme();
 
-    // Watch for ThemeProvider changing body styles back to white
+    // Watch for ThemeProvider changing body/html styles back to white
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
           const target = mutation.target as HTMLElement;
-          // If body background was changed to white (ThemeProvider), re-apply blue
+
+          // Check body background
           if (target === body) {
             const currentBg = body.style.getPropertyValue('background');
             const currentBgPriority = body.style.getPropertyPriority('background');
             // If background is white or doesn't have !important, re-apply blue
             if (currentBg.includes('255, 255, 255') || currentBgPriority !== 'important') {
+              applyBlueTheme();
+            }
+          }
+
+          // Check html background (THIS WAS MISSING!)
+          if (target === html) {
+            const currentBg = html.style.getPropertyValue('background');
+            const currentBgPriority = html.style.getPropertyPriority('background');
+            // If background is white or doesn't have !important, re-apply blue
+            if (currentBg.includes('255, 255, 255') || currentBgPriority !== 'important' || !currentBg.includes('30, 64, 175')) {
               applyBlueTheme();
             }
           }
@@ -57,9 +68,22 @@ export function ExactWorkingReplica() {
     observer.observe(body, { attributes: true, attributeFilter: ['style'] });
     observer.observe(html, { attributes: true, attributeFilter: ['style'] });
 
-    // Cleanup: disconnect observer and remove styles
+    // NUCLEAR BACKUP: Periodically enforce blue theme every 100ms
+    // This catches cases where background is set via CSS variables or classes
+    const enforceInterval = setInterval(() => {
+      const htmlBg = window.getComputedStyle(html).backgroundColor;
+      const bodyBg = window.getComputedStyle(body).backgroundColor;
+
+      // If computed background is white (not blue), re-apply
+      if (htmlBg.includes('255, 255, 255') || bodyBg.includes('255, 255, 255')) {
+        applyBlueTheme();
+      }
+    }, 100);
+
+    // Cleanup: disconnect observer, clear interval, and remove styles
     return () => {
       observer.disconnect();
+      clearInterval(enforceInterval);
       html.style.removeProperty('background');
       body.style.removeProperty('background');
       body.style.removeProperty('color');
