@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 
 export function UltraMinimalTest() {
   const [scrollLockCount, setScrollLockCount] = useState(0);
+  const [caretTrackCount, setCaretTrackCount] = useState(0);
   const [debug, setDebug] = useState<string[]>([]);
 
   const addDebug = (msg: string) => {
@@ -28,6 +29,46 @@ export function UltraMinimalTest() {
 
     return () => {
       vv.removeEventListener('scroll', lockScroll);
+    };
+  }, []);
+
+  // MANUAL CARET TRACKING - iOS doesn't do this automatically
+  useEffect(() => {
+    const textarea = document.querySelector('.test-textarea') as HTMLTextAreaElement;
+    if (!textarea) return;
+
+    const trackCaret = () => {
+      const scrollContainer = document.querySelector('.scroll-container') as HTMLElement;
+      if (!scrollContainer) return;
+
+      // Get caret position by creating a temporary span
+      const text = textarea.value.substring(0, textarea.selectionStart);
+      const lines = text.split('\n');
+      const lineHeight = 28; // Approximate line height
+      const caretY = lines.length * lineHeight;
+
+      const containerHeight = scrollContainer.clientHeight;
+      const scrollTop = scrollContainer.scrollTop;
+      const visibleTop = scrollTop;
+      const visibleBottom = scrollTop + containerHeight;
+
+      // If caret is below visible area, scroll it into view
+      if (caretY > visibleBottom - 100) {
+        const scrollAmount = caretY - (visibleBottom - 100);
+        scrollContainer.scrollTop = scrollTop + scrollAmount;
+        setCaretTrackCount(c => c + 1);
+        addDebug(`Scrolled caret into view (${Math.round(scrollAmount)}px)`);
+      }
+    };
+
+    textarea.addEventListener('input', trackCaret);
+    textarea.addEventListener('selectionchange', trackCaret);
+
+    addDebug('Manual caret tracking enabled');
+
+    return () => {
+      textarea.removeEventListener('input', trackCaret);
+      textarea.removeEventListener('selectionchange', trackCaret);
     };
   }, []);
 
@@ -105,20 +146,22 @@ export function UltraMinimalTest() {
 
       {/* Debug bar - VISIBLE on screen */}
       <div className="debug-bar">
-        SCROLL LOCKS: {scrollLockCount} | {debug[debug.length - 1] || 'Waiting...'}
+        SCROLL LOCKS: {scrollLockCount} | CARET TRACKS: {caretTrackCount} | {debug[debug.length - 1] || 'Waiting...'}
       </div>
 
       {/* The scroll container */}
       <div className="scroll-container">
         <textarea
           className="test-textarea"
-          placeholder="Type here. Press Enter many times. Does the caret stay visible?
+          placeholder="Type here. Press Enter many times.
 
-If the RED bar shows increasing scroll locks, the viewport is trying to scroll (bad).
+RED BAR shows:
+- SCROLL LOCKS = viewport trying to scroll (should stay 0)
+- CARET TRACKS = how many times we scrolled the caret into view
 
-If the caret disappears when you type many lines, native scroll is broken.
+If CARET TRACKS increases, manual scrolling is working.
 
-This is a plain textarea - NO Lexical, NO plugins, NO bullshit."
+This is a plain textarea with MANUAL caret tracking - proving iOS needs explicit scrollIntoView."
           autoFocus
         />
 
