@@ -12,6 +12,42 @@ export function ExactWorkingReplica() {
   const [showHighlighting, setShowHighlighting] = useState(true);
   const [renderMarkdown, setRenderMarkdown] = useState(false);
 
+  // CRITICAL: Override ThemeProvider's white background with inline styles
+  // ThemeProvider applies DEFAULT_THEME with background: '#ffffff' to body
+  // Inline styles have higher specificity than CSS classes/variables
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const root = document.getElementById('root');
+
+    // Save original styles
+    const originalHtmlBg = html.style.background;
+    const originalBodyBg = body.style.background;
+    const originalRootBg = root?.style.background || '';
+
+    // Apply blue theme with inline styles (overrides ThemeProvider)
+    html.style.background = '#1E40AF';
+    body.style.background = '#1E40AF';
+    body.style.color = 'white';
+    body.style.margin = '0';
+    if (root) {
+      root.style.background = '#1E40AF';
+      root.style.minHeight = '100%';
+    }
+
+    // Cleanup: restore original styles on unmount
+    return () => {
+      html.style.background = originalHtmlBg;
+      body.style.background = originalBodyBg;
+      body.style.color = '';
+      body.style.margin = '';
+      if (root) {
+        root.style.background = originalRootBg;
+        root.style.minHeight = '';
+      }
+    };
+  }, []);
+
   return (
     <>
       {/* COMPLETE CSS from working commit be09094b - EVERY DETAIL */}
