@@ -944,8 +944,8 @@ export function CodeMirrorEditor({
         placeholder('Write or paste text...'),
         editorTheme,
         EditorView.lineWrapping,
-        // iOS cursor tracking - keeps cursor consistently visible above keyboard
-        iosCursorTrackingExtension(),
+        // iOS cursor tracking: DISABLED - Let Safari's native scrollIntoView handle it
+        // iosCursorTrackingExtension(),
         // Block keyboard input in Entity Highlight Mode (allows text selection on iOS)
         keyboardBlockerExtension(entityHighlightModeRef),
         // Prevent iOS callout menu (Cut/Copy/Paste) from appearing during text selection
