@@ -9,12 +9,13 @@
 import { useState } from 'react';
 import { RichTextEditor } from '../editor2/RichTextEditor';
 import type { SerializedEditorState } from 'lexical';
+import type { RichDocSnapshot } from '../editor2/types';
 
 export function EditorTest() {
   const [richDoc, setRichDoc] = useState<SerializedEditorState | null>(null);
 
-  const handleChange = (doc: SerializedEditorState, plainText: string) => {
-    setRichDoc(doc);
+  const handleChange = (snapshot: RichDocSnapshot) => {
+    setRichDoc(snapshot.doc);
   };
 
   return (
