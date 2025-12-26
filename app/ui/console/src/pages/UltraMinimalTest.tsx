@@ -14,21 +14,40 @@ export function UltraMinimalTest() {
     setDebug(prev => [...prev.slice(-5), `${new Date().toLocaleTimeString()}: ${msg}`]);
   };
 
+  // NUCLEAR OPTION: Prevent ALL touchmove events on html/body
   useEffect(() => {
-    const vv = window.visualViewport;
-    if (!vv) return;
+    const preventScroll = (e: TouchEvent) => {
+      // Only prevent on html/body, allow on textarea's scroll container
+      const target = e.target as HTMLElement;
+      if (!target.closest('.scroll-container')) {
+        e.preventDefault();
+        setScrollLockCount(c => c + 1);
+        addDebug('🚫 Prevented touchmove on body');
+      }
+    };
 
+    // Prevent touchmove on document to stop viewport scroll
+    document.addEventListener('touchmove', preventScroll, { passive: false });
+
+    // Also lock visualViewport scroll as backup
+    const vv = window.visualViewport;
     const lockScroll = () => {
       window.scrollTo(0, 0);
       setScrollLockCount(c => c + 1);
       addDebug('Viewport tried to scroll - LOCKED');
     };
 
-    vv.addEventListener('scroll', lockScroll);
-    addDebug('Viewport scroll lock active');
+    if (vv) {
+      vv.addEventListener('scroll', lockScroll);
+    }
+
+    addDebug('Viewport scroll lock active (touchmove + visualViewport)');
 
     return () => {
-      vv.removeEventListener('scroll', lockScroll);
+      document.removeEventListener('touchmove', preventScroll);
+      if (vv) {
+        vv.removeEventListener('scroll', lockScroll);
+      }
     };
   }, []);
 
@@ -49,45 +68,66 @@ export function UltraMinimalTest() {
 
       const containerHeight = scrollContainer.clientHeight;
       const scrollTop = scrollContainer.scrollTop;
-      const visibleTop = scrollTop;
-      const visibleBottom = scrollTop + containerHeight;
 
-      // Keep caret in the lower third of viewport (like iOS Notes)
-      const targetOffset = containerHeight * 0.66; // Position caret 2/3 down the screen
-      const minOffset = 100; // Minimum padding from top
-      const maxOffset = containerHeight - 100; // Minimum padding from bottom
+      // Target: keep caret at 40% down the screen (so keyboard doesn't obscure)
+      const targetPosition = containerHeight * 0.4;
+
+      // Danger zones: top 25% or bottom 35% of visible area
+      const topDangerZone = scrollTop + (containerHeight * 0.25);
+      const bottomDangerZone = scrollTop + (containerHeight * 0.65);
 
       let needsScroll = false;
       let newScrollTop = scrollTop;
 
-      // Caret is below visible area - scroll down
-      if (caretY > visibleBottom - 100) {
-        newScrollTop = caretY - targetOffset;
+      // Caret in bottom danger zone - scroll down IMMEDIATELY
+      if (caretY > bottomDangerZone) {
+        newScrollTop = caretY - targetPosition;
         needsScroll = true;
-        addDebug(`⬇️ Caret below view (${Math.round(caretY)}px > ${Math.round(visibleBottom - 100)}px)`);
+        addDebug(`⬇️ Caret in bottom zone (${Math.round(caretY)}px > ${Math.round(bottomDangerZone)}px)`);
       }
-      // Caret is above visible area - scroll up
-      else if (caretY < visibleTop + 100) {
-        newScrollTop = caretY - minOffset;
+      // Caret in top danger zone - scroll up IMMEDIATELY
+      else if (caretY < topDangerZone) {
+        newScrollTop = Math.max(0, caretY - targetPosition);
         needsScroll = true;
-        addDebug(`⬆️ Caret above view (${Math.round(caretY)}px < ${Math.round(visibleTop + 100)}px)`);
+        addDebug(`⬆️ Caret in top zone (${Math.round(caretY)}px < ${Math.round(topDangerZone)}px)`);
       }
 
       if (needsScroll) {
-        scrollContainer.scrollTop = Math.max(0, newScrollTop);
+        scrollContainer.scrollTop = newScrollTop;
         setCaretTrackCount(c => c + 1);
-        addDebug(`✅ Scrolled to ${Math.round(newScrollTop)}px`);
+        addDebug(`✅ Scrolled to ${Math.round(newScrollTop)}px (caret at ${Math.round(targetPosition)}px from top)`);
       }
     };
 
+    // Track on input and selection change
     textarea.addEventListener('input', trackCaret);
     textarea.addEventListener('selectionchange', trackCaret);
 
-    addDebug('Manual caret tracking enabled');
+    // CONTINUOUS tracking - check every frame while focused
+    let rafId: number;
+    const continuousTrack = () => {
+      if (document.activeElement === textarea) {
+        trackCaret();
+      }
+      rafId = requestAnimationFrame(continuousTrack);
+    };
+    rafId = requestAnimationFrame(continuousTrack);
+
+    // Also track on keyboard show/hide (visualViewport resize)
+    const vv = window.visualViewport;
+    if (vv) {
+      vv.addEventListener('resize', trackCaret);
+    }
+
+    addDebug('Manual caret tracking enabled (continuous + events)');
 
     return () => {
       textarea.removeEventListener('input', trackCaret);
       textarea.removeEventListener('selectionchange', trackCaret);
+      if (vv) {
+        vv.removeEventListener('resize', trackCaret);
+      }
+      cancelAnimationFrame(rafId);
     };
   }, []);
 
