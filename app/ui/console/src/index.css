@@ -555,7 +555,7 @@ a:hover {
 .lab-toolbar-stack {
   position: fixed;
   top: 16px;
-  right: 24px;  /* Anchor right edge 24px from viewport right */
+  right: 100px;  /* 100px spacing from right edge */
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -1522,15 +1522,14 @@ a:hover {
 
 /* Toolbar positioning when entity sidebar is pinned */
 .extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
-  /* Position left of sidebar, but never go off-screen */
-  /* On wide screens: sits left of sidebar. On narrow: stays visible at edge */
-  right: max(24px, min(calc(500px + 48px), calc(100vw - 300px)));
+  /* Keep 100px spacing left of sidebar */
+  right: calc(500px + 100px);  /* Sidebar width + 100px spacing */
 }
 
-/* Mobile override - toolbar stays at edge */
+/* Mobile override - toolbar stays with normal spacing */
 @media (max-width: 768px) {
   .extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
-    right: 24px !important;
+    right: 100px !important;
   }
 }
 
