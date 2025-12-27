@@ -2079,6 +2079,28 @@ a:hover {
   overflow: hidden;
   scrollbar-color: #9CA3AF #151929 !important;
   scrollbar-width: thin !important;
+  position: relative;
+}
+
+/* iOS Notes-style fade gradient at top */
+.cm-editor-wrapper::before {
+  content: '';
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(
+    to bottom,
+    var(--bg-primary, #0f1115) 0%,
+    var(--bg-primary, #0f1115) 20%,
+    rgba(15, 17, 21, 0.85) 50%,
+    rgba(15, 17, 21, 0.4) 80%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0.95;
 }
 
 .cm-editor-wrapper::-webkit-scrollbar {

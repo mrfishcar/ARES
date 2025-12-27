@@ -177,6 +177,27 @@
   overscroll-behavior: contain;
 }
 
+/* iOS Notes-style fade gradient at top */
+.rich-editor-shell::before {
+  content: '';
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(
+    to bottom,
+    var(--bg-primary, #0f1115) 0%,
+    var(--bg-primary, #0f1115) 20%,
+    rgba(15, 17, 21, 0.85) 50%,
+    rgba(15, 17, 21, 0.4) 80%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0.95;
+}
+
 /* Editor surface - NO LONGER SCROLLS */
 /* Scroll is handled by parent .editor-scroll-container (Editor-as-Document pattern) */
 .rich-editor-surface {
@@ -194,7 +215,7 @@
   position: relative;
   flex: 1;
   min-height: 500px; /* Ensures content can overflow and trigger scroll */
-  padding: 80px var(--editor-margin-desktop, 96px) 24px var(--editor-margin-desktop, 96px);
+  padding: 100px var(--editor-margin-desktop, 96px) 120px var(--editor-margin-desktop, 96px);
   outline: none;
 
   /* Typography */
@@ -221,7 +242,7 @@
 /* Placeholder */
 .rich-placeholder {
   position: absolute;
-  top: 80px; /* Match content top padding */
+  top: 100px; /* Match content top padding */
   left: var(--editor-margin-desktop, 96px);
   right: var(--editor-margin-desktop, 96px);
   color: var(--text-secondary, #9ca3af);
