@@ -555,12 +555,12 @@ a:hover {
 .lab-toolbar-stack {
   position: fixed;
   top: 16px;
-  right: 24px;  /* Consistent positioning like FloatingActionButton */
+  right: 24px;  /* Anchor right edge 24px from viewport right */
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 8px;
-  z-index: 50;
+  z-index: 150;  /* Above entity sidebar (z-index: 100) */
   transition: right 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1493,7 +1493,7 @@ a:hover {
   display: grid;  /* Grid layout like working commit */
   grid-template-columns: 1fr;  /* Single column (will add second column for results panel later) */
   gap: 24px;
-  padding: 80px 24px 24px;  /* Top padding for toolbar */
+  padding: 0 24px 24px;  /* NO top padding - editor handles spacing from toolbar */
   flex: 1;
   min-height: 0;
   overflow: hidden;  /* Constrain children - they scroll */
@@ -1520,19 +1520,14 @@ a:hover {
 }
 
 /* Toolbar positioning when entity sidebar is pinned */
-@media (min-width: 769px) {
-  .extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
-    /* Position left of sidebar: sidebar width + gap */
-    right: calc(500px + 24px);
-  }
-
-  .extraction-lab.sidebar-open.entity-sidebar-pinned .lab-toolbar-stack {
-    right: calc(500px + 24px);
-  }
+.extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
+  /* Position left of sidebar, but never go off-screen */
+  /* On wide screens: sits left of sidebar. On narrow: stays visible at edge */
+  right: max(24px, min(calc(500px + 48px), calc(100vw - 300px)));
 }
 
+/* Mobile override - toolbar stays at edge */
 @media (max-width: 768px) {
-  /* Mobile: Toolbar stays in corner, sidebar overlays */
   .extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
     right: 24px !important;
   }
@@ -2084,18 +2079,6 @@ a:hover {
   overflow: hidden;
   scrollbar-color: #9CA3AF #151929 !important;
   scrollbar-width: thin !important;
-
-  /* Fade mask - fades content as it scrolls into toolbar area */
-  mask-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    black 100px
-  );
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    black 100px
-  );
 }
 
 .cm-editor-wrapper::-webkit-scrollbar {

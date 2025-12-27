@@ -187,18 +187,6 @@
   /* REMOVED: overflow - parent .editor-scroll-container is the ONLY scroll owner */
   overflow: visible;
   -webkit-overflow-scrolling: auto;
-
-  /* Fade mask - fades content as it scrolls into toolbar area */
-  mask-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    black 100px
-  );
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    black 100px
-  );
 }
 
 /* The actual contentEditable element */
