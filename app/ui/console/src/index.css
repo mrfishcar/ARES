@@ -2834,9 +2834,9 @@ html[data-theme="light"] .overlay-backdrop {
 @supports (-webkit-touch-callout: none) {
   /* iOS Safari specific */
   .lab-control-bar {
-    /* Keep fixed positioning for floating effect */
-    position: fixed;
-    top: 16px;
+    /* REMOVED: position: fixed override - let parent .lab-toolbar-stack handle positioning */
+    /* position: fixed;
+    top: 16px; */
   }
 
   /* Prevent backdrop-filter performance issues on older iOS */
