@@ -2239,7 +2239,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   });
 
   return (
-    <div className={`extraction-lab${layout.showDocumentSidebar ? ' sidebar-open' : ''}`}>
+    <div className={`extraction-lab${layout.showDocumentSidebar ? ' sidebar-open' : ''}${layout.entityPanelMode === 'pinned' ? ' entity-sidebar-pinned' : ''}`}>
       {/* Hamburger button */}
       <button
         onClick={layout.toggleDocumentSidebar}
