@@ -17,7 +17,8 @@ import type {
   Relation,
   Correction,
   CorrectionType,
-  EntityType
+  EntityType,
+  Predicate
 } from './schema';
 import type { KnowledgeGraph } from '../storage/storage';
 import { v4 as uuid } from 'uuid';
@@ -379,6 +380,12 @@ function applyRelationAddCorrection(
 
   const { subj, pred, obj } = relationData;
 
+  // All three must be defined
+  if (!subj || !pred || !obj) {
+    stats.skipped++;
+    return;
+  }
+
   // Check if relation already exists
   const existing = graph.relations.find(
     r => r.subj === subj && r.pred === pred && r.obj === obj
@@ -401,13 +408,13 @@ function applyRelationAddCorrection(
   const newRelation: Relation = {
     id: relationData.id || uuid(),
     subj,
-    pred,
+    pred: pred as Predicate,
     obj,
     confidence: 1.0,
     evidence: [],
     subj_surface: subjEntity.canonical,
-    obj_surface: objEntity.canonical,
-    extractor: 'manual'
+    obj_surface: objEntity.canonical
+    // Note: 'manual' is not a valid extractor type, omit it
   };
   (newRelation as any).manualOverride = true;
 

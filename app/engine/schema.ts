@@ -534,24 +534,30 @@ export interface Correction {
   entityIds?: string[];    // For merge operations
 
   // Before/after snapshots for rollback
-  before: {
+  before?: {
     entityType?: EntityType;
     canonical?: string;
     aliases?: string[];
+    alias?: string;             // Single alias for alias_add/remove
     predicate?: Predicate;
     confidence?: number;
     rejected?: boolean;
+    entity?: Partial<Entity>;   // For rejection: the entity being rejected
+    entities?: Partial<Entity>[]; // For merge: the entities being merged
+    relation?: Partial<Relation>; // For relation operations
     snapshot?: Partial<Entity | Relation>;
   };
-  after: {
+  after?: {
     entityType?: EntityType;
     canonical?: string;
     aliases?: string[];
+    alias?: string;             // Single alias for alias_add/remove
     predicate?: Predicate;
     confidence?: number;
     rejected?: boolean;
-    mergedEntityId?: string;  // For merge: the resulting entity ID
-    splitEntityIds?: string[]; // For split: the resulting entity IDs
+    mergedEntityId?: string;    // For merge: the resulting entity ID
+    splitEntityIds?: string[];  // For split: the resulting entity IDs
+    relation?: Partial<Relation>; // For relation operations
     snapshot?: Partial<Entity | Relation>;
   };
 
@@ -670,4 +676,108 @@ export interface RelationWithOverrides extends Relation {
   };
   rejected?: boolean;
   rejectedAt?: string;
+}
+
+// ============================================================================
+// QUALITY PROVENANCE SYSTEM (Phase 3.4 - 2025-12-20)
+// ============================================================================
+
+/**
+ * Filter rule that was checked during quality filtering
+ */
+export interface FilterRuleCheck {
+  /** Rule identifier */
+  rule: string;
+  /** Whether the rule triggered (resulted in rejection) */
+  triggered: boolean;
+  /** Specific value that triggered the rule */
+  triggerValue?: string | number | boolean;
+}
+
+/**
+ * Confidence components that contributed to final confidence score
+ */
+export interface ConfidenceBreakdown {
+  /** Base confidence from extraction source */
+  base: number;
+  /** NER-backed bonus (+0.15 typical) */
+  nerBonus?: number;
+  /** Multi-token bonus (+0.10 typical) */
+  multiTokenBonus?: number;
+  /** Title prefix bonus (+0.08 typical) */
+  titlePrefixBonus?: number;
+  /** Context promotion bonus (dialogue, relation, coreference) */
+  contextBonus?: number;
+  /** Penalty from low-quality signals */
+  qualityPenalty?: number;
+  /** Final computed confidence */
+  final: number;
+}
+
+/**
+ * Quality decision record for debugging and auditing
+ *
+ * Attached to each entity to explain why it was:
+ * - Assigned to a specific tier
+ * - Rejected from the graph
+ * - Promoted or demoted
+ *
+ * Enables post-hoc debugging of quality filtering decisions.
+ */
+export interface QualityDecision {
+  /** When the decision was made */
+  timestamp: string;
+
+  /** Decision outcome */
+  outcome: 'accepted' | 'rejected';
+
+  /** Assigned tier (if accepted) */
+  tier?: EntityTier;
+
+  /** Reason for tier assignment */
+  tierReason?: string;
+
+  /** Rejection reason (if rejected) */
+  rejectionReason?: string;
+
+  /** Filter rules that were checked */
+  rulesChecked: FilterRuleCheck[];
+
+  /** Confidence score breakdown */
+  confidenceBreakdown?: ConfidenceBreakdown;
+
+  /** Context signals that influenced the decision */
+  contextSignals?: {
+    appearsInDialogue?: boolean;
+    appearsInRelation?: boolean;
+    hasCoreferenceLink?: boolean;
+    hasAppositiveDescription?: boolean;
+    multiParagraphMentions?: number;
+  };
+
+  /** If promoted from a lower tier */
+  promotion?: {
+    originalTier: EntityTier;
+    newTier: EntityTier;
+    promotionReason: string;
+  };
+
+  /** Source of the entity (NER, pattern, fallback, etc.) */
+  source?: string;
+
+  /** Whether this was a sentence-initial-only occurrence */
+  sentenceInitialOnly?: boolean;
+
+  /** Whether entity had NER backing */
+  hasNERSupport?: boolean;
+
+  /** Pipeline version that made this decision */
+  pipelineVersion?: string;
+}
+
+/**
+ * Extended Entity with quality decision tracking
+ */
+export interface EntityWithQuality extends Entity {
+  qualityDecision?: QualityDecision;
 }
