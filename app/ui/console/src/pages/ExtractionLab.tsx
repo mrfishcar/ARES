@@ -2251,7 +2251,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         <Menu size={20} strokeWidth={2} />
       </button>
 
-      {/* Toolbar - NEW COMPONENT */}
+      {/* Toolbar - position: fixed at root level */}
       <LabToolbar
         jobStatus={jobStatus}
         theme={effectiveTheme}
@@ -2290,8 +2290,23 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         loadingDocuments={loadingDocuments}
         loadingDocument={loadingDocument}
         onLoadDocument={handleLoadDocumentById}
+        onClose={layout.closeDocumentSidebar}
         deriveDocumentName={deriveDocumentName}
       />
+
+      {/* Entity Review Sidebar - Pinned mode (same level as documents sidebar) */}
+      {layout.entityPanelMode === 'pinned' && (
+        <EntityReviewSidebar
+          mode="pinned"
+          entities={entities}
+          onClose={layout.closeEntityPanel}
+          onPin={layout.pinEntityPanel}
+          onEntityUpdate={handleEntityUpdate}
+          onLogReport={handleLogReport}
+          onCopyReport={handleCopyReport}
+          onNavigateEntity={handleNavigateToEntity}
+        />
+      )}
 
       {/* Main Content */}
       <div className="lab-content">
@@ -2308,6 +2323,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
               showEntityIndicators={settings.showEntityIndicators}
               navigateToRange={navigateRequest}
               showFormatToolbar={false}
+              onFormatActionsReady={setFormatActions}
             />
           ) : (
             <EditorPane
@@ -2334,22 +2350,6 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
             />
           )}
         </div>
-
-        {/* Pinned sidebar mode - integrated into layout */}
-        {layout.entityPanelMode === 'pinned' && (
-          <div style={{ width: '500px', flexShrink: 0, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-            <EntityReviewSidebar
-              mode="pinned"
-              entities={entities}
-              onClose={layout.closeEntityPanel}
-              onPin={layout.pinEntityPanel}
-              onEntityUpdate={handleEntityUpdate}
-              onLogReport={handleLogReport}
-              onCopyReport={handleCopyReport}
-              onNavigateEntity={handleNavigateToEntity}
-            />
-          </div>
-        )}
 
         {booknlpResult && (
           <div

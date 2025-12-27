@@ -553,15 +553,20 @@ a:hover {
    ========================================================= */
 
 .lab-toolbar-stack {
-  position: fixed;
+  position: fixed;  /* Fixed positioning - positions relative to viewport */
   top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
+  right: 24px;  /* Default: 24px from viewport edge */
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-end;
   gap: 8px;
-  z-index: 50;
+  z-index: 90;  /* Below doc sidebar (z-index: 100) and entity sidebar (z-index: 100) */
+  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* When entity sidebar is pinned, move toolbar to left of sidebar */
+.extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
+  right: 524px;  /* 500px sidebar + 24px gap */
 }
 
 /* Toolbar slot holds both normal and formatting toolbars */
@@ -569,7 +574,7 @@ a:hover {
   position: relative;
   min-height: 44px;
   display: inline-flex;
-  justify-content: center; /* Keep toolbar centered */
+  justify-content: flex-end; /* Right-align toolbar to prevent overflow */
 }
 
 /* Both toolbars share right edge for iOS Notes-style morph */
@@ -581,12 +586,12 @@ a:hover {
               visibility 0ms linear;
 }
 
-/* Formatting toolbar - absolutely positioned, centered via left+right+transform */
+/* Formatting toolbar - absolutely positioned, right-aligned */
 .toolbar-slot .lab-control-bar--formatting {
   position: absolute;
   top: 0;
-  left: 50%;
-  transform: translateX(-50%) scaleX(1); /* Center + scale */
+  right: 0;  /* Right-align instead of center to prevent overflow */
+  transform: scaleX(1);
 }
 
 /* ========== NORMAL MODE ========== */
@@ -598,7 +603,7 @@ a:hover {
 }
 
 .toolbar-slot[data-mode="normal"] .lab-control-bar--formatting {
-  transform: translateX(-50%) scaleX(0); /* Collapse to right while staying centered */
+  transform: scaleX(0); /* Collapse to right */
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
@@ -615,7 +620,7 @@ a:hover {
 }
 
 .toolbar-slot[data-mode="formatting"] .lab-control-bar--formatting {
-  transform: translateX(-50%) scaleX(1); /* Expand from right while centered */
+  transform: scaleX(1); /* Expand from right */
   opacity: 1;
   pointer-events: auto;
   visibility: visible;
@@ -1492,51 +1497,38 @@ a:hover {
 .lab-content {
   display: grid;  /* Grid layout like working commit */
   grid-template-columns: 1fr;  /* Single column (will add second column for results panel later) */
-  gap: 24px;
-  padding: 80px 24px 24px;  /* Top padding for toolbar */
+  gap: 0;  /* No gap - editor fills space */
+  padding: 0;  /* No padding - full-width editor */
   flex: 1;
   min-height: 0;
   overflow: hidden;  /* Constrain children - they scroll */
   background: transparent;
-  transition: padding-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: padding-left 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+              padding-right 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* When entity sidebar is pinned, change to flex layout with sidebar on right */
+/* When entity sidebar is pinned, add right padding (sidebar is at app level now) */
 .extraction-lab.entity-sidebar-pinned .lab-content {
-  display: flex;
-  flex-direction: row;
-  gap: 24px;
+  padding-right: 524px; /* 500px sidebar + 24px gap */
 }
 
-/* Editor panel - scrolls naturally like working commit */
+/* Editor panel - Full-screen, borderless, scrollable */
 .editor-panel {
   display: flex;
   flex-direction: column;
-  background: var(--bg-secondary);
-  border-radius: 12px;
+  background: var(--bg-primary);  /* Match app background */
+  border-radius: 0;  /* No rounded corners - full screen */
+  border: none;  /* No borders */
   overflow: auto;  /* Scroll naturally - no forcing */
   min-height: 0;  /* Allow flex shrinking */
+  -webkit-overflow-scrolling: touch;  /* Smooth iOS scrolling */
+  touch-action: pan-y;  /* Allow vertical touch scrolling */
 }
 
-/* When entity sidebar is pinned, editor takes remaining space */
-.extraction-lab.entity-sidebar-pinned .editor-panel {
-  flex: 1;
-  min-width: 0;
-}
-
-/* Toolbar centering when entity sidebar is pinned - ALL BROWSERS */
-@media (min-width: 769px) {
+/* Mobile override - keep toolbar at edge on narrow screens */
+@media (max-width: 900px) {
   .extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
-    /* Center in editor panel space (accounting for entity sidebar 500px on right) */
-    left: calc((100% - 500px) / 2) !important;
-    transform: translateX(-50%) !important;
-  }
-
-  /* When both document sidebar AND entity sidebar are open */
-  .extraction-lab.sidebar-open.entity-sidebar-pinned .lab-toolbar-stack {
-    /* Center in remaining space (documents 280px left + entity 500px right) */
-    left: calc(280px + (100% - 280px - 500px) / 2) !important;
-    transform: translateX(-50%) !important;
+    right: 24px !important;
   }
 }
 
@@ -1561,22 +1553,7 @@ a:hover {
   box-sizing: border-box;
 }
 
-/* Editor Panel - Infinite canvas feel */
-.editor-panel {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-width: 0;
-  min-height: 0;
-  background-color: var(--bg-primary);
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-  /* Don't scroll here - .rich-editor-surface is the scroll container */
-  overflow: hidden;
-  transition: background-color 0.3s ease;
-  pointer-events: auto;
-}
+/* Editor Panel - Removed duplicate - scrolling handled by first .editor-panel rule */
 
 /* Desktop sidebar for entities */
 .entities-sidebar-desktop {
@@ -2753,8 +2730,7 @@ html[data-theme="light"] .overlay-backdrop {
   }
 
   .lab-control-bar {
-    left: 50%;
-    transform: translateX(-50%);
+    /* Removed centering - let .lab-toolbar-stack handle positioning */
     padding: 6px 12px;
     min-height: 44px;
     max-width: calc(100% - 40px);
@@ -2765,9 +2741,9 @@ html[data-theme="light"] .overlay-backdrop {
     padding-left: 0; /* ✅ Remove sidebar padding on mobile; documents-sidebar is hidden */
   }
 
-  /* Entity sidebar wrapper - escape parent on mobile when pinned */
+  /* Entity sidebar - fullscreen on mobile, remove right padding */
   .extraction-lab.entity-sidebar-pinned .lab-content {
-    overflow: visible; /* Allow pinned sidebar to escape on mobile */
+    padding-right: 0; /* ✅ Remove entity sidebar padding on mobile */
   }
 
   .lab-header-status-row {
@@ -2796,8 +2772,7 @@ html[data-theme="light"] .overlay-backdrop {
   }
 
   .lab-control-bar {
-    left: 50%;
-    transform: translateX(-50%);
+    /* Removed centering - let .lab-toolbar-stack handle positioning */
     padding: 4px 8px;
     max-width: calc(100% - 48px);
   }
@@ -2859,9 +2834,9 @@ html[data-theme="light"] .overlay-backdrop {
 @supports (-webkit-touch-callout: none) {
   /* iOS Safari specific */
   .lab-control-bar {
-    /* Keep fixed positioning for floating effect */
-    position: fixed;
-    top: 16px;
+    /* REMOVED: position: fixed override - let parent .lab-toolbar-stack handle positioning */
+    /* position: fixed;
+    top: 16px; */
   }
 
   /* Prevent backdrop-filter performance issues on older iOS */

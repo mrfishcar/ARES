@@ -3,7 +3,7 @@
  * Lists saved documents with load capability
  */
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { MoreVertical, Trash2 } from 'lucide-react';
 
 interface Document {
@@ -21,6 +21,7 @@ interface DocumentsSidebarProps {
   loadingDocument: boolean;
   onLoadDocument: (id: string) => void;
   onDeleteDocument?: (id: string) => void;
+  onClose?: () => void;  // Added for swipe-to-close
   deriveDocumentName: (doc: Document) => string;
 }
 
@@ -31,9 +32,34 @@ export function DocumentsSidebar({
   loadingDocument,
   onLoadDocument,
   onDeleteDocument,
+  onClose,
   deriveDocumentName,
 }: DocumentsSidebarProps) {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
+  // Swipe-to-close gesture
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number; time: number } | null>(null);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    setTouchStart({ x: touch.clientX, y: touch.clientY, time: Date.now() });
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!touchStart || !onClose) return;
+
+    const touch = e.changedTouches[0];
+    const deltaX = touch.clientX - touchStart.x;
+    const deltaY = Math.abs(touch.clientY - touchStart.y);
+    const deltaTime = Date.now() - touchStart.time;
+
+    // Swipe left to close (horizontal swipe < -100px, not too vertical, reasonably fast)
+    if (deltaX < -100 && deltaY < 75 && deltaTime < 300) {
+      onClose();
+    }
+
+    setTouchStart(null);
+  }, [touchStart, onClose]);
 
   const handleDelete = (id: string, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent triggering onLoadDocument
@@ -55,6 +81,8 @@ export function DocumentsSidebar({
       style={{
         transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
       }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       {/* ARES branding */}
       <div className="sidebar-header">

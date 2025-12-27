@@ -76,11 +76,11 @@ const editorTheme = EditorView.theme({
     color: 'var(--text-primary)',
   },
 
-  // ✅ MAIN FIX: text starts below the header, but cannot scroll under it
+  // ✅ MAIN FIX: text starts below the header
   '.cm-content': {
-    paddingTop: 'var(--editor-header-offset, 80px)', // Fixed top padding, no margin adjustment
+    paddingTop: 'var(--editor-header-offset, 80px)', // Top padding for content below toolbar
     paddingRight: 'var(--editor-margin-desktop, 96px)', // Adjustable side margins
-    paddingBottom: '40px', // Fixed bottom padding
+    paddingBottom: '0', // No bottom padding - scroll to end
     paddingLeft: 'var(--editor-margin-desktop, 96px)', // Adjustable side margins
     boxSizing: 'border-box',
     caretColor: 'var(--text-primary)', // ✅ Ensure cursor is visible on iOS
