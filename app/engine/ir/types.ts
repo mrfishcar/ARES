@@ -529,6 +529,9 @@ export interface StoryEvent {
   /** What triggered this event extraction */
   extractedFrom: 'dependency' | 'pattern' | 'narrative' | 'quote' | 'explicit';
 
+  /** Assertions this event was derived from (required for provenance) */
+  derivedFrom: AssertionId[];
+
   /** Metadata */
   createdAt: string;
   compiler_pass: string;

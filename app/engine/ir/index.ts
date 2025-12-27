@@ -30,6 +30,9 @@ export * from './renderer';
 // Assertion Builder: three deterministic micro-passes
 export * from './assertion-builder';
 
+// Event Builder: derive events from assertions
+export * from './event-builder';
+
 // Future: IR utilities
 // export * from './builders';
 // export * from './validators';
