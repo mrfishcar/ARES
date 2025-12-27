@@ -1520,8 +1520,20 @@ a:hover {
   touch-action: pan-y;  /* Allow vertical touch scrolling */
 }
 
-/* Toolbar stays at fixed position - overlays sidebar if needed */
-/* High z-index (200) ensures it's always visible above sidebar (z-index: 100) */
+/* Toolbar positioning when entity sidebar is pinned */
+.extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
+  /* Move left of sidebar, but never go off-screen */
+  /* Formula: max(stay on screen, position left of sidebar) */
+  right: max(calc(100vw - 200px), calc(500px + 24px));
+}
+
+/* On narrow screens, keep toolbar visible */
+@media (max-width: 900px) {
+  .extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
+    /* On narrow viewports, just keep it at edge with high z-index */
+    right: 24px !important;
+  }
+}
 
 .editor-wrapper {
   display: flex;
