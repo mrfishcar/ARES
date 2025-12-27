@@ -2848,6 +2848,22 @@ html[data-theme="light"] .overlay-backdrop {
     top: 16px;
   }
 
+  /* When entity sidebar is pinned on wider screens, center toolbar in editor panel only */
+  @media (min-width: 769px) {
+    .extraction-lab.entity-sidebar-pinned .lab-control-bar {
+      /* Adjust left position to account for entity sidebar (500px) on right */
+      left: calc((100% - 500px) / 2);
+      transform: translateX(-50%);
+    }
+
+    /* When both documents sidebar AND entity sidebar are open */
+    .extraction-lab.sidebar-open.entity-sidebar-pinned .lab-control-bar {
+      /* Adjust for documents sidebar (280px) on left + entity sidebar (500px) on right */
+      left: calc(280px + (100% - 280px - 500px) / 2);
+      transform: translateX(-50%);
+    }
+  }
+
   /* Prevent backdrop-filter performance issues on older iOS */
   @media (max-width: 768px) {
     .liquid-glass,
