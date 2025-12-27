@@ -577,7 +577,7 @@ a:hover {
 /* Both toolbars share right edge for iOS Notes-style morph */
 .toolbar-slot .lab-control-bar {
   transform-origin: 100% 50%; /* Right edge anchor point for morph animation */
-  will-change: transform, opacity;
+  will-change: transform;
   transition: transform 240ms cubic-bezier(0.2, 0.9, 0.2, 1),
               opacity 85ms linear,
               visibility 0ms linear;
@@ -2781,8 +2781,9 @@ html[data-theme="light"] .overlay-backdrop {
 
   /* Prevent backdrop-filter performance issues on older iOS */
   @media (max-width: 768px) {
-    .liquid-glass {
-      will-change: auto; /* Disable will-change on mobile to save GPU memory */
+    .liquid-glass,
+    .lab-control-bar {
+      will-change: auto !important; /* Disable will-change on mobile to save GPU memory and prevent shadow flicker */
     }
   }
 }
