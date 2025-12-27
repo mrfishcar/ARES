@@ -1524,6 +1524,22 @@ a:hover {
   min-width: 0;
 }
 
+/* Toolbar centering when entity sidebar is pinned - ALL BROWSERS */
+@media (min-width: 769px) {
+  .extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
+    /* Center in editor panel space (accounting for entity sidebar 500px on right) */
+    left: calc((100% - 500px) / 2) !important;
+    transform: translateX(-50%) !important;
+  }
+
+  /* When both document sidebar AND entity sidebar are open */
+  .extraction-lab.sidebar-open.entity-sidebar-pinned .lab-toolbar-stack {
+    /* Center in remaining space (documents 280px left + entity 500px right) */
+    left: calc(280px + (100% - 280px - 500px) / 2) !important;
+    transform: translateX(-50%) !important;
+  }
+}
+
 .editor-wrapper {
   display: flex;
   flex: 1;
