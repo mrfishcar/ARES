@@ -1507,12 +1507,13 @@ a:hover {
   padding-right: 524px; /* 500px sidebar + 24px gap */
 }
 
-/* Editor panel - scrolls naturally like working commit */
+/* Editor panel - Full-screen, borderless, scrollable */
 .editor-panel {
   display: flex;
   flex-direction: column;
-  background: var(--bg-secondary);
-  border-radius: 12px;
+  background: var(--bg-primary);  /* Match app background */
+  border-radius: 0;  /* No rounded corners - full screen */
+  border: none;  /* No borders */
   overflow: auto;  /* Scroll naturally - no forcing */
   min-height: 0;  /* Allow flex shrinking */
   -webkit-overflow-scrolling: touch;  /* Smooth iOS scrolling */
