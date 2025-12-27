@@ -27,6 +27,9 @@ export * from './adapter';
 // Renderer: IR → human-readable text (for debugging and display)
 export * from './renderer';
 
+// Assertion Builder: three deterministic micro-passes
+export * from './assertion-builder';
+
 // Future: IR utilities
 // export * from './builders';
 // export * from './validators';
