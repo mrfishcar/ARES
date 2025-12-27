@@ -2308,6 +2308,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
               showEntityIndicators={settings.showEntityIndicators}
               navigateToRange={navigateRequest}
               showFormatToolbar={false}
+              onFormatActionsReady={setFormatActions}
             />
           ) : (
             <EditorPane
@@ -2337,7 +2338,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
         {/* Pinned sidebar mode - integrated into layout */}
         {layout.entityPanelMode === 'pinned' && (
-          <div style={{ width: '500px', flexShrink: 0, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+          <div style={{ width: '500px', flex: '0 0 auto', display: 'flex', flexDirection: 'column', minHeight: 0, alignSelf: 'stretch' }}>
             <EntityReviewSidebar
               mode="pinned"
               entities={entities}
