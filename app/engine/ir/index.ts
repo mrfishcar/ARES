@@ -33,6 +33,9 @@ export * from './assertion-builder';
 // Event Builder: derive events from assertions
 export * from './event-builder';
 
+// Fact Builder: derive facts from events (materialized views)
+export * from './fact-builder';
+
 // Future: IR utilities
 // export * from './builders';
 // export * from './validators';
