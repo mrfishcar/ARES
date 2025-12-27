@@ -569,7 +569,7 @@ a:hover {
   position: relative;
   min-height: 44px;
   display: inline-flex;
-  justify-content: center; /* Keep toolbar centered */
+  justify-content: flex-end; /* Right-align toolbar to prevent overflow */
 }
 
 /* Both toolbars share right edge for iOS Notes-style morph */
@@ -581,12 +581,12 @@ a:hover {
               visibility 0ms linear;
 }
 
-/* Formatting toolbar - absolutely positioned, centered via left+right+transform */
+/* Formatting toolbar - absolutely positioned, right-aligned */
 .toolbar-slot .lab-control-bar--formatting {
   position: absolute;
   top: 0;
-  left: 50%;
-  transform: translateX(-50%) scaleX(1); /* Center + scale */
+  right: 0;  /* Right-align instead of center to prevent overflow */
+  transform: scaleX(1);
 }
 
 /* ========== NORMAL MODE ========== */
@@ -598,7 +598,7 @@ a:hover {
 }
 
 .toolbar-slot[data-mode="normal"] .lab-control-bar--formatting {
-  transform: translateX(-50%) scaleX(0); /* Collapse to right while staying centered */
+  transform: scaleX(0); /* Collapse to right */
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
@@ -615,7 +615,7 @@ a:hover {
 }
 
 .toolbar-slot[data-mode="formatting"] .lab-control-bar--formatting {
-  transform: translateX(-50%) scaleX(1); /* Expand from right while centered */
+  transform: scaleX(1); /* Expand from right */
   opacity: 1;
   pointer-events: auto;
   visibility: visible;
