@@ -1519,37 +1519,22 @@ a:hover {
   touch-action: pan-y;  /* Allow vertical touch scrolling */
 }
 
-/* Toolbar positioning when entity sidebar is pinned - VIEWPORT-AWARE */
-@media (min-width: 1100px) {
-  /* Wide screens: Toolbar with proper spacing */
+/* Toolbar positioning when entity sidebar is pinned */
+@media (min-width: 769px) {
   .extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
-    right: 548px; /* 500px sidebar + 24px gap + 24px toolbar margin */
-    padding-right: 8px; /* Additional visual padding */
+    /* Position left of sidebar: sidebar width + gap */
+    right: calc(500px + 24px);
   }
 
   .extraction-lab.sidebar-open.entity-sidebar-pinned .lab-toolbar-stack {
-    right: 548px;
-    padding-right: 8px;
-  }
-}
-
-@media (min-width: 769px) and (max-width: 1099px) {
-  /* Medium screens: Toolbar positioned with spacing */
-  .extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
-    right: calc(500px + 48px); /* Sidebar width + generous gap */
-    padding-right: 8px; /* Additional visual padding */
-  }
-
-  .extraction-lab.sidebar-open.entity-sidebar-pinned .lab-toolbar-stack {
-    right: calc(500px + 48px);
-    padding-right: 8px;
+    right: calc(500px + 24px);
   }
 }
 
 @media (max-width: 768px) {
   /* Mobile: Toolbar stays in corner, sidebar overlays */
   .extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
-    right: 24px;
+    right: 24px !important;
   }
 }
 
@@ -2099,6 +2084,18 @@ a:hover {
   overflow: hidden;
   scrollbar-color: #9CA3AF #151929 !important;
   scrollbar-width: thin !important;
+
+  /* Fade mask - fades content as it scrolls into toolbar area */
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 100px
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 100px
+  );
 }
 
 .cm-editor-wrapper::-webkit-scrollbar {

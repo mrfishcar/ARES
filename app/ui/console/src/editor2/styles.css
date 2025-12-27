@@ -187,6 +187,18 @@
   /* REMOVED: overflow - parent .editor-scroll-container is the ONLY scroll owner */
   overflow: visible;
   -webkit-overflow-scrolling: auto;
+
+  /* Fade mask - fades content as it scrolls into toolbar area */
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 100px
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 100px
+  );
 }
 
 /* The actual contentEditable element */
@@ -194,7 +206,7 @@
   position: relative;
   flex: 1;
   min-height: 500px; /* Ensures content can overflow and trigger scroll */
-  padding: 80px var(--editor-margin-desktop, 96px) 40px var(--editor-margin-desktop, 96px);
+  padding: 80px var(--editor-margin-desktop, 96px) 0 var(--editor-margin-desktop, 96px);
   outline: none;
 
   /* Typography */

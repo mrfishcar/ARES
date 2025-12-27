@@ -80,7 +80,7 @@ const editorTheme = EditorView.theme({
   '.cm-content': {
     paddingTop: 'var(--editor-header-offset, 80px)', // Top padding for content below toolbar
     paddingRight: 'var(--editor-margin-desktop, 96px)', // Adjustable side margins
-    paddingBottom: '40px', // Bottom padding
+    paddingBottom: '0', // No bottom padding - scroll to end
     paddingLeft: 'var(--editor-margin-desktop, 96px)', // Adjustable side margins
     boxSizing: 'border-box',
     caretColor: 'var(--text-primary)', // ✅ Ensure cursor is visible on iOS
