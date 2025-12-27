@@ -227,6 +227,8 @@
   opacity: 0.6;
   pointer-events: none;
   user-select: none;
+  white-space: nowrap;  /* Prevent text wrapping */
+  overflow: hidden;  /* Hide overflow if text is too long */
 }
 
 /* Text formatting styles */
