@@ -555,12 +555,13 @@ a:hover {
 .lab-toolbar-stack {
   position: fixed;
   top: 16px;
-  right: 80px;
+  right: 10%;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 8px;
   z-index: 50;
+  transition: right 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Toolbar slot holds both normal and formatting toolbars */
@@ -1514,19 +1515,21 @@ a:hover {
   border-radius: 12px;
   overflow: auto;  /* Scroll naturally - no forcing */
   min-height: 0;  /* Allow flex shrinking */
+  -webkit-overflow-scrolling: touch;  /* Smooth iOS scrolling */
+  touch-action: pan-y;  /* Allow vertical touch scrolling */
 }
 
 /* Toolbar positioning when entity sidebar is pinned - ALL BROWSERS */
 @media (min-width: 769px) {
   .extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
-    /* Add margin for entity sidebar (500px width + 80px base margin + 24px gap) */
-    right: calc(500px + 104px) !important;
+    /* Shift left when entity sidebar is pinned (sidebar is ~38% of typical desktop width) */
+    right: calc(10% + 500px + 24px);
   }
 
   /* When both document sidebar AND entity sidebar are open */
   .extraction-lab.sidebar-open.entity-sidebar-pinned .lab-toolbar-stack {
-    /* Keep same right margin (entity sidebar stays on right) */
-    right: calc(500px + 104px) !important;
+    /* Keep same right offset (entity sidebar stays on right) */
+    right: calc(10% + 500px + 24px);
   }
 }
 

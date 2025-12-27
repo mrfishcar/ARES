@@ -31,13 +31,14 @@
   bottom: 0;
   width: 500px;
 
-  /* Liquid glass styling (matching documents sidebar) */
+  /* Liquid glass styling (identical to documents sidebar) */
   background: radial-gradient(circle at top right, var(--liquid-glass-tint-1), transparent 60%),
-              radial-gradient(circle at bottom left, var(--liquid-glass-tint-2), transparent 65%),
+              radial-gradient(circle at bottom right, var(--liquid-glass-tint-2), transparent 65%),
               var(--liquid-glass-bg);
-  backdrop-filter: blur(var(--glass-blur-strong));
-  -webkit-backdrop-filter: blur(var(--glass-blur-strong));
+  backdrop-filter: blur(var(--liquid-glass-blur-pinned)) saturate(1.12);
+  -webkit-backdrop-filter: blur(var(--liquid-glass-blur-pinned)) saturate(1.12);
   border-left: 1px solid var(--liquid-glass-border);
+  border-right: none;
   border-radius: 0;
   box-shadow: -4px 0 24px rgba(0, 0, 0, 0.08);
 
@@ -45,6 +46,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior-x: none;
+  -webkit-overflow-scrolling: touch;
 
   /* Start off-screen by default, slide in when pinned */
   transform: translateX(100%);
