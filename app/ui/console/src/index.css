@@ -1522,15 +1522,17 @@ a:hover {
 
 /* Toolbar positioning when entity sidebar is pinned */
 .extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
-  /* Position to left of sidebar (same distance as lab-content padding) */
-  right: 524px;  /* 500px sidebar + 24px gap */
+  /* Position to left of sidebar with enough clearance */
+  /* Sidebar is 500px wide, so position toolbar at 500px + gap + safety margin */
+  right: 548px;  /* 500px sidebar + 24px gap + 24px extra clearance */
 }
 
 /* On narrow screens, keep toolbar visible */
 @media (max-width: 900px) {
   .extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
-    /* On narrow viewports, just keep it at edge with high z-index */
+    /* On narrow viewports, just keep it at edge */
     right: 24px !important;
+    z-index: 200 !important;  /* Restore high z-index on mobile */
   }
 }
 
