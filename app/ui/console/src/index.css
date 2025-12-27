@@ -515,13 +515,28 @@ a:hover {
   left: 0;
   bottom: 0;
   width: 280px;
-  border: 1px solid var(--border-soft);
+
+  /* Liquid glass styling */
+  background: radial-gradient(circle at top left, var(--liquid-glass-tint-1), transparent 60%),
+              radial-gradient(circle at bottom right, var(--liquid-glass-tint-2), transparent 65%),
+              var(--liquid-glass-bg);
+  backdrop-filter: blur(var(--liquid-glass-blur-pinned)) saturate(1.12);
+  -webkit-backdrop-filter: blur(var(--liquid-glass-blur-pinned)) saturate(1.12);
+
+  border-right: 1px solid var(--liquid-glass-border);
   border-left: none;
   border-radius: 0 12px 12px 0;
-  box-shadow: inset -1px 0 0 var(--border-soft);
+  box-shadow: 4px 0 24px var(--liquid-glass-glow-outer),
+              inset 0 1px 0 var(--liquid-glass-glow-inner);
+
   padding: 22px 18px 18px;
   z-index: 100;
+
+  /* Lock X-axis scroll - only allow Y-axis */
   overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+
   /* ✅ Start off-screen by default */
   transform: translateX(-100%);
   transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
@@ -917,8 +932,15 @@ a:hover {
   gap: 8px;
 }
 
+.document-list-item {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+}
+
 .document-item {
-  width: 100%;
+  flex: 1;
   text-align: left;
   border: 1px solid var(--border-color);
   background: var(--bg-elevated);
@@ -938,16 +960,53 @@ a:hover {
   border-color: var(--accent-color);
 }
 
+.document-item__info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .document-item__title {
   font-weight: 500;
   font-size: 14px;
-  margin-bottom: 4px;
   color: var(--text-primary);
 }
 
 .document-item__date {
   font-size: 11px;
   color: var(--text-secondary);
+}
+
+.document-item__delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: auto;
+  border: 1px solid var(--border-color);
+  background: var(--bg-elevated);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-secondary);
+}
+
+.document-item__delete:hover {
+  background: var(--bg-secondary);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.document-item__delete.confirm {
+  background: #ef4444;
+  border-color: #dc2626;
+  color: white;
+  animation: confirmPulse 0.3s ease;
+}
+
+@keyframes confirmPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
 }
 
 /* Job Progress */
@@ -1442,6 +1501,13 @@ a:hover {
   transition: padding-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* When entity sidebar is pinned, change to flex layout with sidebar on right */
+.extraction-lab.entity-sidebar-pinned .lab-content {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+}
+
 /* Editor panel - scrolls naturally like working commit */
 .editor-panel {
   display: flex;
@@ -1450,6 +1516,12 @@ a:hover {
   border-radius: 12px;
   overflow: auto;  /* Scroll naturally - no forcing */
   min-height: 0;  /* Allow flex shrinking */
+}
+
+/* When entity sidebar is pinned, editor takes remaining space */
+.extraction-lab.entity-sidebar-pinned .editor-panel {
+  flex: 1;
+  min-width: 0;
 }
 
 .editor-wrapper {
@@ -2677,6 +2749,11 @@ html[data-theme="light"] .overlay-backdrop {
     padding-left: 0; /* ✅ Remove sidebar padding on mobile; documents-sidebar is hidden */
   }
 
+  /* Entity sidebar wrapper - escape parent on mobile when pinned */
+  .extraction-lab.entity-sidebar-pinned .lab-content {
+    overflow: visible; /* Allow pinned sidebar to escape on mobile */
+  }
+
   .lab-header-status-row {
     flex-wrap: wrap;
     gap: 8px;
@@ -2751,6 +2828,14 @@ html[data-theme="light"] .overlay-backdrop {
   textarea,
   select {
     font-size: 16px !important; /* Prevents iOS zoom on focus */
+  }
+
+  /* Documents sidebar - fullscreen on mobile */
+  .documents-sidebar {
+    width: 100%;
+    border-radius: 0;
+    border-right: none;
+    box-shadow: none;
   }
 }
 

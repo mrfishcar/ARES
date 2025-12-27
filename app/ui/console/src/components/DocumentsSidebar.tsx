@@ -3,6 +3,9 @@
  * Lists saved documents with load capability
  */
 
+import { useState } from 'react';
+import { MoreVertical, Trash2 } from 'lucide-react';
+
 interface Document {
   id: string;
   title: string;
@@ -17,6 +20,7 @@ interface DocumentsSidebarProps {
   loadingDocuments: boolean;
   loadingDocument: boolean;
   onLoadDocument: (id: string) => void;
+  onDeleteDocument?: (id: string) => void;
   deriveDocumentName: (doc: Document) => string;
 }
 
@@ -26,8 +30,25 @@ export function DocumentsSidebar({
   loadingDocuments,
   loadingDocument,
   onLoadDocument,
+  onDeleteDocument,
   deriveDocumentName,
 }: DocumentsSidebarProps) {
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
+  const handleDelete = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering onLoadDocument
+    if (deleteConfirm === id) {
+      // Second click - actually delete
+      onDeleteDocument?.(id);
+      setDeleteConfirm(null);
+    } else {
+      // First click - show confirmation
+      setDeleteConfirm(id);
+      // Auto-cancel after 3 seconds
+      setTimeout(() => setDeleteConfirm(null), 3000);
+    }
+  };
+
   return (
     <div
       className="documents-sidebar"
@@ -57,19 +78,31 @@ export function DocumentsSidebar({
         ) : (
           <ul className="document-list">
             {documents.map((doc) => (
-              <li key={doc.id}>
+              <li key={doc.id} className="document-list-item">
                 <button
                   onClick={() => onLoadDocument(doc.id)}
                   className="document-item"
                   disabled={loadingDocument}
                 >
-                  <div className="document-item__title">
-                    {deriveDocumentName(doc)}
-                  </div>
-                  <div className="document-item__date">
-                    {new Date(doc.updatedAt).toLocaleDateString()}
+                  <div className="document-item__info">
+                    <div className="document-item__title">
+                      {deriveDocumentName(doc)}
+                    </div>
+                    <div className="document-item__date">
+                      {new Date(doc.updatedAt).toLocaleDateString()}
+                    </div>
                   </div>
                 </button>
+                {onDeleteDocument && (
+                  <button
+                    onClick={(e) => handleDelete(doc.id, e)}
+                    className={`document-item__delete ${deleteConfirm === doc.id ? 'confirm' : ''}`}
+                    title={deleteConfirm === doc.id ? 'Click again to confirm' : 'Delete document'}
+                    type="button"
+                  >
+                    <Trash2 size={14} strokeWidth={2} />
+                  </button>
+                )}
               </li>
             ))}
           </ul>
