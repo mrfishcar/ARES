@@ -2338,7 +2338,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
         {/* Pinned sidebar mode - integrated into layout */}
         {layout.entityPanelMode === 'pinned' && (
-          <div style={{ width: '500px', flex: '0 0 auto', display: 'flex', flexDirection: 'column', minHeight: 0, alignSelf: 'stretch' }}>
+          <div style={{ flex: '0 0 500px', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
             <EntityReviewSidebar
               mode="pinned"
               entities={entities}

@@ -555,7 +555,7 @@ a:hover {
 .lab-toolbar-stack {
   position: fixed;
   top: 16px;
-  right: 24px;
+  right: 80px;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -1526,14 +1526,14 @@ a:hover {
 /* Toolbar positioning when entity sidebar is pinned - ALL BROWSERS */
 @media (min-width: 769px) {
   .extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
-    /* Add margin for entity sidebar (500px + gap) */
-    right: calc(500px + 48px) !important;
+    /* Add margin for entity sidebar (500px width + 80px base margin + 24px gap) */
+    right: calc(500px + 104px) !important;
   }
 
   /* When both document sidebar AND entity sidebar are open */
   .extraction-lab.sidebar-open.entity-sidebar-pinned .lab-toolbar-stack {
     /* Keep same right margin (entity sidebar stays on right) */
-    right: calc(500px + 48px) !important;
+    right: calc(500px + 104px) !important;
   }
 }
 
