@@ -63,7 +63,7 @@ html[data-theme="dark"] .documents-sidebar {
 
 .editor-panel,
 .results-panel {
-  background-color: var(--bg-secondary);
+  background-color: var(--bg-primary);  /* Match page background - same dark navy */
   border: 1px solid var(--border-color);
 }
 
