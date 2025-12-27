@@ -428,7 +428,7 @@ export function NotesPage({ project, toast }: NotesPageProps) {
           )}
         </div>
 
-        <div style={{ flex: 1, overflow: 'auto', padding: '24px 32px' }}>
+        <div style={{ flex: 1, overflow: 'auto', padding: '24px 32px', paddingBottom: 'calc(var(--keyboard-height, 0px) + 32px)' }}>
           {showGarden && (
             <div
               style={{

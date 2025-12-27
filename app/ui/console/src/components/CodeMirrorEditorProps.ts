@@ -25,6 +25,8 @@ export interface CodeMirrorEditorProps {
   onCreateNew?: (entity: EntitySpan, type: EntityType) => void | Promise<void>;
   onReject?: (entity: EntitySpan) => Promise<void>;
   entityHighlightMode?: boolean;
+  onFocusChange?: (focused: boolean) => void;
+  onSelectionChange?: (hasSelection: boolean) => void;
 
   /** NEW: Entity mode text selection callback - called when user drags to select text */
   onTextSelected?: (
@@ -40,8 +42,28 @@ export interface CodeMirrorEditorProps {
   /** NEW: Windowed mode support for large documents */
   baseOffset?: number; // Global offset where this window starts (default 0 = full doc mode)
   onCursorChange?: (globalPos: number) => void; // Called when cursor moves (for window adjustment)
+  registerFormatActions?: (actions: FormattingActions | null) => void;
 
   /** NEW: Navigate to a range (e.g., when clicking an entity in the sidebar) */
   navigateToRange?: NavigateToRange;
   colorForSpan?: (span: EntitySpan) => string | undefined;
+}
+
+export interface FormattingActions {
+  toggleBold: () => void;
+  toggleItalic: () => void;
+  toggleUnderline?: () => void;
+  toggleStrikethrough?: () => void;
+  toggleMonospace: () => void;
+  cycleHeading: () => void;
+  toggleQuote: () => void;
+  insertDivider: () => void;
+  formatHeading?: (level: 'h1' | 'h2' | 'h3') => void;
+  formatParagraph?: () => void;
+  insertBulletList?: () => void;
+  insertNumberedList?: () => void;
+  insertCheckList?: () => void;
+  removeList?: () => void;
+  indent?: () => void;
+  outdent?: () => void;
 }

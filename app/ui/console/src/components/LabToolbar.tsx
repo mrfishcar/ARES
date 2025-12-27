@@ -5,7 +5,8 @@
 
 import { createPortal } from 'react-dom';
 import { useRef, useState, useEffect } from 'react';
-import { Settings, Sun, Moon, Zap, Highlighter, FilePlus, Cloud, CloudOff } from 'lucide-react';
+import { Settings, Sun, Moon, Highlighter, FilePlus, Cloud, CloudOff, Bold, Italic, Code2, Heading, Quote, Minus, Type } from 'lucide-react';
+import type { FormattingActions } from './CodeMirrorEditorProps';
 
 interface LabToolbarProps {
   // Status
@@ -25,9 +26,9 @@ interface LabToolbarProps {
   showEntityIndicators: boolean;
   enableLongTextOptimization: boolean;
   highlightChains: boolean;
+  useRichEditor: boolean;
 
   // Actions
-  onExtractStart: () => void;
   onThemeToggle: () => void;
   onEntityHighlightToggle: () => void;
   onSettingsToggle: () => void;
@@ -41,13 +42,14 @@ interface LabToolbarProps {
   onEntityIndicatorsToggle: () => void;
   onLongTextOptimizationToggle: () => void;
   onHighlightChainsToggle: () => void;
-
-  // State checks
-  canExtract: boolean;
-  isExtracting: boolean;
+  onRichEditorToggle: () => void;
 
   // Save status
   saveStatus: 'idle' | 'saving' | 'saved' | 'error';
+  showFormatToolbar: boolean;
+  formatToolbarEnabled: boolean;
+  formatActions?: FormattingActions | null;
+  onToggleFormatToolbar: () => void;
 }
 
 export function LabToolbar({
@@ -60,8 +62,8 @@ export function LabToolbar({
   showEntityIndicators,
   enableLongTextOptimization,
   highlightChains,
+  useRichEditor,
   editorMargin,
-  onExtractStart,
   onThemeToggle,
   onEntityHighlightToggle,
   onSettingsToggle,
@@ -73,9 +75,12 @@ export function LabToolbar({
   onEntityIndicatorsToggle,
   onLongTextOptimizationToggle,
   onHighlightChainsToggle,
-  canExtract,
-  isExtracting,
+  onRichEditorToggle,
   saveStatus,
+  showFormatToolbar,
+  formatToolbarEnabled,
+  formatActions,
+  onToggleFormatToolbar,
 }: LabToolbarProps) {
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
   const dropdownPanelRef = useRef<HTMLDivElement>(null);
@@ -131,103 +136,175 @@ export function LabToolbar({
       ? 'Saved'
       : saveStatus === 'error'
         ? 'Save failed'
-        : null;
+        : 'Ready';
+
+  const saveStatusClass =
+    saveStatus === 'saving'
+      ? 'save-status--saving'
+      : saveStatus === 'saved'
+        ? 'save-status--saved'
+        : saveStatus === 'error'
+          ? 'save-status--error'
+          : 'save-status--idle';
+
+  const showPerfGauntlet = typeof import.meta !== 'undefined' && import.meta.env.DEV;
+
+  const handleRunPerfGauntlet = async () => {
+    const { runPerfGauntlet } = await import('../perf/perfGauntlet');
+    runPerfGauntlet();
+  };
+
+  const formatButtons: Array<{
+    key: string;
+    label: string;
+    icon: React.ReactNode;
+    action?: () => void;
+  }> = [
+    { key: 'bold', label: 'Bold', icon: <Bold size={14} />, action: formatActions?.toggleBold },
+    { key: 'italic', label: 'Italic', icon: <Italic size={14} />, action: formatActions?.toggleItalic },
+    { key: 'mono', label: 'Monospace', icon: <Code2 size={14} />, action: formatActions?.toggleMonospace },
+    { key: 'heading', label: 'Cycle heading', icon: <Heading size={14} />, action: formatActions?.cycleHeading },
+    { key: 'quote', label: 'Quote block', icon: <Quote size={14} />, action: formatActions?.toggleQuote },
+    { key: 'divider', label: 'Insert divider', icon: <Minus size={14} />, action: formatActions?.insertDivider },
+  ];
 
   return (
     <>
-    <div className="lab-control-bar liquid-glass">
-      {/* Status indicators */}
-      <div className="status-group">
-        <div
-          className={`status-indicator ${
-            jobStatus === 'running'
-              ? 'status-indicator--running'
-              : jobStatus === 'failed'
-                ? 'status-indicator--failed'
-                : ''
-          }`}
-        >
-          {statusLabel}
-        </div>
-        {/* Save status indicator */}
-        {saveStatusLabel && (
-          <div
-            className={`save-status-indicator ${
-              saveStatus === 'saving'
-                ? 'save-status--saving'
-                : saveStatus === 'saved'
-                  ? 'save-status--saved'
-                  : saveStatus === 'error'
-                    ? 'save-status--error'
-                    : ''
-            }`}
-          >
-            {saveStatus === 'saving' ? (
-              <Cloud size={12} strokeWidth={2} className="saving-icon" />
-            ) : saveStatus === 'saved' ? (
-              <Cloud size={12} strokeWidth={2} />
-            ) : saveStatus === 'error' ? (
-              <CloudOff size={12} strokeWidth={2} />
-            ) : null}
-            <span>{saveStatusLabel}</span>
+    {/* Two-toolbar morph container - both toolbars render simultaneously */}
+    <div className="lab-toolbar-stack">
+      <div className="toolbar-slot" data-mode={formatToolbarEnabled ? 'formatting' : 'normal'}>
+        {/* Normal toolbar - always rendered, morphs when switching modes */}
+        <div className="lab-control-bar liquid-glass">
+          <div className="lab-control-bar__content">
+            {/* Status indicator */}
+            <div className="status-group">
+              <div
+                className={`status-indicator ${
+                  jobStatus === 'running'
+                    ? 'status-indicator--running'
+                    : jobStatus === 'failed'
+                      ? 'status-indicator--failed'
+                      : ''
+                }`}
+              >
+                {statusLabel}
+              </div>
+
+              {showPerfGauntlet && (
+                <button
+                  type="button"
+                  onClick={handleRunPerfGauntlet}
+                  className="control-btn"
+                  title="Run Perf Gauntlet (DEV)"
+                  style={{ width: 'auto', padding: '6px 10px', fontSize: '11px' }}
+                >
+                  Run Perf Gauntlet
+                </button>
+              )}
+            </div>
+
+            {/* Icon controls */}
+            <div className="toolbar-actions">
+              <button
+                onClick={onNewDocument}
+                className="control-btn"
+                title="New document"
+                type="button"
+              >
+                <FilePlus size={16} strokeWidth={2} />
+              </button>
+
+              <button
+                onClick={onEntityHighlightToggle}
+                className={`control-btn ${entityHighlightMode ? 'control-btn--active' : ''}`}
+                title="Toggle Entity Highlight Mode (tap entities to edit)"
+                type="button"
+              >
+                <Highlighter size={16} strokeWidth={2} />
+              </button>
+
+              <button
+                onClick={onThemeToggle}
+                className="control-btn"
+                title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+                type="button"
+              >
+                {theme === 'dark' ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
+              </button>
+
+              <button
+                onClick={onToggleFormatToolbar}
+                className={`control-btn ${formatToolbarEnabled ? 'control-btn--active' : ''}`}
+                title="Toggle formatting mode"
+                type="button"
+              >
+                <Type size={16} strokeWidth={2} />
+              </button>
+
+              {/* Settings dropdown */}
+              <div className="settings-dropdown-container">
+                <button
+                  ref={settingsButtonRef}
+                  onClick={onSettingsToggle}
+                  className="control-btn"
+                  title="Settings"
+                  type="button"
+                  aria-expanded={showSettingsDropdown}
+                  aria-label="Settings menu"
+                >
+                  <Settings size={16} strokeWidth={2} />
+                </button>
+              </div>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
 
-      {/* Icon controls */}
-      <div className="toolbar-actions">
-        <button
-          onClick={onNewDocument}
-          className="control-btn"
-          title="New document"
-          type="button"
-        >
-          <FilePlus size={16} strokeWidth={2} />
-        </button>
+        {/* Formatting toolbar - always rendered, morphs when switching modes */}
+        <div className="lab-control-bar lab-control-bar--formatting liquid-glass">
+          <div className="lab-control-bar__content">
+            <div className="formatting-toolbar-content">
+              {formatButtons.map((btn) => (
+                <button
+                  key={btn.key}
+                  type="button"
+                  className="format-control-btn"
+                  onClick={btn.action}
+                  disabled={!btn.action}
+                  title={btn.label}
+                  aria-label={btn.label}
+                >
+                  {btn.icon}
+                </button>
+              ))}
 
-        <button
-          onClick={onExtractStart}
-          disabled={!canExtract || isExtracting}
-          className="control-btn"
-          title="Start background extraction"
-          type="button"
-        >
-          <Zap size={16} strokeWidth={2} />
-        </button>
-
-        <button
-          onClick={onEntityHighlightToggle}
-          className={`control-btn ${entityHighlightMode ? 'control-btn--active' : ''}`}
-          title="Toggle Entity Highlight Mode (tap entities to edit)"
-          type="button"
-        >
-          <Highlighter size={16} strokeWidth={2} />
-        </button>
-
-        <button
-          onClick={onThemeToggle}
-          className="control-btn"
-          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-          type="button"
-        >
-          {theme === 'dark' ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
-        </button>
-
-        {/* Settings dropdown */}
-        <div className="settings-dropdown-container">
-          <button
-            ref={settingsButtonRef}
-            onClick={onSettingsToggle}
-            className="control-btn"
-            title="Settings"
-            type="button"
-            aria-expanded={showSettingsDropdown}
-            aria-label="Settings menu"
-          >
-            <Settings size={16} strokeWidth={2} />
-          </button>
+              {/* Exit formatting mode button */}
+              <button
+                type="button"
+                className="format-control-btn format-exit-btn"
+                onClick={onToggleFormatToolbar}
+                title="Exit formatting mode"
+                aria-label="Exit formatting mode"
+              >
+                <Type size={14} />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
+    </div>
+
+    {/* Save status pill (floated to avoid toolbar width changes) */}
+    <div className={`save-status-pill ${saveStatusClass}`}>
+      {saveStatus === 'saving' ? (
+        <Cloud size={12} strokeWidth={2} className="saving-icon" />
+      ) : saveStatus === 'saved' ? (
+        <Cloud size={12} strokeWidth={2} />
+      ) : saveStatus === 'error' ? (
+        <CloudOff size={12} strokeWidth={2} />
+      ) : (
+        <Cloud size={12} strokeWidth={2} style={{ opacity: 0.35 }} />
+      )}
+      <span>{saveStatusLabel}</span>
     </div>
 
     {/* Portal: Render dropdown outside toolbar to escape transform context */}
@@ -295,6 +372,29 @@ export function LabToolbar({
                   >
                     <span className="settings-dropdown-toggle-label">Highlight Entities</span>
                     <div className={`settings-toggle-switch ${showHighlighting ? 'active' : ''}`}>
+                      <div className="settings-toggle-knob" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Editor engine */}
+                <div className="settings-dropdown-section">
+                  <div className="settings-dropdown-label">Editor Engine</div>
+                  <div
+                    className="settings-dropdown-toggle"
+                    onClick={onRichEditorToggle}
+                    role="switch"
+                    aria-checked={useRichEditor}
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onRichEditorToggle();
+                      }
+                    }}
+                  >
+                    <span className="settings-dropdown-toggle-label">Use rich text editor (Lexical)</span>
+                    <div className={`settings-toggle-switch ${useRichEditor ? 'active' : ''}`}>
                       <div className="settings-toggle-knob" />
                     </div>
                   </div>

@@ -43,7 +43,7 @@ import type { EntitySpan, EntityType } from '../types/entities';
 import { getEntityTypeColor } from '../types/entities';
 import { projectEntitiesToVisibleRanges } from '../editor/entityVisibility';
 import { EntityContextMenu } from './EntityContextMenu';
-import type { CodeMirrorEditorProps } from './CodeMirrorEditorProps';
+import type { CodeMirrorEditorProps, FormattingActions } from './CodeMirrorEditorProps';
 import { measureDecorationBuild } from '../utils/perf';
 
 // -------------------- MARKDOWN STYLES --------------------
@@ -76,11 +76,11 @@ const editorTheme = EditorView.theme({
     color: 'var(--text-primary)',
   },
 
-  // ✅ MAIN FIX: text starts below the header, but cannot scroll under it
+  // ✅ MAIN FIX: text starts below the header
   '.cm-content': {
-    paddingTop: 'var(--editor-header-offset, 80px)', // Fixed top padding, no margin adjustment
+    paddingTop: 'var(--editor-header-offset, 80px)', // Top padding for content below toolbar
     paddingRight: 'var(--editor-margin-desktop, 96px)', // Adjustable side margins
-    paddingBottom: '40px', // Fixed bottom padding
+    paddingBottom: '0', // No bottom padding - scroll to end
     paddingLeft: 'var(--editor-margin-desktop, 96px)', // Adjustable side margins
     boxSizing: 'border-box',
     caretColor: 'var(--text-primary)', // ✅ Ensure cursor is visible on iOS
@@ -91,7 +91,7 @@ const editorTheme = EditorView.theme({
     overscrollBehavior: 'contain',
     touchAction: 'pan-y',
     WebkitOverflowScrolling: 'touch',
-    scrollBehavior: 'smooth',
+    scrollBehavior: 'auto',  // Changed from 'smooth' to avoid iOS jumpiness
   },
 
   '.cm-line': {
@@ -632,6 +632,195 @@ function iosCalloutBlockerExtension(
   });
 }
 
+// -------------------- iOS CURSOR TRACKING EXTENSION --------------------
+
+/**
+ * SOPHISTICATED iOS CURSOR TRACKING
+ *
+ * Philosophy:
+ * - Embrace iOS page scroll when keyboard opens
+ * - Use visualViewport API to know ACTUAL visible area
+ * - Keep caret consistently positioned above keyboard
+ * - Debounced + rAF to prevent layout thrash
+ * - Single scroll owner (no competing systems)
+ *
+ * Fixes:
+ * - "Works for 2 lines, jumps on 3rd" inconsistency
+ * - Multiple scroll systems fighting
+ * - CSS smooth scroll vs JS scroll conflicts
+ */
+
+// Debug flag - can be enabled via browser console:
+// window.enableCaretDebug = true
+declare global {
+  interface Window {
+    enableCaretDebug?: boolean;
+  }
+}
+
+const isDebugEnabled = () => window.enableCaretDebug === true;
+
+function iosCursorTrackingExtension() {
+  // Stable caret margin above keyboard/viewport bottom (px)
+  const CARET_MARGIN = 160;
+
+  // Re-entrancy guard
+  let isScrolling = false;
+  let rafHandle: number | null = null;
+  let debounceTimer: number | null = null;
+
+  const performCaretTracking = (view: EditorView) => {
+    // Prevent re-entrancy during same frame
+    if (isScrolling) {
+      if (isDebugEnabled()) console.log('[CaretTrack] Skipping - already scrolling');
+      return;
+    }
+
+    const selection = view.state.selection.main;
+    const cursorPos = selection.head;
+
+    // Get caret coordinates in viewport
+    const caretCoords = view.coordsAtPos(cursorPos);
+    if (!caretCoords) {
+      if (isDebugEnabled()) console.log('[CaretTrack] No caret coords');
+      return;
+    }
+
+    // Use visualViewport API when available (iOS Safari)
+    const visualViewport = window.visualViewport;
+    let visibleBottom: number;
+
+    if (visualViewport) {
+      // ACTUAL visible area accounting for keyboard
+      visibleBottom = visualViewport.offsetTop + visualViewport.height;
+
+      if (isDebugEnabled()) {
+        console.log('[CaretTrack] visualViewport:', {
+          height: visualViewport.height,
+          offsetTop: visualViewport.offsetTop,
+          visibleBottom,
+          pageScrollY: window.scrollY,
+        });
+      }
+    } else {
+      // Fallback: use window inner height
+      visibleBottom = window.scrollY + window.innerHeight;
+
+      if (isDebugEnabled()) {
+        console.log('[CaretTrack] Fallback viewport:', {
+          innerHeight: window.innerHeight,
+          scrollY: window.scrollY,
+          visibleBottom,
+        });
+      }
+    }
+
+    // Compute where caret should be (CARET_MARGIN above visible bottom)
+    const targetCaretBottom = visibleBottom - CARET_MARGIN;
+
+    if (isDebugEnabled()) {
+      console.log('[CaretTrack] Caret:', {
+        top: caretCoords.top,
+        bottom: caretCoords.bottom,
+        targetCaretBottom,
+        needsScroll: caretCoords.bottom > targetCaretBottom,
+      });
+    }
+
+    // Check if caret is below threshold
+    if (caretCoords.bottom > targetCaretBottom) {
+      const scrollDelta = caretCoords.bottom - targetCaretBottom;
+
+      // Guard: Don't scroll if document can't scroll anymore
+      const maxScrollY = document.documentElement.scrollHeight - window.innerHeight;
+      const newScrollY = window.scrollY + scrollDelta;
+
+      if (newScrollY > maxScrollY) {
+        if (isDebugEnabled()) {
+          console.log('[CaretTrack] Cannot scroll - at document bottom', {
+            maxScrollY,
+            currentScrollY: window.scrollY,
+            attemptedScrollY: newScrollY,
+          });
+        }
+        return;
+      }
+
+      if (isDebugEnabled()) {
+        console.log('[CaretTrack] SCROLLING:', {
+          delta: scrollDelta,
+          from: window.scrollY,
+          to: newScrollY,
+        });
+      }
+
+      // Set re-entrancy guard
+      isScrolling = true;
+
+      // Scroll the PAGE (not editor scroller)
+      window.scrollBy({
+        top: scrollDelta,
+        behavior: 'auto',  // INSTANT - no smooth animation
+      });
+
+      // Clear guard after frame
+      requestAnimationFrame(() => {
+        isScrolling = false;
+      });
+    }
+  };
+
+  return EditorView.updateListener.of((update: ViewUpdate) => {
+    // Only track on selection changes or doc changes (typing)
+    if (!update.selectionSet && !update.docChanged) return;
+
+    // Cancel any pending tracking
+    if (rafHandle !== null) {
+      cancelAnimationFrame(rafHandle);
+      rafHandle = null;
+    }
+    if (debounceTimer !== null) {
+      clearTimeout(debounceTimer);
+      debounceTimer = null;
+    }
+
+    // Debounce + rAF to prevent layout thrash
+    debounceTimer = window.setTimeout(() => {
+      rafHandle = requestAnimationFrame(() => {
+        performCaretTracking(update.view);
+        rafHandle = null;
+      });
+      debounceTimer = null;
+    }, 50); // 50ms debounce
+  });
+}
+
+// -------------------- FOCUS & SELECTION NOTIFIER --------------------
+
+function focusAndSelectionNotifierExtension(
+  onFocusChangeRef: React.MutableRefObject<((focused: boolean) => void) | undefined>,
+  onSelectionChangeRef: React.MutableRefObject<((hasSelection: boolean) => void) | undefined>,
+) {
+  return [
+    EditorView.domEventHandlers({
+      focus: () => {
+        onFocusChangeRef.current?.(true);
+        return false;
+      },
+      blur: () => {
+        onFocusChangeRef.current?.(false);
+        return false;
+      },
+    }),
+    EditorView.updateListener.of((update: ViewUpdate) => {
+      if (update.selectionSet && onSelectionChangeRef.current) {
+        const selection = update.state.selection.main;
+        onSelectionChangeRef.current(!selection.empty);
+      }
+    }),
+  ];
+}
+
 // -------------------- MAIN COMPONENT --------------------
 
 export function CodeMirrorEditor({
@@ -652,6 +841,9 @@ export function CodeMirrorEditor({
   onResizeEntity,
   navigateToRange,
   colorForSpan,
+  onFocusChange,
+  onSelectionChange,
+  registerFormatActions,
 }: CodeMirrorEditorProps) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
@@ -662,6 +854,8 @@ export function CodeMirrorEditor({
   const highlightOpacityRef = useRef(highlightOpacity);
   const colorForSpanRef = useRef<CodeMirrorEditorProps['colorForSpan']>(colorForSpan);
   const onCursorChangeRef = useRef(onCursorChange);
+  const onFocusChangeRef = useRef<CodeMirrorEditorProps['onFocusChange']>();
+  const onSelectionChangeRef = useRef<CodeMirrorEditorProps['onSelectionChange']>();
   const entityHighlightModeRef = useRef(entityHighlightMode);
   const onTextSelectedRef = useRef(onTextSelected);
   const onResizeEntityRef = useRef(onResizeEntity);
@@ -718,6 +912,14 @@ export function CodeMirrorEditor({
   }, [onCursorChange]);
 
   useEffect(() => {
+    onFocusChangeRef.current = onFocusChange;
+  }, [onFocusChange]);
+
+  useEffect(() => {
+    onSelectionChangeRef.current = onSelectionChange;
+  }, [onSelectionChange]);
+
+  useEffect(() => {
     entityHighlightModeRef.current = entityHighlightMode;
   }, [entityHighlightMode]);
 
@@ -742,6 +944,8 @@ export function CodeMirrorEditor({
         placeholder('Write or paste text...'),
         editorTheme,
         EditorView.lineWrapping,
+        // iOS cursor tracking: DISABLED - Let Safari's native scrollIntoView handle it
+        // iosCursorTrackingExtension(),
         // Block keyboard input in Entity Highlight Mode (allows text selection on iOS)
         keyboardBlockerExtension(entityHighlightModeRef),
         // Prevent iOS callout menu (Cut/Copy/Paste) from appearing during text selection
@@ -766,12 +970,19 @@ export function CodeMirrorEditor({
             onChange(nextValue);
           }
 
-          if (update.selectionSet && onCursorChangeRef.current) {
-            const head = update.state.selection.main.head;
-            const globalPos = baseOffsetRef.current + head;
-            onCursorChangeRef.current(globalPos);
+          if (update.selectionSet) {
+            if (onCursorChangeRef.current) {
+              const head = update.state.selection.main.head;
+              const globalPos = baseOffsetRef.current + head;
+              onCursorChangeRef.current(globalPos);
+            }
+            if (onSelectionChangeRef.current) {
+              const selection = update.state.selection.main;
+              onSelectionChangeRef.current(!selection.empty);
+            }
           }
         }),
+        ...focusAndSelectionNotifierExtension(onFocusChangeRef, onSelectionChangeRef),
       ],
     });
 
@@ -798,9 +1009,122 @@ export function CodeMirrorEditor({
 
     viewRef.current = view;
 
+    if (registerFormatActions) {
+      const toggleInlineWrapper = (wrapper: string) => {
+        const v = viewRef.current;
+        if (!v) return;
+        const { state } = v;
+        const selection = state.selection.main;
+        const from = selection.from;
+        const to = selection.to;
+        const selectedText = state.doc.sliceString(from, to);
+        const prefix = from - wrapper.length >= 0 ? state.doc.sliceString(from - wrapper.length, from) : '';
+        const suffix = state.doc.sliceString(to, to + wrapper.length);
+        const hasWrapped = prefix === wrapper && suffix === wrapper;
+
+        if (hasWrapped) {
+          const newFrom = from - wrapper.length;
+          const newTo = to + wrapper.length;
+          v.dispatch({
+            changes: { from: newFrom, to: newTo, insert: selectedText },
+            selection: { anchor: newFrom, head: newFrom + selectedText.length },
+            userEvent: 'input',
+          });
+        } else {
+          const insertText = `${wrapper}${selectedText}${wrapper}`;
+          const cursorPos = from + insertText.length;
+          v.dispatch({
+            changes: { from, to, insert: insertText },
+            selection: { anchor: cursorPos, head: cursorPos },
+            userEvent: 'input',
+          });
+        }
+      };
+
+      const cycleHeading = () => {
+        const v = viewRef.current;
+        if (!v) return;
+        const { state } = v;
+        const selection = state.selection.main;
+        const line = state.doc.lineAt(selection.head);
+        const text = line.text.trimStart();
+        const leadingSpaces = line.text.length - text.length;
+        const currentPrefix = text.startsWith('#') ? text.match(/^#+/)?.[0] ?? '' : '';
+        const nextPrefix =
+          currentPrefix === '' ? '#' :
+          currentPrefix === '#' ? '##' :
+          currentPrefix === '##' ? '###' : '';
+        const body = text.replace(/^#+\s*/, '');
+        const newText = nextPrefix
+          ? `${' '.repeat(leadingSpaces)}${nextPrefix} ${body}`
+          : `${' '.repeat(leadingSpaces)}${body}`;
+        v.dispatch({
+          changes: { from: line.from, to: line.to, insert: newText },
+          selection: { anchor: line.from, head: line.from },
+          userEvent: 'input',
+        });
+      };
+
+      const toggleQuote = () => {
+        const v = viewRef.current;
+        if (!v) return;
+        const { state } = v;
+        const selection = state.selection.main;
+        const fromLine = state.doc.lineAt(selection.from);
+        const toLine = state.doc.lineAt(selection.to);
+        const lines = [];
+        for (let i = fromLine.number; i <= toLine.number; i++) {
+          lines.push(state.doc.line(i));
+        }
+        const allQuoted = lines.every(l => l.text.trimStart().startsWith('> '));
+        const newText = lines
+          .map(line => {
+            const trimmed = line.text.trimStart();
+            const leadingSpaces = line.text.length - trimmed.length;
+            if (allQuoted) {
+              return line.text.replace(/^\s*>\s?/, '');
+            }
+            return `${' '.repeat(leadingSpaces)}> ${trimmed}`;
+          })
+          .join('\n');
+        v.dispatch({
+          changes: { from: fromLine.from, to: toLine.to, insert: newText },
+          selection: { anchor: fromLine.from, head: fromLine.from },
+          userEvent: 'input',
+        });
+      };
+
+      const insertDivider = () => {
+        const v = viewRef.current;
+        if (!v) return;
+        const { state } = v;
+        const selection = state.selection.main;
+        const line = state.doc.lineAt(selection.head);
+        const insertText = `${line.text ? '\n' : ''}---\n`;
+        const insertPos = line.to;
+        v.dispatch({
+          changes: { from: insertPos, to: insertPos, insert: insertText },
+          selection: { anchor: insertPos + insertText.length, head: insertPos + insertText.length },
+          userEvent: 'input',
+        });
+      };
+
+      const actions: FormattingActions = {
+        toggleBold: () => toggleInlineWrapper('**'),
+        toggleItalic: () => toggleInlineWrapper('*'),
+        toggleMonospace: () => toggleInlineWrapper('`'),
+        cycleHeading,
+        toggleQuote,
+        insertDivider,
+      };
+
+      registerFormatActions(actions);
+    }
+
     return () => {
       view.destroy();
       viewRef.current = null;
+      registerFormatActions?.(null);
     };
   }, []);
 

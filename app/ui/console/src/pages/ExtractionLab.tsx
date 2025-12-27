@@ -16,11 +16,18 @@ import { EntityModal } from '../components/EntityModal';
 import { WikiModal } from '../components/WikiModal';
 import { FloatingActionButton } from '../components/FloatingActionButton';
 import { EntityReviewSidebar } from '../components/EntityReviewSidebar';
-import type { NavigateToRange } from '../components/CodeMirrorEditorProps';
+import type { FormattingActions, NavigateToRange } from '../components/CodeMirrorEditorProps';
 import { isValidEntityType, mapExtractionResponseToSpans, type EntitySpan, type EntityType } from '../types/entities';
 import { initializeTheme, toggleTheme, loadThemePreference, getEffectiveTheme } from '../utils/darkMode';
 import { useLabLayoutState } from '../hooks/useLabLayoutState';
 import { useExtractionSettings } from '../hooks/useExtractionSettings';
+import { useAutoLongExtraction } from '../hooks/useAutoLongExtraction';
+import { initializeIOSViewportFix } from '../utils/iosViewportFix';
+import type { SerializedEditorState } from 'lexical';
+import { RichEditorPane } from '../editor2/RichEditorPane';
+import type { BlockIndexEntry, PosMapEntry, RichDocSnapshot } from '../editor2/types';
+import { snapshotRichDoc } from '../editor2/flattenRichDoc';
+import { computeDocVersion } from '../editor2/hash';
 import '../styles/darkMode.css';
 import '../styles/extraction-lab.css';
 
@@ -111,6 +118,10 @@ interface StoredDocument {
   id: string;
   title: string;
   text: string;
+  richDoc?: SerializedEditorState | null;
+  posMap?: PosMapEntry[];
+  docVersion?: string;
+  blockIndex?: BlockIndexEntry[];
   extractionJson?: any;
   extraction?: any;
   createdAt: string;
@@ -119,6 +130,8 @@ interface StoredDocument {
 
 const JOB_POLL_INTERVAL_MS = 1500;
 const SYNC_EXTRACTION_CHAR_LIMIT = 20000;
+const LONG_TEXT_AUTO_THRESHOLD = 20000;
+const LONG_TEXT_IDLE_DEBOUNCE_MS = 1200;
 
 function estimateJobDurationMs(textLength: number): number {
   const baseMs = 8000;
@@ -707,6 +720,10 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
   // Extraction state
   const [text, setText] = useState('');
+  const [richDoc, setRichDoc] = useState<SerializedEditorState | null>(null);
+  const [posMap, setPosMap] = useState<PosMapEntry[]>([]);
+  const [docVersion, setDocVersion] = useState<string>('');
+  const [blockIndex, setBlockIndex] = useState<BlockIndexEntry[]>([]);
   const [entities, setEntities] = useState<EntitySpan[]>([]);
   const [relations, setRelations] = useState<Relation[]>([]);
   const [processing, setProcessing] = useState(false);
@@ -723,6 +740,10 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [jobExpectedDurationMs, setJobExpectedDurationMs] = useState<number | null>(null);
   const [jobProgress, setJobProgress] = useState<number>(0);
   const [jobEtaSeconds, setJobEtaSeconds] = useState<number | null>(null);
+  const jobRevisionRef = useRef<number | null>(null);
+  const jobTextRef = useRef<string | null>(null);
+  const lastAppliedRevisionRef = useRef<number | null>(null);
+  const lastAppliedSignatureRef = useRef<string | null>(null);
   const [backgroundProcessing, setBackgroundProcessing] = useState(false);
 
   // Document state
@@ -750,6 +771,12 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     position?: { x: number; y: number; flip?: boolean }; // Position for menu
   } | null>(null);
   const [navigateRequest, setNavigateRequest] = useState<NavigateToRange | null>(null);
+  const [editorFocused, setEditorFocused] = useState(false);
+  const [hasActiveSelection, setHasActiveSelection] = useState(false);
+  const [formatActions, setFormatActions] = useState<FormattingActions | null>(null);
+  const [showFormatToolbar, setShowFormatToolbar] = useState(false);
+  const formatHideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [formatToolbarEnabled, setFormatToolbarEnabled] = useState(false);
 
   // Theme state
   const [theme, setTheme] = useState(loadThemePreference());
@@ -765,6 +792,31 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     [highlightChains]
   );
 
+  // Ghost formatting toolbar visibility (focus or selection with debounce hide)
+  useEffect(() => {
+    const shouldShow = editorFocused || hasActiveSelection;
+    if (shouldShow) {
+      if (formatHideTimeoutRef.current) {
+        clearTimeout(formatHideTimeoutRef.current);
+        formatHideTimeoutRef.current = null;
+      }
+      setShowFormatToolbar(true);
+    } else {
+      if (formatHideTimeoutRef.current) {
+        clearTimeout(formatHideTimeoutRef.current);
+      }
+      formatHideTimeoutRef.current = setTimeout(() => {
+        setShowFormatToolbar(false);
+      }, 180);
+    }
+    return () => {
+      if (formatHideTimeoutRef.current) {
+        clearTimeout(formatHideTimeoutRef.current);
+        formatHideTimeoutRef.current = null;
+      }
+    };
+  }, [editorFocused, hasActiveSelection]);
+
   const resetEntityOverrides = useCallback(() => {
     setEntityOverrides({
       rejectedSpans: new Set(),
@@ -775,6 +827,8 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   // Initialize theme on mount
   useEffect(() => {
     initializeTheme();
+    // Initialize iOS viewport height fix
+    initializeIOSViewportFix();
   }, []);
 
   // iOS: Prevent body scroll when modals are open
@@ -814,6 +868,22 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       to: end,
       requestId: navigateRequestIdRef.current,
     });
+  }, []);
+
+  const handleRichChange = useCallback((snapshot: RichDocSnapshot) => {
+    setRichDoc(snapshot.docJSON);
+    setText(snapshot.plainText);
+    setPosMap(snapshot.posMap);
+    setBlockIndex(snapshot.blocks);
+    setDocVersion(snapshot.docVersion);
+  }, []);
+
+  const handleLegacyTextChange = useCallback((value: string) => {
+    setRichDoc(null);
+    setText(value);
+    setPosMap([]);
+    setBlockIndex([]);
+    setDocVersion(computeDocVersion(value));
   }, []);
 
   const requiresBackground = text.length > SYNC_EXTRACTION_CHAR_LIMIT;
@@ -892,6 +962,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
       setProcessing(true);
       const start = performance.now();
+      const version = docVersion || computeDocVersion(text, blockIndex);
 
       try {
         // Strip incomplete tags before sending to backend
@@ -905,7 +976,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ text: textForExtraction }),
+          body: JSON.stringify({ text: textForExtraction, docVersion: version, blocks: blockIndex }),
         });
 
         if (!response.ok) {
@@ -932,7 +1003,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         setProcessing(false);
       }
     }, 1000), // Increased debounce for heavier ARES processing
-    [toast, applyExtractionResults]
+    [toast, applyExtractionResults, docVersion, blockIndex]
   );
 
   const runExtractionNow = useCallback(() => {
@@ -947,11 +1018,6 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   useEffect(() => {
     if (requiresBackground) {
       setProcessing(false);
-      if (!hasActiveJob && jobStatus !== 'done' && jobStatus !== 'failed') {
-        setEntities([]);
-        setRelations([]);
-        setStats({ time: 0, confidence: 0, count: 0, relationCount: 0 });
-      }
       return;
     }
 
@@ -963,53 +1029,87 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     extractEntities(text);
   }, [text, extractEntities, requiresBackground, hasActiveJob, liveExtractionEnabled, jobStatus, settings.entityHighlightMode]);
 
-  const startBackgroundJob = async () => {
-    if (!text.trim()) {
-      toast.error('Please paste text before starting extraction.');
-      return;
-    }
+  const startBackgroundJob = useCallback(
+    async (options: { silent?: boolean; revision: number; textSnapshot: string }) => {
+      const { silent = true, revision, textSnapshot } = options;
+      const isDev = typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production';
+      const version = docVersion || computeDocVersion(textSnapshot, blockIndex);
 
-    setBackgroundProcessing(true);
-    setJobError(null);
-    setJobResult(null);
-
-    try {
-      const apiUrl = resolveApiUrl();
-      const payload = { text: stripIncompleteTagsForExtraction(text) };
-      const response = await fetch(`${apiUrl}/jobs/start`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data?.error || 'Failed to start job');
+      if (!textSnapshot.trim()) {
+        if (!silent) {
+          toast.error('Please paste text before starting extraction.');
+        }
+        return;
       }
 
-      setJobId(data.jobId);
-      setJobStatus('queued');
-      const expectedDuration = estimateJobDurationMs(text.length);
-      setJobStartedAt(Date.now());
-      setJobExpectedDurationMs(expectedDuration);
-      setJobProgress(0);
-      setJobEtaSeconds(null);
-      setEntities([]);
-      setRelations([]);
-      setStats({ time: 0, confidence: 0, count: 0, relationCount: 0 });
-      toast.success('Background extraction started.');
-    } catch (error) {
-      toast.error(`Failed to start job: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      setJobId(null);
-      setJobStatus(null);
-      setJobStartedAt(null);
-      setJobExpectedDurationMs(null);
-      setJobProgress(0);
-      setJobEtaSeconds(null);
-    } finally {
-      setBackgroundProcessing(false);
-    }
-  };
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+        return;
+      }
+
+      setBackgroundProcessing(true);
+      setJobError(null);
+      setJobResult(null);
+      jobRevisionRef.current = revision;
+      jobTextRef.current = textSnapshot;
+
+      try {
+        const apiUrl = resolveApiUrl();
+        const payload = { text: stripIncompleteTagsForExtraction(textSnapshot), docVersion: version, blocks: blockIndex };
+        const response = await fetch(`${apiUrl}/jobs/start`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data?.error || 'Failed to start job');
+        }
+
+        setJobId(data.jobId);
+        setJobStatus('queued');
+        const expectedDuration = estimateJobDurationMs(textSnapshot.length);
+        setJobStartedAt(Date.now());
+        setJobExpectedDurationMs(expectedDuration);
+        setJobProgress(0);
+        setJobEtaSeconds(null);
+        setEntities([]);
+        setRelations([]);
+        setStats({ time: 0, confidence: 0, count: 0, relationCount: 0 });
+        if (isDev) {
+          console.debug('[ExtractionLab][auto-long] scheduled', { revision });
+        }
+        if (!silent) {
+          toast.success('Background extraction started.');
+        }
+      } catch (error) {
+        if (!silent) {
+          toast.error(`Failed to start job: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        } else if (isDev) {
+          console.warn('[ExtractionLab] Background job failed to start', error);
+        }
+        setJobId(null);
+        setJobStatus(null);
+        setJobStartedAt(null);
+        setJobExpectedDurationMs(null);
+        setJobProgress(0);
+        setJobEtaSeconds(null);
+        jobRevisionRef.current = null;
+      } finally {
+        setBackgroundProcessing(false);
+      }
+    },
+    [toast, docVersion, blockIndex]
+  );
+
+  const { revisionRef } = useAutoLongExtraction({
+    text,
+    threshold: LONG_TEXT_AUTO_THRESHOLD,
+    debounceMs: LONG_TEXT_IDLE_DEBOUNCE_MS,
+    documentVisible: typeof document === 'undefined' ? true : document.visibilityState === 'visible',
+    hasActiveJob,
+    startJob: (revision, textSnapshot) => startBackgroundJob({ revision, textSnapshot, silent: true }),
+  });
 
   // localStorage backup helpers (for when Railway backend loses documents)
   const getLocalStorageDocuments = useCallback((): StoredDocument[] => {
@@ -1070,7 +1170,20 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const applyDocumentToState = useCallback(
     (document: StoredDocument) => {
       setLastSavedId(document.id);
-      setText(document.text || '');
+      if (document.richDoc) {
+        const snap = snapshotRichDoc(document.richDoc);
+        setRichDoc(document.richDoc);
+        setText(snap.plainText);
+        setPosMap(document.posMap || snap.posMap);
+        setBlockIndex(snap.blocks);
+        setDocVersion(document.docVersion || snap.docVersion);
+      } else {
+        setRichDoc(null);
+        setText(document.text || '');
+        setPosMap([]);
+        setBlockIndex([]);
+        setDocVersion(computeDocVersion(document.text || ''));
+      }
 
       const extraction = document.extractionJson ?? document.extraction;
       if (extraction) {
@@ -1236,9 +1349,14 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         typeOverrides: entityOverrides.typeOverrides,
       };
 
+      const version = docVersion || computeDocVersion(text, blockIndex);
       const payload = {
         title: text.trim().split('\n')[0]?.slice(0, 80) || 'Untitled Document',
         text,
+        richDoc,
+        posMap,
+        blockIndex,
+        docVersion: version,
         extraction: {
           entities,
           relations,
@@ -1295,6 +1413,10 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         id: lastSavedId || `local_${Date.now()}`,
         title: text.trim().split('\n')[0]?.slice(0, 80) || 'Untitled Document',
         text,
+        richDoc,
+        posMap,
+        blockIndex,
+        docVersion: docVersion || computeDocVersion(text, blockIndex),
         extractionJson: {
           entities,
           relations,
@@ -1312,7 +1434,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       }
       return localDoc.id;
     }
-  }, [entities, relations, stats, text, toast, layout.showDocumentSidebar, refreshDocumentList, lastSavedId, saveToLocalStorage, entityOverrides]);
+  }, [entities, relations, stats, text, toast, layout.showDocumentSidebar, refreshDocumentList, lastSavedId, saveToLocalStorage, entityOverrides, richDoc, posMap, blockIndex, docVersion]);
 
   // Manual save (shows toast on error)
   const handleSaveDocument = useCallback(async () => {
@@ -1438,6 +1560,9 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           setJobEtaSeconds(null);
           setJobStartedAt(null);
           setJobExpectedDurationMs(null);
+          setBackgroundProcessing(false);
+          jobRevisionRef.current = null;
+          jobTextRef.current = null;
           clearInterval(interval);
           return;
         }
@@ -1452,8 +1577,35 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
             throw new Error(resultJson?.error || 'Failed to load job result');
           }
 
-          setJobResult(resultJson as ExtractionResponse);
-          applyExtractionResults(resultJson as ExtractionResponse, text, resultJson?.stats?.extractionTime);
+          const jobRevision = jobRevisionRef.current;
+          const currentRevision = revisionRef.current;
+          const targetText = jobTextRef.current ?? text;
+          const signature = JSON.stringify({
+            entities: resultJson.entities,
+            relations: resultJson.relations,
+            stats: resultJson.stats,
+          });
+          const isDev = typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production';
+
+          if (jobRevision !== null && jobRevision === currentRevision) {
+            const isNewResult =
+              lastAppliedRevisionRef.current !== jobRevision ||
+              lastAppliedSignatureRef.current !== signature;
+
+              if (isNewResult) {
+                setJobResult(resultJson as ExtractionResponse);
+                applyExtractionResults(resultJson as ExtractionResponse, targetText, resultJson?.stats?.extractionTime);
+                lastAppliedRevisionRef.current = jobRevision;
+                lastAppliedSignatureRef.current = signature;
+              } else if (isDev) {
+                console.debug('[ExtractionLab][auto-long] skipping duplicate result', { jobRevision });
+              }
+            } else if (isDev) {
+              console.debug('[ExtractionLab][auto-long] stale result ignored', { jobRevision, currentRevision });
+            }
+          setBackgroundProcessing(false);
+          jobRevisionRef.current = null;
+          jobTextRef.current = null;
           setTimeout(() => {
             setJobProgress(0);
             setJobEtaSeconds(null);
@@ -2059,6 +2211,10 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const handleNewDocument = useCallback(() => {
     // Clear current document state
     setText('');
+    setRichDoc(null);
+    setPosMap([]);
+    setBlockIndex([]);
+    setDocVersion('');
     setEntities([]);
     setRelations([]);
     setStats({ time: 0, confidence: 0, count: 0, relationCount: 0 });
@@ -2083,7 +2239,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   });
 
   return (
-    <div className={`extraction-lab${layout.showDocumentSidebar ? ' sidebar-open' : ''}`}>
+    <div className={`extraction-lab${layout.showDocumentSidebar ? ' sidebar-open' : ''}${layout.entityPanelMode === 'pinned' ? ' entity-sidebar-pinned' : ''}`}>
       {/* Hamburger button */}
       <button
         onClick={layout.toggleDocumentSidebar}
@@ -2095,7 +2251,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         <Menu size={20} strokeWidth={2} />
       </button>
 
-      {/* Toolbar - NEW COMPONENT */}
+      {/* Toolbar - position: fixed at root level */}
       <LabToolbar
         jobStatus={jobStatus}
         theme={effectiveTheme}
@@ -2107,7 +2263,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         showEntityIndicators={settings.showEntityIndicators}
         enableLongTextOptimization={settings.enableLongTextOptimization}
         highlightChains={highlightChains}
-        onExtractStart={startBackgroundJob}
+        useRichEditor={settings.useRichEditor}
         onThemeToggle={handleThemeToggle}
         onEntityHighlightToggle={settings.toggleEntityHighlightMode}
         onSettingsToggle={layout.toggleSettingsDropdown}
@@ -2118,10 +2274,13 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         onEntityIndicatorsToggle={settings.toggleEntityIndicators}
         onLongTextOptimizationToggle={settings.toggleLongTextOptimization}
         onHighlightChainsToggle={() => setHighlightChains(prev => !prev)}
-        canExtract={text.trim().length > 0 && !hasActiveJob}
-        isExtracting={backgroundProcessing || hasActiveJob}
+        onRichEditorToggle={settings.toggleRichEditor}
         onNewDocument={handleNewDocument}
         saveStatus={saveStatus}
+        showFormatToolbar={showFormatToolbar}
+        formatToolbarEnabled={formatToolbarEnabled}
+        formatActions={formatActions}
+        onToggleFormatToolbar={() => setFormatToolbarEnabled(prev => !prev)}
       />
 
       {/* Documents sidebar */}
@@ -2131,47 +2290,66 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         loadingDocuments={loadingDocuments}
         loadingDocument={loadingDocument}
         onLoadDocument={handleLoadDocumentById}
+        onClose={layout.closeDocumentSidebar}
         deriveDocumentName={deriveDocumentName}
       />
 
+      {/* Entity Review Sidebar - Pinned mode (same level as documents sidebar) */}
+      {layout.entityPanelMode === 'pinned' && (
+        <EntityReviewSidebar
+          mode="pinned"
+          entities={entities}
+          onClose={layout.closeEntityPanel}
+          onPin={layout.pinEntityPanel}
+          onEntityUpdate={handleEntityUpdate}
+          onLogReport={handleLogReport}
+          onCopyReport={handleCopyReport}
+          onNavigateEntity={handleNavigateToEntity}
+        />
+      )}
+
       {/* Main Content */}
       <div className="lab-content">
-        {/* Editor */}
-        <EditorPane
-          text={text}
-          entities={displayEntities}
-          onTextChange={setText}
-          disableHighlighting={editorDisableHighlighting}
-          highlightOpacity={settings.highlightOpacity}
-          renderMarkdown={renderMarkdown}
-          entityHighlightMode={settings.entityHighlightMode}
-          showEntityIndicators={settings.showEntityIndicators}
-          onChangeType={handleChangeType}
-          onCreateNew={handleCreateNew}
-          onReject={handleReject}
-          onTagEntity={handleTagEntity}
-          onTextSelected={handleTextSelected}
-          onResizeEntity={handleResizeEntity}
-          enableLongTextOptimization={settings.enableLongTextOptimization}
-          navigateToRange={navigateRequest ?? undefined}
-          colorForSpan={colorForSpan}
-        />
-
-        {/* Pinned sidebar mode - integrated into layout */}
-        {layout.entityPanelMode === 'pinned' && (
-          <div style={{ width: '500px', flexShrink: 0, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-            <EntityReviewSidebar
-              mode="pinned"
-              entities={entities}
-              onClose={layout.closeEntityPanel}
-              onPin={layout.pinEntityPanel}
-              onEntityUpdate={handleEntityUpdate}
-              onLogReport={handleLogReport}
-              onCopyReport={handleCopyReport}
-              onNavigateEntity={handleNavigateToEntity}
+        {/* Editor panel - scrolls naturally like working commit */}
+        <div className="editor-panel">
+          {/* Editor */}
+          {settings.useRichEditor ? (
+            <RichEditorPane
+              richDoc={richDoc}
+              plainText={text}
+              entities={displayEntities}
+              onChange={handleRichChange}
+              onEntityFocus={handleNavigateToEntity}
+              showEntityIndicators={settings.showEntityIndicators}
+              navigateToRange={navigateRequest}
+              showFormatToolbar={false}
+              onFormatActionsReady={setFormatActions}
             />
-          </div>
-        )}
+          ) : (
+            <EditorPane
+              text={text}
+              entities={displayEntities}
+              onTextChange={handleLegacyTextChange}
+              disableHighlighting={editorDisableHighlighting}
+              highlightOpacity={settings.highlightOpacity}
+              renderMarkdown={renderMarkdown}
+              entityHighlightMode={settings.entityHighlightMode}
+              showEntityIndicators={settings.showEntityIndicators}
+              onChangeType={handleChangeType}
+              onCreateNew={handleCreateNew}
+              onReject={handleReject}
+              onTagEntity={handleTagEntity}
+              onTextSelected={handleTextSelected}
+              onResizeEntity={handleResizeEntity}
+              enableLongTextOptimization={settings.enableLongTextOptimization}
+              navigateToRange={navigateRequest ?? undefined}
+              colorForSpan={colorForSpan}
+              onEditorFocusChange={setEditorFocused}
+              onSelectionChange={setHasActiveSelection}
+              onFormatActionsReady={setFormatActions}
+            />
+          )}
+        </div>
 
         {booknlpResult && (
           <div

@@ -1,0 +1,383 @@
+/* Clean editor styles with iOS Notes-style formatting toolbar */
+
+/* ========================================
+   TRANSFORMING FORMAT TOOLBAR - iOS Notes Style
+   Slides down from toolbar area when T button is toggled
+   ======================================== */
+
+.transforming-format-toolbar {
+  position: relative;
+  width: 100%;
+  max-height: 0;
+  overflow: hidden;
+  background: var(--bg-primary, #0f1115);
+  border-bottom: 1px solid transparent;
+  opacity: 0;
+  transition: max-height 0.35s cubic-bezier(0.32, 0.72, 0, 1),
+              opacity 0.25s ease-out,
+              border-color 0.25s ease-out;
+}
+
+.transforming-format-toolbar--open {
+  max-height: 300px;
+  opacity: 1;
+  border-bottom-color: var(--border-color, #1f2937);
+}
+
+/* Section container */
+.format-toolbar-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.format-toolbar-section:last-child {
+  border-bottom: none;
+}
+
+/* Section label - iOS Notes style */
+.format-toolbar-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary, #9ca3af);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+/* Button container */
+.format-toolbar-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Format buttons - iOS style */
+.format-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary, #e5e7eb);
+  font-size: 17px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.format-toolbar-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.format-toolbar-btn:active {
+  background: rgba(255, 255, 255, 0.12);
+  transform: scale(0.96);
+  transition: all 0.08s ease;
+}
+
+/* Text-style buttons (Title, Heading, etc.) */
+.format-toolbar-btn--text {
+  font-size: 15px;
+  font-weight: 500;
+  padding: 0 16px;
+  min-width: auto;
+}
+
+/* Active state */
+.format-toolbar-btn--active {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: rgb(96, 165, 250);
+  font-weight: 600;
+}
+
+/* iPad refinements */
+@media (max-width: 1024px) {
+  .format-toolbar-btn {
+    min-width: 44px; /* iOS recommended touch target */
+    height: 44px;
+    font-size: 18px;
+  }
+  
+  .format-toolbar-btn--text {
+    font-size: 16px;
+    padding: 0 18px;
+  }
+  
+  .format-toolbar-section {
+    padding: 12px 16px;
+  }
+  
+  .format-toolbar-label {
+    font-size: 12px;
+    min-width: 70px;
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .format-toolbar-btn {
+    border-color: rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.03);
+  }
+  
+  .format-toolbar-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .format-toolbar-btn:active {
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .transforming-format-toolbar {
+    transition-duration: 0.15s;
+  }
+  
+  .format-toolbar-btn:active {
+    transform: none;
+  }
+}
+
+/* ========================================
+   EDITOR SHELL
+   ======================================== */
+
+.rich-editor-shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 600px;
+  height: 100%;
+  background: transparent;  /* Let parent background show through */
+  color: var(--text-primary, #e5e7eb);
+  border-radius: 0;  /* No rounded corners */
+  border: none;
+  /* Contain scroll - .rich-editor-surface is the scroll container */
+  overflow: hidden;
+  /* Prevent scroll chaining to viewport */
+  overscroll-behavior: contain;
+}
+
+/* Editor surface - NO LONGER SCROLLS */
+/* Scroll is handled by parent .editor-scroll-container (Editor-as-Document pattern) */
+.rich-editor-surface {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  /* REMOVED: overflow - parent .editor-scroll-container is the ONLY scroll owner */
+  overflow: visible;
+  -webkit-overflow-scrolling: auto;
+}
+
+/* The actual contentEditable element */
+.rich-content {
+  position: relative;
+  flex: 1;
+  min-height: 500px; /* Ensures content can overflow and trigger scroll */
+  padding: 100px var(--editor-margin-desktop, 96px) 0 var(--editor-margin-desktop, 96px); /* Increased from 80px to 100px for toolbar clearance */
+  outline: none;
+
+  /* Typography */
+  line-height: 1.7;
+  font-size: 17px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  color: var(--text-primary, #e5e7eb);
+  letter-spacing: -0.01em;
+
+  /* Make it editable and interactive */
+  cursor: text;
+  user-select: text;
+  -webkit-user-select: text;
+  caret-color: var(--text-primary, #e5e7eb);
+  -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+  touch-action: manipulation;
+}
+
+/* Bottom spacer - only visible when keyboard is open (handled by native 100dvh) */
+.editor-bottom-spacer {
+  display: none;
+}
+
+/* Placeholder */
+.rich-placeholder {
+  position: absolute;
+  top: 80px; /* Match content top padding */
+  left: var(--editor-margin-desktop, 96px);
+  right: var(--editor-margin-desktop, 96px);
+  color: var(--text-secondary, #9ca3af);
+  opacity: 0.6;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;  /* Prevent text wrapping */
+  overflow: hidden;  /* Hide overflow if text is too long */
+}
+
+/* Text formatting styles */
+.rich-bold {
+  font-weight: 700;
+}
+
+.rich-italic {
+  font-style: italic;
+}
+
+.rich-underline {
+  text-decoration: underline;
+}
+
+.rich-strikethrough {
+  text-decoration: line-through;
+}
+
+/* Paragraph */
+.rich-paragraph {
+  margin: 0.8em 0;
+}
+
+.rich-content p {
+  margin: 0.8em 0;
+  line-height: 1.7;
+}
+
+.rich-content p:first-child {
+  margin-top: 0;
+}
+
+.rich-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* Headings - iOS Notes style */
+.rich-h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0.9em 0 0.4em 0;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+}
+
+.rich-h2 {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0.85em 0 0.4em 0;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+}
+
+.rich-h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0.8em 0 0.35em 0;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+/* Quote - iOS Notes style */
+.rich-quote {
+  margin: 1.2em 0;
+  padding: 12px 0 12px 20px;
+  border-left: 4px solid rgba(59, 130, 246, 0.5);
+  opacity: 0.9;
+  font-style: italic;
+  color: rgba(229, 231, 235, 0.85);
+}
+
+/* Lists - iOS Notes style */
+.rich-ul {
+  margin: 0.8em 0;
+  padding-left: 28px;
+  list-style-type: disc;
+}
+
+.rich-ol {
+  margin: 0.8em 0;
+  padding-left: 28px;
+  list-style-type: decimal;
+}
+
+.rich-listitem {
+  margin: 0.4em 0;
+  line-height: 1.7;
+}
+
+.rich-checklist {
+  margin: 0.5em 0;
+  padding-left: 24px;
+  list-style-type: none;
+}
+
+.rich-checklist li {
+  position: relative;
+  padding-left: 24px;
+}
+
+.rich-checklist li::before {
+  content: '☐';
+  position: absolute;
+  left: 0;
+  color: var(--text-secondary, #9ca3af);
+}
+
+.rich-checklist li[data-checked="true"]::before {
+  content: '☑';
+  color: rgb(34, 197, 94);
+}
+
+/* Ensure nested lists work */
+.rich-content ul ul,
+.rich-content ol ul {
+  list-style-type: circle;
+}
+
+.rich-content ul ul ul,
+.rich-content ol ul ul {
+  list-style-type: square;
+}
+
+/* Mobile: Prevent nested scroll container - let .lab-content handle scroll */
+@media (max-width: 768px) {
+  .rich-editor-shell {
+    /* Remove border and padding that could interfere */
+    border: none;
+    overflow: visible;
+  }
+
+  .rich-editor-surface {
+    /* NO CHANGE: Already using overflow: visible */
+    /* .editor-scroll-container is the scroll owner on ALL viewports */
+    overflow: visible;
+    -webkit-overflow-scrolling: auto;
+  }
+}
+
+/* iPad-specific refinements (tablets in landscape) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* REMOVED: .rich-editor-surface no longer scrolls */
+  /* .editor-scroll-container handles all scrolling on iPad */
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .floating-format-toolbar {
+    transition-duration: 0.1s;
+  }
+}

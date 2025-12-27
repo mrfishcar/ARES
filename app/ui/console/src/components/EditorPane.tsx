@@ -5,7 +5,7 @@
 
 import { EntityIndicators } from './EntityIndicators';
 import { VirtualizedExtractionEditor } from './VirtualizedExtractionEditor';
-import type { NavigateToRange } from './CodeMirrorEditorProps';
+import type { NavigateToRange, FormattingActions } from './CodeMirrorEditorProps';
 import type { EntitySpan, EntityType } from '../types/entities';
 
 interface EditorPaneProps {
@@ -30,6 +30,9 @@ interface EditorPaneProps {
   enableLongTextOptimization?: boolean;
   navigateToRange?: NavigateToRange;
   colorForSpan?: (span: EntitySpan) => string | undefined;
+  onEditorFocusChange?: (focused: boolean) => void;
+  onSelectionChange?: (hasSelection: boolean) => void;
+  onFormatActionsReady?: (actions: FormattingActions | null) => void;
 }
 
 export function EditorPane({
@@ -50,6 +53,9 @@ export function EditorPane({
   enableLongTextOptimization,
   navigateToRange,
   colorForSpan,
+  onEditorFocusChange,
+  onSelectionChange,
+  onFormatActionsReady,
 }: EditorPaneProps) {
   const editorHeight = Math.max(400, typeof window !== 'undefined' ? window.innerHeight - 380 : 400);
 
@@ -85,6 +91,9 @@ export function EditorPane({
               enableLongTextOptimization={enableLongTextOptimization}
               navigateToRange={navigateToRange}
               colorForSpan={colorForSpan}
+              onEditorFocusChange={onEditorFocusChange}
+              onSelectionChange={onSelectionChange}
+              onFormatActionsReady={onFormatActionsReady}
             />
           </div>
         </div>
