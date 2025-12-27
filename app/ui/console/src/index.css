@@ -1554,22 +1554,7 @@ a:hover {
   box-sizing: border-box;
 }
 
-/* Editor Panel - Infinite canvas feel */
-.editor-panel {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-width: 0;
-  min-height: 0;
-  background-color: var(--bg-primary);
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-  /* Don't scroll here - .rich-editor-surface is the scroll container */
-  overflow: hidden;
-  transition: background-color 0.3s ease;
-  pointer-events: auto;
-}
+/* Editor Panel - Removed duplicate - scrolling handled by first .editor-panel rule */
 
 /* Desktop sidebar for entities */
 .entities-sidebar-desktop {
