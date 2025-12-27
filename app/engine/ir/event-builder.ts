@@ -254,10 +254,10 @@ function createMoveCandidate(
 ): EventCandidate {
   const participants: Participant[] = [];
 
-  // Mover is the subject
+  // Mover is the subject (use specific role MOVER, not generic AGENT)
   if (assertion.subject) {
     participants.push({
-      role: 'AGENT',
+      role: 'MOVER',
       entity: assertion.subject,
       isRequired: true,
     });
@@ -285,7 +285,7 @@ function createMoveCandidate(
  */
 function createDeathCandidate(
   assertion: Assertion,
-  entityMap: Map<EntityId, Entity>
+  _entityMap: Map<EntityId, Entity>
 ): EventCandidate {
   const participants: Participant[] = [];
   const predicate = assertion.predicate as string;
@@ -293,17 +293,17 @@ function createDeathCandidate(
   const isKilling = predicate === 'killed' || predicate === 'murdered';
 
   if (isKilling) {
-    // "X killed Y" - X is the killer (AGENT), Y is the decedent (PATIENT)
+    // "X killed Y" - X is the killer, Y is the decedent
     if (assertion.subject) {
       participants.push({
-        role: 'AGENT',
+        role: 'KILLER',
         entity: assertion.subject,
         isRequired: false, // Killer is optional for DEATH event
       });
     }
     if (assertion.object && typeof assertion.object === 'string') {
       participants.push({
-        role: 'PATIENT',
+        role: 'DECEDENT',
         entity: assertion.object,
         isRequired: true,
       });
@@ -312,7 +312,7 @@ function createDeathCandidate(
     // "X died" - X is the decedent
     if (assertion.subject) {
       participants.push({
-        role: 'PATIENT',
+        role: 'DECEDENT',
         entity: assertion.subject,
         isRequired: true,
       });
@@ -367,7 +367,7 @@ function createTellCandidate(
 
 /**
  * Create a LEARN event candidate.
- * knower = subject, content = object
+ * learner = subject, topic = object
  */
 function createLearnCandidate(
   assertion: Assertion,
@@ -375,10 +375,10 @@ function createLearnCandidate(
 ): EventCandidate {
   const participants: Participant[] = [];
 
-  // Knower is the subject
+  // Learner is the subject (use specific role LEARNER)
   if (assertion.subject) {
     participants.push({
-      role: 'EXPERIENCER',
+      role: 'LEARNER',
       entity: assertion.subject,
       isRequired: true,
     });
@@ -413,10 +413,10 @@ function createPromiseCandidate(
 ): EventCandidate {
   const participants: Participant[] = [];
 
-  // Promiser is the subject
+  // Promiser is the subject (use specific role PROMISER)
   if (assertion.subject) {
     participants.push({
-      role: 'AGENT',
+      role: 'PROMISER',
       entity: assertion.subject,
       isRequired: true,
     });
@@ -451,21 +451,21 @@ function createAttackCandidate(
 ): EventCandidate {
   const participants: Participant[] = [];
 
-  // Attacker is the subject
+  // Attacker is the subject (use specific role ATTACKER)
   if (assertion.subject) {
     participants.push({
-      role: 'AGENT',
+      role: 'ATTACKER',
       entity: assertion.subject,
       isRequired: true,
     });
   }
 
-  // Target is the object
+  // Target is the object (use specific role TARGET)
   if (assertion.object && typeof assertion.object === 'string') {
     const objectEntity = entityMap.get(assertion.object);
     if (objectEntity?.type === 'PERSON' || objectEntity?.type === 'CREATURE') {
       participants.push({
-        role: 'PATIENT',
+        role: 'TARGET',
         entity: assertion.object,
         isRequired: true,
       });
@@ -485,10 +485,10 @@ function createMeetCandidate(
 ): EventCandidate {
   const participants: Participant[] = [];
 
-  // PersonA is the subject
+  // PersonA is the subject (use PERSON_A for symmetric meet events)
   if (assertion.subject) {
     participants.push({
-      role: 'AGENT',
+      role: 'PERSON_A',
       entity: assertion.subject,
       isRequired: true,
     });
@@ -499,7 +499,7 @@ function createMeetCandidate(
     const objectEntity = entityMap.get(assertion.object);
     if (objectEntity?.type === 'PERSON' || objectEntity?.type === 'CREATURE') {
       participants.push({
-        role: 'PATIENT',
+        role: 'PERSON_B',
         entity: assertion.object,
         isRequired: true,
       });
@@ -653,11 +653,20 @@ function mergeCanditatesToEvent(candidates: EventCandidate[]): StoryEvent {
   // Compute composite confidence from merged candidates
   const avgConfidence = computeAverageConfidence(candidates);
 
-  // Use highest modality certainty
-  const bestModality = selectBestModality(candidates);
+  // Use safest modality (most uncertain) to avoid auto-upgrading
+  const safestModality = selectSafestModality(candidates);
 
-  // Generate deterministic event ID
-  const eventId = generateEventId(base.type, base.participants, mergedDerivedFrom);
+  // Collect all observed modalities for richer rendering
+  const modalitiesObserved = collectModalitiesObserved(candidates);
+
+  // Generate deterministic event ID (include dedupe bucket for stability)
+  const eventId = generateEventId(
+    base.type,
+    base.participants,
+    base.docId,
+    base.discoursePosition.paragraphIndex,
+    mergedDerivedFrom
+  );
 
   const now = new Date().toISOString();
 
@@ -669,7 +678,8 @@ function mergeCanditatesToEvent(candidates: EventCandidate[]): StoryEvent {
     time: { type: 'UNKNOWN' } as TimeAnchor, // Will be set by attachTimeAnchors
     evidence: mergedEvidence,
     attribution: base.attribution,
-    modality: bestModality,
+    modality: safestModality,
+    modalitiesObserved, // All modalities seen across merged candidates
     confidence: avgConfidence,
     links: [],
     produces: [],
@@ -711,46 +721,79 @@ function computeAverageConfidence(candidates: EventCandidate[]): Confidence {
 }
 
 /**
- * Select best modality from candidates.
- * Priority: FACT > CLAIM > BELIEF > RUMOR > NEGATED > UNCERTAIN
+ * Select safest modality from candidates (maximum uncertainty).
+ *
+ * When merging duplicate events, we choose the LEAST certain modality
+ * to avoid auto-upgrading uncertain events to facts.
+ *
+ * Uncertainty order (most uncertain first):
+ *   RUMOR > BELIEF > CLAIM > NEGATED > PLAN > HYPOTHETICAL > FACT
+ *
+ * Rule: if any source is RUMOR → merged = RUMOR, etc.
  */
-function selectBestModality(candidates: EventCandidate[]): Modality {
-  const priority: Record<Modality, number> = {
-    FACT: 6,
-    CLAIM: 5,
-    BELIEF: 4,
-    RUMOR: 3,
-    PLAN: 2,
-    NEGATED: 1,
-    HYPOTHETICAL: 0,
-    UNCERTAIN: 0,
+function selectSafestModality(candidates: EventCandidate[]): Modality {
+  // Lower number = more uncertain = chosen when merging
+  const uncertainty: Record<Modality, number> = {
+    RUMOR: 1,        // Most uncertain - hearsay
+    BELIEF: 2,       // Character believes
+    CLAIM: 3,        // Character claims
+    NEGATED: 4,      // Explicitly negated
+    PLAN: 5,         // Future intention
+    HYPOTHETICAL: 6, // Conditional/counterfactual
+    UNCERTAIN: 7,    // Ambiguous
+    FACT: 8,         // Most certain - narrator states
   };
 
-  let best: Modality = 'UNCERTAIN';
-  let bestScore = -1;
+  let safest: Modality = 'FACT';
+  let lowestScore = uncertainty.FACT;
 
   for (const c of candidates) {
-    const score = priority[c.modality] ?? 0;
-    if (score > bestScore) {
-      bestScore = score;
-      best = c.modality;
+    const score = uncertainty[c.modality] ?? uncertainty.UNCERTAIN;
+    if (score < lowestScore) {
+      lowestScore = score;
+      safest = c.modality;
     }
   }
 
-  return best;
+  return safest;
 }
 
 /**
- * Generate deterministic event ID from type, participants, and sources.
+ * Collect all observed modalities from candidates.
+ * Useful for rendering "reported as rumor, later confirmed".
+ */
+function collectModalitiesObserved(candidates: EventCandidate[]): Modality[] {
+  const seen = new Set<Modality>();
+  for (const c of candidates) {
+    seen.add(c.modality);
+  }
+  return Array.from(seen);
+}
+
+/**
+ * Generate deterministic event ID from type, participants, dedupe bucket, and sources.
+ *
+ * The ID is based on the canonical event signature used for deduplication:
+ * - eventType
+ * - participants sorted by role+id
+ * - docId
+ * - paragraphIndex (time bucket)
+ * - derivedFrom assertion IDs
+ *
+ * This ensures same-bucket duplicates get the same ID.
  */
 function generateEventId(
   type: EventType,
   participants: Participant[],
+  docId: string,
+  paragraphIndex: number | undefined,
   derivedFrom: AssertionId[]
 ): EventId {
   const parts = [
     type,
     ...participants.map((p) => `${p.role}:${p.entity}`).sort(),
+    docId,
+    String(paragraphIndex ?? 'unknown'),
     ...derivedFrom.sort(),
   ];
 

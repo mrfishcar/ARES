@@ -442,8 +442,22 @@ export type EventType =
 
 /**
  * Participant roles in events.
+ *
+ * Generic roles (fallback):
+ *   AGENT, PATIENT, EXPERIENCER, RECIPIENT, SOURCE, DESTINATION,
+ *   INSTRUMENT, LOCATION, WITNESS, BENEFICIARY, MALEFICIARY
+ *
+ * Event-specific roles (preferred):
+ *   MOVE: MOVER, ORIGIN, DESTINATION
+ *   TELL: SPEAKER, ADDRESSEE, TOPIC
+ *   LEARN: LEARNER, TOPIC
+ *   DEATH: DECEDENT, KILLER
+ *   ATTACK: ATTACKER, TARGET, WEAPON
+ *   PROMISE: PROMISER, BENEFICIARY
+ *   MEET: PERSON_A, PERSON_B
  */
 export type ParticipantRole =
+  // Generic roles (fallback)
   | 'AGENT'         // Who does the action
   | 'PATIENT'       // Who is affected
   | 'EXPERIENCER'   // Who experiences (cognitive events)
@@ -455,9 +469,23 @@ export type ParticipantRole =
   | 'WITNESS'       // Who observes
   | 'BENEFICIARY'   // Who benefits
   | 'MALEFICIARY'   // Who is harmed
-  | 'SPEAKER'       // Who speaks (communicative)
-  | 'ADDRESSEE'     // Who is spoken to
-  | 'TOPIC'         // What is discussed
+
+  // Communicative roles
+  | 'SPEAKER'       // Who speaks (TELL)
+  | 'ADDRESSEE'     // Who is spoken to (TELL)
+  | 'TOPIC'         // What is discussed (TELL, LEARN)
+
+  // Event-specific roles
+  | 'MOVER'         // Who moves (MOVE)
+  | 'LEARNER'       // Who learns (LEARN)
+  | 'PROMISER'      // Who promises (PROMISE)
+  | 'ATTACKER'      // Who attacks (ATTACK)
+  | 'TARGET'        // Who is attacked (ATTACK)
+  | 'DECEDENT'      // Who died (DEATH)
+  | 'KILLER'        // Who killed (DEATH)
+  | 'PERSON_A'      // First person in symmetric event (MEET)
+  | 'PERSON_B'      // Second person in symmetric event (MEET)
+
   | string;         // Allow custom roles
 
 /**
@@ -514,8 +542,11 @@ export interface StoryEvent {
   /** Attribution */
   attribution: Attribution;
 
-  /** Modality */
+  /** Modality (safest/most uncertain when merged) */
   modality: Modality;
+
+  /** All modalities observed across merged duplicates (for rendering "rumor→confirmed") */
+  modalitiesObserved?: Modality[];
 
   /** Confidence */
   confidence: Confidence;

@@ -163,7 +163,7 @@ describe('MOVE Event Extraction', () => {
     expect(candidates).toHaveLength(1);
     expect(candidates[0].type).toBe('MOVE');
     expect(candidates[0].participants).toHaveLength(2);
-    expect(candidates[0].participants[0].role).toBe('AGENT');
+    expect(candidates[0].participants[0].role).toBe('MOVER');
     expect(candidates[0].participants[0].entity).toBe('entity_harry');
     expect(candidates[0].participants[1].role).toBe('DESTINATION');
     expect(candidates[0].participants[1].entity).toBe('entity_hogwarts');
@@ -255,7 +255,7 @@ describe('DEATH Event Extraction', () => {
     expect(candidates).toHaveLength(1);
     expect(candidates[0].type).toBe('DEATH');
     expect(candidates[0].participants).toHaveLength(1);
-    expect(candidates[0].participants[0].role).toBe('PATIENT');
+    expect(candidates[0].participants[0].role).toBe('DECEDENT');
     expect(candidates[0].participants[0].entity).toBe('entity_dumbledore');
   });
 
@@ -278,16 +278,16 @@ describe('DEATH Event Extraction', () => {
     expect(candidates).toHaveLength(1);
     expect(candidates[0].type).toBe('DEATH');
 
-    // Killer should be AGENT, decedent should be PATIENT
-    const agentParticipant = candidates[0].participants.find(
-      (p) => p.role === 'AGENT'
+    // Killer should be KILLER, decedent should be DECEDENT
+    const killerParticipant = candidates[0].participants.find(
+      (p) => p.role === 'KILLER'
     );
-    const patientParticipant = candidates[0].participants.find(
-      (p) => p.role === 'PATIENT'
+    const decedentParticipant = candidates[0].participants.find(
+      (p) => p.role === 'DECEDENT'
     );
 
-    expect(agentParticipant?.entity).toBe('entity_snape');
-    expect(patientParticipant?.entity).toBe('entity_dumbledore');
+    expect(killerParticipant?.entity).toBe('entity_snape');
+    expect(decedentParticipant?.entity).toBe('entity_dumbledore');
   });
 
   it('should inherit RUMOR modality for rumored death', () => {
@@ -407,10 +407,10 @@ describe('LEARN Event Extraction', () => {
     expect(candidates).toHaveLength(1);
     expect(candidates[0].type).toBe('LEARN');
 
-    const experiencer = candidates[0].participants.find(
-      (p) => p.role === 'EXPERIENCER'
+    const learner = candidates[0].participants.find(
+      (p) => p.role === 'LEARNER'
     );
-    expect(experiencer?.entity).toBe('entity_harry');
+    expect(learner?.entity).toBe('entity_harry');
   });
 });
 
@@ -438,12 +438,12 @@ describe('PROMISE Event Extraction', () => {
     expect(candidates).toHaveLength(1);
     expect(candidates[0].type).toBe('PROMISE');
 
-    const agent = candidates[0].participants.find((p) => p.role === 'AGENT');
+    const promiser = candidates[0].participants.find((p) => p.role === 'PROMISER');
     const beneficiary = candidates[0].participants.find(
       (p) => p.role === 'BENEFICIARY'
     );
 
-    expect(agent?.entity).toBe('entity_snape');
+    expect(promiser?.entity).toBe('entity_snape');
     expect(beneficiary?.entity).toBe('entity_dumbledore');
   });
 });
@@ -471,8 +471,8 @@ describe('ATTACK Event Extraction', () => {
     expect(candidates).toHaveLength(1);
     expect(candidates[0].type).toBe('ATTACK');
 
-    const attacker = candidates[0].participants.find((p) => p.role === 'AGENT');
-    const target = candidates[0].participants.find((p) => p.role === 'PATIENT');
+    const attacker = candidates[0].participants.find((p) => p.role === 'ATTACKER');
+    const target = candidates[0].participants.find((p) => p.role === 'TARGET');
 
     expect(attacker?.entity).toBe('entity_voldemort');
     expect(target?.entity).toBe('entity_harry');
@@ -503,8 +503,8 @@ describe('MEET Event Extraction', () => {
     expect(candidates).toHaveLength(1);
     expect(candidates[0].type).toBe('MEET');
 
-    const personA = candidates[0].participants.find((p) => p.role === 'AGENT');
-    const personB = candidates[0].participants.find((p) => p.role === 'PATIENT');
+    const personA = candidates[0].participants.find((p) => p.role === 'PERSON_A');
+    const personB = candidates[0].participants.find((p) => p.role === 'PERSON_B');
 
     expect(personA?.entity).toBe('entity_harry');
     expect(personB?.entity).toBe('entity_ron');
@@ -671,7 +671,63 @@ describe('Event Deduplication', () => {
     const events = normalizeAndDedupe(candidates);
 
     expect(events).toHaveLength(1);
-    expect(events[0].modality).toBe('FACT'); // Best modality selected
+    expect(events[0].modality).toBe('RUMOR'); // Safest modality selected (max uncertainty)
+  });
+
+  it('should track all observed modalities when deduping', () => {
+    const candidates: EventCandidate[] = [
+      {
+        type: 'DEATH',
+        participants: [
+          { role: 'DECEDENT', entity: 'entity_sirius', isRequired: true },
+        ],
+        evidence: [makeEvidence('text1', { paragraphIndex: 1 })],
+        derivedFrom: ['assertion_1'],
+        modality: 'RUMOR',
+        confidence: makeConfidence(),
+        attribution: makeAttribution(),
+        docId: 'test-doc',
+        discoursePosition: { paragraphIndex: 1, charStart: 0 },
+      },
+      {
+        type: 'DEATH',
+        participants: [
+          { role: 'DECEDENT', entity: 'entity_sirius', isRequired: true },
+        ],
+        evidence: [makeEvidence('text2', { paragraphIndex: 1 })],
+        derivedFrom: ['assertion_2'],
+        modality: 'FACT',
+        confidence: makeConfidence(),
+        attribution: makeAttribution(),
+        docId: 'test-doc',
+        discoursePosition: { paragraphIndex: 1, charStart: 0 },
+      },
+      {
+        type: 'DEATH',
+        participants: [
+          { role: 'DECEDENT', entity: 'entity_sirius', isRequired: true },
+        ],
+        evidence: [makeEvidence('text3', { paragraphIndex: 1 })],
+        derivedFrom: ['assertion_3'],
+        modality: 'BELIEF',
+        confidence: makeConfidence(),
+        attribution: makeAttribution(),
+        docId: 'test-doc',
+        discoursePosition: { paragraphIndex: 1, charStart: 0 },
+      },
+    ];
+
+    const events = normalizeAndDedupe(candidates);
+
+    expect(events).toHaveLength(1);
+    // modalitiesObserved should contain all three observed modalities
+    expect(events[0].modalitiesObserved).toBeDefined();
+    expect(events[0].modalitiesObserved).toContain('RUMOR');
+    expect(events[0].modalitiesObserved).toContain('FACT');
+    expect(events[0].modalitiesObserved).toContain('BELIEF');
+    expect(events[0].modalitiesObserved).toHaveLength(3);
+    // Merged modality should still be RUMOR (safest)
+    expect(events[0].modality).toBe('RUMOR');
   });
 });
 
@@ -968,8 +1024,8 @@ describe('Edge Cases', () => {
     const candidates = extractEventCandidates([assertion], entityMap);
 
     expect(candidates).toHaveLength(1);
-    // Should still have AGENT but no DESTINATION
+    // Should still have MOVER but no DESTINATION
     expect(candidates[0].participants).toHaveLength(1);
-    expect(candidates[0].participants[0].role).toBe('AGENT');
+    expect(candidates[0].participants[0].role).toBe('MOVER');
   });
 });
