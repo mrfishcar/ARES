@@ -555,12 +555,12 @@ a:hover {
 .lab-toolbar-stack {
   position: fixed;
   top: 16px;
-  right: 100px;  /* 100px spacing from right edge */
+  right: 24px;  /* Simple, reliable positioning - always visible */
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 8px;
-  z-index: 150;  /* Above entity sidebar (z-index: 100) */
+  z-index: 200;  /* Above everything - ensure always visible */
   transition: right 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1520,18 +1520,8 @@ a:hover {
   touch-action: pan-y;  /* Allow vertical touch scrolling */
 }
 
-/* Toolbar positioning when entity sidebar is pinned */
-.extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
-  /* Keep 100px spacing left of sidebar */
-  right: calc(500px + 100px);  /* Sidebar width + 100px spacing */
-}
-
-/* Mobile override - toolbar stays with normal spacing */
-@media (max-width: 768px) {
-  .extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
-    right: 100px !important;
-  }
-}
+/* Toolbar stays at fixed position - overlays sidebar if needed */
+/* High z-index (200) ensures it's always visible above sidebar (z-index: 100) */
 
 .editor-wrapper {
   display: flex;
