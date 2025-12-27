@@ -1519,17 +1519,33 @@ a:hover {
   touch-action: pan-y;  /* Allow vertical touch scrolling */
 }
 
-/* Toolbar positioning when entity sidebar is pinned - ALL BROWSERS */
-@media (min-width: 769px) {
+/* Toolbar positioning when entity sidebar is pinned - VIEWPORT-AWARE */
+@media (min-width: 1100px) {
+  /* Wide screens: Toolbar can fit left of sidebar */
   .extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
-    /* Shift left of entity sidebar: 500px sidebar + 24px gap + 24px margin */
-    right: 548px;
+    right: 548px; /* 500px sidebar + 24px gap + 24px margin */
   }
 
-  /* When both document sidebar AND entity sidebar are open */
   .extraction-lab.sidebar-open.entity-sidebar-pinned .lab-toolbar-stack {
-    /* Keep same right offset (entity sidebar stays on right) */
     right: 548px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1099px) {
+  /* Medium screens: Position toolbar just left of sidebar */
+  .extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
+    right: calc(500px + 24px); /* Sidebar width + gap */
+  }
+
+  .extraction-lab.sidebar-open.entity-sidebar-pinned .lab-toolbar-stack {
+    right: calc(500px + 24px);
+  }
+}
+
+@media (max-width: 768px) {
+  /* Mobile: Toolbar stays in corner, sidebar overlays */
+  .extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
+    right: 24px;
   }
 }
 
