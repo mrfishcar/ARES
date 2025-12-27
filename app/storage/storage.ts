@@ -23,6 +23,7 @@ import type { Pattern } from '../engine/bootstrap';
 import { DEFAULT_LLM_CONFIG } from '../engine/llm-config';
 import type { Span as PipelineSpan } from '../engine/pipeline/types';
 import type { BookNLPResult } from '../engine/booknlp/types';
+import { applyOverrides } from '../engine/override-manager';
 
 export interface ProvenanceEntry {
   global_id: string;
@@ -511,9 +512,33 @@ export async function appendDoc(
   // DEBUG: Log globals before storing
   console.log(`[STORAGE] Final globals for ${docId}: ${globals.length} entities:`, globals.slice(0, 5).map(e => `${e.type}::${e.canonical}`).join(', '));
 
-  // Update graph
+  // Update graph with new entities/relations
   graph.entities = globals;
   graph.relations = filteredRelations;
+
+  // Apply saved corrections to preserve user overrides across reprocessing
+  // This ensures entity type changes, merges, rejections etc. survive
+  if (graph.corrections && graph.corrections.length > 0) {
+    console.log(`[STORAGE] Applying ${graph.corrections.length} saved corrections to preserve user overrides`);
+    const overrideResult = applyOverrides(graph, graph.corrections);
+    graph.entities = overrideResult.graph.entities;
+    graph.relations = overrideResult.graph.relations;
+
+    if (overrideResult.stats.totalApplied > 0) {
+      console.log(`[STORAGE] Applied ${overrideResult.stats.totalApplied} corrections:`, {
+        entityTypeChanges: overrideResult.stats.entityTypeChanges,
+        entityMerges: overrideResult.stats.entityMerges,
+        entityRejections: overrideResult.stats.entityRejections,
+        aliasChanges: overrideResult.stats.aliasChanges,
+        relationChanges: overrideResult.stats.relationAdditions + overrideResult.stats.relationRemovals
+      });
+    }
+    if (overrideResult.conflicts.length > 0) {
+      console.warn(`[STORAGE] ${overrideResult.conflicts.length} override conflicts detected`);
+    }
+  }
+
+  // Update graph metadata (entities/relations already updated above)
   graph.conflicts = conflicts;
   graph.metadata.updated_at = new Date().toISOString();
   graph.metadata.doc_count += 1;

@@ -1538,3 +1538,238 @@ export function correctEntityType(
 
   return currentType;
 }
+
+// ============================================================================
+// CONTEXT-AWARE QUALITY FILTERING (Phase 3.2)
+// Dynamic tier promotion based on contextual signals
+// ============================================================================
+
+/**
+ * Context signals that can boost entity quality/tier
+ */
+export interface EntityContextSignals {
+  /** Entity appears within or near dialogue (speech attribution) */
+  appearsInDialogue?: boolean;
+  /** Entity appears as subject or object in a relation pattern */
+  appearsInRelation?: boolean;
+  /** Entity is referenced by a pronoun (coreference resolved) */
+  hasCoreferenceLink?: boolean;
+  /** Entity has an appositive ("X, the Y") */
+  hasAppositiveDescription?: boolean;
+  /** Entity appears in multiple paragraphs */
+  multiParagraphMentions?: number;
+  /** Entity is mentioned by another character */
+  mentionedByCharacter?: boolean;
+  /** Document ID for same-document checks */
+  docId?: string;
+}
+
+/**
+ * Result of context-aware tier promotion
+ */
+export interface TierPromotionResult {
+  originalTier: EntityTier;
+  promotedTier: EntityTier;
+  wasPromoted: boolean;
+  promotionReason?: string;
+  confidenceBoost: number;
+}
+
+/**
+ * Evaluate context signals and determine if entity should be promoted
+ *
+ * Promotion rules:
+ * - TIER_C → TIER_B: Dialogue context, relation pattern, coreference link
+ * - TIER_C → TIER_A: Multiple strong signals (appositive + relation + dialogue)
+ * - TIER_B → TIER_A: Appositive + multi-paragraph + relation
+ *
+ * @param entity - Entity with current tier
+ * @param context - Context signals from extraction
+ * @returns Promotion result with new tier and reason
+ */
+export function evaluateTierPromotion(
+  entity: Entity,
+  context: EntityContextSignals
+): TierPromotionResult {
+  const originalTier = entity.tier ?? 'TIER_A';
+  let promotedTier = originalTier;
+  let promotionReason: string | undefined;
+  let confidenceBoost = 0;
+
+  // Count strong signals
+  let strongSignals = 0;
+  let moderateSignals = 0;
+
+  // Strong signals
+  if (context.hasAppositiveDescription) {
+    strongSignals++;
+    confidenceBoost += 0.15;
+  }
+  if (context.appearsInRelation) {
+    strongSignals++;
+    confidenceBoost += 0.10;
+  }
+  if ((context.multiParagraphMentions ?? 0) >= 3) {
+    strongSignals++;
+    confidenceBoost += 0.10;
+  }
+
+  // Moderate signals
+  if (context.appearsInDialogue) {
+    moderateSignals++;
+    confidenceBoost += 0.08;
+  }
+  if (context.hasCoreferenceLink) {
+    moderateSignals++;
+    confidenceBoost += 0.05;
+  }
+  if (context.mentionedByCharacter) {
+    moderateSignals++;
+    confidenceBoost += 0.05;
+  }
+
+  // Apply promotion rules based on current tier
+  if (originalTier === 'TIER_C') {
+    if (strongSignals >= 2 || (strongSignals >= 1 && moderateSignals >= 2)) {
+      // Strong promotion: TIER_C → TIER_A
+      promotedTier = 'TIER_A';
+      promotionReason = `tier_c_to_tier_a: ${strongSignals} strong + ${moderateSignals} moderate signals`;
+    } else if (strongSignals >= 1 || moderateSignals >= 2) {
+      // Moderate promotion: TIER_C → TIER_B
+      promotedTier = 'TIER_B';
+      promotionReason = `tier_c_to_tier_b: ${strongSignals} strong + ${moderateSignals} moderate signals`;
+    } else if (moderateSignals >= 1) {
+      // Weak promotion: stay TIER_C but boost confidence
+      promotionReason = `tier_c_confidence_boost: ${moderateSignals} moderate signals`;
+    }
+  } else if (originalTier === 'TIER_B') {
+    if (strongSignals >= 2 || (strongSignals >= 1 && moderateSignals >= 2)) {
+      // Promote TIER_B → TIER_A
+      promotedTier = 'TIER_A';
+      promotionReason = `tier_b_to_tier_a: ${strongSignals} strong + ${moderateSignals} moderate signals`;
+    }
+  }
+  // TIER_A entities don't need promotion
+
+  return {
+    originalTier,
+    promotedTier,
+    wasPromoted: promotedTier !== originalTier,
+    promotionReason,
+    confidenceBoost: Math.min(confidenceBoost, 0.30) // Cap at 0.30 boost
+  };
+}
+
+/**
+ * Apply context-aware tier promotion to entities
+ *
+ * @param entities - Entities with tiers assigned
+ * @param contextMap - Map of entity ID to context signals
+ * @returns Entities with potentially promoted tiers
+ */
+export function applyContextAwareTierPromotion(
+  entities: Entity[],
+  contextMap: Map<string, EntityContextSignals>
+): Entity[] {
+  return entities.map(entity => {
+    const context = contextMap.get(entity.id);
+    if (!context) {
+      return entity;
+    }
+
+    const promotion = evaluateTierPromotion(entity, context);
+
+    if (promotion.wasPromoted || promotion.confidenceBoost > 0) {
+      const newConfidence = Math.min(
+        (entity.confidence ?? 0.5) + promotion.confidenceBoost,
+        1.0
+      );
+
+      if (process.env.TIER_DEBUG === '1') {
+        console.log(
+          `[CONTEXT-PROMOTION] ${entity.canonical} (${entity.type}): ` +
+          `${promotion.originalTier} → ${promotion.promotedTier} ` +
+          `(confidence: ${entity.confidence?.toFixed(2)} → ${newConfidence.toFixed(2)}) ` +
+          `reason: ${promotion.promotionReason}`
+        );
+      }
+
+      return {
+        ...entity,
+        tier: promotion.promotedTier,
+        confidence: newConfidence,
+        attrs: {
+          ...entity.attrs,
+          tierPromoted: promotion.wasPromoted,
+          promotionReason: promotion.promotionReason,
+          originalTier: promotion.originalTier
+        }
+      };
+    }
+
+    return entity;
+  });
+}
+
+/**
+ * Extract context signals from parsed document structure
+ *
+ * This is a helper to build context signals from spaCy output
+ * or other structured document representation.
+ *
+ * @param entityId - Entity ID to analyze
+ * @param documentStructure - Parsed document with paragraphs, dialogue, etc.
+ * @returns Context signals for the entity
+ */
+export function extractContextSignals(
+  entityId: string,
+  documentStructure: {
+    paragraphs: Array<{
+      text: string;
+      isDialogue: boolean;
+      entityMentions: string[];
+    }>;
+    relations: Array<{ subj: string; obj: string }>;
+    coreferenceChains: Array<string[]>;
+    appositives: Map<string, string[]>;
+  }
+): EntityContextSignals {
+  const signals: EntityContextSignals = {};
+
+  // Check dialogue context
+  const dialogueParagraphs = documentStructure.paragraphs.filter(
+    p => p.isDialogue && p.entityMentions.includes(entityId)
+  );
+  if (dialogueParagraphs.length > 0) {
+    signals.appearsInDialogue = true;
+  }
+
+  // Check relation patterns
+  const inRelation = documentStructure.relations.some(
+    r => r.subj === entityId || r.obj === entityId
+  );
+  if (inRelation) {
+    signals.appearsInRelation = true;
+  }
+
+  // Check coreference
+  const hasCoref = documentStructure.coreferenceChains.some(
+    chain => chain.includes(entityId)
+  );
+  if (hasCoref) {
+    signals.hasCoreferenceLink = true;
+  }
+
+  // Check appositives
+  if (documentStructure.appositives.has(entityId)) {
+    signals.hasAppositiveDescription = true;
+  }
+
+  // Count multi-paragraph mentions
+  const mentionParagraphs = documentStructure.paragraphs.filter(
+    p => p.entityMentions.includes(entityId)
+  );
+  signals.multiParagraphMentions = mentionParagraphs.length;
+
+  return signals;
+}

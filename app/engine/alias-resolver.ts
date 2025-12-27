@@ -18,7 +18,7 @@ import type { EntityProfile } from './entity-profiler';
 import { aliasRegistry } from './alias-registry';
 import { eidRegistry } from './eid-registry';
 import { normalizeForAliasing } from './hert/fingerprint';
-import { canMergeByTier } from './entity-tier-assignment';
+import { canMergeByTier, type TierMergeOptions, DEFAULT_TIER_MERGE_OPTIONS } from './entity-tier-assignment';
 
 /**
  * Alias resolution result
@@ -158,37 +158,77 @@ export class AliasResolver {
   /**
    * Tier-aware resolution
    *
-   * TIER_C entities are isolated and should not be merged with other entities.
-   * This prevents low-confidence provisional entities from contaminating
-   * high-confidence core entity clusters.
-   *
-   * Merging rules:
+   * Graduated merging based on entity tiers:
    * - TIER_A can merge with TIER_A (full merging)
    * - TIER_B can merge with TIER_A or TIER_B (cautious merging)
-   * - TIER_C cannot merge with anything (isolated)
+   * - TIER_C can conditionally merge:
+   *   - To TIER_A if confidence > 0.85 or strong namehood evidence
+   *   - To TIER_B if same document + same type
+   *   - TIER_C → TIER_C is blocked (garbage isolation)
    *
    * @param entity - Entity to resolve (includes tier information)
    * @param profile - Optional profile for context-based matching
    * @param existingProfiles - All existing profiles
+   * @param tierOptions - Optional tier merge configuration
    * @returns Resolution or null if should create new entity
    */
   resolveWithTier(
     entity: Entity,
     profile?: EntityProfile,
-    existingProfiles?: Map<string, EntityProfile>
+    existingProfiles?: Map<string, EntityProfile>,
+    tierOptions?: TierMergeOptions
   ): AliasResolution | null {
     const tier = entity.tier ?? 'TIER_A'; // Default to TIER_A for backward compatibility
+    const opts = { ...DEFAULT_TIER_MERGE_OPTIONS, ...tierOptions };
 
-    // TIER_C entities are isolated - never merge
-    if (tier === 'TIER_C') {
+    // For TIER_A and TIER_B, use standard resolution
+    if (tier !== 'TIER_C') {
+      return this.resolve(entity.canonical, entity.type, profile, existingProfiles);
+    }
+
+    // TIER_C: Check if conditional merge is possible
+    // First, try to find a potential match
+    const potentialMatch = this.resolve(entity.canonical, entity.type, profile, existingProfiles);
+
+    if (!potentialMatch) {
+      // No match found anyway - create new entity
       if (process.env.TIER_DEBUG === '1') {
-        console.log(`[ALIAS-RESOLVER] TIER_C entity "${entity.canonical}" is isolated - no merging`);
+        console.log(`[ALIAS-RESOLVER] TIER_C entity "${entity.canonical}" - no potential matches found`);
       }
       return null;
     }
 
-    // For TIER_A and TIER_B, use standard resolution
-    return this.resolve(entity.canonical, entity.type, profile, existingProfiles);
+    // Found a potential match - check tier compatibility
+    // We need to look up the target entity's tier
+    const targetCanonical = potentialMatch.canonical;
+    const targetConfidence = potentialMatch.confidence;
+
+    // Create a mock target entity for tier checking
+    // In practice, we use confidence as proxy for tier quality
+    const targetEntity: Entity = {
+      id: `target_${potentialMatch.eid}`,
+      type: entity.type,
+      canonical: targetCanonical || entity.canonical,
+      aliases: [],
+      confidence: targetConfidence,
+      // Infer tier from confidence (higher confidence = higher tier)
+      tier: targetConfidence >= 0.85 ? 'TIER_A' : (targetConfidence >= 0.6 ? 'TIER_B' : 'TIER_C')
+    };
+
+    const mergeCheck = canMergeByTier(entity, targetEntity, opts);
+
+    if (mergeCheck.canMerge) {
+      if (process.env.TIER_DEBUG === '1') {
+        console.log(`[ALIAS-RESOLVER] TIER_C entity "${entity.canonical}" allowed to merge: ${mergeCheck.reason}`);
+      }
+      return potentialMatch;
+    }
+
+    // Merge not allowed
+    if (process.env.TIER_DEBUG === '1') {
+      console.log(`[ALIAS-RESOLVER] TIER_C entity "${entity.canonical}" blocked from merge: ${mergeCheck.reason}`);
+    }
+    return null;
   }
 
   /**
