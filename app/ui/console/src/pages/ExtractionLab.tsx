@@ -2293,6 +2293,20 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         deriveDocumentName={deriveDocumentName}
       />
 
+      {/* Entity Review Sidebar - Pinned mode (same level as documents sidebar) */}
+      {layout.entityPanelMode === 'pinned' && (
+        <EntityReviewSidebar
+          mode="pinned"
+          entities={entities}
+          onClose={layout.closeEntityPanel}
+          onPin={layout.pinEntityPanel}
+          onEntityUpdate={handleEntityUpdate}
+          onLogReport={handleLogReport}
+          onCopyReport={handleCopyReport}
+          onNavigateEntity={handleNavigateToEntity}
+        />
+      )}
+
       {/* Main Content */}
       <div className="lab-content">
         {/* Editor panel - scrolls naturally like working commit */}
@@ -2335,22 +2349,6 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
             />
           )}
         </div>
-
-        {/* Pinned sidebar mode - integrated into layout */}
-        {layout.entityPanelMode === 'pinned' && (
-          <div style={{ flex: '0 0 500px', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-            <EntityReviewSidebar
-              mode="pinned"
-              entities={entities}
-              onClose={layout.closeEntityPanel}
-              onPin={layout.pinEntityPanel}
-              onEntityUpdate={handleEntityUpdate}
-              onLogReport={handleLogReport}
-              onCopyReport={handleCopyReport}
-              onNavigateEntity={handleNavigateToEntity}
-            />
-          </div>
-        )}
 
         {booknlpResult && (
           <div

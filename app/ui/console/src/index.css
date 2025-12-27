@@ -1497,14 +1497,13 @@ a:hover {
   min-height: 0;
   overflow: hidden;  /* Constrain children - they scroll */
   background: transparent;
-  transition: padding-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: padding-left 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+              padding-right 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* When entity sidebar is pinned, change to flex layout with sidebar on right */
+/* When entity sidebar is pinned, add right padding (sidebar is at app level now) */
 .extraction-lab.entity-sidebar-pinned .lab-content {
-  display: flex;
-  flex-direction: row;
-  gap: 24px;
+  padding-right: 524px; /* 500px sidebar + 24px gap */
 }
 
 /* Editor panel - scrolls naturally like working commit */
@@ -1515,12 +1514,6 @@ a:hover {
   border-radius: 12px;
   overflow: auto;  /* Scroll naturally - no forcing */
   min-height: 0;  /* Allow flex shrinking */
-}
-
-/* When entity sidebar is pinned, editor takes remaining space */
-.extraction-lab.entity-sidebar-pinned .editor-panel {
-  flex: 1;
-  min-width: 0;
 }
 
 /* Toolbar positioning when entity sidebar is pinned - ALL BROWSERS */
@@ -2762,9 +2755,9 @@ html[data-theme="light"] .overlay-backdrop {
     padding-left: 0; /* ✅ Remove sidebar padding on mobile; documents-sidebar is hidden */
   }
 
-  /* Entity sidebar wrapper - escape parent on mobile when pinned */
+  /* Entity sidebar - fullscreen on mobile, remove right padding */
   .extraction-lab.entity-sidebar-pinned .lab-content {
-    overflow: visible; /* Allow pinned sidebar to escape on mobile */
+    padding-right: 0; /* ✅ Remove entity sidebar padding on mobile */
   }
 
   .lab-header-status-row {

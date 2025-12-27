@@ -23,15 +23,37 @@
   border: 1px solid var(--liquid-glass-border);
 }
 
-/* Pinned mode - integrated into layout */
+/* Pinned mode - fixed sidebar from right (same level as documents sidebar) */
 .entity-review-sidebar.pinned {
-  width: 100%;
-  flex: 1; /* Fill parent container instead of height: 100% */
-  min-height: 0; /* Allow flex shrinking */
-  box-shadow: none;
-  border-radius: 0;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 500px;
+
+  /* Liquid glass styling (matching documents sidebar) */
+  background: radial-gradient(circle at top right, var(--liquid-glass-tint-1), transparent 60%),
+              radial-gradient(circle at bottom left, var(--liquid-glass-tint-2), transparent 65%),
+              var(--liquid-glass-bg);
+  backdrop-filter: blur(var(--glass-blur-strong));
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong));
   border-left: 1px solid var(--liquid-glass-border);
-  animation: none; /* NO animation in pinned mode - prevents jump */
+  border-radius: 0;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.08);
+
+  z-index: 100;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+
+  /* Start off-screen by default, slide in when pinned */
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Slide in when pinned mode is active */
+.extraction-lab.entity-sidebar-pinned .entity-review-sidebar.pinned {
+  transform: translateX(0);
 }
 
 @keyframes slideIn {
