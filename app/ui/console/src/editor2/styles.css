@@ -193,7 +193,7 @@
   position: relative;
   flex: 1;
   min-height: 500px; /* Ensures content can overflow and trigger scroll */
-  padding: 80px var(--editor-margin-desktop, 96px) 0 var(--editor-margin-desktop, 96px);
+  padding: 100px var(--editor-margin-desktop, 96px) 0 var(--editor-margin-desktop, 96px); /* Increased from 80px to 100px for toolbar clearance */
   outline: none;
 
   /* Typography */

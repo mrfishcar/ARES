@@ -29,7 +29,8 @@
   top: 0;
   right: 0;
   bottom: 0;
-  width: 500px;
+  width: min(500px, 35vw);  /* Responsive width: 500px or 35% of viewport, whichever is smaller */
+  max-width: 700px;  /* Allow wider on very large screens */
 
   /* Liquid glass styling (identical to documents sidebar) */
   background: radial-gradient(circle at top right, var(--liquid-glass-tint-1), transparent 60%),
@@ -490,10 +491,10 @@
     border-radius: 0;
   }
 
-  /* Pinned mode - keep right-side pinned behavior on mobile (narrower width) */
+  /* Pinned mode - full width on mobile screens */
   .entity-review-sidebar.pinned {
-    width: 85%;  /* Take up most of screen on mobile, but not full width */
-    max-width: 500px;  /* Don't exceed desktop width */
+    width: 100%;  /* Full width on mobile */
+    max-width: none;  /* Remove max-width constraint on mobile */
   }
 
   .entity-table-header,

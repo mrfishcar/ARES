@@ -2290,6 +2290,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         loadingDocuments={loadingDocuments}
         loadingDocument={loadingDocument}
         onLoadDocument={handleLoadDocumentById}
+        onClose={layout.closeDocumentSidebar}
         deriveDocumentName={deriveDocumentName}
       />
 
