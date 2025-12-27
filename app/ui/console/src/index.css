@@ -553,15 +553,20 @@ a:hover {
    ========================================================= */
 
 .lab-toolbar-stack {
-  position: absolute;  /* Changed from fixed - now positioned within lab-content */
+  position: fixed;  /* Fixed positioning - positions relative to viewport */
   top: 16px;
-  right: 24px;  /* Always 24px from container's right edge */
+  right: 24px;  /* Default: 24px from viewport edge */
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 8px;
-  z-index: 200;  /* Above everything - ensure always visible */
-  /* Removed transition - no longer needed, parent padding handles movement */
+  z-index: 200;
+  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* When entity sidebar is pinned, move toolbar to left of sidebar */
+.extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
+  right: 524px;  /* 500px sidebar + 24px gap */
 }
 
 /* Toolbar slot holds both normal and formatting toolbars */
@@ -1490,7 +1495,6 @@ a:hover {
 }
 
 .lab-content {
-  position: relative;  /* Added: Contains absolutely positioned toolbar */
   display: grid;  /* Grid layout like working commit */
   grid-template-columns: 1fr;  /* Single column (will add second column for results panel later) */
   gap: 0;  /* No gap - editor fills space */
@@ -1521,11 +1525,12 @@ a:hover {
   touch-action: pan-y;  /* Allow vertical touch scrolling */
 }
 
-/* Removed: Toolbar positioning when entity sidebar is pinned
- * No longer needed - toolbar is now inside lab-content container,
- * which has padding-right: 524px when sidebar is pinned.
- * The toolbar automatically moves with the container padding.
- */
+/* Mobile override - keep toolbar at edge on narrow screens */
+@media (max-width: 900px) {
+  .extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
+    right: 24px !important;
+  }
+}
 
 .editor-wrapper {
   display: flex;
