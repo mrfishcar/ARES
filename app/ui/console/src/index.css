@@ -553,15 +553,15 @@ a:hover {
    ========================================================= */
 
 .lab-toolbar-stack {
-  position: fixed;
+  position: absolute;  /* Changed from fixed - now positioned within lab-content */
   top: 16px;
-  right: 24px;  /* Simple, reliable positioning - always visible */
+  right: 24px;  /* Always 24px from container's right edge */
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 8px;
   z-index: 200;  /* Above everything - ensure always visible */
-  transition: right 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Removed transition - no longer needed, parent padding handles movement */
 }
 
 /* Toolbar slot holds both normal and formatting toolbars */
@@ -1490,6 +1490,7 @@ a:hover {
 }
 
 .lab-content {
+  position: relative;  /* Added: Contains absolutely positioned toolbar */
   display: grid;  /* Grid layout like working commit */
   grid-template-columns: 1fr;  /* Single column (will add second column for results panel later) */
   gap: 0;  /* No gap - editor fills space */
@@ -1520,21 +1521,11 @@ a:hover {
   touch-action: pan-y;  /* Allow vertical touch scrolling */
 }
 
-/* Toolbar positioning when entity sidebar is pinned */
-.extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
-  /* Position to left of sidebar with enough clearance */
-  /* Sidebar is 500px wide, so position toolbar at 500px + gap + safety margin */
-  right: 548px;  /* 500px sidebar + 24px gap + 24px extra clearance */
-}
-
-/* On narrow screens, keep toolbar visible */
-@media (max-width: 900px) {
-  .extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
-    /* On narrow viewports, just keep it at edge */
-    right: 24px !important;
-    z-index: 200 !important;  /* Restore high z-index on mobile */
-  }
-}
+/* Removed: Toolbar positioning when entity sidebar is pinned
+ * No longer needed - toolbar is now inside lab-content container,
+ * which has padding-right: 524px when sidebar is pinned.
+ * The toolbar automatically moves with the container padding.
+ */
 
 .editor-wrapper {
   display: flex;

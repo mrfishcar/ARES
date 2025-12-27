@@ -2251,38 +2251,6 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         <Menu size={20} strokeWidth={2} />
       </button>
 
-      {/* Toolbar - NEW COMPONENT */}
-      <LabToolbar
-        jobStatus={jobStatus}
-        theme={effectiveTheme}
-        entityHighlightMode={settings.entityHighlightMode}
-        showSettingsDropdown={layout.showSettingsDropdown}
-        showHighlighting={settings.showHighlighting}
-        highlightOpacity={settings.highlightOpacity}
-        editorMargin={settings.editorMargin}
-        showEntityIndicators={settings.showEntityIndicators}
-        enableLongTextOptimization={settings.enableLongTextOptimization}
-        highlightChains={highlightChains}
-        useRichEditor={settings.useRichEditor}
-        onThemeToggle={handleThemeToggle}
-        onEntityHighlightToggle={settings.toggleEntityHighlightMode}
-        onSettingsToggle={layout.toggleSettingsDropdown}
-        onSettingsClose={layout.closeSettingsDropdown}
-        onHighlightingToggle={settings.toggleHighlighting}
-        onOpacityChange={settings.setHighlightOpacity}
-        onMarginChange={settings.setEditorMargin}
-        onEntityIndicatorsToggle={settings.toggleEntityIndicators}
-        onLongTextOptimizationToggle={settings.toggleLongTextOptimization}
-        onHighlightChainsToggle={() => setHighlightChains(prev => !prev)}
-        onRichEditorToggle={settings.toggleRichEditor}
-        onNewDocument={handleNewDocument}
-        saveStatus={saveStatus}
-        showFormatToolbar={showFormatToolbar}
-        formatToolbarEnabled={formatToolbarEnabled}
-        formatActions={formatActions}
-        onToggleFormatToolbar={() => setFormatToolbarEnabled(prev => !prev)}
-      />
-
       {/* Documents sidebar */}
       <DocumentsSidebar
         isOpen={layout.showDocumentSidebar}
@@ -2309,6 +2277,38 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
       {/* Main Content */}
       <div className="lab-content">
+        {/* Toolbar - Moved inside lab-content to share padding with editor */}
+        <LabToolbar
+          jobStatus={jobStatus}
+          theme={effectiveTheme}
+          entityHighlightMode={settings.entityHighlightMode}
+          showSettingsDropdown={layout.showSettingsDropdown}
+          showHighlighting={settings.showHighlighting}
+          highlightOpacity={settings.highlightOpacity}
+          editorMargin={settings.editorMargin}
+          showEntityIndicators={settings.showEntityIndicators}
+          enableLongTextOptimization={settings.enableLongTextOptimization}
+          highlightChains={highlightChains}
+          useRichEditor={settings.useRichEditor}
+          onThemeToggle={handleThemeToggle}
+          onEntityHighlightToggle={settings.toggleEntityHighlightMode}
+          onSettingsToggle={layout.toggleSettingsDropdown}
+          onSettingsClose={layout.closeSettingsDropdown}
+          onHighlightingToggle={settings.toggleHighlighting}
+          onOpacityChange={settings.setHighlightOpacity}
+          onMarginChange={settings.setEditorMargin}
+          onEntityIndicatorsToggle={settings.toggleEntityIndicators}
+          onLongTextOptimizationToggle={settings.toggleLongTextOptimization}
+          onHighlightChainsToggle={() => setHighlightChains(prev => !prev)}
+          onRichEditorToggle={settings.toggleRichEditor}
+          onNewDocument={handleNewDocument}
+          saveStatus={saveStatus}
+          showFormatToolbar={showFormatToolbar}
+          formatToolbarEnabled={formatToolbarEnabled}
+          formatActions={formatActions}
+          onToggleFormatToolbar={() => setFormatToolbarEnabled(prev => !prev)}
+        />
+
         {/* Editor panel - scrolls naturally like working commit */}
         <div className="editor-panel">
           {/* Editor */}
