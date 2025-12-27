@@ -2732,8 +2732,7 @@ html[data-theme="light"] .overlay-backdrop {
   }
 
   .lab-control-bar {
-    left: 50%;
-    transform: translateX(-50%);
+    /* Removed centering - let .lab-toolbar-stack handle positioning */
     padding: 6px 12px;
     min-height: 44px;
     max-width: calc(100% - 40px);
@@ -2775,8 +2774,7 @@ html[data-theme="light"] .overlay-backdrop {
   }
 
   .lab-control-bar {
-    left: 50%;
-    transform: translateX(-50%);
+    /* Removed centering - let .lab-toolbar-stack handle positioning */
     padding: 4px 8px;
     max-width: calc(100% - 48px);
   }
