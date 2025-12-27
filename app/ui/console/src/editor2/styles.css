@@ -166,10 +166,9 @@
   width: 100%;
   min-height: 600px;
   height: 100%;
-  background: var(--bg-primary, #0f1115);
+  background: transparent;  /* Let parent background show through */
   color: var(--text-primary, #e5e7eb);
-  border-radius: 12px;
-  /* Remove border for clean iOS Notes look */
+  border-radius: 0;  /* No rounded corners */
   border: none;
   /* Contain scroll - .rich-editor-surface is the scroll container */
   overflow: hidden;
