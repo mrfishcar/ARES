@@ -539,17 +539,23 @@ export interface StoryEvent {
 }
 
 // =============================================================================
-// FACTS
+// FACTS (MATERIALIZED VIEW ROWS)
 // =============================================================================
 
 /**
- * A fact is a queryable, stable piece of knowledge.
+ * A FactViewRow is a single row in a materialized view over assertions/events.
  *
- * Facts are derived from confirmed assertions and events.
- * They're what renderers query for wiki pages and timelines.
+ * DESIGN RULES:
+ * 1. Facts are NOT a second truth store - they are index rows
+ * 2. derivedFrom is REQUIRED - orphan facts must be deleted
+ * 3. No edit fields - to change a fact, edit the source assertion
+ * 4. Recomputable - can drop all facts and regenerate from assertions
+ * 5. No lifecycle - no createdAt, no user overrides on facts
+ *
+ * Think: database index row, not a table with its own identity.
  */
-export interface Fact {
-  /** Stable ID */
+export interface FactViewRow {
+  /** Computed ID (deterministic hash of derivedFrom) */
   id: FactId;
 
   /** Subject entity */
@@ -561,25 +567,27 @@ export interface Fact {
   /** Object (entity or literal) */
   object: EntityId | string | number | boolean;
 
-  /** When this fact became true */
+  /** When this fact became true (computed from source) */
   validFrom: TimeAnchor;
 
-  /** When this fact stopped being true (if known) */
+  /** When this fact stopped being true (computed from source) */
   validUntil?: TimeAnchor;
 
-  /** What this fact was derived from */
+  /**
+   * REQUIRED: Source assertions/events this fact was derived from.
+   * If empty, this fact is orphaned and should be deleted.
+   */
   derivedFrom: (EventId | AssertionId)[];
 
-  /** Composite confidence */
+  /** Composite confidence (computed from source objects) */
   confidence: number;
-
-  /** Metadata */
-  createdAt: string;
-
-  /** User override status */
-  userConfirmed?: boolean;
-  userRejected?: boolean;
 }
+
+/** Alias for clarity */
+export type FactView = FactViewRow;
+
+/** @deprecated Use FactViewRow */
+export type Fact = FactViewRow;
 
 // =============================================================================
 // OVERRIDES
@@ -715,6 +723,46 @@ export interface CompiledIR {
     factCount: number;
     overrideCount: number;
     evidenceSpanCount: number;
+  };
+}
+
+// =============================================================================
+// PROJECT IR (STABLE CONTRACT)
+// =============================================================================
+
+/**
+ * ProjectIR is the stable JSON contract between adapter and renderers.
+ *
+ * This interface is versioned and should not change shape without
+ * a version bump. Renderers depend on this shape.
+ *
+ * Adapter produces ProjectIR. Renderers consume ProjectIR.
+ * They can evolve independently as long as this contract is stable.
+ */
+export interface ProjectIR {
+  /** Schema version for compatibility checking */
+  version: '1.0';
+
+  /** Project/document identifier */
+  projectId: string;
+  docId?: string;
+
+  /** When this IR was produced */
+  createdAt: string;
+
+  /** Core IR objects */
+  entities: Entity[];
+  assertions: Assertion[];
+  events: StoryEvent[];
+
+  /** Facts are optional - computed on demand as views */
+  facts?: FactViewRow[];
+
+  /** Statistics for quick overview */
+  stats: {
+    entityCount: number;
+    assertionCount: number;
+    eventCount: number;
   };
 }
 
