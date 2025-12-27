@@ -194,7 +194,7 @@
   position: relative;
   flex: 1;
   min-height: 500px; /* Ensures content can overflow and trigger scroll */
-  padding: 80px 24px 24px 24px;
+  padding: 80px var(--editor-margin-desktop, 96px) 24px var(--editor-margin-desktop, 96px);
   outline: none;
 
   /* Typography */
@@ -222,8 +222,8 @@
 .rich-placeholder {
   position: absolute;
   top: 80px; /* Match content top padding */
-  left: 24px;
-  right: 24px;
+  left: var(--editor-margin-desktop, 96px);
+  right: var(--editor-margin-desktop, 96px);
   color: var(--text-secondary, #9ca3af);
   opacity: 0.6;
   pointer-events: none;
