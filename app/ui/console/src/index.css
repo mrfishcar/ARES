@@ -1522,9 +1522,8 @@ a:hover {
 
 /* Toolbar positioning when entity sidebar is pinned */
 .extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
-  /* Move left of sidebar, but never go off-screen */
-  /* Formula: max(stay on screen, position left of sidebar) */
-  right: max(calc(100vw - 200px), calc(500px + 24px));
+  /* Position to left of sidebar (same distance as lab-content padding) */
+  right: 524px;  /* 500px sidebar + 24px gap */
 }
 
 /* On narrow screens, keep toolbar visible */
