@@ -72,7 +72,7 @@ body {
 
   /* Editor Margins */
   --editor-margin-desktop: 96px;
-  --editor-margin-mobile: clamp(8px, 4vw, 14px);
+  --editor-margin-mobile: clamp(4px, 1.5vw, 8px);
   --editor-header-offset: 80px;
 
   /* Glassmorphism Variables – Dark Mode Defaults */
