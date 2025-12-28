@@ -849,9 +849,10 @@ a:hover {
 .formatting-toolbar-content {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 4px 6px;
+  gap: 8px;
+  padding: 6px 8px;
   width: 100%;
+  justify-content: center;
 }
 
 .formatting-toolbar-content--palette {
@@ -864,13 +865,20 @@ a:hover {
   align-items: center;
   justify-content: center;
   width: 100%;
+  max-width: 720px;
 }
 
 .formatting-palette__row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
+  padding: 6px 10px;
+  background: color-mix(in srgb, var(--surface-strong) 90%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-soft) 85%, transparent);
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(14px);
 }
 
 .formatting-palette__row--compact {
@@ -885,25 +893,27 @@ a:hover {
 
 .formatting-palette__section--style {
   position: relative;
+  margin-right: 4px;
 }
 
 .format-style-dropdown {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
-  border-radius: 12px;
-  border: 1px solid var(--border-soft);
-  background: color-mix(in srgb, var(--surface-strong) 85%, transparent);
+  padding: 8px 10px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--border-soft) 80%, transparent);
+  background: color-mix(in srgb, var(--surface-strong) 92%, transparent);
   color: var(--text-primary);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.18s var(--ease-in-out);
+  min-width: 120px;
 }
 
 .format-style-dropdown:hover {
-  background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
 }
 
 .format-style-menu {
@@ -946,16 +956,16 @@ a:hover {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 8px;
+  flex-wrap: nowrap;
 }
 
 .format-control {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: 12px;
-  border: 1px solid var(--border-soft);
-  background: color-mix(in srgb, var(--surface-strong) 85%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-soft) 75%, transparent);
+  background: color-mix(in srgb, var(--surface-strong) 94%, transparent);
   color: var(--text-primary);
   display: inline-flex;
   align-items: center;
@@ -965,7 +975,7 @@ a:hover {
 }
 
 .format-control:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
 }
 
 .format-control:active:not(:disabled) {
@@ -978,27 +988,28 @@ a:hover {
 }
 
 .format-control--active {
-  background: color-mix(in srgb, var(--accent-color) 14%, transparent);
-  border-color: color-mix(in srgb, var(--accent-color) 60%, var(--border-soft));
+  background: color-mix(in srgb, var(--accent-color) 18%, transparent);
+  border-color: color-mix(in srgb, var(--accent-color) 65%, var(--border-soft));
   color: var(--accent-color);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-color) 45%, transparent);
 }
 
 .format-control-divider {
   width: 1px;
   height: 24px;
-  background: var(--border-soft);
-  opacity: 0.65;
-  margin: 0 4px;
+  background: color-mix(in srgb, var(--border-soft) 80%, transparent);
+  opacity: 0.55;
+  margin: 0 2px;
 }
 
 .format-toolbar-exit {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 12px;
+  padding: 8px 10px;
   border-radius: 12px;
-  border: 1px solid var(--border-soft);
-  background: color-mix(in srgb, var(--surface-strong) 90%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-soft) 80%, transparent);
+  background: color-mix(in srgb, var(--surface-strong) 94%, transparent);
   color: var(--text-primary);
   font-weight: 600;
   cursor: pointer;
@@ -1006,7 +1017,7 @@ a:hover {
 }
 
 .format-toolbar-exit:hover {
-  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+  background: color-mix(in srgb, var(--text-primary) 6%, transparent);
 }
 
 /* ===== DOCUMENTS SIDEBAR ===== */
