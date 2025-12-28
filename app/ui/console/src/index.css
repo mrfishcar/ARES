@@ -70,6 +70,9 @@ body {
   --entity-concept: #14b8a6;
   --entity-object: #8b5cf6;
 
+  /* Toolbar sizing */
+  --format-toolbar-min-width: min(clamp(320px, 60vw, 560px), calc(100vw - 32px));
+
   /* Editor Margins */
   --editor-margin-desktop: 96px;
   --editor-margin-mobile: clamp(4px, 1.5vw, 8px);
@@ -567,6 +570,7 @@ a:hover {
 .toolbar-slot {
   position: relative;
   min-height: 44px;
+  min-width: var(--format-toolbar-min-width);
   display: inline-flex;
   justify-content: center; /* Keep toolbar centered */
 }
@@ -585,6 +589,7 @@ a:hover {
   top: 0;
   left: 50%;
   transform: translateX(-50%) scaleX(1); /* Center + scale */
+  min-width: var(--format-toolbar-min-width);
 }
 
 /* ========== NORMAL MODE ========== */
