@@ -23,12 +23,18 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { extractFromSegments } from '../app/engine/extract/orchestrator';
+import { parseWithService } from '../app/engine/extract/entities';
 import { adaptLegacyExtraction, type LegacyExtractionResult } from '../app/engine/ir/adapter';
 import { buildAssertions } from '../app/engine/ir/assertion-builder';
 import { buildEvents, type DocOrderInfo } from '../app/engine/ir/event-builder';
 import { buildFactsFromEvents } from '../app/engine/ir/fact-builder';
 import { renderEntityPage } from '../app/engine/ir/entity-renderer';
 import { renderTimeline } from '../app/engine/ir/timeline-renderer';
+import {
+  extractAssertionsFromSentences,
+  type ParsedSentence,
+  type EntitySpan,
+} from '../app/engine/ir/predicate-extractor';
 import type { ProjectIR, StoryEvent, Assertion, Modality, Entity, EntityId } from '../app/engine/ir/types';
 
 // =============================================================================
@@ -107,7 +113,57 @@ async function main() {
 
   let ir = adaptLegacyExtraction(legacyResult);
   console.log(`  IR Entities: ${ir.entities.length}`);
-  console.log(`  IR Assertions: ${ir.assertions.length}`);
+  console.log(`  IR Assertions (from legacy): ${ir.assertions.length}`);
+
+  // ==========================================================================
+  // STEP 2.5: Predicate Extraction (NEW!)
+  // ==========================================================================
+  console.log('\n[2.5/6] Extracting predicates from dependency trees...');
+
+  // Parse the text with spaCy
+  const parseResponse = await parseWithService(chapterText);
+  const sentences: ParsedSentence[] = parseResponse.sentences;
+  console.log(`  Parsed ${sentences.length} sentences`);
+
+  // Build entity spans from extraction result
+  const entitySpans: EntitySpan[] = extractionResult.spans.map((span) => {
+    const entity = extractionResult.entities.find(e => e.id === span.entity_id);
+    return {
+      entityId: span.entity_id,
+      name: entity?.canonical || entity?.id || span.entity_id,
+      start: span.start,
+      end: span.end,
+      type: entity?.type,
+    };
+  });
+  console.log(`  Using ${entitySpans.length} entity spans for resolution`);
+
+  // Extract predicate-based assertions
+  const predicateAssertions = extractAssertionsFromSentences(
+    sentences,
+    entitySpans,
+    { docId, minConfidence: 0.4 }
+  );
+  console.log(`  Extracted ${predicateAssertions.length} predicate assertions`);
+
+  // Merge with legacy assertions
+  const mergedAssertions = [...ir.assertions, ...predicateAssertions];
+  ir = { ...ir, assertions: mergedAssertions };
+  console.log(`  Total assertions: ${mergedAssertions.length}`);
+
+  // Count predicate types
+  const predicateCounts = new Map<string, number>();
+  for (const a of predicateAssertions) {
+    const pred = String(a.predicate);
+    predicateCounts.set(pred, (predicateCounts.get(pred) ?? 0) + 1);
+  }
+  const topPredicates = Array.from(predicateCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10);
+  console.log('  Top predicates extracted:');
+  for (const [pred, count] of topPredicates) {
+    console.log(`    ${pred}: ${count}`);
+  }
 
   // ==========================================================================
   // STEP 3: Assertion Builder

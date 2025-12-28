@@ -42,6 +42,9 @@ export * from './entity-renderer';
 // Timeline Renderer: chronological event timelines
 export * from './timeline-renderer';
 
+// Predicate Extractor: verb exhaust capture from dependency trees
+export * from './predicate-extractor';
+
 // Future: IR utilities
 // export * from './builders';
 // export * from './validators';

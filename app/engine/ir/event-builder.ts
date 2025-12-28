@@ -90,8 +90,9 @@ export interface EventCandidate {
  * These are the trigger sources for event extraction.
  */
 
-// MOVE event triggers
+// MOVE event triggers (expanded to include base verbs)
 const MOVE_PREDICATES = new Set<PredicateType | string>([
+  // With preposition suffix
   'traveled_to',
   'went_to',
   'arrived_at',
@@ -101,6 +102,23 @@ const MOVE_PREDICATES = new Set<PredicateType | string>([
   'returned_to',
   'fled_to',
   'escaped_to',
+  'came_to',
+  'came_from',
+  'walked_to',
+  'ran_to',
+  'stayed_at',
+  'stayed_in',
+  // Base verbs (when prep object is captured as object)
+  'went',
+  'moved',
+  'came',
+  'traveled',
+  'walked',
+  'ran',
+  'returned',
+  'fled',
+  'escaped',
+  'entered',
 ]);
 
 // LEARN/DISCOVER event triggers
@@ -125,6 +143,16 @@ const TELL_PREDICATES = new Set<PredicateType | string>([
   'announced',
   'warned',
   'confessed',
+  'replied',
+  'answered',
+  'shouted',
+  'whispered',
+  'called',
+  'cried',
+  'stated',
+  'declared',
+  'mentioned',
+  'noted',
 ]);
 
 // PROMISE event triggers
@@ -155,6 +183,11 @@ const MEET_PREDICATES = new Set<PredicateType | string>([
   'ran_into',
   'found',
   'came_across',
+  'meet',
+  'joined',
+  'greeted',
+  'saw',
+  'visited',
 ]);
 
 // DEATH event triggers
