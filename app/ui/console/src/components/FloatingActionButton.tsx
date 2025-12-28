@@ -6,7 +6,7 @@
  * - Future: Jump-to-top, other tools
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type CSSProperties } from 'react';
 
 interface FloatingActionButtonProps {
   icon: string;
@@ -15,6 +15,8 @@ interface FloatingActionButtonProps {
   visible?: boolean;
   position?: 'bottom-right' | 'bottom-left';
   autoHideOnScroll?: boolean;
+  containerClassName?: string;
+  containerStyle?: CSSProperties;
 }
 
 export function FloatingActionButton({
@@ -24,6 +26,8 @@ export function FloatingActionButton({
   visible = true,
   position = 'bottom-right',
   autoHideOnScroll = false,
+  containerClassName,
+  containerStyle,
 }: FloatingActionButtonProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [opacity, setOpacity] = useState(0.5);
@@ -53,12 +57,13 @@ export function FloatingActionButton({
 
   return (
     <div
-      className="floating-button-container"
+      className={`floating-button-container${containerClassName ? ` ${containerClassName}` : ''}`}
       style={{
         position: 'fixed',
         ...positionStyles,
         zIndex: 100,
         pointerEvents: 'none',
+        ...containerStyle,
       }}
     >
       <button

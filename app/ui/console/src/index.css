@@ -214,18 +214,49 @@ body {
   pointer-events: none;
 }
 
-.chrome-layer {
+.lab-chrome-layer {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  inset: env(safe-area-inset-top) env(safe-area-inset-right) auto env(safe-area-inset-left);
   z-index: 1100;
+  pointer-events: none; /* Children re-enable for interaction. */
+}
+
+.lab-chrome-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  pointer-events: auto;
+}
+
+.lab-chrome-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex: 1;
+  pointer-events: auto;
+}
+
+.lab-entity-fab {
   pointer-events: none;
 }
 
-.chrome-layer .hamburger-btn,
-.chrome-layer .lab-toolbar-stack {
-  pointer-events: auto;
+@media (min-width: 768px) {
+  .lab-chrome-layer {
+    inset: 16px 16px auto 16px;
+  }
+}
+
+:root {
+  --lab-fab-right: calc(env(safe-area-inset-right) + 16px);
+  --lab-fab-bottom: calc(env(safe-area-inset-bottom) + 16px);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --lab-fab-right: 24px;
+    --lab-fab-bottom: 24px;
+  }
 }
 
 .portal-root::backdrop,
@@ -457,18 +488,18 @@ a:hover {
   min-height: 0; /* Allow child flex items to manage their own scrolling */
 }
 
-/* Hamburger Button - ChatGPT style */
+/* Hamburger Button - lives inside the viewport-fixed chrome layer. */
 .hamburger-btn {
-  position: fixed;
-  top: 20px;
-  left: 20px;
+  position: relative;
+  top: auto;
+  left: auto;
   border: none;
   background: none; /* Safari blur fix - use 'none' instead of 'transparent' */
   color: rgb(180, 190, 210);
   cursor: pointer;
   padding: 8px;
   line-height: 1;
-  z-index: 60;
+  z-index: 1;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
@@ -540,20 +571,12 @@ a:hover {
    ========================================================= */
 
 .lab-toolbar-stack {
-  position: fixed;  /* Fixed positioning - positions relative to viewport */
-  top: 16px;
-  right: 24px;  /* Default: 24px from viewport edge */
+  position: relative; /* Positioned by the fixed chrome layer wrapper */
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 8px;
-  z-index: 90;  /* Below doc sidebar (z-index: 100) and entity sidebar (z-index: 100) */
-  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* When entity sidebar is pinned, move toolbar to left of sidebar */
-.extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
-  right: 524px;  /* 500px sidebar + 24px gap */
+  z-index: 1;
 }
 
 /* Toolbar slot holds both normal and formatting toolbars */
@@ -1531,8 +1554,8 @@ a:hover {
 
 /* Mobile override - keep toolbar at edge on narrow screens */
 @media (max-width: 900px) {
-  .extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
-    right: 24px !important;
+  .lab-toolbar-stack {
+    align-items: flex-end;
   }
 }
 
@@ -2739,7 +2762,6 @@ html[data-theme="light"] .overlay-backdrop {
   }
 
   .lab-content {
-    padding-top: 48px;
     padding-left: 0; /* ✅ Remove sidebar padding on mobile; documents-sidebar is hidden */
   }
 
@@ -2821,12 +2843,8 @@ html[data-theme="light"] .overlay-backdrop {
     padding-top: env(safe-area-inset-top);
   }
 
-  .lab-control-bar {
-    top: calc(16px + env(safe-area-inset-top));
-  }
-
-  .hamburger-btn {
-    top: calc(20px + env(safe-area-inset-top));
+  .lab-chrome-layer {
+    inset: env(safe-area-inset-top) env(safe-area-inset-right) auto env(safe-area-inset-left);
   }
 }
 

@@ -723,7 +723,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   // → .editor-panel (scroll container) → editor content. Keyboard padding is applied only on .editor-panel.
   const editorScrollRef = useRef<HTMLDivElement | null>(null);
   const [scrollContainerEl, setScrollContainerEl] = useState<HTMLElement | null>(null);
-  const chromeLayerRef = useRef<HTMLDivElement | null>(null);
+  const chromeTopRowRef = useRef<HTMLDivElement | null>(null);
   const [chromeHeight, setChromeHeight] = useState(72);
 
   // Extraction state
@@ -802,7 +802,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
   // Measure the viewport-anchored chrome so the editor scroll container can pad underneath it without resizing.
   useLayoutEffect(() => {
-    const chromeEl = chromeLayerRef.current;
+    const chromeEl = chromeTopRowRef.current;
     if (!chromeEl) return;
 
     const measure = () => {
@@ -2426,47 +2426,64 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   );
 
   const chromeLayer = (
-    <div className="chrome-layer" ref={chromeLayerRef}>
-      {/* Viewport-anchored chrome so scrolling the editor never moves top controls. */}
-      <button
-        onClick={layout.toggleDocumentSidebar}
-        className="hamburger-btn"
-        style={{ left: layout.showDocumentSidebar ? '300px' : '20px' }}
-        title="Documents"
-        type="button"
-      >
-        <Menu size={20} strokeWidth={2} />
-      </button>
+    <div className="lab-chrome-layer">
+      {/* Viewport-fixed chrome layer: keep top controls out of the scrollable document. */}
+      <div className="lab-chrome-top-row" ref={chromeTopRowRef}>
+        <button
+          onClick={layout.toggleDocumentSidebar}
+          className="hamburger-btn"
+          title="Documents"
+          type="button"
+        >
+          <Menu size={20} strokeWidth={2} />
+        </button>
 
-      <LabToolbar
-        jobStatus={jobStatus}
-        theme={effectiveTheme}
-        entityHighlightMode={settings.entityHighlightMode}
-        showSettingsDropdown={layout.showSettingsDropdown}
-        showHighlighting={settings.showHighlighting}
-        highlightOpacity={settings.highlightOpacity}
-        editorMargin={settings.editorMargin}
-        showEntityIndicators={settings.showEntityIndicators}
-        enableLongTextOptimization={settings.enableLongTextOptimization}
-        highlightChains={highlightChains}
-        useRichEditor={settings.useRichEditor}
-        onThemeToggle={handleThemeToggle}
-        onEntityHighlightToggle={settings.toggleEntityHighlightMode}
-        onSettingsToggle={layout.toggleSettingsDropdown}
-        onSettingsClose={layout.closeSettingsDropdown}
-        onHighlightingToggle={settings.toggleHighlighting}
-        onOpacityChange={settings.setHighlightOpacity}
-        onMarginChange={settings.setEditorMargin}
-        onEntityIndicatorsToggle={settings.toggleEntityIndicators}
-        onLongTextOptimizationToggle={settings.toggleLongTextOptimization}
-        onHighlightChainsToggle={() => setHighlightChains(prev => !prev)}
-        onRichEditorToggle={settings.toggleRichEditor}
-        onNewDocument={handleNewDocument}
-        saveStatus={saveStatus}
-        showFormatToolbar={showFormatToolbar}
-        formatToolbarEnabled={formatToolbarEnabled}
-        formatActions={formatActions}
-        onToggleFormatToolbar={() => setFormatToolbarEnabled(prev => !prev)}
+        <div className="lab-chrome-actions">
+          <LabToolbar
+            jobStatus={jobStatus}
+            theme={effectiveTheme}
+            entityHighlightMode={settings.entityHighlightMode}
+            showSettingsDropdown={layout.showSettingsDropdown}
+            showHighlighting={settings.showHighlighting}
+            highlightOpacity={settings.highlightOpacity}
+            editorMargin={settings.editorMargin}
+            showEntityIndicators={settings.showEntityIndicators}
+            enableLongTextOptimization={settings.enableLongTextOptimization}
+            highlightChains={highlightChains}
+            useRichEditor={settings.useRichEditor}
+            onThemeToggle={handleThemeToggle}
+            onEntityHighlightToggle={settings.toggleEntityHighlightMode}
+            onSettingsToggle={layout.toggleSettingsDropdown}
+            onSettingsClose={layout.closeSettingsDropdown}
+            onHighlightingToggle={settings.toggleHighlighting}
+            onOpacityChange={settings.setHighlightOpacity}
+            onMarginChange={settings.setEditorMargin}
+            onEntityIndicatorsToggle={settings.toggleEntityIndicators}
+            onLongTextOptimizationToggle={settings.toggleLongTextOptimization}
+            onHighlightChainsToggle={() => setHighlightChains(prev => !prev)}
+            onRichEditorToggle={settings.toggleRichEditor}
+            onNewDocument={handleNewDocument}
+            saveStatus={saveStatus}
+            showFormatToolbar={showFormatToolbar}
+            formatToolbarEnabled={formatToolbarEnabled}
+            formatActions={formatActions}
+            onToggleFormatToolbar={() => setFormatToolbarEnabled(prev => !prev)}
+          />
+        </div>
+      </div>
+
+      <FloatingActionButton
+        icon="📊"
+        label="View entities and stats"
+        onClick={layout.openEntityPanel}
+        visible={text.trim().length > 0 && layout.entityPanelMode === 'closed'}
+        position="bottom-right"
+        containerClassName="lab-entity-fab"
+        containerStyle={{
+          right: 'var(--lab-fab-right, calc(env(safe-area-inset-right) + 16px))',
+          bottom: 'var(--lab-fab-bottom, calc(env(safe-area-inset-bottom) + 16px))',
+          zIndex: 1100,
+        }}
       />
     </div>
   );
@@ -2633,15 +2650,6 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
             )}
           </div>
         </div>
-
-        {/* Floating Action Button - Only show when text exists and panel is not pinned */}
-        <FloatingActionButton
-          icon="📊"
-          label="View entities and stats"
-          onClick={layout.openEntityPanel}
-          visible={text.trim().length > 0 && layout.entityPanelMode === 'closed'}
-          position="bottom-right"
-        />
 
         {/* Entity Review Sidebar - Full-screen overlay mode */}
         {layout.entityPanelMode === 'overlay' && (
