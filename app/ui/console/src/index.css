@@ -431,7 +431,8 @@ a:hover {
 .extraction-lab {
   display: flex;
   flex-direction: column;
-  height: 100dvh; /* Fixed viewport height to stabilize chrome */
+  height: 100%;
+  min-height: 100%;
   background: var(--bg-primary);
   overflow: hidden;  /* Lock the page */
 }
