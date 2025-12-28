@@ -725,6 +725,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [scrollContainerEl, setScrollContainerEl] = useState<HTMLElement | null>(null);
   const chromeTopRowRef = useRef<HTMLDivElement | null>(null);
   const [chromeHeight, setChromeHeight] = useState(72);
+  const toolbarRef = useRef<HTMLDivElement | null>(null);
 
   // Extraction state
   const [text, setText] = useState('');
@@ -821,6 +822,65 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     return () => {
       resizeObserver.disconnect();
       window.removeEventListener('resize', measure);
+    };
+  }, []);
+
+  // Keep the floating toolbar pinned to the visual viewport so it rises above the keyboard without resizing the editor.
+  useLayoutEffect(() => {
+    const toolbarEl = toolbarRef.current;
+    if (!toolbarEl || typeof window === 'undefined') return;
+
+    const vv = window.visualViewport;
+
+    const updateToolbarBottom = () => {
+      if (!toolbarRef.current) return;
+
+      const keyboardOverlap = vv
+        ? Math.max(0, window.innerHeight - (vv.height + vv.offsetTop))
+        : 0;
+
+      // Small breathing room above the keyboard and the safe area inset.
+      toolbarRef.current.style.bottom = `calc(${keyboardOverlap}px + env(safe-area-inset-bottom, 0px) + 12px)`;
+    };
+
+    updateToolbarBottom();
+
+    if (vv) {
+      vv.addEventListener('resize', updateToolbarBottom);
+      vv.addEventListener('scroll', updateToolbarBottom);
+    }
+
+    window.addEventListener('orientationchange', updateToolbarBottom);
+
+    return () => {
+      if (vv) {
+        vv.removeEventListener('resize', updateToolbarBottom);
+        vv.removeEventListener('scroll', updateToolbarBottom);
+      }
+      window.removeEventListener('orientationchange', updateToolbarBottom);
+    };
+  }, []);
+
+  // Measure toolbar height so the editor can pad underneath without any height or width changes.
+  useLayoutEffect(() => {
+    const toolbarEl = toolbarRef.current;
+    const scrollEl = editorScrollRef.current;
+    if (!toolbarEl || !scrollEl) return;
+
+    const measureToolbar = () => {
+      const rect = toolbarEl.getBoundingClientRect();
+      if (rect.height > 0) {
+        scrollEl.style.setProperty('--floating-toolbar-height', `${Math.ceil(rect.height)}px`);
+      }
+    };
+
+    measureToolbar();
+
+    const resizeObserver = new ResizeObserver(measureToolbar);
+    resizeObserver.observe(toolbarEl);
+
+    return () => {
+      resizeObserver.disconnect();
     };
   }, []);
 
@@ -2437,39 +2497,40 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         >
           <Menu size={20} strokeWidth={2} />
         </button>
+      </div>
 
-        <div className="lab-chrome-actions">
-          <LabToolbar
-            jobStatus={jobStatus}
-            theme={effectiveTheme}
-            entityHighlightMode={settings.entityHighlightMode}
-            showSettingsDropdown={layout.showSettingsDropdown}
-            showHighlighting={settings.showHighlighting}
-            highlightOpacity={settings.highlightOpacity}
-            editorMargin={settings.editorMargin}
-            showEntityIndicators={settings.showEntityIndicators}
-            enableLongTextOptimization={settings.enableLongTextOptimization}
-            highlightChains={highlightChains}
-            useRichEditor={settings.useRichEditor}
-            onThemeToggle={handleThemeToggle}
-            onEntityHighlightToggle={settings.toggleEntityHighlightMode}
-            onSettingsToggle={layout.toggleSettingsDropdown}
-            onSettingsClose={layout.closeSettingsDropdown}
-            onHighlightingToggle={settings.toggleHighlighting}
-            onOpacityChange={settings.setHighlightOpacity}
-            onMarginChange={settings.setEditorMargin}
-            onEntityIndicatorsToggle={settings.toggleEntityIndicators}
-            onLongTextOptimizationToggle={settings.toggleLongTextOptimization}
-            onHighlightChainsToggle={() => setHighlightChains(prev => !prev)}
-            onRichEditorToggle={settings.toggleRichEditor}
-            onNewDocument={handleNewDocument}
-            saveStatus={saveStatus}
-            showFormatToolbar={showFormatToolbar}
-            formatToolbarEnabled={formatToolbarEnabled}
-            formatActions={formatActions}
-            onToggleFormatToolbar={() => setFormatToolbarEnabled(prev => !prev)}
-          />
-        </div>
+      {/* Toolbar pinned to the visual viewport so it rides above the keyboard instead of scrolling away. */}
+      <div className="lab-toolbar-fixed" ref={toolbarRef}>
+        <LabToolbar
+          jobStatus={jobStatus}
+          theme={effectiveTheme}
+          entityHighlightMode={settings.entityHighlightMode}
+          showSettingsDropdown={layout.showSettingsDropdown}
+          showHighlighting={settings.showHighlighting}
+          highlightOpacity={settings.highlightOpacity}
+          editorMargin={settings.editorMargin}
+          showEntityIndicators={settings.showEntityIndicators}
+          enableLongTextOptimization={settings.enableLongTextOptimization}
+          highlightChains={highlightChains}
+          useRichEditor={settings.useRichEditor}
+          onThemeToggle={handleThemeToggle}
+          onEntityHighlightToggle={settings.toggleEntityHighlightMode}
+          onSettingsToggle={layout.toggleSettingsDropdown}
+          onSettingsClose={layout.closeSettingsDropdown}
+          onHighlightingToggle={settings.toggleHighlighting}
+          onOpacityChange={settings.setHighlightOpacity}
+          onMarginChange={settings.setEditorMargin}
+          onEntityIndicatorsToggle={settings.toggleEntityIndicators}
+          onLongTextOptimizationToggle={settings.toggleLongTextOptimization}
+          onHighlightChainsToggle={() => setHighlightChains(prev => !prev)}
+          onRichEditorToggle={settings.toggleRichEditor}
+          onNewDocument={handleNewDocument}
+          saveStatus={saveStatus}
+          showFormatToolbar={showFormatToolbar}
+          formatToolbarEnabled={formatToolbarEnabled}
+          formatActions={formatActions}
+          onToggleFormatToolbar={() => setFormatToolbarEnabled(prev => !prev)}
+        />
       </div>
 
       <FloatingActionButton
