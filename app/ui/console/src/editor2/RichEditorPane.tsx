@@ -3,7 +3,7 @@ import type { EntitySpan } from '../types/entities';
 import { EntityIndicators } from '../components/EntityIndicators';
 import type { RichDocSnapshot } from './types';
 import { RichTextEditor } from './RichTextEditor';
-import type { NavigateToRange, FormattingActions } from '../components/CodeMirrorEditorProps';
+import type { NavigateToRange } from '../components/CodeMirrorEditorProps';
 
 interface Props {
   richDoc: SerializedEditorState | null;
@@ -14,7 +14,6 @@ interface Props {
   showEntityIndicators?: boolean;
   navigateToRange?: NavigateToRange | null;
   showFormatToolbar?: boolean; // Controlled by T button in LabToolbar
-  onFormatActionsReady?: (actions: FormattingActions) => void;
 }
 
 export function RichEditorPane({
@@ -26,9 +25,11 @@ export function RichEditorPane({
   navigateToRange,
   showEntityIndicators = true,
   showFormatToolbar = false,
-  onFormatActionsReady,
 }: Props) {
-  const editorHeight = Math.max(400, typeof window !== 'undefined' ? window.innerHeight - 380 : 400);
+  // Use a stable, content-first height for indicator overlays; avoid tying to
+  // window.innerHeight so keyboard viewport changes don't resize the shell on
+  // iOS and shift the chrome.
+  const editorHeight = 520;
 
   return (
     <div className="editor-wrapper">
@@ -53,7 +54,6 @@ export function RichEditorPane({
               onEntityPress={onEntityFocus}
               navigateToRange={navigateToRange}
               showFormatToolbar={showFormatToolbar}
-              onFormatActionsReady={onFormatActionsReady}
             />
           </div>
         </div>
