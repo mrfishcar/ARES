@@ -213,9 +213,12 @@
   touch-action: manipulation;
 }
 
-/* Bottom spacer - only visible when keyboard is open (handled by native 100dvh) */
+/* Bottom spacer – padding-only slack so Safari scrolls inside the editor instead of
+   nudging the viewport/chrome when the keyboard appears. */
 .editor-bottom-spacer {
-  display: none;
+  display: block;
+  height: clamp(200px, 40vh, 320px);
+  flex-shrink: 0;
 }
 
 /* Placeholder */

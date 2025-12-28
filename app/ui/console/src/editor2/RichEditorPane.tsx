@@ -26,7 +26,10 @@ export function RichEditorPane({
   showEntityIndicators = true,
   showFormatToolbar = false,
 }: Props) {
-  const editorHeight = Math.max(400, typeof window !== 'undefined' ? window.innerHeight - 380 : 400);
+  // Use a stable, content-first height for indicator overlays; avoid tying to
+  // window.innerHeight so keyboard viewport changes don't resize the shell on
+  // iOS and shift the chrome.
+  const editorHeight = 520;
 
   return (
     <div className="editor-wrapper">
