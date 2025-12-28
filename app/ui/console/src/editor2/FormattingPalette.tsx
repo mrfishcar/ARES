@@ -1,14 +1,11 @@
 /**
  * FormattingPalette - iOS Notes-style floating formatting controls
- * Two-row layout:
- * - Row 1: Style selector dropdown
- * - Row 2: Format controls (bold, italic, etc.)
- * 
- * Features active state tracking and keyboard shortcuts
+ * Single-row layout with inline style chips and formatting buttons.
+ * Features active state tracking and keyboard shortcuts.
  */
 
-import { ChevronDown, Bold, Italic, Underline, Strikethrough, List, ListOrdered, ListChecks, IndentDecrease, IndentIncrease, Quote } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
+import { Bold, Italic, Underline, Strikethrough, List, ListOrdered, ListChecks, IndentDecrease, IndentIncrease, Quote } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import type { FormattingActions } from '../components/CodeMirrorEditorProps';
 import type { FormatState } from './plugins/FormatActionsPlugin';
 
@@ -20,12 +17,14 @@ interface FormattingPaletteProps {
 }
 
 const STYLE_OPTIONS = [
-  { value: 'p', label: 'Body' },
   { value: 'h1', label: 'Title' },
   { value: 'h2', label: 'Heading' },
   { value: 'h3', label: 'Subheading' },
-  { value: 'mono', label: 'Monospace' },
+  { value: 'p', label: 'Body' },
+  { value: 'mono', label: 'Mono' },
 ] as const;
+
+const ICON_STROKE = 2.25;
 
 export function FormattingPalette({
   isOpen,
@@ -33,9 +32,7 @@ export function FormattingPalette({
   formatState,
   onClose
 }: FormattingPaletteProps) {
-  const [showStyleDropdown, setShowStyleDropdown] = useState(false);
   const [currentStyle, setCurrentStyle] = useState<string>('p');
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Update current style from format state
   useEffect(() => {
@@ -47,20 +44,6 @@ export function FormattingPalette({
       else setCurrentStyle('p');
     }
   }, [formatState]);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    if (!showStyleDropdown) return;
-
-    const handleClick = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setShowStyleDropdown(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [showStyleDropdown]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -91,6 +74,9 @@ export function FormattingPalette({
             formatActions?.toggleStrikethrough?.();
           }
           break;
+        case 'escape':
+          onClose();
+          break;
       }
     };
 
@@ -100,8 +86,7 @@ export function FormattingPalette({
 
   const handleStyleChange = (style: string) => {
     setCurrentStyle(style);
-    setShowStyleDropdown(false);
-    
+
     // Apply style via formatActions
     if (formatActions) {
       if (style === 'h1') {
@@ -120,38 +105,23 @@ export function FormattingPalette({
 
   if (!isOpen) return null;
 
-  const currentStyleLabel = STYLE_OPTIONS.find(opt => opt.value === currentStyle)?.label || 'Body';
-
   return (
     <div className={`formatting-palette ${isOpen ? 'formatting-palette--open' : ''}`}>
       <div className="formatting-palette__row formatting-palette__row--compact">
-        <div className="formatting-palette__section formatting-palette__section--style" ref={dropdownRef}>
-          <button
-            type="button"
-            className="format-style-dropdown"
-            onClick={() => setShowStyleDropdown(!showStyleDropdown)}
-            aria-label="Text style"
-            aria-haspopup="listbox"
-            aria-expanded={showStyleDropdown}
-          >
-            <span>{currentStyleLabel}</span>
-            <ChevronDown size={16} />
-          </button>
-
-          {showStyleDropdown && (
-            <div className="format-style-menu">
-              {STYLE_OPTIONS.map(option => (
-                <button
-                  key={option.value}
-                  type="button"
-                  className={`format-style-option ${currentStyle === option.value ? 'format-style-option--active' : ''}`}
-                  onClick={() => handleStyleChange(option.value)}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          )}
+        <div className="formatting-palette__section formatting-palette__section--style" role="group" aria-label="Text style">
+          <div className="formatting-style-chips" aria-live="polite">
+            {STYLE_OPTIONS.map(option => (
+              <button
+                key={option.value}
+                type="button"
+                className={`format-style-chip ${currentStyle === option.value ? 'format-style-chip--active' : ''}`}
+                onClick={() => handleStyleChange(option.value)}
+                aria-pressed={currentStyle === option.value}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="formatting-palette__section formatting-palette__section--controls">
@@ -164,7 +134,7 @@ export function FormattingPalette({
             aria-label="Bold"
             aria-pressed={formatState?.isBold ?? false}
           >
-            <Bold size={18} />
+            <Bold size={18} strokeWidth={ICON_STROKE} />
           </button>
 
           <button
@@ -176,7 +146,7 @@ export function FormattingPalette({
             aria-label="Italic"
             aria-pressed={formatState?.isItalic ?? false}
           >
-            <Italic size={18} />
+            <Italic size={18} strokeWidth={ICON_STROKE} />
           </button>
 
           <button
@@ -188,7 +158,7 @@ export function FormattingPalette({
             aria-label="Underline"
             aria-pressed={formatState?.isUnderline ?? false}
           >
-            <Underline size={18} />
+            <Underline size={18} strokeWidth={ICON_STROKE} />
           </button>
 
           <button
@@ -200,7 +170,7 @@ export function FormattingPalette({
             aria-label="Strikethrough"
             aria-pressed={formatState?.isStrikethrough ?? false}
           >
-            <Strikethrough size={18} />
+            <Strikethrough size={18} strokeWidth={ICON_STROKE} />
           </button>
 
           <div className="format-control-divider" />
@@ -214,7 +184,7 @@ export function FormattingPalette({
             aria-label="Bullet list"
             aria-pressed={formatState?.listType === 'bullet'}
           >
-            <List size={18} />
+            <List size={18} strokeWidth={ICON_STROKE} />
           </button>
 
           <button
@@ -226,7 +196,7 @@ export function FormattingPalette({
             aria-label="Numbered list"
             aria-pressed={formatState?.listType === 'number'}
           >
-            <ListOrdered size={18} />
+            <ListOrdered size={18} strokeWidth={ICON_STROKE} />
           </button>
 
           <button
@@ -238,7 +208,7 @@ export function FormattingPalette({
             aria-label="Checklist"
             aria-pressed={formatState?.listType === 'check'}
           >
-            <ListChecks size={18} />
+            <ListChecks size={18} strokeWidth={ICON_STROKE} />
           </button>
 
           <div className="format-control-divider" />
@@ -251,7 +221,7 @@ export function FormattingPalette({
             title="Decrease indent (⇧Tab)"
             aria-label="Decrease indent"
           >
-            <IndentDecrease size={18} />
+            <IndentDecrease size={18} strokeWidth={ICON_STROKE} />
           </button>
 
           <button
@@ -262,7 +232,7 @@ export function FormattingPalette({
             title="Increase indent (Tab)"
             aria-label="Increase indent"
           >
-            <IndentIncrease size={18} />
+            <IndentIncrease size={18} strokeWidth={ICON_STROKE} />
           </button>
 
           <button
@@ -274,7 +244,7 @@ export function FormattingPalette({
             aria-label="Quote block"
             aria-pressed={formatState?.isQuote ?? false}
           >
-            <Quote size={18} />
+            <Quote size={18} strokeWidth={ICON_STROKE} />
           </button>
         </div>
       </div>
