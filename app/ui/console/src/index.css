@@ -72,6 +72,7 @@ body {
 
   /* Toolbar sizing */
   --format-toolbar-min-width: min(clamp(320px, 60vw, 560px), calc(100vw - 32px));
+  --lab-toolbar-width-normal: min(clamp(360px, 52vw, 520px), calc(100vw - 40px));
 
   /* Editor Margins */
   --editor-margin-desktop: 96px;
@@ -552,7 +553,7 @@ a:hover {
 
 /* =========================================================
    iOS Notes-style right-anchored toolbar morph
-   Two toolbars occupy same fixed space, morph horizontally
+   Single pill stays mounted and reshapes between modes
    ========================================================= */
 
 .lab-toolbar-stack {
@@ -566,94 +567,82 @@ a:hover {
   z-index: 50;
 }
 
-/* Toolbar slot holds both normal and formatting toolbars */
 .toolbar-slot {
   position: relative;
   min-height: 44px;
-  min-width: var(--format-toolbar-min-width);
+  min-width: var(--lab-toolbar-width-normal);
   display: inline-flex;
-  justify-content: center; /* Keep toolbar centered */
-}
-
-/* Both toolbars share right edge for iOS Notes-style morph */
-.toolbar-slot .lab-control-bar {
-  transform-origin: 100% 50%; /* Right edge anchor point for morph animation */
-  will-change: transform;
-  transition: transform 240ms cubic-bezier(0.2, 0.9, 0.2, 1) 110ms,
-              visibility 0ms linear 350ms;
-}
-
-/* Formatting toolbar - absolutely positioned, centered via left+right+transform */
-.toolbar-slot .lab-control-bar--formatting {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%) scaleX(1); /* Center + scale */
-  min-width: var(--format-toolbar-min-width);
-}
-
-/* ========== NORMAL MODE ========== */
-.toolbar-slot[data-mode="normal"] .lab-control-bar:not(.lab-control-bar--formatting) {
-  transform: scaleX(1);
-  pointer-events: auto;
-  visibility: visible;
-}
-
-.toolbar-slot[data-mode="normal"] .lab-control-bar--formatting {
-  transform: translateX(-50%) scaleX(0); /* Collapse to right while staying centered */
-  pointer-events: none;
-  visibility: hidden;
-}
-
-/* ========== FORMATTING MODE ========== */
-.toolbar-slot[data-mode="formatting"] .lab-control-bar:not(.lab-control-bar--formatting) {
-  transform: scaleX(0); /* Collapse to right */
-  pointer-events: none;
-  visibility: hidden;
-}
-
-.toolbar-slot[data-mode="formatting"] .lab-control-bar--formatting {
-  transform: translateX(-50%) scaleX(1); /* Expand from right while centered */
-  pointer-events: auto;
-  visibility: visible;
-}
-
-/* Content inside toolbar fades independently from pill transform */
-.lab-control-bar__content {
-  opacity: 1;
-  transition: opacity 120ms ease;
-}
-
-.toolbar-slot[data-mode="formatting"] .lab-control-bar:not(.lab-control-bar--formatting) .lab-control-bar__content {
-  opacity: 0;
-  transition-delay: 0ms;
-}
-
-.toolbar-slot[data-mode="normal"] .lab-control-bar:not(.lab-control-bar--formatting) .lab-control-bar__content {
-  opacity: 1;
-  transition-delay: 340ms;
-}
-
-.toolbar-slot[data-mode="normal"] .lab-control-bar--formatting .lab-control-bar__content {
-  opacity: 0;
-  transition-delay: 0ms;
-}
-
-.toolbar-slot[data-mode="formatting"] .lab-control-bar--formatting .lab-control-bar__content {
-  opacity: 1;
-  transition-delay: 340ms;
-}
-
-.lab-control-bar {
-  position: relative;
-  display: inline-flex;           /* 👈 shrink-wrap to contents */
   justify-content: center;
+}
+
+.toolbar-slot .lab-control-bar {
+  position: relative;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 16px;
   padding: 8px 20px;
   border-radius: 22px;
-  white-space: nowrap;            /* prevent status/controls wrapping */
+  white-space: nowrap;
   pointer-events: auto;
+  min-width: var(--lab-toolbar-width-normal);
+  width: var(--lab-toolbar-width-normal);
+  transform-origin: 100% 50%;
+  will-change: width, padding;
+  transition: width 260ms cubic-bezier(0.2, 0.9, 0.2, 1),
+              min-width 260ms cubic-bezier(0.2, 0.9, 0.2, 1),
+              padding 220ms cubic-bezier(0.2, 0.9, 0.2, 1),
+              gap 200ms ease,
+              border-radius 200ms ease;
+}
+
+.toolbar-slot[data-mode="formatting"] .lab-control-bar {
+  min-width: var(--format-toolbar-min-width);
+  width: var(--format-toolbar-min-width);
+  padding: 10px 14px;
+  gap: 12px;
+  border-radius: 20px;
+}
+
+.lab-control-bar__content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity 140ms ease, visibility 0ms linear 180ms;
+  padding: 0 4px;
+}
+
+.toolbar-slot[data-mode="normal"] .lab-control-bar__content--normal {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+  transition-delay: 160ms; /* let pill reshape, then fade content back */
+}
+
+.toolbar-slot[data-mode="normal"] .lab-control-bar__content--formatting {
+  transition-delay: 0ms;
+}
+
+.toolbar-slot[data-mode="formatting"] .lab-control-bar__content--normal {
+  transition-delay: 0ms;
+}
+
+.toolbar-slot[data-mode="formatting"] .lab-control-bar__content--formatting {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+  transition-delay: 160ms; /* fade in after morph completes */
+}
+
+.lab-control-bar__content--formatting {
+  justify-content: center;
 }
 
 .lab-control-bar.hidden {

@@ -160,12 +160,15 @@ export function LabToolbar({
 
   return (
     <>
-    {/* Two-toolbar morph container - both toolbars render simultaneously */}
+    {/* Single morphing toolbar container; contents swap but pill stays mounted */}
     <div className="lab-toolbar-stack">
       <div className="toolbar-slot" data-mode={formatToolbarEnabled ? 'formatting' : 'normal'}>
-        {/* Normal toolbar - always rendered, morphs when switching modes */}
-        <div className="lab-control-bar liquid-glass">
-          <div className="lab-control-bar__content">
+        <div
+          className="lab-control-bar liquid-glass"
+          data-mode={formatToolbarEnabled ? 'formatting' : 'normal'}
+        >
+          {/* Normal toolbar content */}
+          <div className="lab-control-bar__content lab-control-bar__content--normal">
             {/* Status indicator */}
             <div className="status-group">
               <div
@@ -247,11 +250,9 @@ export function LabToolbar({
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Formatting toolbar - always rendered, morphs when switching modes */}
-        <div className="lab-control-bar lab-control-bar--formatting liquid-glass">
-          <div className="lab-control-bar__content">
+          {/* Formatting toolbar content */}
+          <div className="lab-control-bar__content lab-control-bar__content--formatting">
             <div className="formatting-toolbar-content formatting-toolbar-content--palette">
               <FormattingPalette
                 isOpen={formatToolbarEnabled}
