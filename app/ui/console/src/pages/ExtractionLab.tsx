@@ -22,6 +22,7 @@ import { initializeTheme, toggleTheme, loadThemePreference, getEffectiveTheme } 
 import { useLabLayoutState } from '../hooks/useLabLayoutState';
 import { useExtractionSettings } from '../hooks/useExtractionSettings';
 import { useAutoLongExtraction } from '../hooks/useAutoLongExtraction';
+import { useKeyboardViewportOffset } from '../hooks/useKeyboardViewportOffset';
 import type { SerializedEditorState } from 'lexical';
 import { RichEditorPane } from '../editor2/RichEditorPane';
 import type { BlockIndexEntry, PosMapEntry, RichDocSnapshot } from '../editor2/types';
@@ -718,6 +719,10 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   // Settings state (via custom hook)
   const settings = useExtractionSettings();
 
+  // Sync a keyboard offset CSS variable so viewport-fixed chrome can rise above the iOS keyboard
+  // without resizing the editor surface itself.
+  useKeyboardViewportOffset();
+
   // Single scroll owner for the editor surface.
   // Layout chain (no resizing allowed): #root (React mount) → .extraction-lab (page root) → .lab-content (layout parent)
   // → .editor-panel (scroll container) → editor content. Keyboard padding is applied only on .editor-panel.
@@ -825,42 +830,6 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     };
   }, []);
 
-  // Keep the floating toolbar pinned to the visual viewport so it rises above the keyboard without resizing the editor.
-  useLayoutEffect(() => {
-    const toolbarEl = toolbarRef.current;
-    if (!toolbarEl || typeof window === 'undefined') return;
-
-    const vv = window.visualViewport;
-
-    const updateToolbarBottom = () => {
-      if (!toolbarRef.current) return;
-
-      const keyboardOverlap = vv
-        ? Math.max(0, window.innerHeight - (vv.height + vv.offsetTop))
-        : 0;
-
-      // Small breathing room above the keyboard and the safe area inset.
-      toolbarRef.current.style.bottom = `calc(${keyboardOverlap}px + env(safe-area-inset-bottom, 0px) + 12px)`;
-    };
-
-    updateToolbarBottom();
-
-    if (vv) {
-      vv.addEventListener('resize', updateToolbarBottom);
-      vv.addEventListener('scroll', updateToolbarBottom);
-    }
-
-    window.addEventListener('orientationchange', updateToolbarBottom);
-
-    return () => {
-      if (vv) {
-        vv.removeEventListener('resize', updateToolbarBottom);
-        vv.removeEventListener('scroll', updateToolbarBottom);
-      }
-      window.removeEventListener('orientationchange', updateToolbarBottom);
-    };
-  }, []);
-
   // Measure toolbar height so the editor can pad underneath without any height or width changes.
   useLayoutEffect(() => {
     const toolbarEl = toolbarRef.current;
@@ -923,139 +892,6 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   // Initialize theme on mount
   useEffect(() => {
     initializeTheme();
-  }, []);
-
-  // Keyboard-safe padding: compute inset once the visual viewport settles.
-  // Absolutely no resizing or translation of the scroll container or its parents is allowed.
-  useLayoutEffect(() => {
-    const scrollContainer = editorScrollRef.current;
-    if (!scrollContainer || typeof window === 'undefined') return;
-
-    const debugEnabled = Boolean((window as any).ARES_DEBUG_KB);
-    const vv = window.visualViewport;
-
-    const log = (event: string, extra?: Record<string, unknown>) => {
-      if (!debugEnabled) return;
-      console.log('[KeyboardInset]', {
-        event,
-        innerHeight: window.innerHeight,
-        vvHeight: vv?.height,
-        vvOffsetTop: vv?.offsetTop,
-        kbInset: extra?.kbInset ?? 0,
-        clientHeight: scrollContainer.clientHeight,
-        scrollHeight: scrollContainer.scrollHeight,
-        viewportWidth: window.innerWidth,
-        offsetWidth: scrollContainer.offsetWidth,
-        ...extra,
-      });
-    };
-
-    const applyInsets = (kbInset: number) => {
-      const clamped = Math.max(0, Math.round(kbInset));
-      scrollContainer.style.setProperty('--kb', `${clamped}px`);
-      scrollContainer.style.setProperty('--kbInset', `${clamped}px`);
-      scrollContainer.style.setProperty('--safeBottom', 'env(safe-area-inset-bottom, 0px)');
-      scrollContainer.style.setProperty('--toolbarHeight', 'var(--floating-toolbar-height, 0px)');
-      scrollContainer.style.setProperty(
-        '--bottomInset',
-        `calc(${clamped}px + env(safe-area-inset-bottom, 0px) + var(--floating-toolbar-height, 0px))`,
-      );
-      scrollContainer.style.paddingBottom =
-        `calc(env(safe-area-inset-bottom, 0px) + ${clamped}px + var(--floating-toolbar-height, 0px))`;
-      log('applyInsets', { kbInset: clamped });
-    };
-
-    const activeElementIsInside = () => {
-      const active = document.activeElement;
-      return active instanceof HTMLElement && scrollContainer.contains(active);
-    };
-
-    const computeKeyboardInset = () => {
-      const kbInset = vv ? Math.max(0, window.innerHeight - (vv.height + vv.offsetTop)) : 0;
-      return activeElementIsInside() ? kbInset : 0;
-    };
-
-    const recomputeKbInset = (event: string) => {
-      const kbInset = computeKeyboardInset();
-      applyInsets(kbInset);
-      log(event, { kbInset });
-    };
-
-    const resetAndRecompute = (event: string) => {
-      applyInsets(0);
-      requestAnimationFrame(() => {
-        recomputeKbInset(`${event}:raf`);
-        window.setTimeout(() => recomputeKbInset(`${event}:200ms`), 200);
-      });
-    };
-
-    const guardRails = () => {
-      if (!import.meta.env.DEV) return;
-      const viewportWidth = window.innerWidth;
-      if (scrollContainer.offsetWidth < viewportWidth - 8) {
-        console.warn('[KeyboardInset][guard]', 'Editor narrower than viewport', {
-          offsetWidth: scrollContainer.offsetWidth,
-          viewportWidth,
-        });
-      }
-
-      const ancestors: HTMLElement[] = [];
-      let el: HTMLElement | null = scrollContainer;
-      for (let i = 0; i < 4 && el; i++) {
-        ancestors.push(el);
-        el = el.parentElement;
-      }
-      ancestors.forEach(node => {
-        const style = getComputedStyle(node);
-        const hasExplicitHeight = ['height', 'maxHeight', 'minHeight'].some(prop => {
-          const value = style[prop as keyof CSSStyleDeclaration];
-          return typeof value === 'string' && value.trim() !== '' && value.trim() !== 'auto';
-        });
-        if (hasExplicitHeight) {
-          console.warn('[KeyboardInset][guard]', 'Explicit height detected', {
-            node,
-            className: node.className,
-            style: {
-              height: style.height,
-              maxHeight: style.maxHeight,
-              minHeight: style.minHeight,
-            },
-          });
-        }
-      });
-    };
-
-    // Reset synchronously on mount/pageshow/visibilitychange before the first paint
-    applyInsets(0);
-    guardRails();
-    requestAnimationFrame(() => guardRails());
-    resetAndRecompute('mount');
-
-    const handleViewportResize = () => resetAndRecompute('visualViewport.resize');
-    const handlePageShow = () => resetAndRecompute('pageshow');
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible') {
-        resetAndRecompute('visibilitychange');
-      }
-    };
-    const handleFocusIn = () => recomputeKbInset('focusin');
-    const handleFocusOut = () => recomputeKbInset('focusout');
-
-    vv?.addEventListener('resize', handleViewportResize);
-    window.addEventListener('pageshow', handlePageShow);
-    document.addEventListener('visibilitychange', handleVisibility);
-    window.addEventListener('focusin', handleFocusIn);
-    window.addEventListener('focusout', handleFocusOut);
-
-    log('listeners-attached');
-
-    return () => {
-      vv?.removeEventListener('resize', handleViewportResize);
-      window.removeEventListener('pageshow', handlePageShow);
-      document.removeEventListener('visibilitychange', handleVisibility);
-      window.removeEventListener('focusin', handleFocusIn);
-      window.removeEventListener('focusout', handleFocusOut);
-    };
   }, []);
 
   // iOS: Prevent body scroll when modals are open
@@ -2542,7 +2378,8 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         containerClassName="lab-entity-fab"
         containerStyle={{
           right: 'var(--lab-fab-right, calc(env(safe-area-inset-right) + 16px))',
-          bottom: 'var(--lab-fab-bottom, calc(env(safe-area-inset-bottom) + 16px))',
+          bottom:
+            'calc(var(--lab-fab-bottom, calc(env(safe-area-inset-bottom) + 16px)) + var(--keyboard-offset, 0px))',
           zIndex: 1100,
         }}
       />

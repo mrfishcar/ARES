@@ -75,6 +75,10 @@ body {
   --editor-header-offset: clamp(3.5rem, 8vw, 5.5rem);
   --editor-header-offset-compact: clamp(2.75rem, 7vw, 4.25rem);
 
+  /* Chrome + keyboard offsets */
+  --floating-toolbar-height: 72px;
+  --keyboard-offset: 0px;
+
   /* Glassmorphism Variables – Dark Mode Defaults */
   --glass-bg-dark: rgba(15, 23, 42, 0.75);
   --glass-bg-light: rgba(255, 255, 255, 0.9);
@@ -235,11 +239,11 @@ body {
 }
 
 .lab-toolbar-fixed {
-  /* Toolbar is viewport-fixed; bottom offset is updated via visualViewport to clear the keyboard. */
+  /* Toolbar is viewport-fixed; bottom offset comes from visualViewport via --keyboard-offset to clear the keyboard. */
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + var(--keyboard-offset, 0px) + 12px);
   pointer-events: auto;
   z-index: 1101;
 }
@@ -1549,14 +1553,13 @@ a:hover {
   overflow-y: auto;  /* Single scroll owner for editor content */
   -webkit-overflow-scrolling: touch;  /* Smooth iOS scrolling */
   touch-action: pan-y;  /* Allow vertical touch scrolling */
-  /* Keyboard-safe inset: use padding instead of resizing to avoid layout jumps */
-  --kb: 0px;
-  --kbInset: 0px;
-  --safeBottom: env(safe-area-inset-bottom, 0px);
-  --toolbarHeight: var(--floating-toolbar-height, 0px);
-  --bottomInset: calc(var(--kb) + var(--safeBottom) + var(--toolbarHeight));
+  /* Keyboard-safe inset: padding-only to avoid layout jumps */
   padding-top: var(--chromeHeight, 72px); /* Space for viewport-anchored chrome layer */
-  padding-bottom: var(--bottomInset);
+  padding-bottom: calc(
+    env(safe-area-inset-bottom, 0px) +
+    var(--floating-toolbar-height, 72px) +
+    var(--keyboard-offset, 0px)
+  );
 }
 
 /* Mobile override - keep toolbar at edge on narrow screens */

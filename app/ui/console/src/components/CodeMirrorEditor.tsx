@@ -693,7 +693,7 @@ function iosCursorTrackingExtension(getScrollContainer: () => HTMLElement | null
     }
 
     const containerRect = container.getBoundingClientRect();
-    const kbInset = parseFloat(getComputedStyle(container).getPropertyValue('--kbInset')) || 0;
+    const kbInset = parseFloat(getComputedStyle(container).getPropertyValue('--keyboard-offset')) || 0;
     const visibleHeight = container.clientHeight - kbInset;
     const caretBottomInContainer = caretCoords.bottom - containerRect.top + container.scrollTop;
     const targetCaretBottom = container.scrollTop + visibleHeight - CARET_MARGIN;
