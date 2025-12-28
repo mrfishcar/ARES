@@ -176,8 +176,7 @@ export function RichTextEditor({
           {/* ENABLED: Provides explicit caret tracking with correct container targeting */}
           {/* Targets .lab-content on mobile, .rich-editor-surface on desktop */}
           <ScrollIntoViewPlugin />
-          {/* KeyboardLockPlugin intentionally disabled: duplicate keyboard/viewport management
-              triggered iOS Safari second-focus jumps. Rely on static layout + native scrolling. */}
+          {/* KeyboardLockPlugin disabled; rely on native Safari caret restoration to avoid second-focus jumps */}
         </div>
       </div>
     </LexicalComposer>
