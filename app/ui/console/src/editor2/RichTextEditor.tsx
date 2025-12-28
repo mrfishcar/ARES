@@ -20,7 +20,6 @@ import type { NavigateToRange, FormattingActions } from '../components/CodeMirro
 import { FocusDebugPlugin } from './plugins/FocusDebugPlugin';
 import { FormatActionsPlugin, type FormatState } from './plugins/FormatActionsPlugin';
 import { ScrollIntoViewPlugin } from './plugins/ScrollIntoViewPlugin';
-import { KeyboardLockPlugin } from './plugins/KeyboardLockPlugin';
 
 interface RichTextEditorProps {
   initialDocJSON?: SerializedEditorState | null;
@@ -177,10 +176,7 @@ export function RichTextEditor({
           {/* ENABLED: Provides explicit caret tracking with correct container targeting */}
           {/* Targets .lab-content on mobile, .rich-editor-surface on desktop */}
           <ScrollIntoViewPlugin />
-          {/* KeyboardLockPlugin: Prevents page scroll on iPad when keyboard is open */}
-          {/* Adds 'kb-open' class to html/body when editor is focused */}
-          {/* Sets position: fixed on html to prevent "manual slide entire UI" issue */}
-          <KeyboardLockPlugin />
+          {/* KeyboardLockPlugin disabled; rely on native Safari caret restoration to avoid second-focus jumps */}
         </div>
       </div>
     </LexicalComposer>
