@@ -1465,11 +1465,11 @@ a:hover {
 }
 
 .lab-content {
-  display: grid;  /* Grid layout like working commit */
-  grid-template-columns: 1fr;  /* Single column (will add second column for results panel later) */
+  display: flex; /* Simple flex column: chrome above, editor fills the rest */
+  flex-direction: column;
   gap: 24px;
   padding: 80px 24px 24px;  /* Top padding for toolbar */
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;  /* Constrain children - they scroll */
   background: transparent;
