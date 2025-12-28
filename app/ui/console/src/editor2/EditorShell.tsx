@@ -74,11 +74,7 @@ export function EditorShell({
 
   return (
     <div className="editor-shell">
-      {/* Formatting palette - DISABLED: LabToolbar now handles formatting mode
-       * The toolbar morph animation shows formatting controls in the morphed toolbar
-       */}
-
-      {/* Editor content */}
+      {/* Editor content - formatting UI is provided by the LabToolbar palette */}
       <div className="editor-shell__content">
         {children}
       </div>

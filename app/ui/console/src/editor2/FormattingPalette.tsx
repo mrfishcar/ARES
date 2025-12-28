@@ -7,7 +7,7 @@
  * Features active state tracking and keyboard shortcuts
  */
 
-import { ChevronDown, Bold, Italic, Underline, Strikethrough, List, ListOrdered, IndentDecrease, IndentIncrease, Quote } from 'lucide-react';
+import { ChevronDown, Bold, Italic, Underline, Strikethrough, List, ListOrdered, ListChecks, IndentDecrease, IndentIncrease, Quote } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import type { FormattingActions } from '../components/CodeMirrorEditorProps';
 import type { FormatState } from './plugins/FormatActionsPlugin';
@@ -124,143 +124,148 @@ export function FormattingPalette({
 
   return (
     <div className={`formatting-palette ${isOpen ? 'formatting-palette--open' : ''}`}>
-      <div className="formatting-palette__inner">
-        {/* Row 1: Style Selector */}
-        <div className="formatting-palette__row">
-          <div className="formatting-palette__section" ref={dropdownRef}>
-            <button
-              type="button"
-              className="format-style-dropdown"
-              onClick={() => setShowStyleDropdown(!showStyleDropdown)}
-              aria-label="Text style"
-            >
-              <span>{currentStyleLabel}</span>
-              <ChevronDown size={16} />
-            </button>
+      <div className="formatting-palette__row formatting-palette__row--compact">
+        <div className="formatting-palette__section formatting-palette__section--style" ref={dropdownRef}>
+          <button
+            type="button"
+            className="format-style-dropdown"
+            onClick={() => setShowStyleDropdown(!showStyleDropdown)}
+            aria-label="Text style"
+          >
+            <span>{currentStyleLabel}</span>
+            <ChevronDown size={16} />
+          </button>
 
-            {showStyleDropdown && (
-              <div className="format-style-menu">
-                {STYLE_OPTIONS.map(option => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    className={`format-style-option ${currentStyle === option.value ? 'format-style-option--active' : ''}`}
-                    onClick={() => handleStyleChange(option.value)}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          {showStyleDropdown && (
+            <div className="format-style-menu">
+              {STYLE_OPTIONS.map(option => (
+                <button
+                  key={option.value}
+                  type="button"
+                  className={`format-style-option ${currentStyle === option.value ? 'format-style-option--active' : ''}`}
+                  onClick={() => handleStyleChange(option.value)}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Row 2: Format Controls */}
-        <div className="formatting-palette__row">
-          <div className="formatting-palette__section formatting-palette__section--controls">
-            <button
-              type="button"
-              className={`format-control ${formatState?.isBold ? 'format-control--active' : ''}`}
-              onClick={formatActions?.toggleBold}
-              disabled={!formatActions?.toggleBold}
-              title="Bold (⌘B)"
-              aria-label="Bold"
-            >
-              <Bold size={18} />
-            </button>
+        <div className="formatting-palette__section formatting-palette__section--controls">
+          <button
+            type="button"
+            className={`format-control ${formatState?.isBold ? 'format-control--active' : ''}`}
+            onClick={formatActions?.toggleBold}
+            disabled={!formatActions?.toggleBold}
+            title="Bold (⌘B)"
+            aria-label="Bold"
+          >
+            <Bold size={18} />
+          </button>
 
-            <button
-              type="button"
-              className={`format-control ${formatState?.isItalic ? 'format-control--active' : ''}`}
-              onClick={formatActions?.toggleItalic}
-              disabled={!formatActions?.toggleItalic}
-              title="Italic (⌘I)"
-              aria-label="Italic"
-            >
-              <Italic size={18} />
-            </button>
+          <button
+            type="button"
+            className={`format-control ${formatState?.isItalic ? 'format-control--active' : ''}`}
+            onClick={formatActions?.toggleItalic}
+            disabled={!formatActions?.toggleItalic}
+            title="Italic (⌘I)"
+            aria-label="Italic"
+          >
+            <Italic size={18} />
+          </button>
 
-            <button
-              type="button"
-              className={`format-control ${formatState?.isUnderline ? 'format-control--active' : ''}`}
-              onClick={formatActions?.toggleUnderline}
-              disabled={!formatActions?.toggleUnderline}
-              title="Underline (⌘U)"
-              aria-label="Underline"
-            >
-              <Underline size={18} />
-            </button>
+          <button
+            type="button"
+            className={`format-control ${formatState?.isUnderline ? 'format-control--active' : ''}`}
+            onClick={formatActions?.toggleUnderline}
+            disabled={!formatActions?.toggleUnderline}
+            title="Underline (⌘U)"
+            aria-label="Underline"
+          >
+            <Underline size={18} />
+          </button>
 
-            <button
-              type="button"
-              className={`format-control ${formatState?.isStrikethrough ? 'format-control--active' : ''}`}
-              onClick={formatActions?.toggleStrikethrough}
-              disabled={!formatActions?.toggleStrikethrough}
-              title="Strikethrough (⌘⇧D)"
-              aria-label="Strikethrough"
-            >
-              <Strikethrough size={18} />
-            </button>
+          <button
+            type="button"
+            className={`format-control ${formatState?.isStrikethrough ? 'format-control--active' : ''}`}
+            onClick={formatActions?.toggleStrikethrough}
+            disabled={!formatActions?.toggleStrikethrough}
+            title="Strikethrough (⌘⇧D)"
+            aria-label="Strikethrough"
+          >
+            <Strikethrough size={18} />
+          </button>
 
-            <div className="format-control-divider" />
+          <div className="format-control-divider" />
 
-            <button
-              type="button"
-              className="format-control"
-              onClick={formatActions?.insertBulletList}
-              disabled={!formatActions?.insertBulletList}
-              title="Bullet list"
-              aria-label="Bullet list"
-            >
-              <List size={18} />
-            </button>
+          <button
+            type="button"
+            className={`format-control ${formatState?.listType === 'bullet' ? 'format-control--active' : ''}`}
+            onClick={formatActions?.insertBulletList}
+            disabled={!formatActions?.insertBulletList}
+            title="Bullet list"
+            aria-label="Bullet list"
+          >
+            <List size={18} />
+          </button>
 
-            <button
-              type="button"
-              className="format-control"
-              onClick={formatActions?.insertNumberedList}
-              disabled={!formatActions?.insertNumberedList}
-              title="Numbered list"
-              aria-label="Numbered list"
-            >
-              <ListOrdered size={18} />
-            </button>
+          <button
+            type="button"
+            className={`format-control ${formatState?.listType === 'number' ? 'format-control--active' : ''}`}
+            onClick={formatActions?.insertNumberedList}
+            disabled={!formatActions?.insertNumberedList}
+            title="Numbered list"
+            aria-label="Numbered list"
+          >
+            <ListOrdered size={18} />
+          </button>
 
-            <div className="format-control-divider" />
+          <button
+            type="button"
+            className={`format-control ${formatState?.listType === 'check' ? 'format-control--active' : ''}`}
+            onClick={formatActions?.insertCheckList}
+            disabled={!formatActions?.insertCheckList}
+            title="Checklist"
+            aria-label="Checklist"
+          >
+            <ListChecks size={18} />
+          </button>
 
-            <button
-              type="button"
-              className="format-control"
-              onClick={formatActions?.outdent}
-              disabled={!formatActions?.outdent}
-              title="Decrease indent (⇧Tab)"
-              aria-label="Decrease indent"
-            >
-              <IndentDecrease size={18} />
-            </button>
+          <div className="format-control-divider" />
 
-            <button
-              type="button"
-              className="format-control"
-              onClick={formatActions?.indent}
-              disabled={!formatActions?.indent}
-              title="Increase indent (Tab)"
-              aria-label="Increase indent"
-            >
-              <IndentIncrease size={18} />
-            </button>
+          <button
+            type="button"
+            className="format-control"
+            onClick={formatActions?.outdent}
+            disabled={!formatActions?.outdent}
+            title="Decrease indent (⇧Tab)"
+            aria-label="Decrease indent"
+          >
+            <IndentDecrease size={18} />
+          </button>
 
-            <button
-              type="button"
-              className={`format-control ${formatState?.isQuote ? 'format-control--active' : ''}`}
-              onClick={formatActions?.toggleQuote}
-              disabled={!formatActions?.toggleQuote}
-              title="Quote block"
-              aria-label="Quote block"
-            >
-              <Quote size={18} />
-            </button>
-          </div>
+          <button
+            type="button"
+            className="format-control"
+            onClick={formatActions?.indent}
+            disabled={!formatActions?.indent}
+            title="Increase indent (Tab)"
+            aria-label="Increase indent"
+          >
+            <IndentIncrease size={18} />
+          </button>
+
+          <button
+            type="button"
+            className={`format-control ${formatState?.isQuote ? 'format-control--active' : ''}`}
+            onClick={formatActions?.toggleQuote}
+            disabled={!formatActions?.toggleQuote}
+            title="Quote block"
+            aria-label="Quote block"
+          >
+            <Quote size={18} />
+          </button>
         </div>
       </div>
     </div>

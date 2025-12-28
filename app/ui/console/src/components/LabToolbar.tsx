@@ -5,8 +5,10 @@
 
 import { createPortal } from 'react-dom';
 import { useRef, useState, useEffect } from 'react';
-import { Settings, Sun, Moon, Highlighter, FilePlus, Cloud, CloudOff, Bold, Italic, Code2, Heading, Quote, Minus, Type } from 'lucide-react';
+import { Settings, Sun, Moon, Highlighter, FilePlus, Cloud, CloudOff, Type, X } from 'lucide-react';
 import type { FormattingActions } from './CodeMirrorEditorProps';
+import { FormattingPalette } from '../editor2/FormattingPalette';
+import type { FormatState } from '../editor2/plugins/FormatActionsPlugin';
 
 interface LabToolbarProps {
   // Status
@@ -49,6 +51,7 @@ interface LabToolbarProps {
   showFormatToolbar: boolean;
   formatToolbarEnabled: boolean;
   formatActions?: FormattingActions | null;
+  formatState?: FormatState | null;
   onToggleFormatToolbar: () => void;
 }
 
@@ -77,9 +80,10 @@ export function LabToolbar({
   onHighlightChainsToggle,
   onRichEditorToggle,
   saveStatus,
-  showFormatToolbar,
+  showFormatToolbar: _showFormatToolbar,
   formatToolbarEnabled,
   formatActions,
+  formatState,
   onToggleFormatToolbar,
 }: LabToolbarProps) {
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
@@ -153,20 +157,6 @@ export function LabToolbar({
     const { runPerfGauntlet } = await import('../perf/perfGauntlet');
     runPerfGauntlet();
   };
-
-  const formatButtons: Array<{
-    key: string;
-    label: string;
-    icon: React.ReactNode;
-    action?: () => void;
-  }> = [
-    { key: 'bold', label: 'Bold', icon: <Bold size={14} />, action: formatActions?.toggleBold },
-    { key: 'italic', label: 'Italic', icon: <Italic size={14} />, action: formatActions?.toggleItalic },
-    { key: 'mono', label: 'Monospace', icon: <Code2 size={14} />, action: formatActions?.toggleMonospace },
-    { key: 'heading', label: 'Cycle heading', icon: <Heading size={14} />, action: formatActions?.cycleHeading },
-    { key: 'quote', label: 'Quote block', icon: <Quote size={14} />, action: formatActions?.toggleQuote },
-    { key: 'divider', label: 'Insert divider', icon: <Minus size={14} />, action: formatActions?.insertDivider },
-  ];
 
   return (
     <>
@@ -262,31 +252,26 @@ export function LabToolbar({
         {/* Formatting toolbar - always rendered, morphs when switching modes */}
         <div className="lab-control-bar lab-control-bar--formatting liquid-glass">
           <div className="lab-control-bar__content">
-            <div className="formatting-toolbar-content">
-              {formatButtons.map((btn) => (
-                <button
-                  key={btn.key}
-                  type="button"
-                  className="format-control-btn"
-                  onClick={btn.action}
-                  disabled={!btn.action}
-                  title={btn.label}
-                  aria-label={btn.label}
-                >
-                  {btn.icon}
-                </button>
-              ))}
+            <div className="formatting-toolbar-content formatting-toolbar-content--palette">
+              <FormattingPalette
+                isOpen={formatToolbarEnabled}
+                formatActions={formatActions}
+                formatState={formatState}
+                onClose={onToggleFormatToolbar}
+              />
 
-              {/* Exit formatting mode button */}
-              <button
-                type="button"
-                className="format-control-btn format-exit-btn"
-                onClick={onToggleFormatToolbar}
-                title="Exit formatting mode"
-                aria-label="Exit formatting mode"
-              >
-                <Type size={14} />
-              </button>
+              {formatToolbarEnabled && (
+                <button
+                  type="button"
+                  className="format-toolbar-exit"
+                  onClick={onToggleFormatToolbar}
+                  title="Exit formatting mode"
+                  aria-label="Exit formatting mode"
+                >
+                  <X size={14} />
+                  <span>Done</span>
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -40,6 +40,7 @@ export interface FormatState {
   isStrikethrough: boolean;
   isCode: boolean;
   isQuote: boolean;
+  listType: 'bullet' | 'number' | 'check' | null;
   blockType: 'paragraph' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'quote' | 'code';
 }
 
@@ -57,6 +58,7 @@ export function FormatActionsPlugin({ onActionsReady, onFormatStateChange }: For
     isStrikethrough: false,
     isCode: false,
     isQuote: false,
+    listType: null,
     blockType: 'paragraph'
   });
 
@@ -73,6 +75,7 @@ export function FormatActionsPlugin({ onActionsReady, onFormatStateChange }: For
         isStrikethrough: selection.hasFormat('strikethrough'),
         isCode: selection.hasFormat('code'),
         isQuote: false,
+        listType: null,
         blockType: 'paragraph'
       };
 
@@ -87,6 +90,11 @@ export function FormatActionsPlugin({ onActionsReady, onFormatStateChange }: For
       } else if ($isQuoteNode(element)) {
         newState.isQuote = true;
         newState.blockType = 'quote';
+      } else if ($isListNode(element)) {
+        const listType = element.getListType();
+        if (listType === 'bullet' || listType === 'number' || listType === 'check') {
+          newState.listType = listType;
+        }
       }
 
       setFormatState(newState);
@@ -105,6 +113,17 @@ export function FormatActionsPlugin({ onActionsReady, onFormatStateChange }: For
       COMMAND_PRIORITY_LOW
     );
   }, [editor, updateFormatState]);
+
+  useEffect(() => {
+    return editor.registerUpdateListener(() => {
+      updateFormatState();
+    });
+  }, [editor, updateFormatState]);
+
+  // Prime state on mount
+  useEffect(() => {
+    updateFormatState();
+  }, [updateFormatState]);
 
   useEffect(() => {
     const actions: FormattingActions = {
