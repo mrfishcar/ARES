@@ -29,6 +29,7 @@ import { snapshotRichDoc } from '../editor2/flattenRichDoc';
 import { computeDocVersion } from '../editor2/hash';
 import '../styles/darkMode.css';
 import '../styles/extraction-lab.css';
+import type { CSSProperties } from 'react';
 
 interface ExtractionLabProps {
   project: string;
@@ -722,6 +723,8 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   // → .editor-panel (scroll container) → editor content. Keyboard padding is applied only on .editor-panel.
   const editorScrollRef = useRef<HTMLDivElement | null>(null);
   const [scrollContainerEl, setScrollContainerEl] = useState<HTMLElement | null>(null);
+  const chromeLayerRef = useRef<HTMLDivElement | null>(null);
+  const [chromeHeight, setChromeHeight] = useState(72);
 
   // Extraction state
   const [text, setText] = useState('');
@@ -796,6 +799,30 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     },
     [highlightChains]
   );
+
+  // Measure the viewport-anchored chrome so the editor scroll container can pad underneath it without resizing.
+  useLayoutEffect(() => {
+    const chromeEl = chromeLayerRef.current;
+    if (!chromeEl) return;
+
+    const measure = () => {
+      const rect = chromeEl.getBoundingClientRect();
+      if (rect.height > 0) {
+        setChromeHeight(Math.ceil(rect.height));
+      }
+    };
+
+    measure();
+
+    const resizeObserver = new ResizeObserver(measure);
+    resizeObserver.observe(chromeEl);
+    window.addEventListener('resize', measure);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, []);
 
   // Ghost formatting toolbar visibility (focus or selection with debounce hide)
   useEffect(() => {
@@ -2372,15 +2399,16 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     setJobEtaSeconds(null);
   }, [resetEntityOverrides]);
 
-  console.debug('[ExtractionLab] Editor props', {
-    entitiesCount: displayEntities?.length ?? 0,
-    editorDisableHighlighting,
-    entityHighlightMode: settings.entityHighlightMode,
-  });
+  const chromePortalTarget =
+    typeof document !== 'undefined' ? document.getElementById('chrome-layer-root') ?? document.body : null;
+  const editorPanelStyle = useMemo(
+    () => ({ '--chromeHeight': `${chromeHeight}px` } as CSSProperties),
+    [chromeHeight]
+  );
 
-  return (
-    <div className={`extraction-lab${layout.showDocumentSidebar ? ' sidebar-open' : ''}${layout.entityPanelMode === 'pinned' ? ' entity-sidebar-pinned' : ''}`}>
-      {/* Hamburger button */}
+  const chromeLayer = (
+    <div className="chrome-layer" ref={chromeLayerRef}>
+      {/* Viewport-anchored chrome so scrolling the editor never moves top controls. */}
       <button
         onClick={layout.toggleDocumentSidebar}
         className="hamburger-btn"
@@ -2391,7 +2419,6 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         <Menu size={20} strokeWidth={2} />
       </button>
 
-      {/* Toolbar - position: fixed at root level */}
       <LabToolbar
         jobStatus={jobStatus}
         theme={effectiveTheme}
@@ -2422,213 +2449,228 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         formatActions={formatActions}
         onToggleFormatToolbar={() => setFormatToolbarEnabled(prev => !prev)}
       />
+    </div>
+  );
 
-      {/* Documents sidebar */}
-      <DocumentsSidebar
-        isOpen={layout.showDocumentSidebar}
-        documents={documentList}
-        loadingDocuments={loadingDocuments}
-        loadingDocument={loadingDocument}
-        onLoadDocument={handleLoadDocumentById}
-        onClose={layout.closeDocumentSidebar}
-        deriveDocumentName={deriveDocumentName}
-      />
+  console.debug('[ExtractionLab] Editor props', {
+    entitiesCount: displayEntities?.length ?? 0,
+    editorDisableHighlighting,
+    entityHighlightMode: settings.entityHighlightMode,
+  });
 
-      {/* Entity Review Sidebar - Pinned mode (same level as documents sidebar) */}
-      {layout.entityPanelMode === 'pinned' && (
-        <EntityReviewSidebar
-          mode="pinned"
-          entities={entities}
-          onClose={layout.closeEntityPanel}
-          onPin={layout.pinEntityPanel}
-          onEntityUpdate={handleEntityUpdate}
-          onLogReport={handleLogReport}
-          onCopyReport={handleCopyReport}
-          onNavigateEntity={handleNavigateToEntity}
+  return (
+    <>
+      {chromePortalTarget ? createPortal(chromeLayer, chromePortalTarget) : chromeLayer}
+      <div
+        className={`extraction-lab${layout.showDocumentSidebar ? ' sidebar-open' : ''}${layout.entityPanelMode === 'pinned' ? ' entity-sidebar-pinned' : ''}`}
+      >
+        {/* Documents sidebar */}
+        <DocumentsSidebar
+          isOpen={layout.showDocumentSidebar}
+          documents={documentList}
+          loadingDocuments={loadingDocuments}
+          loadingDocument={loadingDocument}
+          onLoadDocument={handleLoadDocumentById}
+          onClose={layout.closeDocumentSidebar}
+          deriveDocumentName={deriveDocumentName}
         />
-      )}
 
-      {/* Main Content */}
-      <div className="lab-content">
-        {/* Editor panel - single scroll owner so chrome stays static */}
-        <div className="editor-panel" ref={editorScrollRef}>
-          {/* Editor */}
-          {settings.useRichEditor ? (
-            <RichEditorPane
-              richDoc={richDoc}
-              plainText={text}
-              entities={displayEntities}
-              onChange={handleRichChange}
-              onEntityFocus={handleNavigateToEntity}
-              showEntityIndicators={settings.showEntityIndicators}
-              navigateToRange={navigateRequest}
-              showFormatToolbar={false}
-              onFormatActionsReady={setFormatActions}
-            />
-          ) : (
-            <EditorPane
-              text={text}
-              entities={displayEntities}
-              onTextChange={handleLegacyTextChange}
-              disableHighlighting={editorDisableHighlighting}
-              highlightOpacity={settings.highlightOpacity}
-              renderMarkdown={renderMarkdown}
-              entityHighlightMode={settings.entityHighlightMode}
-              showEntityIndicators={settings.showEntityIndicators}
-              onChangeType={handleChangeType}
-              onCreateNew={handleCreateNew}
-              onReject={handleReject}
-              onTagEntity={handleTagEntity}
-              onTextSelected={handleTextSelected}
-              onResizeEntity={handleResizeEntity}
-              enableLongTextOptimization={settings.enableLongTextOptimization}
-              navigateToRange={navigateRequest ?? undefined}
-              colorForSpan={colorForSpan}
-              onEditorFocusChange={setEditorFocused}
-              onSelectionChange={setHasActiveSelection}
-              onFormatActionsReady={setFormatActions}
-              scrollContainer={scrollContainerEl}
-            />
-          )}
+        {/* Entity Review Sidebar - Pinned mode (same level as documents sidebar) */}
+        {layout.entityPanelMode === 'pinned' && (
+          <EntityReviewSidebar
+            mode="pinned"
+            entities={entities}
+            onClose={layout.closeEntityPanel}
+            onPin={layout.pinEntityPanel}
+            onEntityUpdate={handleEntityUpdate}
+            onLogReport={handleLogReport}
+            onCopyReport={handleCopyReport}
+            onNavigateEntity={handleNavigateToEntity}
+          />
+        )}
 
-          {booknlpResult && (
-            <div
-              className="booknlp-panel"
-              style={{
-                marginTop: '16px',
-                padding: '16px',
-                border: '1px solid var(--border-color, #e5e7eb)',
-                borderRadius: '12px',
-                background: 'var(--bg-secondary, #fff)',
-                width: '100%',
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '16px' }}>
-                    BookNLP Quotes {booknlpResult.quotes ? `(${booknlpResult.quotes.length})` : ''}
-                  </h3>
-                  <div style={{ color: '#6b7280', fontSize: '12px' }}>
-                    Speakers are resolved to BookNLP characters; enable “Color BookNLP chains” in settings to see clusters.
+        {/* Main Content */}
+        <div className="lab-content">
+          {/* Editor panel - single scroll owner so chrome stays static */}
+          <div className="editor-panel" ref={editorScrollRef} style={editorPanelStyle}>
+            {/* Editor */}
+            {settings.useRichEditor ? (
+              <RichEditorPane
+                richDoc={richDoc}
+                plainText={text}
+                entities={displayEntities}
+                onChange={handleRichChange}
+                onEntityFocus={handleNavigateToEntity}
+                showEntityIndicators={settings.showEntityIndicators}
+                navigateToRange={navigateRequest}
+                showFormatToolbar={false}
+                onFormatActionsReady={setFormatActions}
+              />
+            ) : (
+              <EditorPane
+                text={text}
+                entities={displayEntities}
+                onTextChange={handleLegacyTextChange}
+                disableHighlighting={editorDisableHighlighting}
+                highlightOpacity={settings.highlightOpacity}
+                renderMarkdown={renderMarkdown}
+                entityHighlightMode={settings.entityHighlightMode}
+                showEntityIndicators={settings.showEntityIndicators}
+                onChangeType={handleChangeType}
+                onCreateNew={handleCreateNew}
+                onReject={handleReject}
+                onTagEntity={handleTagEntity}
+                onTextSelected={handleTextSelected}
+                onResizeEntity={handleResizeEntity}
+                enableLongTextOptimization={settings.enableLongTextOptimization}
+                navigateToRange={navigateRequest ?? undefined}
+                colorForSpan={colorForSpan}
+                onEditorFocusChange={setEditorFocused}
+                onSelectionChange={setHasActiveSelection}
+                onFormatActionsReady={setFormatActions}
+                scrollContainer={scrollContainerEl}
+              />
+            )}
+
+            {booknlpResult && (
+              <div
+                className="booknlp-panel"
+                style={{
+                  marginTop: '16px',
+                  padding: '16px',
+                  border: '1px solid var(--border-color, #e5e7eb)',
+                  borderRadius: '12px',
+                  background: 'var(--bg-secondary, #fff)',
+                  width: '100%',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '16px' }}>
+                      BookNLP Quotes {booknlpResult.quotes ? `(${booknlpResult.quotes.length})` : ''}
+                    </h3>
+                    <div style={{ color: '#6b7280', fontSize: '12px' }}>
+                      Speakers are resolved to BookNLP characters; enable “Color BookNLP chains” in settings to see clusters.
+                    </div>
                   </div>
+                  {booknlpResult.metadata && (
+                    <div style={{ color: '#6b7280', fontSize: '12px' }}>
+                      {booknlpResult.characters?.length ?? 0} characters · {booknlpResult.metadata.processing_time_seconds}s
+                    </div>
+                  )}
                 </div>
-                {booknlpResult.metadata && (
-                  <div style={{ color: '#6b7280', fontSize: '12px' }}>
-                    {booknlpResult.characters?.length ?? 0} characters · {booknlpResult.metadata.processing_time_seconds}s
+
+                {booknlpResult.quotes && booknlpResult.quotes.length > 0 ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px', marginTop: '12px' }}>
+                    {booknlpResult.quotes.map((quote: any, idx: number) => {
+                      const speakerName = quote.speaker_id
+                        ? speakerLookup.get(quote.speaker_id) || quote.speaker_name || 'Unknown speaker'
+                        : quote.speaker_name || 'Unknown speaker';
+                      const confidence = Math.round(((quote.confidence ?? 0.5) || 0.5) * 100);
+
+                      return (
+                        <div
+                          key={quote.id || idx}
+                          style={{
+                            padding: '12px',
+                            borderRadius: '10px',
+                            border: '1px solid var(--border-subtle, #e5e7eb)',
+                            background: 'var(--bg-tertiary, #f9fafb)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '6px',
+                          }}
+                        >
+                          <div style={{ fontStyle: 'italic', color: '#111827' }}>“{quote.text}”</div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                              <span style={{ fontWeight: 600, color: '#111827' }}>{speakerName}</span>
+                              <span style={{ color: '#6b7280', fontSize: '12px' }}>Confidence {confidence}%</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleQuoteNavigate(quote)}
+                              style={{
+                                border: '1px solid #d1d5db',
+                                background: '#fff',
+                                borderRadius: '8px',
+                                padding: '6px 10px',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              Jump
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div style={{ color: '#6b7280', marginTop: '8px' }}>
+                    No quotes detected for this passage yet.
                   </div>
                 )}
               </div>
-
-              {booknlpResult.quotes && booknlpResult.quotes.length > 0 ? (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px', marginTop: '12px' }}>
-                  {booknlpResult.quotes.map((quote: any, idx: number) => {
-                    const speakerName = quote.speaker_id
-                      ? speakerLookup.get(quote.speaker_id) || quote.speaker_name || 'Unknown speaker'
-                      : quote.speaker_name || 'Unknown speaker';
-                    const confidence = Math.round(((quote.confidence ?? 0.5) || 0.5) * 100);
-
-                    return (
-                      <div
-                        key={quote.id || idx}
-                        style={{
-                          padding: '12px',
-                          borderRadius: '10px',
-                          border: '1px solid var(--border-subtle, #e5e7eb)',
-                          background: 'var(--bg-tertiary, #f9fafb)',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '6px',
-                        }}
-                      >
-                        <div style={{ fontStyle: 'italic', color: '#111827' }}>“{quote.text}”</div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                            <span style={{ fontWeight: 600, color: '#111827' }}>{speakerName}</span>
-                            <span style={{ color: '#6b7280', fontSize: '12px' }}>Confidence {confidence}%</span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleQuoteNavigate(quote)}
-                            style={{
-                              border: '1px solid #d1d5db',
-                              background: '#fff',
-                              borderRadius: '8px',
-                              padding: '6px 10px',
-                              cursor: 'pointer',
-                            }}
-                          >
-                            Jump
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div style={{ color: '#6b7280', marginTop: '8px' }}>
-                  No quotes detected for this passage yet.
-                </div>
-              )}
-            </div>
-          )}
+            )}
+          </div>
         </div>
+
+        {/* Floating Action Button - Only show when text exists and panel is not pinned */}
+        <FloatingActionButton
+          icon="📊"
+          label="View entities and stats"
+          onClick={layout.openEntityPanel}
+          visible={text.trim().length > 0 && layout.entityPanelMode === 'closed'}
+          position="bottom-right"
+        />
+
+        {/* Entity Review Sidebar - Full-screen overlay mode */}
+        {layout.entityPanelMode === 'overlay' && (
+          <EntityReviewSidebar
+            mode="overlay"
+            entities={entities}
+            onClose={layout.closeEntityPanel}
+            onPin={layout.pinEntityPanel}
+            onEntityUpdate={handleEntityUpdate}
+            onLogReport={handleLogReport}
+            onCopyReport={handleCopyReport}
+            onNavigateEntity={handleNavigateToEntity}
+          />
+        )}
+
+        {/* Entity Modal */}
+        {layout.showEntityModal && (
+          <EntityModal
+            entities={displayEntities}
+            relations={relations}
+            onClose={layout.closeEntityModal}
+            onViewWiki={handleViewWiki}
+          />
+        )}
+
+        {/* Wiki Modal */}
+        {selectedEntity && (
+          <WikiModal
+            entityName={selectedEntity.name}
+            entityType={selectedEntity.type}
+            project={project}
+            onClose={() => setSelectedEntity(null)}
+            extractionContext={{ entities: displayEntities, relations }}
+          />
+        )}
+
+        {/* Entity Selection Menu - shown when text is selected in highlight mode */}
+        {textSelection && settings.entityHighlightMode && (
+          <EntitySelectionMenu
+            selectedText={textSelection.text}
+            entitiesCount={textSelection.entitiesInRange.length}
+            position={textSelection.position}
+            onTagAsEntity={() => createEntityFromSelection()} // Auto-detects entity type
+            onMergeEntities={mergeEntitiesFromSelection}
+            onCancel={clearTextSelection}
+          />
+        )}
       </div>
-
-      {/* Floating Action Button - Only show when text exists and panel is not pinned */}
-      <FloatingActionButton
-        icon="📊"
-        label="View entities and stats"
-        onClick={layout.openEntityPanel}
-        visible={text.trim().length > 0 && layout.entityPanelMode === 'closed'}
-        position="bottom-right"
-      />
-
-      {/* Entity Review Sidebar - Full-screen overlay mode */}
-      {layout.entityPanelMode === 'overlay' && (
-        <EntityReviewSidebar
-          mode="overlay"
-          entities={entities}
-          onClose={layout.closeEntityPanel}
-          onPin={layout.pinEntityPanel}
-          onEntityUpdate={handleEntityUpdate}
-          onLogReport={handleLogReport}
-          onCopyReport={handleCopyReport}
-          onNavigateEntity={handleNavigateToEntity}
-        />
-      )}
-
-      {/* Entity Modal */}
-      {layout.showEntityModal && (
-        <EntityModal
-          entities={displayEntities}
-          relations={relations}
-          onClose={layout.closeEntityModal}
-          onViewWiki={handleViewWiki}
-        />
-      )}
-
-      {/* Wiki Modal */}
-      {selectedEntity && (
-        <WikiModal
-          entityName={selectedEntity.name}
-          entityType={selectedEntity.type}
-          project={project}
-          onClose={() => setSelectedEntity(null)}
-          extractionContext={{ entities: displayEntities, relations }}
-        />
-      )}
-
-      {/* Entity Selection Menu - shown when text is selected in highlight mode */}
-      {textSelection && settings.entityHighlightMode && (
-        <EntitySelectionMenu
-          selectedText={textSelection.text}
-          entitiesCount={textSelection.entitiesInRange.length}
-          position={textSelection.position}
-          onTagAsEntity={() => createEntityFromSelection()} // Auto-detects entity type
-          onMergeEntities={mergeEntitiesFromSelection}
-          onCancel={clearTextSelection}
-        />
-      )}
-    </div>
+    </>
   );
 }

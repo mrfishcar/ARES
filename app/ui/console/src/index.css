@@ -206,6 +206,28 @@ body {
   z-index: 1200;
 }
 
+/* Viewport-anchored chrome layer so toolbar + hamburger never join any scroll context. */
+.chrome-layer-root {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  pointer-events: none;
+}
+
+.chrome-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1100;
+  pointer-events: none;
+}
+
+.chrome-layer .hamburger-btn,
+.chrome-layer .lab-toolbar-stack {
+  pointer-events: auto;
+}
+
 .portal-root::backdrop,
 .modal-root::backdrop,
 .overlay-root::backdrop,
@@ -1503,6 +1525,7 @@ a:hover {
   --safeBottom: env(safe-area-inset-bottom, 0px);
   --toolbarHeight: var(--floating-toolbar-height, 0px);
   --bottomInset: calc(var(--kb) + var(--safeBottom) + var(--toolbarHeight));
+  padding-top: var(--chromeHeight, 72px); /* Space for viewport-anchored chrome layer */
   padding-bottom: var(--bottomInset);
 }
 

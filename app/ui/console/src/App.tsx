@@ -143,6 +143,7 @@ function AppShell() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <ToastContainer messages={toast.messages} onClose={toast.closeToast} />
+      <div id="chrome-layer-root" className="chrome-layer-root" />
       <div id="overlay-root" className="overlay-root" />
     </>
   );
