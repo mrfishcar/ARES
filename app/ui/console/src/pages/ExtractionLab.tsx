@@ -2399,8 +2399,27 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     setJobEtaSeconds(null);
   }, [resetEntityOverrides]);
 
-  const chromePortalTarget =
-    typeof document !== 'undefined' ? document.getElementById('chrome-layer-root') ?? document.body : null;
+  const [chromePortalTarget, setChromePortalTarget] = useState<HTMLElement | null>(
+    () => (typeof document !== 'undefined' ? document.body : null)
+  );
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+
+    let target = document.getElementById('chrome-layer-root') as HTMLElement | null;
+
+    if (!target) {
+      target = document.createElement('div');
+      target.id = 'chrome-layer-root';
+      target.className = 'chrome-layer-root';
+    }
+
+    // Ensure the chrome layer is a direct child of <body> so it never inherits scroll/transform contexts.
+    if (target.parentElement !== document.body) {
+      document.body.appendChild(target);
+    }
+
+    setChromePortalTarget(target);
+  }, []);
   const editorPanelStyle = useMemo(
     () => ({ '--chromeHeight': `${chromeHeight}px` } as CSSProperties),
     [chromeHeight]
