@@ -33,9 +33,6 @@ body {
 }
 
 :root {
-  /* Single viewport height variable - 100dvh handles iOS keyboard natively */
-  --app-viewport-height: 100dvh;
-
   --app-bg-dark: #0a0e27;  /* Night sky - matches darkMode.ts */
   --app-bg-light: #FFF9F0;  /* Warm light - matches darkMode.ts */
 
@@ -173,42 +170,13 @@ html,
 body,
 #root {
   height: 100%;
-  /* Use CSS variable for viewport height (updated by JS on keyboard open) */
-  min-height: 100dvh;
+  min-height: 100%;
   overflow: hidden;
   overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
 }
 
-/* iPad Safari keyboard fix: Lock viewport scroll when editor is focused */
-/* The 'kb-open' class is added to <html> when Lexical editor receives focus */
-/* This prevents the "manual slide entire UI" issue on iPad when keyboard is open */
-html.kb-open,
-body.kb-open {
-  /* CRITICAL: position: fixed prevents page scroll on iPad */
-  position: fixed !important;
-  width: 100% !important;
-  height: 100% !important;
-  overflow: hidden !important;
-  overscroll-behavior: none !important;
-  touch-action: manipulation !important;
-}
-
-/* Use visualViewport height when available (iOS keyboard handling) */
-html.kb-open {
-  height: var(--vvh, 100vh) !important;
-}
-
-#root.kb-open {
-  height: var(--vvh, 100vh) !important;
-}
-
-/* CRITICAL: Make .extraction-lab use visual viewport height when keyboard is open */
-/* This eliminates white space below the editor when keyboard appears on iPad */
-html.kb-open .extraction-lab {
-  height: var(--vvh, 100dvh) !important;
-  min-height: var(--vvh, 100dvh) !important;
-}
+/* Removed keyboard-lock overrides: rely on static layout to avoid iOS second-focus jumps */
 
 @media (prefers-color-scheme: light) {
   :root,
@@ -408,8 +376,6 @@ body::before {
   z-index: -1;
   background-color: var(--app-surface);
   background-image: var(--app-background-gradient);
-  /* Ensure it covers viewport even when keyboard appears */
-  min-height: 100dvh;
 }
 
 #root {
@@ -465,7 +431,7 @@ a:hover {
 .extraction-lab {
   display: flex;
   flex-direction: column;
-  height: 100vh;  /* Simple 100vh like working commit */
+  height: 100%;  /* Match app viewport height */
   background: var(--bg-primary);
   overflow: hidden;  /* Lock the page */
 }
@@ -553,20 +519,15 @@ a:hover {
    ========================================================= */
 
 .lab-toolbar-stack {
-  position: fixed;  /* Fixed positioning - positions relative to viewport */
+  position: fixed;
   top: 16px;
-  right: 24px;  /* Default: 24px from viewport edge */
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
   gap: 8px;
-  z-index: 90;  /* Below doc sidebar (z-index: 100) and entity sidebar (z-index: 100) */
-  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* When entity sidebar is pinned, move toolbar to left of sidebar */
-.extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
-  right: 524px;  /* 500px sidebar + 24px gap */
+  z-index: 50;
 }
 
 /* Toolbar slot holds both normal and formatting toolbars */
@@ -574,7 +535,7 @@ a:hover {
   position: relative;
   min-height: 44px;
   display: inline-flex;
-  justify-content: flex-end; /* Right-align toolbar to prevent overflow */
+  justify-content: center; /* Keep toolbar centered */
 }
 
 /* Both toolbars share right edge for iOS Notes-style morph */
@@ -586,12 +547,12 @@ a:hover {
               visibility 0ms linear;
 }
 
-/* Formatting toolbar - absolutely positioned, right-aligned */
+/* Formatting toolbar - absolutely positioned, centered via left+right+transform */
 .toolbar-slot .lab-control-bar--formatting {
   position: absolute;
   top: 0;
-  right: 0;  /* Right-align instead of center to prevent overflow */
-  transform: scaleX(1);
+  left: 50%;
+  transform: translateX(-50%) scaleX(1); /* Center + scale */
 }
 
 /* ========== NORMAL MODE ========== */
@@ -603,7 +564,7 @@ a:hover {
 }
 
 .toolbar-slot[data-mode="normal"] .lab-control-bar--formatting {
-  transform: scaleX(0); /* Collapse to right */
+  transform: translateX(-50%) scaleX(0); /* Collapse to right while staying centered */
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
@@ -620,7 +581,7 @@ a:hover {
 }
 
 .toolbar-slot[data-mode="formatting"] .lab-control-bar--formatting {
-  transform: scaleX(1); /* Expand from right */
+  transform: translateX(-50%) scaleX(1); /* Expand from right while centered */
   opacity: 1;
   pointer-events: auto;
   visibility: visible;
@@ -1497,38 +1458,52 @@ a:hover {
 .lab-content {
   display: grid;  /* Grid layout like working commit */
   grid-template-columns: 1fr;  /* Single column (will add second column for results panel later) */
-  gap: 0;  /* No gap - editor fills space */
-  padding: 0;  /* No padding - full-width editor */
+  gap: 24px;
+  padding: 80px 24px 24px;  /* Top padding for toolbar */
   flex: 1;
   min-height: 0;
   overflow: hidden;  /* Constrain children - they scroll */
   background: transparent;
-  transition: padding-left 0.28s cubic-bezier(0.4, 0, 0.2, 1),
-              padding-right 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: padding-left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* When entity sidebar is pinned, add right padding (sidebar is at app level now) */
+/* When entity sidebar is pinned, change to flex layout with sidebar on right */
 .extraction-lab.entity-sidebar-pinned .lab-content {
-  padding-right: 524px; /* 500px sidebar + 24px gap */
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
 }
 
-/* Editor panel - Full-screen, borderless, scrollable */
+/* Editor panel - scrolls naturally like working commit */
 .editor-panel {
   display: flex;
   flex-direction: column;
   background: var(--bg-primary);  /* Match app background */
   border-radius: 0;  /* No rounded corners - full screen */
   border: none;  /* No borders */
-  overflow: auto;  /* Scroll naturally - no forcing */
+  overflow-y: auto;  /* Scroll naturally - no forcing */
   min-height: 0;  /* Allow flex shrinking */
-  -webkit-overflow-scrolling: touch;  /* Smooth iOS scrolling */
-  touch-action: pan-y;  /* Allow vertical touch scrolling */
 }
 
-/* Mobile override - keep toolbar at edge on narrow screens */
-@media (max-width: 900px) {
+/* When entity sidebar is pinned, editor takes remaining space */
+.extraction-lab.entity-sidebar-pinned .editor-panel {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Toolbar centering when entity sidebar is pinned - ALL BROWSERS */
+@media (min-width: 769px) {
   .extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {
-    right: 24px !important;
+    /* Center in editor panel space (accounting for entity sidebar 500px on right) */
+    left: calc((100% - 500px) / 2) !important;
+    transform: translateX(-50%) !important;
+  }
+
+  /* When both document sidebar AND entity sidebar are open */
+  .extraction-lab.sidebar-open.entity-sidebar-pinned .lab-toolbar-stack {
+    /* Center in remaining space (documents 280px left + entity 500px right) */
+    left: calc(280px + (100% - 280px - 500px) / 2) !important;
+    transform: translateX(-50%) !important;
   }
 }
 
@@ -1553,7 +1528,22 @@ a:hover {
   box-sizing: border-box;
 }
 
-/* Editor Panel - Removed duplicate - scrolling handled by first .editor-panel rule */
+/* Editor Panel - Infinite canvas feel */
+.editor-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  background-color: var(--bg-primary);
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  /* Don't scroll here - .rich-editor-surface is the scroll container */
+  overflow: hidden;
+  transition: background-color 0.3s ease;
+  pointer-events: auto;
+}
 
 /* Desktop sidebar for entities */
 .entities-sidebar-desktop {
@@ -2730,7 +2720,8 @@ html[data-theme="light"] .overlay-backdrop {
   }
 
   .lab-control-bar {
-    /* Removed centering - let .lab-toolbar-stack handle positioning */
+    left: 50%;
+    transform: translateX(-50%);
     padding: 6px 12px;
     min-height: 44px;
     max-width: calc(100% - 40px);
@@ -2741,9 +2732,9 @@ html[data-theme="light"] .overlay-backdrop {
     padding-left: 0; /* ✅ Remove sidebar padding on mobile; documents-sidebar is hidden */
   }
 
-  /* Entity sidebar - fullscreen on mobile, remove right padding */
+  /* Entity sidebar wrapper - escape parent on mobile when pinned */
   .extraction-lab.entity-sidebar-pinned .lab-content {
-    padding-right: 0; /* ✅ Remove entity sidebar padding on mobile */
+    overflow: visible; /* Allow pinned sidebar to escape on mobile */
   }
 
   .lab-header-status-row {
@@ -2772,7 +2763,8 @@ html[data-theme="light"] .overlay-backdrop {
   }
 
   .lab-control-bar {
-    /* Removed centering - let .lab-toolbar-stack handle positioning */
+    left: 50%;
+    transform: translateX(-50%);
     padding: 4px 8px;
     max-width: calc(100% - 48px);
   }
@@ -2834,9 +2826,9 @@ html[data-theme="light"] .overlay-backdrop {
 @supports (-webkit-touch-callout: none) {
   /* iOS Safari specific */
   .lab-control-bar {
-    /* REMOVED: position: fixed override - let parent .lab-toolbar-stack handle positioning */
-    /* position: fixed;
-    top: 16px; */
+    /* Keep fixed positioning for floating effect */
+    position: fixed;
+    top: 16px;
   }
 
   /* Prevent backdrop-filter performance issues on older iOS */
@@ -2854,13 +2846,6 @@ html[data-theme="light"] .overlay-backdrop {
 body.modal-open {
   overflow: hidden;
   /* Removed: position: fixed; width: 100%; height: 100%; - causes iOS caret issues */
-}
-
-/* iOS: Ensure editor doesn't remount on keyboard show/hide */
-.editor-panel {
-  /* Keep editor mounted and stable */
-  contain: layout style;
-  /* REMOVED: translateZ(0) caused blur to change during interaction */
 }
 
 /* iOS: Prevent layout shift when keyboard appears */

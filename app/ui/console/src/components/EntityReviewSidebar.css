@@ -23,40 +23,15 @@
   border: 1px solid var(--liquid-glass-border);
 }
 
-/* Pinned mode - fixed sidebar from right (same level as documents sidebar) */
+/* Pinned mode - integrated into layout */
 .entity-review-sidebar.pinned {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: min(500px, 35vw);  /* Responsive width: 500px or 35% of viewport, whichever is smaller */
-  max-width: 700px;  /* Allow wider on very large screens */
-
-  /* Liquid glass styling (identical to documents sidebar) */
-  background: radial-gradient(circle at top right, var(--liquid-glass-tint-1), transparent 60%),
-              radial-gradient(circle at bottom right, var(--liquid-glass-tint-2), transparent 65%),
-              var(--liquid-glass-bg);
-  backdrop-filter: blur(var(--liquid-glass-blur-pinned)) saturate(1.12);
-  -webkit-backdrop-filter: blur(var(--liquid-glass-blur-pinned)) saturate(1.12);
-  border-left: 1px solid var(--liquid-glass-border);
-  border-right: none;
+  width: 100%;
+  flex: 1; /* Fill parent container instead of height: 100% */
+  min-height: 0; /* Allow flex shrinking */
+  box-shadow: none;
   border-radius: 0;
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.08);
-
-  z-index: 100;
-  overflow-y: auto;
-  overflow-x: hidden;
-  overscroll-behavior-x: none;
-  -webkit-overflow-scrolling: touch;
-
-  /* Start off-screen by default, slide in when pinned */
-  transform: translateX(100%);
-  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Slide in when pinned mode is active */
-.extraction-lab.entity-sidebar-pinned .entity-review-sidebar.pinned {
-  transform: translateX(0);
+  border-left: 1px solid var(--liquid-glass-border);
+  animation: none; /* NO animation in pinned mode - prevents jump */
 }
 
 @keyframes slideIn {
@@ -491,10 +466,22 @@
     border-radius: 0;
   }
 
-  /* Pinned mode - full width on mobile screens */
+  /* Pinned mode - fullscreen on mobile */
   .entity-review-sidebar.pinned {
-    width: 100%;  /* Full width on mobile */
-    max-width: none;  /* Remove max-width constraint on mobile */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 1000;
+    border-radius: 0;
+    border-left: none;
+  }
+
+  /* Hide pin button on mobile */
+  .entity-review-sidebar .action-btn-icon[title*="Pin"],
+  .entity-review-sidebar .action-btn-icon[title*="Unpin"] {
+    display: none;
   }
 
   .entity-table-header,
