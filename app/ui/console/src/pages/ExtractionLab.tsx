@@ -22,7 +22,6 @@ import { initializeTheme, toggleTheme, loadThemePreference, getEffectiveTheme } 
 import { useLabLayoutState } from '../hooks/useLabLayoutState';
 import { useExtractionSettings } from '../hooks/useExtractionSettings';
 import { useAutoLongExtraction } from '../hooks/useAutoLongExtraction';
-import { initializeIOSViewportFix } from '../utils/iosViewportFix';
 import type { SerializedEditorState } from 'lexical';
 import { RichEditorPane } from '../editor2/RichEditorPane';
 import type { BlockIndexEntry, PosMapEntry, RichDocSnapshot } from '../editor2/types';
@@ -718,6 +717,10 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   // Settings state (via custom hook)
   const settings = useExtractionSettings();
 
+  // Single scroll owner for the editor surface
+  const editorScrollRef = useRef<HTMLDivElement | null>(null);
+  const [scrollContainerEl, setScrollContainerEl] = useState<HTMLElement | null>(null);
+
   // Extraction state
   const [text, setText] = useState('');
   const [richDoc, setRichDoc] = useState<SerializedEditorState | null>(null);
@@ -824,11 +827,83 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     });
   }, []);
 
+  useEffect(() => {
+    setScrollContainerEl(editorScrollRef.current);
+  }, []);
+
   // Initialize theme on mount
   useEffect(() => {
     initializeTheme();
-    // Initialize iOS viewport height fix
-    initializeIOSViewportFix();
+  }, []);
+
+  // Keyboard-safe padding: compute inset once the visual viewport settles
+  useEffect(() => {
+    const scrollContainer = editorScrollRef.current;
+    if (!scrollContainer || typeof window === 'undefined') return;
+
+    const debugEnabled = Boolean((window as any).ARES_DEBUG_KB);
+
+    const log = (event: string, extra?: Record<string, unknown>) => {
+      if (!debugEnabled) return;
+      const vv = window.visualViewport;
+      console.log('[KeyboardInset]', {
+        event,
+        innerHeight: window.innerHeight,
+        vvHeight: vv?.height,
+        vvOffsetTop: vv?.offsetTop,
+        kbInset: extra?.kbInset ?? 0,
+        clientHeight: scrollContainer.clientHeight,
+        scrollHeight: scrollContainer.scrollHeight,
+        ...extra,
+      });
+    };
+
+    const applyInsets = (kbInset: number) => {
+      const clamped = Math.max(0, Math.round(kbInset));
+      scrollContainer.style.setProperty('--kbInset', `${clamped}px`);
+      scrollContainer.style.setProperty('--safeBottom', 'env(safe-area-inset-bottom, 0px)');
+      scrollContainer.style.setProperty('--toolbarHeight', 'var(--floating-toolbar-height, 0px)');
+      scrollContainer.style.setProperty(
+        '--bottomInset',
+        'calc(var(--kbInset) + var(--safeBottom) + var(--toolbarHeight))',
+      );
+      log('applyInsets', { kbInset: clamped });
+    };
+
+    const computeKeyboardInset = (event: string) => {
+      const vv = window.visualViewport;
+      const kbInset = vv ? Math.max(0, window.innerHeight - (vv.height + vv.offsetTop)) : 0;
+      applyInsets(kbInset);
+      log(event, { kbInset });
+    };
+
+    const resetAndRecompute = (event: string) => {
+      applyInsets(0);
+      requestAnimationFrame(() => computeKeyboardInset(`${event}:rAF`));
+      window.setTimeout(() => computeKeyboardInset(`${event}:250ms`), 250);
+    };
+
+    resetAndRecompute('pageshow-init');
+
+    const handleViewportResize = () => requestAnimationFrame(() => computeKeyboardInset('visualViewport.resize'));
+    const handlePageShow = () => resetAndRecompute('pageshow');
+    const handleFocusIn = () => computeKeyboardInset('focusin');
+    const handleFocusOut = () => computeKeyboardInset('focusout');
+
+    const vv = window.visualViewport;
+    vv?.addEventListener('resize', handleViewportResize);
+    window.addEventListener('pageshow', handlePageShow);
+    window.addEventListener('focusin', handleFocusIn);
+    window.addEventListener('focusout', handleFocusOut);
+
+    log('listeners-attached');
+
+    return () => {
+      vv?.removeEventListener('resize', handleViewportResize);
+      window.removeEventListener('pageshow', handlePageShow);
+      window.removeEventListener('focusin', handleFocusIn);
+      window.removeEventListener('focusout', handleFocusOut);
+    };
   }, []);
 
   // iOS: Prevent body scroll when modals are open
@@ -2311,7 +2386,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       {/* Main Content */}
       <div className="lab-content">
         {/* Editor panel - scrolls naturally like working commit */}
-        <div className="editor-panel">
+        <div className="editor-panel" ref={editorScrollRef}>
           {/* Editor */}
           {settings.useRichEditor ? (
             <RichEditorPane
@@ -2347,6 +2422,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
               onEditorFocusChange={setEditorFocused}
               onSelectionChange={setHasActiveSelection}
               onFormatActionsReady={setFormatActions}
+              scrollContainer={scrollContainerEl}
             />
           )}
         </div>

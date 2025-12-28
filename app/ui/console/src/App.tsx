@@ -87,15 +87,6 @@ function AppShell() {
     };
   }, []);
 
-  // iOS Notes pattern: Let 100dvh handle keyboard, NO JavaScript tracking
-  // visualViewport.height changes when keyboard opens, but 100dvh stays constant
-  // This lets content extend behind keyboard instead of shrinking
-  // Safari's native scrollIntoView handles caret positioning perfectly
-  useEffect(() => {
-    // NO-OP: Removed viewport tracking
-    // Keeping effect for documentation purposes
-  }, []);
-
   useEffect(() => {
     saveState('project', project);
   }, [project]);

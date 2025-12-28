@@ -212,7 +212,7 @@
   touch-action: manipulation;
 }
 
-/* Bottom spacer - only visible when keyboard is open (handled by native 100dvh) */
+/* Bottom spacer - provides scroll slack when keyboard is open */
 .editor-bottom-spacer {
   display: none;
 }

@@ -152,7 +152,7 @@ export function ExactWorkingReplica() {
         .extraction-lab {
           display: flex;
           flex-direction: column;
-          height: 100vh;
+          height: 100%;
           background: var(--bg-primary);
           overflow: hidden;
         }
@@ -314,7 +314,7 @@ export function ExactWorkingReplica() {
             <CodeMirrorEditor
               value={text}
               onChange={(newText) => setText(newText)}
-              minHeight="calc(100vh - 280px)"
+              minHeight="calc(100% - 280px)"
               disableHighlighting={!showHighlighting}
               enableWYSIWYG={renderMarkdown}
             />
