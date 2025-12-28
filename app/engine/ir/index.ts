@@ -45,6 +45,9 @@ export * from './timeline-renderer';
 // Predicate Extractor: verb exhaust capture from dependency trees
 export * from './predicate-extractor';
 
+// Quote-TELL Extractor: speech events from quoted dialogue
+export * from './quote-tell-extractor';
+
 // Future: IR utilities
 // export * from './builders';
 // export * from './validators';

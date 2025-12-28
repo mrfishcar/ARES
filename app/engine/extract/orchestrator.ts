@@ -287,6 +287,15 @@ export async function extractFromSegments(
     corefLinks: number;
     processingTimeSeconds: number;
   };
+  quotes?: Array<{  // Quote data for TELL extraction (when mode='booknlp')
+    id: string;
+    text: string;
+    start: number;
+    end: number;
+    speaker_id: string | null;
+    speaker_name: string | null;
+    confidence: number;
+  }>;
 }> {
   // FAST PATH: Synthetic performance fixtures (PersonX_Y worked with PersonX_Z)
   // The Level 5B performance tests generate documents with dozens of simple
@@ -469,6 +478,8 @@ export async function extractFromSegments(
           relationsGenerated: relations.length,
           processingTimeSeconds: booknlpResult.metadata.processing_time_seconds,
         },
+        // Include quotes for TELL extraction
+        quotes: booknlpResult.quotes,
       };
       return booknlpResponse;
     } catch (error) {

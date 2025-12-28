@@ -35,6 +35,12 @@ import {
   type ParsedSentence,
   type EntitySpan,
 } from '../app/engine/ir/predicate-extractor';
+import {
+  extractTellFromQuotes,
+  buildQuoteIndex,
+  filterOverlappingVerbTells,
+  type QuoteSignal,
+} from '../app/engine/ir/quote-tell-extractor';
 import type { ProjectIR, StoryEvent, Assertion, Modality, Entity, EntityId } from '../app/engine/ir/types';
 
 // =============================================================================
@@ -157,10 +163,68 @@ async function main() {
   );
   console.log(`  Extracted ${predicateAssertions.length} predicate assertions`);
 
-  // Merge with legacy assertions
-  const mergedAssertions = [...ir.assertions, ...predicateAssertions];
-  ir = { ...ir, assertions: mergedAssertions };
-  console.log(`  Total assertions: ${mergedAssertions.length}`);
+  // ==========================================================================
+  // STEP 2.6: Quote-Aware TELL Extraction
+  // ==========================================================================
+  console.log('\n[2.6/6] Extracting TELL events from quotes...');
+
+  // Check if we have quotes from BookNLP
+  let quoteAssertions: Assertion[] = [];
+  let quoteTellStats = { totalQuotes: 0, withSpeaker: 0, withoutSpeaker: 0, tellEventsCreated: 0 };
+
+  if (extractionResult.quotes && extractionResult.quotes.length > 0) {
+    // Convert to QuoteSignal format
+    const quoteSignals: QuoteSignal[] = extractionResult.quotes.map(q => ({
+      id: q.id,
+      text: q.text,
+      start: q.start,
+      end: q.end,
+      speakerId: q.speaker_id,
+      speakerName: q.speaker_name,
+      confidence: q.confidence,
+    }));
+
+    // Build quote index for deduplication
+    const quoteIndex = buildQuoteIndex(quoteSignals);
+
+    // Extract TELL assertions from quotes (quote beats verb)
+    const quoteTellResult = extractTellFromQuotes(quoteSignals, docId, {
+      minSpeakerConfidence: 0.5,
+      includeUnattributed: false,
+    });
+    quoteAssertions = quoteTellResult.assertions;
+    quoteTellStats = quoteTellResult.stats;
+
+    console.log(`  Quotes found: ${quoteTellStats.totalQuotes}`);
+    console.log(`    With speaker: ${quoteTellStats.withSpeaker}`);
+    console.log(`    Without speaker: ${quoteTellStats.withoutSpeaker}`);
+    console.log(`    TELL events created: ${quoteTellStats.tellEventsCreated}`);
+
+    // Filter verb-based TELL that overlap with quotes (prevent double-counting)
+    const { kept, filtered, merged } = filterOverlappingVerbTells(
+      predicateAssertions,
+      quoteIndex,
+      quoteAssertions
+    );
+    console.log(`  Verb-TELL fusion:`);
+    console.log(`    Verb assertions kept: ${kept.length}`);
+    console.log(`    Verb assertions filtered (overlap): ${filtered.length}`);
+    console.log(`    Merged with quotes: ${merged.length}`);
+
+    // Use filtered predicate assertions
+    const filteredPredicateAssertions = kept;
+
+    // Merge: quote assertions + filtered predicate assertions + legacy
+    const mergedAssertions = [...ir.assertions, ...quoteAssertions, ...filteredPredicateAssertions];
+    ir = { ...ir, assertions: mergedAssertions };
+    console.log(`  Total assertions: ${mergedAssertions.length}`);
+  } else {
+    console.log(`  No quotes available (not using BookNLP mode)`);
+    // Merge with legacy assertions (no quote data)
+    const mergedAssertions = [...ir.assertions, ...predicateAssertions];
+    ir = { ...ir, assertions: mergedAssertions };
+    console.log(`  Total assertions: ${mergedAssertions.length}`);
+  }
 
   // Count predicate types
   const predicateCounts = new Map<string, number>();
