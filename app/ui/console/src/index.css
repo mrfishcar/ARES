@@ -72,7 +72,7 @@ body {
 
   /* Editor Margins */
   --editor-margin-desktop: 96px;
-  --editor-margin-mobile: 24px;
+  --editor-margin-mobile: clamp(8px, 4vw, 14px);
   --editor-header-offset: 80px;
 
   /* Glassmorphism Variables – Dark Mode Defaults */
@@ -2800,7 +2800,10 @@ html[data-theme="light"] .overlay-backdrop {
 /* Mobile editor margins override */
 @media (max-width: 768px) {
   :root {
-    --editor-margin-desktop: var(--editor-margin-mobile, 24px);
+    --editor-margin-desktop: calc(
+      var(--editor-margin-mobile, 12px) +
+      max(env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px))
+    ) !important;
   }
 }
 
