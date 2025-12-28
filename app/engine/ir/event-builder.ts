@@ -200,6 +200,133 @@ const DEATH_PREDICATES = new Set<PredicateType | string>([
 ]);
 
 // =============================================================================
+// PREDICATE NORMALIZATION TABLE
+// =============================================================================
+
+/**
+ * Normalize surface verb forms to canonical predicates.
+ * This reduces trigger list bloat and makes behavior more consistent.
+ *
+ * Format: surface form → canonical form
+ */
+const PREDICATE_NORMALIZATIONS: Record<string, string> = {
+  // TELL variations → said
+  'say': 'said',
+  'says': 'said',
+  'reply': 'replied',
+  'replies': 'replied',
+  'answer': 'answered',
+  'answers': 'answered',
+  'shout': 'shouted',
+  'shouts': 'shouted',
+  'whisper': 'whispered',
+  'whispers': 'whispered',
+  'tell': 'told',
+  'tells': 'told',
+  'ask': 'asked',
+  'asks': 'asked',
+  'explain': 'explained',
+  'explains': 'explained',
+  'announce': 'announced',
+  'announces': 'announced',
+  'declare': 'declared',
+  'declares': 'declared',
+  'mention': 'mentioned',
+  'mentions': 'mentioned',
+  'state': 'stated',
+  'states': 'stated',
+
+  // MOVE variations → past tense
+  'go': 'went',
+  'goes': 'went',
+  'come': 'came',
+  'comes': 'came',
+  'move': 'moved',
+  'moves': 'moved',
+  'walk': 'walked',
+  'walks': 'walked',
+  'run': 'ran',
+  'runs': 'ran',
+  'enter': 'entered',
+  'enters': 'entered',
+  'leave': 'left',
+  'leaves': 'left',
+  'arrive': 'arrived_at',
+  'arrives': 'arrived_at',
+  'travel': 'traveled',
+  'travels': 'traveled',
+  'return': 'returned',
+  'returns': 'returned',
+  'flee': 'fled',
+  'flees': 'fled',
+  'escape': 'escaped',
+  'escapes': 'escaped',
+  'stay': 'stayed_at',
+  'stays': 'stayed_at',
+
+  // LEARN variations
+  'learn': 'learned',
+  'learns': 'learned',
+  'discover': 'discovered',
+  'discovers': 'discovered',
+  'realize': 'realized',
+  'realizes': 'realized',
+  'understand': 'understood',
+  'understands': 'understood',
+  'recognize': 'recognized',
+  'recognizes': 'recognized',
+
+  // MEET variations
+  'meet': 'met',
+  'meets': 'met',
+  'encounter': 'encountered',
+  'encounters': 'encountered',
+  'greet': 'greeted',
+  'greets': 'greeted',
+  'join': 'joined',
+  'joins': 'joined',
+  'see': 'saw',
+  'sees': 'saw',
+
+  // DEATH variations
+  'die': 'died',
+  'dies': 'died',
+  'kill': 'killed',
+  'kills': 'killed',
+  'murder': 'murdered',
+  'murders': 'murdered',
+
+  // ATTACK variations
+  'attack': 'attacked',
+  'attacks': 'attacked',
+  'fight': 'fought',
+  'fights': 'fought',
+  'strike': 'struck',
+  'strikes': 'struck',
+  'hit': 'hit', // already past tense form
+  'hits': 'hit',
+  'assault': 'assaulted',
+  'assaults': 'assaulted',
+
+  // PROMISE variations
+  'promise': 'promised',
+  'promises': 'promised',
+  'swear': 'swore',
+  'swears': 'swore',
+  'vow': 'vowed',
+  'vows': 'vowed',
+  'pledge': 'pledged',
+  'pledges': 'pledged',
+};
+
+/**
+ * Normalize a predicate to its canonical form.
+ */
+function normalizePredicate(predicate: string): string {
+  return PREDICATE_NORMALIZATIONS[predicate] || predicate;
+}
+
+// =============================================================================
 // EVENT ELIGIBILITY GATE
 // =============================================================================
 
@@ -396,13 +523,16 @@ export function extractEventCandidates(
  * Returns null if no match.
  */
 function getEventTypeForPredicate(predicate: string): EventType | null {
-  if (MOVE_PREDICATES.has(predicate)) return 'MOVE';
-  if (DEATH_PREDICATES.has(predicate)) return 'DEATH';
-  if (TELL_PREDICATES.has(predicate)) return 'TELL';
-  if (LEARN_PREDICATES.has(predicate)) return 'LEARN';
-  if (PROMISE_PREDICATES.has(predicate)) return 'PROMISE';
-  if (ATTACK_PREDICATES.has(predicate)) return 'ATTACK';
-  if (MEET_PREDICATES.has(predicate)) return 'MEET';
+  // Normalize predicate first (e.g., 'say' → 'said', 'go' → 'went')
+  const normalized = normalizePredicate(predicate);
+
+  if (MOVE_PREDICATES.has(normalized)) return 'MOVE';
+  if (DEATH_PREDICATES.has(normalized)) return 'DEATH';
+  if (TELL_PREDICATES.has(normalized)) return 'TELL';
+  if (LEARN_PREDICATES.has(normalized)) return 'LEARN';
+  if (PROMISE_PREDICATES.has(normalized)) return 'PROMISE';
+  if (ATTACK_PREDICATES.has(normalized)) return 'ATTACK';
+  if (MEET_PREDICATES.has(normalized)) return 'MEET';
   return null;
 }
 
