@@ -6,7 +6,7 @@
  * Clean architecture with extracted components and hooks
  */
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Menu } from 'lucide-react';
 import { LabToolbar } from '../components/LabToolbar';
@@ -717,7 +717,9 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   // Settings state (via custom hook)
   const settings = useExtractionSettings();
 
-  // Single scroll owner for the editor surface
+  // Single scroll owner for the editor surface.
+  // Layout chain (no resizing allowed): #root (React mount) → .extraction-lab (page root) → .lab-content (layout parent)
+  // → .editor-panel (scroll container) → editor content. Keyboard padding is applied only on .editor-panel.
   const editorScrollRef = useRef<HTMLDivElement | null>(null);
   const [scrollContainerEl, setScrollContainerEl] = useState<HTMLElement | null>(null);
 
@@ -836,16 +838,17 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     initializeTheme();
   }, []);
 
-  // Keyboard-safe padding: compute inset once the visual viewport settles
-  useEffect(() => {
+  // Keyboard-safe padding: compute inset once the visual viewport settles.
+  // Absolutely no resizing or translation of the scroll container or its parents is allowed.
+  useLayoutEffect(() => {
     const scrollContainer = editorScrollRef.current;
     if (!scrollContainer || typeof window === 'undefined') return;
 
     const debugEnabled = Boolean((window as any).ARES_DEBUG_KB);
+    const vv = window.visualViewport;
 
     const log = (event: string, extra?: Record<string, unknown>) => {
       if (!debugEnabled) return;
-      const vv = window.visualViewport;
       console.log('[KeyboardInset]', {
         event,
         innerHeight: window.innerHeight,
@@ -854,45 +857,106 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         kbInset: extra?.kbInset ?? 0,
         clientHeight: scrollContainer.clientHeight,
         scrollHeight: scrollContainer.scrollHeight,
+        viewportWidth: window.innerWidth,
+        offsetWidth: scrollContainer.offsetWidth,
         ...extra,
       });
     };
 
     const applyInsets = (kbInset: number) => {
       const clamped = Math.max(0, Math.round(kbInset));
+      scrollContainer.style.setProperty('--kb', `${clamped}px`);
       scrollContainer.style.setProperty('--kbInset', `${clamped}px`);
       scrollContainer.style.setProperty('--safeBottom', 'env(safe-area-inset-bottom, 0px)');
       scrollContainer.style.setProperty('--toolbarHeight', 'var(--floating-toolbar-height, 0px)');
       scrollContainer.style.setProperty(
         '--bottomInset',
-        'calc(var(--kbInset) + var(--safeBottom) + var(--toolbarHeight))',
+        `calc(${clamped}px + env(safe-area-inset-bottom, 0px) + var(--floating-toolbar-height, 0px))`,
       );
+      scrollContainer.style.paddingBottom =
+        `calc(env(safe-area-inset-bottom, 0px) + ${clamped}px + var(--floating-toolbar-height, 0px))`;
       log('applyInsets', { kbInset: clamped });
     };
 
-    const computeKeyboardInset = (event: string) => {
-      const vv = window.visualViewport;
+    const activeElementIsInside = () => {
+      const active = document.activeElement;
+      return active instanceof HTMLElement && scrollContainer.contains(active);
+    };
+
+    const computeKeyboardInset = () => {
       const kbInset = vv ? Math.max(0, window.innerHeight - (vv.height + vv.offsetTop)) : 0;
+      return activeElementIsInside() ? kbInset : 0;
+    };
+
+    const recomputeKbInset = (event: string) => {
+      const kbInset = computeKeyboardInset();
       applyInsets(kbInset);
       log(event, { kbInset });
     };
 
     const resetAndRecompute = (event: string) => {
       applyInsets(0);
-      requestAnimationFrame(() => computeKeyboardInset(`${event}:rAF`));
-      window.setTimeout(() => computeKeyboardInset(`${event}:250ms`), 250);
+      requestAnimationFrame(() => {
+        recomputeKbInset(`${event}:raf`);
+        window.setTimeout(() => recomputeKbInset(`${event}:200ms`), 200);
+      });
     };
 
-    resetAndRecompute('pageshow-init');
+    const guardRails = () => {
+      if (!import.meta.env.DEV) return;
+      const viewportWidth = window.innerWidth;
+      if (scrollContainer.offsetWidth < viewportWidth - 8) {
+        console.warn('[KeyboardInset][guard]', 'Editor narrower than viewport', {
+          offsetWidth: scrollContainer.offsetWidth,
+          viewportWidth,
+        });
+      }
 
-    const handleViewportResize = () => requestAnimationFrame(() => computeKeyboardInset('visualViewport.resize'));
+      const ancestors: HTMLElement[] = [];
+      let el: HTMLElement | null = scrollContainer;
+      for (let i = 0; i < 4 && el; i++) {
+        ancestors.push(el);
+        el = el.parentElement;
+      }
+      ancestors.forEach(node => {
+        const style = getComputedStyle(node);
+        const hasExplicitHeight = ['height', 'maxHeight', 'minHeight'].some(prop => {
+          const value = style[prop as keyof CSSStyleDeclaration];
+          return typeof value === 'string' && value.trim() !== '' && value.trim() !== 'auto';
+        });
+        if (hasExplicitHeight) {
+          console.warn('[KeyboardInset][guard]', 'Explicit height detected', {
+            node,
+            className: node.className,
+            style: {
+              height: style.height,
+              maxHeight: style.maxHeight,
+              minHeight: style.minHeight,
+            },
+          });
+        }
+      });
+    };
+
+    // Reset synchronously on mount/pageshow/visibilitychange before the first paint
+    applyInsets(0);
+    guardRails();
+    requestAnimationFrame(() => guardRails());
+    resetAndRecompute('mount');
+
+    const handleViewportResize = () => resetAndRecompute('visualViewport.resize');
     const handlePageShow = () => resetAndRecompute('pageshow');
-    const handleFocusIn = () => computeKeyboardInset('focusin');
-    const handleFocusOut = () => computeKeyboardInset('focusout');
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        resetAndRecompute('visibilitychange');
+      }
+    };
+    const handleFocusIn = () => recomputeKbInset('focusin');
+    const handleFocusOut = () => recomputeKbInset('focusout');
 
-    const vv = window.visualViewport;
     vv?.addEventListener('resize', handleViewportResize);
     window.addEventListener('pageshow', handlePageShow);
+    document.addEventListener('visibilitychange', handleVisibility);
     window.addEventListener('focusin', handleFocusIn);
     window.addEventListener('focusout', handleFocusOut);
 
@@ -901,6 +965,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     return () => {
       vv?.removeEventListener('resize', handleViewportResize);
       window.removeEventListener('pageshow', handlePageShow);
+      document.removeEventListener('visibilitychange', handleVisibility);
       window.removeEventListener('focusin', handleFocusIn);
       window.removeEventListener('focusout', handleFocusOut);
     };

@@ -424,8 +424,11 @@ a:hover {
 .extraction-lab {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 0;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  flex: 1 1 auto;
+  align-self: stretch;
   background: var(--bg-primary);
   overflow: hidden;  /* Lock the page */
 }
@@ -1454,13 +1457,16 @@ a:hover {
   50% { opacity: 0.6; }
 }
 
+
 .lab-content {
-  display: grid;  /* Grid layout like working commit */
-  grid-template-columns: 1fr;  /* Single column (will add second column for results panel later) */
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  flex: 1 1 auto;
+  align-self: stretch;
   gap: 0;  /* No gap - editor fills space */
   padding: 0;  /* No padding - full-width editor */
-  flex: 1;
-  min-height: 0;
   overflow: hidden;  /* Constrain children - they scroll */
   background: transparent;
   transition: padding-left 0.28s cubic-bezier(0.4, 0, 0.2, 1),
@@ -1474,20 +1480,24 @@ a:hover {
 
 /* Editor panel - Full-screen, borderless, scrollable */
 .editor-panel {
-  display: flex;
-  flex-direction: column;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  flex: 1 1 auto;
+  align-self: stretch;
   background: var(--bg-primary);  /* Match app background */
   border-radius: 0;  /* No rounded corners - full screen */
   border: none;  /* No borders */
   overflow: auto;  /* Scroll naturally - no forcing */
-  min-height: 0;  /* Allow flex shrinking */
   -webkit-overflow-scrolling: touch;  /* Smooth iOS scrolling */
   touch-action: pan-y;  /* Allow vertical touch scrolling */
   /* Keyboard-safe inset: use padding instead of resizing to avoid layout jumps */
+  --kb: 0px;
   --kbInset: 0px;
   --safeBottom: env(safe-area-inset-bottom, 0px);
   --toolbarHeight: var(--floating-toolbar-height, 0px);
-  --bottomInset: calc(var(--kbInset) + var(--safeBottom) + var(--toolbarHeight));
+  --bottomInset: calc(var(--kb) + var(--safeBottom) + var(--toolbarHeight));
   padding-bottom: var(--bottomInset);
 }
 
@@ -1499,11 +1509,11 @@ a:hover {
 }
 
 .editor-wrapper {
-  display: flex;
-  flex: 1;
+  display: block;
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
-  min-height: 0;
-  height: 100%;
+  flex: 1 1 auto;
   background-color: var(--bg-primary);
 }
 
@@ -2202,8 +2212,8 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   flex: 1;
   gap: 0;
   min-width: 0;
-  min-height: 0;
-  height: 100%;
+  width: 100%;
+  max-width: 100%;
 }
 
 /* Entity indicators container on left side */
@@ -2223,8 +2233,6 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   display: flex;
   flex: 1;
   min-width: 0;
-  min-height: 0;
-  height: 100%;
   position: relative;
 }
 

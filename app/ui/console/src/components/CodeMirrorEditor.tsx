@@ -793,6 +793,9 @@ export function CodeMirrorEditor({
   registerFormatActions,
   scrollContainer,
 }: CodeMirrorEditorProps) {
+  // Legacy prop is kept for API compatibility, but we avoid enforcing fixed heights
+  // to honor the iOS layout rules that forbid resizing ancestors.
+  void minHeight;
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
   const scrollContainerRef = useRef<HTMLElement | null>(null);
@@ -1207,8 +1210,6 @@ export function CodeMirrorEditor({
       style={{
         position: 'relative',
         width: '100%',
-        height: '100%',
-        minHeight,
         background: 'var(--bg-primary)',
         overflow: 'hidden',
       }}
@@ -1218,7 +1219,6 @@ export function CodeMirrorEditor({
         className="cm-editor-wrapper"
         style={{
           width: '100%',
-          height: '100%',
           background: 'var(--bg-primary)',
           overflow: 'hidden',
         }}
