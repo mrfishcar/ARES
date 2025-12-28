@@ -431,9 +431,18 @@ a:hover {
 .extraction-lab {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: 100dvh; /* Fixed viewport height to stabilize chrome */
   background: var(--bg-primary);
   overflow: hidden;  /* Lock the page */
+}
+
+/* Top/bottom chrome shrink to content; editor section grows */
+.extraction-lab > :not(.lab-content) {
+  flex: 0 0 auto;
+}
+
+.lab-content {
+  flex: 1 1 auto;
 }
 
 /* Hamburger Button - ChatGPT style */
