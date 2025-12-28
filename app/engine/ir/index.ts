@@ -39,6 +39,9 @@ export * from './fact-builder';
 // Entity Renderer: wiki-style pages for entities
 export * from './entity-renderer';
 
+// Timeline Renderer: chronological event timelines
+export * from './timeline-renderer';
+
 // Future: IR utilities
 // export * from './builders';
 // export * from './validators';
