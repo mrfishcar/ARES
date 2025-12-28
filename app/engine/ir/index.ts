@@ -36,6 +36,9 @@ export * from './event-builder';
 // Fact Builder: derive facts from events (materialized views)
 export * from './fact-builder';
 
+// Entity Renderer: wiki-style pages for entities
+export * from './entity-renderer';
+
 // Future: IR utilities
 // export * from './builders';
 // export * from './validators';
