@@ -47,9 +47,6 @@ export interface CodeMirrorEditorProps {
   /** NEW: Navigate to a range (e.g., when clicking an entity in the sidebar) */
   navigateToRange?: NavigateToRange;
   colorForSpan?: (span: EntitySpan) => string | undefined;
-
-  /** Optional scroll container to keep caret tracking inside the editor shell */
-  scrollContainer?: HTMLElement | null;
 }
 
 export interface FormattingActions {

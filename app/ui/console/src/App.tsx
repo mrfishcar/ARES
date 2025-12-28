@@ -87,6 +87,15 @@ function AppShell() {
     };
   }, []);
 
+  // iOS Notes pattern: Let 100dvh handle keyboard, NO JavaScript tracking
+  // visualViewport.height changes when keyboard opens, but 100dvh stays constant
+  // This lets content extend behind keyboard instead of shrinking
+  // Safari's native scrollIntoView handles caret positioning perfectly
+  useEffect(() => {
+    // NO-OP: Removed viewport tracking
+    // Keeping effect for documentation purposes
+  }, []);
+
   useEffect(() => {
     saveState('project', project);
   }, [project]);
@@ -143,7 +152,6 @@ function AppShell() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <ToastContainer messages={toast.messages} onClose={toast.closeToast} />
-      <div id="chrome-layer-root" className="chrome-layer-root" />
       <div id="overlay-root" className="overlay-root" />
     </>
   );

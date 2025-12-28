@@ -37,7 +37,6 @@ interface VirtualizedExtractionEditorProps {
   onEditorFocusChange?: (focused: boolean) => void;
   onSelectionChange?: (hasSelection: boolean) => void;
   onFormatActionsReady?: (actions: FormattingActions | null) => void;
-  scrollContainer?: HTMLElement | null;
 }
 
 // Configurable window parameters
@@ -136,7 +135,6 @@ export function VirtualizedExtractionEditor({
   onEditorFocusChange,
   onSelectionChange,
   onFormatActionsReady,
-  scrollContainer,
 }: VirtualizedExtractionEditorProps) {
   const chunkingEnabled = useMemo(
     () => enableLongTextOptimization,
@@ -454,7 +452,6 @@ export function VirtualizedExtractionEditor({
       onFocusChange={onEditorFocusChange}
       onSelectionChange={onSelectionChange}
       registerFormatActions={onFormatActionsReady}
-      scrollContainer={scrollContainer}
     />
   );
 }

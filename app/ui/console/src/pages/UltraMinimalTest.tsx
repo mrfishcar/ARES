@@ -153,7 +153,8 @@ export function UltraMinimalTest() {
         }
 
         html, body {
-          height: 100%;
+          height: 100vh;
+          height: 100dvh;
           margin: 0;
           padding: 0;
           overflow: hidden;
@@ -163,7 +164,8 @@ export function UltraMinimalTest() {
         }
 
         #root {
-          height: 100%;
+          height: 100vh;
+          height: 100dvh;
           overflow: hidden;
           overscroll-behavior: none;
           display: flex;
@@ -199,7 +201,7 @@ export function UltraMinimalTest() {
 
         .test-textarea {
           width: 100%;
-          min-height: 100%;
+          min-height: 100vh;
           background: #2d3748;
           color: #e5e7eb;
           border: 2px solid #4a5568;

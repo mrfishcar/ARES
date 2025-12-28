@@ -33,7 +33,6 @@ interface EditorPaneProps {
   onEditorFocusChange?: (focused: boolean) => void;
   onSelectionChange?: (hasSelection: boolean) => void;
   onFormatActionsReady?: (actions: FormattingActions | null) => void;
-  scrollContainer?: HTMLElement | null;
 }
 
 export function EditorPane({
@@ -57,7 +56,6 @@ export function EditorPane({
   onEditorFocusChange,
   onSelectionChange,
   onFormatActionsReady,
-  scrollContainer,
 }: EditorPaneProps) {
   const editorHeight = Math.max(400, typeof window !== 'undefined' ? window.innerHeight - 380 : 400);
 
@@ -96,7 +94,6 @@ export function EditorPane({
               onEditorFocusChange={onEditorFocusChange}
               onSelectionChange={onSelectionChange}
               onFormatActionsReady={onFormatActionsReady}
-              scrollContainer={scrollContainer}
             />
           </div>
         </div>

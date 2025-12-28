@@ -49,26 +49,12 @@ import { measureDecorationBuild } from '../utils/perf';
 // -------------------- MARKDOWN STYLES --------------------
 
 const markdownHighlightStyle = HighlightStyle.define([
-  {
-    tag: t.heading1,
-    fontSize: 'clamp(1.85rem, 1.2rem + 2vw, 2.35rem)',
-    fontWeight: '700',
-    lineHeight: '1.2',
-  },
-  {
-    tag: t.heading2,
-    fontSize: 'clamp(1.55rem, 1.1rem + 1.4vw, 2rem)',
-    fontWeight: '700',
-    lineHeight: '1.25',
-  },
-  {
-    tag: t.heading3,
-    fontSize: 'clamp(1.3rem, 1.05rem + 0.8vw, 1.6rem)',
-    fontWeight: '700',
-  },
-  { tag: t.heading4, fontSize: 'clamp(1.15rem, 1rem + 0.4vw, 1.35rem)', fontWeight: '700' },
-  { tag: t.heading5, fontSize: 'clamp(1.05rem, 0.98rem + 0.25vw, 1.2rem)', fontWeight: '700' },
-  { tag: t.heading6, fontWeight: '700' },
+  { tag: t.heading1, fontSize: '2.1em', fontWeight: 'bold' },
+  { tag: t.heading2, fontSize: '1.8em', fontWeight: 'bold' },
+  { tag: t.heading3, fontSize: '1.4em', fontWeight: 'bold' },
+  { tag: t.heading4, fontSize: '1.2em', fontWeight: 'bold' },
+  { tag: t.heading5, fontSize: '1.1em', fontWeight: 'bold' },
+  { tag: t.heading6, fontWeight: 'bold' },
   { tag: t.strong, fontWeight: 'bold' },
   { tag: t.emphasis, fontStyle: 'italic' },
   { tag: t.link, textDecoration: 'underline' },
@@ -83,22 +69,21 @@ const editorTheme = EditorView.theme({
   '.cm-editor': {
     height: '100%',
     fontFamily:
-      'system-ui, -apple-system, "SF Pro Text", "SF Pro Display", BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif',
-    fontSize: 'clamp(1rem, 0.98rem + 0.22vw, 1.125rem)',
-    lineHeight: '1.6',
+      '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", Inter, system-ui, sans-serif',
+    fontSize: '1rem',
+    lineHeight: '1.75',
     backgroundColor: 'transparent',
     color: 'var(--text-primary)',
   },
 
-  // ✅ MAIN FIX: text starts below the header
+  // ✅ MAIN FIX: text starts below the header, but cannot scroll under it
   '.cm-content': {
-    paddingTop: 'var(--editor-header-offset, 80px)', // Top padding for content below toolbar
+    paddingTop: 'var(--editor-header-offset, 80px)', // Fixed top padding, no margin adjustment
     paddingRight: 'var(--editor-margin-desktop, 96px)', // Adjustable side margins
-    paddingBottom: '0', // No bottom padding - scroll to end
+    paddingBottom: '40px', // Fixed bottom padding
     paddingLeft: 'var(--editor-margin-desktop, 96px)', // Adjustable side margins
     boxSizing: 'border-box',
     caretColor: 'var(--text-primary)', // ✅ Ensure cursor is visible on iOS
-    textAlign: 'left',
   },
 
   '.cm-scroller': {
@@ -675,51 +660,121 @@ declare global {
 
 const isDebugEnabled = () => window.enableCaretDebug === true;
 
-function iosCursorTrackingExtension(getScrollContainer: () => HTMLElement | null) {
-  // Stable caret margin above keyboard/toolbar overlap (px)
-  const CARET_MARGIN = 140;
+function iosCursorTrackingExtension() {
+  // Stable caret margin above keyboard/viewport bottom (px)
+  const CARET_MARGIN = 160;
 
+  // Re-entrancy guard
+  let isScrolling = false;
   let rafHandle: number | null = null;
   let debounceTimer: number | null = null;
 
   const performCaretTracking = (view: EditorView) => {
-    const selection = view.state.selection.main;
-    const cursorPos = selection.head;
-    const caretCoords = view.coordsAtPos(cursorPos);
-    const container = getScrollContainer() ?? view.scrollDOM?.parentElement;
-
-    if (!caretCoords || !container) {
+    // Prevent re-entrancy during same frame
+    if (isScrolling) {
+      if (isDebugEnabled()) console.log('[CaretTrack] Skipping - already scrolling');
       return;
     }
 
-    const containerRect = container.getBoundingClientRect();
-    const kbInset = parseFloat(getComputedStyle(container).getPropertyValue('--keyboard-offset')) || 0;
-    const visibleHeight = container.clientHeight - kbInset;
-    const caretBottomInContainer = caretCoords.bottom - containerRect.top + container.scrollTop;
-    const targetCaretBottom = container.scrollTop + visibleHeight - CARET_MARGIN;
+    const selection = view.state.selection.main;
+    const cursorPos = selection.head;
+
+    // Get caret coordinates in viewport
+    const caretCoords = view.coordsAtPos(cursorPos);
+    if (!caretCoords) {
+      if (isDebugEnabled()) console.log('[CaretTrack] No caret coords');
+      return;
+    }
+
+    // Use visualViewport API when available (iOS Safari)
+    const visualViewport = window.visualViewport;
+    let visibleBottom: number;
+
+    if (visualViewport) {
+      // ACTUAL visible area accounting for keyboard
+      visibleBottom = visualViewport.offsetTop + visualViewport.height;
+
+      if (isDebugEnabled()) {
+        console.log('[CaretTrack] visualViewport:', {
+          height: visualViewport.height,
+          offsetTop: visualViewport.offsetTop,
+          visibleBottom,
+          pageScrollY: window.scrollY,
+        });
+      }
+    } else {
+      // Fallback: use window inner height
+      visibleBottom = window.scrollY + window.innerHeight;
+
+      if (isDebugEnabled()) {
+        console.log('[CaretTrack] Fallback viewport:', {
+          innerHeight: window.innerHeight,
+          scrollY: window.scrollY,
+          visibleBottom,
+        });
+      }
+    }
+
+    // Compute where caret should be (CARET_MARGIN above visible bottom)
+    const targetCaretBottom = visibleBottom - CARET_MARGIN;
 
     if (isDebugEnabled()) {
-      console.log('[CaretTrack]', {
-        caretBottomInContainer,
+      console.log('[CaretTrack] Caret:', {
+        top: caretCoords.top,
+        bottom: caretCoords.bottom,
         targetCaretBottom,
-        kbInset,
-        containerScrollTop: container.scrollTop,
-        containerHeight: container.clientHeight,
+        needsScroll: caretCoords.bottom > targetCaretBottom,
       });
     }
 
-    if (caretBottomInContainer > targetCaretBottom) {
-      const scrollDelta = caretBottomInContainer - targetCaretBottom;
-      container.scrollTo({
-        top: container.scrollTop + scrollDelta,
-        behavior: 'auto',
+    // Check if caret is below threshold
+    if (caretCoords.bottom > targetCaretBottom) {
+      const scrollDelta = caretCoords.bottom - targetCaretBottom;
+
+      // Guard: Don't scroll if document can't scroll anymore
+      const maxScrollY = document.documentElement.scrollHeight - window.innerHeight;
+      const newScrollY = window.scrollY + scrollDelta;
+
+      if (newScrollY > maxScrollY) {
+        if (isDebugEnabled()) {
+          console.log('[CaretTrack] Cannot scroll - at document bottom', {
+            maxScrollY,
+            currentScrollY: window.scrollY,
+            attemptedScrollY: newScrollY,
+          });
+        }
+        return;
+      }
+
+      if (isDebugEnabled()) {
+        console.log('[CaretTrack] SCROLLING:', {
+          delta: scrollDelta,
+          from: window.scrollY,
+          to: newScrollY,
+        });
+      }
+
+      // Set re-entrancy guard
+      isScrolling = true;
+
+      // Scroll the PAGE (not editor scroller)
+      window.scrollBy({
+        top: scrollDelta,
+        behavior: 'auto',  // INSTANT - no smooth animation
+      });
+
+      // Clear guard after frame
+      requestAnimationFrame(() => {
+        isScrolling = false;
       });
     }
   };
 
   return EditorView.updateListener.of((update: ViewUpdate) => {
+    // Only track on selection changes or doc changes (typing)
     if (!update.selectionSet && !update.docChanged) return;
 
+    // Cancel any pending tracking
     if (rafHandle !== null) {
       cancelAnimationFrame(rafHandle);
       rafHandle = null;
@@ -729,16 +784,14 @@ function iosCursorTrackingExtension(getScrollContainer: () => HTMLElement | null
       debounceTimer = null;
     }
 
+    // Debounce + rAF to prevent layout thrash
     debounceTimer = window.setTimeout(() => {
       rafHandle = requestAnimationFrame(() => {
-        // Allow layout to settle before measuring
-        requestAnimationFrame(() => {
-          performCaretTracking(update.view);
-          rafHandle = null;
-        });
+        performCaretTracking(update.view);
+        rafHandle = null;
       });
       debounceTimer = null;
-    }, 50);
+    }, 50); // 50ms debounce
   });
 }
 
@@ -791,14 +844,9 @@ export function CodeMirrorEditor({
   onFocusChange,
   onSelectionChange,
   registerFormatActions,
-  scrollContainer,
 }: CodeMirrorEditorProps) {
-  // Legacy prop is kept for API compatibility, but we avoid enforcing fixed heights
-  // to honor the iOS layout rules that forbid resizing ancestors.
-  void minHeight;
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
-  const scrollContainerRef = useRef<HTMLElement | null>(null);
 
   const entitiesRef = useRef<EntitySpan[]>(entities);
   const baseOffsetRef = useRef(baseOffset);
@@ -872,11 +920,6 @@ export function CodeMirrorEditor({
   }, [onSelectionChange]);
 
   useEffect(() => {
-    scrollContainerRef.current = scrollContainer ??
-      (wrapperRef.current ? (wrapperRef.current.closest('.editor-panel') as HTMLElement | null) : null);
-  }, [scrollContainer]);
-
-  useEffect(() => {
     entityHighlightModeRef.current = entityHighlightMode;
   }, [entityHighlightMode]);
 
@@ -901,7 +944,8 @@ export function CodeMirrorEditor({
         placeholder('Write or paste text...'),
         editorTheme,
         EditorView.lineWrapping,
-        iosCursorTrackingExtension(() => scrollContainerRef.current),
+        // iOS cursor tracking: DISABLED - Let Safari's native scrollIntoView handle it
+        // iosCursorTrackingExtension(),
         // Block keyboard input in Entity Highlight Mode (allows text selection on iOS)
         keyboardBlockerExtension(entityHighlightModeRef),
         // Prevent iOS callout menu (Cut/Copy/Paste) from appearing during text selection
@@ -1210,6 +1254,8 @@ export function CodeMirrorEditor({
       style={{
         position: 'relative',
         width: '100%',
+        height: '100%',
+        minHeight,
         background: 'var(--bg-primary)',
         overflow: 'hidden',
       }}
@@ -1219,6 +1265,7 @@ export function CodeMirrorEditor({
         className="cm-editor-wrapper"
         style={{
           width: '100%',
+          height: '100%',
           background: 'var(--bg-primary)',
           overflow: 'hidden',
         }}

@@ -45,7 +45,7 @@ export function WorkingCommitTest() {
         .extraction-lab {
           display: flex;
           flex-direction: column;
-          height: 100%;
+          height: 100vh;  /* NOT 100%, NOT 100dvh */
           background: #FFF9F0;
           overflow: hidden;
           /* NO position, NO transform, NO min-height */
