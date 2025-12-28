@@ -854,7 +854,6 @@ a:hover {
   align-items: center;
   justify-content: center;
   width: 100%;
-  max-width: 720px;
 }
 
 .formatting-palette__row {
@@ -862,12 +861,12 @@ a:hover {
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 6px 10px;
-  background: color-mix(in srgb, var(--surface-strong) 90%, transparent);
-  border: 1px solid color-mix(in srgb, var(--border-soft) 85%, transparent);
-  border-radius: 16px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
-  backdrop-filter: blur(14px);
+  padding: 4px 8px;
+  background: color-mix(in srgb, var(--surface-strong) 78%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-soft) 80%, transparent);
+  border-radius: 14px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.14);
+  backdrop-filter: blur(10px);
 }
 
 .formatting-palette__row--compact {
