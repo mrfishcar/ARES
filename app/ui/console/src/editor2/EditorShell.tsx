@@ -7,8 +7,7 @@
  * - Editor sizing and mount
  */
 
-import { useEffect, useRef, ReactNode } from 'react';
-import { FormattingPalette } from './FormattingPalette';
+import { useEffect, ReactNode } from 'react';
 import type { FormattingActions } from '../components/CodeMirrorEditorProps';
 import type { FormatState } from './plugins/FormatActionsPlugin';
 
@@ -33,44 +32,10 @@ export function EditorShell({
   onModeChange,
   onRequestExit
 }: EditorShellProps) {
-  const paletteRef = useRef<HTMLDivElement>(null);
-
   // Notify parent of mode changes
   useEffect(() => {
     onModeChange?.(formatToolbarEnabled ? 'formatting' : 'normal');
   }, [formatToolbarEnabled, onModeChange]);
-
-  // Click outside to exit formatting mode
-  useEffect(() => {
-    if (!formatToolbarEnabled) return;
-
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      
-      // Stay open if click is inside palette
-      if (paletteRef.current && paletteRef.current.contains(target)) {
-        return;
-      }
-      
-      // Stay open if clicking dropdown menu (which may be portaled outside)
-      if (target.closest('.format-style-menu') || target.closest('.format-style-dropdown')) {
-        return;
-      }
-      
-      // Any other click closes formatting mode
-      onRequestExit?.();
-    };
-
-    // Add delay to avoid immediate closure on mode activation
-    const timer = setTimeout(() => {
-      document.addEventListener('mousedown', handleClickOutside);
-    }, 100);
-
-    return () => {
-      clearTimeout(timer);
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [formatToolbarEnabled, onRequestExit]);
 
   return (
     <div className="editor-shell">

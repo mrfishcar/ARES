@@ -5,7 +5,7 @@
  */
 
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { 
   FORMAT_TEXT_COMMAND, 
   FORMAT_ELEMENT_COMMAND,
@@ -16,13 +16,14 @@ import {
   INDENT_CONTENT_COMMAND,
   OUTDENT_CONTENT_COMMAND
 } from 'lexical';
-import { 
+import {
   INSERT_UNORDERED_LIST_COMMAND,
   INSERT_ORDERED_LIST_COMMAND,
   INSERT_CHECK_LIST_COMMAND,
   REMOVE_LIST_COMMAND,
   $isListNode
 } from '@lexical/list';
+import { $isCodeNode } from '@lexical/code';
 import { $setBlocksType } from '@lexical/selection';
 import { 
   $isHeadingNode, 
@@ -51,6 +52,7 @@ interface FormatActionsPluginProps {
 
 export function FormatActionsPlugin({ onActionsReady, onFormatStateChange }: FormatActionsPluginProps) {
   const [editor] = useLexicalComposerContext();
+  const firstStateSync = useRef(true);
   const [formatState, setFormatState] = useState<FormatState>({
     isBold: false,
     isItalic: false,
@@ -85,7 +87,10 @@ export function FormatActionsPlugin({ onActionsReady, onFormatStateChange }: For
         ? anchorNode
         : anchorNode.getTopLevelElementOrThrow();
 
-      if ($isHeadingNode(element)) {
+      if ($isCodeNode(element)) {
+        newState.isCode = true;
+        newState.blockType = 'code';
+      } else if ($isHeadingNode(element)) {
         newState.blockType = element.getTag();
       } else if ($isQuoteNode(element)) {
         newState.isQuote = true;
@@ -97,8 +102,25 @@ export function FormatActionsPlugin({ onActionsReady, onFormatStateChange }: For
         }
       }
 
-      setFormatState(newState);
-      onFormatStateChange?.(newState);
+      setFormatState(prev => {
+        const unchanged =
+          prev.isBold === newState.isBold &&
+          prev.isItalic === newState.isItalic &&
+          prev.isUnderline === newState.isUnderline &&
+          prev.isStrikethrough === newState.isStrikethrough &&
+          prev.isCode === newState.isCode &&
+          prev.isQuote === newState.isQuote &&
+          prev.listType === newState.listType &&
+          prev.blockType === newState.blockType;
+
+        if (firstStateSync.current || !unchanged) {
+          firstStateSync.current = false;
+          onFormatStateChange?.(newState);
+          return newState;
+        }
+
+        return prev;
+      });
     });
   }, [editor, onFormatStateChange]);
 

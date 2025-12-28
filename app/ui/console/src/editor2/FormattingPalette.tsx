@@ -131,6 +131,8 @@ export function FormattingPalette({
             className="format-style-dropdown"
             onClick={() => setShowStyleDropdown(!showStyleDropdown)}
             aria-label="Text style"
+            aria-haspopup="listbox"
+            aria-expanded={showStyleDropdown}
           >
             <span>{currentStyleLabel}</span>
             <ChevronDown size={16} />
@@ -160,6 +162,7 @@ export function FormattingPalette({
             disabled={!formatActions?.toggleBold}
             title="Bold (⌘B)"
             aria-label="Bold"
+            aria-pressed={formatState?.isBold ?? false}
           >
             <Bold size={18} />
           </button>
@@ -171,6 +174,7 @@ export function FormattingPalette({
             disabled={!formatActions?.toggleItalic}
             title="Italic (⌘I)"
             aria-label="Italic"
+            aria-pressed={formatState?.isItalic ?? false}
           >
             <Italic size={18} />
           </button>
@@ -182,6 +186,7 @@ export function FormattingPalette({
             disabled={!formatActions?.toggleUnderline}
             title="Underline (⌘U)"
             aria-label="Underline"
+            aria-pressed={formatState?.isUnderline ?? false}
           >
             <Underline size={18} />
           </button>
@@ -193,6 +198,7 @@ export function FormattingPalette({
             disabled={!formatActions?.toggleStrikethrough}
             title="Strikethrough (⌘⇧D)"
             aria-label="Strikethrough"
+            aria-pressed={formatState?.isStrikethrough ?? false}
           >
             <Strikethrough size={18} />
           </button>
@@ -206,6 +212,7 @@ export function FormattingPalette({
             disabled={!formatActions?.insertBulletList}
             title="Bullet list"
             aria-label="Bullet list"
+            aria-pressed={formatState?.listType === 'bullet'}
           >
             <List size={18} />
           </button>
@@ -217,6 +224,7 @@ export function FormattingPalette({
             disabled={!formatActions?.insertNumberedList}
             title="Numbered list"
             aria-label="Numbered list"
+            aria-pressed={formatState?.listType === 'number'}
           >
             <ListOrdered size={18} />
           </button>
@@ -228,6 +236,7 @@ export function FormattingPalette({
             disabled={!formatActions?.insertCheckList}
             title="Checklist"
             aria-label="Checklist"
+            aria-pressed={formatState?.listType === 'check'}
           >
             <ListChecks size={18} />
           </button>
@@ -263,6 +272,7 @@ export function FormattingPalette({
             disabled={!formatActions?.toggleQuote}
             title="Quote block"
             aria-label="Quote block"
+            aria-pressed={formatState?.isQuote ?? false}
           >
             <Quote size={18} />
           </button>
