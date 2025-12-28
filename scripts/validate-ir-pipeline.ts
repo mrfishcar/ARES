@@ -26,7 +26,7 @@ import { extractFromSegments } from '../app/engine/extract/orchestrator';
 import { parseWithService } from '../app/engine/extract/entities';
 import { adaptLegacyExtraction, type LegacyExtractionResult } from '../app/engine/ir/adapter';
 import { buildAssertions } from '../app/engine/ir/assertion-builder';
-import { buildEvents, type DocOrderInfo } from '../app/engine/ir/event-builder';
+import { buildEvents, type DocOrderInfo, type EligibilityStats, type BuildEventsResult } from '../app/engine/ir/event-builder';
 import { buildFactsFromEvents } from '../app/engine/ir/fact-builder';
 import { renderEntityPage } from '../app/engine/ir/entity-renderer';
 import { renderTimeline } from '../app/engine/ir/timeline-renderer';
@@ -45,15 +45,26 @@ const OUTPUT_DIR = '/tmp/ir-validation';
 const DEFAULT_CHAPTER = 'corpus/contemporary-chapter-01.txt';
 const TOP_N_ENTITIES = 5;
 
-// Event trigger predicates (from event-builder.ts)
+// Event trigger predicates (synced with event-builder.ts)
 const EVENT_TRIGGERS: Record<string, string[]> = {
-  MOVE: ['moved_to', 'traveled_to', 'went_to', 'arrived_at', 'left', 'departed', 'relocated_to', 'lives_in', 'located_in'],
-  DEATH: ['died', 'killed', 'murdered', 'deceased', 'passed_away', 'death_of'],
-  TELL: ['told', 'said', 'asked', 'replied', 'answered', 'spoke_to', 'informed', 'confessed'],
-  LEARN: ['learned', 'discovered', 'realized', 'found_out', 'understood'],
-  PROMISE: ['promised', 'vowed', 'swore', 'committed', 'pledged'],
-  ATTACK: ['attacked', 'fought', 'struck', 'hit', 'assaulted'],
-  MEET: ['met', 'encountered', 'greeted', 'introduced_to', 'saw'],
+  MOVE: [
+    // With preposition suffix
+    'traveled_to', 'went_to', 'arrived_at', 'left', 'moved_to', 'visited',
+    'returned_to', 'fled_to', 'escaped_to', 'came_to', 'came_from',
+    'walked_to', 'ran_to', 'stayed_at', 'stayed_in',
+    // Base verbs
+    'went', 'moved', 'came', 'traveled', 'walked', 'ran', 'returned', 'fled', 'escaped', 'entered',
+  ],
+  DEATH: ['died', 'killed', 'murdered', 'perished', 'passed_away'],
+  TELL: [
+    'told', 'said', 'asked', 'questioned', 'informed', 'explained',
+    'revealed', 'announced', 'warned', 'confessed', 'replied', 'answered',
+    'shouted', 'whispered', 'called', 'cried', 'stated', 'declared', 'mentioned', 'noted',
+  ],
+  LEARN: ['learned', 'discovered', 'realized', 'found_out', 'understood', 'recognized'],
+  PROMISE: ['promised', 'swore', 'vowed', 'agreed_to', 'committed_to', 'pledged'],
+  ATTACK: ['attacked', 'hit', 'hurt', 'injured', 'struck', 'fought', 'assaulted'],
+  MEET: ['met', 'encountered', 'ran_into', 'found', 'came_across', 'meet', 'joined', 'greeted', 'saw', 'visited'],
 };
 
 // =============================================================================
@@ -200,9 +211,28 @@ async function main() {
     orderIndex: 0,
   }];
 
-  const events = buildEvents(enrichedAssertions, entityMap, docOrder);
+  const buildResult = buildEvents(enrichedAssertions, entityMap, docOrder, true);
+  const events = buildResult.events;
+  const eligibilityStats = buildResult.eligibilityStats!;
   ir = { ...ir, events };
   console.log(`  Events: ${events.length}`);
+
+  // Show eligibility gate stats
+  const blocked = eligibilityStats.total - eligibilityStats.passed;
+  console.log(`  Eligibility gate:`);
+  console.log(`    Assertions considered: ${eligibilityStats.total}`);
+  console.log(`    Passed: ${eligibilityStats.passed}`);
+  console.log(`    Blocked: ${blocked}`);
+  if (blocked > 0) {
+    if (eligibilityStats.blockedUnresolvedPronoun > 0)
+      console.log(`      - unresolved pronoun: ${eligibilityStats.blockedUnresolvedPronoun}`);
+    if (eligibilityStats.blockedGroupPlaceholder > 0)
+      console.log(`      - group placeholder: ${eligibilityStats.blockedGroupPlaceholder}`);
+    if (eligibilityStats.blockedMissingObject > 0)
+      console.log(`      - missing object: ${eligibilityStats.blockedMissingObject}`);
+    if (eligibilityStats.blockedNegated > 0)
+      console.log(`      - negated modality: ${eligibilityStats.blockedNegated}`);
+  }
 
   // Count event types
   const eventTypeCounts = new Map<string, number>();
@@ -321,6 +351,18 @@ async function main() {
     .filter(p => !mappedPredicates.has(p))
     .sort();
 
+  // Count predicates with their mapping status (for metrics)
+  const mappedCounts = new Map<string, number>();
+  const unmappedCounts = new Map<string, number>();
+  for (const a of enrichedAssertions) {
+    const pred = String(a.predicate);
+    if (mappedPredicates.has(pred)) {
+      mappedCounts.set(pred, (mappedCounts.get(pred) ?? 0) + 1);
+    } else {
+      unmappedCounts.set(pred, (unmappedCounts.get(pred) ?? 0) + 1);
+    }
+  }
+
   const metrics = {
     chapter: chapterPath,
     wordCount,
@@ -333,11 +375,34 @@ async function main() {
     },
     eventTypeDistribution: Object.fromEntries(eventTypeCounts),
     modalityDistribution: Object.fromEntries(modalityCounts),
+    eligibilityStats: {
+      considered: eligibilityStats.total,
+      passed: eligibilityStats.passed,
+      blocked: eligibilityStats.total - eligibilityStats.passed,
+      blockedByReason: {
+        unresolvedPronoun: eligibilityStats.blockedUnresolvedPronoun,
+        groupPlaceholder: eligibilityStats.blockedGroupPlaceholder,
+        missingObject: eligibilityStats.blockedMissingObject,
+        negated: eligibilityStats.blockedNegated,
+      },
+    },
     topEntities: topEntities.map(([id, count]) => ({
       id,
       name: ir.entities.find(e => e.id === id)?.canonical || id,
       count,
     })),
+    verbLemmaStats: {
+      mappedTotal: Array.from(mappedCounts.values()).reduce((a, b) => a + b, 0),
+      unmappedTotal: Array.from(unmappedCounts.values()).reduce((a, b) => a + b, 0),
+      topMapped: Array.from(mappedCounts.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 20)
+        .map(([lemma, count]) => ({ lemma, count })),
+      topUnmapped: Array.from(unmappedCounts.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 20)
+        .map(([lemma, count]) => ({ lemma, count })),
+    },
     unmappedPredicates: unmappedPredicates.slice(0, 20),
     allPredicates: Array.from(allPredicates).sort(),
   };
@@ -362,9 +427,21 @@ async function main() {
   console.log(`  Events:     ${metrics.counts.events}`);
   console.log(`  Facts:      ${metrics.counts.facts}`);
 
-  console.log('\nUNMAPPED PREDICATES (top 20):');
-  for (const pred of unmappedPredicates.slice(0, 20)) {
-    console.log(`  - ${pred}`);
+  const topMapped = Array.from(mappedCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 20);
+  const topUnmapped = Array.from(unmappedCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 20);
+
+  console.log('\nVERB LEMMAS CAPTURED (mapped to events, top 20):');
+  for (const [pred, count] of topMapped) {
+    console.log(`  - ${pred}: ${count}`);
+  }
+
+  console.log('\nVERB LEMMAS UNMAPPED (no event type, top 20):');
+  for (const [pred, count] of topUnmapped) {
+    console.log(`  - ${pred}: ${count}`);
   }
 
   console.log('\n' + '='.repeat(60));

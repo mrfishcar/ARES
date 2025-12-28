@@ -200,24 +200,149 @@ const DEATH_PREDICATES = new Set<PredicateType | string>([
 ]);
 
 // =============================================================================
+// EVENT ELIGIBILITY GATE
+// =============================================================================
+
+/**
+ * Unresolved pronouns that should block event creation.
+ * These indicate failed coreference resolution.
+ */
+const UNRESOLVED_PRONOUNS = new Set([
+  'he', 'she', 'they', 'it', 'him', 'her', 'them',
+  'his', 'hers', 'their', 'theirs', 'its',
+  'He', 'She', 'They', 'It', 'Him', 'Her', 'Them',
+  'I', 'we', 'me', 'us', 'my', 'our', 'We', 'Me', 'Us',
+]);
+
+/**
+ * Group placeholders that should block event creation
+ * unless they map to a real GROUP entity type.
+ */
+const GROUP_PLACEHOLDERS = new Set([
+  'everyone', 'everybody', 'someone', 'somebody', 'anyone', 'anybody',
+  'no one', 'nobody', 'people', 'others', 'some', 'many', 'few',
+  'the family', 'the group', 'the team', 'the crowd',
+  'Everyone', 'Everybody', 'Someone', 'Somebody', 'Anyone', 'Anybody',
+]);
+
+/**
+ * Stats for tracking eligibility gate decisions.
+ */
+export interface EligibilityStats {
+  /** Total assertions processed */
+  total: number;
+  /** Assertions that passed eligibility */
+  passed: number;
+  /** Blocked by unresolved pronoun subject */
+  blockedUnresolvedPronoun: number;
+  /** Blocked by group placeholder subject */
+  blockedGroupPlaceholder: number;
+  /** Blocked by missing required object */
+  blockedMissingObject: number;
+  /** Blocked by NEGATED modality */
+  blockedNegated: number;
+}
+
+/**
+ * Eligibility check result with reason.
+ */
+interface EligibilityResult {
+  eligible: boolean;
+  reason?: 'unresolved_pronoun' | 'group_placeholder' | 'missing_object' | 'negated';
+  confidencePenalty?: number;
+}
+
+/**
+ * Check if an assertion is eligible for event creation.
+ *
+ * Hard blocks:
+ * - Subject is unresolved pronoun (coref failed)
+ * - Subject is group placeholder (unless GROUP entity)
+ * - Object required for event type but missing (MOVE needs destination)
+ *
+ * Soft blocks:
+ * - NEGATED modality → skip event (for now; could create NON_EVENT later)
+ */
+function checkEligibility(
+  assertion: Assertion,
+  eventType: EventType,
+  entityMap: Map<EntityId, Entity>
+): EligibilityResult {
+  const subjectId = assertion.subject;
+
+  // Hard block: No subject
+  if (!subjectId) {
+    return { eligible: false, reason: 'unresolved_pronoun' };
+  }
+
+  // Check if subject is a resolved entity or just a pronoun string
+  const subjectEntity = entityMap.get(subjectId);
+  const subjectName = subjectEntity?.name || subjectId;
+
+  // Hard block: Unresolved pronoun as subject
+  if (UNRESOLVED_PRONOUNS.has(subjectName) && !subjectEntity) {
+    return { eligible: false, reason: 'unresolved_pronoun' };
+  }
+
+  // Hard block: Group placeholder (unless mapped to GROUP entity)
+  const lowerName = subjectName.toLowerCase();
+  if (GROUP_PLACEHOLDERS.has(subjectName) || GROUP_PLACEHOLDERS.has(lowerName)) {
+    if (!subjectEntity || subjectEntity.type !== 'GROUP') {
+      return { eligible: false, reason: 'group_placeholder' };
+    }
+  }
+
+  // Hard block: MOVE requires destination
+  if (eventType === 'MOVE') {
+    const objectId = assertion.object;
+    if (!objectId || typeof objectId !== 'string') {
+      return { eligible: false, reason: 'missing_object' };
+    }
+    // Check if object is a PLACE (or at least exists)
+    const objectEntity = entityMap.get(objectId);
+    // Allow if object exists as entity, even if not strictly PLACE
+    // (validation will filter later if needed)
+  }
+
+  // Soft block: NEGATED modality → skip event creation (for now)
+  if (assertion.modality === 'NEGATED') {
+    return { eligible: false, reason: 'negated' };
+  }
+
+  return { eligible: true };
+}
+
+// =============================================================================
 // EVENT CANDIDATE EXTRACTION
 // =============================================================================
 
 /**
- * Extract event candidates from assertions.
+ * Extract event candidates from assertions with eligibility gating.
  *
  * This is a deterministic mapping: same assertions → same candidates.
- * No inference or world simulation - just predicate matching.
+ * No inference or world simulation - just predicate matching + eligibility checks.
  *
  * @param assertions - Array of enriched assertions
  * @param entityMap - Map of entity IDs to entities (for type checking)
+ * @param stats - Optional stats object to track eligibility decisions
  * @returns Array of event candidates
  */
 export function extractEventCandidates(
   assertions: Assertion[],
-  entityMap: Map<EntityId, Entity>
+  entityMap: Map<EntityId, Entity>,
+  stats?: EligibilityStats
 ): EventCandidate[] {
   const candidates: EventCandidate[] = [];
+
+  // Initialize stats if provided
+  if (stats) {
+    stats.total = 0;
+    stats.passed = 0;
+    stats.blockedUnresolvedPronoun = 0;
+    stats.blockedGroupPlaceholder = 0;
+    stats.blockedMissingObject = 0;
+    stats.blockedNegated = 0;
+  }
 
   for (const assertion of assertions) {
     // Skip assertions without subject-predicate-object
@@ -225,7 +350,39 @@ export function extractEventCandidates(
       continue;
     }
 
-    const candidate = mapAssertionToCandidate(assertion, entityMap);
+    // First determine if this predicate maps to an event type
+    const eventType = getEventTypeForPredicate(assertion.predicate as string);
+    if (!eventType) {
+      continue; // Predicate doesn't map to any event
+    }
+
+    if (stats) stats.total++;
+
+    // Check eligibility before creating candidate
+    const eligibility = checkEligibility(assertion, eventType, entityMap);
+    if (!eligibility.eligible) {
+      if (stats) {
+        switch (eligibility.reason) {
+          case 'unresolved_pronoun':
+            stats.blockedUnresolvedPronoun++;
+            break;
+          case 'group_placeholder':
+            stats.blockedGroupPlaceholder++;
+            break;
+          case 'missing_object':
+            stats.blockedMissingObject++;
+            break;
+          case 'negated':
+            stats.blockedNegated++;
+            break;
+        }
+      }
+      continue;
+    }
+
+    if (stats) stats.passed++;
+
+    const candidate = createCandidateForType(eventType, assertion, entityMap);
     if (candidate) {
       candidates.push(candidate);
     }
@@ -235,46 +392,46 @@ export function extractEventCandidates(
 }
 
 /**
- * Map a single assertion to an event candidate.
- * Returns null if the predicate doesn't map to any event type.
+ * Determine which event type a predicate maps to.
+ * Returns null if no match.
  */
-function mapAssertionToCandidate(
+function getEventTypeForPredicate(predicate: string): EventType | null {
+  if (MOVE_PREDICATES.has(predicate)) return 'MOVE';
+  if (DEATH_PREDICATES.has(predicate)) return 'DEATH';
+  if (TELL_PREDICATES.has(predicate)) return 'TELL';
+  if (LEARN_PREDICATES.has(predicate)) return 'LEARN';
+  if (PROMISE_PREDICATES.has(predicate)) return 'PROMISE';
+  if (ATTACK_PREDICATES.has(predicate)) return 'ATTACK';
+  if (MEET_PREDICATES.has(predicate)) return 'MEET';
+  return null;
+}
+
+/**
+ * Create a candidate for a specific event type.
+ */
+function createCandidateForType(
+  eventType: EventType,
   assertion: Assertion,
   entityMap: Map<EntityId, Entity>
 ): EventCandidate | null {
-  const predicate = assertion.predicate as string;
-
-  // Try each event type in priority order
-  if (MOVE_PREDICATES.has(predicate)) {
-    return createMoveCandidate(assertion, entityMap);
+  switch (eventType) {
+    case 'MOVE':
+      return createMoveCandidate(assertion, entityMap);
+    case 'DEATH':
+      return createDeathCandidate(assertion, entityMap);
+    case 'TELL':
+      return createTellCandidate(assertion, entityMap);
+    case 'LEARN':
+      return createLearnCandidate(assertion, entityMap);
+    case 'PROMISE':
+      return createPromiseCandidate(assertion, entityMap);
+    case 'ATTACK':
+      return createAttackCandidate(assertion, entityMap);
+    case 'MEET':
+      return createMeetCandidate(assertion, entityMap);
+    default:
+      return null;
   }
-
-  if (DEATH_PREDICATES.has(predicate)) {
-    return createDeathCandidate(assertion, entityMap);
-  }
-
-  if (TELL_PREDICATES.has(predicate)) {
-    return createTellCandidate(assertion, entityMap);
-  }
-
-  if (LEARN_PREDICATES.has(predicate)) {
-    return createLearnCandidate(assertion, entityMap);
-  }
-
-  if (PROMISE_PREDICATES.has(predicate)) {
-    return createPromiseCandidate(assertion, entityMap);
-  }
-
-  if (ATTACK_PREDICATES.has(predicate)) {
-    return createAttackCandidate(assertion, entityMap);
-  }
-
-  if (MEET_PREDICATES.has(predicate)) {
-    return createMeetCandidate(assertion, entityMap);
-  }
-
-  // No matching event type
-  return null;
 }
 
 /**
@@ -948,13 +1105,38 @@ function computeDiscourseTime(
  * @param docOrder - Document order information
  * @returns Array of StoryEvents with time anchors
  */
+/**
+ * Result of buildEvents including optional eligibility stats.
+ */
+export interface BuildEventsResult {
+  events: StoryEvent[];
+  eligibilityStats?: EligibilityStats;
+}
+
 export function buildEvents(
   assertions: Assertion[],
   entityMap: Map<EntityId, Entity>,
-  docOrder: DocOrderInfo[]
-): StoryEvent[] {
-  // Step 1: Extract event candidates
-  const candidates = extractEventCandidates(assertions, entityMap);
+  docOrder: DocOrderInfo[],
+  trackEligibility?: false
+): StoryEvent[];
+export function buildEvents(
+  assertions: Assertion[],
+  entityMap: Map<EntityId, Entity>,
+  docOrder: DocOrderInfo[],
+  trackEligibility: true
+): BuildEventsResult;
+export function buildEvents(
+  assertions: Assertion[],
+  entityMap: Map<EntityId, Entity>,
+  docOrder: DocOrderInfo[],
+  trackEligibility: boolean = false
+): StoryEvent[] | BuildEventsResult {
+  // Step 1: Extract event candidates (with optional stats)
+  const stats: EligibilityStats | undefined = trackEligibility
+    ? { total: 0, passed: 0, blockedUnresolvedPronoun: 0, blockedGroupPlaceholder: 0, blockedMissingObject: 0, blockedNegated: 0 }
+    : undefined;
+
+  const candidates = extractEventCandidates(assertions, entityMap, stats);
 
   // Step 2: Normalize and dedupe
   const events = normalizeAndDedupe(candidates);
@@ -962,6 +1144,9 @@ export function buildEvents(
   // Step 3: Attach time anchors
   const timedEvents = attachTimeAnchors(events, docOrder);
 
+  if (trackEligibility) {
+    return { events: timedEvents, eligibilityStats: stats };
+  }
   return timedEvents;
 }
 
