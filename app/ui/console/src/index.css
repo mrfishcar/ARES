@@ -465,7 +465,7 @@ a:hover {
 .extraction-lab {
   display: flex;
   flex-direction: column;
-  height: 100vh;  /* Simple 100vh like working commit */
+  height: 100%;  /* Match app viewport height */
   background: var(--bg-primary);
   overflow: hidden;  /* Lock the page */
 }
@@ -1519,7 +1519,7 @@ a:hover {
   background: var(--bg-primary);  /* Match app background */
   border-radius: 0;  /* No rounded corners - full screen */
   border: none;  /* No borders */
-  overflow: auto;  /* Scroll naturally - no forcing */
+  overflow-y: auto;  /* Scroll naturally - no forcing */
   min-height: 0;  /* Allow flex shrinking */
   -webkit-overflow-scrolling: touch;  /* Smooth iOS scrolling */
   touch-action: pan-y;  /* Allow vertical touch scrolling */
@@ -2854,13 +2854,6 @@ html[data-theme="light"] .overlay-backdrop {
 body.modal-open {
   overflow: hidden;
   /* Removed: position: fixed; width: 100%; height: 100%; - causes iOS caret issues */
-}
-
-/* iOS: Ensure editor doesn't remount on keyboard show/hide */
-.editor-panel {
-  /* Keep editor mounted and stable */
-  contain: layout style;
-  /* REMOVED: translateZ(0) caused blur to change during interaction */
 }
 
 /* iOS: Prevent layout shift when keyboard appears */
