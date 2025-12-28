@@ -166,9 +166,10 @@
   width: 100%;
   min-height: 600px;
   height: 100%;
-  background: transparent;  /* Let parent background show through */
+  background: var(--bg-primary, #0f1115);
   color: var(--text-primary, #e5e7eb);
-  border-radius: 0;  /* No rounded corners */
+  border-radius: 12px;
+  /* Remove border for clean iOS Notes look */
   border: none;
   /* Contain scroll - .rich-editor-surface is the scroll container */
   overflow: hidden;
@@ -193,7 +194,7 @@
   position: relative;
   flex: 1;
   min-height: 500px; /* Ensures content can overflow and trigger scroll */
-  padding: 100px var(--editor-margin-desktop, 96px) 0 var(--editor-margin-desktop, 96px); /* Increased from 80px to 100px for toolbar clearance */
+  padding: 80px 24px 24px 24px;
   outline: none;
 
   /* Typography */
@@ -221,14 +222,12 @@
 .rich-placeholder {
   position: absolute;
   top: 80px; /* Match content top padding */
-  left: var(--editor-margin-desktop, 96px);
-  right: var(--editor-margin-desktop, 96px);
+  left: 24px;
+  right: 24px;
   color: var(--text-secondary, #9ca3af);
   opacity: 0.6;
   pointer-events: none;
   user-select: none;
-  white-space: nowrap;  /* Prevent text wrapping */
-  overflow: hidden;  /* Hide overflow if text is too long */
 }
 
 /* Text formatting styles */

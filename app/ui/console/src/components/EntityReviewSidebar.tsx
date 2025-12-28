@@ -475,38 +475,11 @@ export function EntityReviewSidebar({
     });
   }, []);
 
-  // Swipe-to-close gesture for pinned mode
-  const [touchStart, setTouchStart] = useState<{ x: number; y: number; time: number } | null>(null);
-
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    if (mode !== 'pinned') return;
-    const touch = e.touches[0];
-    setTouchStart({ x: touch.clientX, y: touch.clientY, time: Date.now() });
-  }, [mode]);
-
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    if (mode !== 'pinned' || !touchStart) return;
-
-    const touch = e.changedTouches[0];
-    const deltaX = touch.clientX - touchStart.x;
-    const deltaY = Math.abs(touch.clientY - touchStart.y);
-    const deltaTime = Date.now() - touchStart.time;
-
-    // Swipe right to close (horizontal swipe > 100px, not too vertical, reasonably fast)
-    if (deltaX > 100 && deltaY < 75 && deltaTime < 300) {
-      onClose();
-    }
-
-    setTouchStart(null);
-  }, [mode, touchStart, onClose]);
-
   return (
     <div
       ref={sidebarRef}
       className={`entity-review-sidebar ${mode} ${mode === 'overlay' ? 'liquid-glass--strong' : 'liquid-glass--subtle'}`}
       style={overlayStyle}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
     >
       {/* Drag handle for overlay mode */}
       {mode === 'overlay' && (
