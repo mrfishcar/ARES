@@ -2450,7 +2450,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
       {/* Main Content */}
       <div className="lab-content">
-        {/* Editor panel - scrolls naturally like working commit */}
+        {/* Editor panel - single scroll owner so chrome stays static */}
         <div className="editor-panel" ref={editorScrollRef}>
           {/* Editor */}
           {settings.useRichEditor ? (
@@ -2490,88 +2490,88 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
               scrollContainer={scrollContainerEl}
             />
           )}
-        </div>
 
-        {booknlpResult && (
-          <div
-            className="booknlp-panel"
-            style={{
-              marginTop: '16px',
-              padding: '16px',
-              border: '1px solid var(--border-color, #e5e7eb)',
-              borderRadius: '12px',
-              background: 'var(--bg-secondary, #fff)',
-              width: '100%',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '16px' }}>
-                  BookNLP Quotes {booknlpResult.quotes ? `(${booknlpResult.quotes.length})` : ''}
-                </h3>
-                <div style={{ color: '#6b7280', fontSize: '12px' }}>
-                  Speakers are resolved to BookNLP characters; enable “Color BookNLP chains” in settings to see clusters.
+          {booknlpResult && (
+            <div
+              className="booknlp-panel"
+              style={{
+                marginTop: '16px',
+                padding: '16px',
+                border: '1px solid var(--border-color, #e5e7eb)',
+                borderRadius: '12px',
+                background: 'var(--bg-secondary, #fff)',
+                width: '100%',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '16px' }}>
+                    BookNLP Quotes {booknlpResult.quotes ? `(${booknlpResult.quotes.length})` : ''}
+                  </h3>
+                  <div style={{ color: '#6b7280', fontSize: '12px' }}>
+                    Speakers are resolved to BookNLP characters; enable “Color BookNLP chains” in settings to see clusters.
+                  </div>
                 </div>
+                {booknlpResult.metadata && (
+                  <div style={{ color: '#6b7280', fontSize: '12px' }}>
+                    {booknlpResult.characters?.length ?? 0} characters · {booknlpResult.metadata.processing_time_seconds}s
+                  </div>
+                )}
               </div>
-              {booknlpResult.metadata && (
-                <div style={{ color: '#6b7280', fontSize: '12px' }}>
-                  {booknlpResult.characters?.length ?? 0} characters · {booknlpResult.metadata.processing_time_seconds}s
+
+              {booknlpResult.quotes && booknlpResult.quotes.length > 0 ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px', marginTop: '12px' }}>
+                  {booknlpResult.quotes.map((quote: any, idx: number) => {
+                    const speakerName = quote.speaker_id
+                      ? speakerLookup.get(quote.speaker_id) || quote.speaker_name || 'Unknown speaker'
+                      : quote.speaker_name || 'Unknown speaker';
+                    const confidence = Math.round(((quote.confidence ?? 0.5) || 0.5) * 100);
+
+                    return (
+                      <div
+                        key={quote.id || idx}
+                        style={{
+                          padding: '12px',
+                          borderRadius: '10px',
+                          border: '1px solid var(--border-subtle, #e5e7eb)',
+                          background: 'var(--bg-tertiary, #f9fafb)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '6px',
+                        }}
+                      >
+                        <div style={{ fontStyle: 'italic', color: '#111827' }}>“{quote.text}”</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            <span style={{ fontWeight: 600, color: '#111827' }}>{speakerName}</span>
+                            <span style={{ color: '#6b7280', fontSize: '12px' }}>Confidence {confidence}%</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleQuoteNavigate(quote)}
+                            style={{
+                              border: '1px solid #d1d5db',
+                              background: '#fff',
+                              borderRadius: '8px',
+                              padding: '6px 10px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Jump
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div style={{ color: '#6b7280', marginTop: '8px' }}>
+                  No quotes detected for this passage yet.
                 </div>
               )}
             </div>
-
-            {booknlpResult.quotes && booknlpResult.quotes.length > 0 ? (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px', marginTop: '12px' }}>
-                {booknlpResult.quotes.map((quote: any, idx: number) => {
-                  const speakerName = quote.speaker_id
-                    ? speakerLookup.get(quote.speaker_id) || quote.speaker_name || 'Unknown speaker'
-                    : quote.speaker_name || 'Unknown speaker';
-                  const confidence = Math.round(((quote.confidence ?? 0.5) || 0.5) * 100);
-
-                  return (
-                    <div
-                      key={quote.id || idx}
-                      style={{
-                        padding: '12px',
-                        borderRadius: '10px',
-                        border: '1px solid var(--border-subtle, #e5e7eb)',
-                        background: 'var(--bg-tertiary, #f9fafb)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '6px',
-                      }}
-                    >
-                      <div style={{ fontStyle: 'italic', color: '#111827' }}>“{quote.text}”</div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <span style={{ fontWeight: 600, color: '#111827' }}>{speakerName}</span>
-                          <span style={{ color: '#6b7280', fontSize: '12px' }}>Confidence {confidence}%</span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleQuoteNavigate(quote)}
-                          style={{
-                            border: '1px solid #d1d5db',
-                            background: '#fff',
-                            borderRadius: '8px',
-                            padding: '6px 10px',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          Jump
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div style={{ color: '#6b7280', marginTop: '8px' }}>
-                No quotes detected for this passage yet.
-              </div>
-            )}
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Floating Action Button - Only show when text exists and panel is not pinned */}
