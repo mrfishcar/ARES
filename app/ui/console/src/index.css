@@ -9,6 +9,7 @@
   --bg-primary: #FFF9F0;
   --bg-secondary: #FFF4E6;
   --bg-tertiary: #FFEFD5;
+  --editor-bottom-buffer: 0px;
   --text-primary: #4A403A;
   --text-secondary: #8B7E77;
   --text-muted: #B8ABA4;
@@ -31,7 +32,13 @@
   --entity-object: #D89BAA;
 }
 
+html {
+  min-height: 100%;
+  background: var(--bg-primary);
+}
+
 body {
+  min-height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
@@ -39,6 +46,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background: var(--bg-primary);
   color: var(--text-primary);
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 code {
@@ -68,9 +81,9 @@ a:hover {
 .extraction-lab {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
   background: var(--bg-primary);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .lab-header {
@@ -167,7 +180,7 @@ a:hover {
   flex: 1;
   min-height: 0;
   padding: 24px 16px;
-  overflow: auto;
+  overflow: visible;
 }
 
 .editor-wrapper {
@@ -189,7 +202,7 @@ a:hover {
   border: 1px solid var(--border-color);
   border-radius: 0;
   box-shadow: none;
-  overflow: hidden;
+  overflow: visible;
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
@@ -656,6 +669,7 @@ a:hover {
 .cm-editor-wrapper {
   scrollbar-color: #E8A87C #FFEFD5 !important;
   scrollbar-width: thin !important;
+  padding-bottom: var(--editor-bottom-buffer);
 }
 
 .cm-editor-wrapper::-webkit-scrollbar {
@@ -708,6 +722,7 @@ html[data-theme="dark"] .cm-editor-wrapper {
 /* Also style .cm-scroller scrollbar (CodeMirror's internal scrollable element) - Light Mode */
 .cm-scroller {
   color-scheme: light !important;
+  padding-bottom: var(--editor-bottom-buffer);
 }
 
 .cm-scroller::-webkit-scrollbar {
@@ -746,6 +761,12 @@ html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb {
 
 html[data-theme="dark"] .cm-scroller::-webkit-scrollbar-thumb:hover {
   background: #a0e7ff !important;
+}
+
+@supports (-webkit-touch-callout: none) {
+  :root {
+    --editor-bottom-buffer: 180px;
+  }
 }
 
 /* Text margins inside editor */
