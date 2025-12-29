@@ -998,6 +998,110 @@ const editorTheme = EditorView.theme({
 });
 
 // ============================================================================
+// 7. iOS CARET NUDGE (MINIMAL, ROBUST)
+//   - Only runs when iOS + keyboard likely open (visualViewport shrunk)
+//   - Scrolls by exact needed delta + padding
+//   - Handles iPadOS "Macintosh" UA
+// ============================================================================
+
+function isIOSLike(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent || '';
+  const platform = (navigator as any).platform || '';
+  const maxTouchPoints = (navigator as any).maxTouchPoints || 0;
+
+  // Classic iOS
+  if (/iPad|iPhone|iPod/.test(ua)) return true;
+
+  // iPadOS often reports as Mac, but has touch points
+  if (/Macintosh/.test(ua) && maxTouchPoints > 1) return true;
+
+  // Fallback (rare): platform hints
+  if (/iPad|iPhone|iPod/.test(platform)) return true;
+
+  return false;
+}
+
+function setupIOSCaretNudge(view: EditorView) {
+  const vv = typeof window !== 'undefined' ? window.visualViewport : null;
+  if (!isIOSLike() || !vv) return null;
+
+  const scroller = view.scrollDOM;
+  const content = view.contentDOM;
+  if (!scroller || !content) return null;
+
+  let rafPending = false;
+  let lastRunAt = 0;
+
+  const KEYBOARD_OPEN_EPS = 80;     // px: viewport shrink threshold
+  const SAFE_PAD = 96;             // px: keep caret this far above bottom
+  const MAX_SCROLL_STEP = 220;     // px: avoid insane jumps
+  const MIN_INTERVAL_MS = 50;      // ms: simple time gate
+
+  const keyboardLikelyOpen = () => {
+    // When keyboard opens, visualViewport height usually shrinks relative to layout viewport
+    return (window.innerHeight - vv.height) > KEYBOARD_OPEN_EPS;
+  };
+
+  const measureCaretRect = (): DOMRect | null => {
+    const sel = document.getSelection();
+    if (!sel || sel.rangeCount === 0) return null;
+    const range = sel.getRangeAt(0);
+    if (!content.contains(range.startContainer)) return null;
+
+    const caretRange = range.cloneRange();
+    caretRange.collapse(true);
+    const rects = caretRange.getClientRects();
+    if (rects && rects.length > 0) return rects[0] as DOMRect;
+    return caretRange.getBoundingClientRect();
+  };
+
+  const run = () => {
+    rafPending = false;
+    const now = performance.now();
+    if (now - lastRunAt < MIN_INTERVAL_MS) return;
+    lastRunAt = now;
+
+    if (!keyboardLikelyOpen()) return;
+
+    const rect = measureCaretRect();
+    if (!rect) return;
+
+    // visual viewport bottom edge in page coordinates
+    const viewportBottom = vv.offsetTop + vv.height;
+    const desiredBottom = viewportBottom - SAFE_PAD;
+
+    const delta = rect.bottom - desiredBottom;
+    if (delta <= 0) return; // caret safely above keyboard
+
+    const step = Math.min(Math.max(delta + 8, 24), MAX_SCROLL_STEP);
+    scroller.scrollTop += step;
+  };
+
+  const schedule = () => {
+    if (rafPending) return;
+    rafPending = true;
+    requestAnimationFrame(run);
+  };
+
+  const onInput = () => schedule();
+  const onSelection = () => schedule();
+  const onVV = () => schedule();
+
+  content.addEventListener('input', onInput);
+  document.addEventListener('selectionchange', onSelection);
+  vv.addEventListener('resize', onVV);
+  vv.addEventListener('scroll', onVV);
+
+  return () => {
+    content.removeEventListener('input', onInput);
+    document.removeEventListener('selectionchange', onSelection);
+    vv.removeEventListener('resize', onVV);
+    vv.removeEventListener('scroll', onVV);
+  };
+}
+
+// ============================================================================
 // 6. MAIN COMPONENT
 // ============================================================================
 
@@ -1176,7 +1280,12 @@ export function CodeMirrorEditor({
 
     viewRef.current = view;
 
+    const cleanupCaretNudge = setupIOSCaretNudge(view);
+
     return () => {
+      if (cleanupCaretNudge) {
+        cleanupCaretNudge();
+      }
       view.destroy();
       viewRef.current = null;
     };
@@ -1303,7 +1412,7 @@ export function CodeMirrorEditor({
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ position: 'relative', width: '100%', minHeight, display: 'flex', flexDirection: 'column', flex: 1 }}>
       <div
         ref={editorRef}
         className="cm-editor-wrapper"
@@ -1312,8 +1421,9 @@ export function CodeMirrorEditor({
           borderRadius: '0',
           backgroundColor: 'var(--bg-primary)',
           width: '100%',
-          height: '100%',
-          overflow: 'auto',
+          minHeight,
+          flex: 1,
+          overflow: 'hidden',
           scrollbarColor: '#E8A87C #FFEFD5',
           scrollbarWidth: 'thin'
         } as React.CSSProperties}
