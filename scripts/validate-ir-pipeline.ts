@@ -110,7 +110,7 @@ async function checkParserHealth(): Promise<boolean> {
       return false;
     }
 
-    const data = await response.json();
+    const data = await response.json() as { status?: string };
     return data.status === 'ok';
   } catch (error) {
     // Connection refused, timeout, or other network error
