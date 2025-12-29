@@ -1589,7 +1589,21 @@ a:hover {
   overflow: hidden;  
   transition: background-color 0.3s ease;  
   pointer-events: auto;  
-}  
+}
+
+/* =========================================================
+   iOS CARET COMFORT BUFFER
+   Gives Safari room to scroll caret above keyboard
+   ========================================================= */
+
+.rich-editor-surface::after {
+  content: "";
+  display: block;
+  height: 160px; /* Tuned for iPad keyboard */
+  pointer-events: none;
+}
+
+  
   
 /* Desktop sidebar for entities */  
 .entities-sidebar-desktop {  
