@@ -1592,16 +1592,25 @@ a:hover {
 }
 
 /* =========================================================
-   iOS CARET COMFORT BUFFER
-   Gives Safari room to scroll caret above keyboard
+   iOS CARET SAFETY BUFFER (PADDING-BASED)
+   Ensures caret never enters keyboard occlusion zone
    ========================================================= */
 
-.rich-editor-surface::after {
-  content: "";
-  display: block;
-  height: 160px; /* Tuned for iPad keyboard */
-  pointer-events: none;
+/* Default: no extra padding on desktop */
+.rich-editor-surface {
+  --editor-bottom-buffer: 0px;
+  padding-bottom: var(--editor-bottom-buffer);
 }
+
+/* iOS Safari only */
+@supports (-webkit-touch-callout: none) {
+  .rich-editor-surface {
+    --editor-bottom-buffer: 180px; /* Tuned for iPad keyboard */
+  }
+}
+
+
+
 
   
   
