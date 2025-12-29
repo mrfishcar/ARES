@@ -74,6 +74,39 @@ const EVENT_TRIGGERS: Record<string, string[]> = {
 };
 
 // =============================================================================
+// PARSER HEALTH CHECK
+// =============================================================================
+
+const PARSER_URL = 'http://127.0.0.1:8000';
+
+/**
+ * Check if the spaCy parser service is running and healthy.
+ * Returns true if reachable, false otherwise.
+ */
+async function checkParserHealth(): Promise<boolean> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3000);
+
+    const response = await fetch(`${PARSER_URL}/health`, {
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      return false;
+    }
+
+    const data = await response.json();
+    return data.status === 'ok';
+  } catch (error) {
+    // Connection refused, timeout, or other network error
+    return false;
+  }
+}
+
+// =============================================================================
 // MAIN
 // =============================================================================
 
@@ -101,6 +134,32 @@ async function main() {
   const chapterText = fs.readFileSync(absolutePath, 'utf-8');
   const wordCount = chapterText.split(/\s+/).length;
   console.log(`Chapter loaded: ${wordCount} words`);
+
+  // ==========================================================================
+  // PARSER HEALTH CHECK (required for extraction)
+  // ==========================================================================
+  console.log('\n[0/6] Checking parser service...');
+  const parserOk = await checkParserHealth();
+  if (!parserOk) {
+    console.error('\n' + '='.repeat(60));
+    console.error('❌ PARSER SERVICE NOT REACHABLE');
+    console.error('='.repeat(60));
+    console.error('');
+    console.error('The spaCy parser service is not running at http://127.0.0.1:8000');
+    console.error('');
+    console.error('To start the parser, run:');
+    console.error('');
+    console.error('    make parser');
+    console.error('');
+    console.error('or:');
+    console.error('');
+    console.error('    python scripts/parser_service.py');
+    console.error('');
+    console.error('Wait for "Application startup complete" before running validation.');
+    console.error('='.repeat(60));
+    process.exit(1);
+  }
+  console.log('  ✅ Parser service is running');
 
   // ==========================================================================
   // STEP 1: Legacy Extraction

@@ -330,6 +330,158 @@ describe('Quick Facts', () => {
 });
 
 // =============================================================================
+// STATE PROPERTIES TESTS
+// =============================================================================
+
+describe('State Properties', () => {
+  it('should render state assertions with "current" label', () => {
+    const ir = createFixtureIR();
+
+    // Add state assertions for Harry
+    ir.assertions.push({
+      id: 'state_1',
+      assertionType: 'DIRECT',
+      subject: 'entity_harry',
+      predicate: 'state_of',
+      object: 'happy',
+      evidence: [makeEvidence('Harry was happy', { charStart: 100 })],
+      attribution: makeAttribution(),
+      modality: 'FACT',
+      confidence: makeConfidence(),
+      createdAt: new Date().toISOString(),
+      compiler_pass: 'state_extractor:copula_adj',
+    });
+
+    const output = renderEntityPage(ir, 'entity_harry');
+
+    expect(output).toContain('## States & properties');
+    expect(output).toContain('### States');
+    expect(output).toContain('is happy');
+    expect(output).toContain('*(current)*');
+  });
+
+  it('should render is_a assertions under Identity & Roles', () => {
+    const ir = createFixtureIR();
+
+    ir.assertions.push({
+      id: 'is_a_1',
+      assertionType: 'DIRECT',
+      subject: 'entity_harry',
+      predicate: 'is_a',
+      object: 'a wizard',
+      evidence: [makeEvidence('Harry was a wizard')],
+      attribution: makeAttribution(),
+      modality: 'FACT',
+      confidence: makeConfidence(),
+      createdAt: new Date().toISOString(),
+      compiler_pass: 'state_extractor:copula_noun',
+    });
+
+    const output = renderEntityPage(ir, 'entity_harry');
+
+    expect(output).toContain('### Identity & Roles');
+    expect(output).toContain('is a wizard');
+  });
+
+  it('should render has assertions under Possessions', () => {
+    const ir = createFixtureIR();
+
+    ir.assertions.push({
+      id: 'has_1',
+      assertionType: 'DIRECT',
+      subject: 'entity_harry',
+      predicate: 'has',
+      object: 'an owl',
+      evidence: [makeEvidence('Harry had an owl')],
+      attribution: makeAttribution(),
+      modality: 'FACT',
+      confidence: makeConfidence(),
+      createdAt: new Date().toISOString(),
+      compiler_pass: 'state_extractor:possession',
+    });
+
+    const output = renderEntityPage(ir, 'entity_harry');
+
+    expect(output).toContain('### Possessions');
+    expect(output).toContain('has an owl');
+  });
+
+  it('should show negated assertions with ❌ icon', () => {
+    const ir = createFixtureIR();
+
+    ir.assertions.push({
+      id: 'state_neg',
+      assertionType: 'DIRECT',
+      subject: 'entity_harry',
+      predicate: 'state_of',
+      object: 'afraid',
+      evidence: [makeEvidence('Harry was not afraid')],
+      attribution: makeAttribution(),
+      modality: 'NEGATED',
+      confidence: makeConfidence(),
+      createdAt: new Date().toISOString(),
+      compiler_pass: 'state_extractor:copula_adj',
+    });
+
+    const output = renderEntityPage(ir, 'entity_harry');
+
+    expect(output).toContain('❌');
+    expect(output).toContain('is afraid');
+  });
+
+  it('should show earlier states when multiple of same type', () => {
+    const ir = createFixtureIR();
+
+    // Add two state assertions at different positions
+    ir.assertions.push(
+      {
+        id: 'state_early',
+        assertionType: 'DIRECT',
+        subject: 'entity_harry',
+        predicate: 'state_of',
+        object: 'sad',
+        evidence: [makeEvidence('Harry was sad', { charStart: 10 })],
+        attribution: makeAttribution(),
+        modality: 'FACT',
+        confidence: makeConfidence(),
+        createdAt: new Date().toISOString(),
+        compiler_pass: 'state_extractor:copula_adj',
+      },
+      {
+        id: 'state_later',
+        assertionType: 'DIRECT',
+        subject: 'entity_harry',
+        predicate: 'state_of',
+        object: 'happy',
+        evidence: [makeEvidence('Harry was happy', { charStart: 200 })],
+        attribution: makeAttribution(),
+        modality: 'FACT',
+        confidence: makeConfidence(),
+        createdAt: new Date().toISOString(),
+        compiler_pass: 'state_extractor:copula_adj',
+      }
+    );
+
+    const output = renderEntityPage(ir, 'entity_harry');
+
+    expect(output).toContain('*(current)*');
+    expect(output).toContain('*(earlier)*');
+  });
+
+  it('should not show section if no state assertions', () => {
+    const ir = createFixtureIR();
+    // Remove any existing assertions
+    ir.assertions = ir.assertions.filter(a =>
+      !['state_of', 'is_a', 'has', 'can', 'trait', 'location_at'].includes(a.predicate || '')
+    );
+
+    const output = renderEntityPage(ir, 'entity_harry');
+
+    expect(output).not.toContain('## States & properties');
+  });
+});
+
+// =============================================================================
 // CURRENT STATUS TESTS
 // =============================================================================
 

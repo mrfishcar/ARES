@@ -50,6 +50,33 @@ const DEFAULT_OPTIONS: Required<EntityPageOptions> = {
 };
 
 // =============================================================================
+// STATE PREDICATE CONSTANTS
+// =============================================================================
+
+/** State/property predicates from state-assertion-extractor */
+const STATE_PREDICATES = new Set([
+  'state_of',     // X was ADJ (emotional/physical state)
+  'is_a',         // X was a NOUN (identity/role)
+  'has',          // X had NOUN (possession)
+  'can',          // X could VERB (capability)
+  'trait',        // X was always ADJ (permanent trait)
+  'location_at',  // X was in PLACE (static location)
+]);
+
+/** Human-readable labels for state predicates */
+const STATE_PREDICATE_LABELS: Record<string, string> = {
+  'state_of': 'States',
+  'is_a': 'Identity & Roles',
+  'has': 'Possessions',
+  'can': 'Capabilities',
+  'trait': 'Traits',
+  'location_at': 'Locations',
+};
+
+/** Display order for state predicates */
+const STATE_PREDICATE_ORDER = ['trait', 'is_a', 'state_of', 'has', 'can', 'location_at'];
+
+// =============================================================================
 // MAIN RENDERER
 // =============================================================================
 
@@ -87,6 +114,7 @@ export function renderEntityPage(
 
   sections.push(renderTitleBlock(entity));
   sections.push(renderQuickFacts(entity, entityFacts, entityId, ir));
+  sections.push(renderStateProperties(entityAssertions, entityId, ir, options));
   sections.push(renderCurrentStatus(entityFacts, entityId, ir));
   sections.push(renderTimelineHighlights(entityEvents, ir, options));
   sections.push(renderKeyClaims(entityAssertions, ir, options));
@@ -200,6 +228,130 @@ function renderQuickFacts(
   }
 
   return lines.join('\n');
+}
+
+/**
+ * 3.2b States & Properties (from state-assertion-extractor)
+ *
+ * Shows state_of, is_a, has, can, trait, location_at assertions.
+ * Groups by predicate type with most recent as "Current" and older as "Earlier".
+ */
+function renderStateProperties(
+  assertions: Assertion[],
+  entityId: EntityId,
+  ir: ProjectIR,
+  options: Required<EntityPageOptions>
+): string {
+  // Filter to only state predicates where this entity is the subject
+  const stateAssertions = assertions.filter(
+    a => a.subject === entityId && a.predicate && STATE_PREDICATES.has(a.predicate)
+  );
+
+  if (stateAssertions.length === 0) {
+    return '';  // Don't show section if no state assertions
+  }
+
+  const lines: string[] = [];
+  lines.push('## States & properties');
+  lines.push('');
+
+  // Group by predicate type
+  const byPredicate = new Map<string, Assertion[]>();
+  for (const a of stateAssertions) {
+    const pred = a.predicate!;
+    if (!byPredicate.has(pred)) {
+      byPredicate.set(pred, []);
+    }
+    byPredicate.get(pred)!.push(a);
+  }
+
+  // Render in predicate order
+  for (const predicate of STATE_PREDICATE_ORDER) {
+    const group = byPredicate.get(predicate);
+    if (!group || group.length === 0) continue;
+
+    const label = STATE_PREDICATE_LABELS[predicate] || predicate;
+    lines.push(`### ${label}`);
+    lines.push('');
+
+    // Sort by evidence position (most recent first for "current")
+    const sorted = [...group].sort((a, b) => {
+      return -compareEvidenceOrder(a.evidence, b.evidence);  // Negative for descending
+    });
+
+    // Most recent is "current", others are "earlier"
+    const current = sorted[0];
+    const earlier = sorted.slice(1);
+
+    // Format current
+    const currentStr = formatStateAssertion(current, ir);
+    const modalityIcon = current.modality === 'NEGATED' ? '❌ ' : '';
+    lines.push(`- ${modalityIcon}**${currentStr}** *(current)*`);
+
+    // Add evidence for current
+    if (current.evidence.length > 0) {
+      const evidenceSnippet = formatEvidence(current.evidence[0]);
+      lines.push(`  > "${evidenceSnippet}"`);
+    }
+
+    // Format earlier (if any)
+    if (earlier.length > 0) {
+      const maxEarlier = 3;  // Limit history display
+      for (let i = 0; i < Math.min(earlier.length, maxEarlier); i++) {
+        const a = earlier[i];
+        const str = formatStateAssertion(a, ir);
+        const mIcon = a.modality === 'NEGATED' ? '❌ ' : '';
+        lines.push(`- ${mIcon}${str} *(earlier)*`);
+      }
+      if (earlier.length > maxEarlier) {
+        lines.push(`  *(${earlier.length - maxEarlier} more not shown)*`);
+      }
+    }
+
+    lines.push('');
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Format a state assertion as human-readable text.
+ */
+function formatStateAssertion(assertion: Assertion, ir: ProjectIR): string {
+  const predicate = assertion.predicate;
+  const object = assertion.object;
+
+  // Get object display name
+  let objectStr: string;
+  if (typeof object === 'string') {
+    // Try to resolve as entity ID
+    const entity = ir.entities.find(e => e.id === object);
+    objectStr = entity ? entity.canonical : object;
+  } else if (typeof object === 'boolean') {
+    objectStr = object ? 'true' : 'false';
+  } else if (typeof object === 'number') {
+    objectStr = String(object);
+  } else {
+    objectStr = String(object);
+  }
+
+  // Format based on predicate type
+  switch (predicate) {
+    case 'state_of':
+      return `is ${objectStr}`;
+    case 'is_a':
+      return `is ${objectStr}`;
+    case 'has':
+      return `has ${objectStr}`;
+    case 'can':
+      return `can ${objectStr}`;
+    case 'trait':
+      return `is always ${objectStr}`;
+    case 'location_at':
+      return `is ${objectStr}`;
+    default:
+      return `${predicate} ${objectStr}`;
+  }
 }
 
 /**
