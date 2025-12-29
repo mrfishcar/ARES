@@ -163,12 +163,21 @@ body {
   }  
 }  
   
-@media (prefers-color-scheme: light) {  
-  :root {  
-    color-scheme: light;  
-    --app-surface: var(--app-bg-light);  
-  }  
-}  
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --app-surface: var(--app-bg-light);
+
+    /* Glass - Warm theme */
+    --liquid-glass-bg-light: rgba(255, 249, 240, 0.92);
+    --liquid-glass-border-light: rgba(200, 180, 160, 0.35);
+    --liquid-glass-bg: var(--liquid-glass-bg-light);
+    --liquid-glass-border: var(--liquid-glass-border-light);
+    --liquid-glass-glow-outer: rgba(74, 64, 58, 0.08);
+    --liquid-glass-tint-1: rgba(200, 180, 160, 0.05);
+    --liquid-glass-tint-2: rgba(180, 160, 140, 0.05);
+  }
+}
   
 /* ===============================  
    DISABLED iOS VIEWPORT LOCKING  
@@ -193,18 +202,8 @@ html.kb-open .extraction-lab {
 }  
 */  
   
-  /* Glass - Warm theme */  
-  --liquid-glass-bg-light: rgba(255, 249, 240, 0.92);  
-  --liquid-glass-border-light: rgba(200, 180, 160, 0.35);  
-  --liquid-glass-bg: var(--liquid-glass-bg-light);  
-  --liquid-glass-border: var(--liquid-glass-border-light);  
-  --liquid-glass-glow-outer: rgba(74, 64, 58, 0.08);  
-  --liquid-glass-tint-1: rgba(200, 180, 160, 0.05);  
-  --liquid-glass-tint-2: rgba(180, 160, 140, 0.05);  
-}  
-  
-/* Dark mode – "night sky" */  
-html[data-theme="dark"] {  
+/* Dark mode – "night sky" */
+html[data-theme="dark"] {
   --bg-primary: var(--app-bg-dark);     /* #0a0e27 - Night sky */  
   --bg-secondary: #141829;              /* Slightly lighter midnight - matches darkMode.ts */  
   --bg-tertiary: #1a1f3a;               /* Code night */  
