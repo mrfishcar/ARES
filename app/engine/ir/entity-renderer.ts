@@ -1,14 +1,19 @@
 /**
- * Entity Page Renderer - Generates wiki-style pages for entities.
+ * Entity & Item Page Renderer - Generates wiki-style pages.
  *
- * This renderer produces human-readable markdown for a single entity,
- * showing its facts, events, assertions, and evidence.
+ * This renderer produces human-readable markdown for entities and items,
+ * showing their facts, events, assertions, and evidence.
+ *
+ * Renderers:
+ * - renderEntityPage(entityId) - Wiki page for PERSON/ORG/PLACE entities
+ * - renderItemPage(itemId) - Wiki page for ITEM entities with ownership
  *
  * CONTRACT:
  * - Renderer must NOT infer new information
  * - Renderer may only aggregate and format existing IR data
  * - Sorting must be deterministic (no JS object iteration order)
  * - Evidence snippets are display-only, not semantic
+ * - Contested/unknown states must be explicitly labeled
  *
  * @module ir/entity-renderer
  */
@@ -25,7 +30,7 @@ import type {
   DiscourseTime,
   Modality,
 } from './types';
-import { buildFactsFromEvents, getCurrentLocation, getCurrentPossessions, isAlive } from './fact-builder';
+import { buildFactsFromEvents, getCurrentLocation, getCurrentPossessions, getCurrentHolder, isAlive } from './fact-builder';
 
 // =============================================================================
 // TYPES
@@ -126,6 +131,377 @@ export function renderEntityPage(
   }
 
   return sections.filter((s) => s.length > 0).join('\n\n');
+}
+
+// =============================================================================
+// ITEM PAGE RENDERER
+// =============================================================================
+
+export interface ItemPageOptions {
+  /** Maximum transfer events to show (default 25) */
+  maxTransfers?: number;
+  /** Maximum evidence snippets per item (default 2) */
+  maxEvidencePerItem?: number;
+  /** Include debug section (default false) */
+  includeDebug?: boolean;
+}
+
+const DEFAULT_ITEM_OPTIONS: Required<ItemPageOptions> = {
+  maxTransfers: 25,
+  maxEvidencePerItem: 2,
+  includeDebug: false,
+};
+
+/**
+ * Render a wiki-style page for an item (ITEM entity type).
+ *
+ * Shows:
+ * - Current holder (or contested/unknown)
+ * - Ownership timeline (possession facts)
+ * - Transfer events involving the item
+ * - Evidence snippets
+ *
+ * @param ir - The ProjectIR containing all data
+ * @param itemId - The item entity to render
+ * @param opts - Rendering options
+ * @returns Markdown string
+ */
+export function renderItemPage(
+  ir: ProjectIR,
+  itemId: EntityId,
+  opts?: ItemPageOptions
+): string {
+  const options = { ...DEFAULT_ITEM_OPTIONS, ...opts };
+
+  // Find the entity
+  const entity = ir.entities.find((e) => e.id === itemId);
+  if (!entity) {
+    return `# Item Not Found\n\nNo item with ID \`${itemId}\` exists in this IR.`;
+  }
+
+  // Compute facts from events
+  const facts = buildFactsFromEvents(ir.events);
+
+  // Get transfer events involving this item
+  const transferEvents = ir.events.filter(
+    (e) =>
+      e.type === 'TRANSFER' &&
+      e.participants.some((p) => p.role === 'ITEM' && p.entity === itemId)
+  );
+
+  // Build sections
+  const sections: string[] = [];
+
+  sections.push(renderItemTitleBlock(entity));
+  sections.push(renderItemCurrentHolder(facts, itemId, ir));
+  sections.push(renderOwnershipTimeline(facts, itemId, ir));
+  sections.push(renderTransferHistory(transferEvents, itemId, ir, options));
+
+  if (options.includeDebug) {
+    sections.push(renderItemDebugSection(entity, facts, transferEvents, itemId));
+  }
+
+  return sections.filter((s) => s.length > 0).join('\n\n');
+}
+
+/**
+ * Item Title Block
+ */
+function renderItemTitleBlock(entity: Entity): string {
+  const lines: string[] = [];
+
+  const displayName = entity.canonical || entity.id;
+  lines.push(`# ${displayName}`);
+  lines.push('');
+
+  lines.push(`**Type:** ${entity.type}`);
+
+  const aliases = entity.aliases.filter((a) => a !== entity.canonical);
+  if (aliases.length > 0) {
+    lines.push(`**Aliases:** ${aliases.join(', ')}`);
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Current Holder section
+ */
+function renderItemCurrentHolder(
+  facts: FactViewRow[],
+  itemId: EntityId,
+  ir: ProjectIR
+): string {
+  const lines: string[] = [];
+  lines.push('## Current holder');
+  lines.push('');
+
+  const holderResult = getCurrentHolder(facts, itemId);
+
+  if (!holderResult) {
+    lines.push('**Unknown** — No ownership information available.');
+    return lines.join('\n');
+  }
+
+  if (holderResult.holder === 'contested') {
+    lines.push('**⚠️ Contested** — Multiple entities claim possession:');
+    lines.push('');
+    for (const holderId of holderResult.holders) {
+      const holderName = getEntityName(ir, holderId);
+      lines.push(`- ${holderName}`);
+    }
+    lines.push('');
+    lines.push('*This may indicate conflicting evidence or a data inconsistency.*');
+  } else {
+    const holderName = getEntityName(ir, holderResult.holder);
+    lines.push(`**${holderName}**`);
+
+    // Find the most recent gain fact for evidence
+    const gainFact = facts
+      .filter(
+        (f) =>
+          f.object === itemId &&
+          f.predicate === 'possesses' &&
+          f.subject === holderResult.holder &&
+          !f.validUntil
+      )
+      .sort((a, b) => compareDiscourseTime(b.validFrom, a.validFrom))[0];
+
+    if (gainFact) {
+      const timeStr = formatTimeAnchor(gainFact.validFrom);
+      lines.push(`- Since ${timeStr}`);
+
+      // Get evidence
+      if (gainFact.derivedFrom.length > 0) {
+        const sourceEvent = ir.events.find((e) => e.id === gainFact.derivedFrom[0]);
+        if (sourceEvent && sourceEvent.evidence.length > 0) {
+          lines.push(`- *"${formatEvidence(sourceEvent.evidence[0])}"*`);
+        }
+      }
+    }
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Ownership Timeline section
+ *
+ * Shows chronological list of who possessed the item and when.
+ */
+function renderOwnershipTimeline(
+  facts: FactViewRow[],
+  itemId: EntityId,
+  ir: ProjectIR
+): string {
+  const lines: string[] = [];
+  lines.push('## Ownership history');
+  lines.push('');
+
+  // Get all possession facts for this item
+  const possessionFacts = facts.filter(
+    (f) =>
+      f.object === itemId &&
+      f.predicate === 'possesses' &&
+      typeof f.subject === 'string'
+  );
+
+  if (possessionFacts.length === 0) {
+    lines.push('*(No ownership history.)*');
+    return lines.join('\n');
+  }
+
+  // Build ownership entries: each gain/loss pair or current possession
+  interface OwnershipEntry {
+    holder: EntityId;
+    from: TimeAnchor;
+    until?: TimeAnchor;
+    inference?: 'explicit' | 'implied_loss';
+    derivedFrom: string[];
+  }
+
+  const entries: OwnershipEntry[] = [];
+
+  // Group facts by holder
+  const byHolder = new Map<EntityId, FactViewRow[]>();
+  for (const fact of possessionFacts) {
+    const holderId = fact.subject;
+    if (!byHolder.has(holderId)) {
+      byHolder.set(holderId, []);
+    }
+    byHolder.get(holderId)!.push(fact);
+  }
+
+  // For each holder, determine their ownership period
+  for (const [holderId, holderFacts] of byHolder.entries()) {
+    const gainFact = holderFacts.find((f) => !f.validUntil);
+    const lossFact = holderFacts.find((f) => f.validUntil);
+
+    if (gainFact) {
+      entries.push({
+        holder: holderId,
+        from: gainFact.validFrom,
+        until: lossFact?.validUntil,
+        inference: gainFact.inference,
+        derivedFrom: gainFact.derivedFrom,
+      });
+    } else if (lossFact) {
+      // Only loss fact (inferred prior possession)
+      entries.push({
+        holder: holderId,
+        from: lossFact.validFrom, // UNKNOWN
+        until: lossFact.validUntil,
+        inference: lossFact.inference,
+        derivedFrom: lossFact.derivedFrom,
+      });
+    }
+  }
+
+  // Sort by "from" time (most recent first for display), with UNKNOWN last
+  entries.sort((a, b) => {
+    const aVal = getOwnershipSortValue(a);
+    const bVal = getOwnershipSortValue(b);
+    return bVal - aVal; // Descending (most recent first)
+  });
+
+  // Render entries
+  for (const entry of entries) {
+    const holderName = getEntityName(ir, entry.holder);
+    const fromStr = formatTimeAnchor(entry.from);
+
+    let line = `- **${holderName}**`;
+
+    if (entry.until) {
+      const untilStr = formatTimeAnchor(entry.until);
+      line += ` — ${fromStr} → ${untilStr}`;
+    } else {
+      line += ` — since ${fromStr}`;
+      line += ' *(current)*';
+    }
+
+    if (entry.inference === 'implied_loss') {
+      line += ' *(inferred)*';
+    }
+
+    lines.push(line);
+
+    // Add evidence
+    if (entry.derivedFrom.length > 0) {
+      const sourceEvent = ir.events.find((e) => e.id === entry.derivedFrom[0]);
+      if (sourceEvent && sourceEvent.evidence.length > 0) {
+        lines.push(`  > *"${formatEvidence(sourceEvent.evidence[0])}"*`);
+      }
+    }
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Get sort value for ownership entry (for chronological ordering).
+ */
+function getOwnershipSortValue(entry: { from: TimeAnchor; until?: TimeAnchor }): number {
+  // Use "until" if present (end of ownership), otherwise "from" (start)
+  const time = entry.until ?? entry.from;
+
+  if (time.type === 'DISCOURSE') {
+    return (
+      (time.chapter ?? 0) * 100000 +
+      (time.paragraph ?? 0) * 1000 +
+      (time.sentence ?? 0)
+    );
+  }
+  // UNKNOWN sorts earliest
+  return -1;
+}
+
+/**
+ * Transfer History section
+ *
+ * Shows transfer events involving this item.
+ */
+function renderTransferHistory(
+  events: StoryEvent[],
+  itemId: EntityId,
+  ir: ProjectIR,
+  options: Required<ItemPageOptions>
+): string {
+  const lines: string[] = [];
+  lines.push('## Transfer events');
+  lines.push('');
+
+  if (events.length === 0) {
+    lines.push('*(No transfer events recorded.)*');
+    return lines.join('\n');
+  }
+
+  // Sort by discourse time
+  const sortedEvents = [...events].sort((a, b) =>
+    compareDiscourseTime(a.time, b.time)
+  );
+
+  // Limit to maxTransfers
+  const displayEvents = sortedEvents.slice(0, options.maxTransfers);
+
+  for (const event of displayEvents) {
+    const summary = summarizeEvent(event, ir);
+    const timeStr = formatTimeAnchor(event.time);
+    const modalityBadge = event.modality !== 'FACT' ? ` (${event.modality})` : '';
+
+    lines.push(`- ${timeStr}: ${summary}${modalityBadge}`);
+
+    // Evidence snippets
+    const evidenceLimit = Math.min(event.evidence.length, options.maxEvidencePerItem);
+    for (let i = 0; i < evidenceLimit; i++) {
+      lines.push(`  > *"${formatEvidence(event.evidence[i])}"*`);
+    }
+  }
+
+  if (sortedEvents.length > options.maxTransfers) {
+    lines.push('');
+    lines.push(`*(${sortedEvents.length - options.maxTransfers} more events not shown)*`);
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Item Debug Section
+ */
+function renderItemDebugSection(
+  entity: Entity,
+  facts: FactViewRow[],
+  events: StoryEvent[],
+  itemId: EntityId
+): string {
+  const lines: string[] = [];
+  lines.push('## Debug');
+  lines.push('');
+
+  lines.push('### Item metadata');
+  lines.push('');
+  lines.push(`- **ID:** \`${entity.id}\``);
+  lines.push(`- **Type:** ${entity.type}`);
+  lines.push(`- **Confidence:** ${(entity.confidence.composite * 100).toFixed(1)}%`);
+
+  // Possession facts
+  const possessionFacts = facts.filter(
+    (f) => f.object === itemId && f.predicate === 'possesses'
+  );
+
+  lines.push('');
+  lines.push('### Possession facts');
+  lines.push('');
+  lines.push(`- Total: ${possessionFacts.length}`);
+  lines.push(`- Current (no validUntil): ${possessionFacts.filter((f) => !f.validUntil).length}`);
+  lines.push(`- Ended (has validUntil): ${possessionFacts.filter((f) => f.validUntil).length}`);
+
+  lines.push('');
+  lines.push('### Transfer events');
+  lines.push('');
+  lines.push(`- Total: ${events.length}`);
+
+  return lines.join('\n');
 }
 
 // =============================================================================
