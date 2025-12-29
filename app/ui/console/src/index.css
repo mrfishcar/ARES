@@ -9,7 +9,10 @@
   padding: 0;
 }
 
-/* HTML = absolute bottom layer (Safari void fallback) */
+/* ===============================
+   BEDROCK LAYERS — SAFE FOR iOS
+================================ */
+
 html {
   font-size: 100%;
   -webkit-text-size-adjust: 100%;
@@ -29,11 +32,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/*
-  CRITICAL iOS RULE:
-  - Allow the page to scroll
-  - DO NOT lock html/body with position: fixed
-  - iOS uses page scroll to keep caret visible
+/* IMPORTANT:
+   Allow page scroll so iOS can keep caret visible
 */
 html,
 body {
@@ -43,59 +43,14 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
-/*
-  React mount MUST extend fully,
-  or Safari will show the underlying layer
-*/
+/* ===============================
+   REACT ROOT — MUST EXTEND
+================================ */
+
 #root {
   min-height: 100%;
   background-color: var(--app-surface);
 }
-
-/* ===========================
-   ORIGINAL FILE CONTINUES
-   =========================== */
-
-* {  
-  box-sizing: border-box;  
-  margin: 0;  
-  padding: 0;  
-}  
-  
-/* ===============================  
-   BEDROCK LAYERS — SAFE FOR iOS  
-================================ */  
-  
-html {  
-  font-size: 100%;  
-  -webkit-text-size-adjust: 100%;  
-  background-color: var(--app-surface);  
-}  
-  
-body {  
-  margin: 0;  
-  padding: 0;  
-  background-color: var(--app-surface);  
-}  
-  
-/* IMPORTANT:  
-   Allow page scroll so iOS can keep caret visible  
-*/  
-html,  
-body {  
-  min-height: 100%;  
-  overflow-y: auto;  
-  overscroll-behavior: auto;  
-}  
-  
-/* ===============================  
-   REACT ROOT — MUST EXTEND  
-================================ */  
-  
-#root {  
-  min-height: 100%;  
-  background-color: var(--app-surface);  
-}  
   
 /* ===============================  
    DESIGN TOKENS (UNCHANGED)  
@@ -170,31 +125,8 @@ body {
   }  
 }  
   
-/* ===============================  
-   DISABLED iOS VIEWPORT LOCKING  
-   (INTENTIONALLY REMOVED)  
-================================ */  
-  
-/*  
-html.kb-open,  
-body.kb-open {  
-  position: fixed !important;  
-  width: 100% !important;  
-  height: 100% !important;  
-  overflow: hidden !important;  
-  overscroll-behavior: none !important;  
-  touch-action: manipulation !important;  
-}  
-  
-html.kb-open,  
-#root.kb-open,  
-html.kb-open .extraction-lab {  
-  height: var(--vvh, 100vh) !important;  
-}  
-*/  
-  
-  /* Glass - Warm theme */  
-  --liquid-glass-bg-light: rgba(255, 249, 240, 0.92);  
+  /* Glass - Warm theme */
+  --liquid-glass-bg-light: rgba(255, 249, 240, 0.92);
   --liquid-glass-border-light: rgba(200, 180, 160, 0.35);  
   --liquid-glass-bg: var(--liquid-glass-bg-light);  
   --liquid-glass-border: var(--liquid-glass-border-light);  
@@ -310,10 +242,10 @@ body::before {
   min-height: 100dvh;  
 }  
   
-#root {  
-  height: 100%;  
-  background-color: var(--app-surface);  
-}  
+#root {
+  min-height: 100%;
+  background-color: var(--app-surface);
+}
   
 /* Removed .app-root - unnecessary wrapper */  
   
@@ -360,13 +292,13 @@ a:hover {
   
 /* ===== Extraction Lab Styles ===== */  
   
-.extraction-lab {  
-  display: flex;  
-  flex-direction: column;  
-  height: 100vh;  /* Simple 100vh like working commit */  
-  background: var(--bg-primary);  
-  overflow: hidden;  /* Lock the page */  
-}  
+.extraction-lab {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--bg-primary);
+  overflow: visible;
+}
   
 /* Hamburger Button - ChatGPT style */  
 .hamburger-btn {  
@@ -1600,6 +1532,9 @@ a:hover {
 .rich-editor-surface {
   --editor-bottom-buffer: 0px;
   padding-bottom: var(--editor-bottom-buffer);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* iOS Safari only */
@@ -2929,8 +2864,8 @@ body.modal-open {
   
 /* iOS: Prevent layout shift when keyboard appears */  
 @media (max-width: 768px) {  
-  /* REMOVED: .lab-content scroll override */  
-  /* Now using .editor-scroll-container as the ONLY scroll owner on all viewports */  
+  /* REMOVED: .lab-content scroll override */
+  /* .rich-editor-surface is the dedicated scroll owner inside the editor */
   
   /* Keep toolbar visible above keyboard */  
   .lab-control-bar {  
