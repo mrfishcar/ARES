@@ -28,6 +28,7 @@ import { RichEditorPane } from '../editor2/RichEditorPane';
 import type { BlockIndexEntry, PosMapEntry, RichDocSnapshot } from '../editor2/types';
 import { snapshotRichDoc } from '../editor2/flattenRichDoc';
 import { computeDocVersion } from '../editor2/hash';
+import type { FormatState } from '../editor2/plugins/FormatActionsPlugin';
 import '../styles/darkMode.css';
 import '../styles/extraction-lab.css';
 
@@ -774,6 +775,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   const [editorFocused, setEditorFocused] = useState(false);
   const [hasActiveSelection, setHasActiveSelection] = useState(false);
   const [formatActions, setFormatActions] = useState<FormattingActions | null>(null);
+  const [formatState, setFormatState] = useState<FormatState | null>(null);
   const [showFormatToolbar, setShowFormatToolbar] = useState(false);
   const formatHideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [formatToolbarEnabled, setFormatToolbarEnabled] = useState(false);
@@ -816,6 +818,12 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       }
     };
   }, [editorFocused, hasActiveSelection]);
+
+  useEffect(() => {
+    if (!settings.useRichEditor) {
+      setFormatState(null);
+    }
+  }, [settings.useRichEditor]);
 
   const resetEntityOverrides = useCallback(() => {
     setEntityOverrides({
@@ -2280,6 +2288,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         showFormatToolbar={showFormatToolbar}
         formatToolbarEnabled={formatToolbarEnabled}
         formatActions={formatActions}
+        formatState={formatState}
         onToggleFormatToolbar={() => setFormatToolbarEnabled(prev => !prev)}
       />
 
@@ -2324,6 +2333,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
               navigateToRange={navigateRequest}
               showFormatToolbar={false}
               onFormatActionsReady={setFormatActions}
+              onFormatStateChange={setFormatState}
             />
           ) : (
             <EditorPane

@@ -70,9 +70,13 @@ body {
   --entity-concept: #14b8a6;
   --entity-object: #8b5cf6;
 
+  /* Toolbar sizing */
+  --format-toolbar-min-width: min(clamp(320px, 60vw, 560px), calc(100vw - 32px));
+  --lab-toolbar-width-normal: min(clamp(360px, 52vw, 520px), calc(100vw - 40px));
+
   /* Editor Margins */
   --editor-margin-desktop: 96px;
-  --editor-margin-mobile: 24px;
+  --editor-margin-mobile: clamp(4px, 1.5vw, 8px);
   --editor-header-offset: 80px;
 
   /* Glassmorphism Variables – Dark Mode Defaults */
@@ -549,7 +553,7 @@ a:hover {
 
 /* =========================================================
    iOS Notes-style right-anchored toolbar morph
-   Two toolbars occupy same fixed space, morph horizontally
+   Single pill stays mounted and reshapes between modes
    ========================================================= */
 
 .lab-toolbar-stack {
@@ -563,100 +567,82 @@ a:hover {
   z-index: 50;
 }
 
-/* Toolbar slot holds both normal and formatting toolbars */
 .toolbar-slot {
   position: relative;
   min-height: 44px;
+  min-width: var(--lab-toolbar-width-normal);
   display: inline-flex;
-  justify-content: center; /* Keep toolbar centered */
-}
-
-/* Both toolbars share right edge for iOS Notes-style morph */
-.toolbar-slot .lab-control-bar {
-  transform-origin: 100% 50%; /* Right edge anchor point for morph animation */
-  will-change: transform;
-  transition: transform 240ms cubic-bezier(0.2, 0.9, 0.2, 1),
-              opacity 85ms linear,
-              visibility 0ms linear;
-}
-
-/* Formatting toolbar - absolutely positioned, centered via left+right+transform */
-.toolbar-slot .lab-control-bar--formatting {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%) scaleX(1); /* Center + scale */
-}
-
-/* ========== NORMAL MODE ========== */
-.toolbar-slot[data-mode="normal"] .lab-control-bar:not(.lab-control-bar--formatting) {
-  transform: scaleX(1);
-  opacity: 1;
-  pointer-events: auto;
-  visibility: visible;
-}
-
-.toolbar-slot[data-mode="normal"] .lab-control-bar--formatting {
-  transform: translateX(-50%) scaleX(0); /* Collapse to right while staying centered */
-  opacity: 0;
-  pointer-events: none;
-  visibility: hidden;
-  transition-delay: 0ms;
-}
-
-/* ========== FORMATTING MODE ========== */
-.toolbar-slot[data-mode="formatting"] .lab-control-bar:not(.lab-control-bar--formatting) {
-  transform: scaleX(0); /* Collapse to right */
-  opacity: 0;
-  pointer-events: none;
-  visibility: hidden;
-  transition-delay: 0ms;
-}
-
-.toolbar-slot[data-mode="formatting"] .lab-control-bar--formatting {
-  transform: translateX(-50%) scaleX(1); /* Expand from right while centered */
-  opacity: 1;
-  pointer-events: auto;
-  visibility: visible;
-  transition-delay: 240ms;
-}
-
-/* Content inside toolbar fades independently from pill transform */
-.lab-control-bar__content {
-  opacity: 1;
-  transition: opacity 85ms linear;
-}
-
-.toolbar-slot[data-mode="formatting"] .lab-control-bar:not(.lab-control-bar--formatting) .lab-control-bar__content {
-  opacity: 0;
-  transition-delay: 0s;
-}
-
-.toolbar-slot[data-mode="normal"] .lab-control-bar:not(.lab-control-bar--formatting) .lab-control-bar__content {
-  opacity: 1;
-  transition-delay: 140ms;
-}
-
-.toolbar-slot[data-mode="normal"] .lab-control-bar--formatting .lab-control-bar__content {
-  opacity: 0;
-  transition-delay: 0s;
-}
-
-.toolbar-slot[data-mode="formatting"] .lab-control-bar--formatting .lab-control-bar__content {
-  opacity: 1;
-  transition-delay: 300ms;
-}
-
-.lab-control-bar {
-  position: relative;
-  display: inline-flex;           /* 👈 shrink-wrap to contents */
   justify-content: center;
+}
+
+.toolbar-slot .lab-control-bar {
+  position: relative;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 16px;
   padding: 8px 20px;
   border-radius: 22px;
-  white-space: nowrap;            /* prevent status/controls wrapping */
+  white-space: nowrap;
   pointer-events: auto;
+  min-width: var(--lab-toolbar-width-normal);
+  width: var(--lab-toolbar-width-normal);
+  transform-origin: 100% 50%;
+  will-change: width, padding;
+  transition: width 260ms cubic-bezier(0.2, 0.9, 0.2, 1),
+              min-width 260ms cubic-bezier(0.2, 0.9, 0.2, 1),
+              padding 220ms cubic-bezier(0.2, 0.9, 0.2, 1),
+              gap 200ms ease,
+              border-radius 200ms ease;
+}
+
+.toolbar-slot[data-mode="formatting"] .lab-control-bar {
+  min-width: var(--format-toolbar-min-width);
+  width: var(--format-toolbar-min-width);
+  padding: 10px 14px;
+  gap: 12px;
+  border-radius: 20px;
+}
+
+.lab-control-bar__content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity 140ms ease, visibility 0ms linear 180ms;
+  padding: 0 4px;
+}
+
+.toolbar-slot[data-mode="normal"] .lab-control-bar__content--normal {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+  transition-delay: 160ms; /* let pill reshape, then fade content back */
+}
+
+.toolbar-slot[data-mode="normal"] .lab-control-bar__content--formatting {
+  transition-delay: 0ms;
+}
+
+.toolbar-slot[data-mode="formatting"] .lab-control-bar__content--normal {
+  transition-delay: 0ms;
+}
+
+.toolbar-slot[data-mode="formatting"] .lab-control-bar__content--formatting {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+  transition-delay: 160ms; /* fade in after morph completes */
+}
+
+.lab-control-bar__content--formatting {
+  justify-content: center;
 }
 
 .lab-control-bar.hidden {
@@ -852,17 +838,119 @@ a:hover {
 .formatting-toolbar-content {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 0 4px;
+  gap: 8px;
+  padding: 6px 8px;
+  width: 100%;
+  justify-content: center;
 }
 
-.format-control-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  border: 1px solid var(--border-soft);
-  background: color-mix(in srgb, var(--surface-strong) 85%, transparent);
-  color: var(--text-primary);
+.formatting-toolbar-content--palette {
+  min-width: var(--format-toolbar-min-width);
+}
+
+.formatting-palette {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  --format-accent: #f6d348;
+  --format-pill-ink: var(--text-primary);
+  --format-pill-bg: color-mix(in srgb, var(--liquid-glass-bg) 92%, rgba(255, 255, 255, 0.08));
+  --format-pill-border: var(--liquid-glass-border);
+  --format-pill-shadow: 0 12px 28px var(--liquid-glass-glow-outer), inset 0 1px 0 var(--liquid-glass-glow-inner);
+  --format-pill-tint-1: var(--liquid-glass-tint-1);
+  --format-pill-tint-2: var(--liquid-glass-tint-2);
+  --format-chip-bg: color-mix(in srgb, var(--liquid-glass-bg) 78%, rgba(255, 255, 255, 0.12));
+  --format-chip-border: color-mix(in srgb, var(--liquid-glass-border) 90%, rgba(255, 255, 255, 0.12));
+  color: var(--format-pill-ink);
+}
+
+.formatting-palette__panel {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  background: linear-gradient(140deg, var(--format-pill-bg), color-mix(in srgb, var(--format-pill-bg) 92%, var(--format-pill-tint-1) 8%)),
+    linear-gradient(220deg, transparent, var(--format-pill-tint-2));
+  border: 1px solid var(--format-pill-border);
+  border-radius: 14px;
+  box-shadow: var(--format-pill-shadow);
+  backdrop-filter: blur(var(--liquid-glass-blur-toolbar));
+}
+
+.formatting-palette__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.formatting-style-chips {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  align-items: stretch;
+  width: 100%;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 6px;
+  -webkit-overflow-scrolling: touch;
+  padding: 2px 0;
+}
+
+.format-style-chip {
+  border: 1px solid var(--format-chip-border);
+  background: var(--format-chip-bg);
+  color: var(--format-pill-ink);
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s var(--ease-in-out);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  text-align: center;
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+.format-style-chip:hover {
+  background: color-mix(in srgb, var(--format-chip-bg) 75%, rgba(255, 255, 255, 0.15));
+}
+
+.format-style-chip--active {
+  background: var(--format-accent);
+  border-color: transparent;
+  color: #1b1b1f;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+}
+
+.formatting-palette__row--inline,
+.formatting-palette__row--blocks {
+  justify-content: flex-start;
+}
+
+.formatting-palette__controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.format-control {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid var(--format-chip-border);
+  background: var(--format-chip-bg);
+  color: var(--format-pill-ink);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -870,23 +958,51 @@ a:hover {
   transition: all 0.16s var(--ease-in-out);
 }
 
-.format-control-btn:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+.format-control:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--format-chip-bg) 75%, rgba(255, 255, 255, 0.15));
 }
 
-.format-control-btn:active:not(:disabled) {
+.format-control:active:not(:disabled) {
   transform: translateY(1px);
 }
 
-.format-control-btn:disabled {
+.format-control:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
 
-.format-exit-btn {
-  margin-left: 8px;
-  border-left: 1px solid var(--border-soft);
-  padding-left: 16px;
+.format-control--active {
+  background: var(--format-accent);
+  border-color: transparent;
+  color: #18181b;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+}
+
+.format-control-divider {
+  width: 1px;
+  height: 22px;
+  background: color-mix(in srgb, var(--format-pill-ink) 45%, transparent);
+  opacity: 0.6;
+  margin: 0 4px;
+}
+
+.format-toolbar-exit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--format-chip-border);
+  background: var(--format-chip-bg);
+  color: var(--format-pill-ink);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: all 0.16s var(--ease-in-out);
+}
+
+.format-toolbar-exit:hover {
+  background: color-mix(in srgb, var(--format-chip-bg) 75%, rgba(255, 255, 255, 0.15));
 }
 
 /* ===== DOCUMENTS SIDEBAR ===== */
@@ -2800,7 +2916,10 @@ html[data-theme="light"] .overlay-backdrop {
 /* Mobile editor margins override */
 @media (max-width: 768px) {
   :root {
-    --editor-margin-desktop: var(--editor-margin-mobile, 24px);
+    --editor-margin-desktop: calc(
+      var(--editor-margin-mobile, 12px) +
+      max(env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px))
+    ) !important;
   }
 }
 

@@ -15,6 +15,7 @@ interface Props {
   navigateToRange?: NavigateToRange | null;
   showFormatToolbar?: boolean; // Controlled by T button in LabToolbar
   onFormatActionsReady?: (actions: FormattingActions) => void;
+  onFormatStateChange?: (state: import('./plugins/FormatActionsPlugin').FormatState) => void;
 }
 
 export function RichEditorPane({
@@ -27,6 +28,7 @@ export function RichEditorPane({
   showEntityIndicators = true,
   showFormatToolbar = false,
   onFormatActionsReady,
+  onFormatStateChange,
 }: Props) {
   const editorHeight = Math.max(400, typeof window !== 'undefined' ? window.innerHeight - 380 : 400);
 
@@ -54,6 +56,7 @@ export function RichEditorPane({
               navigateToRange={navigateToRange}
               showFormatToolbar={showFormatToolbar}
               onFormatActionsReady={onFormatActionsReady}
+              onFormatStateChange={onFormatStateChange}
             />
           </div>
         </div>
