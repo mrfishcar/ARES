@@ -140,6 +140,10 @@ body {
   --editor-margin-mobile: clamp(4px, 1.5vw, 8px);
   --editor-header-offset: 80px;
 
+  /* Toolbar sizing */
+  --lab-toolbar-width-normal: clamp(320px, 38vw, 440px);
+  --format-toolbar-min-width: clamp(360px, 48vw, 560px);
+
   /* Glassmorphism variables */
   --glass-bg-dark: rgba(15, 23, 42, 0.75);
   --glass-bg-light: rgba(255, 255, 255, 0.9);
