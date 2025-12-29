@@ -17,11 +17,9 @@ interface FormattingPaletteProps {
 }
 
 const STYLE_OPTIONS = [
-  { value: 'h1', label: 'Title' },
   { value: 'h2', label: 'Heading' },
   { value: 'h3', label: 'Subheading' },
   { value: 'p', label: 'Body' },
-  { value: 'mono', label: 'Mono' },
 ] as const;
 
 const ICON_STROKE = 2.25;
@@ -37,10 +35,8 @@ export function FormattingPalette({
   // Update current style from format state
   useEffect(() => {
     if (formatState) {
-      if (formatState.blockType === 'h1') setCurrentStyle('h1');
-      else if (formatState.blockType === 'h2') setCurrentStyle('h2');
+      if (formatState.blockType === 'h1' || formatState.blockType === 'h2') setCurrentStyle('h2');
       else if (formatState.blockType === 'h3') setCurrentStyle('h3');
-      else if (formatState.isCode) setCurrentStyle('mono');
       else setCurrentStyle('p');
     }
   }, [formatState]);
@@ -89,14 +85,10 @@ export function FormattingPalette({
 
     // Apply style via formatActions
     if (formatActions) {
-      if (style === 'h1') {
-        formatActions.formatHeading?.('h1');
-      } else if (style === 'h2') {
+      if (style === 'h2') {
         formatActions.formatHeading?.('h2');
       } else if (style === 'h3') {
         formatActions.formatHeading?.('h3');
-      } else if (style === 'mono') {
-        formatActions.toggleMonospace?.();
       } else if (style === 'p') {
         formatActions.formatParagraph?.();
       }
