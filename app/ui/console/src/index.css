@@ -896,25 +896,31 @@ a:hover {
 }
 
 .formatting-style-chips {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  overflow-x: auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 8px;
+  align-items: stretch;
   padding: 2px;
+}
+
+@media (max-width: 720px) {
+  .formatting-style-chips {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
 }
 
 .format-style-chip {
   border: 1px solid var(--format-chip-border);
   background: var(--format-chip-bg);
   color: var(--format-pill-ink);
-  padding: 7px 12px;
-  border-radius: 11px;
+  padding: 10px 12px;
+  border-radius: 12px;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.18s var(--ease-in-out);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
-  white-space: nowrap;
+  text-align: left;
 }
 
 .format-style-chip:hover {

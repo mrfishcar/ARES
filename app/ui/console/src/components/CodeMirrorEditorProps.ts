@@ -58,7 +58,7 @@ export interface FormattingActions {
   cycleHeading: () => void;
   toggleQuote: () => void;
   insertDivider: () => void;
-  formatHeading?: (level: 'h1' | 'h2' | 'h3') => void;
+  formatHeading?: (level: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6') => void;
   formatParagraph?: () => void;
   insertBulletList?: () => void;
   insertNumberedList?: () => void;

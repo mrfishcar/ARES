@@ -16,11 +16,15 @@ interface FormattingPaletteProps {
   onClose: () => void;
 }
 
-const STYLE_OPTIONS = [
+type StyleValue = 'h1' | 'h2' | 'h3' | 'p' | 'mono';
+
+const STYLE_OPTIONS: Array<{ value: StyleValue; label: string }> = [
+  { value: 'h1', label: 'Title' },
   { value: 'h2', label: 'Heading' },
   { value: 'h3', label: 'Subheading' },
   { value: 'p', label: 'Body' },
-] as const;
+  { value: 'mono', label: 'Monospaced' }
+];
 
 const ICON_STROKE = 2.25;
 
@@ -30,13 +34,15 @@ export function FormattingPalette({
   formatState,
   onClose
 }: FormattingPaletteProps) {
-  const [currentStyle, setCurrentStyle] = useState<string>('p');
+  const [currentStyle, setCurrentStyle] = useState<StyleValue>('p');
 
   // Update current style from format state
   useEffect(() => {
     if (formatState) {
-      if (formatState.blockType === 'h1' || formatState.blockType === 'h2') setCurrentStyle('h2');
-      else if (formatState.blockType === 'h3') setCurrentStyle('h3');
+      if (formatState.blockType === 'h1') setCurrentStyle('h1');
+      else if (formatState.blockType === 'h2') setCurrentStyle('h2');
+      else if (formatState.blockType === 'h3' || formatState.blockType === 'h4' || formatState.blockType === 'h5' || formatState.blockType === 'h6') setCurrentStyle('h3');
+      else if (formatState.blockType === 'code' || formatState.isCode) setCurrentStyle('mono');
       else setCurrentStyle('p');
     }
   }, [formatState]);
@@ -80,17 +86,21 @@ export function FormattingPalette({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, formatActions]);
 
-  const handleStyleChange = (style: string) => {
+  const handleStyleChange = (style: StyleValue) => {
     setCurrentStyle(style);
 
     // Apply style via formatActions
     if (formatActions) {
-      if (style === 'h2') {
+      if (style === 'h1') {
+        formatActions.formatHeading?.('h1');
+      } else if (style === 'h2') {
         formatActions.formatHeading?.('h2');
       } else if (style === 'h3') {
         formatActions.formatHeading?.('h3');
       } else if (style === 'p') {
         formatActions.formatParagraph?.();
+      } else if (style === 'mono') {
+        formatActions.toggleMonospace();
       }
     }
   };

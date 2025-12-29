@@ -220,7 +220,7 @@ export function FormatActionsPlugin({ onActionsReady, onFormatStateChange }: For
         console.log('[FormatActions] Divider not implemented');
       },
       
-      formatHeading: (level: 'h1' | 'h2' | 'h3') => {
+      formatHeading: (level: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6') => {
         editor.update(() => {
           const selection = $getSelection();
           if ($isRangeSelection(selection)) {
