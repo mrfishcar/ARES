@@ -677,18 +677,21 @@ a:hover {
   gap: 8px;
   padding: 6px 8px;
   width: 100%;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .formatting-toolbar-content--palette {
   min-width: var(--format-toolbar-min-width);
+  width: 100%;
+  flex: 1 1 var(--format-toolbar-min-width);
+  overflow: hidden;
 }
 
 .formatting-palette {
   flex: 1;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   width: 100%;
   max-width: 100%;
   min-width: 0;
@@ -726,6 +729,7 @@ a:hover {
   gap: 10px;
   width: 100%;
   justify-content: flex-start;
+  padding: 0 6px;
 }
 
 .formatting-palette__row--styles {
@@ -784,6 +788,7 @@ a:hover {
 .formatting-palette__row--inline,
 .formatting-palette__row--blocks {
   justify-content: flex-start;
+  padding: 0 6px;
 }
 
 .formatting-palette__controls {
