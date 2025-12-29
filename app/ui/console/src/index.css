@@ -14,22 +14,18 @@ html {
   -webkit-overflow-scrolling: touch;
 }
 
-html,
-body {
-  background: var(--bg-primary);
-  height: 100%;  /* Simple height, not vh/dvh */
+html, body {
+  height: 100%;
   margin: 0;
-  padding: 0;
-  overflow: hidden;
-  overscroll-behavior: none;
+  background: var(--bg-primary);
+  /* allow scrolling if you want iOS to do iOS things */
+  overflow: auto; /* or just remove overflow entirely */
 }
 
 #root {
-  height: 100%;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  background-color: var(--bg-primary);
+  min-height: 100%;
+  background: var(--bg-primary);
+  /* avoid overflow hidden unless absolutely necessary */
 }
 
 :root {
