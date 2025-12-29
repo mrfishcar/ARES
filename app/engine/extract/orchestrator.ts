@@ -38,6 +38,10 @@ import {
 } from '../booknlp';
 import { projectToGraph } from '../booknlp/graph-projection';
 
+// 🆕 RULE-BASED QUOTE ATTRIBUTION (works without BookNLP)
+import { extractQuotesWithSpeakers } from '../ir/quote-attribution';
+import type { EntitySpan } from '../ir/predicate-extractor';
+
 // ============================================================================
 // MODE DETECTION
 // ============================================================================
@@ -287,6 +291,15 @@ export async function extractFromSegments(
     corefLinks: number;
     processingTimeSeconds: number;
   };
+  quotes?: Array<{  // Quote data for TELL extraction (when mode='booknlp')
+    id: string;
+    text: string;
+    start: number;
+    end: number;
+    speaker_id: string | null;
+    speaker_name: string | null;
+    confidence: number;
+  }>;
 }> {
   // FAST PATH: Synthetic performance fixtures (PersonX_Y worked with PersonX_Z)
   // The Level 5B performance tests generate documents with dozens of simple
@@ -469,6 +482,8 @@ export async function extractFromSegments(
           relationsGenerated: relations.length,
           processingTimeSeconds: booknlpResult.metadata.processing_time_seconds,
         },
+        // Include quotes for TELL extraction
+        quotes: booknlpResult.quotes,
       };
       return booknlpResponse;
     } catch (error) {
@@ -1721,6 +1736,41 @@ export async function extractFromSegments(
     }
   }
 
+  // 🆕 RULE-BASED QUOTE EXTRACTION (works without BookNLP)
+  // Extract quotes and attribute speakers using pattern matching
+  const entitySpansForQuotes: EntitySpan[] = filteredSpans.map(span => {
+    const entity = filteredEntities.find(e => e.id === span.entity_id);
+    return {
+      entityId: span.entity_id,
+      name: entity?.canonical || span.entity_id,
+      start: span.start,
+      end: span.end,
+      type: entity?.type,
+    };
+  });
+
+  const quoteResult = extractQuotesWithSpeakers(fullText, {
+    docId,
+    entitySpans: entitySpansForQuotes,
+    enableTurnTaking: true,
+    enablePronounResolution: true,
+  });
+
+  const quotes = quoteResult.quotes.map(q => ({
+    id: q.id,
+    text: q.text,
+    start: q.start,
+    end: q.end,
+    speaker_id: q.speakerId,
+    speaker_name: q.speakerName,
+    confidence: q.confidence,
+  }));
+
+  if (quotes.length > 0) {
+    const attributed = quotes.filter(q => q.speaker_id).length;
+    console.log(`[ORCHESTRATOR] 💬 Quotes: ${quotes.length} found, ${attributed} with speaker attribution`);
+  }
+
   return {
     entities: filteredEntities,
     spans: filteredSpans, // Don't include virtual spans in output
@@ -1729,6 +1779,7 @@ export async function extractFromSegments(
     profiles, // Return updated profiles for cross-document learning
     herts,     // Return HERTs if generated
     mode: 'legacy' as const,  // Legacy extraction path
+    quotes,   // 🆕 Include quotes for TELL extraction
     stats: {
       entities: {
         kept: filteredEntities.length,

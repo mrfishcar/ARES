@@ -10,9 +10,15 @@
  * - Pronouns without proper resolution → false relations
  */
 
-import type { Entity, EntityType } from './schema';
+import type { Entity, EntityType, QualityDecision, FilterRuleCheck, EntityWithQuality } from './schema';
 import { splitSchoolName } from './linguistics/school-names';
 import { PERSON_HEAD_BLOCKLIST } from './linguistics/common-noun-filters';
+import {
+  TITLE_PREFIXES as CENTRALIZED_TITLE_PREFIXES,
+  validateEntityForType,
+  inferEntityType,
+  type TypeValidationFeatures
+} from './entity-type-validators';
 
 export interface EntityQualityConfig {
   minConfidence: number;
@@ -1133,15 +1139,15 @@ import type { EntityTier } from './schema';
  * Result of tiered filtering
  */
 export interface TieredFilterResult {
-  // Entities by tier
-  tierA: Entity[];      // High-confidence, graph-worthy
-  tierB: Entity[];      // Medium-confidence, supporting
-  tierC: Entity[];      // Low-confidence, candidates
-  rejected: Entity[];   // Absolute rejections (stopwords, pronouns, etc.)
+  // Entities by tier (with quality decisions)
+  tierA: EntityWithQuality[];      // High-confidence, graph-worthy
+  tierB: EntityWithQuality[];      // Medium-confidence, supporting
+  tierC: EntityWithQuality[];      // Low-confidence, candidates
+  rejected: EntityWithQuality[];   // Absolute rejections (stopwords, pronouns, etc.)
 
   // Combined views
-  allAccepted: Entity[];     // TIER_A + TIER_B + TIER_C
-  graphWorthy: Entity[];     // TIER_A only (for strict mode)
+  allAccepted: EntityWithQuality[];     // TIER_A + TIER_B + TIER_C
+  graphWorthy: EntityWithQuality[];     // TIER_A only (for strict mode)
 
   // Statistics
   stats: {
@@ -1151,6 +1157,12 @@ export interface TieredFilterResult {
     tierA: number;
     tierB: number;
     tierC: number;
+  };
+
+  // Rejection breakdown for debugging
+  rejectionBreakdown?: {
+    byRule: Map<string, number>;
+    byType: Map<string, number>;
   };
 }
 
@@ -1202,6 +1214,43 @@ function isAbsolutelyRejected(entity: Entity): { rejected: boolean; reason?: str
 }
 
 /**
+ * Build a quality decision record for an entity
+ */
+function buildQualityDecision(
+  entity: Entity,
+  outcome: 'accepted' | 'rejected',
+  options: {
+    tier?: EntityTier;
+    tierReason?: string;
+    rejectionReason?: string;
+    rulesChecked: FilterRuleCheck[];
+    hasNERSupport?: boolean;
+    sentenceInitialOnly?: boolean;
+    source?: string;
+  }
+): QualityDecision {
+  const baseConfidence = (entity.confidence ?? entity.attrs?.confidence as number) ?? 0.5;
+
+  return {
+    timestamp: new Date().toISOString(),
+    outcome,
+    tier: options.tier,
+    tierReason: options.tierReason,
+    rejectionReason: options.rejectionReason,
+    rulesChecked: options.rulesChecked,
+    confidenceBreakdown: {
+      base: baseConfidence,
+      nerBonus: options.hasNERSupport ? 0.15 : undefined,
+      final: entity.confidence ?? baseConfidence
+    },
+    source: options.source ?? (entity.source as string),
+    hasNERSupport: options.hasNERSupport,
+    sentenceInitialOnly: options.sentenceInitialOnly,
+    pipelineVersion: '3.4.0'  // Phase 3.4 version
+  };
+}
+
+/**
  * Filter and tier entities
  *
  * This is the main entry point for tiered filtering.
@@ -1215,88 +1264,237 @@ export function filterAndTierEntities(
   entities: Entity[],
   config: EntityQualityConfig = DEFAULT_CONFIG
 ): TieredFilterResult {
-  const tierA: Entity[] = [];
-  const tierB: Entity[] = [];
-  const tierC: Entity[] = [];
-  const rejected: Entity[] = [];
+  const tierA: EntityWithQuality[] = [];
+  const tierB: EntityWithQuality[] = [];
+  const tierC: EntityWithQuality[] = [];
+  const rejected: EntityWithQuality[] = [];
+
+  // Track rejection counts by rule and type
+  const rejectionByRule = new Map<string, number>();
+  const rejectionByType = new Map<string, number>();
 
   for (const entity of entities) {
-    // Step 1: Check absolute rejections
-    const rejection = isAbsolutelyRejected(entity);
-    if (rejection.rejected) {
-      rejected.push(entity);
-      continue;
-    }
+    // Track rules checked for this entity
+    const rulesChecked: FilterRuleCheck[] = [];
+    let rejectionReason: string | undefined;
 
-    // Step 2: Check type-specific validity
+    // Extract feature context
     const name = entity.canonical;
     const lowerName = name.toLowerCase();
     const tokens = name.split(/\s+/).filter(Boolean);
     const isSingleToken = tokens.length === 1;
-
-    // Check blocked tokens from config
-    if (config.blockedTokens.has(lowerName)) {
-      rejected.push(entity);
-      continue;
-    }
-
-    // Check capitalization requirement for proper nouns
-    if (config.requireCapitalization && !isValidProperNoun(name, entity.type)) {
-      rejected.push(entity);
-      continue;
-    }
-
-    // Check type-specific validity with tier-aware handling
     const hasNERSupport = Boolean(entity.attrs?.nerLabel);
     const isSentenceInitial = Boolean(entity.attrs?.isSentenceInitial);
     const occursNonInitial = Boolean(entity.attrs?.occursNonInitial);
     const isSentenceInitialOnly = isSentenceInitial && !occursNonInitial;
 
-    // PERSON blocklist check
-    if (entity.type === 'PERSON' && isSingleToken) {
-      const normalized = lowerName.trim();
-      if (PERSON_HEAD_BLOCKLIST.has(normalized)) {
-        rejected.push(entity);
-        continue;
-      }
-    }
+    // Step 1: Check absolute rejections
+    const absoluteRejection = isAbsolutelyRejected(entity);
+    rulesChecked.push({
+      rule: 'absolute_rejection',
+      triggered: absoluteRejection.rejected,
+      triggerValue: absoluteRejection.reason
+    });
 
-    // Too generic check
-    if (isTooGeneric(name)) {
-      rejected.push(entity);
+    if (absoluteRejection.rejected) {
+      rejectionReason = absoluteRejection.reason ?? 'unknown';
+      rejectionByRule.set(rejectionReason, (rejectionByRule.get(rejectionReason) ?? 0) + 1);
+      rejectionByType.set(entity.type, (rejectionByType.get(entity.type) ?? 0) + 1);
+
+      const entityWithQuality: EntityWithQuality = {
+        ...entity,
+        qualityDecision: buildQualityDecision(entity, 'rejected', {
+          rejectionReason,
+          rulesChecked,
+          hasNERSupport,
+          sentenceInitialOnly: isSentenceInitialOnly
+        })
+      };
+      rejected.push(entityWithQuality);
       continue;
     }
 
-    // Role-based name check
-    if (isRoleBasedName(name)) {
-      rejected.push(entity);
+    // Step 2: Check blocked tokens from config
+    const blockedTokenCheck = config.blockedTokens.has(lowerName);
+    rulesChecked.push({
+      rule: 'blocked_token',
+      triggered: blockedTokenCheck,
+      triggerValue: blockedTokenCheck ? lowerName : undefined
+    });
+
+    if (blockedTokenCheck) {
+      rejectionReason = 'blocked_token';
+      rejectionByRule.set(rejectionReason, (rejectionByRule.get(rejectionReason) ?? 0) + 1);
+      rejectionByType.set(entity.type, (rejectionByType.get(entity.type) ?? 0) + 1);
+
+      const entityWithQuality: EntityWithQuality = {
+        ...entity,
+        qualityDecision: buildQualityDecision(entity, 'rejected', {
+          rejectionReason,
+          rulesChecked,
+          hasNERSupport,
+          sentenceInitialOnly: isSentenceInitialOnly
+        })
+      };
+      rejected.push(entityWithQuality);
       continue;
     }
 
-    // DATE validation
+    // Step 3: Check capitalization requirement for proper nouns
+    const capitalizationValid = !config.requireCapitalization || isValidProperNoun(name, entity.type);
+    rulesChecked.push({
+      rule: 'capitalization',
+      triggered: !capitalizationValid
+    });
+
+    if (!capitalizationValid) {
+      rejectionReason = 'capitalization';
+      rejectionByRule.set(rejectionReason, (rejectionByRule.get(rejectionReason) ?? 0) + 1);
+      rejectionByType.set(entity.type, (rejectionByType.get(entity.type) ?? 0) + 1);
+
+      const entityWithQuality: EntityWithQuality = {
+        ...entity,
+        qualityDecision: buildQualityDecision(entity, 'rejected', {
+          rejectionReason,
+          rulesChecked,
+          hasNERSupport,
+          sentenceInitialOnly: isSentenceInitialOnly
+        })
+      };
+      rejected.push(entityWithQuality);
+      continue;
+    }
+
+    // Step 4: PERSON blocklist check
+    const personBlocklistTriggered = entity.type === 'PERSON' && isSingleToken &&
+      PERSON_HEAD_BLOCKLIST.has(lowerName.trim());
+    rulesChecked.push({
+      rule: 'person_blocklist',
+      triggered: personBlocklistTriggered,
+      triggerValue: personBlocklistTriggered ? lowerName : undefined
+    });
+
+    if (personBlocklistTriggered) {
+      rejectionReason = 'person_blocklist';
+      rejectionByRule.set(rejectionReason, (rejectionByRule.get(rejectionReason) ?? 0) + 1);
+      rejectionByType.set(entity.type, (rejectionByType.get(entity.type) ?? 0) + 1);
+
+      const entityWithQuality: EntityWithQuality = {
+        ...entity,
+        qualityDecision: buildQualityDecision(entity, 'rejected', {
+          rejectionReason,
+          rulesChecked,
+          hasNERSupport,
+          sentenceInitialOnly: isSentenceInitialOnly
+        })
+      };
+      rejected.push(entityWithQuality);
+      continue;
+    }
+
+    // Step 5: Too generic check
+    const tooGenericTriggered = isTooGeneric(name);
+    rulesChecked.push({
+      rule: 'too_generic',
+      triggered: tooGenericTriggered
+    });
+
+    if (tooGenericTriggered) {
+      rejectionReason = 'too_generic';
+      rejectionByRule.set(rejectionReason, (rejectionByRule.get(rejectionReason) ?? 0) + 1);
+      rejectionByType.set(entity.type, (rejectionByType.get(entity.type) ?? 0) + 1);
+
+      const entityWithQuality: EntityWithQuality = {
+        ...entity,
+        qualityDecision: buildQualityDecision(entity, 'rejected', {
+          rejectionReason,
+          rulesChecked,
+          hasNERSupport,
+          sentenceInitialOnly: isSentenceInitialOnly
+        })
+      };
+      rejected.push(entityWithQuality);
+      continue;
+    }
+
+    // Step 6: Role-based name check
+    const roleBasedTriggered = isRoleBasedName(name);
+    rulesChecked.push({
+      rule: 'role_based_name',
+      triggered: roleBasedTriggered
+    });
+
+    if (roleBasedTriggered) {
+      rejectionReason = 'role_based_name';
+      rejectionByRule.set(rejectionReason, (rejectionByRule.get(rejectionReason) ?? 0) + 1);
+      rejectionByType.set(entity.type, (rejectionByType.get(entity.type) ?? 0) + 1);
+
+      const entityWithQuality: EntityWithQuality = {
+        ...entity,
+        qualityDecision: buildQualityDecision(entity, 'rejected', {
+          rejectionReason,
+          rulesChecked,
+          hasNERSupport,
+          sentenceInitialOnly: isSentenceInitialOnly
+        })
+      };
+      rejected.push(entityWithQuality);
+      continue;
+    }
+
+    // Step 7: DATE validation
     if (entity.type === 'DATE') {
       const isSimpleYear = /^\d{4}$/.test(name);
-      if (!isSimpleYear && !isValidDate(name)) {
-        rejected.push(entity);
+      const dateValid = isSimpleYear || isValidDate(name);
+      rulesChecked.push({
+        rule: 'date_validation',
+        triggered: !dateValid
+      });
+
+      if (!dateValid) {
+        rejectionReason = 'invalid_date';
+        rejectionByRule.set(rejectionReason, (rejectionByRule.get(rejectionReason) ?? 0) + 1);
+        rejectionByType.set(entity.type, (rejectionByType.get(entity.type) ?? 0) + 1);
+
+        const entityWithQuality: EntityWithQuality = {
+          ...entity,
+          qualityDecision: buildQualityDecision(entity, 'rejected', {
+            rejectionReason,
+            rulesChecked,
+            hasNERSupport,
+            sentenceInitialOnly: isSentenceInitialOnly
+          })
+        };
+        rejected.push(entityWithQuality);
         continue;
       }
     }
 
-    // Step 3: Assign tier based on evidence
+    // Step 8: Assign tier based on evidence
     const features = extractTierFeatures(entity);
     const { tier, reason } = assignEntityTier(entity, features);
 
-    // Assign tier to entity
-    const tieredEntity: Entity = {
+    // Build quality decision for accepted entity
+    const qualityDecision = buildQualityDecision(entity, 'accepted', {
+      tier,
+      tierReason: reason,
+      rulesChecked,
+      hasNERSupport,
+      sentenceInitialOnly: isSentenceInitialOnly
+    });
+
+    // Assign tier to entity with quality decision
+    const tieredEntity: EntityWithQuality = {
       ...entity,
       tier,
       attrs: {
         ...entity.attrs,
         tierReason: reason,
       },
+      qualityDecision
     };
 
-    // Step 4: Place in appropriate tier bucket
+    // Step 9: Place in appropriate tier bucket
     switch (tier) {
       case 'TIER_A':
         tierA.push(tieredEntity);
@@ -1328,6 +1526,10 @@ export function filterAndTierEntities(
       tierB: tierB.length,
       tierC: tierC.length,
     },
+    rejectionBreakdown: {
+      byRule: rejectionByRule,
+      byType: rejectionByType
+    }
   };
 }
 
@@ -1366,6 +1568,145 @@ export function logTieredFilterStats(result: TieredFilterResult, label = ''): vo
   console.log(`    TIER_B (supporting): ${result.stats.tierB}`);
   console.log(`    TIER_C (candidate): ${result.stats.tierC}`);
   console.log(`  Rejected: ${result.stats.rejected}`);
+
+  // Log rejection breakdown if available
+  if (result.rejectionBreakdown) {
+    console.log(`  Rejection Breakdown by Rule:`);
+    result.rejectionBreakdown.byRule.forEach((count, rule) => {
+      console.log(`    ${rule}: ${count}`);
+    });
+    console.log(`  Rejection Breakdown by Type:`);
+    result.rejectionBreakdown.byType.forEach((count, type) => {
+      console.log(`    ${type}: ${count}`);
+    });
+  }
+}
+
+/**
+ * Format a quality decision as a human-readable string
+ * Useful for debugging and logging
+ */
+export function formatQualityDecision(decision: QualityDecision): string {
+  const lines: string[] = [];
+
+  lines.push(`Outcome: ${decision.outcome.toUpperCase()}`);
+
+  if (decision.tier) {
+    lines.push(`Tier: ${decision.tier} (${decision.tierReason || 'no reason'})`);
+  }
+
+  if (decision.rejectionReason) {
+    lines.push(`Rejection: ${decision.rejectionReason}`);
+  }
+
+  if (decision.confidenceBreakdown) {
+    const cb = decision.confidenceBreakdown;
+    lines.push(`Confidence: ${cb.final.toFixed(2)} (base: ${cb.base.toFixed(2)})`);
+    if (cb.nerBonus) lines.push(`  NER bonus: +${cb.nerBonus.toFixed(2)}`);
+    if (cb.contextBonus) lines.push(`  Context bonus: +${cb.contextBonus.toFixed(2)}`);
+    if (cb.qualityPenalty) lines.push(`  Quality penalty: -${cb.qualityPenalty.toFixed(2)}`);
+  }
+
+  const triggeredRules = decision.rulesChecked.filter(r => r.triggered);
+  if (triggeredRules.length > 0) {
+    lines.push(`Triggered rules: ${triggeredRules.map(r => r.rule).join(', ')}`);
+  }
+
+  if (decision.promotion) {
+    lines.push(`Promotion: ${decision.promotion.originalTier} → ${decision.promotion.newTier}`);
+    lines.push(`  Reason: ${decision.promotion.promotionReason}`);
+  }
+
+  if (decision.sentenceInitialOnly) {
+    lines.push(`Sentence-initial only: yes`);
+  }
+
+  if (decision.hasNERSupport) {
+    lines.push(`NER support: yes`);
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Generate a quality report for debugging entity filtering issues
+ */
+export function generateQualityReport(result: TieredFilterResult): string {
+  const lines: string[] = [];
+
+  lines.push('='.repeat(60));
+  lines.push('ENTITY QUALITY FILTER REPORT');
+  lines.push('='.repeat(60));
+  lines.push('');
+
+  // Summary stats
+  lines.push('## Summary');
+  lines.push(`Total entities: ${result.stats.original}`);
+  lines.push(`Accepted: ${result.stats.accepted} (${((result.stats.accepted / result.stats.original) * 100).toFixed(1)}%)`);
+  lines.push(`  TIER_A: ${result.stats.tierA}`);
+  lines.push(`  TIER_B: ${result.stats.tierB}`);
+  lines.push(`  TIER_C: ${result.stats.tierC}`);
+  lines.push(`Rejected: ${result.stats.rejected}`);
+  lines.push('');
+
+  // Rejection breakdown
+  if (result.rejectionBreakdown) {
+    lines.push('## Rejection Breakdown');
+    lines.push('');
+    lines.push('### By Rule:');
+    const sortedRules = [...result.rejectionBreakdown.byRule.entries()]
+      .sort((a, b) => b[1] - a[1]);
+    for (const [rule, count] of sortedRules) {
+      const pct = ((count / result.stats.rejected) * 100).toFixed(1);
+      lines.push(`  ${rule}: ${count} (${pct}%)`);
+    }
+    lines.push('');
+    lines.push('### By Entity Type:');
+    const sortedTypes = [...result.rejectionBreakdown.byType.entries()]
+      .sort((a, b) => b[1] - a[1]);
+    for (const [type, count] of sortedTypes) {
+      const pct = ((count / result.stats.rejected) * 100).toFixed(1);
+      lines.push(`  ${type}: ${count} (${pct}%)`);
+    }
+    lines.push('');
+  }
+
+  // Sample rejected entities
+  if (result.rejected.length > 0) {
+    lines.push('## Sample Rejected Entities (first 10)');
+    const samples = result.rejected.slice(0, 10);
+    for (const entity of samples) {
+      const reason = entity.qualityDecision?.rejectionReason || 'unknown';
+      lines.push(`  - "${entity.canonical}" (${entity.type}): ${reason}`);
+    }
+    lines.push('');
+  }
+
+  // Tier distribution with samples
+  lines.push('## Tier Distribution');
+  lines.push('');
+  lines.push('### TIER_A (Core) - Sample:');
+  for (const entity of result.tierA.slice(0, 5)) {
+    const reason = entity.qualityDecision?.tierReason || 'unknown';
+    lines.push(`  - "${entity.canonical}" (${entity.type}): ${reason}`);
+  }
+  lines.push('');
+  lines.push('### TIER_B (Supporting) - Sample:');
+  for (const entity of result.tierB.slice(0, 5)) {
+    const reason = entity.qualityDecision?.tierReason || 'unknown';
+    lines.push(`  - "${entity.canonical}" (${entity.type}): ${reason}`);
+  }
+  lines.push('');
+  lines.push('### TIER_C (Candidate) - Sample:');
+  for (const entity of result.tierC.slice(0, 5)) {
+    const reason = entity.qualityDecision?.tierReason || 'unknown';
+    lines.push(`  - "${entity.canonical}" (${entity.type}): ${reason}`);
+  }
+
+  lines.push('');
+  lines.push('='.repeat(60));
+
+  return lines.join('\n');
 }
 
 // ============================================================================
@@ -1500,41 +1841,247 @@ export function isValidEntity(
  * Force-correct entity type based on strong lexical markers
  * This overrides spaCy classifications when we have high confidence
  *
- * (Consolidated from entity-filter.ts)
+ * @deprecated Use inferEntityType from entity-type-validators.ts directly
  */
 export function correctEntityType(
   canonical: string,
   currentType: EntityType
 ): EntityType {
-  const normalized = canonical.toLowerCase();
+  // Delegate to centralized implementation
+  return inferEntityType(canonical, currentType);
+}
 
-  // Geographic markers - MUST be PLACE
-  if (/(river|creek|stream|mountain|mount|peak|hill|hillside|valley|lake|sea|ocean|island|isle|forest|wood|desert|plain|prairie|city|town|village|kingdom|realm|land|cliff|ridge|canyon|gorge|fjord|haven|harbor|bay|cove|grove|glade|dale|moor|heath|marsh|swamp|waste|wild|reach|highland|lowland|borderland)s?\b/i.test(canonical)) {
-    return 'PLACE';
+// ============================================================================
+// CONTEXT-AWARE QUALITY FILTERING (Phase 3.2)
+// Dynamic tier promotion based on contextual signals
+// ============================================================================
+
+/**
+ * Context signals that can boost entity quality/tier
+ */
+export interface EntityContextSignals {
+  /** Entity appears within or near dialogue (speech attribution) */
+  appearsInDialogue?: boolean;
+  /** Entity appears as subject or object in a relation pattern */
+  appearsInRelation?: boolean;
+  /** Entity is referenced by a pronoun (coreference resolved) */
+  hasCoreferenceLink?: boolean;
+  /** Entity has an appositive ("X, the Y") */
+  hasAppositiveDescription?: boolean;
+  /** Entity appears in multiple paragraphs */
+  multiParagraphMentions?: number;
+  /** Entity is mentioned by another character */
+  mentionedByCharacter?: boolean;
+  /** Document ID for same-document checks */
+  docId?: string;
+}
+
+/**
+ * Result of context-aware tier promotion
+ */
+export interface TierPromotionResult {
+  originalTier: EntityTier;
+  promotedTier: EntityTier;
+  wasPromoted: boolean;
+  promotionReason?: string;
+  confidenceBoost: number;
+}
+
+/**
+ * Evaluate context signals and determine if entity should be promoted
+ *
+ * Promotion rules:
+ * - TIER_C → TIER_B: Dialogue context, relation pattern, coreference link
+ * - TIER_C → TIER_A: Multiple strong signals (appositive + relation + dialogue)
+ * - TIER_B → TIER_A: Appositive + multi-paragraph + relation
+ *
+ * @param entity - Entity with current tier
+ * @param context - Context signals from extraction
+ * @returns Promotion result with new tier and reason
+ */
+export function evaluateTierPromotion(
+  entity: Entity,
+  context: EntityContextSignals
+): TierPromotionResult {
+  const originalTier = entity.tier ?? 'TIER_A';
+  let promotedTier = originalTier;
+  let promotionReason: string | undefined;
+  let confidenceBoost = 0;
+
+  // Count strong signals
+  let strongSignals = 0;
+  let moderateSignals = 0;
+
+  // Strong signals
+  if (context.hasAppositiveDescription) {
+    strongSignals++;
+    confidenceBoost += 0.15;
+  }
+  if (context.appearsInRelation) {
+    strongSignals++;
+    confidenceBoost += 0.10;
+  }
+  if ((context.multiParagraphMentions ?? 0) >= 3) {
+    strongSignals++;
+    confidenceBoost += 0.10;
   }
 
-  // Educational/organizational markers
-  if (/(school|university|academy|college|ministry|department|company|corporation|inc|llc|corp|ltd|bank|institute)\b/i.test(canonical)) {
-    return 'ORG';
+  // Moderate signals
+  if (context.appearsInDialogue) {
+    moderateSignals++;
+    confidenceBoost += 0.08;
+  }
+  if (context.hasCoreferenceLink) {
+    moderateSignals++;
+    confidenceBoost += 0.05;
+  }
+  if (context.mentionedByCharacter) {
+    moderateSignals++;
+    confidenceBoost += 0.05;
   }
 
-  // House/Order markers
-  if (/\b(house|order|clan|tribe|dynasty)\b/i.test(canonical)) {
-    return 'HOUSE';
+  // Apply promotion rules based on current tier
+  if (originalTier === 'TIER_C') {
+    if (strongSignals >= 2 || (strongSignals >= 1 && moderateSignals >= 2)) {
+      // Strong promotion: TIER_C → TIER_A
+      promotedTier = 'TIER_A';
+      promotionReason = `tier_c_to_tier_a: ${strongSignals} strong + ${moderateSignals} moderate signals`;
+    } else if (strongSignals >= 1 || moderateSignals >= 2) {
+      // Moderate promotion: TIER_C → TIER_B
+      promotedTier = 'TIER_B';
+      promotionReason = `tier_c_to_tier_b: ${strongSignals} strong + ${moderateSignals} moderate signals`;
+    } else if (moderateSignals >= 1) {
+      // Weak promotion: stay TIER_C but boost confidence
+      promotionReason = `tier_c_confidence_boost: ${moderateSignals} moderate signals`;
+    }
+  } else if (originalTier === 'TIER_B') {
+    if (strongSignals >= 2 || (strongSignals >= 1 && moderateSignals >= 2)) {
+      // Promote TIER_B → TIER_A
+      promotedTier = 'TIER_A';
+      promotionReason = `tier_b_to_tier_a: ${strongSignals} strong + ${moderateSignals} moderate signals`;
+    }
+  }
+  // TIER_A entities don't need promotion
+
+  return {
+    originalTier,
+    promotedTier,
+    wasPromoted: promotedTier !== originalTier,
+    promotionReason,
+    confidenceBoost: Math.min(confidenceBoost, 0.30) // Cap at 0.30 boost
+  };
+}
+
+/**
+ * Apply context-aware tier promotion to entities
+ *
+ * @param entities - Entities with tiers assigned
+ * @param contextMap - Map of entity ID to context signals
+ * @returns Entities with potentially promoted tiers
+ */
+export function applyContextAwareTierPromotion(
+  entities: Entity[],
+  contextMap: Map<string, EntityContextSignals>
+): Entity[] {
+  return entities.map(entity => {
+    const context = contextMap.get(entity.id);
+    if (!context) {
+      return entity;
+    }
+
+    const promotion = evaluateTierPromotion(entity, context);
+
+    if (promotion.wasPromoted || promotion.confidenceBoost > 0) {
+      const newConfidence = Math.min(
+        (entity.confidence ?? 0.5) + promotion.confidenceBoost,
+        1.0
+      );
+
+      if (process.env.TIER_DEBUG === '1') {
+        console.log(
+          `[CONTEXT-PROMOTION] ${entity.canonical} (${entity.type}): ` +
+          `${promotion.originalTier} → ${promotion.promotedTier} ` +
+          `(confidence: ${entity.confidence?.toFixed(2)} → ${newConfidence.toFixed(2)}) ` +
+          `reason: ${promotion.promotionReason}`
+        );
+      }
+
+      return {
+        ...entity,
+        tier: promotion.promotedTier,
+        confidence: newConfidence,
+        attrs: {
+          ...entity.attrs,
+          tierPromoted: promotion.wasPromoted,
+          ...(promotion.promotionReason ? { promotionReason: promotion.promotionReason } : {}),
+          originalTier: promotion.originalTier
+        }
+      };
+    }
+
+    return entity;
+  });
+}
+
+/**
+ * Extract context signals from parsed document structure
+ *
+ * This is a helper to build context signals from spaCy output
+ * or other structured document representation.
+ *
+ * @param entityId - Entity ID to analyze
+ * @param documentStructure - Parsed document with paragraphs, dialogue, etc.
+ * @returns Context signals for the entity
+ */
+export function extractContextSignals(
+  entityId: string,
+  documentStructure: {
+    paragraphs: Array<{
+      text: string;
+      isDialogue: boolean;
+      entityMentions: string[];
+    }>;
+    relations: Array<{ subj: string; obj: string }>;
+    coreferenceChains: Array<string[]>;
+    appositives: Map<string, string[]>;
+  }
+): EntityContextSignals {
+  const signals: EntityContextSignals = {};
+
+  // Check dialogue context
+  const dialogueParagraphs = documentStructure.paragraphs.filter(
+    p => p.isDialogue && p.entityMentions.includes(entityId)
+  );
+  if (dialogueParagraphs.length > 0) {
+    signals.appearsInDialogue = true;
   }
 
-  // Event markers
-  if (/\b(battle|war|treaty|accord|council|conference|summit)\s+of\b/i.test(canonical)) {
-    return 'EVENT';
-  }
-  if (/\b(dance|reunion|festival|party|ball|show)\b/i.test(canonical) && canonical.split(/\s+/).length >= 2) {
-    return 'EVENT';
-  }
-
-  // Demonymic race markers
-  if (/\bnative american(s)?\b/i.test(canonical)) {
-    return 'RACE';
+  // Check relation patterns
+  const inRelation = documentStructure.relations.some(
+    r => r.subj === entityId || r.obj === entityId
+  );
+  if (inRelation) {
+    signals.appearsInRelation = true;
   }
 
-  return currentType;
+  // Check coreference
+  const hasCoref = documentStructure.coreferenceChains.some(
+    chain => chain.includes(entityId)
+  );
+  if (hasCoref) {
+    signals.hasCoreferenceLink = true;
+  }
+
+  // Check appositives
+  if (documentStructure.appositives.has(entityId)) {
+    signals.hasAppositiveDescription = true;
+  }
+
+  // Count multi-paragraph mentions
+  const mentionParagraphs = documentStructure.paragraphs.filter(
+    p => p.entityMentions.includes(entityId)
+  );
+  signals.multiParagraphMentions = mentionParagraphs.length;
+
+  return signals;
 }

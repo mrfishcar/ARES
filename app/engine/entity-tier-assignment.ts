@@ -430,19 +430,96 @@ export function assignTiersToEntities(
   });
 }
 
+/**
+ * Options for tier-based merge decisions
+ */
+export interface TierMergeOptions {
+  /** Allow TIER_C → TIER_A merges when confidence exceeds this threshold */
+  tierCToTierAThreshold?: number;
+  /** Allow TIER_C → TIER_B merges when entities are from the same document */
+  allowTierCToTierBSameDoc?: boolean;
+  /** Document ID for same-document check */
+  docId1?: string;
+  docId2?: string;
+}
+
+/**
+ * Default tier merge options
+ */
+export const DEFAULT_TIER_MERGE_OPTIONS: TierMergeOptions = {
+  tierCToTierAThreshold: 0.85,
+  allowTierCToTierBSameDoc: true,
+};
+
 export function canMergeByTier(
   entity1: Entity,
-  entity2: Entity
+  entity2: Entity,
+  options: TierMergeOptions = {}
 ): { canMerge: boolean; reason: string } {
   const tier1 = entity1.tier ?? 'TIER_A';
   const tier2 = entity2.tier ?? 'TIER_A';
+  const opts = { ...DEFAULT_TIER_MERGE_OPTIONS, ...options };
 
-  // TIER_C entities are isolated
-  if (tier1 === 'TIER_C' || tier2 === 'TIER_C') {
-    return { canMerge: false, reason: 'tier_c_isolated' };
+  // If neither is TIER_C, always allow merge
+  if (tier1 !== 'TIER_C' && tier2 !== 'TIER_C') {
+    return { canMerge: true, reason: 'tier_compatible' };
   }
 
-  return { canMerge: true, reason: 'tier_compatible' };
+  // Both TIER_C - never merge (garbage isolation)
+  if (tier1 === 'TIER_C' && tier2 === 'TIER_C') {
+    return { canMerge: false, reason: 'tier_c_c_isolated' };
+  }
+
+  // One is TIER_C, the other is not
+  const tierCEntity = tier1 === 'TIER_C' ? entity1 : entity2;
+  const otherEntity = tier1 === 'TIER_C' ? entity2 : entity1;
+  const otherTier = tier1 === 'TIER_C' ? tier2 : tier1;
+
+  // TIER_C → TIER_A: Allow if confidence threshold met
+  if (otherTier === 'TIER_A') {
+    const mergeConfidence = Math.max(
+      tierCEntity.confidence ?? 0,
+      otherEntity.confidence ?? 0
+    );
+    if (opts.tierCToTierAThreshold && mergeConfidence >= opts.tierCToTierAThreshold) {
+      return {
+        canMerge: true,
+        reason: `tier_c_to_tier_a_confidence_${mergeConfidence.toFixed(2)}`
+      };
+    }
+    // Also allow if TIER_C entity has strong namehood evidence
+    if (tierCEntity.attrs?.occursNonInitial || (tierCEntity.aliases?.length ?? 0) > 1) {
+      return {
+        canMerge: true,
+        reason: 'tier_c_to_tier_a_strong_evidence'
+      };
+    }
+    return { canMerge: false, reason: 'tier_c_to_tier_a_confidence_below_threshold' };
+  }
+
+  // TIER_C → TIER_B: Allow if same document and same type
+  if (otherTier === 'TIER_B') {
+    const sameType = tierCEntity.type === otherEntity.type;
+
+    // Check if same document (if document info available in attrs)
+    const doc1 = opts.docId1 || (tierCEntity.attrs?.docId as string | undefined);
+    const doc2 = opts.docId2 || (otherEntity.attrs?.docId as string | undefined);
+    const sameDoc = doc1 && doc2 && doc1 === doc2;
+
+    if (opts.allowTierCToTierBSameDoc && sameType && sameDoc) {
+      return { canMerge: true, reason: 'tier_c_to_tier_b_same_doc_same_type' };
+    }
+
+    // Also allow if types match and high confidence
+    if (sameType && (tierCEntity.confidence ?? 0) >= 0.75) {
+      return { canMerge: true, reason: 'tier_c_to_tier_b_same_type_high_confidence' };
+    }
+
+    return { canMerge: false, reason: 'tier_c_to_tier_b_conditions_not_met' };
+  }
+
+  // Fallback: no merge
+  return { canMerge: false, reason: 'tier_c_isolated' };
 }
 
 export function filterByTier(

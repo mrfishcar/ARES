@@ -1258,3 +1258,239 @@ extend type Query {
     limit: Int = 50
   ): SearchResults!
 }
+
+# ============================================================================
+# User Correction System (Phase 2)
+# First-class user overrides that survive reprocessing
+# ============================================================================
+
+"""Correction type enum"""
+enum CorrectionType {
+  ENTITY_TYPE
+  ENTITY_MERGE
+  ENTITY_SPLIT
+  ENTITY_REJECT
+  ENTITY_RESTORE
+  RELATION_ADD
+  RELATION_REMOVE
+  RELATION_EDIT
+  ALIAS_ADD
+  ALIAS_REMOVE
+  CANONICAL_CHANGE
+}
+
+"""A user correction/override"""
+type Correction {
+  id: ID!
+  type: CorrectionType!
+  timestamp: String!
+  author: String
+  entityId: ID
+  relationId: ID
+  entityIds: [ID!]
+  before: JSON
+  after: JSON
+  reason: String
+  learned: CorrectionLearning
+  rolledBack: Boolean!
+}
+
+"""Learning metadata for a correction"""
+type CorrectionLearning {
+  patternExtracted: Boolean!
+  patternId: ID
+  appliedToCount: Int!
+}
+
+"""Version snapshot of the graph"""
+type VersionSnapshot {
+  id: ID!
+  createdAt: String!
+  correctionId: ID!
+  entityCount: Int!
+  relationCount: Int!
+  description: String
+}
+
+"""Learned pattern from user corrections"""
+type LearnedPattern {
+  id: ID!
+  type: String!
+  pattern: String!
+  condition: JSON
+  action: JSON
+  stats: PatternStats!
+  active: Boolean!
+  createdAt: String!
+  createdFromCorrectionId: ID!
+}
+
+"""Statistics for a learned pattern"""
+type PatternStats {
+  timesApplied: Int!
+  confidence: Float!
+}
+
+"""Result of a correction operation"""
+type CorrectionResult {
+  success: Boolean!
+  correction: Correction
+  entity: EntityLite
+  entities: [EntityLite!]
+  relation: RelationLite
+  versionSnapshot: VersionSnapshot
+  error: String
+}
+
+"""Result of a rollback operation"""
+type RollbackResult {
+  success: Boolean!
+  restoredSnapshot: VersionSnapshot
+  error: String
+}
+
+"""Correction history for an entity or relation"""
+type CorrectionHistory {
+  corrections: [Correction!]!
+  totalCount: Int!
+}
+
+"""Input for entity split"""
+input EntitySplitInput {
+  name: String!
+  type: EntityType!
+  aliases: [String!]
+  mentionIds: [ID!]
+}
+
+extend type Query {
+  """Get correction history for a project"""
+  listCorrections(
+    project: String!
+    entityId: ID
+    limit: Int = 50
+    after: Cursor
+  ): [Correction!]!
+
+  """Get version snapshots for a project"""
+  listVersions(
+    project: String!
+    limit: Int = 20
+  ): [VersionSnapshot!]!
+
+  """Get learned patterns for a project"""
+  listLearnedPatterns(
+    project: String!
+    active: Boolean
+  ): [LearnedPattern!]!
+
+  """Get correction history for a specific entity"""
+  entityCorrectionHistory(
+    project: String!
+    entityId: ID!
+  ): CorrectionHistory!
+}
+
+extend type Mutation {
+  """Correct an entity's type"""
+  correctEntityType(
+    project: String!
+    entityId: ID!
+    newType: EntityType!
+    reason: String
+  ): CorrectionResult!
+
+  """Merge multiple entities into one"""
+  mergeEntities(
+    project: String!
+    entityIds: [ID!]!
+    canonicalName: String!
+    reason: String
+  ): CorrectionResult!
+
+  """Split an entity into multiple entities"""
+  splitEntity(
+    project: String!
+    entityId: ID!
+    splits: [EntitySplitInput!]!
+    reason: String
+  ): CorrectionResult!
+
+  """Reject an entity (mark as false positive)"""
+  rejectEntity(
+    project: String!
+    entityId: ID!
+    reason: String
+  ): CorrectionResult!
+
+  """Restore a previously rejected entity"""
+  restoreEntity(
+    project: String!
+    entityId: ID!
+    reason: String
+  ): CorrectionResult!
+
+  """Add a relation between entities"""
+  addRelation(
+    project: String!
+    subjectId: ID!
+    predicate: String!
+    objectId: ID!
+    reason: String
+  ): CorrectionResult!
+
+  """Remove a relation"""
+  removeRelation(
+    project: String!
+    relationId: ID!
+    reason: String
+  ): CorrectionResult!
+
+  """Edit an existing relation"""
+  editRelation(
+    project: String!
+    relationId: ID!
+    subjectId: ID
+    predicate: String
+    objectId: ID
+    reason: String
+  ): CorrectionResult!
+
+  """Add an alias to an entity"""
+  addEntityAlias(
+    project: String!
+    entityId: ID!
+    alias: String!
+    reason: String
+  ): CorrectionResult!
+
+  """Remove an alias from an entity"""
+  removeEntityAlias(
+    project: String!
+    entityId: ID!
+    alias: String!
+    reason: String
+  ): CorrectionResult!
+
+  """Change an entity's canonical name"""
+  changeCanonicalName(
+    project: String!
+    entityId: ID!
+    newName: String!
+    reason: String
+  ): CorrectionResult!
+
+  """Rollback a correction"""
+  rollbackCorrection(
+    project: String!
+    correctionId: ID!
+    reason: String
+  ): RollbackResult!
+
+  """Toggle a learned pattern's active status"""
+  toggleLearnedPattern(
+    project: String!
+    patternId: ID!
+    active: Boolean!
+  ): LearnedPattern!
+}

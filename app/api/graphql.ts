@@ -38,6 +38,7 @@ import { timelineAnalysisResolvers } from './resolvers/timeline-analysis';
 import { wikiResolvers } from './resolvers/wiki';
 import { errorLogResolvers } from './resolvers/error_log';
 import { entityHighlightingResolvers } from './resolvers/entity-highlighting';
+import { correctionResolvers } from './resolvers/corrections';
 import { globalRateLimiter, extractClientId } from './rate-limit';
 import { invalidateProjectCache } from './cache-layer';
 import { handleUpload, handleMediaServe } from './upload';
@@ -434,7 +435,10 @@ function createResolvers(storagePath?: string) {
       ...timelineAnalysisResolvers.Query,
 
       // Wiki Generation System
-      ...wikiResolvers.Query
+      ...wikiResolvers.Query,
+
+      // User Correction System (Phase 2)
+      ...correctionResolvers.Query
     },
 
     Mutation: {
@@ -516,7 +520,10 @@ function createResolvers(storagePath?: string) {
       ...wikiResolvers.Mutation,
 
       // Client error logging
-      ...errorLogResolvers.Mutation
+      ...errorLogResolvers.Mutation,
+
+      // User Correction System (Phase 2)
+      ...correctionResolvers.Mutation
     },
 
     // Field resolvers

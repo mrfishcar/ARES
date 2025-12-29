@@ -5,7 +5,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import type { Entity, Relation } from '../engine/schema';
+import type { Entity, Relation, Correction, VersionSnapshot, LearnedPattern } from '../engine/schema';
 import type { Conflict } from '../engine/conflicts';
 import { extractEntities } from '../engine/extract/entities';
 import { extractRelations } from '../engine/extract/relations';
@@ -23,6 +23,7 @@ import type { Pattern } from '../engine/bootstrap';
 import { DEFAULT_LLM_CONFIG } from '../engine/llm-config';
 import type { Span as PipelineSpan } from '../engine/pipeline/types';
 import type { BookNLPResult } from '../engine/booknlp/types';
+import { applyOverrides } from '../engine/override-manager';
 
 export interface ProvenanceEntry {
   global_id: string;
@@ -45,11 +46,19 @@ export interface KnowledgeGraph {
   provenance: Map<string, ProvenanceEntry>;  // local_id -> entry
   profiles: Map<string, EntityProfile>;      // entity_id -> profile (adaptive learning)
   booknlp?: BookNLPStore;
+
+  // User override system (Phase 2 - 2025-12-20)
+  corrections: Correction[];                  // User corrections/overrides
+  versions: VersionSnapshot[];                // Version history for rollback
+  learnedPatterns: LearnedPattern[];          // Patterns learned from corrections
+
   metadata: {
     created_at: string;
     updated_at: string;
     doc_count: number;
     doc_ids: string[];
+    correction_count?: number;                // Total corrections applied
+    last_correction_at?: string;              // Last correction timestamp
   };
 }
 
@@ -60,11 +69,19 @@ export interface SerializedGraph {
   provenance: Record<string, ProvenanceEntry>;
   profiles?: any;  // Serialized profiles (optional for backward compatibility)
   booknlp?: BookNLPStore;
+
+  // User override system (Phase 2 - 2025-12-20)
+  corrections?: Correction[];                  // User corrections/overrides
+  versions?: VersionSnapshot[];                // Version history for rollback
+  learnedPatterns?: LearnedPattern[];          // Patterns learned from corrections
+
   metadata: {
     created_at: string;
     updated_at: string;
     doc_count: number;
     doc_ids: string[];
+    correction_count?: number;
+    last_correction_at?: string;
   };
 }
 
@@ -179,6 +196,10 @@ export function saveGraph(
     provenance: Object.fromEntries(graph.provenance),
     profiles: graph.profiles ? serializeProfiles(graph.profiles) : {},  // Serialize profiles (handle undefined)
     booknlp: graph.booknlp,
+    // User override system (Phase 2 - 2025-12-20)
+    corrections: graph.corrections || [],
+    versions: graph.versions || [],
+    learnedPatterns: graph.learnedPatterns || [],
     metadata: graph.metadata
   };
 
@@ -207,7 +228,15 @@ export function loadGraph(
     provenance: new Map(Object.entries(serialized.provenance)),
     profiles: serialized.profiles ? deserializeProfiles(serialized.profiles) : new Map(),  // Deserialize profiles (backward compatible)
     booknlp: booknlpData || { quotes: [], characters: [], mentions: [], metadata: booknlpData?.metadata || {} },
-    metadata: serialized.metadata
+    // User override system (Phase 2 - backward compatible)
+    corrections: serialized.corrections || [],
+    versions: serialized.versions || [],
+    learnedPatterns: serialized.learnedPatterns || [],
+    metadata: {
+      ...serialized.metadata,
+      correction_count: serialized.metadata.correction_count || 0,
+      last_correction_at: serialized.metadata.last_correction_at,
+    }
   };
 }
 
@@ -222,11 +251,16 @@ export function createEmptyGraph(): KnowledgeGraph {
     provenance: new Map(),
     profiles: new Map(),  // Empty profiles for adaptive learning
     booknlp: { quotes: [], characters: [], mentions: [], metadata: {} },
+    // User override system (Phase 2 - 2025-12-20)
+    corrections: [],
+    versions: [],
+    learnedPatterns: [],
     metadata: {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       doc_count: 0,
-      doc_ids: []
+      doc_ids: [],
+      correction_count: 0,
     }
   };
 }
@@ -478,9 +512,33 @@ export async function appendDoc(
   // DEBUG: Log globals before storing
   console.log(`[STORAGE] Final globals for ${docId}: ${globals.length} entities:`, globals.slice(0, 5).map(e => `${e.type}::${e.canonical}`).join(', '));
 
-  // Update graph
+  // Update graph with new entities/relations
   graph.entities = globals;
   graph.relations = filteredRelations;
+
+  // Apply saved corrections to preserve user overrides across reprocessing
+  // This ensures entity type changes, merges, rejections etc. survive
+  if (graph.corrections && graph.corrections.length > 0) {
+    console.log(`[STORAGE] Applying ${graph.corrections.length} saved corrections to preserve user overrides`);
+    const overrideResult = applyOverrides(graph, graph.corrections);
+    graph.entities = overrideResult.graph.entities;
+    graph.relations = overrideResult.graph.relations;
+
+    if (overrideResult.stats.totalApplied > 0) {
+      console.log(`[STORAGE] Applied ${overrideResult.stats.totalApplied} corrections:`, {
+        entityTypeChanges: overrideResult.stats.entityTypeChanges,
+        entityMerges: overrideResult.stats.entityMerges,
+        entityRejections: overrideResult.stats.entityRejections,
+        aliasChanges: overrideResult.stats.aliasChanges,
+        relationChanges: overrideResult.stats.relationAdditions + overrideResult.stats.relationRemovals
+      });
+    }
+    if (overrideResult.conflicts.length > 0) {
+      console.warn(`[STORAGE] ${overrideResult.conflicts.length} override conflicts detected`);
+    }
+  }
+
+  // Update graph metadata (entities/relations already updated above)
   graph.conflicts = conflicts;
   graph.metadata.updated_at = new Date().toISOString();
   graph.metadata.doc_count += 1;
