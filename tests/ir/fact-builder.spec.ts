@@ -14,6 +14,7 @@ import {
   buildFactsFromEvents,
   getCurrentLocation,
   getCurrentPossessions,
+  getCurrentHolder,
   isAlive,
   getFactsForEntity,
   getFactsByPredicate,
@@ -811,6 +812,101 @@ describe('Query Helpers', () => {
       expect(possessions).toContain('entity_wand');
       expect(possessions).toContain('entity_cloak');
       expect(possessions).toContain('entity_map');
+    });
+  });
+
+  describe('getCurrentHolder (inverse query)', () => {
+    it('should return current holder of an item', () => {
+      const event = makeEvent('TRANSFER', [
+        { role: 'RECEIVER', entity: 'entity_harry' },
+        { role: 'ITEM', entity: 'entity_wand' },
+      ]);
+
+      const facts = buildFactsFromEvents([event]);
+      const result = getCurrentHolder(facts, 'entity_wand');
+
+      expect(result).toEqual({ holder: 'entity_harry' });
+    });
+
+    it('should return undefined for unknown item', () => {
+      const facts = buildFactsFromEvents([]);
+      const result = getCurrentHolder(facts, 'entity_unknown');
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should track holder after transfer chain', () => {
+      const events = [
+        makeEvent(
+          'TRANSFER',
+          [
+            { role: 'GIVER', entity: 'entity_ollivander' },
+            { role: 'RECEIVER', entity: 'entity_harry' },
+            { role: 'ITEM', entity: 'entity_wand' },
+          ],
+          { time: makeDiscourseTime(1, 0, 0) }
+        ),
+        makeEvent(
+          'TRANSFER',
+          [
+            { role: 'GIVER', entity: 'entity_harry' },
+            { role: 'RECEIVER', entity: 'entity_ron' },
+            { role: 'ITEM', entity: 'entity_wand' },
+          ],
+          { time: makeDiscourseTime(2, 0, 0) }
+        ),
+      ];
+
+      const facts = buildFactsFromEvents(events);
+      const result = getCurrentHolder(facts, 'entity_wand');
+
+      // Ron should be the current holder
+      expect(result).toEqual({ holder: 'entity_ron' });
+    });
+
+    it('should return undefined if item was given away and not received', () => {
+      const event = makeEvent('TRANSFER', [
+        { role: 'GIVER', entity: 'entity_harry' },
+        { role: 'ITEM', entity: 'entity_wand' },
+        // No receiver - item went somewhere unknown
+      ]);
+
+      const facts = buildFactsFromEvents([event]);
+      const result = getCurrentHolder(facts, 'entity_wand');
+
+      // No current holder (giver lost it, no one received it)
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('Inference flag', () => {
+    it('should mark receiver possession as explicit', () => {
+      const event = makeEvent('TRANSFER', [
+        { role: 'RECEIVER', entity: 'entity_harry' },
+        { role: 'ITEM', entity: 'entity_wand' },
+      ]);
+
+      const facts = buildFactsFromEvents([event]);
+
+      const receiverFact = facts.find(
+        (f) => f.subject === 'entity_harry' && !f.validUntil
+      );
+      expect(receiverFact?.inference).toBe('explicit');
+    });
+
+    it('should mark giver loss as implied_loss', () => {
+      const event = makeEvent('TRANSFER', [
+        { role: 'GIVER', entity: 'entity_ollivander' },
+        { role: 'RECEIVER', entity: 'entity_harry' },
+        { role: 'ITEM', entity: 'entity_wand' },
+      ]);
+
+      const facts = buildFactsFromEvents([event]);
+
+      const giverFact = facts.find(
+        (f) => f.subject === 'entity_ollivander' && f.validUntil
+      );
+      expect(giverFact?.inference).toBe('implied_loss');
     });
   });
 });

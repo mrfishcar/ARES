@@ -25,7 +25,7 @@ import type {
   DiscourseTime,
   Modality,
 } from './types';
-import { buildFactsFromEvents, getCurrentLocation, isAlive } from './fact-builder';
+import { buildFactsFromEvents, getCurrentLocation, getCurrentPossessions, isAlive } from './fact-builder';
 
 // =============================================================================
 // TYPES
@@ -115,6 +115,7 @@ export function renderEntityPage(
   sections.push(renderTitleBlock(entity));
   sections.push(renderQuickFacts(entity, entityFacts, entityId, ir));
   sections.push(renderStateProperties(entityAssertions, entityId, ir, options));
+  sections.push(renderPossessions(entityFacts, entityId, ir));
   sections.push(renderCurrentStatus(entityFacts, entityId, ir));
   sections.push(renderTimelineHighlights(entityEvents, ir, options));
   sections.push(renderKeyClaims(entityAssertions, ir, options));
@@ -352,6 +353,109 @@ function formatStateAssertion(assertion: Assertion, ir: ProjectIR): string {
     default:
       return `${predicate} ${objectStr}`;
   }
+}
+
+/**
+ * 3.2c Possessions (from TRANSFER events → possesses facts)
+ *
+ * Shows current possessions first, then recently lost items.
+ * Deterministic ordering: current first, then by validFrom desc, then by item name.
+ */
+function renderPossessions(
+  facts: FactViewRow[],
+  entityId: EntityId,
+  ir: ProjectIR
+): string {
+  // Get all possession facts where this entity is the subject
+  const possessionFacts = facts.filter(
+    (f) =>
+      f.subject === entityId &&
+      f.predicate === 'possesses' &&
+      typeof f.object === 'string'
+  );
+
+  if (possessionFacts.length === 0) {
+    return '';  // Don't show section if no possession facts
+  }
+
+  const lines: string[] = [];
+  lines.push('## Possessions');
+  lines.push('');
+
+  // Separate current and ended possessions
+  const currentItems = getCurrentPossessions(facts, entityId);
+  const currentFacts = possessionFacts.filter(
+    (f) => !f.validUntil && currentItems.includes(f.object as string)
+  );
+  const endedFacts = possessionFacts.filter(
+    (f) => f.validUntil !== undefined
+  );
+
+  // Sort current by validFrom desc (most recent first), then by item name
+  const sortedCurrent = [...currentFacts].sort((a, b) => {
+    const timeDiff = compareDiscourseTime(b.validFrom, a.validFrom);  // Desc
+    if (timeDiff !== 0) return timeDiff;
+    return getEntityName(ir, a.object as string).localeCompare(
+      getEntityName(ir, b.object as string)
+    );
+  });
+
+  // Sort ended by validUntil desc (most recently lost first)
+  const sortedEnded = [...endedFacts].sort((a, b) => {
+    const aTime = a.validUntil ?? { type: 'UNKNOWN' as const };
+    const bTime = b.validUntil ?? { type: 'UNKNOWN' as const };
+    const timeDiff = compareDiscourseTime(bTime, aTime);  // Desc
+    if (timeDiff !== 0) return timeDiff;
+    return getEntityName(ir, a.object as string).localeCompare(
+      getEntityName(ir, b.object as string)
+    );
+  });
+
+  // Render current possessions
+  if (sortedCurrent.length > 0) {
+    for (const fact of sortedCurrent) {
+      const itemName = getEntityName(ir, fact.object as string);
+      const timeStr = formatTimeAnchor(fact.validFrom);
+
+      // Get evidence from derivedFrom
+      let evidenceSnippet = '';
+      if (fact.derivedFrom.length > 0) {
+        const sourceEvent = ir.events.find((e) => e.id === fact.derivedFrom[0]);
+        if (sourceEvent && sourceEvent.evidence.length > 0) {
+          evidenceSnippet = ` — *"${formatEvidence(sourceEvent.evidence[0])}"*`;
+        }
+      }
+
+      lines.push(`- **${itemName}** — since ${timeStr}${evidenceSnippet}`);
+    }
+  }
+
+  // Render recently lost items (if any)
+  if (sortedEnded.length > 0) {
+    lines.push('');
+    lines.push('**No longer has:**');
+    lines.push('');
+
+    const maxEnded = 5;  // Limit ended items shown
+    for (let i = 0; i < Math.min(sortedEnded.length, maxEnded); i++) {
+      const fact = sortedEnded[i];
+      const itemName = getEntityName(ir, fact.object as string);
+      const untilStr = fact.validUntil
+        ? formatTimeAnchor(fact.validUntil)
+        : 'unknown';
+
+      // Check if this was inferred
+      const inferredTag = (fact as any).inference === 'implied_loss' ? ' *(inferred)*' : '';
+
+      lines.push(`- ${itemName} — until ${untilStr}${inferredTag}`);
+    }
+
+    if (sortedEnded.length > maxEnded) {
+      lines.push(`  *(${sortedEnded.length - maxEnded} more not shown)*`);
+    }
+  }
+
+  return lines.join('\n');
 }
 
 /**
@@ -932,6 +1036,24 @@ export function summarizeEvent(event: StoryEvent, ir: ProjectIR): string {
       }
       if (promiser) {
         return `${getEntityName(ir, promiser.entity)} made a promise`;
+      }
+      break;
+    }
+    case 'TRANSFER': {
+      const giver = event.participants.find((p) => p.role === 'GIVER');
+      const receiver = event.participants.find((p) => p.role === 'RECEIVER');
+      const taker = event.participants.find((p) => p.role === 'TAKER');
+      const item = event.participants.find((p) => p.role === 'ITEM');
+      const itemName = item ? getEntityName(ir, item.entity) : 'something';
+
+      if (giver && receiver) {
+        return `${getEntityName(ir, giver.entity)} gave ${itemName} to ${getEntityName(ir, receiver.entity)}`;
+      }
+      if (taker && item) {
+        return `${getEntityName(ir, taker.entity)} took ${itemName}`;
+      }
+      if (receiver && item) {
+        return `${getEntityName(ir, receiver.entity)} received ${itemName}`;
       }
       break;
     }

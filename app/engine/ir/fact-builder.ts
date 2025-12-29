@@ -195,6 +195,7 @@ function deriveTransferFacts(event: StoryEvent): FactViewRow[] {
         validFrom: event.time,
         derivedFrom: [event.id],
         confidence: event.confidence.composite,
+        inference: 'explicit',  // Directly stated in evidence
       })
     );
   }
@@ -211,6 +212,7 @@ function deriveTransferFacts(event: StoryEvent): FactViewRow[] {
         validUntil: event.time, // Lost it at event time
         derivedFrom: [event.id],
         confidence: event.confidence.composite * 0.9, // Slightly lower - inferred loss
+        inference: 'implied_loss',  // Inferred from transfer (giver no longer has item)
       })
     );
   }
@@ -230,6 +232,7 @@ interface FactInput {
   validUntil?: TimeAnchor;
   derivedFrom: (EventId | AssertionId)[];
   confidence: number;
+  inference?: 'explicit' | 'implied_loss';
 }
 
 /**
@@ -243,7 +246,7 @@ function createFact(input: FactInput): FactViewRow {
     input.derivedFrom
   );
 
-  return {
+  const fact: FactViewRow = {
     id: factId,
     subject: input.subject,
     predicate: input.predicate,
@@ -253,6 +256,13 @@ function createFact(input: FactInput): FactViewRow {
     derivedFrom: input.derivedFrom,
     confidence: input.confidence,
   };
+
+  // Add inference field if specified
+  if (input.inference) {
+    fact.inference = input.inference;
+  }
+
+  return fact;
 }
 
 /**
@@ -469,6 +479,74 @@ export function getCurrentPossessions(
   return Array.from(itemStates.entries())
     .filter(([_, state]) => state.gainTime > state.lossTime)
     .map(([itemId, _]) => itemId);
+}
+
+/**
+ * Get the current holder of an item (inverse query).
+ *
+ * Returns the entity that most recently gained the item without losing it.
+ * If multiple entities "currently" hold it (data inconsistency), returns
+ * { holder: 'contested', holders: [...] }.
+ *
+ * @param facts - All facts
+ * @param itemId - The item entity ID
+ * @returns Current holder info, or undefined if no holder
+ */
+export function getCurrentHolder(
+  facts: FactViewRow[],
+  itemId: EntityId
+): { holder: EntityId } | { holder: 'contested'; holders: EntityId[] } | undefined {
+  // Get all possession facts where this item is the object
+  const possessionFacts = facts.filter(
+    (f) =>
+      f.object === itemId &&
+      f.predicate === 'possesses' &&
+      typeof f.subject === 'string'
+  );
+
+  if (possessionFacts.length === 0) {
+    return undefined;
+  }
+
+  // Track each entity's possession state for this item
+  const entityStates = new Map<EntityId, { gainTime: number; lossTime: number }>();
+
+  for (const fact of possessionFacts) {
+    const entityId = fact.subject;
+
+    const state = entityStates.get(entityId) || { gainTime: -1, lossTime: -1 };
+
+    if (fact.validUntil) {
+      // Loss fact
+      const lossTime = getTimeOrderValue(fact.validUntil);
+      state.lossTime = Math.max(state.lossTime, lossTime);
+    } else {
+      // Gain fact
+      const gainTime = getTimeOrderValue(fact.validFrom);
+      state.gainTime = Math.max(state.gainTime, gainTime);
+    }
+
+    entityStates.set(entityId, state);
+  }
+
+  // Find entities that currently possess the item (gainTime > lossTime)
+  const currentHolders: EntityId[] = [];
+  for (const [entityId, state] of entityStates.entries()) {
+    if (state.gainTime > state.lossTime) {
+      currentHolders.push(entityId);
+    }
+  }
+
+  if (currentHolders.length === 0) {
+    return undefined;
+  }
+
+  if (currentHolders.length === 1) {
+    return { holder: currentHolders[0] };
+  }
+
+  // Multiple holders - contested (data inconsistency, but handle gracefully)
+  return { holder: 'contested', holders: currentHolders.sort() };
 }
 
 /**
