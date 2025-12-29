@@ -366,8 +366,12 @@ export interface EligibilityStats {
   blockedGroupPlaceholder: number;
   /** Blocked by missing required object */
   blockedMissingObject: number;
+  /** Blocked by unresolved pronoun object */
+  blockedUnresolvedObject: number;
   /** Blocked by NEGATED modality */
   blockedNegated: number;
+  /** Detailed reasons for unresolved pronouns */
+  unresolvedReasons: Record<string, number>;
 }
 
 /**
@@ -375,15 +379,17 @@ export interface EligibilityStats {
  */
 interface EligibilityResult {
   eligible: boolean;
-  reason?: 'unresolved_pronoun' | 'group_placeholder' | 'missing_object' | 'negated';
+  reason?: 'unresolved_pronoun' | 'group_placeholder' | 'missing_object' | 'negated' | 'unresolved_object';
   confidencePenalty?: number;
+  unresolvedReason?: string;  // More detail for debugging
 }
 
 /**
  * Check if an assertion is eligible for event creation.
  *
- * Hard blocks:
- * - Subject is unresolved pronoun (coref failed)
+ * Hard blocks (using explicit resolution markers when available):
+ * - Subject has explicit subjectResolution.resolved === false
+ * - Subject is unresolved pronoun (fallback: string matching)
  * - Subject is group placeholder (unless GROUP entity)
  * - Object required for event type but missing (MOVE needs destination)
  *
@@ -402,13 +408,35 @@ function checkEligibility(
     return { eligible: false, reason: 'unresolved_pronoun' };
   }
 
+  // =========================================================================
+  // EXPLICIT RESOLUTION CHECK (preferred - uses salience-resolver output)
+  // =========================================================================
+
+  // If subject has explicit resolution metadata, use it
+  if (assertion.subjectResolution) {
+    if (!assertion.subjectResolution.resolved) {
+      return {
+        eligible: false,
+        reason: 'unresolved_pronoun',
+        unresolvedReason: assertion.subjectResolution.unresolvedReason,
+      };
+    }
+    // Subject was resolved - continue with other checks
+  }
+
+  // =========================================================================
+  // FALLBACK: String-based pronoun detection (for legacy assertions)
+  // =========================================================================
+
   // Check if subject is a resolved entity or just a pronoun string
   const subjectEntity = entityMap.get(subjectId);
-  const subjectName = subjectEntity?.name || subjectId;
+  const subjectName = subjectEntity?.canonical || subjectId;
 
-  // Hard block: Unresolved pronoun as subject
-  if (UNRESOLVED_PRONOUNS.has(subjectName) && !subjectEntity) {
-    return { eligible: false, reason: 'unresolved_pronoun' };
+  // Hard block: Unresolved pronoun as subject (fallback when no explicit resolution)
+  if (!assertion.subjectResolution) {
+    if (UNRESOLVED_PRONOUNS.has(subjectName) && !subjectEntity) {
+      return { eligible: false, reason: 'unresolved_pronoun' };
+    }
   }
 
   // Hard block: Group placeholder (unless mapped to GROUP entity)
@@ -419,6 +447,25 @@ function checkEligibility(
     }
   }
 
+  // =========================================================================
+  // OBJECT CHECKS
+  // =========================================================================
+
+  // Check object resolution if present
+  if (assertion.objectResolution && !assertion.objectResolution.resolved) {
+    // For most event types, unresolved object is a soft block
+    // For MOVE, it's a hard block (destination required)
+    if (eventType === 'MOVE') {
+      return {
+        eligible: false,
+        reason: 'unresolved_object',
+        unresolvedReason: assertion.objectResolution.unresolvedReason,
+      };
+    }
+    // For other events, apply confidence penalty instead of blocking
+    // (handled in candidate creation)
+  }
+
   // Hard block: MOVE requires destination
   if (eventType === 'MOVE') {
     const objectId = assertion.object;
@@ -426,7 +473,7 @@ function checkEligibility(
       return { eligible: false, reason: 'missing_object' };
     }
     // Check if object is a PLACE (or at least exists)
-    const objectEntity = entityMap.get(objectId);
+    const objectEntity = entityMap.get(objectId as string);
     // Allow if object exists as entity, even if not strictly PLACE
     // (validation will filter later if needed)
   }
@@ -499,9 +546,17 @@ export function extractEventCandidates(
           case 'missing_object':
             stats.blockedMissingObject++;
             break;
+          case 'unresolved_object':
+            stats.blockedUnresolvedObject++;
+            break;
           case 'negated':
             stats.blockedNegated++;
             break;
+        }
+        // Track detailed unresolved reasons
+        if (eligibility.unresolvedReason) {
+          stats.unresolvedReasons[eligibility.unresolvedReason] =
+            (stats.unresolvedReasons[eligibility.unresolvedReason] || 0) + 1;
         }
       }
       continue;
@@ -1263,7 +1318,16 @@ export function buildEvents(
 ): StoryEvent[] | BuildEventsResult {
   // Step 1: Extract event candidates (with optional stats)
   const stats: EligibilityStats | undefined = trackEligibility
-    ? { total: 0, passed: 0, blockedUnresolvedPronoun: 0, blockedGroupPlaceholder: 0, blockedMissingObject: 0, blockedNegated: 0 }
+    ? {
+        total: 0,
+        passed: 0,
+        blockedUnresolvedPronoun: 0,
+        blockedGroupPlaceholder: 0,
+        blockedMissingObject: 0,
+        blockedUnresolvedObject: 0,
+        blockedNegated: 0,
+        unresolvedReasons: {},
+      }
     : undefined;
 
   const candidates = extractEventCandidates(assertions, entityMap, stats);

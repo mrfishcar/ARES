@@ -117,6 +117,51 @@ export interface Confidence {
 }
 
 // =============================================================================
+// PRONOUN RESOLUTION METADATA
+// =============================================================================
+
+/**
+ * Resolution method for pronouns.
+ */
+export type PronounResolutionMethod = 'salience' | 'gender-unique' | 'unresolved';
+
+/**
+ * Reason why a pronoun could not be resolved.
+ */
+export type PronounUnresolvedReason =
+  | 'no_candidates'     // No entities in scope
+  | 'ambiguous'         // Multiple candidates with similar salience
+  | 'too_far'           // Entity mention is too far away
+  | 'gender_mismatch'   // No entities match pronoun gender
+  | 'number_mismatch';  // No entities match pronoun number
+
+/**
+ * Metadata about pronoun resolution for a subject or object.
+ *
+ * Used by the eligibility gate to make explicit decisions about
+ * whether to include assertions with pronoun subjects/objects.
+ */
+export interface PronounResolutionMeta {
+  /** The original pronoun text (e.g., "he", "she", "they") */
+  originalText: string;
+
+  /** Whether the pronoun was resolved to an entity */
+  resolved: boolean;
+
+  /** How the resolution was made */
+  method: PronounResolutionMethod;
+
+  /** If unresolved, why */
+  unresolvedReason?: PronounUnresolvedReason;
+
+  /** Confidence in the resolution (0-1) */
+  confidence: number;
+
+  /** The resolved entity ID (if resolved) */
+  resolvedEntityId?: EntityId;
+}
+
+// =============================================================================
 // TIME ANCHORING
 // =============================================================================
 
@@ -344,8 +389,14 @@ export interface Assertion {
 
   // For DIRECT assertions: subject-predicate-object
   subject?: EntityId;
+
+  /** Pronoun resolution status for subject (if subject was a pronoun) */
+  subjectResolution?: PronounResolutionMeta;
   predicate?: PredicateType;
   object?: EntityId | string | number | boolean;  // Entity or literal value
+
+  /** Pronoun resolution status for object (if object was a pronoun) */
+  objectResolution?: PronounResolutionMeta;
 
   // For BELIEF/CLAIM assertions: holder + nested content
   holder?: EntityId;          // Who believes/claims this

@@ -15,6 +15,7 @@
 
 import type { QuoteSignal } from './quote-tell-extractor';
 import type { EntitySpan } from './predicate-extractor';
+import { SalienceResolver, inferGender, type SalienceEntry as ResolverSalienceEntry } from './salience-resolver';
 
 // =============================================================================
 // TYPES
@@ -340,167 +341,100 @@ function findEntityByName(
 }
 
 // =============================================================================
-// SALIENCE STACK (COREF-LITE)
+// SALIENCE STACK (BACKWARD-COMPATIBLE WRAPPER)
 // =============================================================================
 
+// The salience stack implementation has been extracted to salience-resolver.ts
+// for broader use in pronoun resolution across the pipeline.
+// This wrapper provides backward compatibility with the original API.
+
+/**
+ * Entry in the salience stack (backward-compatible type)
+ */
 export interface SalienceEntry {
   entityId: string;
   name: string;
   gender: 'male' | 'female' | 'neutral' | 'unknown';
-  number: 'singular' | 'plural' | 'unknown';
+  salience: number;
   lastMentionPos: number;
-  salience: number;  // Higher = more salient
 }
 
+/**
+ * Salience stack interface (backward-compatible)
+ */
 export interface SalienceStack {
+  /** All entries in the stack */
   entries: SalienceEntry[];
-
-  /** Add or update an entity mention */
+  /** Add a mention of an entity */
   mention(entityId: string, name: string, pos: number, role: 'subject' | 'object' | 'other'): void;
-
-  /** Get the most salient candidate for a pronoun */
-  resolvePronnoun(pronoun: string, pos: number): SalienceEntry | null;
-
-  /** Decay salience (call at sentence boundaries) */
-  decay(factor?: number): void;
+  /** Resolve a pronoun to an entity */
+  resolvePronoun(pronoun: string, pos: number): { entityId: string; name: string } | null;
+  /** Decay all salience values */
+  decay(factor: number): void;
 }
 
 /**
  * Create a salience stack for tracking entity mentions.
+ * This is a backward-compatible wrapper around SalienceResolver.
  */
 export function createSalienceStack(): SalienceStack {
-  const entries: SalienceEntry[] = [];
+  // Use the new SalienceResolver internally
+  const resolver = new SalienceResolver({
+    personOnly: true,
+    paragraphBoundary: 'decay',
+  });
 
-  // Role weights for salience
-  const ROLE_WEIGHTS = {
-    subject: 3.0,
-    object: 2.0,
-    other: 1.0,
-  };
+  // Track current sentence index for the resolver
+  let currentSentence = 0;
+
+  // Convert resolver state to backward-compatible format
+  function getEntries(): SalienceEntry[] {
+    return resolver.getState().map(entry => ({
+      entityId: entry.entityId,
+      name: entry.name,
+      gender: entry.gender,
+      salience: entry.salience,
+      lastMentionPos: entry.lastMentionPos,
+    }));
+  }
 
   return {
-    entries,
-
-    mention(entityId: string, name: string, pos: number, role: 'subject' | 'object' | 'other'): void {
-      const existing = entries.find(e => e.entityId === entityId);
-      const weight = ROLE_WEIGHTS[role];
-
-      // Infer gender from name (heuristic)
-      const gender = inferGender(name);
-
-      if (existing) {
-        existing.lastMentionPos = pos;
-        existing.salience += weight;
-        if (gender !== 'unknown') {
-          existing.gender = gender;
-        }
-      } else {
-        entries.push({
-          entityId,
-          name,
-          gender,
-          number: 'singular',  // Default
-          lastMentionPos: pos,
-          salience: weight,
-        });
-      }
-
-      // Sort by salience (descending)
-      entries.sort((a, b) => b.salience - a.salience);
+    get entries() {
+      return getEntries();
     },
 
-    resolvePronoun(pronoun: string, pos: number): SalienceEntry | null {
-      const pronounLower = pronoun.toLowerCase();
-      const pronounInfo = SPEAKER_PRONOUNS[pronounLower];
+    mention(entityId: string, name: string, pos: number, role: 'subject' | 'object' | 'other') {
+      // Estimate sentence index from position (rough heuristic)
+      // For quote attribution, we mostly care about relative ordering
+      resolver.mention(entityId, name, pos, currentSentence, role, 'PERSON');
+    },
 
-      if (!pronounInfo) return null;
+    resolvePronoun(pronoun: string, pos: number): { entityId: string; name: string } | null {
+      const result = resolver.resolve(pronoun, pos, currentSentence);
 
-      // Filter candidates by gender/number match
-      const candidates = entries.filter(e => {
-        // Gender match
-        if (pronounInfo.gender !== 'neutral' && e.gender !== 'unknown') {
-          if (pronounInfo.gender !== e.gender) return false;
-        }
-        // Number match (they can be singular or plural)
-        if (pronounInfo.number === 'singular' && e.number === 'plural') {
-          return false;
-        }
-        // Recency check: must be mentioned within ~500 chars
-        if (pos - e.lastMentionPos > 500) return false;
-
-        return true;
-      });
-
-      // If exactly one candidate, high confidence
-      if (candidates.length === 1) {
-        return candidates[0];
-      }
-
-      // If multiple candidates, return the most salient but lower confidence
-      if (candidates.length > 1) {
-        // Only return if top candidate is significantly more salient
-        if (candidates[0].salience > candidates[1].salience * 1.5) {
-          return candidates[0];
-        }
-        // Too ambiguous - don't guess
-        return null;
+      if (result.resolvedEntityId && result.resolvedName) {
+        return {
+          entityId: result.resolvedEntityId,
+          name: result.resolvedName,
+        };
       }
 
       return null;
     },
 
-    decay(factor = 0.7): void {
-      for (const entry of entries) {
-        entry.salience *= factor;
+    decay(factor: number) {
+      // The new resolver doesn't have explicit decay, but we can advance sentence
+      // to trigger decay. Each decay call represents moving forward in text.
+      if (factor < 0.95) {
+        // Strong decay requested - treat as paragraph boundary
+        resolver.advanceParagraph();
+      } else if (factor < 1.0) {
+        // Mild decay - advance sentence
+        resolver.advanceSentence();
       }
-      // Remove entries with very low salience
-      const threshold = 0.5;
-      const toRemove = entries.filter(e => e.salience < threshold);
-      for (const entry of toRemove) {
-        const idx = entries.indexOf(entry);
-        if (idx >= 0) entries.splice(idx, 1);
-      }
+      currentSentence++;
     },
   };
-}
-
-/**
- * Infer gender from a name (heuristic).
- */
-function inferGender(name: string): 'male' | 'female' | 'neutral' | 'unknown' {
-  const nameLower = name.toLowerCase();
-
-  // Common male names
-  const maleNames = new Set([
-    'james', 'john', 'robert', 'michael', 'william', 'david', 'richard', 'joseph',
-    'thomas', 'charles', 'christopher', 'daniel', 'matthew', 'anthony', 'mark',
-    'donald', 'steven', 'paul', 'andrew', 'joshua', 'kenneth', 'kevin', 'brian',
-    'george', 'edward', 'ronald', 'timothy', 'jason', 'jeffrey', 'ryan', 'jacob',
-    'marcus', 'henry', 'peter', 'jack', 'harry', 'arthur', 'barty', 'preston',
-  ]);
-
-  // Common female names
-  const femaleNames = new Set([
-    'mary', 'patricia', 'jennifer', 'linda', 'elizabeth', 'barbara', 'susan',
-    'jessica', 'sarah', 'karen', 'nancy', 'lisa', 'betty', 'margaret', 'sandra',
-    'ashley', 'dorothy', 'kimberly', 'emily', 'donna', 'michelle', 'carol',
-    'amanda', 'melissa', 'deborah', 'stephanie', 'rebecca', 'sharon', 'laura',
-    'kelly', 'rachel', 'emma', 'olivia', 'lily', 'sophia', 'anna', 'grace',
-  ]);
-
-  // Check first name
-  const firstName = nameLower.split(/\s+/)[0];
-
-  if (maleNames.has(firstName)) return 'male';
-  if (femaleNames.has(firstName)) return 'female';
-
-  // Check for title prefixes
-  if (nameLower.startsWith('mr.') || nameLower.startsWith('mr ')) return 'male';
-  if (nameLower.startsWith('mrs.') || nameLower.startsWith('mrs ') ||
-      nameLower.startsWith('ms.') || nameLower.startsWith('ms ') ||
-      nameLower.startsWith('miss ')) return 'female';
-
-  return 'unknown';
 }
 
 // =============================================================================
@@ -683,10 +617,10 @@ export function extractQuotesWithSpeakers(
 }
 
 // =============================================================================
-// EXPORTS
+// EXPORTS (types re-exported for convenience)
 // =============================================================================
 
-export {
+export type {
   QuoteMatch,
   SpeakerCandidate,
   AttributionResult,
