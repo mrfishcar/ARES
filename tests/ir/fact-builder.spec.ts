@@ -4,14 +4,16 @@
  * Test coverage:
  * - located_in facts from MOVE events
  * - alive=false facts from DEATH events
+ * - possesses facts from TRANSFER events
  * - Fact deduplication
- * - Query helpers
+ * - Query helpers (getCurrentLocation, isAlive, getCurrentPossessions)
  */
 
 import { describe, it, expect } from 'vitest';
 import {
   buildFactsFromEvents,
   getCurrentLocation,
+  getCurrentPossessions,
   isAlive,
   getFactsForEntity,
   getFactsByPredicate,
@@ -294,6 +296,219 @@ describe('DEATH → alive=false', () => {
 });
 
 // =============================================================================
+// TRANSFER → possesses TESTS
+// =============================================================================
+
+describe('TRANSFER → possesses', () => {
+  describe('Receiver gains possession', () => {
+    it('should create possesses fact for RECEIVER', () => {
+      const event = makeEvent('TRANSFER', [
+        { role: 'GIVER', entity: 'entity_harry' },
+        { role: 'RECEIVER', entity: 'entity_ron' },
+        { role: 'ITEM', entity: 'entity_wand' },
+      ]);
+
+      const facts = buildFactsFromEvents([event]);
+
+      const receiverFact = facts.find(
+        (f) => f.subject === 'entity_ron' && !f.validUntil
+      );
+      expect(receiverFact).toBeDefined();
+      expect(receiverFact?.predicate).toBe('possesses');
+      expect(receiverFact?.object).toBe('entity_wand');
+    });
+
+    it('should create possesses fact for TAKER (taking verbs)', () => {
+      const event = makeEvent('TRANSFER', [
+        { role: 'TAKER', entity: 'entity_thief' },
+        { role: 'ITEM', entity: 'entity_gold' },
+      ]);
+
+      const facts = buildFactsFromEvents([event]);
+
+      expect(facts).toHaveLength(1);
+      expect(facts[0].subject).toBe('entity_thief');
+      expect(facts[0].predicate).toBe('possesses');
+      expect(facts[0].object).toBe('entity_gold');
+    });
+
+    it('should prefer RECEIVER over TAKER if both present', () => {
+      const event = makeEvent('TRANSFER', [
+        { role: 'TAKER', entity: 'entity_taker' },
+        { role: 'RECEIVER', entity: 'entity_receiver' },
+        { role: 'ITEM', entity: 'entity_item' },
+      ]);
+
+      const facts = buildFactsFromEvents([event]);
+
+      const gainFact = facts.find((f) => !f.validUntil);
+      expect(gainFact?.subject).toBe('entity_receiver');
+    });
+
+    it('should include derivedFrom pointing to event', () => {
+      const event = makeEvent(
+        'TRANSFER',
+        [
+          { role: 'RECEIVER', entity: 'entity_hermione' },
+          { role: 'ITEM', entity: 'entity_book' },
+        ],
+        { id: 'event_transfer_123' }
+      );
+
+      const facts = buildFactsFromEvents([event]);
+
+      expect(facts[0].derivedFrom).toContain('event_transfer_123');
+    });
+
+    it('should inherit time anchor from event', () => {
+      const event = makeEvent(
+        'TRANSFER',
+        [
+          { role: 'RECEIVER', entity: 'entity_neville' },
+          { role: 'ITEM', entity: 'entity_remembrall' },
+        ],
+        { time: makeDiscourseTime(2, 8, 5) }
+      );
+
+      const facts = buildFactsFromEvents([event]);
+
+      expect(facts[0].validFrom.type).toBe('DISCOURSE');
+      if (facts[0].validFrom.type === 'DISCOURSE') {
+        expect(facts[0].validFrom.chapter).toBe(2);
+        expect(facts[0].validFrom.paragraph).toBe(8);
+      }
+    });
+  });
+
+  describe('Giver loses possession', () => {
+    it('should create validUntil fact for GIVER', () => {
+      const event = makeEvent(
+        'TRANSFER',
+        [
+          { role: 'GIVER', entity: 'entity_harry' },
+          { role: 'RECEIVER', entity: 'entity_ron' },
+          { role: 'ITEM', entity: 'entity_cloak' },
+        ],
+        { time: makeDiscourseTime(5, 10, 0) }
+      );
+
+      const facts = buildFactsFromEvents([event]);
+
+      const giverFact = facts.find((f) => f.subject === 'entity_harry');
+      expect(giverFact).toBeDefined();
+      expect(giverFact?.predicate).toBe('possesses');
+      expect(giverFact?.object).toBe('entity_cloak');
+      expect(giverFact?.validUntil).toBeDefined();
+      if (giverFact?.validUntil?.type === 'DISCOURSE') {
+        expect(giverFact.validUntil.chapter).toBe(5);
+        expect(giverFact.validUntil.paragraph).toBe(10);
+      }
+    });
+
+    it('should set validFrom to UNKNOWN for giver (prior possession inferred)', () => {
+      const event = makeEvent('TRANSFER', [
+        { role: 'GIVER', entity: 'entity_dumbledore' },
+        { role: 'RECEIVER', entity: 'entity_harry' },
+        { role: 'ITEM', entity: 'entity_elderWand' },
+      ]);
+
+      const facts = buildFactsFromEvents([event]);
+
+      const giverFact = facts.find((f) => f.subject === 'entity_dumbledore');
+      expect(giverFact?.validFrom.type).toBe('UNKNOWN');
+    });
+
+    it('should have slightly lower confidence for inferred loss', () => {
+      const event = makeEvent(
+        'TRANSFER',
+        [
+          { role: 'GIVER', entity: 'entity_ollivander' },
+          { role: 'RECEIVER', entity: 'entity_harry' },
+          { role: 'ITEM', entity: 'entity_wand' },
+        ],
+        { confidence: makeConfidence(0.8) }
+      );
+
+      const facts = buildFactsFromEvents([event]);
+
+      const receiverFact = facts.find((f) => f.subject === 'entity_harry');
+      const giverFact = facts.find((f) => f.subject === 'entity_ollivander');
+
+      expect(receiverFact?.confidence).toBe(0.8);
+      expect(giverFact?.confidence).toBeCloseTo(0.72, 5); // 0.8 * 0.9
+    });
+  });
+
+  describe('Hard constraints', () => {
+    it('should not create facts if ITEM is missing', () => {
+      const event = makeEvent('TRANSFER', [
+        { role: 'GIVER', entity: 'entity_harry' },
+        { role: 'RECEIVER', entity: 'entity_ron' },
+        // No ITEM
+      ]);
+
+      const facts = buildFactsFromEvents([event]);
+
+      expect(facts).toHaveLength(0);
+    });
+
+    it('should only create receiver fact if no GIVER', () => {
+      const event = makeEvent('TRANSFER', [
+        { role: 'RECEIVER', entity: 'entity_harry' },
+        { role: 'ITEM', entity: 'entity_letter' },
+        // No GIVER
+      ]);
+
+      const facts = buildFactsFromEvents([event]);
+
+      expect(facts).toHaveLength(1);
+      expect(facts[0].subject).toBe('entity_harry');
+      expect(facts[0].validUntil).toBeUndefined();
+    });
+  });
+
+  describe('Complex transfer chains', () => {
+    it('should track possession through multiple transfers', () => {
+      const events = [
+        makeEvent(
+          'TRANSFER',
+          [
+            { role: 'GIVER', entity: 'entity_harry' },
+            { role: 'RECEIVER', entity: 'entity_ron' },
+            { role: 'ITEM', entity: 'entity_snitch' },
+          ],
+          { id: 'transfer_1', time: makeDiscourseTime(1, 0, 0) }
+        ),
+        makeEvent(
+          'TRANSFER',
+          [
+            { role: 'GIVER', entity: 'entity_ron' },
+            { role: 'RECEIVER', entity: 'entity_hermione' },
+            { role: 'ITEM', entity: 'entity_snitch' },
+          ],
+          { id: 'transfer_2', time: makeDiscourseTime(2, 0, 0) }
+        ),
+      ];
+
+      const facts = buildFactsFromEvents(events);
+
+      // Should have 4 facts: Harry loses, Ron gains, Ron loses, Hermione gains
+      expect(facts.length).toBeGreaterThanOrEqual(4);
+
+      // Hermione should currently possess the snitch
+      const possessions = getCurrentPossessions(facts, 'entity_hermione');
+      expect(possessions).toContain('entity_snitch');
+
+      // Harry and Ron should no longer possess it
+      const harryPossessions = getCurrentPossessions(facts, 'entity_harry');
+      const ronPossessions = getCurrentPossessions(facts, 'entity_ron');
+      expect(harryPossessions).not.toContain('entity_snitch');
+      expect(ronPossessions).not.toContain('entity_snitch');
+    });
+  });
+});
+
+// =============================================================================
 // DEDUPLICATION TESTS
 // =============================================================================
 
@@ -519,6 +734,83 @@ describe('Query Helpers', () => {
 
       expect(aliveFacts).toHaveLength(1);
       expect(aliveFacts[0].predicate).toBe('alive');
+    });
+  });
+
+  describe('getCurrentPossessions', () => {
+    it('should return current possessions', () => {
+      const event = makeEvent('TRANSFER', [
+        { role: 'RECEIVER', entity: 'entity_harry' },
+        { role: 'ITEM', entity: 'entity_wand' },
+      ]);
+
+      const facts = buildFactsFromEvents([event]);
+      const possessions = getCurrentPossessions(facts, 'entity_harry');
+
+      expect(possessions).toContain('entity_wand');
+    });
+
+    it('should return empty for unknown entity', () => {
+      const facts = buildFactsFromEvents([]);
+      const possessions = getCurrentPossessions(facts, 'entity_unknown');
+
+      expect(possessions).toHaveLength(0);
+    });
+
+    it('should exclude items transferred away', () => {
+      const events = [
+        makeEvent(
+          'TRANSFER',
+          [
+            { role: 'RECEIVER', entity: 'entity_harry' },
+            { role: 'ITEM', entity: 'entity_cloak' },
+          ],
+          { time: makeDiscourseTime(1, 0, 0) }
+        ),
+        makeEvent(
+          'TRANSFER',
+          [
+            { role: 'GIVER', entity: 'entity_harry' },
+            { role: 'RECEIVER', entity: 'entity_dumbledore' },
+            { role: 'ITEM', entity: 'entity_cloak' },
+          ],
+          { time: makeDiscourseTime(2, 0, 0) }
+        ),
+      ];
+
+      const facts = buildFactsFromEvents(events);
+      const harryPossessions = getCurrentPossessions(facts, 'entity_harry');
+      const dumbledorePossessions = getCurrentPossessions(facts, 'entity_dumbledore');
+
+      // Harry gave it away
+      expect(harryPossessions).not.toContain('entity_cloak');
+      // Dumbledore has it now
+      expect(dumbledorePossessions).toContain('entity_cloak');
+    });
+
+    it('should handle multiple possessions', () => {
+      const events = [
+        makeEvent('TRANSFER', [
+          { role: 'RECEIVER', entity: 'entity_harry' },
+          { role: 'ITEM', entity: 'entity_wand' },
+        ]),
+        makeEvent('TRANSFER', [
+          { role: 'RECEIVER', entity: 'entity_harry' },
+          { role: 'ITEM', entity: 'entity_cloak' },
+        ]),
+        makeEvent('TRANSFER', [
+          { role: 'RECEIVER', entity: 'entity_harry' },
+          { role: 'ITEM', entity: 'entity_map' },
+        ]),
+      ];
+
+      const facts = buildFactsFromEvents(events);
+      const possessions = getCurrentPossessions(facts, 'entity_harry');
+
+      expect(possessions).toHaveLength(3);
+      expect(possessions).toContain('entity_wand');
+      expect(possessions).toContain('entity_cloak');
+      expect(possessions).toContain('entity_map');
     });
   });
 });
