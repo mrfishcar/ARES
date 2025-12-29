@@ -26,7 +26,20 @@ import { extractFromSegments } from '../app/engine/extract/orchestrator';
 import { parseWithService } from '../app/engine/extract/entities';
 import { adaptLegacyExtraction, type LegacyExtractionResult } from '../app/engine/ir/adapter';
 import { buildAssertions } from '../app/engine/ir/assertion-builder';
-import { buildEvents, type DocOrderInfo, type EligibilityStats, type BuildEventsResult } from '../app/engine/ir/event-builder';
+import {
+  buildEvents,
+  type DocOrderInfo,
+  type EligibilityStats,
+  type BuildEventsResult,
+  MOVE_PREDICATES,
+  LEARN_PREDICATES,
+  TELL_PREDICATES,
+  PROMISE_PREDICATES,
+  ATTACK_PREDICATES,
+  MEET_PREDICATES,
+  DEATH_PREDICATES,
+  normalizePredicate,
+} from '../app/engine/ir/event-builder';
 import { buildFactsFromEvents } from '../app/engine/ir/fact-builder';
 import { renderEntityPage } from '../app/engine/ir/entity-renderer';
 import { renderTimeline } from '../app/engine/ir/timeline-renderer';
@@ -51,27 +64,24 @@ const OUTPUT_DIR = '/tmp/ir-validation';
 const DEFAULT_CHAPTER = 'corpus/contemporary-chapter-01.txt';
 const TOP_N_ENTITIES = 5;
 
-// Event trigger predicates (synced with event-builder.ts)
-const EVENT_TRIGGERS: Record<string, string[]> = {
-  MOVE: [
-    // With preposition suffix
-    'traveled_to', 'went_to', 'arrived_at', 'left', 'moved_to', 'visited',
-    'returned_to', 'fled_to', 'escaped_to', 'came_to', 'came_from',
-    'walked_to', 'ran_to', 'stayed_at', 'stayed_in',
-    // Base verbs
-    'went', 'moved', 'came', 'traveled', 'walked', 'ran', 'returned', 'fled', 'escaped', 'entered',
-  ],
-  DEATH: ['died', 'killed', 'murdered', 'perished', 'passed_away'],
-  TELL: [
-    'told', 'said', 'asked', 'questioned', 'informed', 'explained',
-    'revealed', 'announced', 'warned', 'confessed', 'replied', 'answered',
-    'shouted', 'whispered', 'called', 'cried', 'stated', 'declared', 'mentioned', 'noted',
-  ],
-  LEARN: ['learned', 'discovered', 'realized', 'found_out', 'understood', 'recognized'],
-  PROMISE: ['promised', 'swore', 'vowed', 'agreed_to', 'committed_to', 'pledged'],
-  ATTACK: ['attacked', 'hit', 'hurt', 'injured', 'struck', 'fought', 'assaulted'],
-  MEET: ['met', 'encountered', 'ran_into', 'found', 'came_across', 'meet', 'joined', 'greeted', 'saw', 'visited'],
-};
+// Build mappedPredicates from imported sets (using canonical/normalized forms)
+const ALL_EVENT_PREDICATES = new Set<string>([
+  ...Array.from(MOVE_PREDICATES),
+  ...Array.from(LEARN_PREDICATES),
+  ...Array.from(TELL_PREDICATES),
+  ...Array.from(PROMISE_PREDICATES),
+  ...Array.from(ATTACK_PREDICATES),
+  ...Array.from(MEET_PREDICATES),
+  ...Array.from(DEATH_PREDICATES),
+]);
+
+/**
+ * Check if a predicate (after normalization) maps to any event type.
+ */
+function predicateMapsToEvent(predicate: string): boolean {
+  const normalized = normalizePredicate(predicate);
+  return ALL_EVENT_PREDICATES.has(normalized);
+}
 
 // =============================================================================
 // PARSER HEALTH CHECK
@@ -454,9 +464,8 @@ async function main() {
   console.log('METRICS');
   console.log('='.repeat(60));
 
-  // Find predicates that didn't map to events
+  // Find predicates that didn't map to events (using normalization)
   const allPredicates = new Set<string>();
-  const mappedPredicates = new Set<string>();
 
   for (const a of enrichedAssertions) {
     if (a.predicate) {
@@ -464,23 +473,20 @@ async function main() {
     }
   }
 
-  for (const [eventType, triggers] of Object.entries(EVENT_TRIGGERS)) {
-    for (const trigger of triggers) {
-      mappedPredicates.add(trigger);
-    }
-  }
-
   const unmappedPredicates = Array.from(allPredicates)
-    .filter(p => !mappedPredicates.has(p))
+    .filter(p => !predicateMapsToEvent(p))
     .sort();
 
-  // Count predicates with their mapping status (for metrics)
+  // Count predicates with their mapping status (using normalization)
   const mappedCounts = new Map<string, number>();
   const unmappedCounts = new Map<string, number>();
   for (const a of enrichedAssertions) {
     const pred = String(a.predicate);
-    if (mappedPredicates.has(pred)) {
-      mappedCounts.set(pred, (mappedCounts.get(pred) ?? 0) + 1);
+    // Apply normalization to determine if it maps to an event type
+    if (predicateMapsToEvent(pred)) {
+      // Track by normalized form for clearer metrics
+      const normalized = normalizePredicate(pred);
+      mappedCounts.set(normalized, (mappedCounts.get(normalized) ?? 0) + 1);
     } else {
       unmappedCounts.set(pred, (unmappedCounts.get(pred) ?? 0) + 1);
     }

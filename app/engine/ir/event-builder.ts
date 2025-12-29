@@ -129,6 +129,15 @@ const LEARN_PREDICATES = new Set<PredicateType | string>([
   'found_out',
   'understood',
   'recognized',
+  // Recall/remember = learning from memory
+  'remembered',
+  'recalled',
+  'recollected',
+  // Perception = discovering via senses
+  'noticed',
+  'observed',
+  'spotted',
+  'detected',
 ]);
 
 // TELL/ASK event triggers
@@ -143,6 +152,7 @@ const TELL_PREDICATES = new Set<PredicateType | string>([
   'announced',
   'warned',
   'confessed',
+  'admitted',   // Similar to confessed
   'replied',
   'answered',
   'shouted',
@@ -153,6 +163,8 @@ const TELL_PREDICATES = new Set<PredicateType | string>([
   'declared',
   'mentioned',
   'noted',
+  'muttered',   // Common speech verb
+  'murmured',   // Common speech verb
 ]);
 
 // PROMISE event triggers
@@ -160,6 +172,7 @@ const PROMISE_PREDICATES = new Set<PredicateType | string>([
   'promised',
   'swore',
   'vowed',
+  'agreed',      // "X agreed to Y" or "X agreed with Y"
   'agreed_to',
   'committed_to',
   'pledged',
@@ -235,6 +248,14 @@ const PREDICATE_NORMALIZATIONS: Record<string, string> = {
   'mentions': 'mentioned',
   'state': 'stated',
   'states': 'stated',
+  'admit': 'admitted',
+  'admits': 'admitted',
+  'confess': 'confessed',
+  'confesses': 'confessed',
+  'mutter': 'muttered',
+  'mutters': 'muttered',
+  'murmur': 'murmured',
+  'murmurs': 'murmured',
 
   // MOVE variations → past tense
   'go': 'went',
@@ -275,6 +296,20 @@ const PREDICATE_NORMALIZATIONS: Record<string, string> = {
   'understands': 'understood',
   'recognize': 'recognized',
   'recognizes': 'recognized',
+  'remember': 'remembered',
+  'remembers': 'remembered',
+  'recall': 'recalled',
+  'recalls': 'recalled',
+  'recollect': 'recollected',
+  'recollects': 'recollected',
+  'notice': 'noticed',
+  'notices': 'noticed',
+  'observe': 'observed',
+  'observes': 'observed',
+  'spot': 'spotted',
+  'spots': 'spotted',
+  'detect': 'detected',
+  'detects': 'detected',
 
   // MEET variations
   'meet': 'met',
@@ -317,6 +352,8 @@ const PREDICATE_NORMALIZATIONS: Record<string, string> = {
   'vows': 'vowed',
   'pledge': 'pledged',
   'pledges': 'pledged',
+  'agree': 'agreed',
+  'agrees': 'agreed',
 };
 
 /**
@@ -1356,4 +1393,6 @@ export {
   ATTACK_PREDICATES,
   MEET_PREDICATES,
   DEATH_PREDICATES,
+  PREDICATE_NORMALIZATIONS,
+  normalizePredicate,
 };
