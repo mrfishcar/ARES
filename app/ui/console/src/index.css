@@ -892,17 +892,30 @@ a:hover {
   justify-content: flex-start;
 }
 
-.formatting-style-chips {
+.formatting-palette__row--styles {
   display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: flex-start;
+  width: 100%;
+  min-width: 0;
+  gap: 6px;
+  padding: 2px 4px 6px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 8px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.formatting-style-chips {
+  display: inline-flex;
+  flex: 1 0 auto;
   flex-wrap: nowrap;
   gap: 8px;
   align-items: stretch;
   width: 100%;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scroll-padding: 6px;
-  -webkit-overflow-scrolling: touch;
-  padding: 2px 0;
+  min-width: 0;
+  padding: 0;
 }
 
 .format-style-chip {

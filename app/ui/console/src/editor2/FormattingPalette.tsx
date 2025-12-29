@@ -125,7 +125,7 @@ export function FormattingPalette({
     <div className={`formatting-palette ${isOpen ? 'formatting-palette--open' : ''}`}>
       <div className="formatting-palette__panel">
         <div className="formatting-palette__row formatting-palette__row--styles" role="group" aria-label="Text style">
-          <div className="formatting-style-chips" aria-live="polite">
+          <div className="formatting-style-chips formatting-style-chips--row" aria-live="polite">
             {STYLE_OPTIONS.map(option => (
               <button
                 key={option.value}
