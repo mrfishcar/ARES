@@ -4,7 +4,19 @@
  * Features active state tracking and keyboard shortcuts.
  */
 
-import { Bold, Italic, Underline, Strikethrough, List, ListOrdered, ListChecks, IndentDecrease, IndentIncrease, Quote } from 'lucide-react';
+import {
+  Bold,
+  Italic,
+  Underline,
+  Strikethrough,
+  List,
+  ListOrdered,
+  ListChecks,
+  IndentDecrease,
+  IndentIncrease,
+  Quote,
+  Code2
+} from 'lucide-react';
 import { useState, useEffect } from 'react';
 import type { FormattingActions } from '../components/CodeMirrorEditorProps';
 import type { FormatState } from './plugins/FormatActionsPlugin';
@@ -107,10 +119,12 @@ export function FormattingPalette({
 
   if (!isOpen) return null;
 
+  const isMonoActive = formatState?.blockType === 'code' || formatState?.isCode;
+
   return (
     <div className={`formatting-palette ${isOpen ? 'formatting-palette--open' : ''}`}>
-      <div className="formatting-palette__row formatting-palette__row--compact">
-        <div className="formatting-palette__section formatting-palette__section--style" role="group" aria-label="Text style">
+      <div className="formatting-palette__panel">
+        <div className="formatting-palette__row formatting-palette__row--styles" role="group" aria-label="Text style">
           <div className="formatting-style-chips" aria-live="polite">
             {STYLE_OPTIONS.map(option => (
               <button
@@ -126,128 +140,146 @@ export function FormattingPalette({
           </div>
         </div>
 
-        <div className="formatting-palette__section formatting-palette__section--controls">
-          <button
-            type="button"
-            className={`format-control ${formatState?.isBold ? 'format-control--active' : ''}`}
-            onClick={formatActions?.toggleBold}
-            disabled={!formatActions?.toggleBold}
-            title="Bold (⌘B)"
-            aria-label="Bold"
-            aria-pressed={formatState?.isBold ?? false}
-          >
-            <Bold size={18} strokeWidth={ICON_STROKE} />
-          </button>
+        <div className="formatting-palette__row formatting-palette__row--inline">
+          <div className="formatting-palette__controls" role="group" aria-label="Inline formatting">
+            <button
+              type="button"
+              className={`format-control ${formatState?.isBold ? 'format-control--active' : ''}`}
+              onClick={formatActions?.toggleBold}
+              disabled={!formatActions?.toggleBold}
+              title="Bold (⌘B)"
+              aria-label="Bold"
+              aria-pressed={formatState?.isBold ?? false}
+            >
+              <Bold size={18} strokeWidth={ICON_STROKE} />
+            </button>
 
-          <button
-            type="button"
-            className={`format-control ${formatState?.isItalic ? 'format-control--active' : ''}`}
-            onClick={formatActions?.toggleItalic}
-            disabled={!formatActions?.toggleItalic}
-            title="Italic (⌘I)"
-            aria-label="Italic"
-            aria-pressed={formatState?.isItalic ?? false}
-          >
-            <Italic size={18} strokeWidth={ICON_STROKE} />
-          </button>
+            <button
+              type="button"
+              className={`format-control ${formatState?.isItalic ? 'format-control--active' : ''}`}
+              onClick={formatActions?.toggleItalic}
+              disabled={!formatActions?.toggleItalic}
+              title="Italic (⌘I)"
+              aria-label="Italic"
+              aria-pressed={formatState?.isItalic ?? false}
+            >
+              <Italic size={18} strokeWidth={ICON_STROKE} />
+            </button>
 
-          <button
-            type="button"
-            className={`format-control ${formatState?.isUnderline ? 'format-control--active' : ''}`}
-            onClick={formatActions?.toggleUnderline}
-            disabled={!formatActions?.toggleUnderline}
-            title="Underline (⌘U)"
-            aria-label="Underline"
-            aria-pressed={formatState?.isUnderline ?? false}
-          >
-            <Underline size={18} strokeWidth={ICON_STROKE} />
-          </button>
+            <button
+              type="button"
+              className={`format-control ${formatState?.isUnderline ? 'format-control--active' : ''}`}
+              onClick={formatActions?.toggleUnderline}
+              disabled={!formatActions?.toggleUnderline}
+              title="Underline (⌘U)"
+              aria-label="Underline"
+              aria-pressed={formatState?.isUnderline ?? false}
+            >
+              <Underline size={18} strokeWidth={ICON_STROKE} />
+            </button>
 
-          <button
-            type="button"
-            className={`format-control ${formatState?.isStrikethrough ? 'format-control--active' : ''}`}
-            onClick={formatActions?.toggleStrikethrough}
-            disabled={!formatActions?.toggleStrikethrough}
-            title="Strikethrough (⌘⇧D)"
-            aria-label="Strikethrough"
-            aria-pressed={formatState?.isStrikethrough ?? false}
-          >
-            <Strikethrough size={18} strokeWidth={ICON_STROKE} />
-          </button>
+            <button
+              type="button"
+              className={`format-control ${formatState?.isStrikethrough ? 'format-control--active' : ''}`}
+              onClick={formatActions?.toggleStrikethrough}
+              disabled={!formatActions?.toggleStrikethrough}
+              title="Strikethrough (⌘⇧D)"
+              aria-label="Strikethrough"
+              aria-pressed={formatState?.isStrikethrough ?? false}
+            >
+              <Strikethrough size={18} strokeWidth={ICON_STROKE} />
+            </button>
 
-          <div className="format-control-divider" />
+            <div className="format-control-divider" aria-hidden="true" />
 
-          <button
-            type="button"
-            className={`format-control ${formatState?.listType === 'bullet' ? 'format-control--active' : ''}`}
-            onClick={formatActions?.insertBulletList}
-            disabled={!formatActions?.insertBulletList}
-            title="Bullet list"
-            aria-label="Bullet list"
-            aria-pressed={formatState?.listType === 'bullet'}
-          >
-            <List size={18} strokeWidth={ICON_STROKE} />
-          </button>
+            <button
+              type="button"
+              className={`format-control ${isMonoActive ? 'format-control--active' : ''}`}
+              onClick={formatActions?.toggleMonospace}
+              disabled={!formatActions?.toggleMonospace}
+              title="Monospaced"
+              aria-label="Monospaced"
+              aria-pressed={isMonoActive}
+            >
+              <Code2 size={18} strokeWidth={ICON_STROKE} />
+            </button>
+          </div>
+        </div>
 
-          <button
-            type="button"
-            className={`format-control ${formatState?.listType === 'number' ? 'format-control--active' : ''}`}
-            onClick={formatActions?.insertNumberedList}
-            disabled={!formatActions?.insertNumberedList}
-            title="Numbered list"
-            aria-label="Numbered list"
-            aria-pressed={formatState?.listType === 'number'}
-          >
-            <ListOrdered size={18} strokeWidth={ICON_STROKE} />
-          </button>
+        <div className="formatting-palette__row formatting-palette__row--blocks">
+          <div className="formatting-palette__controls" role="group" aria-label="Block formatting">
+            <button
+              type="button"
+              className={`format-control ${formatState?.listType === 'bullet' ? 'format-control--active' : ''}`}
+              onClick={formatActions?.insertBulletList}
+              disabled={!formatActions?.insertBulletList}
+              title="Bullet list"
+              aria-label="Bullet list"
+              aria-pressed={formatState?.listType === 'bullet'}
+            >
+              <List size={18} strokeWidth={ICON_STROKE} />
+            </button>
 
-          <button
-            type="button"
-            className={`format-control ${formatState?.listType === 'check' ? 'format-control--active' : ''}`}
-            onClick={formatActions?.insertCheckList}
-            disabled={!formatActions?.insertCheckList}
-            title="Checklist"
-            aria-label="Checklist"
-            aria-pressed={formatState?.listType === 'check'}
-          >
-            <ListChecks size={18} strokeWidth={ICON_STROKE} />
-          </button>
+            <button
+              type="button"
+              className={`format-control ${formatState?.listType === 'number' ? 'format-control--active' : ''}`}
+              onClick={formatActions?.insertNumberedList}
+              disabled={!formatActions?.insertNumberedList}
+              title="Numbered list"
+              aria-label="Numbered list"
+              aria-pressed={formatState?.listType === 'number'}
+            >
+              <ListOrdered size={18} strokeWidth={ICON_STROKE} />
+            </button>
 
-          <div className="format-control-divider" />
+            <button
+              type="button"
+              className={`format-control ${formatState?.listType === 'check' ? 'format-control--active' : ''}`}
+              onClick={formatActions?.insertCheckList}
+              disabled={!formatActions?.insertCheckList}
+              title="Checklist"
+              aria-label="Checklist"
+              aria-pressed={formatState?.listType === 'check'}
+            >
+              <ListChecks size={18} strokeWidth={ICON_STROKE} />
+            </button>
 
-          <button
-            type="button"
-            className="format-control"
-            onClick={formatActions?.outdent}
-            disabled={!formatActions?.outdent}
-            title="Decrease indent (⇧Tab)"
-            aria-label="Decrease indent"
-          >
-            <IndentDecrease size={18} strokeWidth={ICON_STROKE} />
-          </button>
+            <div className="format-control-divider" aria-hidden="true" />
 
-          <button
-            type="button"
-            className="format-control"
-            onClick={formatActions?.indent}
-            disabled={!formatActions?.indent}
-            title="Increase indent (Tab)"
-            aria-label="Increase indent"
-          >
-            <IndentIncrease size={18} strokeWidth={ICON_STROKE} />
-          </button>
+            <button
+              type="button"
+              className="format-control"
+              onClick={formatActions?.outdent}
+              disabled={!formatActions?.outdent}
+              title="Decrease indent (⇧Tab)"
+              aria-label="Decrease indent"
+            >
+              <IndentDecrease size={18} strokeWidth={ICON_STROKE} />
+            </button>
 
-          <button
-            type="button"
-            className={`format-control ${formatState?.isQuote ? 'format-control--active' : ''}`}
-            onClick={formatActions?.toggleQuote}
-            disabled={!formatActions?.toggleQuote}
-            title="Quote block"
-            aria-label="Quote block"
-            aria-pressed={formatState?.isQuote ?? false}
-          >
-            <Quote size={18} strokeWidth={ICON_STROKE} />
-          </button>
+            <button
+              type="button"
+              className="format-control"
+              onClick={formatActions?.indent}
+              disabled={!formatActions?.indent}
+              title="Increase indent (Tab)"
+              aria-label="Increase indent"
+            >
+              <IndentIncrease size={18} strokeWidth={ICON_STROKE} />
+            </button>
+
+            <button
+              type="button"
+              className={`format-control ${formatState?.isQuote ? 'format-control--active' : ''}`}
+              onClick={formatActions?.toggleQuote}
+              disabled={!formatActions?.toggleQuote}
+              title="Quote block"
+              aria-label="Quote block"
+              aria-pressed={formatState?.isQuote ?? false}
+            >
+              <Quote size={18} strokeWidth={ICON_STROKE} />
+            </button>
+          </div>
         </div>
       </div>
     </div>

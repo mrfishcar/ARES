@@ -858,7 +858,7 @@ a:hover {
   --format-pill-ink: var(--text-primary);
   --format-pill-bg: color-mix(in srgb, var(--liquid-glass-bg) 92%, rgba(255, 255, 255, 0.08));
   --format-pill-border: var(--liquid-glass-border);
-  --format-pill-shadow: 0 14px 32px var(--liquid-glass-glow-outer), inset 0 1px 0 var(--liquid-glass-glow-inner);
+  --format-pill-shadow: 0 12px 28px var(--liquid-glass-glow-outer), inset 0 1px 0 var(--liquid-glass-glow-inner);
   --format-pill-tint-1: var(--liquid-glass-tint-1);
   --format-pill-tint-2: var(--liquid-glass-tint-2);
   --format-chip-bg: color-mix(in srgb, var(--liquid-glass-bg) 78%, rgba(255, 255, 255, 0.12));
@@ -866,46 +866,39 @@ a:hover {
   color: var(--format-pill-ink);
 }
 
-.formatting-palette__row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.formatting-palette__panel {
   width: 100%;
-  padding: 5px 10px;
-  background: linear-gradient(135deg, var(--format-pill-bg), color-mix(in srgb, var(--format-pill-bg) 92%, var(--format-pill-tint-1) 8%)),
-    linear-gradient(225deg, transparent, var(--format-pill-tint-2));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  background: linear-gradient(140deg, var(--format-pill-bg), color-mix(in srgb, var(--format-pill-bg) 92%, var(--format-pill-tint-1) 8%)),
+    linear-gradient(220deg, transparent, var(--format-pill-tint-2));
   border: 1px solid var(--format-pill-border);
-  border-radius: 16px;
+  border-radius: 14px;
   box-shadow: var(--format-pill-shadow);
   backdrop-filter: blur(var(--liquid-glass-blur-toolbar));
 }
 
-.formatting-palette__row--compact {
-  padding: 5px 8px;
-}
-
-.formatting-palette__section {
+.formatting-palette__row {
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.formatting-palette__section--style {
-  flex: 1;
-  min-width: 220px;
+  width: 100%;
+  justify-content: center;
 }
 
 .formatting-style-chips {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
   align-items: stretch;
-  padding: 2px;
+  width: 100%;
 }
 
 @media (max-width: 720px) {
   .formatting-style-chips {
-    grid-template-columns: repeat(1, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -920,7 +913,7 @@ a:hover {
   cursor: pointer;
   transition: all 0.18s var(--ease-in-out);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
-  text-align: left;
+  text-align: center;
 }
 
 .format-style-chip:hover {
@@ -934,18 +927,21 @@ a:hover {
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
 }
 
-.formatting-palette__section--controls {
-  flex: 1;
+.formatting-palette__row--inline,
+.formatting-palette__row--blocks {
+  justify-content: flex-start;
+}
+
+.formatting-palette__controls {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
   gap: 6px;
   flex-wrap: nowrap;
 }
 
 .format-control {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 12px;
   border: 1px solid var(--format-chip-border);
   background: var(--format-chip-bg);
@@ -979,7 +975,7 @@ a:hover {
 
 .format-control-divider {
   width: 1px;
-  height: 24px;
+  height: 22px;
   background: color-mix(in srgb, var(--format-pill-ink) 45%, transparent);
   opacity: 0.6;
   margin: 0 4px;
