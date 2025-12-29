@@ -183,7 +183,8 @@ const RUMOR_CUES = new Set([
 ]);
 
 /**
- * Plan/intention cues.
+ * Plan/intention cues (includes desire verbs).
+ * Desire verbs (want, wish, hope) express future-oriented intentions.
  */
 const PLAN_CUES = new Set([
   'plans to',
@@ -196,6 +197,19 @@ const PLAN_CUES = new Set([
   'would',
   'going to',
   'about to',
+  // Desire verbs (future-oriented)
+  'wants to',
+  'wanted to',
+  'want to',
+  'wishes to',
+  'wished to',
+  'wish to',
+  'desires to',
+  'desired to',
+  'desire to',
+  'needs to',
+  'needed to',
+  'need to',
 ]);
 
 /**

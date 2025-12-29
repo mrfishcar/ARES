@@ -38,6 +38,7 @@ import {
   ATTACK_PREDICATES,
   MEET_PREDICATES,
   DEATH_PREDICATES,
+  TRANSFER_PREDICATES,
   normalizePredicate,
 } from '../app/engine/ir/event-builder';
 import { buildFactsFromEvents } from '../app/engine/ir/fact-builder';
@@ -73,6 +74,7 @@ const ALL_EVENT_PREDICATES = new Set<string>([
   ...Array.from(ATTACK_PREDICATES),
   ...Array.from(MEET_PREDICATES),
   ...Array.from(DEATH_PREDICATES),
+  ...Array.from(TRANSFER_PREDICATES),
 ]);
 
 /**
