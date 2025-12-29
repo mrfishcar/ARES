@@ -21,6 +21,7 @@ import {
   MOVE_PREDICATES,
   TELL_PREDICATES,
   DEATH_PREDICATES,
+  TRANSFER_PREDICATES,
 } from '../../app/engine/ir/event-builder';
 import type {
   Assertion,
@@ -1027,5 +1028,252 @@ describe('Edge Cases', () => {
     // Should still have MOVER but no DESTINATION
     expect(candidates[0].participants).toHaveLength(1);
     expect(candidates[0].participants[0].role).toBe('MOVER');
+  });
+});
+
+// =============================================================================
+// TRANSFER EVENT TESTS
+// =============================================================================
+
+describe('TRANSFER Event Extraction', () => {
+  describe('Predicate Sets', () => {
+    it('should have TRANSFER predicates defined', () => {
+      expect(TRANSFER_PREDICATES.has('gave')).toBe(true);
+      expect(TRANSFER_PREDICATES.has('took')).toBe(true);
+      expect(TRANSFER_PREDICATES.has('received')).toBe(true);
+      expect(TRANSFER_PREDICATES.has('stole')).toBe(true);
+    });
+  });
+
+  describe('Giving verbs', () => {
+    it('should create TRANSFER event from "gave" with ITEM object', () => {
+      const entities = [
+        makeEntity('entity_harry', 'PERSON', 'Harry'),
+        makeEntity('entity_wand', 'ITEM', 'the wand'),
+      ];
+      const entityMap = makeEntityMap(entities);
+
+      const assertion = makeAssertion({
+        subject: 'entity_harry',
+        predicate: 'gave',
+        object: 'entity_wand',
+        evidence: [makeEvidence('Harry gave the wand')],
+      });
+
+      const candidates = extractEventCandidates([assertion], entityMap);
+
+      expect(candidates).toHaveLength(1);
+      expect(candidates[0].type).toBe('TRANSFER');
+
+      const giver = candidates[0].participants.find(p => p.role === 'GIVER');
+      const item = candidates[0].participants.find(p => p.role === 'ITEM');
+
+      expect(giver?.entity).toBe('entity_harry');
+      expect(item?.entity).toBe('entity_wand');
+    });
+
+    it('should identify RECEIVER when object is a PERSON for giving verbs', () => {
+      const entities = [
+        makeEntity('entity_harry', 'PERSON', 'Harry'),
+        makeEntity('entity_ron', 'PERSON', 'Ron'),
+      ];
+      const entityMap = makeEntityMap(entities);
+
+      const assertion = makeAssertion({
+        subject: 'entity_harry',
+        predicate: 'handed',
+        object: 'entity_ron', // Person = RECEIVER
+        evidence: [makeEvidence('Harry handed Ron')],
+      });
+
+      const candidates = extractEventCandidates([assertion], entityMap);
+
+      // Should NOT create event because no ITEM
+      expect(candidates).toHaveLength(0);
+    });
+  });
+
+  describe('Taking verbs', () => {
+    it('should create TRANSFER event from "took" with ITEM object', () => {
+      const entities = [
+        makeEntity('entity_hermione', 'PERSON', 'Hermione'),
+        makeEntity('entity_book', 'ITEM', 'the book'),
+      ];
+      const entityMap = makeEntityMap(entities);
+
+      const assertion = makeAssertion({
+        subject: 'entity_hermione',
+        predicate: 'took',
+        object: 'entity_book',
+        evidence: [makeEvidence('Hermione took the book')],
+      });
+
+      const candidates = extractEventCandidates([assertion], entityMap);
+
+      expect(candidates).toHaveLength(1);
+      expect(candidates[0].type).toBe('TRANSFER');
+
+      const receiver = candidates[0].participants.find(p => p.role === 'RECEIVER');
+      const item = candidates[0].participants.find(p => p.role === 'ITEM');
+
+      expect(receiver?.entity).toBe('entity_hermione');
+      expect(item?.entity).toBe('entity_book');
+    });
+
+    it('should create TRANSFER event from "stole"', () => {
+      const entities = [
+        makeEntity('entity_draco', 'PERSON', 'Draco'),
+        makeEntity('entity_stone', 'ITEM', "the philosopher's stone"),
+      ];
+      const entityMap = makeEntityMap(entities);
+
+      const assertion = makeAssertion({
+        subject: 'entity_draco',
+        predicate: 'stole',
+        object: 'entity_stone',
+        evidence: [makeEvidence("Draco stole the philosopher's stone")],
+      });
+
+      const candidates = extractEventCandidates([assertion], entityMap);
+
+      expect(candidates).toHaveLength(1);
+      expect(candidates[0].type).toBe('TRANSFER');
+    });
+
+    it('should block TRANSFER when taking verb has PERSON object (ambiguous)', () => {
+      const entities = [
+        makeEntity('entity_harry', 'PERSON', 'Harry'),
+        makeEntity('entity_hermione', 'PERSON', 'Hermione'),
+      ];
+      const entityMap = makeEntityMap(entities);
+
+      // "took her" is ambiguous - could be "took her somewhere"
+      const assertion = makeAssertion({
+        subject: 'entity_harry',
+        predicate: 'took',
+        object: 'entity_hermione',
+        evidence: [makeEvidence('Harry took her')],
+      });
+
+      const candidates = extractEventCandidates([assertion], entityMap);
+
+      // Should be blocked as ambiguous
+      expect(candidates).toHaveLength(0);
+    });
+  });
+
+  describe('Receiving verbs', () => {
+    it('should create TRANSFER event from "received"', () => {
+      const entities = [
+        makeEntity('entity_neville', 'PERSON', 'Neville'),
+        makeEntity('entity_letter', 'ITEM', 'the letter'),
+      ];
+      const entityMap = makeEntityMap(entities);
+
+      const assertion = makeAssertion({
+        subject: 'entity_neville',
+        predicate: 'received',
+        object: 'entity_letter',
+        evidence: [makeEvidence('Neville received the letter')],
+      });
+
+      const candidates = extractEventCandidates([assertion], entityMap);
+
+      expect(candidates).toHaveLength(1);
+      expect(candidates[0].type).toBe('TRANSFER');
+
+      const receiver = candidates[0].participants.find(p => p.role === 'RECEIVER');
+      const item = candidates[0].participants.find(p => p.role === 'ITEM');
+
+      expect(receiver?.entity).toBe('entity_neville');
+      expect(item?.entity).toBe('entity_letter');
+    });
+
+    it('should create TRANSFER event from "got"', () => {
+      const entities = [
+        makeEntity('entity_ginny', 'PERSON', 'Ginny'),
+        makeEntity('entity_broom', 'ITEM', 'a new broom'),
+      ];
+      const entityMap = makeEntityMap(entities);
+
+      const assertion = makeAssertion({
+        subject: 'entity_ginny',
+        predicate: 'got',
+        object: 'entity_broom',
+        evidence: [makeEvidence('Ginny got a new broom')],
+      });
+
+      const candidates = extractEventCandidates([assertion], entityMap);
+
+      expect(candidates).toHaveLength(1);
+      expect(candidates[0].type).toBe('TRANSFER');
+    });
+  });
+
+  describe('Hard constraints', () => {
+    it('should block TRANSFER when no ITEM is present', () => {
+      const entities = [
+        makeEntity('entity_harry', 'PERSON', 'Harry'),
+      ];
+      const entityMap = makeEntityMap(entities);
+
+      // No object = no ITEM
+      const assertion = makeAssertion({
+        subject: 'entity_harry',
+        predicate: 'gave',
+        evidence: [makeEvidence('Harry gave')],
+      });
+
+      const candidates = extractEventCandidates([assertion], entityMap);
+
+      expect(candidates).toHaveLength(0);
+    });
+
+    it('should include evidence spans in TRANSFER event', () => {
+      const entities = [
+        makeEntity('entity_dumbledore', 'PERSON', 'Dumbledore'),
+        makeEntity('entity_cloak', 'ITEM', 'the invisibility cloak'),
+      ];
+      const entityMap = makeEntityMap(entities);
+
+      const evidence = makeEvidence('Dumbledore gave the invisibility cloak', {
+        paragraphIndex: 10,
+        sentenceIndex: 3,
+      });
+
+      const assertion = makeAssertion({
+        subject: 'entity_dumbledore',
+        predicate: 'gave',
+        object: 'entity_cloak',
+        evidence: [evidence],
+      });
+
+      const candidates = extractEventCandidates([assertion], entityMap);
+
+      expect(candidates).toHaveLength(1);
+      expect(candidates[0].evidence).toHaveLength(1);
+      expect(candidates[0].evidence[0].paragraphIndex).toBe(10);
+    });
+
+    it('should inherit modality from assertion', () => {
+      const entities = [
+        makeEntity('entity_sirius', 'PERSON', 'Sirius'),
+        makeEntity('entity_knife', 'ITEM', 'the knife'),
+      ];
+      const entityMap = makeEntityMap(entities);
+
+      const assertion = makeAssertion({
+        subject: 'entity_sirius',
+        predicate: 'gave',
+        object: 'entity_knife',
+        modality: 'BELIEF',
+        evidence: [makeEvidence('Sirius might have given the knife')],
+      });
+
+      const candidates = extractEventCandidates([assertion], entityMap);
+
+      expect(candidates).toHaveLength(1);
+      expect(candidates[0].modality).toBe('BELIEF');
+    });
   });
 });

@@ -666,6 +666,17 @@ export interface FactViewRow {
 
   /** Composite confidence (computed from source objects) */
   confidence: number;
+
+  /**
+   * How this fact was inferred (for tracking implicit derivations).
+   *
+   * - 'explicit': Directly stated in evidence (e.g., "Harry received the wand")
+   * - 'implied_loss': Inferred from transfer (e.g., giver no longer has item)
+   *
+   * Used for rendering (show inferred facts differently) and future
+   * edge cases like lend (temporary) or copy (no loss).
+   */
+  inference?: 'explicit' | 'implied_loss';
 }
 
 /** Alias for clarity */

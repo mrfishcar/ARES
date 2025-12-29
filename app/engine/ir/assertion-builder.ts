@@ -139,6 +139,27 @@ const BELIEF_VERBS = new Set([
   'considered',
 ]);
 
+// =============================================================================
+// FUTURE: PERCEPTION EPISTEMICS
+// =============================================================================
+//
+// Perception verbs (saw, watched, heard, noticed, observed, felt) currently
+// remain as FACT modality by default. In the future, these should be attributed
+// as "character perception" rather than pure narrator fact:
+//
+// Example: "Harry saw Draco enter the room"
+// - Current: FACT modality (narrator-asserted event)
+// - Future: CHARACTER_PERCEPTION modality with perceiver=Harry
+//
+// This requires:
+// 1. New modality type: CHARACTER_PERCEPTION
+// 2. Attribution field: perceiver: EntityId
+// 3. Epistemic chain: "Harry saw X" means Harry believes X happened
+//
+// Not urgent - perception verbs work correctly as FACT for now.
+// Track: https://github.com/mrfishcar/ARES/issues/xxx
+// =============================================================================
+
 /**
  * Negation cues that indicate NEGATED modality.
  */
@@ -183,7 +204,8 @@ const RUMOR_CUES = new Set([
 ]);
 
 /**
- * Plan/intention cues.
+ * Plan/intention cues (includes desire verbs).
+ * Desire verbs (want, wish, hope) express future-oriented intentions.
  */
 const PLAN_CUES = new Set([
   'plans to',
@@ -196,6 +218,19 @@ const PLAN_CUES = new Set([
   'would',
   'going to',
   'about to',
+  // Desire verbs (future-oriented)
+  'wants to',
+  'wanted to',
+  'want to',
+  'wishes to',
+  'wished to',
+  'wish to',
+  'desires to',
+  'desired to',
+  'desire to',
+  'needs to',
+  'needed to',
+  'need to',
 ]);
 
 /**

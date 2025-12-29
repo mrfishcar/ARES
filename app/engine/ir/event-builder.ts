@@ -129,6 +129,15 @@ const LEARN_PREDICATES = new Set<PredicateType | string>([
   'found_out',
   'understood',
   'recognized',
+  // Recall/remember = learning from memory
+  'remembered',
+  'recalled',
+  'recollected',
+  // Perception = discovering via senses
+  'noticed',
+  'observed',
+  'spotted',
+  'detected',
 ]);
 
 // TELL/ASK event triggers
@@ -143,6 +152,7 @@ const TELL_PREDICATES = new Set<PredicateType | string>([
   'announced',
   'warned',
   'confessed',
+  'admitted',   // Similar to confessed
   'replied',
   'answered',
   'shouted',
@@ -153,6 +163,8 @@ const TELL_PREDICATES = new Set<PredicateType | string>([
   'declared',
   'mentioned',
   'noted',
+  'muttered',   // Common speech verb
+  'murmured',   // Common speech verb
 ]);
 
 // PROMISE event triggers
@@ -160,6 +172,7 @@ const PROMISE_PREDICATES = new Set<PredicateType | string>([
   'promised',
   'swore',
   'vowed',
+  'agreed',      // "X agreed to Y" or "X agreed with Y"
   'agreed_to',
   'committed_to',
   'pledged',
@@ -199,6 +212,31 @@ const DEATH_PREDICATES = new Set<PredicateType | string>([
   'passed_away',
 ]);
 
+// TRANSFER event triggers (possession changes)
+const TRANSFER_PREDICATES = new Set<PredicateType | string>([
+  // Giving
+  'gave',
+  'handed',
+  'passed',
+  'offered',
+  'presented',
+  'delivered',
+  'donated',
+  'gifted',
+  // Taking
+  'took',
+  'grabbed',
+  'seized',
+  'snatched',
+  'stole',
+  // Receiving
+  'received',
+  'accepted',
+  'obtained',
+  'acquired',
+  'got',
+]);
+
 // =============================================================================
 // PREDICATE NORMALIZATION TABLE
 // =============================================================================
@@ -235,6 +273,14 @@ const PREDICATE_NORMALIZATIONS: Record<string, string> = {
   'mentions': 'mentioned',
   'state': 'stated',
   'states': 'stated',
+  'admit': 'admitted',
+  'admits': 'admitted',
+  'confess': 'confessed',
+  'confesses': 'confessed',
+  'mutter': 'muttered',
+  'mutters': 'muttered',
+  'murmur': 'murmured',
+  'murmurs': 'murmured',
 
   // MOVE variations → past tense
   'go': 'went',
@@ -275,6 +321,20 @@ const PREDICATE_NORMALIZATIONS: Record<string, string> = {
   'understands': 'understood',
   'recognize': 'recognized',
   'recognizes': 'recognized',
+  'remember': 'remembered',
+  'remembers': 'remembered',
+  'recall': 'recalled',
+  'recalls': 'recalled',
+  'recollect': 'recollected',
+  'recollects': 'recollected',
+  'notice': 'noticed',
+  'notices': 'noticed',
+  'observe': 'observed',
+  'observes': 'observed',
+  'spot': 'spotted',
+  'spots': 'spotted',
+  'detect': 'detected',
+  'detects': 'detected',
 
   // MEET variations
   'meet': 'met',
@@ -317,6 +377,46 @@ const PREDICATE_NORMALIZATIONS: Record<string, string> = {
   'vows': 'vowed',
   'pledge': 'pledged',
   'pledges': 'pledged',
+  'agree': 'agreed',
+  'agrees': 'agreed',
+
+  // TRANSFER variations
+  'give': 'gave',
+  'gives': 'gave',
+  'hand': 'handed',
+  'hands': 'handed',
+  'pass': 'passed',
+  'passes': 'passed',
+  'offer': 'offered',
+  'offers': 'offered',
+  'present': 'presented',
+  'presents': 'presented',
+  'deliver': 'delivered',
+  'delivers': 'delivered',
+  'donate': 'donated',
+  'donates': 'donated',
+  'gift': 'gifted',
+  'gifts': 'gifted',
+  'take': 'took',
+  'takes': 'took',
+  'grab': 'grabbed',
+  'grabs': 'grabbed',
+  'seize': 'seized',
+  'seizes': 'seized',
+  'snatch': 'snatched',
+  'snatches': 'snatched',
+  'steal': 'stole',
+  'steals': 'stole',
+  'receive': 'received',
+  'receives': 'received',
+  'accept': 'accepted',
+  'accepts': 'accepted',
+  'obtain': 'obtained',
+  'obtains': 'obtained',
+  'acquire': 'acquired',
+  'acquires': 'acquired',
+  'get': 'got',
+  'gets': 'got',
 };
 
 /**
@@ -588,6 +688,7 @@ function getEventTypeForPredicate(predicate: string): EventType | null {
   if (PROMISE_PREDICATES.has(normalized)) return 'PROMISE';
   if (ATTACK_PREDICATES.has(normalized)) return 'ATTACK';
   if (MEET_PREDICATES.has(normalized)) return 'MEET';
+  if (TRANSFER_PREDICATES.has(normalized)) return 'TRANSFER';
   return null;
 }
 
@@ -614,6 +715,8 @@ function createCandidateForType(
       return createAttackCandidate(assertion, entityMap);
     case 'MEET':
       return createMeetCandidate(assertion, entityMap);
+    case 'TRANSFER':
+      return createTransferCandidate(assertion, entityMap);
     default:
       return null;
   }
@@ -882,6 +985,129 @@ function createMeetCandidate(
   }
 
   return createBaseCandidate('MEET', assertion, participants);
+}
+
+/**
+ * Create a TRANSFER event candidate.
+ * Handles possession changes: give, take, receive, steal
+ *
+ * Participants:
+ * - GIVER (subject for give/hand/pass, object for take/steal/receive)
+ * - RECEIVER (object for give/hand/pass, subject for take/steal/receive)
+ * - ITEM (required - the thing being transferred)
+ *
+ * Verb classes:
+ * - GIVING: gave, handed, passed, offered, presented, delivered, donated, gifted
+ * - TAKING: took, grabbed, seized, snatched, stole
+ * - RECEIVING: received, accepted, obtained, acquired, got
+ */
+const GIVING_VERBS = new Set(['gave', 'handed', 'passed', 'offered', 'presented', 'delivered', 'donated', 'gifted']);
+const TAKING_VERBS = new Set(['took', 'grabbed', 'seized', 'snatched', 'stole']);
+const RECEIVING_VERBS = new Set(['received', 'accepted', 'obtained', 'acquired', 'got']);
+
+function createTransferCandidate(
+  assertion: Assertion,
+  entityMap: Map<EntityId, Entity>
+): EventCandidate | null {
+  const participants: Participant[] = [];
+  const predicate = normalizePredicate(assertion.predicate as string);
+
+  // Determine transfer direction based on verb class
+  const isGiving = GIVING_VERBS.has(predicate);
+  const isTaking = TAKING_VERBS.has(predicate);
+  const isReceiving = RECEIVING_VERBS.has(predicate);
+
+  // For TRANSFER, we need at least an ITEM
+  // The object should be the ITEM for giving verbs
+  // The subject should be the RECEIVER for taking/receiving verbs
+
+  if (isGiving) {
+    // "X gave Y to Z" or "X gave Z Y"
+    // Subject = GIVER, Object could be ITEM or RECEIVER
+    if (assertion.subject) {
+      participants.push({
+        role: 'GIVER',
+        entity: assertion.subject,
+        isRequired: false,
+      });
+    }
+
+    // Object is typically the ITEM in "gave the book" or RECEIVER in "gave him"
+    if (assertion.object && typeof assertion.object === 'string') {
+      const objectEntity = entityMap.get(assertion.object);
+      if (objectEntity?.type === 'PERSON') {
+        // Object is a person = RECEIVER
+        participants.push({
+          role: 'RECEIVER',
+          entity: assertion.object,
+          isRequired: false,
+        });
+      } else {
+        // Object is not a person = ITEM
+        participants.push({
+          role: 'ITEM',
+          entity: assertion.object,
+          isRequired: true,
+        });
+      }
+    }
+  } else if (isTaking) {
+    // "X took Y" or "X stole Y from Z"
+    // Subject = RECEIVER (person taking), Object = ITEM
+    if (assertion.subject) {
+      participants.push({
+        role: 'RECEIVER',
+        entity: assertion.subject,
+        isRequired: false,
+      });
+    }
+
+    if (assertion.object && typeof assertion.object === 'string') {
+      const objectEntity = entityMap.get(assertion.object);
+      if (objectEntity?.type !== 'PERSON') {
+        // Object is the ITEM being taken
+        participants.push({
+          role: 'ITEM',
+          entity: assertion.object,
+          isRequired: true,
+        });
+      } else {
+        // "took her" might be person, skip as ITEM
+        // This blocks ambiguous cases per constraint
+        return null;
+      }
+    }
+  } else if (isReceiving) {
+    // "X received Y" or "X got Y"
+    // Subject = RECEIVER, Object = ITEM
+    if (assertion.subject) {
+      participants.push({
+        role: 'RECEIVER',
+        entity: assertion.subject,
+        isRequired: false,
+      });
+    }
+
+    if (assertion.object && typeof assertion.object === 'string') {
+      const objectEntity = entityMap.get(assertion.object);
+      if (objectEntity?.type !== 'PERSON') {
+        participants.push({
+          role: 'ITEM',
+          entity: assertion.object,
+          isRequired: true,
+        });
+      }
+    }
+  }
+
+  // HARD CONSTRAINT: Block if no ITEM participant
+  // A transfer without an item is meaningless
+  const hasItem = participants.some(p => p.role === 'ITEM');
+  if (!hasItem) {
+    return null;
+  }
+
+  return createBaseCandidate('TRANSFER', assertion, participants);
 }
 
 /**
@@ -1356,4 +1582,7 @@ export {
   ATTACK_PREDICATES,
   MEET_PREDICATES,
   DEATH_PREDICATES,
+  TRANSFER_PREDICATES,
+  PREDICATE_NORMALIZATIONS,
+  normalizePredicate,
 };

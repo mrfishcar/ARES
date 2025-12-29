@@ -14,6 +14,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   renderEntityPage,
+  renderItemPage,
   getEntityName,
   getEventsForEntity,
   getAssertionsForEntity,
@@ -847,5 +848,252 @@ describe('Edge Cases', () => {
     const output = renderEntityPage(ir, 'entity_harry', { maxAssertions: 1 });
 
     expect(output).toContain('more claims not shown');
+  });
+});
+
+// =============================================================================
+// ITEM PAGE RENDERER TESTS
+// =============================================================================
+
+describe('renderItemPage', () => {
+  function makeTransferEvent(
+    id: string,
+    giver: string | null,
+    receiver: string,
+    item: string,
+    time: DiscourseTime,
+    evidenceText: string
+  ): StoryEvent {
+    const participants: Participant[] = [
+      { role: 'RECEIVER', entity: receiver, isRequired: true },
+      { role: 'ITEM', entity: item, isRequired: true },
+    ];
+
+    if (giver) {
+      participants.unshift({ role: 'GIVER', entity: giver, isRequired: true });
+    }
+
+    return {
+      id,
+      type: 'TRANSFER',
+      participants,
+      time,
+      evidence: [makeEvidence(evidenceText)],
+      attribution: makeAttribution(),
+      modality: 'FACT',
+      confidence: makeConfidence(),
+      links: [],
+      produces: [],
+      extractedFrom: 'pattern',
+      derivedFrom: [],
+      createdAt: new Date().toISOString(),
+      compiler_pass: 'test',
+    };
+  }
+
+  function createItemIR(): ProjectIR {
+    return {
+      version: '1.0',
+      projectId: 'test',
+      createdAt: new Date().toISOString(),
+      entities: [
+        makeEntity('entity_harry', 'PERSON', 'Harry Potter'),
+        makeEntity('entity_ron', 'PERSON', 'Ron Weasley'),
+        makeEntity('entity_ollivander', 'PERSON', 'Ollivander'),
+        makeEntity('entity_wand', 'ITEM', 'Elder Wand'),
+      ],
+      assertions: [],
+      events: [
+        makeTransferEvent(
+          'transfer_1',
+          'entity_ollivander',
+          'entity_harry',
+          'entity_wand',
+          { type: 'DISCOURSE', chapter: 1, paragraph: 5, sentence: 0 },
+          'Ollivander handed the wand to Harry.'
+        ),
+        makeTransferEvent(
+          'transfer_2',
+          'entity_harry',
+          'entity_ron',
+          'entity_wand',
+          { type: 'DISCOURSE', chapter: 3, paragraph: 10, sentence: 0 },
+          'Harry gave the wand to Ron.'
+        ),
+      ],
+      stats: { entityCount: 4, assertionCount: 0, eventCount: 2 },
+    };
+  }
+
+  describe('Title Block', () => {
+    it('should render item name as title', () => {
+      const ir = createItemIR();
+      const output = renderItemPage(ir, 'entity_wand');
+
+      expect(output).toContain('# Elder Wand');
+      expect(output).toContain('**Type:** ITEM');
+    });
+  });
+
+  describe('Current Holder', () => {
+    it('should show current holder from transfer events', () => {
+      const ir = createItemIR();
+      const output = renderItemPage(ir, 'entity_wand');
+
+      expect(output).toContain('## Current holder');
+      expect(output).toContain('**Ron Weasley**');
+    });
+
+    it('should show "Unknown" when no ownership information', () => {
+      const ir: ProjectIR = {
+        version: '1.0',
+        projectId: 'test',
+        createdAt: new Date().toISOString(),
+        entities: [makeEntity('entity_ring', 'ITEM', 'Ring')],
+        assertions: [],
+        events: [],
+        stats: { entityCount: 1, assertionCount: 0, eventCount: 0 },
+      };
+
+      const output = renderItemPage(ir, 'entity_ring');
+
+      expect(output).toContain('**Unknown**');
+      expect(output).toContain('No ownership information available');
+    });
+
+    it('should include acquisition time', () => {
+      const ir = createItemIR();
+      const output = renderItemPage(ir, 'entity_wand');
+
+      expect(output).toContain('Since Ch.3 ¶10');
+    });
+  });
+
+  describe('Ownership History', () => {
+    it('should show ownership timeline', () => {
+      const ir = createItemIR();
+      const output = renderItemPage(ir, 'entity_wand');
+
+      expect(output).toContain('## Ownership history');
+      expect(output).toContain('**Ron Weasley**');
+      expect(output).toContain('**Harry Potter**');
+    });
+
+    it('should mark current owner', () => {
+      const ir = createItemIR();
+      const output = renderItemPage(ir, 'entity_wand');
+
+      expect(output).toContain('*(current)*');
+    });
+
+    it('should mark inferred losses', () => {
+      const ir = createItemIR();
+      const output = renderItemPage(ir, 'entity_wand');
+
+      // Ollivander's loss is inferred
+      expect(output).toContain('*(inferred)*');
+    });
+
+    it('should include evidence quotes', () => {
+      const ir = createItemIR();
+      const output = renderItemPage(ir, 'entity_wand');
+
+      expect(output).toContain('Harry gave the wand to Ron');
+    });
+  });
+
+  describe('Transfer Events', () => {
+    it('should list transfer events', () => {
+      const ir = createItemIR();
+      const output = renderItemPage(ir, 'entity_wand');
+
+      expect(output).toContain('## Transfer events');
+    });
+
+    it('should show event summaries with time', () => {
+      const ir = createItemIR();
+      const output = renderItemPage(ir, 'entity_wand');
+
+      // Should have transfer summaries
+      expect(output).toContain('gave Elder Wand to');
+    });
+
+    it('should show "No transfer events" when none exist', () => {
+      const ir: ProjectIR = {
+        version: '1.0',
+        projectId: 'test',
+        createdAt: new Date().toISOString(),
+        entities: [makeEntity('entity_book', 'ITEM', 'Book')],
+        assertions: [],
+        events: [],
+        stats: { entityCount: 1, assertionCount: 0, eventCount: 0 },
+      };
+
+      const output = renderItemPage(ir, 'entity_book');
+
+      expect(output).toContain('*(No transfer events recorded.)*');
+    });
+  });
+
+  describe('Edge Cases', () => {
+    it('should return "not found" for missing item', () => {
+      const ir = createItemIR();
+      const output = renderItemPage(ir, 'entity_nonexistent');
+
+      expect(output).toContain('# Item Not Found');
+      expect(output).toContain('entity_nonexistent');
+    });
+
+    it('should handle item with only receiving (no giver)', () => {
+      const ir: ProjectIR = {
+        version: '1.0',
+        projectId: 'test',
+        createdAt: new Date().toISOString(),
+        entities: [
+          makeEntity('entity_frodo', 'PERSON', 'Frodo'),
+          makeEntity('entity_ring', 'ITEM', 'One Ring'),
+        ],
+        assertions: [],
+        events: [
+          makeTransferEvent(
+            'transfer_found',
+            null, // No giver - Frodo found it
+            'entity_frodo',
+            'entity_ring',
+            { type: 'DISCOURSE', chapter: 1, paragraph: 1, sentence: 0 },
+            'Frodo found the Ring.'
+          ),
+        ],
+        stats: { entityCount: 2, assertionCount: 0, eventCount: 1 },
+      };
+
+      const output = renderItemPage(ir, 'entity_ring');
+
+      expect(output).toContain('**Frodo**');
+      expect(output).toContain('*(current)*');
+      // Should NOT contain "inferred" since there's no giver to infer loss from
+      expect(output).not.toContain('*(inferred)*');
+    });
+  });
+
+  describe('Section Ordering', () => {
+    it('should render sections in correct order', () => {
+      const ir = createItemIR();
+      const output = renderItemPage(ir, 'entity_wand');
+
+      const sections = [
+        '# Elder Wand',
+        '## Current holder',
+        '## Ownership history',
+        '## Transfer events',
+      ];
+
+      let lastIndex = -1;
+      for (const section of sections) {
+        const index = output.indexOf(section);
+        expect(index).toBeGreaterThan(lastIndex);
+        lastIndex = index;
+      }
+    });
   });
 });

@@ -654,3 +654,156 @@ describe('Edge Cases', () => {
     expect(() => buildAssertion(assertion, context)).not.toThrow();
   });
 });
+
+// =============================================================================
+// PERCEPTION & COGNITION MODALITY TESTS
+// =============================================================================
+
+describe('Perception and Cognition Modality', () => {
+  describe('Desire verbs → PLAN modality', () => {
+    it('should assign PLAN modality when evidence contains "wants to"', () => {
+      const assertion = makeAssertion({
+        evidence: [{
+          docId: 'test-doc',
+          charStart: 0,
+          charEnd: 50,
+          text: 'Harry wants to become an Auror',
+        }],
+      });
+
+      const result = applyModalityPass(assertion);
+      expect(result.modality).toBe('PLAN');
+    });
+
+    it('should assign PLAN modality when evidence contains "wanted to"', () => {
+      const assertion = makeAssertion({
+        evidence: [{
+          docId: 'test-doc',
+          charStart: 0,
+          charEnd: 50,
+          text: 'She wanted to leave the room',
+        }],
+      });
+
+      const result = applyModalityPass(assertion);
+      expect(result.modality).toBe('PLAN');
+    });
+
+    it('should assign PLAN modality when evidence contains "wishes to"', () => {
+      const assertion = makeAssertion({
+        evidence: [{
+          docId: 'test-doc',
+          charStart: 0,
+          charEnd: 50,
+          text: 'Dumbledore wishes to speak with you',
+        }],
+      });
+
+      const result = applyModalityPass(assertion);
+      expect(result.modality).toBe('PLAN');
+    });
+
+    it('should assign PLAN modality when evidence contains "needs to"', () => {
+      const assertion = makeAssertion({
+        evidence: [{
+          docId: 'test-doc',
+          charStart: 0,
+          charEnd: 50,
+          text: 'Ron needs to find the key',
+        }],
+      });
+
+      const result = applyModalityPass(assertion);
+      expect(result.modality).toBe('PLAN');
+    });
+  });
+
+  describe('Cognition verbs → BELIEF modality', () => {
+    it('should assign BELIEF modality for "thinks"', () => {
+      const assertion = makeAssertion({
+        evidence: [{
+          docId: 'test-doc',
+          charStart: 0,
+          charEnd: 50,
+          text: 'Hermione thinks the answer is obvious',
+        }],
+      });
+
+      const result = applyModalityPass(assertion);
+      expect(result.modality).toBe('BELIEF');
+    });
+
+    it('should assign BELIEF modality for "believes"', () => {
+      const assertion = makeAssertion({
+        evidence: [{
+          docId: 'test-doc',
+          charStart: 0,
+          charEnd: 50,
+          text: 'Harry believes Snape is guilty',
+        }],
+      });
+
+      const result = applyModalityPass(assertion);
+      expect(result.modality).toBe('BELIEF');
+    });
+
+    it('should assign BELIEF modality for "suspects"', () => {
+      const assertion = makeAssertion({
+        evidence: [{
+          docId: 'test-doc',
+          charStart: 0,
+          charEnd: 50,
+          text: 'McGonagall suspects foul play',
+        }],
+      });
+
+      const result = applyModalityPass(assertion);
+      expect(result.modality).toBe('BELIEF');
+    });
+  });
+
+  describe('Perception verbs → FACT modality (by default)', () => {
+    it('should keep FACT modality for "saw"', () => {
+      const assertion = makeAssertion({
+        evidence: [{
+          docId: 'test-doc',
+          charStart: 0,
+          charEnd: 50,
+          text: 'Harry saw the dragon',
+        }],
+      });
+
+      const result = applyModalityPass(assertion);
+      // Perception is factual - narrator states someone perceived something
+      expect(result.modality).toBe('FACT');
+    });
+
+    it('should keep FACT modality for "looked at"', () => {
+      const assertion = makeAssertion({
+        evidence: [{
+          docId: 'test-doc',
+          charStart: 0,
+          charEnd: 50,
+          text: 'She looked at the map carefully',
+        }],
+      });
+
+      const result = applyModalityPass(assertion);
+      expect(result.modality).toBe('FACT');
+    });
+
+    it('should keep FACT modality for "watched"', () => {
+      const assertion = makeAssertion({
+        evidence: [{
+          docId: 'test-doc',
+          charStart: 0,
+          charEnd: 50,
+          text: 'They watched the game intently',
+        }],
+      });
+
+      const result = applyModalityPass(assertion);
+      expect(result.modality).toBe('FACT');
+    });
+  });
+});
