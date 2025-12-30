@@ -104,12 +104,18 @@ body {
   /* Glass - Warm theme */
   --liquid-glass-bg-light: rgba(255, 249, 240, 0.92);
   --liquid-glass-border-light: rgba(200, 180, 160, 0.35);
-  --liquid-glass-bg: var(--liquid-glass-bg-light);
-  --liquid-glass-border: var(--liquid-glass-border-light);
-  --liquid-glass-glow-outer: rgba(74, 64, 58, 0.08);
-  --liquid-glass-glow-inner: rgba(255, 255, 255, 0.1);
-  --liquid-glass-tint-1: rgba(200, 180, 160, 0.05);
-  --liquid-glass-tint-2: rgba(180, 160, 140, 0.05);
+  --liquid-glass-glow-outer-light: rgba(74, 64, 58, 0.08);
+  --liquid-glass-glow-inner-light: rgba(255, 255, 255, 0.1);
+  --liquid-glass-tint-1-light: rgba(200, 180, 160, 0.05);
+  --liquid-glass-tint-2-light: rgba(180, 160, 140, 0.05);
+
+  /* Default to dark theme */
+  --liquid-glass-bg: var(--liquid-glass-bg-dark);
+  --liquid-glass-border: var(--liquid-glass-border-dark);
+  --liquid-glass-glow-outer: var(--liquid-glass-glow-outer-dark);
+  --liquid-glass-glow-inner: var(--liquid-glass-glow-inner-dark);
+  --liquid-glass-tint-1: var(--liquid-glass-tint-1-dark);
+  --liquid-glass-tint-2: var(--liquid-glass-tint-2-dark);
 
   --bg-primary: var(--app-bg-dark);
   --bg-secondary: #141829;
@@ -139,6 +145,12 @@ body {
   :root {
     color-scheme: dark;
     --app-surface: var(--app-bg-dark);
+    --liquid-glass-bg: var(--liquid-glass-bg-dark);
+    --liquid-glass-border: var(--liquid-glass-border-dark);
+    --liquid-glass-glow-outer: var(--liquid-glass-glow-outer-dark);
+    --liquid-glass-glow-inner: var(--liquid-glass-glow-inner-dark);
+    --liquid-glass-tint-1: var(--liquid-glass-tint-1-dark);
+    --liquid-glass-tint-2: var(--liquid-glass-tint-2-dark);
   }
 }
 
@@ -146,6 +158,12 @@ body {
   :root {
     color-scheme: light;
     --app-surface: var(--app-bg-light);
+    --liquid-glass-bg: var(--liquid-glass-bg-light);
+    --liquid-glass-border: var(--liquid-glass-border-light);
+    --liquid-glass-glow-outer: var(--liquid-glass-glow-outer-light);
+    --liquid-glass-glow-inner: var(--liquid-glass-glow-inner-light);
+    --liquid-glass-tint-1: var(--liquid-glass-tint-1-light);
+    --liquid-glass-tint-2: var(--liquid-glass-tint-2-light);
   }
 }
 
