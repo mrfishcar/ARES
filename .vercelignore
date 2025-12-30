@@ -9,11 +9,15 @@ env
 
 # Backend services (not needed for frontend-only deployment)
 app/services
-app/engine
 
-# Exception: Include IR module for wiki panel feature
-!app/engine/ir
-!app/engine/schema.ts
+# Engine subdirectories (exclude all except IR module needed for wiki panel)
+app/engine/booknlp
+app/engine/extract
+app/engine/grammar
+app/engine/hert
+app/engine/linguistics
+app/engine/llm-providers
+app/engine/pipeline
 
 # Test files
 tests
