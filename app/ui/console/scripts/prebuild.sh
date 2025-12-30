@@ -5,19 +5,20 @@ set -euo pipefail
 # This allows the console to bundle IR code even when engine/ is not accessible
 
 SCRIPT_DIR="$(cd -- "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONSOLE_ROOT="$SCRIPT_DIR/.."
+CONSOLE_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 ENGINE_IR_SRC="$CONSOLE_ROOT/../../engine/ir"
 ENGINE_IR_DEST="$CONSOLE_ROOT/src/engine-vendor/ir"
 
 echo "=== Copying engine IR module to console app ==="
+echo "Console root: $CONSOLE_ROOT"
 echo "Source: $ENGINE_IR_SRC"
 echo "Destination: $ENGINE_IR_DEST"
 
 # Verify source exists
 if [ ! -d "$ENGINE_IR_SRC" ]; then
   echo "ERROR: Source directory not found: $ENGINE_IR_SRC"
-  echo "Current directory: $(pwd)"
-  echo "Console root: $CONSOLE_ROOT"
+  echo "Tried to find: $CONSOLE_ROOT/../../engine/ir"
+  ls -la "$CONSOLE_ROOT/../../" || true
   exit 1
 fi
 
