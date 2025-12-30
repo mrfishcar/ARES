@@ -1,6 +1,34 @@
 # ARES - Advanced Relation Extraction System
 
-A local-first, deterministic engine for extracting entities and relations from narrative text. Builds knowledge graphs with full provenance tracking.
+A local-first, deterministic engine for extracting entities and relations from narrative text. Builds knowledge graphs with full provenance tracking, wiki-style entity pages, and chronological timelines.
+
+## Architecture Overview
+
+ARES has two main systems:
+
+### 1. Extraction Engine (`app/engine/extract/`)
+Transforms raw text into structured entities and relations:
+```
+Text → spaCy Parser → Entity Extraction → Relation Extraction → Knowledge Graph
+           ↓                  ↓                   ↓
+      Tokenization      3-Stage NER        Pattern Matching
+      Dependency Parse  Alias Resolution   Inverse Generation
+      POS Tagging       Coreference        Evidence Provenance
+```
+
+### 2. Intermediate Representation (IR) System (`app/engine/ir/`)
+Compiles extraction output into a rich story world model:
+```
+Knowledge Graph → Assertion Builder → Event Builder → Fact Builder
+                       ↓                   ↓               ↓
+                  Predicates          Story Events    Derived Facts
+                  Modalities          Participants    Possession State
+                  Confidence          Timelines       Relation Facts
+
+                → Entity Renderer → Wiki Pages
+                → Timeline Builder → Chronological Views
+                → Extraction Diagnostics → Quality Metrics
+```
 
 ## Quick Start
 
@@ -15,107 +43,100 @@ make parser
 # 3. Run tests (Terminal 2)
 npm test
 
-# 4. Start dev server (optional)
+# 4. Run IR tests (507 tests)
+npm test tests/ir/
+
+# 5. Start dev server (optional)
 make server-graphql  # GraphQL API on port 4000
+make ui-console      # Web UI on port 5173
 ```
 
-**Note**: Without the spaCy parser, tests use MockParserClient with limited NER. Start the parser for production-quality extraction.
+## IR System Components
 
-## Architecture Overview
+| Module | Purpose | Key Functions |
+|--------|---------|---------------|
+| `assertion-builder` | Extract predicates and modalities | `buildAssertions()` |
+| `event-builder` | Derive story events (MOVE, DEATH, TELL, TRANSFER) | `buildEvents()` |
+| `fact-builder` | Materialize facts from events | `buildFactsFromEvents()`, `deriveRelationFacts()` |
+| `entity-renderer` | Generate wiki-style entity pages | `renderEntityPage()`, `renderItemPage()`, `renderPlacePage()` |
+| `timeline-builder` | Timeline ordering and filtering | `queryTimeline()`, `deriveTemporalLinks()` |
+| `timeline-renderer` | Render chronological views | `renderTimeline()` |
+| `extraction-diagnostics` | Validate and measure quality | `validateIR()`, `computeMetrics()` |
 
+### Entity Pages (Wiki-Style)
+```typescript
+import { renderEntityPage, renderItemPage, renderPlacePage } from './app/engine/ir';
+const markdown = renderEntityPage(ir, 'entity_harry');
+// Returns: Wiki page with quick facts, relationships, possessions, timeline
 ```
-Text → spaCy Parser → Entity Extraction → Relation Extraction → Knowledge Graph
-           ↓                  ↓                   ↓
-      Tokenization      3-Stage NER        Pattern Matching
-      Dependency Parse  Alias Resolution   Inverse Generation
-      POS Tagging       Coreference        Evidence Provenance
+
+### Timeline Queries
+```typescript
+import { queryTimeline } from './app/engine/ir';
+const result = queryTimeline(ir.events, {
+  entityId: 'entity_frodo',
+  eventType: ['MOVE', 'MEET'],
+  timeRange: { minChapter: 1, maxChapter: 5 },
+});
 ```
-
-**Core Pipeline** (`app/engine/`):
-- `extract/orchestrator.ts` - Main extraction coordinator
-- `extract/entities.ts` - Entity extraction (NER, aliases, confidence)
-- `extract/relations.ts` - Relation extraction (dependency patterns)
-- `narrative-relations.ts` - Narrative pattern extraction
-- `coref.ts` - Coreference resolution
-- `merge.ts` - Cross-document entity merging
-
-**Parser** (`app/parser/`):
-- `HttpParserClient.ts` - Production spaCy client
-- `MockParserClient.ts` - Test fallback (limited NER)
 
 ## Testing
 
-**Test Ladder** (progressive difficulty):
-
+### Extraction Quality (Test Ladder)
 | Level | Focus | Command |
 |-------|-------|---------|
 | 1 | Simple sentences | `npm test tests/ladder/level-1-simple.spec.ts` |
 | 2 | Multi-sentence | `npm test tests/ladder/level-2-multisentence.spec.ts` |
 | 3 | Complex narratives | `npm test tests/ladder/level-3-complex.spec.ts` |
-| 5A | Cross-document | `npm test tests/ladder/level-5-cross-document.spec.ts` |
-| 5B | Performance | `npm test tests/ladder/level-5b-performance.spec.ts` |
 
-**Quality Targets**:
-- Entity Precision: ≥80%, Recall: ≥75%
-- Relation Precision: ≥80%, Recall: ≥75%
-
+### IR System Tests (507 tests)
 ```bash
-npm test                    # Run all tests
-npm run test:ladder         # Run ladder tests only
-make smoke                  # Quick validation
+npm test tests/ir/                         # All IR tests
+npm test tests/ir/entity-renderer.spec.ts  # Entity pages (96 tests)
+npm test tests/ir/fact-builder.spec.ts     # Facts (70 tests)
+npm test tests/ir/timeline-builder.spec.ts # Timeline (57 tests)
 ```
+
+**Quality Targets**: Entity P≥80% R≥75%, Relation P≥80% R≥75%
 
 ## Key Concepts
 
 ### Entity Types
-`PERSON`, `ORG`, `PLACE`, `GPE`, `DATE`, `EVENT`, `ARTIFACT`, `RACE`, `DEITY`
+`PERSON`, `ORG`, `PLACE`, `ITEM`, `WORK`, `EVENT`, `ANIMAL`
+
+### Event Types (IR)
+`MOVE`, `DEATH`, `TELL`, `TRANSFER`, `MEET`, `ATTACK`, `CREATE`
 
 ### Relation Predicates
-`parent_of`, `child_of`, `sibling_of`, `married_to`, `works_at`, `lives_in`, `taught`, `founded`, etc.
+`parent_of`, `child_of`, `sibling_of`, `married_to`, `enemy_of`, `ally_of`, `possesses`, `lives_in`
 
 ### HERT IDs
 Hierarchical Entity Reference Tags - stable, compact entity identifiers with provenance.
-Format: `HERTv1:1J8trXOyn4HRaWXrdh9TUE` encodes entity ID, alias, document, position.
-
-## Configuration
-
-```bash
-# Parser selection
-PARSER_BACKEND=http|mock|embedded  # Default: auto (http → mock fallback)
-PARSER_URL=http://127.0.0.1:8000   # Parser service URL
-
-# Debug modes
-L3_DEBUG=1                         # Verbose extraction logging
-L3_TRACE=1                         # Span tracing
-```
+Format: `HERTv1:1J8trXOyn4HRaWXrdh9TUE`
 
 ## Project Structure
 
 ```
 ARES/
-├── app/
-│   ├── engine/          # Extraction engine
-│   │   ├── extract/     # Entity & relation extraction
-│   │   ├── hert/        # HERT encoding
-│   │   └── linguistics/ # Language processing utilities
-│   ├── parser/          # spaCy parser clients
-│   ├── storage/         # SQLite persistence
-│   ├── api/             # GraphQL API
-│   └── ui/              # Web interfaces
+├── app/engine/
+│   ├── extract/        # Extraction engine
+│   ├── ir/             # IR System (assertions, events, facts, renderers)
+│   ├── hert/           # HERT encoding
+│   └── linguistics/    # Language processing
 ├── tests/
-│   ├── ladder/          # Progressive test ladder
-│   └── entity-extraction/  # Entity regression tests
-├── scripts/
-│   └── parser_service.py   # spaCy service
-└── docs/                # Reference documentation
+│   ├── ladder/         # Extraction tests
+│   └── ir/             # IR tests (507)
+└── docs/
+    ├── SONNET_WORK_PLAN.md     # Year-long development plan
+    └── ARCHITECTURE_MASTER.md  # Consolidated architecture
 ```
 
 ## Documentation
 
-- `ARCHITECTURE.md` - Detailed pipeline and design decisions
-- `CONTRIBUTING.md` - Development workflow and conventions
-- `docs/LINGUISTIC_REFERENCE.md` - Language patterns for debugging
-- `docs/architecture/` - Technical design documents
+- `CLAUDE.md` - AI assistant development guide
+- `docs/SONNET_WORK_PLAN.md` - Sequential development roadmap
+- `docs/ARCHITECTURE_MASTER.md` - Architecture reference
+- `docs/LINGUISTIC_REFERENCE.md` - Language patterns
 
 ## License
 
