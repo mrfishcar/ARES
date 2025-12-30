@@ -27,9 +27,11 @@ mkdir -p "$ENGINE_IR_DEST"
 
 # Copy all TypeScript files from IR module
 echo "Copying TypeScript files..."
-# Use find to avoid glob expansion issues with relative paths
-find "$ENGINE_IR_SRC" -maxdepth 1 -name "*.ts" -type f -exec cp {} "$ENGINE_IR_DEST/" \; || {
-  echo "ERROR: Failed to copy TypeScript files"
+# cd to source directory to avoid path expansion issues
+(cd "$ENGINE_IR_SRC" && cp -v *.ts "$ENGINE_IR_DEST/") || {
+  echo "ERROR: Failed to copy TypeScript files from $ENGINE_IR_SRC"
+  echo "Checking source directory contents:"
+  ls -la "$ENGINE_IR_SRC" || true
   exit 1
 }
 
