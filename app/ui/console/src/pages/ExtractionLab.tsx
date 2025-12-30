@@ -1002,6 +1002,9 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         const textForExtraction = stripIncompleteTagsForExtraction(text);
 
         const apiUrl = resolveApiUrl();
+        console.log('[DEBUG] Extraction API URL:', apiUrl);
+        console.log('[DEBUG] Sending extraction request for text length:', textForExtraction.length);
+
         const response = await fetch(`${apiUrl}/extract-entities`, {
           method: 'POST',
           headers: {
@@ -1010,11 +1013,16 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           body: JSON.stringify({ text: textForExtraction, docVersion: version, blocks: blockIndex }),
         });
 
+        console.log('[DEBUG] Response status:', response.status, response.statusText);
+
         if (!response.ok) {
+          const errorText = await response.text();
+          console.log('[DEBUG] Error response:', errorText);
           throw new Error(`API error: ${response.statusText}`);
         }
 
         const data = await response.json();
+        console.log('[DEBUG] Response data:', data);
 
         if (!data.success) {
           throw new Error(data.error || 'Extraction failed');
@@ -1032,14 +1040,9 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           error.message.includes('API error')
         );
 
-        if (!isNetworkError) {
-          console.error('Extraction failed:', error);
-        }
-
-        // Don't show toast for network errors in production (backend not available)
-        if (!isNetworkError || import.meta.env.DEV) {
-          toast.error(`Extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
+        // Temporarily show all errors for debugging
+        console.error('[DEBUG] Extraction failed:', error);
+        toast.error(`Extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
 
         setEntities([]);
         setRelations([]);
