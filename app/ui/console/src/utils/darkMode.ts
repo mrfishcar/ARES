@@ -151,22 +151,22 @@ export function setTheme(mode: ThemeMode): void {
  */
 export const NIGHT_SKY_PALETTE = {
   light: {
-    // App is dark-only - use dark colors even for "light" mode
-    background: '#0a0e27',       // Dark background (matches editor)
-    surface: '#141829',          // Dark surface (matches editor)
-    border: '#2a2f4a',           // Dark border
-    text: '#e5e7eb',             // Light text for dark bg
-    textSecondary: '#9ca3af',    // Secondary light text
-    textTertiary: '#6b7280',
-    heading: '#f0ede8',
-    accent: '#64d5ff',
+    // Light mode - warm theme
+    background: '#FFF9F0',       // Warm light background
+    surface: '#FFF4E6',          // Light warm surface
+    border: '#E8DED5',           // Soft border
+    text: '#4A403A',             // Warm dark text
+    textSecondary: '#8B7E77',    // Secondary text
+    textTertiary: '#c2b8af',
+    heading: '#2d2420',
+    accent: '#5a4d46',
 
-    // Markdown colors (dark)
-    headingColor: '#7dd3fc',
-    linkColor: '#bb86fc',
-    quoteColor: '#a8b5cc',
-    codeBackground: '#1a1f3a',
-    codeColor: '#ffd89b',
+    // Markdown colors (light)
+    headingColor: '#2d2420',
+    linkColor: '#3b82f6',
+    quoteColor: '#9ca3af',
+    codeBackground: '#fef4e6',
+    codeColor: '#c28b6b',
   },
   dark: {
     // Dark mode - night sky theme

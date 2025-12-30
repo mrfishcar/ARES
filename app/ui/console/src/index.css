@@ -139,8 +139,46 @@ body {
   --border-color: rgba(42, 47, 74, 0.6);
   --surface-strong: var(--bg-secondary);
 
-  /* Force dark color scheme always - app is dark-only */
+  /* Default to dark color scheme */
   color-scheme: dark;
+}
+
+/* ===============================
+   COLOR SCHEME - Support both light and dark
+================================ */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --app-surface: var(--app-bg-dark);
+  }
+
+  html {
+    background: var(--app-bg-dark) !important;
+    background-color: var(--app-bg-dark) !important;
+  }
+
+  body {
+    background: var(--app-bg-dark) !important;
+    background-color: var(--app-bg-dark) !important;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --app-surface: var(--app-bg-light);
+  }
+
+  html {
+    background: var(--app-bg-light) !important;
+    background-color: var(--app-bg-light) !important;
+  }
+
+  body {
+    background: var(--app-bg-light) !important;
+    background-color: var(--app-bg-light) !important;
+  }
 }
 
 /* ===============================
