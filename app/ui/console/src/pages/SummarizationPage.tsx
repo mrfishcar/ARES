@@ -8,7 +8,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import Markdown from 'markdown-to-jsx';
-import { useIRAdapter, ExtractionResult } from '../hooks/useIRAdapter';
+import type { ExtractionResult } from '../hooks/useIRAdapter';
 import type { ProjectIR } from '@engine/ir/types';
 import './SummarizationPage.css';
 
@@ -35,13 +35,20 @@ interface SummaryResult {
 
 /**
  * Generate IR-based summary from ProjectIR
+ * Includes defensive checks for malformed data
  */
 function generateIRBasedSummary(ir: ProjectIR): SummaryResult {
   const lines: string[] = [];
 
+  // Ensure arrays exist
+  const entities = Array.isArray(ir.entities) ? ir.entities : [];
+  const events = Array.isArray(ir.events) ? ir.events : [];
+  const assertions = Array.isArray(ir.assertions) ? ir.assertions : [];
+
   // Key Entities Section
   const entityLines: string[] = ['## Key Characters & Entities\n'];
-  const topEntities = [...ir.entities]
+  const topEntities = [...entities]
+    .filter(e => e && typeof e === 'object')
     .sort((a, b) => (b.evidence?.length || 0) - (a.evidence?.length || 0))
     .slice(0, 10);
 
@@ -49,19 +56,22 @@ function generateIRBasedSummary(ir: ProjectIR): SummaryResult {
     entityLines.push('*No entities extracted*\n');
   } else {
     for (const entity of topEntities) {
-      const emoji = getEntityEmoji(entity.type);
+      const type = String(entity.type || 'UNKNOWN');
+      const canonical = String(entity.canonical || 'Unknown');
+      const emoji = getEntityEmoji(type);
       const mentions = entity.evidence?.length || 0;
-      entityLines.push(`- ${emoji} **${entity.canonical}** (${entity.type}) — ${mentions} mention${mentions !== 1 ? 's' : ''}`);
+      entityLines.push(`- ${emoji} **${canonical}** (${type}) — ${mentions} mention${mentions !== 1 ? 's' : ''}`);
     }
   }
   const keyEntities = entityLines.join('\n');
 
   // Key Events Section
   const eventLines: string[] = ['## Key Events\n'];
-  const sortedEvents = [...ir.events]
+  const sortedEvents = [...events]
+    .filter(e => e && typeof e === 'object')
     .sort((a, b) => {
-      const aTime = a.time.type === 'DISCOURSE' ? (a.time.paragraph || 0) : 0;
-      const bTime = b.time.type === 'DISCOURSE' ? (b.time.paragraph || 0) : 0;
+      const aTime = a.time?.type === 'DISCOURSE' ? (a.time.paragraph || 0) : 0;
+      const bTime = b.time?.type === 'DISCOURSE' ? (b.time.paragraph || 0) : 0;
       return aTime - bTime;
     })
     .slice(0, 10);
@@ -70,27 +80,30 @@ function generateIRBasedSummary(ir: ProjectIR): SummaryResult {
     eventLines.push('*No events extracted*\n');
   } else {
     for (const event of sortedEvents) {
-      const participants = event.participants
-        .map(p => {
-          const entity = ir.entities.find(e => e.id === p.entity);
-          return entity?.canonical || p.entity;
-        })
-        .join(', ');
-      eventLines.push(`- **${event.type}**: ${participants || 'Unknown participants'}`);
+      const participants = Array.isArray(event.participants)
+        ? event.participants
+            .map(p => {
+              const entity = entities.find(e => e.id === p.entity);
+              return String(entity?.canonical || p.entity || 'Unknown');
+            })
+            .join(', ')
+        : '';
+      eventLines.push(`- **${String(event.type || 'EVENT')}**: ${participants || 'Unknown participants'}`);
     }
   }
   const keyEvents = eventLines.join('\n');
 
   // Metrics Section - inline calculation
   const metricsLines: string[] = ['## Extraction Metrics\n'];
-  metricsLines.push(`- **Total Entities:** ${ir.entities.length}`);
-  metricsLines.push(`- **Total Events:** ${ir.events.length}`);
-  metricsLines.push(`- **Total Assertions:** ${ir.assertions.length}`);
+  metricsLines.push(`- **Total Entities:** ${entities.length}`);
+  metricsLines.push(`- **Total Events:** ${events.length}`);
+  metricsLines.push(`- **Total Assertions:** ${assertions.length}`);
 
   // Entity type breakdown
   const typeCounts: Record<string, number> = {};
-  for (const entity of ir.entities) {
-    typeCounts[entity.type] = (typeCounts[entity.type] || 0) + 1;
+  for (const entity of entities) {
+    const type = String(entity.type || 'UNKNOWN');
+    typeCounts[type] = (typeCounts[type] || 0) + 1;
   }
   metricsLines.push('\n### Entity Types');
   for (const [type, count] of Object.entries(typeCounts).sort((a, b) => b[1] - a[1])) {
@@ -141,13 +154,49 @@ export function SummarizationPage() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'summary' | 'entities' | 'events' | 'metrics'>('summary');
 
-  // Convert extraction to IR
-  const ir = useIRAdapter(extractionResult, 'summarization-doc');
+  // Convert extraction to IR with error handling
+  const ir = useMemo(() => {
+    if (!extractionResult) return null;
 
-  // Generate summary from IR
+    try {
+      // Validate extraction result has required fields
+      if (!extractionResult.entities || !Array.isArray(extractionResult.entities)) {
+        console.warn('[Summarization] Invalid extraction result - missing entities');
+        return null;
+      }
+
+      // Import hook logic inline to add error handling
+      const { adaptLegacyExtraction } = require('@engine/ir/adapter');
+
+      const legacyFormat = {
+        entities: extractionResult.entities.map(e => ({
+          id: e.id || '',
+          canonical: String(e.canonical || e.text || ''),
+          type: String(e.type || 'UNKNOWN'),
+          aliases: Array.isArray(e.aliases) ? e.aliases : [],
+          confidence: typeof e.confidence === 'number' ? e.confidence : 0.5,
+          attrs: {},
+        })),
+        relations: Array.isArray(extractionResult.relations) ? extractionResult.relations : [],
+        docId: 'summarization-doc',
+      };
+
+      return adaptLegacyExtraction(legacyFormat);
+    } catch (err) {
+      console.error('[Summarization] IR adaptation failed:', err);
+      return null;
+    }
+  }, [extractionResult]);
+
+  // Generate summary from IR with error handling
   const summary = useMemo(() => {
     if (!ir) return null;
-    return generateIRBasedSummary(ir);
+    try {
+      return generateIRBasedSummary(ir);
+    } catch (err) {
+      console.error('[Summarization] Summary generation failed:', err);
+      return null;
+    }
   }, [ir]);
 
   // Word counts
