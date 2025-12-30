@@ -5,6 +5,23 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR/.."
 
+# Check if engine directory is accessible (needed for @engine imports)
+ENGINE_DIR="$(cd ../../../engine 2>/dev/null && pwd || echo "")"
+if [ -z "$ENGINE_DIR" ] || [ ! -d "$ENGINE_DIR/ir" ]; then
+  echo "WARNING: Engine directory not found at expected location"
+  echo "Looking for engine at: ../../engine from $(pwd)"
+  echo "This build requires access to the engine/ir module"
+
+  # Try alternate path (if building from repo root)
+  if [ -d "../../engine/ir" ]; then
+    echo "Found engine at ../../engine"
+  else
+    echo "ERROR: Cannot find engine directory. The console app needs the IR module to build."
+    echo "Make sure the full repository is available during build."
+    exit 1
+  fi
+fi
+
 # Clear any proxy configuration that might break registry access
 unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy
 unset NPM_CONFIG_PROXY NPM_CONFIG_HTTPS_PROXY NPM_CONFIG_HTTP_PROXY NPM_CONFIG_NOPROXY NPM_CONFIG_NO_PROXY

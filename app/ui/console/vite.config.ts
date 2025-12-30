@@ -1,10 +1,13 @@
 import { defineConfig } from 'vite';
 import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 import path from 'path';
 
 const require = createRequire(import.meta.url);
 const reactPlugin = require('@vitejs/plugin-react');
 const react = reactPlugin.default ?? reactPlugin;
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // https://vitejs.dev/config/
 export default defineConfig({
