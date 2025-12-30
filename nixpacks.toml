@@ -1,12 +1,11 @@
 # Railway uses Nixpacks to build the application
-# This tells it we need both Python and Node.js
+# This tells it we need Node.js only (no Python - we've moved away from BookNLP)
 
 [phases.setup]
-nixPkgs = ["python39", "python39Packages.pip", "nodejs-18_x"]
+nixPkgs = ["nodejs-18_x"]
 
 [phases.install]
 cmds = [
-  "pip install -r scripts/requirements.txt",
   "npm install"
 ]
 
