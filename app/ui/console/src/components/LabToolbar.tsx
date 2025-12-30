@@ -5,7 +5,7 @@
 
 import { createPortal } from 'react-dom';
 import { useRef, useState, useEffect } from 'react';
-import { Settings, Sun, Moon, Highlighter, FilePlus, Cloud, CloudOff, Type, X } from 'lucide-react';
+import { Settings, Sun, Moon, Highlighter, FilePlus, Cloud, CloudOff, Type } from 'lucide-react';
 import type { FormattingActions } from './CodeMirrorEditorProps';
 import { FormattingPalette } from '../editor2/FormattingPalette';
 import type { FormatState } from '../editor2/plugins/FormatActionsPlugin';
@@ -260,19 +260,6 @@ export function LabToolbar({
                 formatState={formatState}
                 onClose={onToggleFormatToolbar}
               />
-
-              {formatToolbarEnabled && (
-                <button
-                  type="button"
-                  className="format-toolbar-exit"
-                  onClick={onToggleFormatToolbar}
-                  title="Exit formatting mode"
-                  aria-label="Exit formatting mode"
-                >
-                  <X size={14} />
-                  <span>Done</span>
-                </button>
-              )}
             </div>
           </div>
         </div>
