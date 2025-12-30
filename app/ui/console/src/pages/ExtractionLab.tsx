@@ -1550,8 +1550,11 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
       const document = await fetchDocumentById(targetId);
       applyDocumentToState(document);
     } catch (error) {
-      console.error('[ExtractionLab] Failed to load document', error);
-      toast.error('Failed to load document');
+      // Suppress document loading errors in production (backend not available)
+      if (import.meta.env.DEV) {
+        console.error('[ExtractionLab] Failed to load document', error);
+        toast.error('Failed to load document');
+      }
     } finally {
       setLoadingDocument(false);
     }
