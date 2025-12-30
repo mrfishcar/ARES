@@ -3,14 +3,11 @@
  * Task 1.2.1-1.2.5: Summarization Testing Feature
  *
  * Allows users to input text and see extraction-based summary
- * Uses IR system to generate structured summaries
+ * Displays entities, relations, and basic statistics
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
 import Markdown from 'markdown-to-jsx';
-import type { ExtractionResult } from '../hooks/useIRAdapter';
-import { adaptLegacyExtraction } from '@engine/ir/adapter';
-import type { ProjectIR } from '@engine/ir/types';
 import './SummarizationPage.css';
 
 // Resolve API URL (same logic as ExtractionLab)
@@ -27,108 +24,42 @@ function resolveApiUrl() {
   return apiUrl;
 }
 
-interface SummaryResult {
-  keyEntities: string;
-  keyEvents: string;
-  metrics: string;
-  fullSummary: string;
+// Types for extraction result (inline to avoid @engine imports)
+interface EntityResult {
+  id: string;
+  text?: string;
+  canonical?: string;
+  type: string;
+  confidence?: number;
+  aliases?: string[];
 }
 
-/**
- * Generate IR-based summary from ProjectIR
- * Includes defensive checks for malformed data
- */
-function generateIRBasedSummary(ir: ProjectIR): SummaryResult {
-  const lines: string[] = [];
+interface RelationResult {
+  id: string;
+  subj: string;
+  obj: string;
+  pred: string;
+  confidence: number;
+  subjCanonical?: string;
+  objCanonical?: string;
+}
 
-  // Ensure arrays exist
-  const entities = Array.isArray(ir.entities) ? ir.entities : [];
-  const events = Array.isArray(ir.events) ? ir.events : [];
-  const assertions = Array.isArray(ir.assertions) ? ir.assertions : [];
-
-  // Key Entities Section
-  const entityLines: string[] = ['## Key Characters & Entities\n'];
-  const topEntities = [...entities]
-    .filter(e => e && typeof e === 'object')
-    .sort((a, b) => (b.evidence?.length || 0) - (a.evidence?.length || 0))
-    .slice(0, 10);
-
-  if (topEntities.length === 0) {
-    entityLines.push('*No entities extracted*\n');
-  } else {
-    for (const entity of topEntities) {
-      const type = String(entity.type || 'UNKNOWN');
-      const canonical = String(entity.canonical || 'Unknown');
-      const emoji = getEntityEmoji(type);
-      const mentions = entity.evidence?.length || 0;
-      entityLines.push(`- ${emoji} **${canonical}** (${type}) — ${mentions} mention${mentions !== 1 ? 's' : ''}`);
-    }
-  }
-  const keyEntities = entityLines.join('\n');
-
-  // Key Events Section
-  const eventLines: string[] = ['## Key Events\n'];
-  const sortedEvents = [...events]
-    .filter(e => e && typeof e === 'object')
-    .sort((a, b) => {
-      const aTime = a.time?.type === 'DISCOURSE' ? (a.time.paragraph || 0) : 0;
-      const bTime = b.time?.type === 'DISCOURSE' ? (b.time.paragraph || 0) : 0;
-      return aTime - bTime;
-    })
-    .slice(0, 10);
-
-  if (sortedEvents.length === 0) {
-    eventLines.push('*No events extracted*\n');
-  } else {
-    for (const event of sortedEvents) {
-      const participants = Array.isArray(event.participants)
-        ? event.participants
-            .map(p => {
-              const entity = entities.find(e => e.id === p.entity);
-              return String(entity?.canonical || p.entity || 'Unknown');
-            })
-            .join(', ')
-        : '';
-      eventLines.push(`- **${String(event.type || 'EVENT')}**: ${participants || 'Unknown participants'}`);
-    }
-  }
-  const keyEvents = eventLines.join('\n');
-
-  // Metrics Section - inline calculation
-  const metricsLines: string[] = ['## Extraction Metrics\n'];
-  metricsLines.push(`- **Total Entities:** ${entities.length}`);
-  metricsLines.push(`- **Total Events:** ${events.length}`);
-  metricsLines.push(`- **Total Assertions:** ${assertions.length}`);
-
-  // Entity type breakdown
-  const typeCounts: Record<string, number> = {};
-  for (const entity of entities) {
-    const type = String(entity.type || 'UNKNOWN');
-    typeCounts[type] = (typeCounts[type] || 0) + 1;
-  }
-  metricsLines.push('\n### Entity Types');
-  for (const [type, count] of Object.entries(typeCounts).sort((a, b) => b[1] - a[1])) {
-    metricsLines.push(`- ${type}: ${count}`);
-  }
-  const metricsReport = metricsLines.join('\n');
-
-  // Full Summary
-  lines.push('# Text Summary\n');
-  lines.push(keyEntities);
-  lines.push('\n');
-  lines.push(keyEvents);
-  lines.push('\n');
-  lines.push('## Statistics\n');
-  lines.push(`- **Entities found:** ${ir.entities.length}`);
-  lines.push(`- **Events detected:** ${ir.events.length}`);
-  lines.push(`- **Facts extracted:** ${ir.assertions.length}`);
-
-  return {
-    keyEntities,
-    keyEvents,
-    metrics: metricsReport,
-    fullSummary: lines.join('\n'),
+interface ExtractionResult {
+  success?: boolean;
+  entities: EntityResult[];
+  relations: RelationResult[];
+  stats?: {
+    extractionTime?: number;
+    entityCount?: number;
+    relationCount?: number;
   };
+}
+
+interface SummaryResult {
+  keyEntities: string;
+  keyRelations: string;
+  metrics: string;
+  fullSummary: string;
 }
 
 function getEntityEmoji(type: string): string {
@@ -148,70 +79,108 @@ function getEntityEmoji(type: string): string {
   return emojis[type] || '📄';
 }
 
+/**
+ * Generate summary directly from extraction result (no IR dependency)
+ */
+function generateSummary(extraction: ExtractionResult): SummaryResult {
+  const entities = extraction.entities || [];
+  const relations = extraction.relations || [];
+
+  // Key Entities Section
+  const entityLines: string[] = ['## Key Characters & Entities\n'];
+  const sortedEntities = [...entities]
+    .sort((a, b) => (b.confidence || 0) - (a.confidence || 0))
+    .slice(0, 15);
+
+  if (sortedEntities.length === 0) {
+    entityLines.push('*No entities extracted*\n');
+  } else {
+    for (const entity of sortedEntities) {
+      const type = String(entity.type || 'UNKNOWN');
+      const name = String(entity.canonical || entity.text || 'Unknown');
+      const emoji = getEntityEmoji(type);
+      const conf = entity.confidence ? ` (${Math.round(entity.confidence * 100)}%)` : '';
+      entityLines.push(`- ${emoji} **${name}** — ${type}${conf}`);
+    }
+  }
+  const keyEntities = entityLines.join('\n');
+
+  // Key Relations Section
+  const relationLines: string[] = ['## Key Relationships\n'];
+  const sortedRelations = [...relations]
+    .sort((a, b) => (b.confidence || 0) - (a.confidence || 0))
+    .slice(0, 15);
+
+  if (sortedRelations.length === 0) {
+    relationLines.push('*No relationships extracted*\n');
+  } else {
+    for (const rel of sortedRelations) {
+      const subj = String(rel.subjCanonical || rel.subj || 'Unknown');
+      const obj = String(rel.objCanonical || rel.obj || 'Unknown');
+      const pred = String(rel.pred || 'related_to').replace(/_/g, ' ');
+      relationLines.push(`- **${subj}** → *${pred}* → **${obj}**`);
+    }
+  }
+  const keyRelations = relationLines.join('\n');
+
+  // Metrics Section
+  const metricsLines: string[] = ['## Extraction Metrics\n'];
+  metricsLines.push(`- **Total Entities:** ${entities.length}`);
+  metricsLines.push(`- **Total Relations:** ${relations.length}`);
+  if (extraction.stats?.extractionTime) {
+    metricsLines.push(`- **Processing Time:** ${extraction.stats.extractionTime}ms`);
+  }
+
+  // Entity type breakdown
+  const typeCounts: Record<string, number> = {};
+  for (const entity of entities) {
+    const type = String(entity.type || 'UNKNOWN');
+    typeCounts[type] = (typeCounts[type] || 0) + 1;
+  }
+  if (Object.keys(typeCounts).length > 0) {
+    metricsLines.push('\n### Entity Types');
+    for (const [type, count] of Object.entries(typeCounts).sort((a, b) => b[1] - a[1])) {
+      metricsLines.push(`- ${type}: ${count}`);
+    }
+  }
+  const metrics = metricsLines.join('\n');
+
+  // Full Summary
+  const fullLines: string[] = [];
+  fullLines.push('# Text Analysis Summary\n');
+  fullLines.push(keyEntities);
+  fullLines.push('\n');
+  fullLines.push(keyRelations);
+  fullLines.push('\n');
+  fullLines.push('## Statistics\n');
+  fullLines.push(`- **Entities found:** ${entities.length}`);
+  fullLines.push(`- **Relations found:** ${relations.length}`);
+
+  return {
+    keyEntities,
+    keyRelations,
+    metrics,
+    fullSummary: fullLines.join('\n'),
+  };
+}
+
 export function SummarizationPage() {
   const [inputText, setInputText] = useState('');
   const [extractionResult, setExtractionResult] = useState<ExtractionResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'summary' | 'entities' | 'events' | 'metrics'>('summary');
+  const [activeTab, setActiveTab] = useState<'summary' | 'entities' | 'relations' | 'metrics'>('summary');
 
-  // Convert extraction to IR with error handling
-  const ir = useMemo(() => {
-    if (!extractionResult) return null;
-
-    try {
-      // Validate extraction result has required fields
-      if (!extractionResult.entities || !Array.isArray(extractionResult.entities)) {
-        console.warn('[Summarization] Invalid extraction result - missing entities');
-        return null;
-      }
-
-      console.log('[Summarization] Converting extraction to IR...', {
-        entityCount: extractionResult.entities.length,
-        relationCount: extractionResult.relations?.length || 0
-      });
-
-      const legacyFormat = {
-        entities: extractionResult.entities.map(e => ({
-          id: e.id || '',
-          canonical: String(e.canonical || e.text || ''),
-          type: String(e.type || 'UNKNOWN'),
-          aliases: Array.isArray(e.aliases) ? e.aliases : [],
-          confidence: typeof e.confidence === 'number' ? e.confidence : 0.5,
-          attrs: {},
-        })),
-        relations: Array.isArray(extractionResult.relations) ? extractionResult.relations : [],
-        docId: 'summarization-doc',
-      };
-
-      const result = adaptLegacyExtraction(legacyFormat);
-      console.log('[Summarization] IR adaptation result:', {
-        entities: result?.entities?.length || 0,
-        assertions: result?.assertions?.length || 0,
-        events: result?.events?.length || 0,
-      });
-      return result;
-    } catch (err) {
-      console.error('[Summarization] IR adaptation failed:', err);
-      return null;
-    }
-  }, [extractionResult]);
-
-  // Generate summary from IR with error handling
+  // Generate summary from extraction result
   const summary = useMemo(() => {
-    if (!ir) {
-      console.log('[Summarization] No IR to generate summary from');
-      return null;
-    }
+    if (!extractionResult) return null;
     try {
-      const result = generateIRBasedSummary(ir);
-      console.log('[Summarization] Summary generated successfully');
-      return result;
+      return generateSummary(extractionResult);
     } catch (err) {
       console.error('[Summarization] Summary generation failed:', err);
       return null;
     }
-  }, [ir]);
+  }, [extractionResult]);
 
   // Word counts
   const inputWordCount = useMemo(() => {
@@ -289,7 +258,7 @@ The company then traveled down the Great River Anduin by boat. At Amon Hen, Boro
     <div className="summarization-page">
       <header className="summarization-page__header">
         <h1>📝 Text Summarization</h1>
-        <p>Extract key entities, events, and facts from narrative text</p>
+        <p>Extract key entities, relationships, and facts from narrative text</p>
       </header>
 
       <div className="summarization-page__layout">
@@ -345,8 +314,8 @@ The company then traveled down the Great River Anduin by boat. At Amon Hen, Boro
               <div className="summarization-page__metrics-bar">
                 <span title="Summary word count">{summaryWordCount} words</span>
                 <span title="Compression ratio">↓ {compressionRatio}%</span>
-                <span title="Entities found">👤 {ir?.entities.length || 0}</span>
-                <span title="Events found">📅 {ir?.events.length || 0}</span>
+                <span title="Entities found">👤 {extractionResult?.entities.length || 0}</span>
+                <span title="Relations found">🔗 {extractionResult?.relations.length || 0}</span>
               </div>
             )}
           </div>
@@ -362,7 +331,7 @@ The company then traveled down the Great River Anduin by boat. At Amon Hen, Boro
               <div className="summarization-page__empty-icon">📊</div>
               <p>Enter text and click "Analyze & Summarize" to see results</p>
               <p className="summarization-page__hint">
-                The system will extract entities, events, and relationships
+                The system will extract entities, relationships, and facts
               </p>
             </div>
           )}
@@ -371,25 +340,6 @@ The company then traveled down the Great River Anduin by boat. At Amon Hen, Boro
             <div className="summarization-page__loading">
               <div className="summarization-page__spinner" />
               <p>Analyzing text...</p>
-            </div>
-          )}
-
-          {/* Show extraction result even if IR fails */}
-          {extractionResult && !summary && !isProcessing && (
-            <div className="summarization-page__content" style={{ padding: '20px' }}>
-              <h3>Extraction Complete</h3>
-              <p>Found {extractionResult.entities?.length || 0} entities and {extractionResult.relations?.length || 0} relations.</p>
-              {extractionResult.entities?.length > 0 && (
-                <>
-                  <h4>Entities:</h4>
-                  <ul>
-                    {extractionResult.entities.slice(0, 15).map((e, i) => (
-                      <li key={i}><strong>{String(e.canonical || e.text || 'Unknown')}</strong> ({String(e.type || 'UNKNOWN')})</li>
-                    ))}
-                    {extractionResult.entities.length > 15 && <li>...and {extractionResult.entities.length - 15} more</li>}
-                  </ul>
-                </>
-              )}
             </div>
           )}
 
@@ -410,10 +360,10 @@ The company then traveled down the Great River Anduin by boat. At Amon Hen, Boro
                   👤 Entities
                 </button>
                 <button
-                  className={`summarization-page__tab ${activeTab === 'events' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('events')}
+                  className={`summarization-page__tab ${activeTab === 'relations' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('relations')}
                 >
-                  📅 Events
+                  🔗 Relations
                 </button>
                 <button
                   className={`summarization-page__tab ${activeTab === 'metrics' ? 'active' : ''}`}
@@ -426,10 +376,10 @@ The company then traveled down the Great River Anduin by boat. At Amon Hen, Boro
               {/* Tab Content */}
               <div className="summarization-page__content">
                 <Markdown>
-                  {activeTab === 'summary' && summary.fullSummary}
-                  {activeTab === 'entities' && summary.keyEntities}
-                  {activeTab === 'events' && summary.keyEvents}
-                  {activeTab === 'metrics' && summary.metrics}
+                  {activeTab === 'summary' ? summary.fullSummary : ''}
+                  {activeTab === 'entities' ? summary.keyEntities : ''}
+                  {activeTab === 'relations' ? summary.keyRelations : ''}
+                  {activeTab === 'metrics' ? summary.metrics : ''}
                 </Markdown>
               </div>
             </>
