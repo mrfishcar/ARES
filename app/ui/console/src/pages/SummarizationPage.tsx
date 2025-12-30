@@ -9,6 +9,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import Markdown from 'markdown-to-jsx';
 import type { ExtractionResult } from '../hooks/useIRAdapter';
+import { adaptLegacyExtraction } from '@engine/ir/adapter';
 import type { ProjectIR } from '@engine/ir/types';
 import './SummarizationPage.css';
 
@@ -165,8 +166,10 @@ export function SummarizationPage() {
         return null;
       }
 
-      // Import hook logic inline to add error handling
-      const { adaptLegacyExtraction } = require('@engine/ir/adapter');
+      console.log('[Summarization] Converting extraction to IR...', {
+        entityCount: extractionResult.entities.length,
+        relationCount: extractionResult.relations?.length || 0
+      });
 
       const legacyFormat = {
         entities: extractionResult.entities.map(e => ({
@@ -181,7 +184,13 @@ export function SummarizationPage() {
         docId: 'summarization-doc',
       };
 
-      return adaptLegacyExtraction(legacyFormat);
+      const result = adaptLegacyExtraction(legacyFormat);
+      console.log('[Summarization] IR adaptation result:', {
+        entities: result?.entities?.length || 0,
+        assertions: result?.assertions?.length || 0,
+        events: result?.events?.length || 0,
+      });
+      return result;
     } catch (err) {
       console.error('[Summarization] IR adaptation failed:', err);
       return null;
@@ -190,9 +199,14 @@ export function SummarizationPage() {
 
   // Generate summary from IR with error handling
   const summary = useMemo(() => {
-    if (!ir) return null;
+    if (!ir) {
+      console.log('[Summarization] No IR to generate summary from');
+      return null;
+    }
     try {
-      return generateIRBasedSummary(ir);
+      const result = generateIRBasedSummary(ir);
+      console.log('[Summarization] Summary generated successfully');
+      return result;
     } catch (err) {
       console.error('[Summarization] Summary generation failed:', err);
       return null;
@@ -357,6 +371,25 @@ The company then traveled down the Great River Anduin by boat. At Amon Hen, Boro
             <div className="summarization-page__loading">
               <div className="summarization-page__spinner" />
               <p>Analyzing text...</p>
+            </div>
+          )}
+
+          {/* Show extraction result even if IR fails */}
+          {extractionResult && !summary && !isProcessing && (
+            <div className="summarization-page__content" style={{ padding: '20px' }}>
+              <h3>Extraction Complete</h3>
+              <p>Found {extractionResult.entities?.length || 0} entities and {extractionResult.relations?.length || 0} relations.</p>
+              {extractionResult.entities?.length > 0 && (
+                <>
+                  <h4>Entities:</h4>
+                  <ul>
+                    {extractionResult.entities.slice(0, 15).map((e, i) => (
+                      <li key={i}><strong>{String(e.canonical || e.text || 'Unknown')}</strong> ({String(e.type || 'UNKNOWN')})</li>
+                    ))}
+                    {extractionResult.entities.length > 15 && <li>...and {extractionResult.entities.length - 15} more</li>}
+                  </ul>
+                </>
+              )}
             </div>
           )}
 
