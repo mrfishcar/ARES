@@ -2,18 +2,17 @@
  * Wiki Panel Component
  * Task 1.1.2: Create Wiki Panel Component
  *
- * Displays wiki-style entity pages from IR renderers
- * Features: entity selector, type badges, cross-links, timeline tab
+ * Displays wiki-style entity pages
+ * NOTE: @engine imports removed due to bundling issues with Node.js crypto
  */
 
 import React, { useMemo, useState } from 'react';
 import Markdown from 'markdown-to-jsx';
-import { renderEntityPage, renderItemPage, renderPlacePage } from '@engine/ir/entity-renderer';
-import { renderTimeline } from '@engine/ir/timeline-renderer';
-import { queryTimeline } from '@engine/ir/timeline-builder';
-import type { ProjectIR, EntityId } from '@engine/ir/types';
+import type { ProjectIR } from '../hooks/useIRAdapter';
 import { getEntityTypeColor } from '../types/entities';
 import './WikiPanel.css';
+
+type EntityId = string;
 
 interface WikiPanelProps {
   ir: ProjectIR;
@@ -35,8 +34,62 @@ const ENTITY_TYPE_EMOJI: Record<string, string> = {
   CONCEPT: '💡',
 };
 
+/**
+ * Simple entity page renderer (stub for @engine/ir/entity-renderer)
+ */
+function renderSimpleEntityPage(ir: ProjectIR, entityId: string): string {
+  const entity = ir.entities.find(e => e.id === entityId);
+  if (!entity) return '**Entity not found**';
+
+  const lines: string[] = [];
+
+  // Basic info
+  lines.push(`# ${entity.canonical}`);
+  lines.push('');
+  lines.push(`**Type:** ${entity.type}`);
+
+  if (entity.aliases && entity.aliases.length > 0) {
+    lines.push(`**Also known as:** ${entity.aliases.join(', ')}`);
+  }
+  lines.push('');
+
+  // Relations where this entity is the subject
+  const subjectRelations = ir.assertions.filter(a => a.subject === entityId);
+  if (subjectRelations.length > 0) {
+    lines.push('## Relationships');
+    lines.push('');
+    for (const rel of subjectRelations) {
+      const obj = ir.entities.find(e => e.id === rel.object);
+      const objName = obj?.canonical || rel.object;
+      const pred = String(rel.predicate || 'related_to').replace(/_/g, ' ');
+      lines.push(`- *${pred}* → **${objName}**`);
+    }
+    lines.push('');
+  }
+
+  // Relations where this entity is the object
+  const objectRelations = ir.assertions.filter(a => a.object === entityId);
+  if (objectRelations.length > 0) {
+    lines.push('## Related By');
+    lines.push('');
+    for (const rel of objectRelations) {
+      const subj = ir.entities.find(e => e.id === rel.subject);
+      const subjName = subj?.canonical || rel.subject;
+      const pred = String(rel.predicate || 'related_to').replace(/_/g, ' ');
+      lines.push(`- **${subjName}** *${pred}*`);
+    }
+    lines.push('');
+  }
+
+  if (subjectRelations.length === 0 && objectRelations.length === 0) {
+    lines.push('*No relationships found for this entity.*');
+  }
+
+  return lines.join('\n');
+}
+
 export function WikiPanel({ ir, selectedEntityId, onEntityClick, onClose }: WikiPanelProps) {
-  const [activeTab, setActiveTab] = useState<'wiki' | 'timeline'>('wiki');
+  const [activeTab, setActiveTab] = useState<'wiki' | 'info'>('wiki');
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
 
   // Find selected entity
@@ -60,47 +113,23 @@ export function WikiPanel({ ir, selectedEntityId, onEntityClick, onClose }: Wiki
   // Render wiki content
   const wikiContent = useMemo(() => {
     if (!selectedEntity) return '';
-
-    // Choose renderer based on entity type
-    switch (selectedEntity.type) {
-      case 'ITEM':
-        return renderItemPage(ir, selectedEntity.id);
-      case 'PLACE':
-        return renderPlacePage(ir, selectedEntity.id);
-      default:
-        return renderEntityPage(ir, selectedEntity.id);
-    }
+    return renderSimpleEntityPage(ir, selectedEntity.id);
   }, [ir, selectedEntity]);
 
-  // Render timeline content
-  const timelineContent = useMemo(() => {
+  // Info tab content
+  const infoContent = useMemo(() => {
     if (!selectedEntity) return '';
-
-    const result = queryTimeline(ir.events, {
-      entityId: selectedEntity.id,
-    });
-
-    if (result.events.length === 0) {
-      return '**No events found for this entity.**\n\nThis entity has not been mentioned in any story events yet.';
+    const lines: string[] = [];
+    lines.push('## Entity Info');
+    lines.push('');
+    lines.push(`- **ID:** \`${selectedEntity.id}\``);
+    lines.push(`- **Type:** ${selectedEntity.type}`);
+    lines.push(`- **Canonical Name:** ${selectedEntity.canonical}`);
+    if (selectedEntity.aliases?.length) {
+      lines.push(`- **Aliases:** ${selectedEntity.aliases.join(', ')}`);
     }
-
-    return renderTimeline(ir, {
-      filter: { entityId: selectedEntity.id },
-    });
-  }, [ir, selectedEntity]);
-
-  // Handle link clicks
-  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    const href = e.currentTarget.getAttribute('href');
-    // Entity links start with entity_ or are internal anchors
-    if (href?.startsWith('entity_')) {
-      e.preventDefault();
-      onEntityClick(href);
-    } else if (href?.startsWith('#')) {
-      // Allow internal anchor navigation
-      return;
-    }
-  };
+    return lines.join('\n');
+  }, [selectedEntity]);
 
   if (!selectedEntity) {
     return (
@@ -153,26 +182,24 @@ export function WikiPanel({ ir, selectedEntityId, onEntityClick, onClose }: Wiki
           value={selectedEntityId || ''}
           onChange={(e) => onEntityClick(e.target.value)}
         >
-          <option value="" disabled>
-            Choose entity ({filteredEntities.length})
-          </option>
+          <option value="">Select entity...</option>
           {filteredEntities.map((entity: any) => (
             <option key={entity.id} value={entity.id}>
-              {ENTITY_TYPE_EMOJI[entity.type] || '📄'} {entity.canonical} ({entity.type})
+              {ENTITY_TYPE_EMOJI[entity.type] || '📄'} {entity.canonical}
             </option>
           ))}
         </select>
 
-        {/* Type Filter */}
+        {/* Type filter */}
         <select
           className="wiki-panel__type-filter"
           value={typeFilter || ''}
           onChange={(e) => setTypeFilter(e.target.value || null)}
         >
-          <option value="">All Types</option>
-          {availableTypes.map((type: string) => (
+          <option value="">All types</option>
+          {availableTypes.map(type => (
             <option key={type} value={type}>
-              {ENTITY_TYPE_EMOJI[type as keyof typeof ENTITY_TYPE_EMOJI] || '📄'} {type}
+              {ENTITY_TYPE_EMOJI[type] || '📄'} {type}
             </option>
           ))}
         </select>
@@ -187,10 +214,10 @@ export function WikiPanel({ ir, selectedEntityId, onEntityClick, onClose }: Wiki
           📖 Wiki
         </button>
         <button
-          className={`wiki-panel__tab ${activeTab === 'timeline' ? 'wiki-panel__tab--active' : ''}`}
-          onClick={() => setActiveTab('timeline')}
+          className={`wiki-panel__tab ${activeTab === 'info' ? 'wiki-panel__tab--active' : ''}`}
+          onClick={() => setActiveTab('info')}
         >
-          ⏰ Timeline
+          ℹ️ Info
         </button>
       </div>
 
@@ -199,88 +226,17 @@ export function WikiPanel({ ir, selectedEntityId, onEntityClick, onClose }: Wiki
         <Markdown
           options={{
             overrides: {
-              h1: {
-                props: {
-                  style: {
-                    fontSize: '24px',
-                    fontWeight: '600',
-                    marginTop: '24px',
-                    marginBottom: '12px',
-                    borderBottom: '2px solid #e5e7eb',
-                    paddingBottom: '8px',
-                  },
-                },
-              },
-              h2: {
-                props: {
-                  style: {
-                    fontSize: '20px',
-                    fontWeight: '600',
-                    marginTop: '20px',
-                    marginBottom: '10px',
-                    color: '#374151',
-                  },
-                },
-              },
-              h3: {
-                props: {
-                  style: {
-                    fontSize: '18px',
-                    fontWeight: '600',
-                    marginTop: '16px',
-                    marginBottom: '8px',
-                    color: '#4b5563',
-                  },
-                },
-              },
-              p: { props: { style: { marginBottom: '12px', lineHeight: '1.6' } } },
-              code: {
-                props: {
-                  style: {
-                    background: '#f3f4f6',
-                    padding: '2px 6px',
-                    borderRadius: '3px',
-                    fontFamily: 'monospace',
-                    fontSize: '13px',
-                  },
-                },
-              },
-              pre: {
-                props: {
-                  style: {
-                    background: '#f3f4f6',
-                    padding: '12px',
-                    borderRadius: '6px',
-                    overflow: 'auto',
-                    marginBottom: '12px',
-                  },
-                },
-              },
-              ul: { props: { style: { marginBottom: '12px', paddingLeft: '24px' } } },
-              ol: { props: { style: { marginBottom: '12px', paddingLeft: '24px' } } },
-              li: { props: { style: { marginBottom: '4px' } } },
-              blockquote: {
-                props: {
-                  style: {
-                    borderLeft: '4px solid #d1d5db',
-                    paddingLeft: '16px',
-                    marginLeft: '0',
-                    marginBottom: '12px',
-                    color: '#6b7280',
-                    fontStyle: 'italic',
-                  },
-                },
-              },
               a: {
-                component: ({ href, children }: any) => (
+                component: ({ children, href, ...props }) => (
                   <a
                     href={href}
-                    onClick={handleLinkClick}
-                    style={{
-                      color: '#3b82f6',
-                      textDecoration: 'underline',
-                      cursor: 'pointer',
+                    onClick={(e) => {
+                      if (href?.startsWith('entity_')) {
+                        e.preventDefault();
+                        onEntityClick(href);
+                      }
                     }}
+                    {...props}
                   >
                     {children}
                   </a>
@@ -289,25 +245,8 @@ export function WikiPanel({ ir, selectedEntityId, onEntityClick, onClose }: Wiki
             },
           }}
         >
-          {activeTab === 'wiki' ? wikiContent : timelineContent}
+          {activeTab === 'wiki' ? wikiContent : infoContent}
         </Markdown>
-      </div>
-
-      {/* Footer Stats */}
-      <div className="wiki-panel__footer">
-        <div className="wiki-panel__stats">
-          <span>
-            {ir.entities.length} entities
-          </span>
-          <span>•</span>
-          <span>
-            {ir.events.length} events
-          </span>
-          <span>•</span>
-          <span>
-            {ir.assertions.length} facts
-          </span>
-        </div>
       </div>
     </div>
   );
