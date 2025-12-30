@@ -14,4 +14,4 @@ cmds = [
 cmds = ["npm run build"]
 
 [start]
-cmd = "bash start-services.sh"
+cmd = "sh ./start-services.sh"

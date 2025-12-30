@@ -1,1 +1,1 @@
-web: sh start-services.sh
+web: sh ./start-services.sh
