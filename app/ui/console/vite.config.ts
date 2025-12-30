@@ -36,7 +36,9 @@ export default defineConfig({
   },
   define: {
     global: 'globalThis',
-    'process.env': {}
+    'process.env': {},
+    'process.version': JSON.stringify('v18.0.0'),
+    'process.versions': JSON.stringify({ node: '18.0.0' })
   },
   optimizeDeps: {
     include: ['buffer', 'crypto-browserify', 'stream-browserify']
