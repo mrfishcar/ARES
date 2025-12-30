@@ -30,7 +30,8 @@ export default defineConfig({
       buffer: 'buffer/',
       util: 'util/',
       '@engine': path.resolve(__dirname, '../../engine')
-    }
+    },
+    extensions: ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json']
   },
   define: {
     global: 'globalThis',
