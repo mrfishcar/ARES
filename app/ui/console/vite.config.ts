@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import { createRequire } from 'node:module';
+import path from 'path';
 
 const require = createRequire(import.meta.url);
 const reactPlugin = require('@vitejs/plugin-react');
@@ -24,7 +25,8 @@ export default defineConfig({
       stream: 'stream-browserify',
       crypto: 'crypto-browserify',
       buffer: 'buffer/',
-      util: 'util/'
+      util: 'util/',
+      '@engine': path.resolve(__dirname, '../../engine')
     }
   },
   define: {

@@ -8,8 +8,8 @@
 
 import React, { useMemo, useState } from 'react';
 import Markdown from 'markdown-to-jsx';
-import { renderEntityPage, renderItemPage, renderPlacePage, renderTimeline, queryTimeline } from '../../../../engine/ir';
-import type { ProjectIR, EntityId } from '../../../../engine/ir/types';
+import { renderEntityPage, renderItemPage, renderPlacePage, renderTimeline, queryTimeline } from '@engine/ir';
+import type { ProjectIR, EntityId } from '@engine/ir/types';
 import { getEntityTypeColor } from '../types/entities';
 import './WikiPanel.css';
 
@@ -40,18 +40,18 @@ export function WikiPanel({ ir, selectedEntityId, onEntityClick, onClose }: Wiki
   // Find selected entity
   const selectedEntity = useMemo(() => {
     if (!selectedEntityId) return null;
-    return ir.entities.find(e => e.id === selectedEntityId);
+    return ir.entities.find((e: any) => e.id === selectedEntityId);
   }, [ir.entities, selectedEntityId]);
 
   // Filter entities by type
   const filteredEntities = useMemo(() => {
     if (!typeFilter) return ir.entities;
-    return ir.entities.filter(e => e.type === typeFilter);
+    return ir.entities.filter((e: any) => e.type === typeFilter);
   }, [ir.entities, typeFilter]);
 
   // Get unique entity types
   const availableTypes = useMemo(() => {
-    const types = new Set(ir.entities.map(e => e.type));
+    const types = new Set(ir.entities.map((e: any) => e.type));
     return Array.from(types).sort();
   }, [ir.entities]);
 
@@ -154,7 +154,7 @@ export function WikiPanel({ ir, selectedEntityId, onEntityClick, onClose }: Wiki
           <option value="" disabled>
             Choose entity ({filteredEntities.length})
           </option>
-          {filteredEntities.map((entity) => (
+          {filteredEntities.map((entity: any) => (
             <option key={entity.id} value={entity.id}>
               {ENTITY_TYPE_EMOJI[entity.type] || '📄'} {entity.canonical} ({entity.type})
             </option>
@@ -168,9 +168,9 @@ export function WikiPanel({ ir, selectedEntityId, onEntityClick, onClose }: Wiki
           onChange={(e) => setTypeFilter(e.target.value || null)}
         >
           <option value="">All Types</option>
-          {availableTypes.map((type) => (
+          {availableTypes.map((type: string) => (
             <option key={type} value={type}>
-              {ENTITY_TYPE_EMOJI[type] || '📄'} {type}
+              {ENTITY_TYPE_EMOJI[type as keyof typeof ENTITY_TYPE_EMOJI] || '📄'} {type}
             </option>
           ))}
         </select>

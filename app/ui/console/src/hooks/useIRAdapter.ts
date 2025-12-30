@@ -7,8 +7,8 @@
  */
 
 import { useMemo } from 'react';
-import { adaptLegacyExtraction } from '../../../../engine/ir/adapter';
-import type { ProjectIR } from '../../../../engine/ir/types';
+import { adaptLegacyExtraction } from '@engine/ir/adapter';
+import type { ProjectIR } from '@engine/ir/types';
 
 /**
  * Extraction result from the ARES engine
