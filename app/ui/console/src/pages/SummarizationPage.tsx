@@ -12,8 +12,19 @@ import { useIRAdapter, ExtractionResult } from '../hooks/useIRAdapter';
 import type { ProjectIR } from '@engine/ir/types';
 import './SummarizationPage.css';
 
-// API endpoint for extraction
-const API_BASE = import.meta.env.VITE_API_URL || '';
+// Resolve API URL (same logic as ExtractionLab)
+function resolveApiUrl() {
+  let apiUrl = import.meta.env.VITE_API_URL;
+  if (!apiUrl) {
+    const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+    if (hostname.includes('vercel.app')) {
+      apiUrl = 'https://ares-production-72ea.up.railway.app';
+    } else {
+      apiUrl = 'http://localhost:4000';
+    }
+  }
+  return apiUrl;
+}
 
 interface SummaryResult {
   keyEntities: string;
@@ -166,19 +177,25 @@ export function SummarizationPage() {
     setExtractionResult(null);
 
     try {
-      const response = await fetch(`${API_BASE}/api/extract`, {
+      const apiUrl = resolveApiUrl();
+      console.log('[Summarization] Calling extraction API:', apiUrl);
+
+      const response = await fetch(`${apiUrl}/extract-entities`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: inputText }),
       });
 
       if (!response.ok) {
-        throw new Error(`Extraction failed: ${response.statusText}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData?.error || `Extraction failed: ${response.statusText}`);
       }
 
       const result = await response.json();
+      console.log('[Summarization] Extraction result:', result);
       setExtractionResult(result);
     } catch (err) {
+      console.error('[Summarization] Extraction error:', err);
       setError(err instanceof Error ? err.message : 'Extraction failed');
     } finally {
       setIsProcessing(false);
