@@ -12,6 +12,14 @@
  */
 
 import type { EntityType } from './schema';
+import {
+  isPersonIndicator,
+  isLocationIndicator,
+  isGroupIndicator,
+  isArtifactIndicator,
+  suggestEntityType,
+} from './linguistics/supersense';
+import type { Token } from '../parser/parse-types';
 
 // ============================================================================
 // SHARED CONSTANTS
@@ -618,4 +626,109 @@ export function inferEntityType(
   }
 
   return currentType;
+}
+
+// ============================================================================
+// SUPERSENSE-BASED TYPE INFERENCE
+// ============================================================================
+
+/**
+ * Infer entity type using supersense tagging
+ *
+ * Uses WordNet-style supersenses to improve type classification.
+ * This is particularly useful for common nouns that become entities.
+ *
+ * @param name - Entity canonical name
+ * @param currentType - Current entity type
+ * @param tokens - Optional parsed tokens for the entity name
+ * @returns Corrected type with confidence
+ */
+export function inferEntityTypeWithSupersense(
+  name: string,
+  currentType: EntityType,
+  tokens?: Token[]
+): { type: EntityType; confidence: number; source: 'supersense' | 'lexical' | 'original' } {
+  const nameTokens = name.split(/\s+/).map(t => t.toLowerCase());
+
+  // Check supersense indicators for last word (head noun)
+  const headWord = nameTokens[nameTokens.length - 1];
+
+  // Person indicators (king, wizard, soldier, etc.)
+  if (isPersonIndicator(headWord) && currentType !== 'PERSON') {
+    return { type: 'PERSON', confidence: 0.85, source: 'supersense' };
+  }
+
+  // Location indicators (river, mountain, city, etc.)
+  if (isLocationIndicator(headWord) && currentType !== 'PLACE') {
+    return { type: 'PLACE', confidence: 0.90, source: 'supersense' };
+  }
+
+  // Group indicators (army, council, fellowship, etc.)
+  if (isGroupIndicator(headWord)) {
+    // Groups can be ORG or HOUSE depending on context
+    if (currentType !== 'ORG' && currentType !== 'HOUSE') {
+      return { type: 'ORG', confidence: 0.80, source: 'supersense' };
+    }
+  }
+
+  // Artifact indicators (sword, ring, crown, etc.)
+  if (isArtifactIndicator(headWord) && currentType !== 'ITEM' && currentType !== 'ARTIFACT') {
+    return { type: 'ITEM', confidence: 0.85, source: 'supersense' };
+  }
+
+  // If we have parsed tokens, use full supersense suggestion
+  if (tokens && tokens.length > 0) {
+    const suggestion = suggestEntityType(tokens);
+    if (suggestion.suggestedType && suggestion.confidence > 0.7) {
+      return {
+        type: suggestion.suggestedType,
+        confidence: suggestion.confidence,
+        source: 'supersense',
+      };
+    }
+  }
+
+  // Fall back to lexical inference
+  const lexicalType = inferEntityType(name, currentType);
+  if (lexicalType !== currentType) {
+    return { type: lexicalType, confidence: 0.75, source: 'lexical' };
+  }
+
+  return { type: currentType, confidence: 0.5, source: 'original' };
+}
+
+/**
+ * Check if an entity name is a person role/title
+ * (king, wizard, soldier - common nouns that often become entities in fiction)
+ */
+export function isPersonRole(name: string): boolean {
+  const normalized = name.toLowerCase().trim();
+  return isPersonIndicator(normalized);
+}
+
+/**
+ * Check if an entity name is a location type
+ * (river, mountain, kingdom - geographic features)
+ */
+export function isLocationType(name: string): boolean {
+  const normalized = name.toLowerCase().trim();
+  return isLocationIndicator(normalized);
+}
+
+/**
+ * Check if an entity name is a group/organization type
+ * (army, council, fellowship - collective nouns)
+ */
+export function isGroupType(name: string): boolean {
+  const normalized = name.toLowerCase().trim();
+  return isGroupIndicator(normalized);
+}
+
+/**
+ * Check if an entity name is an artifact/item type
+ * (sword, ring, crown - objects)
+ */
+export function isArtifactType(name: string): boolean {
+  const normalized = name.toLowerCase().trim();
+  return isArtifactIndicator(normalized);
 }

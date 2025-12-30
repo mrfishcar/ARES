@@ -5,3 +5,4 @@ export * from './school-names';
 export * from './jr-disambiguation';
 export * from './context-signals';
 export * from './feature-logging';
+export * from './supersense';
