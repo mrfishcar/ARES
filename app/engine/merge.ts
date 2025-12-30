@@ -3,9 +3,10 @@
  * Merges entities across documents using Jaro-Winkler clustering
  */
 
-import type { Entity, Relation, EntityType } from './schema';
+import type { Entity, Relation, EntityType, EntityTier } from './schema';
 import { toBookNLPGlobalId, toBookNLPEID } from './booknlp/identity';
 import { isValidEntity } from './entity-quality-filter';
+import { computeUnifiedQualityScore } from './entity-tier-assignment';
 
 /**
  * Merge decision with confidence and provenance
@@ -553,6 +554,33 @@ export function mergeEntitiesAcrossDocs(
       const mentionCount = cluster.reduce((sum, e) => sum + ((e as any).mention_count || 0), 0);
       if (mentionCount > 0) {
         (globalEntity as any).mention_count = mentionCount;
+      }
+
+      // TIER COMPUTATION (Phase 1.3): Compute unified quality score for merged entity
+      // This ensures the merged entity has a properly computed tier based on all evidence
+      const qualityScore = computeUnifiedQualityScore(globalEntity);
+      globalEntity.tier = qualityScore.tier;
+
+      // Store quality metadata for debugging and review
+      if (!globalEntity.attrs) {
+        globalEntity.attrs = {};
+      }
+      globalEntity.attrs.qualityScore = {
+        namehoodScore: qualityScore.namehoodScore,
+        finalConfidence: qualityScore.finalConfidence,
+        tierReason: qualityScore.tierReason,
+        passesFilter: qualityScore.passesFilter,
+      };
+
+      // Preserve original cluster entity tiers for provenance
+      const clusterTiers = cluster.map(e => ({
+        id: e.id,
+        canonical: e.canonical,
+        originalTier: e.tier ?? 'UNKNOWN',
+        originalConfidence: e.confidence ?? 0.5,
+      }));
+      if (cluster.length > 1) {
+        globalEntity.attrs.mergedFrom = clusterTiers;
       }
 
       // FEEDBACK VALIDATION (Phase 1.3): Re-validate merged entity

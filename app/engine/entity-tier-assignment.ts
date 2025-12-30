@@ -14,7 +14,7 @@
  * 4. Deterministic and explainable
  */
 
-import type { Entity, EntityTier, EntityType } from './schema';
+import type { Entity, EntityTier, EntityType, EntityQualityScore, ConfidenceBreakdown } from './schema';
 
 /* =============================================================================
  * STRUCTURAL GARBAGE DETECTION (Grammar-Based)
@@ -569,3 +569,178 @@ export function getTierStats(entities: Entity[]): {
 
   return stats;
 }
+
+/* =============================================================================
+ * UNIFIED QUALITY SCORING (Phase 1.2 - Reconciled Systems)
+ *
+ * Bridges confidence scoring (0-1) with namehood scoring (0-10+) and tier assignment.
+ * Ensures consistent quality decisions across the pipeline.
+ * ============================================================================= */
+
+/**
+ * Quality filter thresholds (aligned with entity-quality-filter.ts)
+ */
+const QUALITY_FILTER_THRESHOLDS = {
+  DEFAULT: 0.55,
+  STRICT: 0.75,
+  PERMISSIVE: 0.45,
+} as const;
+
+/**
+ * Map namehood score to confidence range
+ *
+ * Namehood score of 3+ maps to ~0.70+ confidence (TIER_A)
+ * Namehood score of 2 maps to ~0.55+ confidence (TIER_B)
+ * Namehood score of 0-1 maps to ~0.40 confidence (TIER_C)
+ *
+ * Formula: baseConfidence + (namehoodScore * 0.08), capped at 0.99
+ */
+function namehoodToConfidence(namehoodScore: number, baseConfidence: number): number {
+  const namehoodBonus = namehoodScore * 0.08; // Each namehood point adds ~8%
+  const combined = baseConfidence + namehoodBonus;
+  return Math.min(Math.max(combined, 0), 0.99);
+}
+
+/**
+ * Compute unified quality score for an entity
+ *
+ * This function provides a single, consistent view of entity quality
+ * by reconciling the namehood scoring system with confidence thresholds.
+ *
+ * @param entity - Entity to score
+ * @param filterThreshold - Quality filter threshold (default: 0.55)
+ * @returns Unified EntityQualityScore
+ */
+export function computeUnifiedQualityScore(
+  entity: Entity,
+  filterThreshold: number = QUALITY_FILTER_THRESHOLDS.DEFAULT
+): EntityQualityScore {
+  const rawConfidence = entity.confidence ?? 0.5;
+  const features = extractTierFeatures(entity);
+
+  // Build namehood evidence
+  const evidence: NamehoodEvidence = {
+    occursNonInitial: Boolean(entity.attrs?.occursNonInitial),
+    isMultiToken: features.tokenCount >= 2,
+    hasHonorific: features.hasTitlePrefix,
+    mentionCount: features.mentionCount ?? 1,
+    hasNERSupport: features.hasNERSupport,
+    appearsInDialogue: Boolean(entity.attrs?.appearsInDialogue),
+    hasAppositive: Boolean(entity.attrs?.hasAppositive),
+    entityType: entity.type,
+  };
+
+  // Calculate namehood score
+  const namehoodScore = calculateNamehoodScore(evidence);
+
+  // Assign tier
+  const { tier, reason: tierReason } = assignEntityTier(entity, features);
+
+  // Compute final confidence with namehood integration
+  let finalConfidence = namehoodToConfidence(namehoodScore, rawConfidence);
+
+  // Apply NER bonus if not already counted
+  if (features.hasNERSupport && !entity.attrs?.nerBonusApplied) {
+    finalConfidence = Math.min(finalConfidence + 0.15, 0.99);
+  }
+
+  // Build confidence breakdown
+  const breakdown: ConfidenceBreakdown = {
+    base: rawConfidence,
+    namehoodScore,
+    nerBonus: features.hasNERSupport ? 0.15 : undefined,
+    multiTokenBonus: features.tokenCount >= 2 ? 0.10 : undefined,
+    titlePrefixBonus: features.hasTitlePrefix ? 0.08 : undefined,
+    contextBonus: evidence.appearsInDialogue ? 0.08 : undefined,
+    final: finalConfidence,
+  };
+
+  // Check if entity passes quality filter
+  const passesFilter = finalConfidence >= filterThreshold;
+
+  return {
+    rawConfidence,
+    namehoodScore,
+    finalConfidence,
+    tier,
+    tierReason,
+    passesFilter,
+    breakdown,
+    evidence: {
+      occursNonInitial: evidence.occursNonInitial,
+      isMultiToken: evidence.isMultiToken,
+      hasHonorific: evidence.hasHonorific,
+      hasNERSupport: evidence.hasNERSupport,
+      mentionCount: evidence.mentionCount,
+      appearsInDialogue: evidence.appearsInDialogue,
+      hasAppositive: evidence.hasAppositive,
+    },
+  };
+}
+
+/**
+ * Validate that tier assignment aligns with filter thresholds
+ *
+ * Ensures no entity passes tier assignment but fails quality filter.
+ * Returns validation result with any inconsistencies found.
+ */
+export function validateTierFilterAlignment(
+  entities: Entity[],
+  filterThreshold: number = QUALITY_FILTER_THRESHOLDS.DEFAULT
+): {
+  aligned: boolean;
+  inconsistencies: Array<{
+    entity: Entity;
+    tier: EntityTier;
+    confidence: number;
+    passesFilter: boolean;
+    issue: string;
+  }>;
+} {
+  const inconsistencies: Array<{
+    entity: Entity;
+    tier: EntityTier;
+    confidence: number;
+    passesFilter: boolean;
+    issue: string;
+  }> = [];
+
+  for (const entity of entities) {
+    const score = computeUnifiedQualityScore(entity, filterThreshold);
+
+    // Check for inconsistencies:
+    // - TIER_A should always pass filter (confidence >= threshold)
+    // - TIER_B should pass filter (confidence >= threshold)
+    // - TIER_C may or may not pass filter
+
+    if (score.tier === 'TIER_A' && !score.passesFilter) {
+      inconsistencies.push({
+        entity,
+        tier: score.tier,
+        confidence: score.finalConfidence,
+        passesFilter: score.passesFilter,
+        issue: 'TIER_A entity fails quality filter',
+      });
+    }
+
+    if (score.tier === 'TIER_B' && !score.passesFilter) {
+      inconsistencies.push({
+        entity,
+        tier: score.tier,
+        confidence: score.finalConfidence,
+        passesFilter: score.passesFilter,
+        issue: 'TIER_B entity fails quality filter',
+      });
+    }
+  }
+
+  return {
+    aligned: inconsistencies.length === 0,
+    inconsistencies,
+  };
+}
+
+/**
+ * Export namehood calculation for use in quality filter
+ */
+export { calculateNamehoodScore };

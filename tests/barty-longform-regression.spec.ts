@@ -318,7 +318,27 @@ describe('Barty Long-Form Regression Tests', () => {
       expect(result.allAccepted.some(e => e.type === 'ORG')).toBe(true);
     });
 
-    it('does not merge TIER_C garbage with legitimate TIER_A entities', () => {
+    it('does not merge TIER_C garbage with legitimate TIER_A entities when confidence below threshold', () => {
+      // Use lower confidence to test isolation below the 0.85 threshold
+      const garbage = createEntity('ifying\ufffd in', 'SPELL', 0.70);
+      const legitimate = createEntity('Barty Beauregard', 'PERSON', 0.78);
+
+      // Assign tiers
+      garbage.tier = assignEntityTier(garbage, extractTierFeatures(garbage)).tier;
+      legitimate.tier = assignEntityTier(legitimate, extractTierFeatures(legitimate)).tier;
+
+      // Verify tiers
+      expect(garbage.tier).toBe('TIER_C');
+      expect(legitimate.tier).toBe('TIER_A');
+
+      // Verify merge prevention when max confidence < 0.85
+      const { canMerge, reason } = canMergeByTier(garbage, legitimate);
+      expect(canMerge).toBe(false);
+      expect(reason).toBe('tier_c_to_tier_a_confidence_below_threshold');
+    });
+
+    it('allows TIER_C to merge with TIER_A when confidence >= 0.85 (Phase 3.1)', () => {
+      // High confidence enables merge per Phase 3.1 softened isolation
       const garbage = createEntity('ifying\ufffd in', 'SPELL', 0.95);
       const legitimate = createEntity('Barty Beauregard', 'PERSON', 0.98);
 
@@ -330,10 +350,10 @@ describe('Barty Long-Form Regression Tests', () => {
       expect(garbage.tier).toBe('TIER_C');
       expect(legitimate.tier).toBe('TIER_A');
 
-      // Verify merge prevention
+      // With high confidence, TIER_C can merge with TIER_A
       const { canMerge, reason } = canMergeByTier(garbage, legitimate);
-      expect(canMerge).toBe(false);
-      expect(reason).toBe('tier_c_isolated');
+      expect(canMerge).toBe(true);
+      expect(reason).toContain('tier_c_to_tier_a');
     });
   });
 
@@ -420,7 +440,8 @@ describe('Barty Long-Form Regression Tests', () => {
     });
 
     it('maintains precision by isolating low-confidence entities', () => {
-      const highConf = createEntity('Barty Beauregard', 'PERSON', 0.98);
+      // Use confidence below 0.85 threshold to test isolation
+      const highConf = createEntity('Barty Beauregard', 'PERSON', 0.78);
       // Use "Morton" instead of "Stranger" (which is in COMMON_WORD_BLOCKLIST)
       const lowConf = createEntity('Morton', 'PERSON', 0.35);
 
@@ -433,9 +454,27 @@ describe('Barty Long-Form Regression Tests', () => {
       expect(result.tierA.length).toBe(1);
       expect(result.tierC.length).toBe(1);
 
-      // Low confidence cannot merge with high confidence
+      // Low confidence cannot merge with high confidence when max conf < 0.85
       const { canMerge } = canMergeByTier(result.tierC[0], result.tierA[0]);
       expect(canMerge).toBe(false);
+    });
+
+    it('allows merge when max confidence >= 0.85 (Phase 3.1 softening)', () => {
+      // High confidence >= 0.85 enables merge per Phase 3.1
+      const highConf = createEntity('Barty Beauregard', 'PERSON', 0.98);
+      const lowConf = createEntity('Morton', 'PERSON', 0.35);
+
+      const result = filterAndTierEntities([highConf, lowConf]);
+
+      // Both accepted
+      expect(result.allAccepted.length).toBe(2);
+
+      // With high confidence, merge is allowed
+      if (result.tierA.length > 0 && result.tierC.length > 0) {
+        const { canMerge, reason } = canMergeByTier(result.tierC[0], result.tierA[0]);
+        expect(canMerge).toBe(true);
+        expect(reason).toContain('tier_c_to_tier_a');
+      }
     });
   });
 });
