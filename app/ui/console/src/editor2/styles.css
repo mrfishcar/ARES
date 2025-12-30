@@ -176,46 +176,23 @@
   overscroll-behavior: contain;
 }
 
-/* Editor surface - PHASE 2A: Visual viewport aware (Notion pattern) */
+/* Editor surface - NATIVE: Let browser handle everything */
 .rich-editor-surface {
   position: relative;
-  /* REMOVED flex: 1 - was causing container to shrink with parent */
-  /* Now uses explicit height only - maintains scroll space */
+  flex: 1;
   display: flex;
   flex-direction: column;
-  /* Fallback: throttled JS updates via --vvh (older browsers) */
-  height: var(--vvh, 100vh);
-  /* CRITICAL: max-height prevents parent from constraining us */
-  max-height: var(--vvh, 100vh);
   overflow-y: auto;
   overflow-x: hidden;
-  /* Use native momentum scrolling on iOS - smooth and natural */
-  -webkit-overflow-scrolling: touch;
-  /* JS controls scroll timing via rAF - browser handles physics */
-  scroll-behavior: auto;
-  /* ALLOW touch scrolling on editor surface */
-  touch-action: pan-y;
-  overscroll-behavior: contain;
-  /* Performance optimizations */
-  contain: layout style paint;
-  will-change: scroll-position;
-}
-
-/* Native dynamic viewport - zero JS overhead (iOS 15.4+, Safari 15.4+) */
-@supports (height: 100dvh) {
-  .rich-editor-surface {
-    height: 100dvh;  /* Override fallback - native wins */
-    max-height: 100dvh;
-  }
+  /* Use native scrolling - browser knows best */
 }
 
 /* The actual contentEditable element */
 .rich-content {
   position: relative;
   flex: 1;
-  min-height: 100%;
-  /* STATIC PADDING - production pattern, no dynamic keyboard compensation */
-  padding: 80px 24px 24px 24px;  /* Reduced bottom - spacer handles scroll slack */
+  min-height: 500px;
+  padding: 80px 24px 24px 24px;
   outline: none;
 
   /* Typography - iOS Notes style */
