@@ -1,8 +1,9 @@
 # Railway uses Nixpacks to build the application
-# This tells it we need Node.js only (no Python - we've moved away from BookNLP)
+# Python is needed ONLY for building better-sqlite3 (node-gyp compilation)
+# NOT for runtime - we've moved away from BookNLP
 
 [phases.setup]
-nixPkgs = ["nodejs-18_x"]
+nixPkgs = ["nodejs-18_x", "python3", "gcc", "gnumake"]
 
 [phases.install]
 cmds = [
