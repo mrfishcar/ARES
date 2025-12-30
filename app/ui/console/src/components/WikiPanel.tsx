@@ -8,7 +8,9 @@
 
 import React, { useMemo, useState } from 'react';
 import Markdown from 'markdown-to-jsx';
-import { renderEntityPage, renderItemPage, renderPlacePage, renderTimeline, queryTimeline } from '@engine/ir';
+import { renderEntityPage, renderItemPage, renderPlacePage } from '@engine/ir/entity-renderer';
+import { renderTimeline } from '@engine/ir/timeline-renderer';
+import { queryTimeline } from '@engine/ir/timeline-builder';
 import type { ProjectIR, EntityId } from '@engine/ir/types';
 import { getEntityTypeColor } from '../types/entities';
 import './WikiPanel.css';
