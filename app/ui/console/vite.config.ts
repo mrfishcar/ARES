@@ -25,12 +25,12 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      stream: 'stream-browserify',
-      crypto: 'crypto-browserify',
-      buffer: 'buffer/',
-      util: 'util/',
-      // Point to vendored engine files (copied by prebuild.sh)
-      '@engine': path.resolve(__dirname, './src/engine-vendor')
+      stream: path.resolve(__dirname, 'node_modules/stream-browserify'),
+      crypto: path.resolve(__dirname, 'node_modules/crypto-browserify'),
+      buffer: path.resolve(__dirname, 'node_modules/buffer/'),
+      util: path.resolve(__dirname, 'node_modules/util/'),
+      // Point to engine package (same path as tsconfig)
+      '@engine': path.resolve(__dirname, '../../engine')
     },
     extensions: ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json']
   },
