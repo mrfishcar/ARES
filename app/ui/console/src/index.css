@@ -195,13 +195,14 @@ body {
   }
 }
 
-@media (prefers-color-scheme: light) {
+/* DISABLED: Always use dark mode for ARES */
+/* @media (prefers-color-scheme: light) {
   :root {
     color-scheme: light;
     background-color: var(--app-bg-light);
     --app-surface: var(--app-bg-light);
   }
-}
+} */
 
 :root {
   margin: 0;
