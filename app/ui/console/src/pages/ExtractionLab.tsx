@@ -14,8 +14,10 @@ import { DocumentsSidebar } from '../components/DocumentsSidebar';
 import { EditorPane } from '../components/EditorPane';
 import { EntityModal } from '../components/EntityModal';
 import { WikiModal } from '../components/WikiModal';
+import { WikiPanel } from '../components/WikiPanel';
 import { FloatingActionButton } from '../components/FloatingActionButton';
 import { EntityReviewSidebar } from '../components/EntityReviewSidebar';
+import { useIRAdapter } from '../hooks/useIRAdapter';
 import type { FormattingActions, NavigateToRange } from '../components/CodeMirrorEditorProps';
 import { isValidEntityType, mapExtractionResponseToSpans, type EntitySpan, type EntityType } from '../types/entities';
 import { initializeTheme, toggleTheme, loadThemePreference, getEffectiveTheme } from '../utils/darkMode';
@@ -757,6 +759,10 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   // Entity modal state
   const [selectedEntity, setSelectedEntity] = useState<SelectedEntityState | null>(null);
 
+  // Wiki Panel state (Task 1.1.3)
+  const [showWikiPanel, setShowWikiPanel] = useState(false);
+  const [selectedWikiEntityId, setSelectedWikiEntityId] = useState<string | null>(null);
+
   // Entity override state (for highlight mode)
   const [entityOverrides, setEntityOverrides] = useState<EntityOverrides>({
     rejectedSpans: new Set(),
@@ -914,6 +920,23 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     });
     return map;
   }, [booknlpResult, entities]);
+
+  // Convert extraction to IR for wiki rendering (Task 1.1.3)
+  const extractionResultForIR = useMemo(() => ({
+    entities: displayEntities.map(e => ({
+      id: e.entityId || `entity_${e.text.replace(/\s+/g, '_')}`,
+      canonical: e.canonicalName || e.text,
+      text: e.text,
+      type: e.type,
+      confidence: e.confidence,
+      aliases: [],
+    })),
+    relations: relations,
+    success: true,
+  }), [displayEntities, relations]);
+
+  const projectIR = useIRAdapter(extractionResultForIR, lastSavedId || 'lab-doc');
+
   const entityHighlightingEnabled = settings.showHighlighting;
   const editorDisableHighlighting = !entityHighlightingEnabled;
   const effectiveTheme = getEffectiveTheme(theme);
@@ -2209,11 +2232,26 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
     (entityName: string) => {
       const entity = displayEntities.find((e) => e.text === entityName);
       if (entity) {
+        // Open wiki modal (existing behavior)
         setSelectedEntity({ name: entityName, type: entity.type });
+
+        // Also open wiki panel with IR renderer (Task 1.1.3)
+        const entityId = entity.entityId || `entity_${entity.text.replace(/\s+/g, '_')}`;
+        setSelectedWikiEntityId(entityId);
+        setShowWikiPanel(true);
       }
     },
     [displayEntities]
   );
+
+  // Wiki Panel handlers (Task 1.1.3)
+  const handleCloseWikiPanel = useCallback(() => {
+    setShowWikiPanel(false);
+  }, []);
+
+  const handleWikiEntityClick = useCallback((entityId: string) => {
+    setSelectedWikiEntityId(entityId);
+  }, []);
 
   // Create a new blank document
   const handleNewDocument = useCallback(() => {
@@ -2484,6 +2522,16 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           project={project}
           onClose={() => setSelectedEntity(null)}
           extractionContext={{ entities: displayEntities, relations }}
+        />
+      )}
+
+      {/* Wiki Panel (Task 1.1.3) */}
+      {showWikiPanel && projectIR && (
+        <WikiPanel
+          ir={projectIR}
+          selectedEntityId={selectedWikiEntityId}
+          onEntityClick={handleWikiEntityClick}
+          onClose={handleCloseWikiPanel}
         />
       )}
 
