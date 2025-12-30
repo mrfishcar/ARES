@@ -12,6 +12,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   buildFactsFromEvents,
+  deriveRelationFacts,
   getCurrentLocation,
   getCurrentPossessions,
   getCurrentHolder,
@@ -21,6 +22,7 @@ import {
 } from '../../app/engine/ir/fact-builder';
 import type {
   StoryEvent,
+  Assertion,
   Confidence,
   Attribution,
   EvidenceSpan,
@@ -949,5 +951,308 @@ describe('Edge Cases', () => {
 
     // MOVE → 1 fact, TELL → 0 facts, DEATH → 1 fact
     expect(facts).toHaveLength(2);
+  });
+});
+
+// =============================================================================
+// RELATION FACTS (A1)
+// =============================================================================
+
+function makeAssertion(
+  subject: string,
+  predicate: string,
+  object: string,
+  opts: Partial<Assertion> = {}
+): Assertion {
+  const now = new Date().toISOString();
+  return {
+    id: opts.id ?? `assertion_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+    assertionType: 'DIRECT',
+    subject,
+    predicate: predicate as any,
+    object,
+    evidence: opts.evidence ?? [makeEvidence('Test evidence')],
+    attribution: opts.attribution ?? makeAttribution(),
+    modality: opts.modality ?? 'FACT',
+    confidence: opts.confidence ?? makeConfidence(0.8),
+    createdAt: now,
+    compiler_pass: 'test',
+  };
+}
+
+describe('Relation Facts (deriveRelationFacts)', () => {
+  describe('Symmetric Relations', () => {
+    it('should create bidirectional facts for enemy_of', () => {
+      const assertion = makeAssertion('entity_harry', 'enemy_of', 'entity_voldemort');
+
+      const facts = deriveRelationFacts([assertion]);
+
+      expect(facts).toHaveLength(2);
+
+      const harryToVoldy = facts.find(
+        (f) => f.subject === 'entity_harry' && f.object === 'entity_voldemort'
+      );
+      const voldyToHarry = facts.find(
+        (f) => f.subject === 'entity_voldemort' && f.object === 'entity_harry'
+      );
+
+      expect(harryToVoldy).toBeDefined();
+      expect(harryToVoldy?.predicate).toBe('enemy_of');
+      expect(voldyToHarry).toBeDefined();
+      expect(voldyToHarry?.predicate).toBe('enemy_of');
+    });
+
+    it('should create bidirectional facts for sibling_of', () => {
+      const assertion = makeAssertion('entity_ron', 'sibling_of', 'entity_ginny');
+
+      const facts = deriveRelationFacts([assertion]);
+
+      expect(facts).toHaveLength(2);
+      expect(facts.some((f) => f.subject === 'entity_ron' && f.object === 'entity_ginny')).toBe(
+        true
+      );
+      expect(facts.some((f) => f.subject === 'entity_ginny' && f.object === 'entity_ron')).toBe(
+        true
+      );
+    });
+
+    it('should create bidirectional facts for married_to', () => {
+      const assertion = makeAssertion('entity_arthur', 'married_to', 'entity_molly');
+
+      const facts = deriveRelationFacts([assertion]);
+
+      expect(facts).toHaveLength(2);
+    });
+
+    it('should create bidirectional facts for ally_of', () => {
+      const assertion = makeAssertion('entity_order', 'ally_of', 'entity_dumbledore');
+
+      const facts = deriveRelationFacts([assertion]);
+
+      expect(facts).toHaveLength(2);
+    });
+  });
+
+  describe('Directional Relations', () => {
+    it('should create single fact for parent_of', () => {
+      const assertion = makeAssertion('entity_james', 'parent_of', 'entity_harry');
+
+      const facts = deriveRelationFacts([assertion]);
+
+      expect(facts).toHaveLength(1);
+      expect(facts[0].subject).toBe('entity_james');
+      expect(facts[0].predicate).toBe('parent_of');
+      expect(facts[0].object).toBe('entity_harry');
+    });
+
+    it('should create single fact for child_of', () => {
+      const assertion = makeAssertion('entity_harry', 'child_of', 'entity_james');
+
+      const facts = deriveRelationFacts([assertion]);
+
+      expect(facts).toHaveLength(1);
+    });
+
+    it('should create single fact for member_of', () => {
+      const assertion = makeAssertion('entity_harry', 'member_of', 'entity_gryffindor');
+
+      const facts = deriveRelationFacts([assertion]);
+
+      expect(facts).toHaveLength(1);
+      expect(facts[0].predicate).toBe('member_of');
+    });
+
+    it('should create single fact for lives_in', () => {
+      const assertion = makeAssertion('entity_harry', 'lives_in', 'entity_privet_drive');
+
+      const facts = deriveRelationFacts([assertion]);
+
+      expect(facts).toHaveLength(1);
+      expect(facts[0].predicate).toBe('lives_in');
+    });
+  });
+
+  describe('Confidence Threshold', () => {
+    it('should filter out relations below 0.7 confidence', () => {
+      const lowConfAssertion = makeAssertion('entity_a', 'enemy_of', 'entity_b', {
+        confidence: makeConfidence(0.5),
+      });
+
+      const facts = deriveRelationFacts([lowConfAssertion]);
+
+      expect(facts).toHaveLength(0);
+    });
+
+    it('should include relations at exactly 0.7 confidence', () => {
+      const atThreshold = makeAssertion('entity_a', 'enemy_of', 'entity_b', {
+        confidence: makeConfidence(0.7),
+      });
+
+      const facts = deriveRelationFacts([atThreshold]);
+
+      expect(facts).toHaveLength(2); // symmetric
+    });
+
+    it('should include relations above 0.7 confidence', () => {
+      const highConf = makeAssertion('entity_a', 'parent_of', 'entity_b', {
+        confidence: makeConfidence(0.9),
+      });
+
+      const facts = deriveRelationFacts([highConf]);
+
+      expect(facts).toHaveLength(1);
+      expect(facts[0].confidence).toBe(0.9);
+    });
+  });
+
+  describe('Negation Blocking', () => {
+    it('should not create facts for negated relations', () => {
+      const negated = makeAssertion('entity_harry', 'enemy_of', 'entity_ron', {
+        modality: 'NEGATED',
+      });
+
+      const facts = deriveRelationFacts([negated]);
+
+      expect(facts).toHaveLength(0);
+    });
+
+    it('should create facts for non-negated modalities', () => {
+      const factModality = makeAssertion('entity_a', 'sibling_of', 'entity_b', {
+        modality: 'FACT',
+      });
+      const claimModality = makeAssertion('entity_c', 'sibling_of', 'entity_d', {
+        modality: 'CLAIM',
+      });
+
+      const facts = deriveRelationFacts([factModality, claimModality]);
+
+      expect(facts).toHaveLength(4); // 2 symmetric each
+    });
+  });
+
+  describe('Deterministic Ordering', () => {
+    it('should produce consistent fact order for same input', () => {
+      const assertions = [
+        makeAssertion('entity_b', 'enemy_of', 'entity_a', { id: 'assertion_1' }),
+        makeAssertion('entity_c', 'parent_of', 'entity_d', { id: 'assertion_2' }),
+      ];
+
+      const facts1 = deriveRelationFacts(assertions);
+      const facts2 = deriveRelationFacts(assertions);
+
+      expect(facts1.map((f) => f.id)).toEqual(facts2.map((f) => f.id));
+    });
+
+    it('should generate deterministic fact IDs from assertion ID', () => {
+      const assertion = makeAssertion('entity_a', 'enemy_of', 'entity_b', {
+        id: 'fixed_assertion_id',
+      });
+
+      const facts1 = deriveRelationFacts([assertion]);
+      const facts2 = deriveRelationFacts([assertion]);
+
+      expect(facts1[0].id).toBe(facts2[0].id);
+      expect(facts1[1].id).toBe(facts2[1].id);
+    });
+  });
+
+  describe('Non-Relation Predicates', () => {
+    it('should ignore non-relation predicates', () => {
+      const tellAssertion = makeAssertion('entity_harry', 'said', 'hello');
+      const moveAssertion = makeAssertion('entity_harry', 'went_to', 'entity_hogwarts');
+
+      const facts = deriveRelationFacts([tellAssertion, moveAssertion]);
+
+      expect(facts).toHaveLength(0);
+    });
+  });
+
+  describe('Missing Subject/Object', () => {
+    it('should skip assertions with missing subject', () => {
+      const assertion: Assertion = {
+        id: 'test',
+        assertionType: 'DIRECT',
+        subject: undefined as any,
+        predicate: 'enemy_of',
+        object: 'entity_b',
+        evidence: [],
+        attribution: makeAttribution(),
+        modality: 'FACT',
+        confidence: makeConfidence(0.8),
+        createdAt: new Date().toISOString(),
+        compiler_pass: 'test',
+      };
+
+      const facts = deriveRelationFacts([assertion]);
+      expect(facts).toHaveLength(0);
+    });
+
+    it('should skip assertions with non-string object', () => {
+      const assertion = makeAssertion('entity_a', 'enemy_of', 'entity_b');
+      (assertion as any).object = 123; // numeric object
+
+      const facts = deriveRelationFacts([assertion]);
+      expect(facts).toHaveLength(0);
+    });
+  });
+
+  describe('Integration with buildFactsFromEvents', () => {
+    it('should derive relation facts when assertions are passed', () => {
+      const events: StoryEvent[] = [];
+      const assertions = [makeAssertion('entity_a', 'enemy_of', 'entity_b')];
+
+      const facts = buildFactsFromEvents(events, assertions);
+
+      expect(facts).toHaveLength(2);
+    });
+
+    it('should combine event facts and relation facts', () => {
+      const events = [
+        makeEvent('MOVE', [
+          { role: 'MOVER', entity: 'entity_harry' },
+          { role: 'DESTINATION', entity: 'entity_hogwarts' },
+        ]),
+      ];
+      const assertions = [makeAssertion('entity_ron', 'sibling_of', 'entity_ginny')];
+
+      const facts = buildFactsFromEvents(events, assertions);
+
+      // 1 from MOVE + 2 from sibling_of (symmetric)
+      expect(facts).toHaveLength(3);
+    });
+  });
+
+  describe('Evidence Preservation', () => {
+    it('should preserve derivedFrom link to assertion', () => {
+      const assertion = makeAssertion('entity_a', 'enemy_of', 'entity_b', {
+        id: 'original_assertion',
+      });
+
+      const facts = deriveRelationFacts([assertion]);
+
+      expect(facts[0].derivedFrom).toContain('original_assertion');
+      expect(facts[1].derivedFrom).toContain('original_assertion');
+    });
+
+    it('should extract time anchor from assertion evidence', () => {
+      const assertion = makeAssertion('entity_a', 'parent_of', 'entity_b', {
+        evidence: [
+          {
+            docId: 'test',
+            charStart: 0,
+            charEnd: 10,
+            text: 'test',
+            paragraphIndex: 5,
+            sentenceIndex: 12,
+          },
+        ],
+      });
+
+      const facts = deriveRelationFacts([assertion]);
+
+      expect(facts[0].validFrom.type).toBe('DISCOURSE');
+      expect((facts[0].validFrom as DiscourseTime).paragraph).toBe(5);
+      expect((facts[0].validFrom as DiscourseTime).sentence).toBe(12);
+    });
   });
 });

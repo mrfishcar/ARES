@@ -15,6 +15,7 @@ import { describe, it, expect } from 'vitest';
 import {
   renderEntityPage,
   renderItemPage,
+  renderPlacePage,
   getEntityName,
   getEventsForEntity,
   getAssertionsForEntity,
@@ -272,8 +273,11 @@ describe('Title Block', () => {
     const ir = createFixtureIR();
     const output = renderEntityPage(ir, 'entity_harry');
 
+    // Title now includes badge for high-confidence entities
     expect(output).toContain('# Harry Potter');
-    expect(output).toContain('**Type:** PERSON');
+    expect(output).toContain('PERSON');
+    // Badge should appear (👤 for PERSON)
+    expect(output).toContain('👤');
   });
 
   it('should render aliases', () => {
@@ -317,7 +321,9 @@ describe('Quick Facts', () => {
     const ir = createFixtureIR();
     const output = renderEntityPage(ir, 'entity_harry');
 
-    expect(output).toContain('**Current location:** Hogwarts');
+    // Current location is now cross-linked
+    expect(output).toContain('**Current location:**');
+    expect(output).toContain('[Hogwarts](entity_hogwarts)');
   });
 
   it('should show location history when multiple moves', () => {
@@ -930,8 +936,11 @@ describe('renderItemPage', () => {
       const ir = createItemIR();
       const output = renderItemPage(ir, 'entity_wand');
 
+      // Title now includes badge for high-confidence entities
       expect(output).toContain('# Elder Wand');
-      expect(output).toContain('**Type:** ITEM');
+      expect(output).toContain('ITEM');
+      // Badge should appear (🎭 for ITEM)
+      expect(output).toContain('🎭');
     });
   });
 
@@ -941,7 +950,8 @@ describe('renderItemPage', () => {
       const output = renderItemPage(ir, 'entity_wand');
 
       expect(output).toContain('## Current holder');
-      expect(output).toContain('**Ron Weasley**');
+      // Current holder is now cross-linked
+      expect(output).toContain('[Ron Weasley](entity_ron)');
     });
 
     it('should show "Unknown" when no ownership information', () => {
@@ -975,8 +985,9 @@ describe('renderItemPage', () => {
       const output = renderItemPage(ir, 'entity_wand');
 
       expect(output).toContain('## Ownership history');
-      expect(output).toContain('**Ron Weasley**');
-      expect(output).toContain('**Harry Potter**');
+      // Owners are now cross-linked
+      expect(output).toContain('[Ron Weasley](entity_ron)');
+      expect(output).toContain('[Harry Potter](entity_harry)');
     });
 
     it('should mark current owner', () => {
@@ -1069,7 +1080,8 @@ describe('renderItemPage', () => {
 
       const output = renderItemPage(ir, 'entity_ring');
 
-      expect(output).toContain('**Frodo**');
+      // Owner is now cross-linked
+      expect(output).toContain('[Frodo](entity_frodo)');
       expect(output).toContain('*(current)*');
       // Should NOT contain "inferred" since there's no giver to infer loss from
       expect(output).not.toContain('*(inferred)*');
@@ -1094,6 +1106,924 @@ describe('renderItemPage', () => {
         expect(index).toBeGreaterThan(lastIndex);
         lastIndex = index;
       }
+    });
+  });
+});
+
+// =============================================================================
+// RELATIONSHIPS SECTION TESTS (A1)
+// =============================================================================
+
+describe('Relationships Section', () => {
+  function createRelationIR(): ProjectIR {
+    return {
+      projectId: 'test',
+      createdAt: new Date().toISOString(),
+      entities: [
+        makeEntity('entity_harry', 'PERSON', 'Harry Potter'),
+        makeEntity('entity_voldemort', 'PERSON', 'Voldemort'),
+        makeEntity('entity_ron', 'PERSON', 'Ron Weasley'),
+        makeEntity('entity_ginny', 'PERSON', 'Ginny Weasley'),
+        makeEntity('entity_james', 'PERSON', 'James Potter'),
+        makeEntity('entity_gryffindor', 'ORG', 'Gryffindor'),
+      ],
+      assertions: [
+        // enemy_of (symmetric)
+        {
+          id: 'assertion_enemy',
+          assertionType: 'DIRECT' as const,
+          subject: 'entity_harry',
+          predicate: 'enemy_of',
+          object: 'entity_voldemort',
+          evidence: [],
+          attribution: { source: 'NARRATOR', reliability: 0.9, isDialogue: false, isThought: false },
+          modality: 'FACT' as const,
+          confidence: { extraction: 0.9, identity: 0.9, semantic: 0.9, temporal: 0.9, composite: 0.9 },
+          createdAt: new Date().toISOString(),
+          compiler_pass: 'test',
+        },
+        // sibling_of (symmetric)
+        {
+          id: 'assertion_sibling',
+          assertionType: 'DIRECT' as const,
+          subject: 'entity_ron',
+          predicate: 'sibling_of',
+          object: 'entity_ginny',
+          evidence: [],
+          attribution: { source: 'NARRATOR', reliability: 0.9, isDialogue: false, isThought: false },
+          modality: 'FACT' as const,
+          confidence: { extraction: 0.9, identity: 0.9, semantic: 0.9, temporal: 0.9, composite: 0.9 },
+          createdAt: new Date().toISOString(),
+          compiler_pass: 'test',
+        },
+        // parent_of (directional)
+        {
+          id: 'assertion_parent',
+          assertionType: 'DIRECT' as const,
+          subject: 'entity_james',
+          predicate: 'parent_of',
+          object: 'entity_harry',
+          evidence: [],
+          attribution: { source: 'NARRATOR', reliability: 0.9, isDialogue: false, isThought: false },
+          modality: 'FACT' as const,
+          confidence: { extraction: 0.9, identity: 0.9, semantic: 0.9, temporal: 0.9, composite: 0.9 },
+          createdAt: new Date().toISOString(),
+          compiler_pass: 'test',
+        },
+        // member_of (directional)
+        {
+          id: 'assertion_member',
+          assertionType: 'DIRECT' as const,
+          subject: 'entity_harry',
+          predicate: 'member_of',
+          object: 'entity_gryffindor',
+          evidence: [],
+          attribution: { source: 'NARRATOR', reliability: 0.9, isDialogue: false, isThought: false },
+          modality: 'FACT' as const,
+          confidence: { extraction: 0.9, identity: 0.9, semantic: 0.9, temporal: 0.9, composite: 0.9 },
+          createdAt: new Date().toISOString(),
+          compiler_pass: 'test',
+        },
+      ],
+      events: [],
+      stats: { entityCount: 6, assertionCount: 4, eventCount: 0 },
+    };
+  }
+
+  it('should render Relationships section for entity with relations', () => {
+    const ir = createRelationIR();
+    const output = renderEntityPage(ir, 'entity_harry');
+
+    expect(output).toContain('## Relationships');
+  });
+
+  it('should show symmetric relation (enemy_of) for both entities', () => {
+    const ir = createRelationIR();
+
+    const harryPage = renderEntityPage(ir, 'entity_harry');
+    expect(harryPage).toContain('Enemies');
+    expect(harryPage).toContain('Voldemort');
+
+    const voldyPage = renderEntityPage(ir, 'entity_voldemort');
+    expect(voldyPage).toContain('Enemies');
+    expect(voldyPage).toContain('Harry Potter');
+  });
+
+  it('should show sibling_of relation for both siblings', () => {
+    const ir = createRelationIR();
+
+    const ronPage = renderEntityPage(ir, 'entity_ron');
+    expect(ronPage).toContain('Siblings');
+    expect(ronPage).toContain('Ginny Weasley');
+
+    const ginnyPage = renderEntityPage(ir, 'entity_ginny');
+    expect(ginnyPage).toContain('Siblings');
+    expect(ginnyPage).toContain('Ron Weasley');
+  });
+
+  it('should show parent_of relation correctly', () => {
+    const ir = createRelationIR();
+
+    const jamesPage = renderEntityPage(ir, 'entity_james');
+    expect(jamesPage).toContain('Children');
+    expect(jamesPage).toContain('Harry Potter');
+  });
+
+  it('should show child_of relation for child entity (via parent_of as subject)', () => {
+    const ir = createRelationIR();
+
+    const harryPage = renderEntityPage(ir, 'entity_harry');
+    // Harry appears as object in parent_of, should show James as related
+    expect(harryPage).toContain('James Potter');
+  });
+
+  it('should show member_of relation', () => {
+    const ir = createRelationIR();
+
+    const harryPage = renderEntityPage(ir, 'entity_harry');
+    expect(harryPage).toContain('Member of');
+    expect(harryPage).toContain('Gryffindor');
+  });
+
+  it('should not render Relationships section when no relations exist', () => {
+    const ir: ProjectIR = {
+      projectId: 'test',
+      createdAt: new Date().toISOString(),
+      entities: [makeEntity('entity_lonely', 'PERSON', 'Lonely Person')],
+      assertions: [],
+      events: [],
+      stats: { entityCount: 1, assertionCount: 0, eventCount: 0 },
+    };
+
+    const output = renderEntityPage(ir, 'entity_lonely');
+    expect(output).not.toContain('## Relationships');
+  });
+
+  it('should filter out low confidence relations', () => {
+    const ir: ProjectIR = {
+      projectId: 'test',
+      createdAt: new Date().toISOString(),
+      entities: [
+        makeEntity('entity_a', 'PERSON', 'Person A'),
+        makeEntity('entity_b', 'PERSON', 'Person B'),
+      ],
+      assertions: [
+        {
+          id: 'assertion_low',
+          assertionType: 'DIRECT' as const,
+          subject: 'entity_a',
+          predicate: 'enemy_of',
+          object: 'entity_b',
+          evidence: [],
+          attribution: { source: 'NARRATOR', reliability: 0.9, isDialogue: false, isThought: false },
+          modality: 'FACT' as const,
+          confidence: { extraction: 0.5, identity: 0.5, semantic: 0.5, temporal: 0.5, composite: 0.5 }, // Below 0.7
+          createdAt: new Date().toISOString(),
+          compiler_pass: 'test',
+        },
+      ],
+      events: [],
+      stats: { entityCount: 2, assertionCount: 1, eventCount: 0 },
+    };
+
+    const output = renderEntityPage(ir, 'entity_a');
+    expect(output).not.toContain('## Relationships');
+  });
+
+  it('should group multiple relations of same type', () => {
+    const ir: ProjectIR = {
+      projectId: 'test',
+      createdAt: new Date().toISOString(),
+      entities: [
+        makeEntity('entity_parent', 'PERSON', 'Parent'),
+        makeEntity('entity_child1', 'PERSON', 'Child One'),
+        makeEntity('entity_child2', 'PERSON', 'Child Two'),
+      ],
+      assertions: [
+        {
+          id: 'assertion_1',
+          assertionType: 'DIRECT' as const,
+          subject: 'entity_parent',
+          predicate: 'parent_of',
+          object: 'entity_child1',
+          evidence: [],
+          attribution: { source: 'NARRATOR', reliability: 0.9, isDialogue: false, isThought: false },
+          modality: 'FACT' as const,
+          confidence: { extraction: 0.9, identity: 0.9, semantic: 0.9, temporal: 0.9, composite: 0.9 },
+          createdAt: new Date().toISOString(),
+          compiler_pass: 'test',
+        },
+        {
+          id: 'assertion_2',
+          assertionType: 'DIRECT' as const,
+          subject: 'entity_parent',
+          predicate: 'parent_of',
+          object: 'entity_child2',
+          evidence: [],
+          attribution: { source: 'NARRATOR', reliability: 0.9, isDialogue: false, isThought: false },
+          modality: 'FACT' as const,
+          confidence: { extraction: 0.9, identity: 0.9, semantic: 0.9, temporal: 0.9, composite: 0.9 },
+          createdAt: new Date().toISOString(),
+          compiler_pass: 'test',
+        },
+      ],
+      events: [],
+      stats: { entityCount: 3, assertionCount: 2, eventCount: 0 },
+    };
+
+    const output = renderEntityPage(ir, 'entity_parent');
+    expect(output).toContain('Children');
+    expect(output).toContain('Child One');
+    expect(output).toContain('Child Two');
+  });
+});
+
+// =============================================================================
+// CROSS-LINK TESTS (A2)
+// =============================================================================
+
+describe('Cross-Links', () => {
+  it('should render entity links in relationships section', () => {
+    const ir: ProjectIR = {
+      projectId: 'test',
+      createdAt: new Date().toISOString(),
+      entities: [
+        makeEntity('entity_a', 'PERSON', 'Alice'),
+        makeEntity('entity_b', 'PERSON', 'Bob'),
+      ],
+      assertions: [
+        {
+          id: 'assertion_friend',
+          assertionType: 'DIRECT' as const,
+          subject: 'entity_a',
+          predicate: 'friends_with',
+          object: 'entity_b',
+          evidence: [],
+          attribution: { source: 'NARRATOR', reliability: 0.9, isDialogue: false, isThought: false },
+          modality: 'FACT' as const,
+          confidence: { extraction: 0.9, identity: 0.9, semantic: 0.9, temporal: 0.9, composite: 0.9 },
+          createdAt: new Date().toISOString(),
+          compiler_pass: 'test',
+        },
+      ],
+      events: [],
+      stats: { entityCount: 2, assertionCount: 1, eventCount: 0 },
+    };
+
+    const output = renderEntityPage(ir, 'entity_a');
+    // Should render Bob as a cross-link
+    expect(output).toContain('[Bob](entity_b)');
+  });
+
+  it('should render entity links in possessions section', () => {
+    const ir: ProjectIR = {
+      projectId: 'test',
+      createdAt: new Date().toISOString(),
+      entities: [
+        makeEntity('entity_frodo', 'PERSON', 'Frodo'),
+        makeEntity('entity_ring', 'ITEM', 'One Ring'),
+      ],
+      assertions: [],
+      events: [
+        {
+          id: 'transfer_1',
+          type: 'TRANSFER',
+          participants: [
+            { role: 'RECEIVER', entity: 'entity_frodo', isRequired: true },
+            { role: 'ITEM', entity: 'entity_ring', isRequired: true },
+          ],
+          time: { type: 'DISCOURSE', chapter: 1, paragraph: 1, sentence: 0 },
+          evidence: [makeEvidence('Frodo received the Ring.')],
+          attribution: { source: 'NARRATOR', reliability: 0.9, isDialogue: false, isThought: false },
+          modality: 'FACT',
+          confidence: makeConfidence(),
+          links: [],
+          produces: [],
+          extractedFrom: 'pattern',
+          derivedFrom: [],
+          createdAt: new Date().toISOString(),
+          compiler_pass: 'test',
+        },
+      ],
+      stats: { entityCount: 2, assertionCount: 0, eventCount: 1 },
+    };
+
+    const output = renderEntityPage(ir, 'entity_frodo');
+    // Should render Ring as a cross-link in possessions
+    expect(output).toContain('[One Ring](entity_ring)');
+  });
+
+  it('should render entity links in quick facts location', () => {
+    const ir: ProjectIR = {
+      projectId: 'test',
+      createdAt: new Date().toISOString(),
+      entities: [
+        makeEntity('entity_gandalf', 'PERSON', 'Gandalf'),
+        makeEntity('entity_moria', 'PLACE', 'Moria'),
+      ],
+      assertions: [],
+      events: [
+        {
+          id: 'move_1',
+          type: 'MOVE',
+          participants: [
+            { role: 'MOVER', entity: 'entity_gandalf', isRequired: true },
+            { role: 'DESTINATION', entity: 'entity_moria', isRequired: true },
+          ],
+          time: { type: 'DISCOURSE', chapter: 1, paragraph: 1, sentence: 0 },
+          evidence: [makeEvidence('Gandalf entered Moria.')],
+          attribution: { source: 'NARRATOR', reliability: 0.9, isDialogue: false, isThought: false },
+          modality: 'FACT',
+          confidence: makeConfidence(),
+          links: [],
+          produces: [],
+          extractedFrom: 'pattern',
+          derivedFrom: [],
+          createdAt: new Date().toISOString(),
+          compiler_pass: 'test',
+        },
+      ],
+      stats: { entityCount: 2, assertionCount: 0, eventCount: 1 },
+    };
+
+    const output = renderEntityPage(ir, 'entity_gandalf');
+    // Should render Moria as a cross-link in current location
+    expect(output).toContain('[Moria](entity_moria)');
+  });
+
+  it('should render entity links in item page current holder', () => {
+    const ir: ProjectIR = {
+      projectId: 'test',
+      createdAt: new Date().toISOString(),
+      entities: [
+        makeEntity('entity_sam', 'PERSON', 'Sam'),
+        makeEntity('entity_rope', 'ITEM', 'Elven Rope'),
+      ],
+      assertions: [],
+      events: [
+        {
+          id: 'transfer_rope',
+          type: 'TRANSFER',
+          participants: [
+            { role: 'RECEIVER', entity: 'entity_sam', isRequired: true },
+            { role: 'ITEM', entity: 'entity_rope', isRequired: true },
+          ],
+          time: { type: 'DISCOURSE', chapter: 2, paragraph: 5, sentence: 0 },
+          evidence: [makeEvidence('Sam received the Elven Rope.')],
+          attribution: { source: 'NARRATOR', reliability: 0.9, isDialogue: false, isThought: false },
+          modality: 'FACT',
+          confidence: makeConfidence(),
+          links: [],
+          produces: [],
+          extractedFrom: 'pattern',
+          derivedFrom: [],
+          createdAt: new Date().toISOString(),
+          compiler_pass: 'test',
+        },
+      ],
+      stats: { entityCount: 2, assertionCount: 0, eventCount: 1 },
+    };
+
+    const output = renderItemPage(ir, 'entity_rope');
+    // Should render Sam as a cross-link
+    expect(output).toContain('[Sam](entity_sam)');
+  });
+
+  it('should render entity links in ownership history', () => {
+    const ir: ProjectIR = {
+      projectId: 'test',
+      createdAt: new Date().toISOString(),
+      entities: [
+        makeEntity('entity_bilbo', 'PERSON', 'Bilbo'),
+        makeEntity('entity_frodo', 'PERSON', 'Frodo'),
+        makeEntity('entity_sting', 'ITEM', 'Sting'),
+      ],
+      assertions: [],
+      events: [
+        {
+          id: 'transfer_1',
+          type: 'TRANSFER',
+          participants: [
+            { role: 'RECEIVER', entity: 'entity_bilbo', isRequired: true },
+            { role: 'ITEM', entity: 'entity_sting', isRequired: true },
+          ],
+          time: { type: 'DISCOURSE', chapter: 1, paragraph: 1, sentence: 0 },
+          evidence: [makeEvidence('Bilbo found Sting.')],
+          attribution: { source: 'NARRATOR', reliability: 0.9, isDialogue: false, isThought: false },
+          modality: 'FACT',
+          confidence: makeConfidence(),
+          links: [],
+          produces: [],
+          extractedFrom: 'pattern',
+          derivedFrom: [],
+          createdAt: new Date().toISOString(),
+          compiler_pass: 'test',
+        },
+        {
+          id: 'transfer_2',
+          type: 'TRANSFER',
+          participants: [
+            { role: 'GIVER', entity: 'entity_bilbo', isRequired: true },
+            { role: 'RECEIVER', entity: 'entity_frodo', isRequired: true },
+            { role: 'ITEM', entity: 'entity_sting', isRequired: true },
+          ],
+          time: { type: 'DISCOURSE', chapter: 5, paragraph: 10, sentence: 0 },
+          evidence: [makeEvidence('Bilbo gave Sting to Frodo.')],
+          attribution: { source: 'NARRATOR', reliability: 0.9, isDialogue: false, isThought: false },
+          modality: 'FACT',
+          confidence: makeConfidence(),
+          links: [],
+          produces: [],
+          extractedFrom: 'pattern',
+          derivedFrom: [],
+          createdAt: new Date().toISOString(),
+          compiler_pass: 'test',
+        },
+      ],
+      stats: { entityCount: 3, assertionCount: 0, eventCount: 2 },
+    };
+
+    const output = renderItemPage(ir, 'entity_sting');
+    // Both owners should be cross-linked
+    expect(output).toContain('[Bilbo](entity_bilbo)');
+    expect(output).toContain('[Frodo](entity_frodo)');
+  });
+});
+
+// =============================================================================
+// ENTITY TYPE BADGE TESTS (A3)
+// =============================================================================
+
+import { getTypeBadge } from '../../app/engine/ir/entity-renderer';
+
+describe('Entity Type Badges', () => {
+  describe('getTypeBadge', () => {
+    it('should return 👤 for PERSON with high confidence', () => {
+      expect(getTypeBadge('PERSON', 0.9)).toBe('👤');
+    });
+
+    it('should return 🏛️ for ORG with high confidence', () => {
+      expect(getTypeBadge('ORG', 0.8)).toBe('🏛️');
+    });
+
+    it('should return 📍 for PLACE with high confidence', () => {
+      expect(getTypeBadge('PLACE', 0.75)).toBe('📍');
+    });
+
+    it('should return 🎭 for ITEM with high confidence', () => {
+      expect(getTypeBadge('ITEM', 0.85)).toBe('🎭');
+    });
+
+    it('should return empty string for low confidence', () => {
+      expect(getTypeBadge('PERSON', 0.5)).toBe('');
+      expect(getTypeBadge('ORG', 0.69)).toBe('');
+    });
+
+    it('should return empty string for unknown type', () => {
+      expect(getTypeBadge('UNKNOWN_TYPE', 0.9)).toBe('');
+    });
+
+    it('should handle boundary confidence of 0.7', () => {
+      expect(getTypeBadge('PERSON', 0.7)).toBe('👤');
+      expect(getTypeBadge('PERSON', 0.699)).toBe('');
+    });
+  });
+
+  describe('Title Block with Badges', () => {
+    it('should show badge in title for high-confidence entity', () => {
+      const ir: ProjectIR = {
+        projectId: 'test',
+        createdAt: new Date().toISOString(),
+        entities: [makeEntity('entity_gandalf', 'PERSON', 'Gandalf')],
+        assertions: [],
+        events: [],
+        stats: { entityCount: 1, assertionCount: 0, eventCount: 0 },
+      };
+
+      const output = renderEntityPage(ir, 'entity_gandalf');
+      expect(output).toContain('# Gandalf 👤');
+      expect(output).toContain('**Type:** 👤 PERSON');
+    });
+
+    it('should not show badge in title for low-confidence entity', () => {
+      const now = new Date().toISOString();
+      const lowConfEntity: Entity = {
+        id: 'entity_uncertain',
+        type: 'PERSON' as any,
+        canonical: 'Uncertain Person',
+        aliases: ['Uncertain Person'],
+        createdAt: now,
+        updatedAt: now,
+        attrs: {},
+        evidence: [],
+        confidence: {
+          extraction: 0.5,
+          identity: 0.5,
+          semantic: 0.5,
+          temporal: 0.5,
+          composite: 0.5,
+        },
+      };
+
+      const ir: ProjectIR = {
+        projectId: 'test',
+        createdAt: now,
+        entities: [lowConfEntity],
+        assertions: [],
+        events: [],
+        stats: { entityCount: 1, assertionCount: 0, eventCount: 0 },
+      };
+
+      const output = renderEntityPage(ir, 'entity_uncertain');
+      // Should NOT have badge since confidence is below 0.7
+      expect(output).toContain('# Uncertain Person');
+      expect(output).not.toContain('# Uncertain Person 👤');
+      expect(output).toContain('**Type:** PERSON');
+      expect(output).not.toContain('**Type:** 👤');
+    });
+  });
+});
+
+// =============================================================================
+// MENTIONED IN SECTION TESTS (A4)
+// =============================================================================
+
+describe('Mentioned In Section', () => {
+  it('should show mentions grouped by event type', () => {
+    const ir: ProjectIR = {
+      projectId: 'test',
+      createdAt: new Date().toISOString(),
+      entities: [
+        makeEntity('entity_aragorn', 'PERSON', 'Aragorn'),
+        makeEntity('entity_gondor', 'PLACE', 'Gondor'),
+      ],
+      assertions: [],
+      events: [
+        {
+          id: 'event_1',
+          type: 'MOVE',
+          participants: [
+            { role: 'MOVER', entity: 'entity_aragorn', isRequired: true },
+            { role: 'DESTINATION', entity: 'entity_gondor', isRequired: true },
+          ],
+          time: { type: 'DISCOURSE', chapter: 1, paragraph: 5, sentence: 0 },
+          evidence: [makeEvidence('Aragorn traveled to Gondor.')],
+          attribution: makeAttribution(),
+          modality: 'FACT',
+          confidence: makeConfidence(),
+          links: [],
+          produces: [],
+          extractedFrom: 'pattern',
+          derivedFrom: [],
+          createdAt: new Date().toISOString(),
+          compiler_pass: 'test',
+        },
+        {
+          id: 'event_2',
+          type: 'MEET',
+          participants: [
+            { role: 'PERSON_A', entity: 'entity_aragorn', isRequired: true },
+            { role: 'PERSON_B', entity: 'entity_gondor', isRequired: true },
+          ],
+          time: { type: 'DISCOURSE', chapter: 2, paragraph: 10, sentence: 0 },
+          evidence: [makeEvidence('Aragorn met with the council in Gondor.')],
+          attribution: makeAttribution(),
+          modality: 'FACT',
+          confidence: makeConfidence(),
+          links: [],
+          produces: [],
+          extractedFrom: 'pattern',
+          derivedFrom: [],
+          createdAt: new Date().toISOString(),
+          compiler_pass: 'test',
+        },
+      ],
+      stats: { entityCount: 2, assertionCount: 0, eventCount: 2 },
+    };
+
+    const output = renderEntityPage(ir, 'entity_aragorn');
+
+    expect(output).toContain('## Mentioned in');
+    expect(output).toContain('### MOVE');
+    expect(output).toContain('### MEET');
+    expect(output).toContain('Aragorn traveled to Gondor');
+  });
+
+  it('should truncate long evidence to 80 chars in Mentioned In section', () => {
+    const longEvidence = 'A'.repeat(100) + 'END';
+
+    const ir: ProjectIR = {
+      projectId: 'test',
+      createdAt: new Date().toISOString(),
+      entities: [makeEntity('entity_test', 'PERSON', 'Test')],
+      assertions: [],
+      events: [
+        {
+          id: 'event_1',
+          type: 'ATTACK',
+          participants: [
+            { role: 'ATTACKER', entity: 'entity_test', isRequired: true },
+          ],
+          time: { type: 'DISCOURSE', chapter: 1, paragraph: 1, sentence: 0 },
+          evidence: [makeEvidence(longEvidence)],
+          attribution: makeAttribution(),
+          modality: 'FACT',
+          confidence: makeConfidence(),
+          links: [],
+          produces: [],
+          extractedFrom: 'pattern',
+          derivedFrom: [],
+          createdAt: new Date().toISOString(),
+          compiler_pass: 'test',
+        },
+      ],
+      stats: { entityCount: 1, assertionCount: 0, eventCount: 1 },
+    };
+
+    const output = renderEntityPage(ir, 'entity_test');
+
+    // Extract just the Mentioned In section
+    const mentionedInStart = output.indexOf('## Mentioned in');
+    const mentionedInEnd = output.indexOf('## Evidence');
+    const mentionedInSection = output.slice(mentionedInStart, mentionedInEnd);
+
+    // Should contain truncated evidence in Mentioned In section
+    expect(mentionedInSection).toContain('...');
+    // Mentioned In should NOT contain "END" (truncated)
+    expect(mentionedInSection).not.toContain('END');
+  });
+
+  it('should include assertion predicates in grouping', () => {
+    const ir: ProjectIR = {
+      projectId: 'test',
+      createdAt: new Date().toISOString(),
+      entities: [
+        makeEntity('entity_frodo', 'PERSON', 'Frodo'),
+        makeEntity('entity_sam', 'PERSON', 'Sam'),
+      ],
+      assertions: [
+        {
+          id: 'assertion_1',
+          assertionType: 'DIRECT' as const,
+          subject: 'entity_frodo',
+          predicate: 'friends_with',
+          object: 'entity_sam',
+          evidence: [makeEvidence('Frodo was friends with Sam.')],
+          attribution: { source: 'NARRATOR', reliability: 0.9, isDialogue: false, isThought: false },
+          modality: 'FACT' as const,
+          confidence: { extraction: 0.9, identity: 0.9, semantic: 0.9, temporal: 0.9, composite: 0.9 },
+          createdAt: new Date().toISOString(),
+          compiler_pass: 'test',
+        },
+      ],
+      events: [],
+      stats: { entityCount: 2, assertionCount: 1, eventCount: 0 },
+    };
+
+    const output = renderEntityPage(ir, 'entity_frodo');
+
+    expect(output).toContain('## Mentioned in');
+    // Assertion predicate becomes heading
+    expect(output).toContain('friends with');
+  });
+
+  it('should not show section when no mentions', () => {
+    const ir: ProjectIR = {
+      projectId: 'test',
+      createdAt: new Date().toISOString(),
+      entities: [makeEntity('entity_lonely', 'PERSON', 'Lonely Person')],
+      assertions: [],
+      events: [],
+      stats: { entityCount: 1, assertionCount: 0, eventCount: 0 },
+    };
+
+    const output = renderEntityPage(ir, 'entity_lonely');
+
+    expect(output).not.toContain('## Mentioned in');
+  });
+
+  it('should show paragraph reference when available', () => {
+    const ir: ProjectIR = {
+      projectId: 'test',
+      createdAt: new Date().toISOString(),
+      entities: [makeEntity('entity_bilbo', 'PERSON', 'Bilbo')],
+      assertions: [],
+      events: [
+        {
+          id: 'event_1',
+          type: 'TELL',
+          participants: [
+            { role: 'SPEAKER', entity: 'entity_bilbo', isRequired: true },
+          ],
+          time: { type: 'DISCOURSE', chapter: 1, paragraph: 42, sentence: 0 },
+          evidence: [makeEvidence('Bilbo spoke of his adventure.', { paragraphIndex: 42 })],
+          attribution: makeAttribution(),
+          modality: 'FACT',
+          confidence: makeConfidence(),
+          links: [],
+          produces: [],
+          extractedFrom: 'pattern',
+          derivedFrom: [],
+          createdAt: new Date().toISOString(),
+          compiler_pass: 'test',
+        },
+      ],
+      stats: { entityCount: 1, assertionCount: 0, eventCount: 1 },
+    };
+
+    const output = renderEntityPage(ir, 'entity_bilbo');
+
+    expect(output).toContain('[¶42]');
+  });
+});
+
+// =============================================================================
+// PLACE PAGE RENDERER TESTS (A5)
+// =============================================================================
+
+describe('renderPlacePage', () => {
+  function createPlaceIR(): ProjectIR {
+    return {
+      projectId: 'test',
+      createdAt: new Date().toISOString(),
+      entities: [
+        makeEntity('entity_hogwarts', 'PLACE', 'Hogwarts'),
+        makeEntity('entity_harry', 'PERSON', 'Harry Potter'),
+        makeEntity('entity_ron', 'PERSON', 'Ron Weasley'),
+        makeEntity('entity_hermione', 'PERSON', 'Hermione Granger'),
+        makeEntity('entity_wand', 'ITEM', 'Elder Wand'),
+      ],
+      assertions: [
+        // Harry lives in Hogwarts
+        {
+          id: 'lives_1',
+          assertionType: 'DIRECT' as const,
+          subject: 'entity_harry',
+          predicate: 'lives_in',
+          object: 'entity_hogwarts',
+          evidence: [makeEvidence('Harry lived at Hogwarts during school.')],
+          attribution: { source: 'NARRATOR', reliability: 0.9, isDialogue: false, isThought: false },
+          modality: 'FACT' as const,
+          confidence: { extraction: 0.9, identity: 0.9, semantic: 0.9, temporal: 0.9, composite: 0.9 },
+          createdAt: new Date().toISOString(),
+          compiler_pass: 'test',
+        },
+        // Ron lives in Hogwarts
+        {
+          id: 'lives_2',
+          assertionType: 'DIRECT' as const,
+          subject: 'entity_ron',
+          predicate: 'lives_in',
+          object: 'entity_hogwarts',
+          evidence: [makeEvidence('Ron stayed at Hogwarts.')],
+          attribution: { source: 'NARRATOR', reliability: 0.9, isDialogue: false, isThought: false },
+          modality: 'FACT' as const,
+          confidence: { extraction: 0.9, identity: 0.9, semantic: 0.9, temporal: 0.9, composite: 0.9 },
+          createdAt: new Date().toISOString(),
+          compiler_pass: 'test',
+        },
+      ],
+      events: [
+        // Hermione moves to Hogwarts (visitor)
+        {
+          id: 'move_1',
+          type: 'MOVE',
+          participants: [
+            { role: 'MOVER', entity: 'entity_hermione', isRequired: true },
+            { role: 'DESTINATION', entity: 'entity_hogwarts', isRequired: true },
+          ],
+          time: { type: 'DISCOURSE', chapter: 1, paragraph: 10, sentence: 0 },
+          evidence: [makeEvidence('Hermione arrived at Hogwarts.')],
+          attribution: makeAttribution(),
+          modality: 'FACT',
+          confidence: makeConfidence(),
+          links: [],
+          produces: [],
+          extractedFrom: 'pattern',
+          derivedFrom: [],
+          createdAt: new Date().toISOString(),
+          compiler_pass: 'test',
+        },
+      ],
+      stats: { entityCount: 5, assertionCount: 2, eventCount: 1 },
+    };
+  }
+
+  describe('Title Block', () => {
+    it('should render place name as title with badge', () => {
+      const ir = createPlaceIR();
+      const output = renderPlacePage(ir, 'entity_hogwarts');
+
+      expect(output).toContain('# Hogwarts');
+      expect(output).toContain('PLACE');
+      expect(output).toContain('📍');  // PLACE badge
+    });
+
+    it('should return "not found" for missing place', () => {
+      const ir = createPlaceIR();
+      const output = renderPlacePage(ir, 'entity_nonexistent');
+
+      expect(output).toContain('# Place Not Found');
+      expect(output).toContain('entity_nonexistent');
+    });
+  });
+
+  describe('Residents Section', () => {
+    it('should list residents with lives_in assertions', () => {
+      const ir = createPlaceIR();
+      const output = renderPlacePage(ir, 'entity_hogwarts');
+
+      expect(output).toContain('## Residents');
+      // Residents should be cross-linked
+      expect(output).toContain('[Harry Potter](entity_harry)');
+      expect(output).toContain('[Ron Weasley](entity_ron)');
+    });
+
+    it('should show evidence snippet for residents', () => {
+      const ir = createPlaceIR();
+      const output = renderPlacePage(ir, 'entity_hogwarts');
+
+      expect(output).toContain('Harry lived at Hogwarts');
+    });
+
+    it('should not show section when no residents', () => {
+      const ir: ProjectIR = {
+        projectId: 'test',
+        createdAt: new Date().toISOString(),
+        entities: [makeEntity('entity_empty', 'PLACE', 'Empty Place')],
+        assertions: [],
+        events: [],
+        stats: { entityCount: 1, assertionCount: 0, eventCount: 0 },
+      };
+
+      const output = renderPlacePage(ir, 'entity_empty');
+
+      expect(output).not.toContain('## Residents');
+    });
+  });
+
+  describe('Visitors Section', () => {
+    it('should list visitors from MOVE events', () => {
+      const ir = createPlaceIR();
+      const output = renderPlacePage(ir, 'entity_hogwarts');
+
+      expect(output).toContain('## Visitors');
+      // Visitor should be cross-linked
+      expect(output).toContain('[Hermione Granger](entity_hermione)');
+    });
+
+    it('should show visit time', () => {
+      const ir = createPlaceIR();
+      const output = renderPlacePage(ir, 'entity_hogwarts');
+
+      expect(output).toContain('Ch.1 ¶10');
+    });
+
+    it('should not show section when no visitors', () => {
+      const ir: ProjectIR = {
+        projectId: 'test',
+        createdAt: new Date().toISOString(),
+        entities: [makeEntity('entity_nowhere', 'PLACE', 'Nowhere')],
+        assertions: [],
+        events: [],
+        stats: { entityCount: 1, assertionCount: 0, eventCount: 0 },
+      };
+
+      const output = renderPlacePage(ir, 'entity_nowhere');
+
+      expect(output).not.toContain('## Visitors');
+    });
+  });
+
+  describe('Section Ordering', () => {
+    it('should render sections in correct order', () => {
+      const ir = createPlaceIR();
+      const output = renderPlacePage(ir, 'entity_hogwarts');
+
+      const sections = [
+        '# Hogwarts',
+        '## Residents',
+        '## Visitors',
+      ];
+
+      let lastIndex = -1;
+      for (const section of sections) {
+        const index = output.indexOf(section);
+        expect(index).toBeGreaterThan(lastIndex);
+        lastIndex = index;
+      }
+    });
+  });
+
+  describe('Debug Section', () => {
+    it('should show debug info when enabled', () => {
+      const ir = createPlaceIR();
+      const output = renderPlacePage(ir, 'entity_hogwarts', { includeDebug: true });
+
+      expect(output).toContain('## Debug');
+      expect(output).toContain('### Place metadata');
+      expect(output).toContain('Residents: 2');
+      expect(output).toContain('Move events to here: 1');
     });
   });
 });

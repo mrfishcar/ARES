@@ -13,6 +13,9 @@
  * - possesses(entity, item) from TRANSFER events
  *   - receiver/taker gains possession (validFrom = event time)
  *   - giver loses possession (validUntil = event time)
+ * - Relation facts from assertions (enemy_of, sibling_of, married_to, etc.)
+ *   - Symmetric relations create bidirectional facts
+ *   - Confidence threshold ≥0.7
  *
  * @module ir/fact-builder
  */
@@ -28,31 +31,190 @@ import type {
   AssertionId,
   TimeAnchor,
   PredicateType,
+  Modality,
 } from './types';
+
+// =============================================================================
+// RELATION PREDICATES FOR FACT DERIVATION
+// =============================================================================
+
+/**
+ * Relation predicates that create bidirectional facts.
+ * If A enemy_of B, then B enemy_of A.
+ */
+const SYMMETRIC_RELATIONS = new Set<PredicateType | string>([
+  'enemy_of',
+  'sibling_of',
+  'married_to',
+  'ally_of',
+  'friends_with',
+  'cousin_of',
+]);
+
+/**
+ * Relation predicates that create unidirectional facts.
+ * If A parent_of B, we only create A parent_of B (child_of is separate).
+ */
+const DIRECTIONAL_RELATIONS = new Set<PredicateType | string>([
+  'parent_of',
+  'child_of',
+  'member_of',
+  'works_for',
+  'lives_in',
+  'located_in',
+  'born_in',
+  'studied_at',
+  'teaches_at',
+  'mentored',
+  'mentored_by',
+  'leads',
+  'rules',
+  'ruled_by',
+  'guards',
+  'owns',
+  'wields',
+  'possesses',
+  'ancestor_of',
+  'descendant_of',
+]);
+
+/**
+ * All relation predicates we derive facts from.
+ */
+const RELATION_PREDICATES = new Set<PredicateType | string>([
+  ...SYMMETRIC_RELATIONS,
+  ...DIRECTIONAL_RELATIONS,
+]);
+
+/**
+ * Minimum confidence threshold for relation facts.
+ * Relations below this threshold are not derived as facts.
+ */
+const RELATION_CONFIDENCE_THRESHOLD = 0.7;
 
 // =============================================================================
 // FACT EXTRACTION
 // =============================================================================
 
 /**
- * Build FactViewRows from events.
+ * Build FactViewRows from events and assertions.
  *
  * This is the main entry point for fact derivation.
- * Facts are views - they can be recomputed from events at any time.
+ * Facts are views - they can be recomputed from events/assertions at any time.
  *
  * @param events - Array of StoryEvents
+ * @param assertions - Optional array of Assertions (for relation facts)
  * @returns Array of FactViewRows
  */
-export function buildFactsFromEvents(events: StoryEvent[]): FactViewRow[] {
+export function buildFactsFromEvents(
+  events: StoryEvent[],
+  assertions?: Assertion[]
+): FactViewRow[] {
   const facts: FactViewRow[] = [];
 
+  // Derive facts from events
   for (const event of events) {
     const derived = deriveFactsFromEvent(event);
     facts.push(...derived);
   }
 
+  // Derive relation facts from assertions
+  if (assertions) {
+    const relationFacts = deriveRelationFacts(assertions);
+    facts.push(...relationFacts);
+  }
+
   // Deduplicate facts with same subject-predicate-object
   return deduplicateFacts(facts);
+}
+
+/**
+ * Derive relation facts from assertions.
+ *
+ * Filters assertions by relation predicates, applies confidence threshold,
+ * and creates FactViewRows. Symmetric relations create bidirectional facts.
+ *
+ * @param assertions - Array of Assertions
+ * @returns Array of relation FactViewRows
+ */
+export function deriveRelationFacts(assertions: Assertion[]): FactViewRow[] {
+  const facts: FactViewRow[] = [];
+
+  for (const assertion of assertions) {
+    // Skip if not a relation predicate
+    if (!assertion.predicate || !RELATION_PREDICATES.has(assertion.predicate)) {
+      continue;
+    }
+
+    // Skip negated relations - they should NOT create facts
+    if (assertion.modality === 'NEGATED') {
+      continue;
+    }
+
+    // Skip low confidence relations
+    const confidence = assertion.confidence?.composite ?? 0;
+    if (confidence < RELATION_CONFIDENCE_THRESHOLD) {
+      continue;
+    }
+
+    // Skip if subject or object is missing or not entity-like
+    if (!assertion.subject || typeof assertion.subject !== 'string') {
+      continue;
+    }
+    if (!assertion.object || typeof assertion.object !== 'string') {
+      continue;
+    }
+
+    const predicate = assertion.predicate;
+    const subject = assertion.subject;
+    const object = assertion.object as EntityId;
+
+    // Create the primary fact
+    facts.push(
+      createFact({
+        subject,
+        predicate,
+        object,
+        validFrom: getAssertionTimeAnchor(assertion),
+        derivedFrom: [assertion.id],
+        confidence,
+      })
+    );
+
+    // Create inverse fact for symmetric relations
+    if (SYMMETRIC_RELATIONS.has(predicate)) {
+      facts.push(
+        createFact({
+          subject: object,
+          predicate,
+          object: subject,
+          validFrom: getAssertionTimeAnchor(assertion),
+          derivedFrom: [assertion.id],
+          confidence,
+        })
+      );
+    }
+  }
+
+  return facts;
+}
+
+/**
+ * Extract time anchor from assertion evidence.
+ * Defaults to UNKNOWN if no evidence available.
+ */
+function getAssertionTimeAnchor(assertion: Assertion): TimeAnchor {
+  // Use first evidence span for discourse position
+  if (assertion.evidence && assertion.evidence.length > 0) {
+    const ev = assertion.evidence[0];
+    return {
+      type: 'DISCOURSE',
+      paragraph: ev.paragraphIndex ?? 0,
+      sentence: ev.sentenceIndex ?? 0,
+    };
+  }
+
+  return { type: 'UNKNOWN' };
 }
 
 /**
