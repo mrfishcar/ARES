@@ -9,6 +9,7 @@ dist/
 *.log
 data/*.db
 data/*.db-*
+app/ui/console/src/engine-vendor/
 
 # Data
 data/processed/*

@@ -9,7 +9,15 @@ env
 
 # Backend services (not needed for frontend-only deployment)
 app/services
-app/engine
+
+# Engine subdirectories (exclude all except IR module needed for wiki panel)
+app/engine/booknlp
+app/engine/extract
+app/engine/grammar
+app/engine/hert
+app/engine/linguistics
+app/engine/llm-providers
+app/engine/pipeline
 
 # Test files
 tests
