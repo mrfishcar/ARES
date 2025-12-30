@@ -11,6 +11,10 @@ env
 app/services
 app/engine
 
+# Exception: Include IR module for wiki panel feature
+!app/engine/ir
+!app/engine/schema.ts
+
 # Test files
 tests
 *.test.ts
