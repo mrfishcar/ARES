@@ -61,22 +61,44 @@ function mapEntityType(
 
 /**
  * Convert BookNLP characters to ARES entities
+ * Now includes agent_score for Phase 5.2
  */
 export function adaptCharacters(
-  characters: BookNLPCharacter[]
+  characters: BookNLPCharacter[],
+  quotes?: BookNLPQuote[]
 ): ARESEntity[] {
-  return characters.map(char => ({
-    id: toBookNLPStableEntityId(char.id),
-    canonical: char.canonical_name,
-    type: 'PERSON',  // BookNLP characters are always PERSON
-    aliases: char.aliases.map(a => a.text),
-    confidence: 0.95,  // High confidence for BookNLP character clusters
-    source: 'booknlp' as const,
-    booknlp_id: char.id,
-    mention_count: char.mention_count,
-    gender: char.gender || undefined,
-    eid: toBookNLPEID(char.id),
-  }));
+  // Build quote attribution counts per character
+  const quotesByCharacter = new Map<string, { count: number; ids: string[] }>();
+  if (quotes) {
+    for (const quote of quotes) {
+      if (quote.speaker_id) {
+        const existing = quotesByCharacter.get(quote.speaker_id) || { count: 0, ids: [] };
+        existing.count++;
+        existing.ids.push(quote.id);
+        quotesByCharacter.set(quote.speaker_id, existing);
+      }
+    }
+  }
+
+  return characters.map(char => {
+    const quoteData = quotesByCharacter.get(char.id);
+    return {
+      id: toBookNLPStableEntityId(char.id),
+      canonical: char.canonical_name,
+      type: 'PERSON' as const,  // BookNLP characters are always PERSON
+      aliases: char.aliases.map(a => a.text),
+      confidence: 0.95,  // High confidence for BookNLP character clusters
+      source: 'booknlp' as const,
+      booknlp_id: char.id,
+      mention_count: char.mention_count,
+      gender: char.gender || undefined,
+      agent_score: char.agent_score,  // Phase 5.2: Include agent score
+      eid: toBookNLPEID(char.id),
+      // Phase 5.2: Quote tracking per entity
+      quote_count: quoteData?.count,
+      quote_ids: quoteData?.ids,
+    };
+  });
 }
 
 /**
@@ -305,8 +327,8 @@ export function adaptBookNLPContract(
     c => c.mention_count >= minMentionCount
   );
 
-  // Convert characters to PERSON entities
-  const characterEntities = adaptCharacters(filteredCharacters);
+  // Convert characters to PERSON entities (pass quotes for attribution tracking)
+  const characterEntities = adaptCharacters(filteredCharacters, contract.quotes);
 
   // Build character ID mapping
   const characterIdMap = new Map<string, string>();
