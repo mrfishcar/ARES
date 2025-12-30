@@ -29,7 +29,8 @@ export default defineConfig({
       crypto: 'crypto-browserify',
       buffer: 'buffer/',
       util: 'util/',
-      '@engine': path.resolve(__dirname, '../../engine')
+      // Point to vendored engine files (copied by prebuild.sh)
+      '@engine': path.resolve(__dirname, './src/engine-vendor')
     },
     extensions: ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json']
   },

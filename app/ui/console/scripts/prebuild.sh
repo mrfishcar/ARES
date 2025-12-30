@@ -13,17 +13,33 @@ echo "=== Copying engine IR module to console app ==="
 echo "Source: $ENGINE_IR_SRC"
 echo "Destination: $ENGINE_IR_DEST"
 
+# Verify source exists
+if [ ! -d "$ENGINE_IR_SRC" ]; then
+  echo "ERROR: Source directory not found: $ENGINE_IR_SRC"
+  echo "Current directory: $(pwd)"
+  echo "Console root: $CONSOLE_ROOT"
+  exit 1
+fi
+
 # Create destination directory
 mkdir -p "$ENGINE_IR_DEST"
 
-# Copy IR TypeScript files
-cp -r "$ENGINE_IR_SRC"/*.ts "$ENGINE_IR_DEST/" 2>/dev/null || true
-cp -r "$ENGINE_IR_SRC"/types.ts "$ENGINE_IR_DEST/" 2>/dev/null || true
+# Copy all TypeScript files from IR module
+echo "Copying TypeScript files..."
+cp "$ENGINE_IR_SRC"/*.ts "$ENGINE_IR_DEST/" || {
+  echo "ERROR: Failed to copy TypeScript files"
+  exit 1
+}
 
-# Copy package dependencies if needed
+# Count files copied
+FILE_COUNT=$(ls -1 "$ENGINE_IR_DEST"/*.ts 2>/dev/null | wc -l)
+echo "✓ Copied $FILE_COUNT TypeScript files to $ENGINE_IR_DEST"
+
+# Copy schema.ts if needed (for types)
 if [ -f "$CONSOLE_ROOT/../../engine/schema.ts" ]; then
   mkdir -p "$CONSOLE_ROOT/src/engine-vendor"
   cp "$CONSOLE_ROOT/../../engine/schema.ts" "$CONSOLE_ROOT/src/engine-vendor/"
+  echo "✓ Copied schema.ts"
 fi
 
-echo "✓ Engine IR module copied successfully"
+echo "✓ Engine IR module vendored successfully"

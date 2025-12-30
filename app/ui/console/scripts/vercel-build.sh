@@ -48,5 +48,9 @@ rm -f package-lock.json
 npm install --legacy-peer-deps --fetch-retries=5 --fetch-retry-factor=2 --fetch-retry-mintimeout=1000 --fetch-retry-maxtimeout=20000 --registry="https://registry.npmjs.org/"
 set +x
 
+# Vendor engine IR files into console app (for bundling)
+echo "=== Running prebuild to vendor engine files ==="
+bash scripts/prebuild.sh
+
 # Build the console
 npm run build
