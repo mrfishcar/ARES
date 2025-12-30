@@ -1,1 +1,1 @@
-web: sh ./start-services.sh
+web: npm run start:compiled
