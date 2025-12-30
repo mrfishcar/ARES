@@ -144,7 +144,6 @@ body {
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
-    --app-surface: var(--app-bg-dark);
     --liquid-glass-bg: var(--liquid-glass-bg-dark);
     --liquid-glass-border: var(--liquid-glass-border-dark);
     --liquid-glass-glow-outer: var(--liquid-glass-glow-outer-dark);
@@ -157,7 +156,6 @@ body {
 @media (prefers-color-scheme: light) {
   :root {
     color-scheme: light;
-    --app-surface: var(--app-bg-light);
     --liquid-glass-bg: var(--liquid-glass-bg-light);
     --liquid-glass-border: var(--liquid-glass-border-light);
     --liquid-glass-glow-outer: var(--liquid-glass-glow-outer-light);
