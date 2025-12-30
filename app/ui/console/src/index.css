@@ -136,14 +136,51 @@ body {
   --entity-concept: #14b8a6;  
   --entity-object: #8b5cf6;  
   
-  --editor-margin-desktop: 96px;  
-  --editor-margin-mobile: clamp(4px, 1.5vw, 8px);  
-  --editor-header-offset: 80px;  
-  
-  --bg-primary: var(--app-bg-dark);  
-  --bg-secondary: #141829;  
-  --bg-tertiary: #1a1f3a;  
-  --bg-elevated: #141829;  
+  --editor-margin-desktop: 96px;
+  --editor-margin-mobile: clamp(4px, 1.5vw, 8px);
+  --editor-header-offset: 80px;
+
+  /* Toolbar sizing */
+  --lab-toolbar-width-normal: clamp(320px, 38vw, 440px);
+  --format-toolbar-min-width: clamp(360px, 48vw, 560px);
+
+  /* Glassmorphism variables */
+  --glass-bg-dark: rgba(15, 23, 42, 0.75);
+  --glass-bg-light: rgba(255, 255, 255, 0.9);
+  --glass-border-dark: rgba(148, 163, 184, 0.15);
+  --glass-border-light: rgba(200, 210, 240, 0.35);
+  --glass-blur-heavy: 5px;
+  --glass-blur-medium: 5px;
+  --glass-blur-light: 6px;
+
+  /* Liquid glass material tokens */
+  --liquid-glass-blur-toolbar: 5px;
+  --liquid-glass-blur-overlay: 5px;
+  --liquid-glass-blur-pinned: 5px;
+
+  --liquid-glass-bg-dark: rgba(15, 23, 42, 0.6);
+  --liquid-glass-bg-light: rgba(255, 249, 240, 0.92);
+  --liquid-glass-border-dark: rgba(148, 163, 184, 0.15);
+  --liquid-glass-border-light: rgba(200, 180, 160, 0.35);
+  --liquid-glass-glow-inner: rgba(255, 255, 255, 0.08);
+  --liquid-glass-glow-outer-dark: rgba(0, 0, 0, 0.25);
+  --liquid-glass-glow-outer-light: rgba(74, 64, 58, 0.08);
+  --liquid-glass-tint-1-dark: rgba(56, 189, 248, 0.03);
+  --liquid-glass-tint-2-dark: rgba(129, 140, 248, 0.04);
+  --liquid-glass-tint-1-light: rgba(200, 180, 160, 0.05);
+  --liquid-glass-tint-2-light: rgba(180, 160, 140, 0.05);
+
+  --liquid-glass-bg: var(--liquid-glass-bg-dark);
+  --liquid-glass-border: var(--liquid-glass-border-dark);
+  --liquid-glass-glow-outer: var(--liquid-glass-glow-outer-dark);
+  --liquid-glass-tint-1: var(--liquid-glass-tint-1-dark);
+  --liquid-glass-tint-2: var(--liquid-glass-tint-2-dark);
+  --liquid-glass-fallback-surface: color-mix(in srgb, var(--bg-secondary) 55%, transparent);
+
+  --bg-primary: var(--app-bg-dark);
+  --bg-secondary: #141829;
+  --bg-tertiary: #1a1f3a;
+  --bg-elevated: #141829;
   
   --text-primary: #e5e7eb;  
   --text-secondary: #9ca3af;  
@@ -156,19 +193,53 @@ body {
    COLOR SCHEME  
 ================================ */  
   
-@media (prefers-color-scheme: dark) {  
-  :root {  
-    color-scheme: dark;  
-    --app-surface: var(--app-bg-dark);  
-  }  
-}  
-  
-@media (prefers-color-scheme: light) {  
-  :root {  
-    color-scheme: light;  
-    --app-surface: var(--app-bg-light);  
-  }  
-}  
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --app-surface: var(--app-bg-dark);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --app-surface: var(--app-bg-light);
+
+    /* Glass - Warm theme */
+    --liquid-glass-bg: var(--liquid-glass-bg-light);
+    --liquid-glass-border: var(--liquid-glass-border-light);
+    --liquid-glass-glow-outer: var(--liquid-glass-glow-outer-light);
+    --liquid-glass-tint-1: var(--liquid-glass-tint-1-light);
+    --liquid-glass-tint-2: var(--liquid-glass-tint-2-light);
+    --liquid-glass-fallback-surface: color-mix(in srgb, var(--app-bg-light) 65%, transparent);
+  }
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+  --app-surface: var(--app-bg-light);
+
+  /* Warm light palette */
+  --bg-primary: var(--app-bg-light);
+  --bg-secondary: #f6f0e6;
+  --bg-tertiary: #efe4d8;
+  --bg-elevated: #f8efe4;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-tertiary: #6b7280;
+
+  --border-soft: rgba(15, 23, 42, 0.08);
+  --border-color: rgba(15, 23, 42, 0.12);
+
+  /* Keep liquid glass tokens in sync when theme is toggled manually */
+  --liquid-glass-bg: var(--liquid-glass-bg-light);
+  --liquid-glass-border: var(--liquid-glass-border-light);
+  --liquid-glass-glow-outer: var(--liquid-glass-glow-outer-light);
+  --liquid-glass-tint-1: var(--liquid-glass-tint-1-light);
+  --liquid-glass-tint-2: var(--liquid-glass-tint-2-light);
+  --liquid-glass-fallback-surface: color-mix(in srgb, var(--app-bg-light) 65%, transparent);
+}
   
 /* ===============================  
    DISABLED iOS VIEWPORT LOCKING  
@@ -193,22 +264,13 @@ html.kb-open .extraction-lab {
 }  
 */  
   
-  /* Glass - Warm theme */  
-  --liquid-glass-bg-light: rgba(255, 249, 240, 0.92);  
-  --liquid-glass-border-light: rgba(200, 180, 160, 0.35);  
-  --liquid-glass-bg: var(--liquid-glass-bg-light);  
-  --liquid-glass-border: var(--liquid-glass-border-light);  
-  --liquid-glass-glow-outer: rgba(74, 64, 58, 0.08);  
-  --liquid-glass-tint-1: rgba(200, 180, 160, 0.05);  
-  --liquid-glass-tint-2: rgba(180, 160, 140, 0.05);  
-}  
-  
-/* Dark mode – "night sky" */  
-html[data-theme="dark"] {  
-  --bg-primary: var(--app-bg-dark);     /* #0a0e27 - Night sky */  
-  --bg-secondary: #141829;              /* Slightly lighter midnight - matches darkMode.ts */  
-  --bg-tertiary: #1a1f3a;               /* Code night */  
-  --bg-elevated: #141829;  
+/* Dark mode – "night sky" */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-primary: var(--app-bg-dark);     /* #0a0e27 - Night sky */
+  --bg-secondary: #141829;              /* Slightly lighter midnight - matches darkMode.ts */
+  --bg-tertiary: #1a1f3a;               /* Code night */
+  --bg-elevated: #141829;
   
   --text-primary: #e8e6e1;              /* Soft starlight - matches NIGHT_SKY_PALETTE */  
   --text-secondary: #a8b5cc;            /* Twilight gray-blue */  
@@ -221,13 +283,14 @@ html[data-theme="dark"] {
   --glass-bg-dark: rgba(15, 23, 42, 0.75);  
   --glass-border-dark: rgba(148, 163, 184, 0.15);  
   
-  /* Dark mode Liquid Glass */  
-  --liquid-glass-bg: var(--liquid-glass-bg-dark);  
-  --liquid-glass-border: var(--liquid-glass-border-dark);  
-  --liquid-glass-glow-outer: var(--liquid-glass-glow-outer-dark);  
-  --liquid-glass-tint-1: var(--liquid-glass-tint-1-dark);  
-  --liquid-glass-tint-2: var(--liquid-glass-tint-2-dark);  
-}  
+  /* Dark mode Liquid Glass */
+  --liquid-glass-bg: var(--liquid-glass-bg-dark);
+  --liquid-glass-border: var(--liquid-glass-border-dark);
+  --liquid-glass-glow-outer: var(--liquid-glass-glow-outer-dark);
+  --liquid-glass-tint-1: var(--liquid-glass-tint-1-dark);
+  --liquid-glass-tint-2: var(--liquid-glass-tint-2-dark);
+  --liquid-glass-fallback-surface: color-mix(in srgb, var(--bg-secondary) 55%, transparent);
+}
   
 /* ===== LIQUID GLASS MATERIAL SYSTEM ===== */  
 /* Reusable utility classes for consistent glass styling across all components */  
