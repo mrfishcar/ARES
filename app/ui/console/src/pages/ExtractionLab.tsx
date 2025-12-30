@@ -1025,8 +1025,22 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
         console.log(`[ARES ENGINE] Extracted ${data.entities.length} entities, ${data.relations?.length || 0} relations`);
       } catch (error) {
-        console.error('Extraction failed:', error);
-        toast.error(`Extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        // Only log network errors once to avoid filling the console
+        const isNetworkError = error instanceof Error && (
+          error.message.includes('Failed to fetch') ||
+          error.message.includes('NetworkError') ||
+          error.message.includes('API error')
+        );
+
+        if (!isNetworkError) {
+          console.error('Extraction failed:', error);
+        }
+
+        // Don't show toast for network errors in production (backend not available)
+        if (!isNetworkError || import.meta.env.DEV) {
+          toast.error(`Extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+
         setEntities([]);
         setRelations([]);
         setBooknlpResult(null);
