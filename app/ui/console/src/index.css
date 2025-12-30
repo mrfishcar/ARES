@@ -11,13 +11,15 @@
 html {
   font-size: 100%;
   -webkit-text-size-adjust: 100%;
-  background-color: var(--app-surface);
+  background: #0a0e27 !important; /* Force dark background always */
+  background-color: var(--app-surface) !important;
 }
 
 body {
   margin: 0;
   padding: 0;
-  background-color: var(--app-surface);
+  background: #0a0e27 !important; /* Force dark background always */
+  background-color: var(--app-surface) !important;
 }
 
 /* IMPORTANT:
@@ -36,7 +38,8 @@ body {
 
 #root {
   min-height: 100%;
-  background-color: var(--app-surface);
+  background: #0a0e27 !important; /* Force dark background always */
+  background-color: var(--app-surface) !important;
 }
 
 /* ===============================
@@ -253,7 +256,8 @@ body {
   font-size: var(--font-size-base);
   font-weight: 400;
   line-height: var(--line-height-base);
-  background-color: var(--app-surface);
+  background: #0a0e27 !important; /* Force dark background always */
+  background-color: var(--app-surface) !important;
   color: var(--text-primary);
   position: relative;
   min-height: 100%;
@@ -264,7 +268,8 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background-color: var(--app-surface);
+  background: #0a0e27 !important; /* Force dark background always */
+  background-color: var(--app-surface) !important;
   background-image: var(--app-background-gradient);
   /* Ensure it covers viewport even when keyboard appears */
   min-height: 100dvh;
@@ -272,7 +277,8 @@ body::before {
 
 #root {
   height: 100%;
-  background-color: var(--app-surface);
+  background: #0a0e27 !important; /* Force dark background always */
+  background-color: var(--app-surface) !important;
 }
 
 /* Removed .app-root - unnecessary wrapper */
