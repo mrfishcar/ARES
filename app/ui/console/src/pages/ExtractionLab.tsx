@@ -1021,8 +1021,16 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
           throw new Error(`API error: ${response.statusText}`);
         }
 
-        const data = await response.json();
-        console.log('[DEBUG] Response data:', data);
+        let data;
+        try {
+          data = await response.json();
+          console.log('[DEBUG] Response data:', data);
+        } catch (jsonError) {
+          console.error('[DEBUG] Failed to parse JSON response:', jsonError);
+          const rawText = await response.text();
+          console.error('[DEBUG] Raw response:', rawText);
+          throw new Error('Invalid JSON response from server');
+        }
 
         if (!data.success) {
           throw new Error(data.error || 'Extraction failed');
@@ -1033,16 +1041,14 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
 
         console.log(`[ARES ENGINE] Extracted ${data.entities.length} entities, ${data.relations?.length || 0} relations`);
       } catch (error) {
-        // Only log network errors once to avoid filling the console
-        const isNetworkError = error instanceof Error && (
-          error.message.includes('Failed to fetch') ||
-          error.message.includes('NetworkError') ||
-          error.message.includes('API error')
-        );
+        // Enhanced error logging for debugging
+        console.error('[DEBUG] Extraction failed - Error name:', error?.constructor?.name);
+        console.error('[DEBUG] Extraction failed - Error message:', error?.message);
+        console.error('[DEBUG] Extraction failed - Error stack:', error?.stack);
+        console.error('[DEBUG] Extraction failed - Full error:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
 
-        // Temporarily show all errors for debugging
-        console.error('[DEBUG] Extraction failed:', error);
-        toast.error(`Extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        toast.error(`Extraction failed: ${errorMessage}`);
 
         setEntities([]);
         setRelations([]);
