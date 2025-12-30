@@ -4,11 +4,13 @@
  *
  * Task 1.1.1: Create IR Adapter Hook
  * Part of Lab Wiki Integration (TASK_001)
+ *
+ * NOTE: @engine imports have been removed due to bundling issues.
+ * The IR adapter requires Node.js crypto which doesn't bundle properly.
+ * This is a stub that returns null until the bundling issue is resolved.
  */
 
 import { useMemo } from 'react';
-import { adaptLegacyExtraction } from '@engine/ir/adapter';
-import type { ProjectIR } from '@engine/ir/types';
 
 /**
  * Extraction result from the ARES engine
@@ -60,65 +62,88 @@ export interface ExtractionResult {
   error?: string;
 }
 
+// Stub ProjectIR type (matches @engine/ir/types)
+export interface ProjectIR {
+  version: string;
+  projectId: string;
+  docId: string;
+  createdAt: string;
+  entities: Array<{
+    id: string;
+    type: string;
+    canonical: string;
+    aliases: string[];
+    evidence?: Array<{ docId: string; charStart: number; charEnd: number; text?: string }>;
+  }>;
+  assertions: Array<{
+    id: string;
+    subject: string;
+    predicate: string;
+    object: string;
+  }>;
+  events: Array<{
+    id: string;
+    type: string;
+    participants: Array<{ role: string; entity: string }>;
+    time: { type: string; paragraph?: number };
+  }>;
+  stats: {
+    entityCount: number;
+    assertionCount: number;
+    eventCount: number;
+  };
+}
+
 /**
  * Hook to convert extraction results to IR format
+ *
+ * NOTE: Currently returns null due to @engine bundling issues.
+ * The IR adapter requires Node.js crypto which doesn't work in browser bundles.
  *
  * @param extraction - The extraction result from ARES engine
  * @param docId - Document identifier (defaults to 'lab-doc')
  * @returns ProjectIR object or null if extraction is null/invalid
- *
- * @example
- * ```tsx
- * const ExtractionLab = () => {
- *   const [extractionResult, setExtractionResult] = useState(null);
- *   const ir = useIRAdapter(extractionResult, 'my-doc-id');
- *
- *   if (ir) {
- *     // Use ir.entities, ir.events, ir.assertions
- *   }
- * };
- * ```
  */
 export function useIRAdapter(
   extraction: ExtractionResult | null,
-  docId: string = 'lab-doc'
+  _docId: string = 'lab-doc'
 ): ProjectIR | null {
   return useMemo(() => {
-    // Return null for invalid/empty extractions
-    if (!extraction) {
+    // TODO: Re-enable when @engine bundling is fixed
+    // The adaptLegacyExtraction function requires Node.js crypto
+    // which causes "k.replace is not a function" error in browser
+
+    if (!extraction || !extraction.entities?.length) {
       return null;
     }
 
-    // Return null if extraction failed
-    if (extraction.success === false) {
-      return null;
-    }
-
-    // Return null if no entities (empty extraction)
-    if (!extraction.entities || extraction.entities.length === 0) {
-      return null;
-    }
-
-    try {
-      // Convert extraction result to legacy format expected by adapter
-      const legacyFormat = {
-        entities: extraction.entities.map(e => ({
-          id: e.id,
-          canonical: e.canonical || e.text || '',
-          type: e.type as any,
-          aliases: e.aliases || [],
-          confidence: e.confidence,
-          attrs: {},
-        })),
-        relations: extraction.relations || [],
-        docId,
-      };
-
-      // Adapt to IR using the existing adapter
-      return adaptLegacyExtraction(legacyFormat);
-    } catch (error) {
-      console.error('IR adaptation failed:', error);
-      return null;
-    }
-  }, [extraction, docId]);
+    // Return a minimal IR structure from raw extraction
+    // This is a workaround until proper IR adaptation works
+    const now = new Date().toISOString();
+    return {
+      version: '1.0',
+      projectId: _docId,
+      docId: _docId,
+      createdAt: now,
+      entities: extraction.entities.map(e => ({
+        id: e.id,
+        type: e.type,
+        canonical: e.canonical || e.text || '',
+        aliases: e.aliases || [],
+        evidence: [],
+      })),
+      assertions: (extraction.relations || []).map(r => ({
+        id: r.id,
+        subject: r.subj,
+        predicate: r.pred,
+        object: r.obj,
+      })),
+      events: [],
+      stats: {
+        entityCount: extraction.entities.length,
+        assertionCount: extraction.relations?.length || 0,
+        eventCount: 0,
+      },
+    };
+  }, [extraction, _docId]);
 }
