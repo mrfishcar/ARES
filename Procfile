@@ -1,1 +1,1 @@
-web: npm run start:compiled
+web: npm run build && npm run start:compiled
