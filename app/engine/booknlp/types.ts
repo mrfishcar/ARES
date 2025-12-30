@@ -144,4 +144,27 @@ export interface BookNLPResult {
   coref_links: ARESCorefLink[];
   metadata: BookNLPMetadata;
   raw_contract?: BookNLPContract;
+
+  // 🆕 Token analysis results (Phase 5 - 2025-12-30)
+  // Structure extracted from BookNLP tokens for enhanced processing
+  tokenAnalysis?: {
+    paragraphs: Array<{
+      index: number;
+      startChar: number;
+      endChar: number;
+      tokenCount: number;
+    }>;
+    sentences: Array<{
+      index: number;
+      startChar: number;
+      endChar: number;
+      tokenCount: number;
+    }>;
+    posQualitySignals?: {
+      properNounDensity: number;
+      pronounDensity: number;
+      verbDensity: number;
+      qualityScore: number;
+    };
+  };
 }

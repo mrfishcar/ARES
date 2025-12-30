@@ -17,6 +17,13 @@ import type {
   EntityType
 } from '../../engine/schema';
 
+// 🆕 LEARNING ENGINE INTEGRATION (Phase 4 - 2025-12-30)
+// Extract patterns from corrections for automatic application
+import {
+  extractPatternFromCorrection,
+  mergePatterns,
+} from '../../engine/learning-engine';
+
 // ============================================================================
 // HELPER TYPES
 // ============================================================================
@@ -165,6 +172,41 @@ function addCorrectionToGraph(graph: KnowledgeGraph, correction: Correction): Ve
   return snapshot;
 }
 
+/**
+ * 🆕 Extract and store a learned pattern from a correction
+ * This is the key integration point for the learning engine
+ */
+function learnFromCorrection(graph: KnowledgeGraph, correction: Correction): void {
+  // Initialize learnedPatterns if not present
+  if (!graph.learnedPatterns) {
+    graph.learnedPatterns = [];
+  }
+
+  // Try to extract a pattern from this correction
+  const pattern = extractPatternFromCorrection(correction);
+
+  if (pattern) {
+    // Merge the new pattern with existing patterns
+    graph.learnedPatterns = mergePatterns(graph.learnedPatterns, pattern);
+
+    // Mark the correction as having contributed to learning
+    correction.learned = {
+      patternExtracted: true,
+      patternId: pattern.id,
+      appliedToCount: 0
+    };
+
+    // Log for debugging
+    if (process.env.ARES_DEBUG) {
+      console.log(`[LearningEngine] Extracted pattern from ${correction.type}:`, {
+        patternId: pattern.id,
+        patternType: pattern.type,
+        textPattern: pattern.condition?.textPattern,
+      });
+    }
+  }
+}
+
 // ============================================================================
 // QUERY RESOLVERS
 // ============================================================================
@@ -302,6 +344,10 @@ const mutationResolvers = {
     (entity as any).manualOverride = true;
 
     const snapshot = addCorrectionToGraph(graph, correction);
+
+    // 🆕 LEARNING ENGINE: Extract pattern from this correction
+    learnFromCorrection(graph, correction);
+
     saveGraph(graph, graphPath);
 
     return {
@@ -388,6 +434,10 @@ const mutationResolvers = {
     }
 
     const snapshot = addCorrectionToGraph(graph, correction);
+
+    // 🆕 LEARNING ENGINE: Extract merge pattern (e.g., name variations)
+    learnFromCorrection(graph, correction);
+
     saveGraph(graph, graphPath);
 
     return {
@@ -841,6 +891,10 @@ const mutationResolvers = {
     (entity as any).manualOverride = true;
 
     const snapshot = addCorrectionToGraph(graph, correction);
+
+    // 🆕 LEARNING ENGINE: Extract canonical name patterns
+    learnFromCorrection(graph, correction);
+
     saveGraph(graph, graphPath);
 
     return {

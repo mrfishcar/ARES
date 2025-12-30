@@ -3,7 +3,7 @@
  * Processes documents using sentence-level segmentation with context windows
  */
 
-import type { Entity, Relation } from '../schema';
+import type { Entity, Relation, LearnedPattern } from '../schema';
 import { INVERSE } from '../schema';
 import { v4 as uuid } from 'uuid';
 import { segmentDocument, type Seg } from '../segmenter';
@@ -66,6 +66,10 @@ export function getExtractionMode(): ExtractionMode {
 // 🛡️ PRECISION DEFENSE SYSTEM - LAYER 1 & 3
 import { filterLowQualityEntities, isEntityFilterEnabled, getFilterConfig, getFilterStats } from '../entity-quality-filter';
 import { deduplicateRelations, isDeduplicationEnabled, getDeduplicationStats } from '../relation-deduplicator';
+
+// 🆕 LEARNING ENGINE INTEGRATION (Phase 4 - 2025-12-30)
+// Apply learned patterns to improve extraction based on user corrections
+import { applyPatternsToBatch } from '../pattern-applier';
 
 // Select relation patterns mode from environment (baseline | expanded | hybrid)
 const PATTERNS_MODE: PatternsMode = (process.env.RELATION_PATTERNS_MODE as PatternsMode) || 'baseline';
@@ -263,6 +267,7 @@ export async function extractFromSegments(
   options?: {
     generateHERTs?: boolean;     // Enable HERT generation (Phase 2)
     autoSaveHERTs?: boolean;     // Auto-save to HERT store
+    learnedPatterns?: LearnedPattern[];  // 🆕 Patterns from user corrections (Phase 4)
   }
 ): Promise<{
   entities: Entity[];
@@ -903,6 +908,28 @@ export async function extractFromSegments(
   }
 
   const afterFilterCount = allEntities.length;
+
+  // 🆕 LEARNING ENGINE: Apply learned patterns to improve extraction
+  // This step applies patterns extracted from user corrections (Phase 4)
+  // Patterns can modify entity types and confidence scores
+  if (options?.learnedPatterns && options.learnedPatterns.length > 0) {
+    const activePatterns = options.learnedPatterns.filter(p => p.active);
+    if (activePatterns.length > 0) {
+      const patternResult = applyPatternsToBatch(allEntities, activePatterns);
+
+      console.log(`[LEARNING-ENGINE] 🎓 Applied ${activePatterns.length} learned patterns`);
+      console.log(`  - Type corrections: ${patternResult.typeCorrections}`);
+      console.log(`  - Confidence adjustments: ${patternResult.confidenceAdjustments}`);
+      console.log(`  - Total patterns applied: ${patternResult.appliedCount}`);
+
+      // Log individual applications for debugging
+      if (process.env.ARES_DEBUG) {
+        for (const app of patternResult.applications) {
+          console.log(`  [PATTERN] Applied "${app.patternId}" to "${app.entityName}": ${JSON.stringify(app.changes)}`);
+        }
+      }
+    }
+  }
 
   // 4. Build entity profiles (adaptive learning)
   // Accumulate knowledge about entities to improve future resolution

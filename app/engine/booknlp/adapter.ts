@@ -24,6 +24,15 @@ import type {
 } from './types';
 import { toBookNLPEID, toBookNLPStableEntityId, toBookNLPNonCharEntityId, toBookNLPNonCharEID } from './identity';
 
+// 🆕 TOKEN ANALYZER INTEGRATION (Phase 5 - 2025-12-30)
+// Use token analysis for paragraph/sentence structure and POS quality signals
+import {
+  createTokenAnalyzer,
+  type TokenAnalyzer,
+  type Paragraph,
+  type SentenceBoundary,
+} from './token-analyzer';
+
 // ============================================================================
 // TYPE MAPPING
 // ============================================================================
@@ -363,6 +372,48 @@ export function adaptBookNLPContract(
   // Build coref links
   const coref_links = adaptCorefChains(contract, characterIdMap);
 
+  // 🆕 TOKEN ANALYSIS: Extract document structure from tokens
+  // This provides paragraph/sentence boundaries and POS quality signals
+  let tokenAnalysis: BookNLPResult['tokenAnalysis'] = undefined;
+
+  if (contract.tokens && contract.tokens.length > 0) {
+    try {
+      const analyzer = createTokenAnalyzer(contract);
+
+      // Extract structure
+      const paragraphs = analyzer.getParagraphs().map(p => ({
+        index: p.index,
+        startChar: p.startChar,
+        endChar: p.endChar,
+        tokenCount: p.tokens.length,
+      }));
+
+      const sentences = analyzer.getSentences().map(s => ({
+        index: s.index,
+        startChar: s.startChar,
+        endChar: s.endChar,
+        tokenCount: s.tokenCount,
+      }));
+
+      // Get quality signals for the full document
+      const posSignals = analyzer.getQualitySignalsFor(contract.tokens);
+
+      tokenAnalysis = {
+        paragraphs,
+        sentences,
+        posQualitySignals: posSignals,
+      };
+
+      console.log(`[BOOKNLP] Token analysis: ${paragraphs.length} paragraphs, ${sentences.length} sentences`);
+      if (posSignals) {
+        console.log(`[BOOKNLP] POS quality score: ${posSignals.qualityScore.toFixed(2)}`);
+      }
+    } catch (error) {
+      console.warn(`[BOOKNLP] Token analysis failed:`, error);
+      // Continue without token analysis
+    }
+  }
+
   return {
     entities,
     spans,
@@ -370,6 +421,7 @@ export function adaptBookNLPContract(
     coref_links,
     metadata: contract.metadata,
     raw_contract: includeRawContract ? contract : undefined,
+    tokenAnalysis,
   };
 }
 
