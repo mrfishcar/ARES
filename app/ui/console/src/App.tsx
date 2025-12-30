@@ -9,6 +9,7 @@ import { useToast, ToastContainer } from './components/Toast';
 import { ThemeProvider } from './context/ThemeContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ExtractionLab } from './pages/ExtractionLab';
+import { SummarizationPage } from './pages/SummarizationPage';
 import { EditorTest } from './pages/EditorTest';
 import { UltraMinimalTest } from './pages/UltraMinimalTest';
 import { WorkingCommitTest } from './pages/WorkingCommitTest';
@@ -149,6 +150,7 @@ function AppShell() {
         <Route path="/test" element={<WorkingCommitTest />} />
         <Route path="/minimal" element={<UltraMinimalTest />} />
         <Route path="/editor" element={<EditorTest />} />
+        <Route path="/summarize" element={<SummarizationPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <ToastContainer messages={toast.messages} onClose={toast.closeToast} />

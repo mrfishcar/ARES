@@ -87,13 +87,22 @@ export function DocumentsSidebar({
       {/* ARES branding */}
       <div className="sidebar-header">
         <div className="sidebar-brand">ARES</div>
-        <a
-          href="/booknlp"
-          className="sidebar-link"
-          style={{ marginTop: '8px', display: 'inline-block' }}
-        >
-          BookNLP Test
-        </a>
+        <div className="sidebar-nav" style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <a
+            href="/summarize"
+            className="sidebar-link"
+            style={{ display: 'inline-block' }}
+          >
+            📝 Summarization
+          </a>
+          <a
+            href="/booknlp"
+            className="sidebar-link"
+            style={{ display: 'inline-block' }}
+          >
+            📚 BookNLP Test
+          </a>
+        </div>
       </div>
 
       <div className="sidebar-content">
