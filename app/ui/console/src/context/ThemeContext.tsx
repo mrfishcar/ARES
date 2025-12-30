@@ -27,15 +27,15 @@ const DEFAULT_THEME: Theme = {
     primary: '#3b82f6',
     secondary: '#8b5cf6',
     accent: '#10b981',
-    background: '#FFF9F0',    // Warm light background
-    surface: '#FFF4E6',       // Light warm surface
-    text: '#4A403A',          // Warm dark text
-    textSecondary: '#8B7E77', // Secondary text
-    border: '#E8DED5',        // Soft border
+    background: '#0a0e27',    // Dark background (matches editor)
+    surface: '#141829',       // Dark surface (matches editor)
+    text: '#e5e7eb',          // Light text for dark bg
+    textSecondary: '#9ca3af', // Secondary light text
+    border: '#2a2f4a',        // Dark border
   },
   background: {
     type: 'solid',
-    value: '#FFF9F0',  // Warm light background
+    value: '#0a0e27',  // Dark background (matches editor)
   },
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
