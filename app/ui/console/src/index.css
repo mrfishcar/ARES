@@ -135,34 +135,9 @@ body {
   --border-soft: rgba(42, 47, 74, 0.45);
   --border-color: rgba(42, 47, 74, 0.6);
   --surface-strong: var(--bg-secondary);
-}
 
-/* ===============================
-   COLOR SCHEME
-================================ */
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --liquid-glass-bg: var(--liquid-glass-bg-dark);
-    --liquid-glass-border: var(--liquid-glass-border-dark);
-    --liquid-glass-glow-outer: var(--liquid-glass-glow-outer-dark);
-    --liquid-glass-glow-inner: var(--liquid-glass-glow-inner-dark);
-    --liquid-glass-tint-1: var(--liquid-glass-tint-1-dark);
-    --liquid-glass-tint-2: var(--liquid-glass-tint-2-dark);
-  }
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color-scheme: light;
-    --liquid-glass-bg: var(--liquid-glass-bg-light);
-    --liquid-glass-border: var(--liquid-glass-border-light);
-    --liquid-glass-glow-outer: var(--liquid-glass-glow-outer-light);
-    --liquid-glass-glow-inner: var(--liquid-glass-glow-inner-light);
-    --liquid-glass-tint-1: var(--liquid-glass-tint-1-light);
-    --liquid-glass-tint-2: var(--liquid-glass-tint-2-light);
-  }
+  /* Force dark color scheme always - app is dark-only */
+  color-scheme: dark;
 }
 
 /* ===============================
