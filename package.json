@@ -5,7 +5,7 @@
   "main": "app/engine/orchestrator.ts",
   "scripts": {
     "build": "npx esbuild scripts/start-server-and-worker.ts --platform=node --format=cjs --bundle --outfile=dist/start-server-and-worker.js --external:better-sqlite3 --external:uuid --external:@apollo/server --external:prom-client --external:pino --external:lunr --packages=external && mkdir -p dist && cp app/api/schema.graphql dist/schema.graphql",
-    "start": "npm run build && node dist/start-server-and-worker.js",
+    "start": "sh start-services.sh",
     "start:compiled": "node dist/start-server-and-worker.js",
     "parser": "cd app/services && uvicorn parser:app --host 127.0.0.1 --port 8000",
     "dev": "ts-node app/ui/server.ts",

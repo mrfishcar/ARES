@@ -1,7 +1,11 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
 echo "=== Starting ARES Services on Railway ==="
+
+# Build the Node.js server first
+echo "Building Node.js server..."
+npm run build
 
 # Start the Python spaCy parser service in background
 echo "Starting Python parser service on port 8000..."
