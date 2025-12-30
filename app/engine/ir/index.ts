@@ -48,7 +48,12 @@ export * from './predicate-extractor';
 // Quote-TELL Extractor: speech events from quoted dialogue
 export * from './quote-tell-extractor';
 
+// Timeline Builder: timeline ordering, interpolation, filtering (Phase B)
+export * from './timeline-builder';
+
+// Extraction Diagnostics: validation, calibration, metrics (Phase C)
+export * from './extraction-diagnostics';
+
 // Future: IR utilities
 // export * from './builders';
-// export * from './validators';
 // export * from './serialization';
