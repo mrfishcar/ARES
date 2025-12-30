@@ -82,6 +82,35 @@ body {
   --editor-margin-mobile: clamp(4px, 1.5vw, 8px);
   --editor-header-offset: 80px;
 
+  /* Toolbar widths */
+  --lab-toolbar-width-normal: 320px;
+  --format-toolbar-min-width: 520px;
+
+  /* Glass blur intensities */
+  --liquid-glass-blur-toolbar: 18px;
+  --liquid-glass-blur-overlay: 24px;
+  --liquid-glass-blur-pinned: 12px;
+  --glass-blur-light: 12px;
+
+  /* Liquid Glass - Dark theme (default) */
+  --liquid-glass-bg-dark: rgba(15, 23, 42, 0.75);
+  --liquid-glass-border-dark: rgba(148, 163, 184, 0.15);
+  --liquid-glass-glow-outer-dark: rgba(0, 0, 0, 0.3);
+  --liquid-glass-glow-inner-dark: rgba(255, 255, 255, 0.05);
+  --liquid-glass-tint-1-dark: rgba(148, 163, 184, 0.03);
+  --liquid-glass-tint-2-dark: rgba(99, 102, 241, 0.03);
+  --liquid-glass-fallback-surface: var(--bg-secondary);
+
+  /* Glass - Warm theme */
+  --liquid-glass-bg-light: rgba(255, 249, 240, 0.92);
+  --liquid-glass-border-light: rgba(200, 180, 160, 0.35);
+  --liquid-glass-bg: var(--liquid-glass-bg-light);
+  --liquid-glass-border: var(--liquid-glass-border-light);
+  --liquid-glass-glow-outer: rgba(74, 64, 58, 0.08);
+  --liquid-glass-glow-inner: rgba(255, 255, 255, 0.1);
+  --liquid-glass-tint-1: rgba(200, 180, 160, 0.05);
+  --liquid-glass-tint-2: rgba(180, 160, 140, 0.05);
+
   --bg-primary: var(--app-bg-dark);
   --bg-secondary: #141829;
   --bg-tertiary: #1a1f3a;
@@ -92,6 +121,14 @@ body {
   --text-tertiary: #6b7280;
 
   --app-surface: var(--app-bg-dark);
+
+  /* Timing functions */
+  --dur-fast: 150ms;
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --border-soft: rgba(42, 47, 74, 0.45);
+  --border-color: rgba(42, 47, 74, 0.6);
+  --surface-strong: var(--bg-secondary);
 }
 
 /* ===============================
@@ -134,16 +171,6 @@ html.kb-open .extraction-lab {
   height: var(--vvh, 100vh) !important;
 }
 */
-
-  /* Glass - Warm theme */
-  --liquid-glass-bg-light: rgba(255, 249, 240, 0.92);
-  --liquid-glass-border-light: rgba(200, 180, 160, 0.35);
-  --liquid-glass-bg: var(--liquid-glass-bg-light);
-  --liquid-glass-border: var(--liquid-glass-border-light);
-  --liquid-glass-glow-outer: rgba(74, 64, 58, 0.08);
-  --liquid-glass-tint-1: rgba(200, 180, 160, 0.05);
-  --liquid-glass-tint-2: rgba(180, 160, 140, 0.05);
-}
 
 /* Dark mode – "night sky" */
 html[data-theme="dark"] {
@@ -401,6 +428,12 @@ a:hover {
   align-items: flex-end;
   gap: 8px;
   z-index: 50;
+  pointer-events: none; /* Allow clicks through the stack itself */
+}
+
+/* Ensure toolbar itself receives pointer events */
+.lab-toolbar-stack > * {
+  pointer-events: auto;
 }
 
 .toolbar-slot {
@@ -430,6 +463,8 @@ a:hover {
               padding 220ms cubic-bezier(0.2, 0.9, 0.2, 1),
               gap 200ms ease,
               border-radius 200ms ease;
+  opacity: 1; /* Ensure toolbar is visible */
+  visibility: visible; /* Ensure toolbar is visible */
 }
 
 .toolbar-slot[data-mode="formatting"] .lab-control-bar {
@@ -1476,14 +1511,15 @@ a:hover {
   padding-right: 524px; /* 500px sidebar + 24px gap */
 }
 
-/* Editor panel - scrolls naturally like working commit */
+/* Editor panel - container that holds the editor */
 .editor-panel {
   display: flex;
   flex-direction: column;
   background: var(--bg-secondary);
   border-radius: 12px;
-  overflow: auto;  /* Scroll naturally - no forcing */
+  overflow: hidden;  /* Hide overflow - children handle scrolling */
   min-height: 0;  /* Allow flex shrinking */
+  flex: 1;
 }
 
 /* Toolbar positioning when entity sidebar is pinned - ALL BROWSERS */
@@ -1521,10 +1557,52 @@ a:hover {
   box-sizing: border-box;
 }
 
-/* Editor Panel - Infinite canvas feel */
-.editor-panel {
+/* ===== EDITOR SCROLL CONTAINERS ===== */
+
+/* Main editor scroll container - the actual scrolling surface */
+.rich-editor-surface,
+.editor-scroll-container {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  background-color: var(--bg-primary);
+  scrollbar-color: #64d5ff #1a1f3a;
+  scrollbar-width: thin;
+}
+
+/* Scrollbar styling for editor containers */
+.rich-editor-surface::-webkit-scrollbar,
+.editor-scroll-container::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.rich-editor-surface::-webkit-scrollbar-track,
+.editor-scroll-container::-webkit-scrollbar-track {
+  background: #1a1f3a;
+  border-radius: 6px;
+}
+
+.rich-editor-surface::-webkit-scrollbar-thumb,
+.editor-scroll-container::-webkit-scrollbar-thumb {
+  background: #64d5ff;
+  border-radius: 6px;
+  border: 2px solid #1a1f3a;
+}
+
+.rich-editor-surface::-webkit-scrollbar-thumb:hover,
+.editor-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #a0e7ff;
+}
+
+/* Editor content wrapper - infinite canvas feel */
+.editor-content-wrapper {
+  display: flex;
   flex: 1;
   min-width: 0;
   min-height: 0;
@@ -1532,8 +1610,6 @@ a:hover {
   border: none;
   border-radius: 0;
   box-shadow: none;
-  /* Don't scroll here - .rich-editor-surface is the scroll container */
-  overflow: hidden;
   transition: background-color 0.3s ease;
   pointer-events: auto;
 }
