@@ -12,6 +12,24 @@ import type { ProjectIR } from '../hooks/useIRAdapter';
 import { getEntityTypeColor } from '../types/entities';
 import './WikiPanel.css';
 
+/**
+ * Safe Markdown wrapper that ensures content is always a valid string
+ */
+function SafeMarkdown({ children, options }: { children: string; options?: any }) {
+  const content = typeof children === 'string' && children ? children : '';
+
+  if (!content) {
+    return <p style={{ color: '#666' }}>No content to display</p>;
+  }
+
+  try {
+    return <Markdown options={options}>{content}</Markdown>;
+  } catch (err) {
+    console.error('[SafeMarkdown] Render error:', err);
+    return <pre style={{ whiteSpace: 'pre-wrap' }}>{content}</pre>;
+  }
+}
+
 type EntityId = string;
 
 interface WikiPanelProps {
@@ -223,14 +241,14 @@ export function WikiPanel({ ir, selectedEntityId, onEntityClick, onClose }: Wiki
 
       {/* Content */}
       <div className="wiki-panel__content">
-        <Markdown
+        <SafeMarkdown
           options={{
             overrides: {
               a: {
-                component: ({ children, href, ...props }) => (
+                component: ({ children, href, ...props }: any) => (
                   <a
                     href={href}
-                    onClick={(e) => {
+                    onClick={(e: React.MouseEvent) => {
                       if (href?.startsWith('entity_')) {
                         e.preventDefault();
                         onEntityClick(href);
@@ -246,7 +264,7 @@ export function WikiPanel({ ir, selectedEntityId, onEntityClick, onClose }: Wiki
           }}
         >
           {activeTab === 'wiki' ? wikiContent : infoContent}
-        </Markdown>
+        </SafeMarkdown>
       </div>
     </div>
   );

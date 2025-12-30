@@ -10,6 +10,25 @@ import React, { useState, useMemo, useCallback } from 'react';
 import Markdown from 'markdown-to-jsx';
 import './SummarizationPage.css';
 
+/**
+ * Safe Markdown wrapper that ensures content is always a valid string
+ */
+function SafeMarkdown({ children }: { children: string }) {
+  // Ensure we always have a valid string
+  const content = typeof children === 'string' && children ? children : '';
+
+  if (!content) {
+    return <p className="summarization-page__empty-content">No content to display</p>;
+  }
+
+  try {
+    return <Markdown>{content}</Markdown>;
+  } catch (err) {
+    console.error('[SafeMarkdown] Render error:', err);
+    return <pre className="summarization-page__error-content">{content}</pre>;
+  }
+}
+
 // Resolve API URL (same logic as ExtractionLab)
 function resolveApiUrl() {
   let apiUrl = import.meta.env.VITE_API_URL;
@@ -375,12 +394,12 @@ The company then traveled down the Great River Anduin by boat. At Amon Hen, Boro
 
               {/* Tab Content */}
               <div className="summarization-page__content">
-                <Markdown>
-                  {activeTab === 'summary' ? summary.fullSummary : ''}
-                  {activeTab === 'entities' ? summary.keyEntities : ''}
-                  {activeTab === 'relations' ? summary.keyRelations : ''}
-                  {activeTab === 'metrics' ? summary.metrics : ''}
-                </Markdown>
+                <SafeMarkdown>
+                  {activeTab === 'summary' ? summary.fullSummary
+                    : activeTab === 'entities' ? summary.keyEntities
+                    : activeTab === 'relations' ? summary.keyRelations
+                    : summary.metrics}
+                </SafeMarkdown>
               </div>
             </>
           )}

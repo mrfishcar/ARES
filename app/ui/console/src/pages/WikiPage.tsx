@@ -8,6 +8,24 @@ import { fetchWikiFile } from '../lib/api';
 import { LoadingPage } from '../components/Loading';
 import Markdown from 'markdown-to-jsx';
 
+/**
+ * Safe Markdown wrapper that ensures content is always a valid string
+ */
+function SafeMarkdown({ children, options }: { children: string; options?: any }) {
+  const content = typeof children === 'string' && children ? children : '';
+
+  if (!content) {
+    return <p style={{ color: '#666' }}>No content to display</p>;
+  }
+
+  try {
+    return <Markdown options={options}>{content}</Markdown>;
+  } catch (err) {
+    console.error('[SafeMarkdown] Render error:', err);
+    return <pre style={{ whiteSpace: 'pre-wrap' }}>{content}</pre>;
+  }
+}
+
 interface WikiFile {
   id: string;
   path: string;
@@ -133,7 +151,7 @@ export function WikiPage({ project, toast }: WikiPageProps) {
               }}
               className="markdown-content"
             >
-              <Markdown
+              <SafeMarkdown
                 options={{
                   overrides: {
                     h1: { props: { style: { fontSize: '24px', fontWeight: '600', marginTop: '24px', marginBottom: '12px' } } },
@@ -149,7 +167,7 @@ export function WikiPage({ project, toast }: WikiPageProps) {
                 }}
               >
                 {content}
-              </Markdown>
+              </SafeMarkdown>
             </div>
           </div>
         )}
