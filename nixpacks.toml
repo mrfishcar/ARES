@@ -2,6 +2,10 @@
 # Python is needed ONLY for building better-sqlite3 (node-gyp compilation)
 # NOT for runtime - we've moved away from BookNLP
 
+# Environment variables for Railway runtime
+[variables]
+ARES_MODE = "legacy"
+
 [phases.setup]
 nixPkgs = ["nodejs-18_x", "python3", "gcc", "gnumake"]
 
