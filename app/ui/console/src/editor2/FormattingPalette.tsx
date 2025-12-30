@@ -17,7 +17,7 @@ import {
   Quote,
   Code2
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { FormattingActions } from '../components/CodeMirrorEditorProps';
 import type { FormatState } from './plugins/FormatActionsPlugin';
 
@@ -47,6 +47,7 @@ export function FormattingPalette({
   onClose
 }: FormattingPaletteProps) {
   const [currentStyle, setCurrentStyle] = useState<StyleValue>('p');
+  const paletteRef = useRef<HTMLDivElement | null>(null);
 
   // Update current style from format state
   useEffect(() => {
@@ -98,6 +99,22 @@ export function FormattingPalette({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, formatActions]);
 
+  // Close when clicking outside the palette
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!paletteRef.current) return;
+      if (paletteRef.current.contains(event.target as Node)) return;
+      onClose();
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+    };
+  }, [isOpen, onClose]);
+
   const handleStyleChange = (style: StyleValue) => {
     setCurrentStyle(style);
 
@@ -122,7 +139,10 @@ export function FormattingPalette({
   const isMonoActive = formatState?.blockType === 'code' || formatState?.isCode;
 
   return (
-    <div className={`formatting-palette ${isOpen ? 'formatting-palette--open' : ''}`}>
+    <div
+      ref={paletteRef}
+      className={`formatting-palette ${isOpen ? 'formatting-palette--open' : ''}`}
+    >
       <div className="formatting-palette__panel">
         <div className="formatting-palette__row formatting-palette__row--styles" role="group" aria-label="Text style">
           <div className="formatting-style-chips formatting-style-chips--row" aria-live="polite">

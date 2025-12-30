@@ -9,7 +9,10 @@
   padding: 0;
 }
 
-/* HTML = absolute bottom layer (Safari void fallback) */
+/* ===============================
+   BEDROCK LAYERS — SAFE FOR iOS
+================================ */
+
 html {
   font-size: 100%;
   -webkit-text-size-adjust: 100%;
@@ -29,11 +32,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/*
-  CRITICAL iOS RULE:
-  - Allow the page to scroll
-  - DO NOT lock html/body with position: fixed
-  - iOS uses page scroll to keep caret visible
+/* IMPORTANT:
+   Allow page scroll so iOS can keep caret visible
 */
 html,
 body {
@@ -43,74 +43,32 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
-/*
-  React mount MUST extend fully,
-  or Safari will show the underlying layer
-*/
+/* ===============================
+   REACT ROOT — MUST EXTEND
+================================ */
+
 #root {
   min-height: 100%;
   background-color: var(--app-surface);
 }
-
-/* ===========================
-   ORIGINAL FILE CONTINUES
-   =========================== */
-
-* {  
-  box-sizing: border-box;  
-  margin: 0;  
-  padding: 0;  
-}  
-  
-/* ===============================  
-   BEDROCK LAYERS — SAFE FOR iOS  
-================================ */  
-  
-html {  
-  font-size: 100%;  
-  -webkit-text-size-adjust: 100%;  
-  background-color: var(--app-surface);  
-}  
-  
-body {  
-  margin: 0;  
-  padding: 0;  
-  background-color: var(--app-surface);  
-}  
-  
-/* IMPORTANT:  
-   Allow page scroll so iOS can keep caret visible  
-*/  
-html,  
-body {  
-  min-height: 100%;  
-  overflow-y: auto;  
-  overscroll-behavior: auto;  
-}  
-  
-/* ===============================  
-   REACT ROOT — MUST EXTEND  
-================================ */  
-  
-#root {  
-  min-height: 100%;  
-  background-color: var(--app-surface);  
-}  
   
 /* ===============================  
    DESIGN TOKENS (UNCHANGED)  
 ================================ */  
   
-:root {  
-  --app-viewport-height: 100dvh;  
-  
-  --app-bg-dark: #0a0e27;  
-  --app-bg-light: #FFF9F0;  
-  
-  --space-2xs: 4px;  
-  --space-xs: 8px;  
-  --space-sm: 12px;  
-  --space-md: 16px;  
+:root {
+  --app-viewport-height: 100dvh;
+
+  --app-bg-dark: #0a0e27;
+  --app-bg-light: #FFF9F0;
+
+  --format-toolbar-min-width: min(clamp(320px, 60vw, 560px), calc(100vw - 32px));
+  --lab-toolbar-width-normal: min(clamp(360px, 52vw, 520px), calc(100vw - 40px));
+
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
   --space-lg: 20px;  
   --space-xl: 24px;  
   --space-2xl: 32px;  
@@ -146,11 +104,62 @@ body {
   --bg-elevated: #141829;  
   
   --text-primary: #e5e7eb;  
-  --text-secondary: #9ca3af;  
-  --text-tertiary: #6b7280;  
-  
-  --app-surface: var(--app-bg-dark);  
-}  
+  --text-secondary: #9ca3af;
+  --text-tertiary: #6b7280;
+
+  /* Glassmorphism Variables – Dark Mode Defaults */
+  --glass-bg-dark: rgba(15, 23, 42, 0.75);
+  --glass-bg-light: rgba(255, 255, 255, 0.9);
+  --glass-border-dark: rgba(148, 163, 184, 0.15);
+  --glass-border-light: rgba(200, 210, 240, 0.35);
+  --glass-blur-heavy: 5px;
+  --glass-blur-medium: 5px;
+  --glass-blur-light: 6px;
+
+  /* Unified Liquid Glass Material System */
+  /* Blur amounts for consistent glass hierarchy */
+  --liquid-glass-blur-toolbar: 5px;    /* Toolbar, dropdown, context menu */
+  --liquid-glass-blur-overlay: 5px;    /* Floating overlay panels */
+  --liquid-glass-blur-pinned: 5px;     /* Pinned sidebar mode */
+
+  /* Color bases */
+  --liquid-glass-bg-dark: rgba(15, 23, 42, 0.60);
+  --liquid-glass-bg-light: rgba(255, 255, 255, 0.85);
+  --liquid-glass-border-dark: rgba(148, 163, 184, 0.15);
+  --liquid-glass-border-light: rgba(200, 210, 240, 0.4);
+  --liquid-glass-glow-inner: rgba(255, 255, 255, 0.08);
+  --liquid-glass-glow-outer-dark: rgba(0, 0, 0, 0.25);
+  --liquid-glass-glow-outer-light: rgba(15, 23, 42, 0.1);
+
+  /* Subtle tint gradients for glass surfaces */
+  --liquid-glass-tint-1-dark: rgba(56, 189, 248, 0.03);   /* Subtle cyan */
+  --liquid-glass-tint-2-dark: rgba(129, 140, 248, 0.04);  /* Subtle indigo */
+  --liquid-glass-tint-1-light: rgba(200, 220, 255, 0.02);
+  --liquid-glass-tint-2-light: rgba(200, 220, 255, 0.03);
+
+  /* Theme-resolved Liquid Glass tokens */
+  --liquid-glass-bg: var(--liquid-glass-bg-dark);
+  --liquid-glass-border: var(--liquid-glass-border-dark);
+  --liquid-glass-glow-outer: var(--liquid-glass-glow-outer-dark);
+  --liquid-glass-tint-1: var(--liquid-glass-tint-1-dark);
+  --liquid-glass-tint-2: var(--liquid-glass-tint-2-dark);
+  --liquid-glass-fallback-surface: color-mix(in srgb, var(--bg-secondary) 55%, transparent);
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast: 140ms;
+  --dur-med: 240ms;
+
+  --border-soft: rgba(148, 163, 184, 0.45);
+  --border-color: rgba(148, 163, 184, 0.6);
+
+  /* Global background gradient for the deepest layer */
+  --app-background-gradient: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.08), transparent 35%),
+    radial-gradient(circle at 80% 0%, rgba(129, 140, 248, 0.06), transparent 40%),
+    linear-gradient(180deg, #0a0e27 0%, #141829 55%, #0a0e27 100%);
+
+  --app-surface: var(--app-bg-dark);
+}
   
 /* ===============================  
    COLOR SCHEME  
@@ -163,45 +172,44 @@ body {
   }  
 }  
   
-@media (prefers-color-scheme: light) {  
-  :root {  
-    color-scheme: light;  
-    --app-surface: var(--app-bg-light);  
-  }  
-}  
-  
-/* ===============================  
-   DISABLED iOS VIEWPORT LOCKING  
-   (INTENTIONALLY REMOVED)  
-================================ */  
-  
-/*  
-html.kb-open,  
-body.kb-open {  
-  position: fixed !important;  
-  width: 100% !important;  
-  height: 100% !important;  
-  overflow: hidden !important;  
-  overscroll-behavior: none !important;  
-  touch-action: manipulation !important;  
-}  
-  
-html.kb-open,  
-#root.kb-open,  
-html.kb-open .extraction-lab {  
-  height: var(--vvh, 100vh) !important;  
-}  
-*/  
-  
-  /* Glass - Warm theme */  
-  --liquid-glass-bg-light: rgba(255, 249, 240, 0.92);  
-  --liquid-glass-border-light: rgba(200, 180, 160, 0.35);  
-  --liquid-glass-bg: var(--liquid-glass-bg-light);  
-  --liquid-glass-border: var(--liquid-glass-border-light);  
-  --liquid-glass-glow-outer: rgba(74, 64, 58, 0.08);  
-  --liquid-glass-tint-1: rgba(200, 180, 160, 0.05);  
-  --liquid-glass-tint-2: rgba(180, 160, 140, 0.05);  
-}  
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --app-surface: var(--app-bg-light);
+  }
+}
+
+/* Light mode – "paper" */
+html[data-theme="light"] {
+  color-scheme: light;
+
+  /* Base surfaces - Warm theme matching NIGHT_SKY_PALETTE */
+  --app-bg-light: #FFF9F0;
+  --app-surface: #FFF9F0;
+
+  --bg-primary: #FFF9F0;          /* Main background - warm */
+  --bg-secondary: #FFF4E6;        /* Light warm surface */
+  --bg-tertiary: #FFEEDD;         /* Slightly darker warm */
+  --bg-elevated: #FFF4E6;         /* Popover cards, modals */
+
+  /* Text - Warm theme */
+  --text-primary: #4A403A;        /* Warm dark text */
+  --text-secondary: #8B7E77;      /* Secondary text */
+  --text-tertiary: #A89E97;       /* Tertiary text */
+
+  /* Borders - Warm theme */
+  --border-soft: #F0E6DD;         /* Subtle panel/frame */
+  --border-color: #E8DED5;        /* Stronger card outline */
+
+  /* Glass - Warm theme */
+  --liquid-glass-bg-light: rgba(255, 249, 240, 0.92);
+  --liquid-glass-border-light: rgba(200, 180, 160, 0.35);
+  --liquid-glass-bg: var(--liquid-glass-bg-light);
+  --liquid-glass-border: var(--liquid-glass-border-light);
+  --liquid-glass-glow-outer: rgba(74, 64, 58, 0.08);
+  --liquid-glass-tint-1: rgba(200, 180, 160, 0.05);
+  --liquid-glass-tint-2: rgba(180, 160, 140, 0.05);
+}
   
 /* Dark mode – "night sky" */  
 html[data-theme="dark"] {  
@@ -310,10 +318,10 @@ body::before {
   min-height: 100dvh;  
 }  
   
-#root {  
-  height: 100%;  
-  background-color: var(--app-surface);  
-}  
+#root {
+  min-height: 100%;
+  background-color: var(--app-surface);
+}
   
 /* Removed .app-root - unnecessary wrapper */  
   
@@ -360,13 +368,13 @@ a:hover {
   
 /* ===== Extraction Lab Styles ===== */  
   
-.extraction-lab {  
-  display: flex;  
-  flex-direction: column;  
-  height: 100vh;  /* Simple 100vh like working commit */  
-  background: var(--bg-primary);  
-  overflow: hidden;  /* Lock the page */  
-}  
+.extraction-lab {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--bg-primary);
+  overflow: visible;
+}
   
 /* Hamburger Button - ChatGPT style */  
 .hamburger-btn {  
@@ -786,31 +794,33 @@ a:hover {
   justify-content: flex-start;  
 }  
   
-.formatting-palette__row--styles {  
-  display: flex;  
-  flex-wrap: nowrap;  
-  align-items: stretch;  
-  justify-content: flex-start;  
-  width: 100%;  
-  min-width: 0;  
-  gap: 6px;  
-  padding: 2px 4px 6px;  
-  overflow-x: auto;  
-  scroll-snap-type: x mandatory;  
-  scroll-padding: 8px;  
-  -webkit-overflow-scrolling: touch;  
-}  
-  
-.formatting-style-chips {  
-  display: inline-flex;  
-  flex: 1 0 auto;  
-  flex-wrap: nowrap;  
-  gap: 8px;  
-  align-items: stretch;  
-  width: 100%;  
-  min-width: 0;  
-  padding: 0;  
-}  
+.formatting-palette__row--styles {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: flex-start;
+  width: var(--format-toolbar-min-width);
+  max-width: var(--format-toolbar-min-width);
+  min-width: var(--format-toolbar-min-width);
+  margin: 0 auto;
+  gap: 6px;
+  padding: 2px 4px 6px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 8px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.formatting-style-chips {
+  display: inline-flex;
+  flex: 0 0 var(--format-toolbar-min-width);
+  flex-wrap: nowrap;
+  gap: 8px;
+  align-items: stretch;
+  width: var(--format-toolbar-min-width);
+  min-width: var(--format-toolbar-min-width);
+  padding: 0;
+}
   
 .format-style-chip {  
   border: 1px solid var(--format-chip-border);  
@@ -893,20 +903,24 @@ a:hover {
   margin: 0 4px;  
 }  
   
-.format-toolbar-exit {  
-  display: inline-flex;  
-  align-items: center;  
-  gap: 6px;  
-  padding: 8px 12px;  
-  border-radius: 12px;  
-  border: 1px solid var(--format-chip-border);  
-  background: var(--format-chip-bg);  
-  color: var(--format-pill-ink);  
-  font-weight: 700;  
-  letter-spacing: 0.01em;  
-  cursor: pointer;  
-  transition: all 0.16s var(--ease-in-out);  
-}  
+.format-toolbar-exit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--format-chip-border);
+  background: var(--format-chip-bg);
+  color: var(--format-pill-ink);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: all 0.16s var(--ease-in-out);
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
+  flex-shrink: 0;
+}
   
 .format-toolbar-exit:hover {  
   background: color-mix(in srgb, var(--format-chip-bg) 75%, rgba(255, 255, 255, 0.15));  
@@ -1530,17 +1544,8 @@ a:hover {
 }  
   
 /* Editor panel - scrolls naturally like working commit */  
-.editor-panel {  
-  display: flex;  
-  flex-direction: column;  
-  background: var(--bg-secondary);  
-  border-radius: 12px;  
-  overflow: auto;  /* Scroll naturally - no forcing */  
-  min-height: 0;  /* Allow flex shrinking */  
-}  
-  
-/* Toolbar positioning when entity sidebar is pinned - ALL BROWSERS */  
-@media (min-width: 769px) {  
+/* Toolbar positioning when entity sidebar is pinned - ALL BROWSERS */
+@media (min-width: 769px) {
   .extraction-lab.entity-sidebar-pinned .lab-toolbar-stack {  
     /* Add margin for entity sidebar (500px width + 80px base margin + 24px gap) */  
     right: calc(500px + 104px) !important;  
@@ -1600,6 +1605,9 @@ a:hover {
 .rich-editor-surface {
   --editor-bottom-buffer: 0px;
   padding-bottom: var(--editor-bottom-buffer);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* iOS Safari only */
@@ -2929,8 +2937,8 @@ body.modal-open {
   
 /* iOS: Prevent layout shift when keyboard appears */  
 @media (max-width: 768px) {  
-  /* REMOVED: .lab-content scroll override */  
-  /* Now using .editor-scroll-container as the ONLY scroll owner on all viewports */  
+  /* REMOVED: .lab-content scroll override */
+  /* .rich-editor-surface is the dedicated scroll owner inside the editor */
   
   /* Keep toolbar visible above keyboard */  
   .lab-control-bar {  
