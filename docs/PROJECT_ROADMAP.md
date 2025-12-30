@@ -105,13 +105,13 @@ ARES (Advanced Relation Extraction System) aims to build stable, identity-preser
 Current state: Two overlapping filter systems with different thresholds.
 
 **Actions**:
-- [ ] Audit all imports of both files across codebase
-- [ ] Choose `entity-quality-filter.ts` as primary (more sophisticated)
-- [ ] Migrate unique logic from `entity-filter.ts` to primary
-- [ ] Update all imports to use consolidated system
-- [ ] Deprecate `entity-filter.ts`
+- [x] Audit all imports of both files across codebase
+- [x] Choose `entity-quality-filter.ts` as primary (more sophisticated)
+- [x] Migrate unique logic from `entity-filter.ts` to primary
+- [x] Update all imports to use consolidated system
+- [x] Deprecate `entity-filter.ts`
 
-**Success Metric**: Single source of truth for entity quality decisions.
+**Success Metric**: Single source of truth for entity quality decisions. ✅
 
 #### 1.2 Reconcile Confidence Scoring
 **Files**: `entity-quality-filter.ts`, `entity-tier-assignment.ts`
@@ -119,10 +119,10 @@ Current state: Two overlapping filter systems with different thresholds.
 Current state: Different scoring systems (0.55/0.75 confidence vs 0/2/3 namehood).
 
 **Actions**:
-- [ ] Map namehood scores to confidence values
-- [ ] Create unified `EntityQualityScore` interface
-- [ ] Ensure TIER assignment aligns with filter thresholds
-- [ ] Add validation: no entity passes tier but fails filter
+- [x] Map namehood scores to confidence values
+- [x] Create unified `EntityQualityScore` interface
+- [x] Ensure TIER assignment aligns with filter thresholds
+- [x] Add validation: no entity passes tier but fails filter
 
 #### 1.3 Add Merge Feedback Validation
 **File**: `merge.ts`
@@ -130,9 +130,9 @@ Current state: Different scoring systems (0.55/0.75 confidence vs 0/2/3 namehood
 Current state: Merged entities not re-validated.
 
 **Actions**:
-- [ ] After merge, run quality filter on result
-- [ ] If merged entity fails, log warning and flag for review
-- [ ] Preserve individual entity tiers, compute merged tier
+- [x] After merge, run quality filter on result
+- [x] If merged entity fails, log warning and flag for review
+- [x] Preserve individual entity tiers, compute merged tier
 
 ---
 
@@ -164,10 +164,10 @@ interface KnowledgeGraph {
 ```
 
 **Actions**:
-- [ ] Add `corrections` array to KnowledgeGraph
-- [ ] Add `manualOverride` flag to Entity interface
-- [ ] Add `manualOverride` flag to Relation interface
-- [ ] Implement version snapshot on each correction
+- [x] Add `corrections` array to KnowledgeGraph
+- [x] Add `manualOverride` flag to Entity interface
+- [x] Add `manualOverride` flag to Relation interface
+- [x] Implement version snapshot on each correction
 
 #### 2.2 GraphQL Mutations
 **File**: `app/api/schema.graphql`, `app/api/resolvers/corrections.ts`
@@ -184,13 +184,13 @@ type Mutation {
 ```
 
 **Actions**:
-- [ ] Define schema types
-- [ ] Implement resolvers with validation
-- [ ] Persist corrections to graph
-- [ ] Generate version snapshots
+- [x] Define schema types
+- [x] Implement resolvers with validation
+- [x] Persist corrections to graph
+- [x] Generate version snapshots
 
 #### 2.3 Override Application Layer
-**File**: `app/engine/override-manager.ts` (NEW)
+**File**: `app/engine/override-manager.ts` (NEW) ✅ Created
 
 **Core Logic**:
 ```typescript
@@ -207,10 +207,10 @@ export async function applyOverrides(
 ```
 
 **Actions**:
-- [ ] Create override manager module
-- [ ] Implement each correction type application
-- [ ] Call from orchestrator after extraction, before storage
-- [ ] Handle conflicts between extraction and corrections
+- [x] Create override manager module
+- [x] Implement each correction type application
+- [x] Call from orchestrator after extraction, before storage
+- [x] Handle conflicts between extraction and corrections
 
 #### 2.4 UI Integration
 **Files**: `EntityReviewSidebar.tsx`, `EntityPage.tsx`
@@ -234,10 +234,10 @@ export async function applyOverrides(
 Current state: TIER_C entities never merge (line 280 returns null).
 
 **Actions**:
-- [ ] Allow TIER_C → TIER_A merge if confidence > 0.85
-- [ ] Allow TIER_C → TIER_B merge if same document + type
-- [ ] Block TIER_C → TIER_C merges (preserve isolation for garbage)
-- [ ] Add test cases for tier merge behavior
+- [x] Allow TIER_C → TIER_A merge if confidence > 0.85
+- [x] Allow TIER_C → TIER_B merge if same document + type
+- [x] Block TIER_C → TIER_C merges (preserve isolation for garbage)
+- [x] Add test cases for tier merge behavior
 
 #### 3.2 Context-Aware Quality Filtering
 **Files**: `entity-quality-filter.ts`, `entity-tier-assignment.ts`
@@ -245,21 +245,21 @@ Current state: TIER_C entities never merge (line 280 returns null).
 Current state: Dialogue/appositive context mentioned but not integrated.
 
 **Actions**:
-- [ ] Pass dialogue context flag to quality filter
-- [ ] Boost confidence for entities in appositive context
-- [ ] Reduce sentence-initial penalty for dialogue speakers
-- [ ] Add context-aware test cases
+- [x] Pass dialogue context flag to quality filter
+- [x] Boost confidence for entities in appositive context
+- [x] Reduce sentence-initial penalty for dialogue speakers
+- [x] Add context-aware test cases
 
 #### 3.3 Unify Type-Specific Validators
-**File**: `entity-type-validators.ts` (NEW)
+**File**: `entity-type-validators.ts` (NEW) ✅ Created
 
 Current state: PERSON validation scattered across 3+ files.
 
 **Actions**:
-- [ ] Create single source for type validation rules
-- [ ] Move all type blocklists to one location
-- [ ] Centralize `isPersonLikeName`, `isPlaceLikeName`, etc.
-- [ ] Update imports across codebase
+- [x] Create single source for type validation rules
+- [x] Move all type blocklists to one location
+- [x] Centralize `isPersonLikeName`, `isPlaceLikeName`, etc.
+- [x] Update imports across codebase
 
 #### 3.4 Add Quality Provenance
 **Files**: `entity-quality-filter.ts`, `schema.ts`
@@ -267,10 +267,10 @@ Current state: PERSON validation scattered across 3+ files.
 Current state: Quality decisions logged but not stored.
 
 **Actions**:
-- [ ] Add `qualityDecision` field to Entity attrs
-- [ ] Store reason for tier assignment
-- [ ] Store which filter rules triggered
-- [ ] Enable post-hoc debugging of quality issues
+- [x] Add `qualityDecision` field to Entity attrs
+- [x] Store reason for tier assignment
+- [x] Store which filter rules triggered
+- [x] Enable post-hoc debugging of quality issues
 
 ---
 
@@ -279,7 +279,7 @@ Current state: Quality decisions logged but not stored.
 **Goal**: Extract patterns from user corrections for automatic application
 
 #### 4.1 Pattern Extraction
-**File**: `app/engine/learning-engine.ts` (NEW)
+**File**: `app/engine/learning-engine.ts` (NEW) ✅ Created
 
 **Pattern Types**:
 ```typescript
@@ -295,28 +295,28 @@ interface LearnedPattern {
 ```
 
 **Actions**:
-- [ ] On correction, analyze context (surrounding text, entity type, NER label)
-- [ ] Extract generalizable patterns (e.g., "Kingdom of X" → PLACE)
-- [ ] Store patterns with confidence based on correction frequency
-- [ ] Implement pattern matching in extraction pipeline
+- [x] On correction, analyze context (surrounding text, entity type, NER label)
+- [x] Extract generalizable patterns (e.g., "Kingdom of X" → PLACE)
+- [x] Store patterns with confidence based on correction frequency
+- [x] Implement pattern matching in extraction pipeline
 
 #### 4.2 Pattern Application
-**File**: `app/engine/pattern-applier.ts` (NEW)
+**File**: `app/engine/pattern-applier.ts` (NEW) ✅ Created
 
 **Actions**:
-- [ ] During extraction, check entities against learned patterns
-- [ ] Apply type corrections from high-confidence patterns
-- [ ] Boost/reduce confidence based on pattern matches
-- [ ] Track pattern application stats
+- [x] During extraction, check entities against learned patterns
+- [x] Apply type corrections from high-confidence patterns
+- [x] Boost/reduce confidence based on pattern matches
+- [x] Track pattern application stats
 
 #### 4.3 Learning Dashboard
-**File**: `app/ui/console/src/pages/LearningPage.tsx` (NEW)
+**File**: `app/ui/console/src/pages/LearningPage.tsx` (NEW) ✅ Created
 
 **Actions**:
-- [ ] Show all learned patterns with stats
-- [ ] Allow enable/disable individual patterns
-- [ ] Show pattern application log
-- [ ] Allow manual pattern creation
+- [x] Show all learned patterns with stats
+- [x] Allow enable/disable individual patterns
+- [x] Show pattern application log
+- [x] Allow manual pattern creation
 
 ---
 
@@ -325,15 +325,15 @@ interface LearnedPattern {
 **Goal**: Fully leverage BookNLP's capabilities
 
 #### 5.1 Token-Based Structure
-**Files**: `adapter.ts`, `types.ts`
+**Files**: `adapter.ts`, `types.ts`, `token-analyzer.ts` (NEW) ✅ Created
 
 Current state: Tokens array unused.
 
 **Actions**:
-- [ ] Extract paragraph structure from `paragraph_idx`
-- [ ] Extract sentence boundaries from `sentence_idx`
-- [ ] Use lemmas for better entity matching
-- [ ] Pass POS tags to quality filter for structural analysis
+- [x] Extract paragraph structure from `paragraph_idx`
+- [x] Extract sentence boundaries from `sentence_idx`
+- [x] Use lemmas for better entity matching
+- [x] Pass POS tags to quality filter for structural analysis
 
 #### 5.2 Enhanced Entity Profiles
 **File**: `entity-profiler.ts`
@@ -341,10 +341,10 @@ Current state: Tokens array unused.
 Current state: Profiles exist but not enriched from BookNLP.
 
 **Actions**:
-- [ ] Add BookNLP mention_count to profiles
-- [ ] Add gender prediction from BookNLP
-- [ ] Add agent_score from BookNLP
-- [ ] Track quote attributions per entity
+- [x] Add BookNLP mention_count to profiles
+- [x] Add gender prediction from BookNLP
+- [x] Add agent_score from BookNLP
+- [x] Track quote attributions per entity
 
 #### 5.3 Quote Integration
 **Files**: `wiki.ts`, entity UI components
@@ -352,39 +352,39 @@ Current state: Profiles exist but not enriched from BookNLP.
 Current state: Quotes stored but not surfaced.
 
 **Actions**:
-- [ ] Add "Quotes" section to entity wiki pages
-- [ ] Show quote attributions with confidence
-- [ ] Link quotes to evidence spans
-- [ ] Add quote browser to entity page
+- [x] Show quote attributions with confidence (via ARESEntity.quote_count/quote_ids)
+- [x] Link quotes to evidence spans
+- [ ] Add "Quotes" section to entity wiki pages (UI work pending)
+- [ ] Add quote browser to entity page (UI work pending)
 
 ---
 
 ## Success Metrics
 
-### Phase 1: Foundation
-- [ ] Single entity quality filter (1 file, not 2)
-- [ ] Zero entities that pass tier but fail filter
-- [ ] All merged entities re-validated
+### Phase 1: Foundation ✅ COMPLETE
+- [x] Single entity quality filter (1 file, not 2)
+- [x] Zero entities that pass tier but fail filter
+- [x] All merged entities re-validated
 
-### Phase 2: Override System
-- [ ] User corrections survive reprocessing
-- [ ] Version history available for all entities
-- [ ] Rollback functionality working
+### Phase 2: Override System ✅ COMPLETE
+- [x] User corrections survive reprocessing
+- [x] Version history available for all entities
+- [x] Rollback functionality working
 
-### Phase 3: Quality
-- [ ] TIER_C entities can merge when appropriate
-- [ ] Context signals integrated into quality
-- [ ] Quality decisions traceable per entity
+### Phase 3: Quality ✅ COMPLETE
+- [x] TIER_C entities can merge when appropriate
+- [x] Context signals integrated into quality
+- [x] Quality decisions traceable per entity
 
-### Phase 4: Learning
-- [ ] Patterns extracted from corrections
-- [ ] Patterns automatically applied
-- [ ] Pattern effectiveness tracked
+### Phase 4: Learning ✅ COMPLETE
+- [x] Patterns extracted from corrections
+- [x] Patterns automatically applied
+- [x] Pattern effectiveness tracked
 
-### Phase 5: BookNLP
-- [ ] All token data utilized
-- [ ] Entity profiles enriched
-- [ ] Quotes surfaced in UI
+### Phase 5: BookNLP ✅ COMPLETE (core features)
+- [x] All token data utilized
+- [x] Entity profiles enriched
+- [ ] Quotes surfaced in UI (pending wiki.ts updates)
 
 ---
 
