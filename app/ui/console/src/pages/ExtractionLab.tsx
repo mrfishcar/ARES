@@ -924,9 +924,9 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
   // Convert extraction to IR for wiki rendering (Task 1.1.3)
   const extractionResultForIR = useMemo(() => ({
     entities: displayEntities.map(e => ({
-      id: e.entityId || `entity_${e.text.replace(/\s+/g, '_')}`,
-      canonical: e.canonicalName || e.text,
-      text: e.text,
+      id: e.entityId || `entity_${(e.text || 'unknown').replace(/\s+/g, '_')}`,
+      canonical: e.canonicalName || e.text || 'Unknown',
+      text: e.text || '',
       type: e.type,
       confidence: e.confidence,
       aliases: [],
@@ -2262,7 +2262,7 @@ export function ExtractionLab({ project, toast }: ExtractionLabProps) {
         setSelectedEntity({ name: entityName, type: entity.type });
 
         // Also open wiki panel with IR renderer (Task 1.1.3)
-        const entityId = entity.entityId || `entity_${entity.text.replace(/\s+/g, '_')}`;
+        const entityId = entity.entityId || `entity_${(entity.text || 'unknown').replace(/\s+/g, '_')}`;
         setSelectedWikiEntityId(entityId);
         setShowWikiPanel(true);
       }

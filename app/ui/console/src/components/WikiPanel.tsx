@@ -4,13 +4,87 @@
  *
  * Displays wiki-style entity pages
  * NOTE: @engine imports removed due to bundling issues with Node.js crypto
+ * NOTE: markdown-to-jsx removed due to .replace() crash in Safari/iOS
  */
 
 import React, { useMemo, useState } from 'react';
-import Markdown from 'markdown-to-jsx';
 import type { ProjectIR } from '../hooks/useIRAdapter';
 import { getEntityTypeColor } from '../types/entities';
 import './WikiPanel.css';
+
+/**
+ * Simple markdown to HTML renderer (no external dependencies)
+ */
+function renderMarkdown(text: string): string {
+  if (!text || typeof text !== 'string') return '';
+
+  let html = text;
+
+  // Escape HTML first
+  html = html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  // Code blocks (inline)
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+  // Headers
+  html = html.replace(/^### (.*)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.*)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^# (.*)$/gm, '<h1>$1</h1>');
+
+  // Bold and italic
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+  // Lists
+  const lines = html.split('\n');
+  const processedLines: string[] = [];
+  let inList = false;
+
+  for (const line of lines) {
+    if (line.match(/^- /)) {
+      if (!inList) {
+        processedLines.push('<ul>');
+        inList = true;
+      }
+      processedLines.push(`<li>${line.substring(2)}</li>`);
+    } else {
+      if (inList) {
+        processedLines.push('</ul>');
+        inList = false;
+      }
+      if (line.trim()) {
+        if (!line.startsWith('<h') && !line.startsWith('<ul') && !line.startsWith('<li')) {
+          processedLines.push(`<p>${line}</p>`);
+        } else {
+          processedLines.push(line);
+        }
+      }
+    }
+  }
+  if (inList) {
+    processedLines.push('</ul>');
+  }
+
+  return processedLines.join('\n');
+}
+
+/**
+ * Simple Markdown renderer component
+ */
+function SimpleMarkdown({ children }: { children: string }) {
+  const content = typeof children === 'string' && children ? children : '';
+
+  if (!content) {
+    return <p style={{ color: '#666' }}>No content to display</p>;
+  }
+
+  return (
+    <div
+      className="simple-markdown"
+      dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
+    />
+  );
+}
 
 type EntityId = string;
 
@@ -223,30 +297,9 @@ export function WikiPanel({ ir, selectedEntityId, onEntityClick, onClose }: Wiki
 
       {/* Content */}
       <div className="wiki-panel__content">
-        <Markdown
-          options={{
-            overrides: {
-              a: {
-                component: ({ children, href, ...props }) => (
-                  <a
-                    href={href}
-                    onClick={(e) => {
-                      if (href?.startsWith('entity_')) {
-                        e.preventDefault();
-                        onEntityClick(href);
-                      }
-                    }}
-                    {...props}
-                  >
-                    {children}
-                  </a>
-                ),
-              },
-            },
-          }}
-        >
+        <SimpleMarkdown>
           {activeTab === 'wiki' ? wikiContent : infoContent}
-        </Markdown>
+        </SimpleMarkdown>
       </div>
     </div>
   );

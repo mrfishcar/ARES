@@ -7,8 +7,79 @@
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
-import Markdown from 'markdown-to-jsx';
 import './SummarizationPage.css';
+
+/**
+ * Simple markdown to HTML renderer (no external dependencies)
+ * This avoids the markdown-to-jsx bundling issues
+ */
+function renderMarkdown(text: string): string {
+  if (!text || typeof text !== 'string') return '';
+
+  let html = text;
+
+  // Escape HTML
+  html = html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  // Headers
+  html = html.replace(/^### (.*)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.*)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^# (.*)$/gm, '<h1>$1</h1>');
+
+  // Bold and italic
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+  // Lists
+  const lines = html.split('\n');
+  const processedLines: string[] = [];
+  let inList = false;
+
+  for (const line of lines) {
+    if (line.match(/^- /)) {
+      if (!inList) {
+        processedLines.push('<ul>');
+        inList = true;
+      }
+      processedLines.push(`<li>${line.substring(2)}</li>`);
+    } else {
+      if (inList) {
+        processedLines.push('</ul>');
+        inList = false;
+      }
+      if (line.trim()) {
+        if (!line.startsWith('<h') && !line.startsWith('<ul') && !line.startsWith('<li')) {
+          processedLines.push(`<p>${line}</p>`);
+        } else {
+          processedLines.push(line);
+        }
+      }
+    }
+  }
+  if (inList) {
+    processedLines.push('</ul>');
+  }
+
+  return processedLines.join('\n');
+}
+
+/**
+ * Simple Markdown renderer component (no external dependencies)
+ */
+function SimpleMarkdown({ children }: { children: string }) {
+  const content = typeof children === 'string' && children ? children : '';
+
+  if (!content) {
+    return <p className="summarization-page__empty-content">No content to display</p>;
+  }
+
+  return (
+    <div
+      className="simple-markdown"
+      dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
+    />
+  );
+}
 
 // Resolve API URL (same logic as ExtractionLab)
 function resolveApiUrl() {
@@ -375,12 +446,12 @@ The company then traveled down the Great River Anduin by boat. At Amon Hen, Boro
 
               {/* Tab Content */}
               <div className="summarization-page__content">
-                <Markdown>
-                  {activeTab === 'summary' ? summary.fullSummary : ''}
-                  {activeTab === 'entities' ? summary.keyEntities : ''}
-                  {activeTab === 'relations' ? summary.keyRelations : ''}
-                  {activeTab === 'metrics' ? summary.metrics : ''}
-                </Markdown>
+                <SimpleMarkdown>
+                  {activeTab === 'summary' ? summary.fullSummary
+                    : activeTab === 'entities' ? summary.keyEntities
+                    : activeTab === 'relations' ? summary.keyRelations
+                    : summary.metrics}
+                </SimpleMarkdown>
               </div>
             </>
           )}

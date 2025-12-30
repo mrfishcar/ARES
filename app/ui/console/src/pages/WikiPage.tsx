@@ -1,12 +1,86 @@
 /**
  * Wiki Page - Sprint R5
  * View wiki markdown files with rendering
+ * NOTE: markdown-to-jsx removed due to .replace() crash in Safari/iOS
  */
 
 import { useState, useEffect } from 'react';
 import { fetchWikiFile } from '../lib/api';
 import { LoadingPage } from '../components/Loading';
-import Markdown from 'markdown-to-jsx';
+
+/**
+ * Simple markdown to HTML renderer (no external dependencies)
+ */
+function renderMarkdown(text: string): string {
+  if (!text || typeof text !== 'string') return '';
+
+  let html = text;
+
+  // Escape HTML first
+  html = html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  // Code blocks (inline)
+  html = html.replace(/`([^`]+)`/g, '<code style="background: #f3f4f6; padding: 2px 6px; border-radius: 3px; font-family: monospace;">$1</code>');
+
+  // Headers
+  html = html.replace(/^### (.*)$/gm, '<h3 style="font-size: 18px; font-weight: 600; margin-top: 16px; margin-bottom: 8px;">$1</h3>');
+  html = html.replace(/^## (.*)$/gm, '<h2 style="font-size: 20px; font-weight: 600; margin-top: 20px; margin-bottom: 10px;">$1</h2>');
+  html = html.replace(/^# (.*)$/gm, '<h1 style="font-size: 24px; font-weight: 600; margin-top: 24px; margin-bottom: 12px;">$1</h1>');
+
+  // Bold and italic
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+  // Lists
+  const lines = html.split('\n');
+  const processedLines: string[] = [];
+  let inList = false;
+
+  for (const line of lines) {
+    if (line.match(/^- /)) {
+      if (!inList) {
+        processedLines.push('<ul style="margin-bottom: 12px; padding-left: 24px;">');
+        inList = true;
+      }
+      processedLines.push(`<li style="margin-bottom: 4px;">${line.substring(2)}</li>`);
+    } else {
+      if (inList) {
+        processedLines.push('</ul>');
+        inList = false;
+      }
+      if (line.trim()) {
+        if (!line.startsWith('<h') && !line.startsWith('<ul') && !line.startsWith('<li')) {
+          processedLines.push(`<p style="margin-bottom: 12px;">${line}</p>`);
+        } else {
+          processedLines.push(line);
+        }
+      }
+    }
+  }
+  if (inList) {
+    processedLines.push('</ul>');
+  }
+
+  return processedLines.join('\n');
+}
+
+/**
+ * Simple Markdown renderer component
+ */
+function SimpleMarkdown({ children }: { children: string }) {
+  const content = typeof children === 'string' && children ? children : '';
+
+  if (!content) {
+    return <p style={{ color: '#666' }}>No content to display</p>;
+  }
+
+  return (
+    <div
+      className="simple-markdown"
+      dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
+    />
+  );
+}
 
 interface WikiFile {
   id: string;
@@ -133,23 +207,9 @@ export function WikiPage({ project, toast }: WikiPageProps) {
               }}
               className="markdown-content"
             >
-              <Markdown
-                options={{
-                  overrides: {
-                    h1: { props: { style: { fontSize: '24px', fontWeight: '600', marginTop: '24px', marginBottom: '12px' } } },
-                    h2: { props: { style: { fontSize: '20px', fontWeight: '600', marginTop: '20px', marginBottom: '10px' } } },
-                    h3: { props: { style: { fontSize: '18px', fontWeight: '600', marginTop: '16px', marginBottom: '8px' } } },
-                    p: { props: { style: { marginBottom: '12px' } } },
-                    code: { props: { style: { background: '#f3f4f6', padding: '2px 6px', borderRadius: '3px', fontFamily: 'monospace' } } },
-                    pre: { props: { style: { background: '#f3f4f6', padding: '12px', borderRadius: '6px', overflow: 'auto', marginBottom: '12px' } } },
-                    ul: { props: { style: { marginBottom: '12px', paddingLeft: '24px' } } },
-                    ol: { props: { style: { marginBottom: '12px', paddingLeft: '24px' } } },
-                    li: { props: { style: { marginBottom: '4px' } } },
-                  },
-                }}
-              >
+              <SimpleMarkdown>
                 {content}
-              </Markdown>
+              </SimpleMarkdown>
             </div>
           </div>
         )}
