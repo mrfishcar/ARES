@@ -705,28 +705,28 @@ a:hover {
   stroke: white;
 }
 
-/* ===== FORMATTING TOOLBAR CONTENT ===== */
+/* ===== FORMATTING TOOLBAR - SINGLE PILL DESIGN ===== */
+
 .formatting-toolbar-content {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
+  align-items: stretch;
   width: 100%;
-  justify-content: flex-start;
+  justify-content: center;
 }
 
 .formatting-toolbar-content--palette {
   min-width: var(--format-toolbar-min-width);
   width: 100%;
-  flex: 1 1 var(--format-toolbar-min-width);
-  overflow: hidden;
+  flex: 1;
+  display: flex;
 }
 
+/* Single unified pill container for all formatting controls */
 .formatting-palette {
   flex: 1;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   width: 100%;
   max-width: 100%;
   min-width: 0;
@@ -742,31 +742,34 @@ a:hover {
   color: var(--format-pill-ink);
 }
 
+/* The ONE pill that contains all formatting controls */
 .formatting-palette__panel {
   width: 100%;
   max-width: 100%;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 10px 12px;
+  gap: 12px;
+  padding: 14px 16px;
   background: linear-gradient(140deg, var(--format-pill-bg), color-mix(in srgb, var(--format-pill-bg) 92%, var(--format-pill-tint-1) 8%)),
     linear-gradient(220deg, transparent, var(--format-pill-tint-2));
   border: 1px solid var(--format-pill-border);
-  border-radius: 14px;
+  border-radius: 20px;
   box-shadow: var(--format-pill-shadow);
   backdrop-filter: blur(var(--liquid-glass-blur-toolbar));
+  -webkit-backdrop-filter: blur(var(--liquid-glass-blur-toolbar));
 }
 
+/* Each row within the single pill */
 .formatting-palette__row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
   justify-content: flex-start;
-  padding: 0 6px;
 }
 
+/* Style chips row - first row in the pill */
 .formatting-palette__row--styles {
   display: flex;
   flex-wrap: nowrap;
@@ -775,7 +778,7 @@ a:hover {
   width: 100%;
   min-width: 0;
   gap: 6px;
-  padding: 2px 4px 6px;
+  padding: 0;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scroll-padding: 8px;
