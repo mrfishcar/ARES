@@ -10,6 +10,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ExtractionLab } from './pages/ExtractionLab';
 import { SummarizationPage } from './pages/SummarizationPage';
+import { LearningPage } from './pages/LearningPage';
 import { EditorTest } from './pages/EditorTest';
 import { UltraMinimalTest } from './pages/UltraMinimalTest';
 import { WorkingCommitTest } from './pages/WorkingCommitTest';
@@ -151,6 +152,7 @@ function AppShell() {
         <Route path="/minimal" element={<UltraMinimalTest />} />
         <Route path="/editor" element={<EditorTest />} />
         <Route path="/summarize" element={<SummarizationPage />} />
+        <Route path="/learning" element={<LearningPage project={project} toast={toast} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <ToastContainer messages={toast.messages} onClose={toast.closeToast} />
