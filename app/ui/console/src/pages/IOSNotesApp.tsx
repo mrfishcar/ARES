@@ -1392,6 +1392,34 @@ function EditorPanel({
     return () => document.removeEventListener('selectionchange', handleSelectionChange);
   }, [scrollCaretIntoView]);
 
+  // Additional caret tracking on keyup and click
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    const handleKeyUp = () => {
+      requestAnimationFrame(scrollCaretIntoView);
+    };
+
+    const handleClick = () => {
+      setTimeout(scrollCaretIntoView, 50);
+    };
+
+    const handleTouchEnd = () => {
+      setTimeout(scrollCaretIntoView, 100);
+    };
+
+    editor.addEventListener('keyup', handleKeyUp);
+    editor.addEventListener('click', handleClick);
+    editor.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      editor.removeEventListener('keyup', handleKeyUp);
+      editor.removeEventListener('click', handleClick);
+      editor.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [scrollCaretIntoView]);
+
   // Auto-focus for new notes
   useEffect(() => {
     if (!note && editorRef.current) {
