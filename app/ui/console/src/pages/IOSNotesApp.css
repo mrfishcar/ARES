@@ -801,8 +801,6 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: var(--ios-spacing-md);
-  /* Smooth scrolling for caret tracking */
-  scroll-behavior: smooth;
   scroll-padding-top: 20px;
   scroll-padding-bottom: 120px;
 }
