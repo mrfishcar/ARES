@@ -982,6 +982,63 @@ function EditorPanel({
     return title + (bodyText ? '\n' + bodyText : '');
   }, []);
 
+  // Scroll caret into view - only called on Enter key
+  const scrollCaretIntoView = useCallback(() => {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    if (!range.collapsed) return;
+
+    const scrollContainer = contentRef.current;
+    if (!scrollContainer) return;
+
+    // Use marker to get accurate caret position
+    const marker = document.createElement('span');
+    marker.style.cssText = 'position:absolute;visibility:hidden;';
+
+    const markerRange = range.cloneRange();
+    markerRange.collapse(false);
+
+    try {
+      markerRange.insertNode(marker);
+      const markerRect = marker.getBoundingClientRect();
+      const containerRect = scrollContainer.getBoundingClientRect();
+
+      const markerBottom = markerRect.bottom - containerRect.top;
+
+      const vv = window.visualViewport;
+      const visibleHeight = vv
+        ? Math.min(containerRect.height, vv.height - Math.max(0, containerRect.top - vv.offsetTop))
+        : containerRect.height;
+
+      const bottomPadding = isKeyboardOpen ? 150 : 60;
+
+      // Only scroll down if caret is below visible area
+      if (markerBottom > visibleHeight - bottomPadding) {
+        scrollContainer.scrollTop += markerBottom - (visibleHeight - bottomPadding);
+      }
+    } finally {
+      marker.remove();
+    }
+  }, [isKeyboardOpen]);
+
+  // Handle Enter key for scroll tracking
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        // Delay to let the new line be created first
+        setTimeout(scrollCaretIntoView, 50);
+      }
+    };
+
+    editor.addEventListener('keydown', handleKeyDown);
+    return () => editor.removeEventListener('keydown', handleKeyDown);
+  }, [scrollCaretIntoView]);
+
   // Initialize editor content when note changes
   useEffect(() => {
     if (editorRef.current && content !== lastContentRef.current) {
