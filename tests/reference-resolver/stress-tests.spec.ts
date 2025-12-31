@@ -854,3 +854,252 @@ describe('Stress Test: Boundary Conditions', () => {
     expect(he!.canonical).toBe('Harry Potter');
   });
 });
+
+// =============================================================================
+// STRESS TEST: COMPLEX NESTED PATTERNS
+// =============================================================================
+
+describe('Stress Test: Complex Nested Patterns', () => {
+  it('should handle nested possessives correctly', () => {
+    // "Harry's father's wand" - "his" could refer to Harry or father
+    const text = `Harry took his father's wand. He examined it carefully.`;
+
+    const harry = createEntity('harry', 'Harry Potter', 'PERSON');
+    const james = createEntity('james', 'James Potter', 'PERSON');
+
+    const entities = [harry, james];
+    const spans = [
+      createSpan('harry', 0, 5),
+      createSpan('james', 15, 21), // "father" refers to James
+    ];
+    const sentences = [
+      createSentence(`Harry took his father's wand.`, 0),
+      createSentence('He examined it carefully.', 30),
+    ];
+
+    const resolver = createReferenceResolver(entities, spans, sentences, text);
+    resolver.updateContext(harry);
+
+    // "He" at start of new sentence should resolve to Harry (subject of previous)
+    const he = resolver.resolvePronoun('He', 30, 'SENTENCE_START');
+    expect(he).not.toBeNull();
+    expect(he!.canonical).toBe('Harry Potter');
+  });
+
+  it('should handle quoted speech with pronouns', () => {
+    // Pronouns in quotes may refer to the speaker
+    const text = `Harry said "I am ready." He left immediately.`;
+
+    const harry = createEntity('harry', 'Harry Potter', 'PERSON');
+
+    const entities = [harry];
+    const spans = [createSpan('harry', 0, 5)];
+    const sentences = [
+      createSentence(`Harry said "I am ready."`, 0),
+      createSentence('He left immediately.', 25),
+    ];
+
+    const resolver = createReferenceResolver(entities, spans, sentences, text);
+
+    // "He" should resolve to Harry
+    const he = resolver.resolvePronoun('He', 25, 'SENTENCE_START');
+    expect(he).not.toBeNull();
+    expect(he!.canonical).toBe('Harry Potter');
+  });
+
+  it('should handle reflexive pronouns', () => {
+    const text = `Harry hurt himself. He needed help.`;
+
+    const harry = createEntity('harry', 'Harry Potter', 'PERSON');
+
+    const entities = [harry];
+    const spans = [createSpan('harry', 0, 5)];
+    const sentences = [
+      createSentence('Harry hurt himself.', 0),
+      createSentence('He needed help.', 20),
+    ];
+
+    const resolver = createReferenceResolver(entities, spans, sentences, text);
+
+    // "He" should resolve to Harry
+    const he = resolver.resolvePronoun('He', 20, 'SENTENCE_START');
+    expect(he).not.toBeNull();
+    expect(he!.canonical).toBe('Harry Potter');
+  });
+});
+
+// =============================================================================
+// STRESS TEST: FAMILY RELATIONSHIP SCENARIOS
+// =============================================================================
+
+describe('Stress Test: Family Relationships', () => {
+  it('should disambiguate pronouns in sibling context', () => {
+    const text = `Fred and George were twins. Fred was older. He led the way.`;
+
+    const fred = createEntity('fred', 'Fred Weasley', 'PERSON');
+    const george = createEntity('george', 'George Weasley', 'PERSON');
+
+    const entities = [fred, george];
+    const spans = [
+      createSpan('fred', 0, 4),
+      createSpan('george', 9, 15),
+      createSpan('fred', 28, 32), // Second mention
+    ];
+    const sentences = [
+      createSentence('Fred and George were twins.', 0),
+      createSentence('Fred was older.', 28),
+      createSentence('He led the way.', 44),
+    ];
+
+    const resolver = createReferenceResolver(entities, spans, sentences, text);
+    resolver.updateContext(fred);
+
+    // "He" should resolve to Fred (most recent subject)
+    const he = resolver.resolvePronoun('He', 44, 'SENTENCE_START');
+    expect(he).not.toBeNull();
+    expect(he!.canonical).toBe('Fred Weasley');
+  });
+
+  it('should handle parent-child pronoun patterns', () => {
+    const text = `Lucius visited Draco. His father was stern. He listened silently.`;
+
+    const lucius = createEntity('lucius', 'Lucius Malfoy', 'PERSON');
+    const draco = createEntity('draco', 'Draco Malfoy', 'PERSON');
+
+    const entities = [lucius, draco];
+    const spans = [
+      createSpan('lucius', 0, 6),
+      createSpan('draco', 15, 20),
+    ];
+    const sentences = [
+      createSentence('Lucius visited Draco.', 0),
+      createSentence('His father was stern.', 22),
+      createSentence('He listened silently.', 44),
+    ];
+
+    const resolver = createReferenceResolver(entities, spans, sentences, text);
+    resolver.updateContext(lucius);
+    resolver.updateContext(draco);
+
+    // "His" should refer to Draco (Draco's father = Lucius)
+    const his = resolver.resolvePronoun('His', 22, 'POSSESSIVE');
+    expect(his).not.toBeNull();
+    expect(his!.canonical).toBe('Draco Malfoy');
+  });
+});
+
+// =============================================================================
+// STRESS TEST: LONG DISTANCE RESOLUTION
+// =============================================================================
+
+describe('Stress Test: Long Distance Resolution', () => {
+  it('should maintain topic across multiple sentences', () => {
+    const text = `Harry entered the castle. The door creaked open. The hall was dark.
+He walked forward carefully. Something moved in the shadows.`;
+
+    const harry = createEntity('harry', 'Harry Potter', 'PERSON');
+
+    const entities = [harry];
+    const spans = [createSpan('harry', 0, 5)];
+    const sentences = [
+      createSentence('Harry entered the castle.', 0),
+      createSentence('The door creaked open.', 26),
+      createSentence('The hall was dark.', 49),
+      createSentence('He walked forward carefully.', 69),
+      createSentence('Something moved in the shadows.', 98),
+    ];
+
+    const resolver = createReferenceResolver(entities, spans, sentences, text);
+
+    // Even after two non-entity sentences, "He" should still resolve to Harry
+    const he = resolver.resolvePronoun('He', 69, 'SENTENCE_START');
+    expect(he).not.toBeNull();
+    expect(he!.canonical).toBe('Harry Potter');
+  });
+
+  it('should handle pronoun chains across paragraph', () => {
+    const text = `Snape stood at the window. He watched the grounds below.
+
+He remembered the old days. He sighed heavily.`;
+
+    const snape = createEntity('snape', 'Severus Snape', 'PERSON');
+
+    const entities = [snape];
+    const spans = [createSpan('snape', 0, 5)];
+    const sentences = [
+      createSentence('Snape stood at the window.', 0),
+      createSentence('He watched the grounds below.', 27),
+      createSentence('He remembered the old days.', 58),
+      createSentence('He sighed heavily.', 86),
+    ];
+
+    const resolver = createReferenceResolver(entities, spans, sentences, text);
+
+    // All pronouns should resolve to Snape
+    const he1 = resolver.resolvePronoun('He', 27, 'SENTENCE_START');
+    const he2 = resolver.resolvePronoun('He', 58, 'SENTENCE_START');
+    const he3 = resolver.resolvePronoun('He', 86, 'SENTENCE_START');
+
+    expect(he1?.canonical).toBe('Severus Snape');
+    expect(he2?.canonical).toBe('Severus Snape');
+    expect(he3?.canonical).toBe('Severus Snape');
+  });
+});
+
+// =============================================================================
+// STRESS TEST: PERFORMANCE EDGE CASES
+// =============================================================================
+
+describe('Stress Test: Performance Edge Cases', () => {
+  it('should handle many entities efficiently', () => {
+    // Create a text with many entities
+    const names = [
+      'Harry', 'Ron', 'Hermione', 'Neville', 'Luna',
+      'Ginny', 'Fred', 'George', 'Percy', 'Bill'
+    ];
+    const text = names.join(' and ') + ' gathered together. He spoke first.';
+
+    const entities = names.map((name, i) =>
+      createEntity(`e${i}`, name, 'PERSON')
+    );
+    const spans: EntitySpan[] = [];
+    let pos = 0;
+    for (let i = 0; i < names.length; i++) {
+      spans.push(createSpan(`e${i}`, pos, pos + names[i].length));
+      pos += names[i].length + 5; // " and "
+    }
+
+    const sentences = [
+      createSentence(text.split('. ')[0] + '.', 0),
+      createSentence('He spoke first.', text.indexOf('He spoke')),
+    ];
+
+    const resolver = createReferenceResolver(entities, spans, sentences, text);
+
+    // Should not crash or timeout
+    const he = resolver.resolvePronoun('He', text.indexOf('He spoke'), 'SENTENCE_START');
+    expect(he).not.toBeNull();
+  });
+
+  it('should handle very long text', () => {
+    // Create a long text with an entity at start and pronoun at end
+    const padding = 'The scenery was beautiful. '.repeat(50);
+    const text = `Harry watched. ${padding}He turned away.`;
+
+    const harry = createEntity('harry', 'Harry Potter', 'PERSON');
+
+    const entities = [harry];
+    const spans = [createSpan('harry', 0, 5)];
+    const sentences = [
+      createSentence('Harry watched.', 0),
+      createSentence('He turned away.', text.indexOf('He turned')),
+    ];
+
+    const resolver = createReferenceResolver(entities, spans, sentences, text);
+
+    // Should still resolve despite distance
+    const he = resolver.resolvePronoun('He', text.indexOf('He turned'), 'SENTENCE_START');
+    expect(he).not.toBeNull();
+    expect(he!.canonical).toBe('Harry Potter');
+  });
+});
