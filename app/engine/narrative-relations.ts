@@ -381,6 +381,22 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     extractObj: 1,   // Child is subject
     typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
   },
+  // Pattern: "X, descendant of Y" or "X was a descendant of Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*,?\s*(?:was\s+)?(?:a\s+)?(?:the\s+)?(?:descendant|offspring)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/gi,
+    predicate: 'child_of',
+    extractSubj: 1,  // Descendant is child
+    extractObj: 2,   // Ancestor is parent
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // Pattern: "X, heir of Y" or "X is the heir of Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*,?\s*(?:was\s+|is\s+)?(?:the\s+)?heir\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/gi,
+    predicate: 'child_of',
+    extractSubj: 1,  // Heir is child
+    extractObj: 2,   // Person being inherited from is parent
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
   // Pattern: "The couple's daughter, Mira" or "Their son, Cael"
   // Note: This requires special handling - need to resolve "couple"/"their" first
   {
@@ -669,6 +685,197 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+painted\s+(?:the\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
     predicate: 'painted',
     typeGuard: { subj: ['PERSON'], obj: ['WORK', 'ITEM'] }
+  },
+
+  // === BIRTH/ORIGIN PATTERNS ===
+  // "X was born in Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:was|were)\s+born\s+in\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'born_in',
+    typeGuard: { subj: ['PERSON'], obj: ['PLACE'] }
+  },
+  // "X, born in Y" (appositive)
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*,\s*born\s+in\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'born_in',
+    typeGuard: { subj: ['PERSON'], obj: ['PLACE'] }
+  },
+  // "X hails from Y", "X comes from Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:hails|came|comes|hailed)\s+from\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'born_in',
+    typeGuard: { subj: ['PERSON'], obj: ['PLACE'] }
+  },
+
+  // === VIOLENCE/CONFLICT PATTERNS ===
+  // "X killed Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:killed|slew|murdered|assassinated|executed|slain)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'killed',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X was killed by Y" (passive)
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:was|were)\s+(?:killed|slain|murdered|assassinated|executed)\s+by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'killed',
+    extractSubj: 2,  // Killer
+    extractObj: 1,   // Victim
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X attacked Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:attacked|assaulted|ambushed|struck)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'attacked',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X defeated Y" (person vs person)
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:defeated|vanquished|overthrew|overcame)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'defeated',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X conquered Y" (person conquers place)
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:conquered|captured|invaded|seized|occupied)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'conquered',
+    typeGuard: { subj: ['PERSON'], obj: ['PLACE', 'ORG'] }
+  },
+
+  // === EMOTIONAL/INTERPERSONAL PATTERNS ===
+  // "X loves Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:loves|loved|adores|adored)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'loves',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X is in love with Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is|was|fell)\s+in\s+love\s+with\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'loves',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X hates Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:hates|hated|despises|despised|loathes|loathed|detests|detested)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'hates',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X is a friend of Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is|was)\s+(?:a\s+)?(?:close\s+|best\s+|good\s+)?friend\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'friends_with',
+    symmetric: true,
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X trusts Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:trusts|trusted)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'trusts',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X respects Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:respects|respected|admires|admired)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'respects',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X fears Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:fears|feared|dreads|dreaded)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'fears',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+
+  // === BETRAYAL/DECEPTION PATTERNS ===
+  // "X betrayed Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:betrayed|deceived|tricked|fooled)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'betrayed',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X was betrayed by Y" (passive)
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:was|were)\s+(?:betrayed|deceived)\s+by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'betrayed',
+    extractSubj: 2,  // Betrayer
+    extractObj: 1,   // Victim
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+
+  // === MENTORSHIP/TEACHING PATTERNS ===
+  // "X taught Y" (person taught person)
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:taught|trained|mentored|instructed|tutored)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'taught',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X was taught by Y" (passive)
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:was|were)\s+(?:taught|trained|mentored)\s+by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'taught',
+    extractSubj: 2,  // Teacher
+    extractObj: 1,   // Student
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X is the mentor of Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is|was)\s+(?:the\s+)?mentor\s+(?:of|to)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'mentor_of',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X studied under Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:studied|trained|learned)\s+under\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'student_of',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+
+  // === ASSISTANCE/COOPERATION PATTERNS ===
+  // "X helped Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:helped|assisted|aided|supported)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'helped',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X saved Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:saved|rescued|protected)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'saved',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+
+  // === ALLEGIANCE/LOYALTY PATTERNS ===
+  // "X served Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:served|serves)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'serves',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON', 'ORG'] }
+  },
+  // "X followed Y" (loyalty sense)
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:followed|follows)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'follows',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X is loyal to Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is|was|remained)\s+loyal\s+to\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'loyal_to',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON', 'ORG'] }
+  },
+
+  // === COMMUNICATION PATTERNS ===
+  // "X told Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:told|informed|warned|notified)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'told',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X met Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:met|encountered|visited)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'met',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
   }
 ];
 
