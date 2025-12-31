@@ -673,3 +673,184 @@ describe('Stress Test: Entity Switching', () => {
     expect(he2!.canonical).toBe('Voldemort');
   });
 });
+
+// =============================================================================
+// STRESS TEST: MIXED ENTITY TYPES
+// =============================================================================
+
+describe('Stress Test: Mixed Entity Types', () => {
+  it('should resolve "it" to organization/place entities', () => {
+    const text = `The Ministry of Magic was located in London. It had many departments.`;
+
+    const ministry = createEntity('ministry', 'Ministry of Magic', 'ORG');
+    const london = createEntity('london', 'London', 'PLACE');
+
+    const entities = [ministry, london];
+    const spans = [
+      createSpan('ministry', 4, 22),
+      createSpan('london', 34, 40),
+    ];
+    const sentences = [
+      createSentence('The Ministry of Magic was located in London.', 0),
+      createSentence('It had many departments.', 45),
+    ];
+
+    const resolver = createReferenceResolver(entities, spans, sentences, text);
+
+    // "It" should resolve to Ministry (most recent non-person)
+    const it = resolver.resolvePronoun('It', 45, 'SENTENCE_START', ['ORG', 'PLACE']);
+    expect(it).not.toBeNull();
+    expect(it!.canonical).toBe('Ministry of Magic');
+  });
+
+  it('should not resolve "he" to organization entities', () => {
+    const text = `Microsoft announced a new product. He was the CEO.`;
+
+    const microsoft = createEntity('microsoft', 'Microsoft', 'ORG');
+
+    const entities = [microsoft];
+    const spans = [createSpan('microsoft', 0, 9)];
+    const sentences = [
+      createSentence('Microsoft announced a new product.', 0),
+      createSentence('He was the CEO.', 35),
+    ];
+
+    const resolver = createReferenceResolver(entities, spans, sentences, text);
+
+    // "He" should NOT resolve to Microsoft (wrong entity type)
+    const he = resolver.resolvePronoun('He', 35, 'SENTENCE_START', ['PERSON']);
+    expect(he).toBeNull();
+  });
+});
+
+// =============================================================================
+// STRESS TEST: TITLES AND ROLES
+// =============================================================================
+
+describe('Stress Test: Titles and Roles', () => {
+  it('should handle entities with titles', () => {
+    const text = `Professor McGonagall entered the classroom. She looked stern.`;
+
+    const mcgonagall = createEntity('mcg', 'Professor McGonagall', 'PERSON');
+
+    const entities = [mcgonagall];
+    const spans = [createSpan('mcg', 0, 20)];
+    const sentences = [
+      createSentence('Professor McGonagall entered the classroom.', 0),
+      createSentence('She looked stern.', 44),
+    ];
+
+    const resolver = createReferenceResolver(entities, spans, sentences, text);
+
+    // "She" should resolve to McGonagall
+    const she = resolver.resolvePronoun('She', 44, 'SENTENCE_START');
+    expect(she).not.toBeNull();
+    expect(she!.canonical).toBe('Professor McGonagall');
+  });
+
+  it('should handle royalty and formal titles', () => {
+    const text = `Queen Victoria ruled for decades. Her reign was prosperous.`;
+
+    const victoria = createEntity('vic', 'Queen Victoria', 'PERSON');
+
+    const entities = [victoria];
+    const spans = [createSpan('vic', 0, 14)];
+    const sentences = [
+      createSentence('Queen Victoria ruled for decades.', 0),
+      createSentence('Her reign was prosperous.', 34),
+    ];
+
+    const resolver = createReferenceResolver(entities, spans, sentences, text);
+
+    // "Her" should resolve to Victoria
+    const her = resolver.resolvePronoun('Her', 34, 'POSSESSIVE');
+    expect(her).not.toBeNull();
+    expect(her!.canonical).toBe('Queen Victoria');
+  });
+});
+
+// =============================================================================
+// STRESS TEST: EMBEDDING AND RECURSION
+// =============================================================================
+
+describe('Stress Test: Complex Structures', () => {
+  it('should handle nested clauses', () => {
+    const text = `Harry, who was tired, sat down. He needed rest.`;
+
+    const harry = createEntity('harry', 'Harry Potter', 'PERSON');
+
+    const entities = [harry];
+    const spans = [createSpan('harry', 0, 5)];
+    const sentences = [
+      createSentence('Harry, who was tired, sat down.', 0),
+      createSentence('He needed rest.', 32),
+    ];
+
+    const resolver = createReferenceResolver(entities, spans, sentences, text);
+
+    // "He" should still resolve to Harry
+    const he = resolver.resolvePronoun('He', 32, 'SENTENCE_START');
+    expect(he).not.toBeNull();
+    expect(he!.canonical).toBe('Harry Potter');
+  });
+
+  it('should handle parenthetical remarks', () => {
+    const text = `Gandalf (the wizard) spoke wisely. He knew many things.`;
+
+    const gandalf = createEntity('gandalf', 'Gandalf', 'PERSON');
+
+    const entities = [gandalf];
+    const spans = [createSpan('gandalf', 0, 7)];
+    const sentences = [
+      createSentence('Gandalf (the wizard) spoke wisely.', 0),
+      createSentence('He knew many things.', 35),
+    ];
+
+    const resolver = createReferenceResolver(entities, spans, sentences, text);
+
+    // "He" should resolve to Gandalf
+    const he = resolver.resolvePronoun('He', 35, 'SENTENCE_START');
+    expect(he).not.toBeNull();
+    expect(he!.canonical).toBe('Gandalf');
+  });
+});
+
+// =============================================================================
+// STRESS TEST: BOUNDARY CONDITIONS
+// =============================================================================
+
+describe('Stress Test: Boundary Conditions', () => {
+  it('should handle empty entity list gracefully', () => {
+    const resolver = new ReferenceResolver();
+    resolver.initialize([], [], [], 'Some text without entities.');
+
+    const result = resolver.resolvePronoun('He', 0, 'SENTENCE_START');
+    expect(result).toBeNull();
+  });
+
+  it('should handle very short text', () => {
+    const text = 'Hi.';
+    const resolver = createReferenceResolver([], [], [], text);
+
+    const result = resolver.resolvePronoun('He', 0, 'SENTENCE_MID');
+    expect(result).toBeNull();
+  });
+
+  it('should handle pronoun at exact text boundary', () => {
+    const text = 'Harry went home. He';
+    const harry = createEntity('harry', 'Harry Potter', 'PERSON');
+    const entities = [harry];
+    const spans = [createSpan('harry', 0, 5)];
+    const sentences = [
+      createSentence('Harry went home.', 0),
+      createSentence('He', 17),
+    ];
+
+    const resolver = createReferenceResolver(entities, spans, sentences, text);
+
+    // Should still resolve even at end
+    const he = resolver.resolvePronoun('He', 17, 'SENTENCE_START');
+    expect(he).not.toBeNull();
+    expect(he!.canonical).toBe('Harry Potter');
+  });
+});
