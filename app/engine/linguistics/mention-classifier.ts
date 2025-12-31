@@ -211,10 +211,16 @@ function isSentenceInitialTrap(surface: string, text: string, start: number): { 
       // Exception: if followed by comma, it's likely vocative ("Honey, if I...")
       const hasComma = /^[\s]*,/.test(text.slice(start + surface.length));
       if (!hasComma) {
-        // Exception: if followed by a verb, it's likely a name as subject ("Frederick could", "Barty smiled", "Harry married")
-        const COMMON_VERBS = new Set(['could', 'would', 'should', 'will', 'can', 'may', 'might', 'must', 'shall', 'was', 'is', 'are', 'were', 'has', 'had', 'have', 'did', 'does', 'do', 'walked', 'smiled', 'spoke', 'said', 'went', 'came', 'looked', 'turned', 'stood', 'sat', 'ran', 'fell', 'woke', 'slept', 'ate', 'drank', 'thought', 'felt', 'knew', 'saw', 'heard', 'asked', 'told', 'replied', 'nodded', 'shook', 'laughed', 'cried', 'screamed', 'whispered', 'shouted', 'arrived', 'left', 'entered', 'exited', 'began', 'started', 'finished', 'stopped', 'continued', 'tried', 'wanted', 'needed', 'loved', 'hated', 'liked', 'married', 'dwelt', 'lived', 'taught', 'fought', 'brought', 'caught', 'bought', 'sought', 'wrought', 'ruled', 'worked', 'traveled', 'travelled', 'founded', 'attended', 'carried', 'followed', 'helped', 'reached', 'returned', 'saved', 'killed', 'died', 'rose', 'flew', 'swam', 'drove', 'rode', 'climbed', 'jumped', 'held', 'kept', 'gave', 'took', 'made', 'created', 'built', 'destroyed', 'teaches', 'teaches', 'played', 'claimed', 'owns', 'runs', 'leads', 'serves', 'writes', 'reads', 'lives', 'works', 'rules', 'guards', 'fights', 'travels', 'wanders', 'visits', 'meets', 'joins', 'becomes', 'became', 'remains', 'studies', 'studied', 'passed', 'decided', 'discovered', 'learned', 'learned', 'found', 'met', 'lost', 'won', 'defeated']);
-        if (!COMMON_VERBS.has(following.toLowerCase())) {
-          return { isTrap: true, reason: 'sentence-initial-followed-by-lowercase' };
+        // Exception: if followed by a coordinator, it's likely a name in coordination ("Harry and Ron", "Frodo and Sam")
+        const COORDINATORS = new Set(['and', 'or', 'but', 'nor']);
+        if (COORDINATORS.has(following.toLowerCase())) {
+          // This is coordination - don't reject
+        } else {
+          // Exception: if followed by a verb, it's likely a name as subject ("Frederick could", "Barty smiled", "Harry married")
+          const COMMON_VERBS = new Set(['could', 'would', 'should', 'will', 'can', 'may', 'might', 'must', 'shall', 'was', 'is', 'are', 'were', 'has', 'had', 'have', 'did', 'does', 'do', 'walked', 'smiled', 'spoke', 'said', 'went', 'came', 'looked', 'turned', 'stood', 'sat', 'ran', 'fell', 'woke', 'slept', 'ate', 'drank', 'thought', 'felt', 'knew', 'saw', 'heard', 'asked', 'told', 'replied', 'nodded', 'shook', 'laughed', 'cried', 'screamed', 'whispered', 'shouted', 'arrived', 'left', 'entered', 'exited', 'began', 'started', 'finished', 'stopped', 'continued', 'tried', 'wanted', 'needed', 'loved', 'hated', 'liked', 'married', 'dwelt', 'lived', 'taught', 'fought', 'brought', 'caught', 'bought', 'sought', 'wrought', 'ruled', 'worked', 'traveled', 'travelled', 'founded', 'attended', 'carried', 'followed', 'helped', 'reached', 'returned', 'saved', 'killed', 'died', 'rose', 'flew', 'swam', 'drove', 'rode', 'climbed', 'jumped', 'held', 'kept', 'gave', 'took', 'made', 'created', 'built', 'destroyed', 'teaches', 'teaches', 'played', 'claimed', 'owns', 'runs', 'leads', 'serves', 'writes', 'reads', 'lives', 'works', 'rules', 'guards', 'fights', 'travels', 'wanders', 'visits', 'meets', 'joins', 'becomes', 'became', 'remains', 'studies', 'studied', 'passed', 'decided', 'discovered', 'learned', 'learned', 'found', 'met', 'lost', 'won', 'defeated']);
+          if (!COMMON_VERBS.has(following.toLowerCase())) {
+            return { isTrap: true, reason: 'sentence-initial-followed-by-lowercase' };
+          }
         }
       }
     }
@@ -434,7 +440,9 @@ export function classifyMention(
       const COMMON_VERBS = new Set(['could', 'would', 'should', 'will', 'can', 'may', 'might', 'must', 'shall', 'was', 'is', 'are', 'were', 'has', 'had', 'have', 'did', 'does', 'do', 'walked', 'smiled', 'spoke', 'said', 'went', 'came', 'looked', 'turned', 'stood', 'sat', 'ran', 'fell', 'woke', 'slept', 'ate', 'drank', 'thought', 'felt', 'knew', 'saw', 'heard', 'asked', 'told', 'replied', 'nodded', 'shook', 'laughed', 'cried', 'screamed', 'whispered', 'shouted', 'arrived', 'left', 'entered', 'exited', 'began', 'started', 'finished', 'stopped', 'continued', 'tried', 'wanted', 'needed', 'loved', 'hated', 'liked', 'married', 'dwelt', 'lived', 'taught', 'fought', 'brought', 'caught', 'bought', 'sought', 'wrought', 'ruled', 'worked', 'traveled', 'travelled', 'founded', 'attended', 'carried', 'followed', 'helped', 'reached', 'returned', 'saved', 'killed', 'died', 'rose', 'flew', 'swam', 'drove', 'rode', 'climbed', 'jumped', 'held', 'kept', 'gave', 'took', 'made', 'created', 'built', 'destroyed', 'teaches', 'teaches', 'played', 'claimed', 'owns', 'runs', 'leads', 'serves', 'writes', 'reads', 'lives', 'works', 'rules', 'guards', 'fights', 'travels', 'wanders', 'visits', 'meets', 'joins', 'becomes', 'became', 'remains', 'studies', 'studied', 'passed', 'decided', 'discovered', 'learned', 'learned', 'found', 'met', 'lost', 'won', 'defeated']);
       // Exception: followed by appositive relationship markers ("Aragorn, son of Arathorn")
       const APPOSITIVE_MARKERS = new Set(['son', 'daughter', 'brother', 'sister', 'mother', 'father', 'wife', 'husband', 'king', 'queen', 'prince', 'princess', 'lord', 'lady', 'heir', 'child', 'nephew', 'niece', 'cousin', 'uncle', 'aunt', 'friend', 'servant', 'master', 'student', 'apprentice', 'leader', 'chief', 'captain', 'commander', 'head', 'ruler', 'founder', 'member', 'ally', 'enemy', 'rival']);
-      if (!COMMON_VERBS.has(followingWord.toLowerCase()) && !APPOSITIVE_MARKERS.has(followingWord.toLowerCase())) {
+      // Exception: followed by coordinators ("Harry and Ron", "Frodo and Sam")
+      const COORDINATORS = new Set(['and', 'or', 'but', 'nor']);
+      if (!COMMON_VERBS.has(followingWord.toLowerCase()) && !APPOSITIVE_MARKERS.has(followingWord.toLowerCase()) && !COORDINATORS.has(followingWord.toLowerCase())) {
         return { mentionClass: 'CONTEXT_ONLY', reason: 'imperative-single' };
       }
     }
@@ -464,12 +472,15 @@ export function classifyMention(
   // Demonym/adjective before lowercase noun ("Jersey accent")
   // Exception: if followed by comma, it's likely vocative ("Honey, if I...")
   // Exception: if followed by verb, it's likely a name ("Frederick could", "Mary said")
+  // Exception: if followed by coordinator, it's a name in coordination ("Harry and Ron")
   if (sentenceStart && isSingleToken && followingWord && /^[a-z]/.test(followingWord) && !followingComma) {
     // Also exclude names ending in common surname patterns
     if (!/(?:son|man|ton|ley|field|berg|ski|well|ford|wood|ston|worth|ham|burg|land|holm|wick|dale|shaw|cox|fox|beck)$/i.test(raw)) {
       // Exception: if followed by a verb, it's likely a name as subject ("Harry married")
       const COMMON_VERBS = new Set(['could', 'would', 'should', 'will', 'can', 'may', 'might', 'must', 'shall', 'was', 'is', 'are', 'were', 'has', 'had', 'have', 'did', 'does', 'do', 'walked', 'smiled', 'spoke', 'said', 'went', 'came', 'looked', 'turned', 'stood', 'sat', 'ran', 'fell', 'woke', 'slept', 'ate', 'drank', 'thought', 'felt', 'knew', 'saw', 'heard', 'asked', 'told', 'replied', 'nodded', 'shook', 'laughed', 'cried', 'screamed', 'whispered', 'shouted', 'arrived', 'left', 'entered', 'exited', 'began', 'started', 'finished', 'stopped', 'continued', 'tried', 'wanted', 'needed', 'loved', 'hated', 'liked', 'married', 'dwelt', 'lived', 'taught', 'fought', 'brought', 'caught', 'bought', 'sought', 'wrought', 'ruled', 'worked', 'traveled', 'travelled', 'founded', 'attended', 'carried', 'followed', 'helped', 'reached', 'returned', 'saved', 'killed', 'died', 'rose', 'flew', 'swam', 'drove', 'rode', 'climbed', 'jumped', 'held', 'kept', 'gave', 'took', 'made', 'created', 'built', 'destroyed', 'teaches', 'teaches', 'played', 'claimed', 'owns', 'runs', 'leads', 'serves', 'writes', 'reads', 'lives', 'works', 'rules', 'guards', 'fights', 'travels', 'wanders', 'visits', 'meets', 'joins', 'becomes', 'became', 'remains', 'studies', 'studied', 'passed', 'decided', 'discovered', 'learned', 'learned', 'found', 'met', 'lost', 'won', 'defeated']);
-      if (!COMMON_VERBS.has(followingWord.toLowerCase())) {
+      // Exception: if followed by coordinator, it's likely a name in coordination ("Harry and Ron")
+      const COORDINATORS = new Set(['and', 'or', 'but', 'nor']);
+      if (!COMMON_VERBS.has(followingWord.toLowerCase()) && !COORDINATORS.has(followingWord.toLowerCase())) {
         return { mentionClass: 'NON_ENTITY', reason: 'adjectival-demonym' };
       }
     }
@@ -530,7 +541,9 @@ export function classifyMention(
       const APPOSITIVE_MARKERS_TITLE = new Set(['son', 'daughter', 'brother', 'sister', 'mother', 'father', 'wife', 'husband', 'king', 'queen', 'prince', 'princess', 'lord', 'lady', 'heir', 'child', 'nephew', 'niece', 'cousin', 'uncle', 'aunt', 'friend', 'servant', 'master', 'student', 'apprentice', 'leader', 'chief', 'captain', 'commander', 'head', 'ruler', 'founder', 'member', 'ally', 'enemy', 'rival']);
       // Exception: if followed by a preposition, it's likely a name followed by location/time ("Arwen in 3019")
       const COMMON_PREPS = new Set(['in', 'at', 'on', 'to', 'from', 'with', 'of', 'for', 'by', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'between', 'under', 'over', 'near', 'across', 'around', 'behind', 'beside', 'against', 'along', 'among', 'beyond', 'inside', 'outside', 'toward', 'towards', 'upon', 'within', 'without', 'until', 'since', 'except', 'despite', 'throughout', 'like', 'unlike', 'via', 'per', 'versus', 'vs']);
-      if (!COMMON_VERBS.has(followingWord.toLowerCase()) && !APPOSITIVE_MARKERS_TITLE.has(followingWord.toLowerCase()) && !COMMON_PREPS.has(followingWord.toLowerCase())) {
+      // Exception: if followed by coordinator, it's a name in coordination ("Harry and Ron")
+      const COORDINATORS = new Set(['and', 'or', 'but', 'nor']);
+      if (!COMMON_VERBS.has(followingWord.toLowerCase()) && !APPOSITIVE_MARKERS_TITLE.has(followingWord.toLowerCase()) && !COMMON_PREPS.has(followingWord.toLowerCase()) && !COORDINATORS.has(followingWord.toLowerCase())) {
         return { mentionClass: 'NON_ENTITY', reason: 'titlecase-plus-lower-follow' };
       }
     }
