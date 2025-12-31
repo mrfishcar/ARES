@@ -1025,11 +1025,14 @@ function EditorPanel({
       const topPadding = 80; // Header + some breathing room
 
       // Bottom padding: account for keyboard toolbar when open
-      const bottomPadding = isKeyboardOpen ? 100 : 60; // More space when keyboard is up
+      // Add extra line height (~24px) to ensure caret line is fully visible
+      const lineHeight = 24;
+      const bottomPadding = isKeyboardOpen ? (120 + lineHeight) : 60;
 
       // Check if marker is below visible area
       if (markerBottomInContainer > visibleHeight - bottomPadding) {
-        const scrollAmount = markerBottomInContainer - visibleHeight + bottomPadding;
+        // Add extra line height to scroll amount to show the caret's actual line
+        const scrollAmount = markerBottomInContainer - visibleHeight + bottomPadding + lineHeight;
         // Use scrollTo with smooth behavior for native-like animation
         scrollContainer.scrollTo({
           top: scrollContainer.scrollTop + scrollAmount,
