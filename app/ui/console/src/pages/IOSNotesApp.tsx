@@ -1617,7 +1617,8 @@ function EditorPanel({
         style={{
           // When keyboard is open, add padding to create scrollable space
           // This allows the caret to scroll into view above the keyboard
-          paddingBottom: isKeyboardOpen ? `${keyboardHeight}px` : undefined
+          // Add extra 300px to ensure plenty of scroll room
+          paddingBottom: isKeyboardOpen ? `${keyboardHeight + 300}px` : undefined
         }}
       >
         {note && (
