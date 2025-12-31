@@ -1,18 +1,26 @@
 # ReferenceResolver Implementation Session (Continued)
 
-**Date**: 2025-12-31 (23:00 UTC)
+**Date**: 2025-12-31 (23:00 UTC) - Updated 23:28 UTC
 **Branch**: `claude/ares-story-compiler-VAWSy`
-**Status**: ✅ **PHASE 2 PREPARATIONS COMPLETE - TokenResolver Adapter Ready**
+**Status**: ✅ **PHASE 2 PREPARATIONS COMPLETE + Entity Recognition Bug Fixed**
 
 ---
 
-## Session 2 Summary
+## Session 2 Summary (Continued)
 
-This session continued the coreference consolidation work, creating the bridge layer needed for migrating `relations.ts` to use the unified ReferenceResolver.
+This session continued the coreference consolidation work, creating the TokenResolver adapter and fixing a critical entity recognition bug.
 
 ### Key Accomplishments
 
-1. ✅ **Created TokenResolver Adapter** (`app/engine/reference-resolver.ts`)
+1. ✅ **Fixed Sentence-Initial Entity Recognition Bug**
+   - **Root Cause**: The `classifyMention()` function in `mention-classifier.ts` was rejecting
+     names like "Saul" in "Saul appeared." because "appeared" was not in `COMMON_VERBS`
+   - **Fix**: Added 'appeared' to the `COMMON_VERBS` whitelist (all 3 locations)
+   - Also fixed MockParserClient to skip pronouns in NER tagging (prevents "He" from being
+     tagged as PERSON when capitalized at sentence start)
+   - Verified: Extraction now correctly finds both "Frederick" and "Saul"
+
+2. ✅ **Created TokenResolver Adapter** (`app/engine/reference-resolver.ts`)
    - Bridges between Token-level operations and ReferenceResolver
    - `resolveToken()`: Resolves pronoun tokens to their antecedent tokens
    - `resolvePossessors()`: Handles possessive pronouns (his/her/their)
@@ -50,10 +58,11 @@ This session continued the coreference consolidation work, creating the bridge l
 | extraction-patterns | ✅ 86/86 passing |
 | Key Tests Total | 163+ passing |
 
-### Commits This Session (2)
+### Commits This Session (3)
 
 1. `38336661` - feat: Add TokenResolver adapter for relations.ts migration
 2. `dde09f28` - test: Add 9 more stress tests for complex edge cases
+3. `fe0a0f88` - fix: Improve sentence-initial entity recognition
 
 ---
 
