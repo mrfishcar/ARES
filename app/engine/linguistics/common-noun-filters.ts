@@ -10,6 +10,9 @@ export const PERSON_HEAD_BLOCKLIST = new Set([
   'friend', 'enemy', 'neighbor', 'neighbour', 'teacher', 'student',
   'boy', 'girl', 'kid', 'mom', 'dad', 'mother', 'father',
   'brother', 'sister', 'aunt', 'uncle',
+  // collective nouns / organization members (often capitalized as part of "Guild of X")
+  'cartographers', 'professors', 'engineers', 'farmers', 'volunteers',
+  'members', 'workers', 'soldiers', 'guards', 'merchants', 'scholars',
   // world-specific
   'hell', 'trail', // you can expand as you discover junk entities
   'dead',
