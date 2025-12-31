@@ -532,14 +532,27 @@ export class ReferenceResolver {
     const currentParagraph = this.getParagraphIndex(position);
     const prevParagraph = this.getParagraphIndex(prevSentence.start);
 
-    // Only use this strategy within same paragraph
+    // Cross-paragraph resolution: still look for subject of last sentence in prev paragraph
+    // but use slightly lower confidence and check for paragraph topic entity
+    let targetSentence = prevSentence;
+    let confidenceModifier = 0;
+
     if (currentParagraph !== prevParagraph) {
-      return this.resolveMidSentencePronoun(pronoun, position, info, allowedTypes);
+      // For cross-paragraph, find the FIRST sentence of the previous paragraph
+      // (the topic-setting sentence) rather than the last
+      const prevParaStart = this.paragraphBoundaries[prevParagraph] ?? 0;
+      const firstSentenceOfPrevPara = this.sentences.find(s => s.start >= prevParaStart);
+      if (firstSentenceOfPrevPara) {
+        targetSentence = firstSentenceOfPrevPara;
+        confidenceModifier = -0.1; // Lower confidence for cross-paragraph
+      } else {
+        return this.resolveMidSentencePronoun(pronoun, position, info, allowedTypes);
+      }
     }
 
-    // Get entities from previous sentence
+    // Get entities from target sentence
     const prevSpans = this.entitySpans
-      .filter(span => span.start >= prevSentence.start && span.start < prevSentence.end)
+      .filter(span => span.start >= targetSentence.start && span.start < targetSentence.end)
       .sort((a, b) => a.start - b.start);
 
     if (prevSpans.length === 0) {
@@ -561,7 +574,7 @@ export class ReferenceResolver {
         id: entity.id,
         canonical: entity.canonical,
         type: entity.type,
-        confidence: 0.75,
+        confidence: 0.75 + confidenceModifier,
         method: 'pronoun',
       };
     }
