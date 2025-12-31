@@ -1842,6 +1842,19 @@ function extractDepRelations(
           // Look for subject (nsubj, nsubjpass for passive voice, or npadvmod)
           subj = tokens.find(t => (t.dep === 'nsubj' || t.dep === 'nsubjpass' || t.dep === 'npadvmod') && t.head === tok.i);
 
+          // If subject is a relational noun (son, daughter, etc.), look for the proper noun attached to it
+          // E.g., "Aragorn, son of Arathorn, married Arwen" -> son is nsubj, Aragorn is compound of son
+          if (subj) {
+            const RELATIONAL_NOUNS = new Set(['son', 'daughter', 'brother', 'sister', 'father', 'mother', 'wife', 'husband', 'child', 'heir', 'king', 'queen', 'prince', 'princess', 'lord', 'lady']);
+            if (RELATIONAL_NOUNS.has(subj.text.toLowerCase())) {
+              // Look for compound or appositive that points to this relational noun
+              const propernoun = tokens.find(t => (t.dep === 'compound' || t.dep === 'appos') && t.head === subj!.i && t.pos === 'PROPN');
+              if (propernoun) {
+                subj = propernoun;
+              }
+            }
+          }
+
           // Fallback: Check if subject points to an auxiliary verb that points to this verb
           // This handles "Meanwhile, Sarah and Marcus got married" where Sarah's head is "got" not "married"
           if (!subj) {
