@@ -211,6 +211,37 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
+// Toast notification context and hook
+interface ToastContextType {
+  showToast: (message: string) => void;
+}
+
+const ToastContext = React.createContext<ToastContextType>({ showToast: () => {} });
+
+function useToast() {
+  return React.useContext(ToastContext);
+}
+
+function ToastProvider({ children }: { children: React.ReactNode }) {
+  const [toast, setToast] = useState<string | null>(null);
+
+  const showToast = useCallback((message: string) => {
+    setToast(message);
+    setTimeout(() => setToast(null), 2000);
+  }, []);
+
+  return (
+    <ToastContext.Provider value={{ showToast }}>
+      {children}
+      {toast && (
+        <div className="ios-toast" role="alert" aria-live="polite">
+          {toast}
+        </div>
+      )}
+    </ToastContext.Provider>
+  );
+}
+
 // ============================================================================
 // ICONS
 // ============================================================================
@@ -663,6 +694,7 @@ function EditorPanel({
   onTogglePin,
   onDelete,
   onShare,
+  onCreateNote,
   showBackButton,
   onBack,
   backLabel,
@@ -674,6 +706,7 @@ function EditorPanel({
   onTogglePin: () => void;
   onDelete: () => void;
   onShare: () => void;
+  onCreateNote?: () => void;
   showBackButton?: boolean;
   onBack?: () => void;
   backLabel?: string;
@@ -684,6 +717,12 @@ function EditorPanel({
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const { showToast } = useToast();
+
+  // Toolbar button handlers with toast feedback
+  const handleToolbarAction = useCallback((action: string) => {
+    showToast(`${action} - Coming soon`);
+  }, [showToast]);
 
   // Split content into title (first line) and body (rest)
   // Handle edge cases: empty content, no newline, etc.
@@ -819,12 +858,12 @@ function EditorPanel({
 
         {/* iPad toolbar icons */}
         <div className="ios-editor-panel__toolbar-center">
-          <button type="button" className="ios-icon-button" aria-label="Search in note">{Icons.search}</button>
-          <button type="button" className="ios-icon-button" aria-label="Text format">{Icons.textFormat}</button>
-          <button type="button" className="ios-icon-button" aria-label="Checklist">{Icons.checklist}</button>
-          <button type="button" className="ios-icon-button" aria-label="Table">{Icons.table}</button>
-          <button type="button" className="ios-icon-button" aria-label="Attachment">{Icons.attachment}</button>
-          <button type="button" className="ios-icon-button" aria-label="Markup">{Icons.markup}</button>
+          <button type="button" className="ios-icon-button" aria-label="Search in note" onClick={() => handleToolbarAction('Search')}>{Icons.search}</button>
+          <button type="button" className="ios-icon-button" aria-label="Text format" onClick={() => handleToolbarAction('Text formatting')}>{Icons.textFormat}</button>
+          <button type="button" className="ios-icon-button" aria-label="Checklist" onClick={() => handleToolbarAction('Checklist')}>{Icons.checklist}</button>
+          <button type="button" className="ios-icon-button" aria-label="Table" onClick={() => handleToolbarAction('Table')}>{Icons.table}</button>
+          <button type="button" className="ios-icon-button" aria-label="Attachment" onClick={() => handleToolbarAction('Attachments')}>{Icons.attachment}</button>
+          <button type="button" className="ios-icon-button" aria-label="Markup" onClick={() => handleToolbarAction('Markup')}>{Icons.markup}</button>
         </div>
 
         <div className="ios-editor-panel__header-right">
@@ -932,10 +971,10 @@ function EditorPanel({
           aria-label="Text formatting"
           style={{ bottom: `${keyboardHeight}px` }}
         >
-          <button type="button" className="ios-toolbar-button" aria-label="Checklist">{Icons.checklist}</button>
-          <button type="button" className="ios-toolbar-button" aria-label="Text format">{Icons.textFormat}</button>
-          <button type="button" className="ios-toolbar-button" aria-label="Table">{Icons.table}</button>
-          <button type="button" className="ios-toolbar-button" aria-label="Attachment">{Icons.attachment}</button>
+          <button type="button" className="ios-toolbar-button" aria-label="Checklist" onClick={() => handleToolbarAction('Checklist')}>{Icons.checklist}</button>
+          <button type="button" className="ios-toolbar-button" aria-label="Text format" onClick={() => handleToolbarAction('Text formatting')}>{Icons.textFormat}</button>
+          <button type="button" className="ios-toolbar-button" aria-label="Table" onClick={() => handleToolbarAction('Table')}>{Icons.table}</button>
+          <button type="button" className="ios-toolbar-button" aria-label="Attachment" onClick={() => handleToolbarAction('Attachments')}>{Icons.attachment}</button>
           <div className="ios-keyboard-toolbar__spacer" />
           <button
             type="button"
@@ -953,11 +992,11 @@ function EditorPanel({
 
       {/* Mobile bottom toolbar - hidden when keyboard is open */}
       <footer className={`ios-editor-panel__footer ${isKeyboardOpen ? 'ios-editor-panel__footer--hidden' : ''}`} role="toolbar" aria-label="Note actions">
-        <button type="button" className="ios-toolbar-button" aria-label="Checklist">{Icons.checklist}</button>
-        <button type="button" className="ios-toolbar-button" aria-label="Text format">{Icons.textFormat}</button>
-        <button type="button" className="ios-toolbar-button" aria-label="Attachment">{Icons.attachment}</button>
-        <button type="button" className="ios-toolbar-button" aria-label="Markup">{Icons.markup}</button>
-        <button type="button" className="ios-compose-button ios-compose-button--prominent" aria-label="Create new note">{Icons.compose}</button>
+        <button type="button" className="ios-toolbar-button" aria-label="Checklist" onClick={() => handleToolbarAction('Checklist')}>{Icons.checklist}</button>
+        <button type="button" className="ios-toolbar-button" aria-label="Text format" onClick={() => handleToolbarAction('Text formatting')}>{Icons.textFormat}</button>
+        <button type="button" className="ios-toolbar-button" aria-label="Attachment" onClick={() => handleToolbarAction('Attachments')}>{Icons.attachment}</button>
+        <button type="button" className="ios-toolbar-button" aria-label="Markup" onClick={() => handleToolbarAction('Markup')}>{Icons.markup}</button>
+        <button type="button" className="ios-compose-button ios-compose-button--prominent" aria-label="Create new note" onClick={onCreateNote}>{Icons.compose}</button>
       </footer>
     </div>
   );
@@ -1246,101 +1285,107 @@ export function IOSNotesApp() {
   // TABLET LAYOUT: Split view
   if (isTablet) {
     return (
-      <div className="ios-notes-app ios-notes-app--tablet">
-        {showSidebar && (
-          <NotesListSidebar
-            folder={currentFolder}
-            notes={folderNotes}
-            selectedNoteId={selectedNoteId}
-            searchValue={searchValue}
-            onSearchChange={setSearchValue}
-            onSelectNote={handleSelectNote}
-            onCreateNote={handleCreateNote}
-            onDeleteNote={handleDeleteNote}
-            onToggleSidebar={() => setShowSidebar(false)}
-            showSidebarToggle
-          />
-        )}
+      <ToastProvider>
+        <div className="ios-notes-app ios-notes-app--tablet">
+          {showSidebar && (
+            <NotesListSidebar
+              folder={currentFolder}
+              notes={folderNotes}
+              selectedNoteId={selectedNoteId}
+              searchValue={searchValue}
+              onSearchChange={setSearchValue}
+              onSelectNote={handleSelectNote}
+              onCreateNote={handleCreateNote}
+              onDeleteNote={handleDeleteNote}
+              onToggleSidebar={() => setShowSidebar(false)}
+              showSidebarToggle
+            />
+          )}
 
-        <EditorPanel
-          note={selectedNote}
-          content={editorContent}
-          onContentChange={setEditorContent}
-          onSave={handleSaveNote}
-          onTogglePin={handleTogglePin}
-          onDelete={() => selectedNoteId && handleDeleteNote(selectedNoteId)}
-          onShare={handleShare}
-          showBackButton={!showSidebar}
-          onBack={() => setShowSidebar(true)}
-          backLabel={currentFolder.name}
-        />
-      </div>
+          <EditorPanel
+            note={selectedNote}
+            content={editorContent}
+            onContentChange={setEditorContent}
+            onSave={handleSaveNote}
+            onTogglePin={handleTogglePin}
+            onDelete={() => selectedNoteId && handleDeleteNote(selectedNoteId)}
+            onShare={handleShare}
+            onCreateNote={handleCreateNote}
+            showBackButton={!showSidebar}
+            onBack={() => setShowSidebar(true)}
+            backLabel={currentFolder.name}
+          />
+        </div>
+      </ToastProvider>
     );
   }
 
   // MOBILE LAYOUT: Stacked navigation
   return (
-    <div className="ios-notes-app ios-notes-app--mobile">
-      {mobileView === 'folders' && (
-        <FoldersView
-          folders={folders}
-          notes={notes}
-          onSelectFolder={handleSelectFolder}
-          onCreateFolder={handleCreateFolder}
-        />
-      )}
+    <ToastProvider>
+      <div className="ios-notes-app ios-notes-app--mobile">
+        {mobileView === 'folders' && (
+          <FoldersView
+            folders={folders}
+            notes={notes}
+            onSelectFolder={handleSelectFolder}
+            onCreateFolder={handleCreateFolder}
+          />
+        )}
 
-      {mobileView === 'notes' && (
-        <div className="ios-notes-list-view">
-          <header className="ios-header ios-header--large">
-            <div className="ios-header__nav">
-              <div className="ios-header__left">
-                <BackButton onClick={handleMobileBack} label="Folders" />
+        {mobileView === 'notes' && (
+          <div className="ios-notes-list-view">
+            <header className="ios-header ios-header--large">
+              <div className="ios-header__nav">
+                <div className="ios-header__left">
+                  <BackButton onClick={handleMobileBack} label="Folders" />
+                </div>
+                <div className="ios-header__right">
+                  <button className="ios-icon-button">{Icons.more}</button>
+                </div>
               </div>
-              <div className="ios-header__right">
-                <button className="ios-icon-button">{Icons.more}</button>
-              </div>
+              <div className="ios-header__large-title">{currentFolder.name}</div>
+              <SearchBar value={searchValue} onChange={setSearchValue} />
+            </header>
+
+            <div className="ios-notes-list-view__content">
+              <NotesListContent
+                notes={folderNotes}
+                searchValue={searchValue}
+                selectedNoteId={selectedNoteId}
+                onSelectNote={handleSelectNote}
+                onDeleteNote={handleDeleteNote}
+              />
             </div>
-            <div className="ios-header__large-title">{currentFolder.name}</div>
-            <SearchBar value={searchValue} onChange={setSearchValue} />
-          </header>
 
-          <div className="ios-notes-list-view__content">
-            <NotesListContent
-              notes={folderNotes}
-              searchValue={searchValue}
-              selectedNoteId={selectedNoteId}
-              onSelectNote={handleSelectNote}
-              onDeleteNote={handleDeleteNote}
-            />
+            <footer className="ios-notes-list-footer">
+              <span className="ios-notes-list-footer__count">
+                {folderNotes.length} {folderNotes.length === 1 ? 'Note' : 'Notes'}
+              </span>
+              <button className="ios-compose-button" onClick={handleCreateNote}>
+                {Icons.compose}
+              </button>
+            </footer>
           </div>
+        )}
 
-          <footer className="ios-notes-list-footer">
-            <span className="ios-notes-list-footer__count">
-              {folderNotes.length} {folderNotes.length === 1 ? 'Note' : 'Notes'}
-            </span>
-            <button className="ios-compose-button" onClick={handleCreateNote}>
-              {Icons.compose}
-            </button>
-          </footer>
-        </div>
-      )}
-
-      {mobileView === 'editor' && (
-        <EditorPanel
-          note={selectedNote}
-          content={editorContent}
-          onContentChange={setEditorContent}
-          onSave={handleSaveNote}
-          onTogglePin={handleTogglePin}
-          onDelete={() => selectedNoteId && handleDeleteNote(selectedNoteId)}
-          onShare={handleShare}
-          showBackButton
-          onBack={handleMobileBack}
-          backLabel={currentFolder.name}
-        />
-      )}
-    </div>
+        {mobileView === 'editor' && (
+          <EditorPanel
+            note={selectedNote}
+            content={editorContent}
+            onContentChange={setEditorContent}
+            onSave={handleSaveNote}
+            onTogglePin={handleTogglePin}
+            onDelete={() => selectedNoteId && handleDeleteNote(selectedNoteId)}
+            onShare={handleShare}
+            onCreateNote={handleCreateNote}
+            showBackButton
+            onBack={handleMobileBack}
+            backLabel={currentFolder.name}
+          />
+        )}
+      </div>
+    </ToastProvider>
   );
 }
 

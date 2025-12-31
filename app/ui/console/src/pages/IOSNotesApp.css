@@ -984,12 +984,35 @@
    SCROLLBAR STYLING
 ============================================================================ */
 
+/* Custom scrollbars - iOS-style thin scrollbars */
 .ios-folders-view__content::-webkit-scrollbar,
 .ios-notes-list-view__content::-webkit-scrollbar,
 .ios-notes-sidebar__content::-webkit-scrollbar,
 .ios-editor-panel__content::-webkit-scrollbar {
-  width: 0;
+  width: 6px;
   background: transparent;
+}
+
+.ios-folders-view__content::-webkit-scrollbar-track,
+.ios-notes-list-view__content::-webkit-scrollbar-track,
+.ios-notes-sidebar__content::-webkit-scrollbar-track,
+.ios-editor-panel__content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ios-folders-view__content::-webkit-scrollbar-thumb,
+.ios-notes-list-view__content::-webkit-scrollbar-thumb,
+.ios-notes-sidebar__content::-webkit-scrollbar-thumb,
+.ios-editor-panel__content::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.4);
+  border-radius: 3px;
+}
+
+.ios-folders-view__content::-webkit-scrollbar-thumb:hover,
+.ios-notes-list-view__content::-webkit-scrollbar-thumb:hover,
+.ios-notes-sidebar__content::-webkit-scrollbar-thumb:hover,
+.ios-editor-panel__content::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 128, 128, 0.6);
 }
 
 /* ============================================================================
@@ -1065,5 +1088,46 @@
 
   .ios-dropdown-menu__item:hover {
     background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* ============================================================================
+   TOAST NOTIFICATIONS
+============================================================================ */
+
+.ios-toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  background: rgba(60, 60, 60, 0.95);
+  color: #FFFFFF;
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 12px;
+  z-index: 10000;
+  pointer-events: none;
+  animation: ios-toast-appear 0.3s ease-out;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes ios-toast-appear {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Light mode toast */
+@media (prefers-color-scheme: light) {
+  .ios-toast {
+    background: rgba(80, 80, 80, 0.95);
   }
 }
