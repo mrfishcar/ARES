@@ -982,6 +982,35 @@ function EditorPanel({
     return title + (bodyText ? '\n' + bodyText : '');
   }, []);
 
+  // Scroll caret into view - no marker, just scroll the focus node
+  const scrollCaretIntoView = useCallback(() => {
+    const selection = window.getSelection();
+    if (!selection || !selection.focusNode) return;
+
+    // Get the element containing the caret
+    const node = selection.focusNode;
+    const el = node.nodeType === Node.TEXT_NODE ? node.parentElement : node as HTMLElement;
+    if (!el) return;
+
+    // Use scrollIntoView with 'nearest' - only scrolls if actually needed
+    el.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+  }, []);
+
+  // Only scroll on Enter key (new lines)
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        setTimeout(scrollCaretIntoView, 50);
+      }
+    };
+
+    editor.addEventListener('keydown', handleKeyDown);
+    return () => editor.removeEventListener('keydown', handleKeyDown);
+  }, [scrollCaretIntoView]);
+
   // Initialize editor content when note changes
   useEffect(() => {
     if (editorRef.current && content !== lastContentRef.current) {
