@@ -982,33 +982,55 @@ function EditorPanel({
     return title + (bodyText ? '\n' + bodyText : '');
   }, []);
 
-  // Scroll caret into view - no marker, just scroll the focus node
+  // Scroll caret into view - manual calculation, no DOM insertion
   const scrollCaretIntoView = useCallback(() => {
     const selection = window.getSelection();
-    if (!selection || !selection.focusNode) return;
+    const container = contentRef.current;
+    if (!selection || !selection.focusNode || !container) return;
 
     // Get the element containing the caret
     const node = selection.focusNode;
     const el = node.nodeType === Node.TEXT_NODE ? node.parentElement : node as HTMLElement;
     if (!el) return;
 
-    // Use scrollIntoView with 'nearest' - only scrolls if actually needed
-    el.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+    // Get element position relative to container
+    const elRect = el.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+
+    // Calculate visible area (account for keyboard)
+    const visibleBottom = window.visualViewport
+      ? window.visualViewport.height + window.visualViewport.offsetTop
+      : window.innerHeight;
+
+    // Buffer space above keyboard (where we want the caret to be)
+    const buffer = 60;
+
+    // If element bottom is below visible area, scroll it up
+    if (elRect.bottom > visibleBottom - buffer) {
+      const scrollAmount = elRect.bottom - (visibleBottom - buffer);
+      container.scrollTop += scrollAmount;
+    }
+
+    // If element top is above visible area, scroll it down
+    if (elRect.top < containerRect.top + 20) {
+      const scrollAmount = containerRect.top + 20 - elRect.top;
+      container.scrollTop -= scrollAmount;
+    }
   }, []);
 
-  // Only scroll on Enter key (new lines)
+  // Trigger scroll on Enter and Backspace
   useEffect(() => {
     const editor = editorRef.current;
     if (!editor) return;
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === 'Backspace') {
         setTimeout(scrollCaretIntoView, 50);
       }
     };
 
-    editor.addEventListener('keydown', handleKeyDown);
-    return () => editor.removeEventListener('keydown', handleKeyDown);
+    editor.addEventListener('keyup', handleKeyUp);
+    return () => editor.removeEventListener('keyup', handleKeyUp);
   }, [scrollCaretIntoView]);
 
   // Initialize editor content when note changes
@@ -1616,9 +1638,7 @@ function EditorPanel({
         ref={contentRef}
         style={{
           // When keyboard is open, add padding to create scrollable space
-          // This allows the caret to scroll into view above the keyboard
-          // Add extra 300px to ensure plenty of scroll room
-          paddingBottom: isKeyboardOpen ? `${keyboardHeight + 300}px` : undefined
+          paddingBottom: isKeyboardOpen ? `${keyboardHeight + 100}px` : undefined
         }}
       >
         {note && (
