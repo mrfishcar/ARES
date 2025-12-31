@@ -3282,15 +3282,26 @@ const PERSON_NICKNAME_NORMALIZERS = new Map<string, string>([
       const aliasParts = aliasHintsBySpanKey.get(aliasKey);
       if (aliasParts) {
         for (const alias of aliasParts) {
-          addAlias(entry, alias);
+          // Don't add bare titles as aliases (e.g., "Professor" from "Professor McGonagall")
+          const aliasLower = alias.replace(/[.'']+$/g, '').toLowerCase();
+          if (!TITLE_WORDS.has(aliasLower)) {
+            addAlias(entry, alias);
+          }
         }
       }
 
       if (spanType === 'PERSON') {
         const nameTokens = span.text.split(/\s+/).filter(Boolean);
         if (nameTokens.length === 2 && nameTokens.every(tok => /^[A-Z]/.test(tok))) {
-          addAlias(entry, nameTokens[0]);
-          addAlias(entry, nameTokens[1]);
+          // Don't add title tokens as aliases
+          const firstLower = nameTokens[0].replace(/[.'']+$/g, '').toLowerCase();
+          const secondLower = nameTokens[1].replace(/[.'']+$/g, '').toLowerCase();
+          if (!TITLE_WORDS.has(firstLower)) {
+            addAlias(entry, nameTokens[0]);
+          }
+          if (!TITLE_WORDS.has(secondLower)) {
+            addAlias(entry, nameTokens[1]);
+          }
         }
       }
       entries.push(entry);
@@ -3771,9 +3782,14 @@ const mergedEntries = Array.from(mergedMap.values());
   const entities: Entity[] = [];
   const spans: Array<{ entity_id: string; start: number; end: number }> = [];
   const seenSpanKeys = new Set<string>();
-  const emittedKeys = new Set<string>();
+  // Track which entry was emitted for each dedupeKey so we can replace with a more informative one
+  // Also store the original canonical (before normalization) for comparison
+  const emittedEntryByKey = new Map<string, { entry: EntityEntry; originalCanonical: string }>();
 
   for (const entry of confidenceFilteredEntries) {
+    // Preserve the original canonical before normalization for comparison
+    const originalCanonical = entry.entity.canonical;
+
     // Ensure aliases are unique
     const nameSet = new Set<string>([entry.entity.canonical, ...entry.entity.aliases]);
     const candidateRawByNormalized = new Map<string, string>();
@@ -3918,15 +3934,91 @@ const mergedEntries = Array.from(mergedMap.values());
     }
 
     const dedupeKey = `${entry.entity.type}:${chosen.toLowerCase()}`;
-    if (emittedKeys.has(dedupeKey)) {
-      if (DEBUG_ENTITIES) {
-        console.warn(
-          `[EXTRACT-ENTITIES][DEBUG] Deduped entity ${entry.entity.id} (${entry.entity.canonical}) due to key ${dedupeKey}`
-        );
+    const existing = emittedEntryByKey.get(dedupeKey);
+    if (existing) {
+      // Compare ORIGINAL surface texts (before normalization) to prefer the more informative one
+      // Prefer titled versions like "Professor McGonagall" over bare "McGonagall"
+      const existingRawCanonical = existing.originalCanonical;
+      const newRawCanonical = originalCanonical;
+
+      // Score based on word count and presence of title
+      const existingWords = existingRawCanonical.split(/\s+/).length;
+      const newWords = newRawCanonical.split(/\s+/).length;
+
+      // Check if either has a title prefix
+      const existingFirstToken = existingRawCanonical.split(/\s+/)[0]?.replace(/[.'']+$/g, '').toLowerCase();
+      const newFirstToken = newRawCanonical.split(/\s+/)[0]?.replace(/[.'']+$/g, '').toLowerCase();
+      const existingHasTitle = TITLE_WORDS.has(existingFirstToken);
+      const newHasTitle = TITLE_WORDS.has(newFirstToken);
+
+      // Prefer: titled over non-titled, then more words
+      const existingScore = (existingHasTitle ? 10 : 0) + existingWords;
+      const newScore = (newHasTitle ? 10 : 0) + newWords;
+
+      if (newScore > existingScore) {
+        // New entry is more informative - we need to replace
+        // Update canonical to preserve the titled version
+        entry.entity.canonical = newRawCanonical;
+
+        // Merge spans from existing into new entry
+        for (const span of existing.entry.spanList) {
+          if (!entry.spanList.some(s => s.start === span.start && s.end === span.end)) {
+            entry.spanList.push(span);
+          }
+        }
+        // Merge aliases
+        for (const alias of existing.entry.entity.aliases) {
+          if (!entry.entity.aliases.includes(alias)) {
+            entry.entity.aliases.push(alias);
+          }
+        }
+        // Add existing original canonical as alias if it's different
+        if (existingRawCanonical.toLowerCase() !== entry.entity.canonical.toLowerCase() &&
+            !entry.entity.aliases.map(a => a.toLowerCase()).includes(existingRawCanonical.toLowerCase())) {
+          entry.entity.aliases.push(existingRawCanonical);
+        }
+
+        if (DEBUG_ENTITIES) {
+          console.log(
+            `[EXTRACT-ENTITIES][DEBUG] Replacing ${existingRawCanonical} with more informative ${newRawCanonical} for key ${dedupeKey}`
+          );
+        }
+
+        // Remove the existing entity from entities array
+        const existingIdx = entities.findIndex(e => e.id === existing.entry.entity.id);
+        if (existingIdx !== -1) {
+          entities.splice(existingIdx, 1);
+        }
+        // Update the map to point to new entry
+        emittedEntryByKey.set(dedupeKey, { entry, originalCanonical: newRawCanonical });
+      } else {
+        // Existing is better or equal - merge new spans/aliases into existing
+        for (const span of entry.spanList) {
+          if (!existing.entry.spanList.some(s => s.start === span.start && s.end === span.end)) {
+            existing.entry.spanList.push(span);
+          }
+        }
+        for (const alias of entry.entity.aliases) {
+          if (!existing.entry.entity.aliases.includes(alias)) {
+            existing.entry.entity.aliases.push(alias);
+          }
+        }
+        // Add new original canonical as alias if different
+        if (newRawCanonical.toLowerCase() !== existing.entry.entity.canonical.toLowerCase() &&
+            !existing.entry.entity.aliases.map(a => a.toLowerCase()).includes(newRawCanonical.toLowerCase())) {
+          existing.entry.entity.aliases.push(newRawCanonical);
+        }
+
+        if (DEBUG_ENTITIES) {
+          console.warn(
+            `[EXTRACT-ENTITIES][DEBUG] Merged entity ${entry.entity.id} (${originalCanonical}) into existing ${existing.entry.entity.id} (${existingRawCanonical}) for key ${dedupeKey}`
+          );
+        }
+        continue;
       }
-      continue;
+    } else {
+      emittedEntryByKey.set(dedupeKey, { entry, originalCanonical });
     }
-    emittedKeys.add(dedupeKey);
 
     if (DEBUG_ENTITIES) {
       console.log(
