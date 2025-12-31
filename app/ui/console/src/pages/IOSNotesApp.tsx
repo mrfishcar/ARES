@@ -634,12 +634,14 @@ function FoldersSidebar({
   currentFolderId,
   onSelectFolder,
   onCreateFolder,
+  onToggleSidebar,
 }: {
   folders: Folder[];
   notes: Note[];
   currentFolderId: string;
   onSelectFolder: (folderId: string) => void;
   onCreateFolder: () => void;
+  onToggleSidebar?: () => void;
 }) {
   const [searchValue, setSearchValue] = useState('');
 
@@ -657,6 +659,11 @@ function FoldersSidebar({
     <div className="ios-folders-sidebar">
       <header className="ios-folders-sidebar__header">
         <div className="ios-folders-sidebar__header-top">
+          {onToggleSidebar && (
+            <button className="ios-icon-button" onClick={onToggleSidebar} aria-label="Hide folders">
+              {Icons.sidebar}
+            </button>
+          )}
           <div className="ios-folders-sidebar__title">Folders</div>
           <button className="ios-icon-button" onClick={onCreateFolder} aria-label="New folder">
             {Icons.plus}
@@ -717,6 +724,7 @@ function NotesListSidebar({
   onDeleteNote,
   onToggleSidebar,
   showSidebarToggle,
+  showFolderInNotes = true,
 }: {
   folder: Folder;
   notes: Note[];
@@ -728,6 +736,7 @@ function NotesListSidebar({
   onDeleteNote: (noteId: string) => void;
   onToggleSidebar?: () => void;
   showSidebarToggle?: boolean;
+  showFolderInNotes?: boolean;
 }) {
   const filteredNotes = useMemo(() => {
     if (!searchValue) return notes;
@@ -803,7 +812,7 @@ function NotesListSidebar({
                     <NoteRow
                       key={note.id}
                       note={note}
-                      folderName="Notes"
+                      folderName={showFolderInNotes ? 'Notes' : undefined}
                       isSelected={note.id === selectedNoteId}
                       onClick={() => onSelectNote(note.id)}
                       onDelete={() => onDeleteNote(note.id)}
@@ -1577,6 +1586,8 @@ export function IOSNotesApp() {
   const [editorContent, setEditorContent] = useState('');
   const [searchValue, setSearchValue] = useState('');
   const [showSidebar, setShowSidebar] = useState(true);
+  const [showFoldersSidebar, setShowFoldersSidebar] = useState(true);
+  const [showNotesSidebar, setShowNotesSidebar] = useState(true);
 
   // Get current folder and notes
   const currentFolder = folders.find(f => f.id === currentFolderId) || folders[0];
@@ -1771,25 +1782,33 @@ export function IOSNotesApp() {
   if (isLargeTablet) {
     return (
       <ToastProvider>
-        <div className="ios-notes-app ios-notes-app--large-tablet">
-          <FoldersSidebar
-            folders={folders}
-            notes={notes}
-            currentFolderId={currentFolderId}
-            onSelectFolder={handleFolderSelect}
-            onCreateFolder={handleCreateFolder}
-          />
+        <div className={`ios-notes-app ios-notes-app--large-tablet ${!showFoldersSidebar ? 'ios-notes-app--folders-hidden' : ''} ${!showNotesSidebar ? 'ios-notes-app--notes-hidden' : ''}`}>
+          {showFoldersSidebar && (
+            <FoldersSidebar
+              folders={folders}
+              notes={notes}
+              currentFolderId={currentFolderId}
+              onSelectFolder={handleFolderSelect}
+              onCreateFolder={handleCreateFolder}
+              onToggleSidebar={() => setShowFoldersSidebar(false)}
+            />
+          )}
 
-          <NotesListSidebar
-            folder={currentFolder}
-            notes={folderNotes}
-            selectedNoteId={selectedNoteId}
-            searchValue={searchValue}
-            onSearchChange={setSearchValue}
-            onSelectNote={handleSelectNote}
-            onCreateNote={handleCreateNote}
-            onDeleteNote={handleDeleteNote}
-          />
+          {showNotesSidebar && (
+            <NotesListSidebar
+              folder={currentFolder}
+              notes={folderNotes}
+              selectedNoteId={selectedNoteId}
+              searchValue={searchValue}
+              onSearchChange={setSearchValue}
+              onSelectNote={handleSelectNote}
+              onCreateNote={handleCreateNote}
+              onDeleteNote={handleDeleteNote}
+              onToggleSidebar={() => setShowNotesSidebar(false)}
+              showSidebarToggle
+              showFolderInNotes={currentFolderId === 'all'}
+            />
+          )}
 
           <EditorPanel
             note={selectedNote}
@@ -1800,6 +1819,9 @@ export function IOSNotesApp() {
             onDelete={() => selectedNoteId && handleDeleteNote(selectedNoteId)}
             onShare={handleShare}
             onCreateNote={handleCreateNote}
+            showBackButton={!showFoldersSidebar || !showNotesSidebar}
+            onBack={() => { setShowFoldersSidebar(true); setShowNotesSidebar(true); }}
+            backLabel={!showFoldersSidebar ? 'Folders' : currentFolder.name}
           />
         </div>
       </ToastProvider>
