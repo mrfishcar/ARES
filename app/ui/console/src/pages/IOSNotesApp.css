@@ -1519,6 +1519,15 @@
    SCROLLBAR STYLING
 ============================================================================ */
 
+/* Prevent layout shift when scrollbar appears/disappears */
+.ios-folders-view__content,
+.ios-notes-list-view__content,
+.ios-notes-sidebar__content,
+.ios-folders-sidebar__content,
+.ios-editor-panel__content {
+  scrollbar-gutter: stable;
+}
+
 /* Custom scrollbars - iOS-style thin scrollbars */
 .ios-folders-view__content::-webkit-scrollbar,
 .ios-notes-list-view__content::-webkit-scrollbar,

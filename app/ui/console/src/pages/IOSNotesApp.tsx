@@ -744,6 +744,7 @@ function NotesListSidebar({
   showSidebarToggle?: boolean;
   showFolderInNotes?: boolean;
 }) {
+  const { showToast } = useToast();
   const filteredNotes = useMemo(() => {
     if (!searchValue) return notes;
     const query = searchValue.toLowerCase();
@@ -773,7 +774,11 @@ function NotesListSidebar({
             <div className="ios-notes-sidebar__title">{folder.name}</div>
             <div className="ios-notes-sidebar__count">{notes.length} Notes</div>
           </div>
-          <button className="ios-icon-button ios-icon-button--circle">
+          <button
+            className="ios-icon-button ios-icon-button--circle"
+            onClick={() => showToast('Folder options - Coming soon')}
+            aria-label="Folder options"
+          >
             {Icons.moreCircle}
           </button>
           <button className="ios-icon-button" onClick={onCreateNote}>
@@ -1080,7 +1085,7 @@ function EditorPanel({
         if (bodyEl) {
           const newItem = document.createElement('div');
           newItem.className = 'ios-checklist-item';
-          newItem.innerHTML = '<span class="ios-checkbox" contenteditable="false">☐</span><span class="ios-checklist-text"></span>';
+          newItem.innerHTML = '<span class="ios-checkbox" contenteditable="false">☐</span><span class="ios-checklist-text" contenteditable="true"></span>';
           bodyEl.appendChild(newItem);
 
           // Focus the text span
@@ -1112,7 +1117,7 @@ function EditorPanel({
         const text = targetDiv.textContent || '';
         const newItem = document.createElement('div');
         newItem.className = 'ios-checklist-item';
-        newItem.innerHTML = `<span class="ios-checkbox" contenteditable="false">☐</span><span class="ios-checklist-text">${escapeHtml(text)}</span>`;
+        newItem.innerHTML = `<span class="ios-checkbox" contenteditable="false">☐</span><span class="ios-checklist-text" contenteditable="true">${escapeHtml(text)}</span>`;
         targetDiv.replaceWith(newItem);
       }
     }
@@ -1210,7 +1215,7 @@ function EditorPanel({
           e.preventDefault();
           const newItem = document.createElement('div');
           newItem.className = 'ios-checklist-item';
-          newItem.innerHTML = '<span class="ios-checkbox" contenteditable="false">☐</span><span class="ios-checklist-text"></span>';
+          newItem.innerHTML = '<span class="ios-checkbox" contenteditable="false">☐</span><span class="ios-checklist-text" contenteditable="true"></span>';
           checklistItem.after(newItem);
 
           const textSpan = newItem.querySelector('.ios-checklist-text');
