@@ -82,18 +82,22 @@ el.scrollIntoView({ block: 'nearest', behavior: 'auto' });
 **Result**: Too coarse - scrolls entire element, not caret position within it
 **Why**: scrollIntoView operates on element boundaries, not caret position
 
-### 7. Manual scroll calculation 🧪 (Current Test)
+### 7. Manual scroll calculation ✅ WORKS
 **Method**: Calculate if element is outside visible area, scroll container directly
 ```javascript
 const elRect = el.getBoundingClientRect();
 const visibleBottom = window.visualViewport.height + window.visualViewport.offsetTop;
 if (elRect.bottom > visibleBottom - buffer) {
-  container.scrollTop += elRect.bottom - (visibleBottom - buffer);
+  container.scrollTo({
+    top: container.scrollTop + scrollAmount,
+    behavior: 'smooth'
+  });
 }
 ```
 **Trigger**: Enter and Backspace keys
-**Status**: Testing now
-**Theory**: Direct container scroll, uses visualViewport for accurate visible area
+**Result**: Works! Keeps caret visible without causing drift
+**Why it works**: Only reads positions (getBoundingClientRect), never writes to DOM near caret
+**Enhancement**: Added `behavior: 'smooth'` for smooth line transitions
 
 ---
 
