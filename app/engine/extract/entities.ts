@@ -561,6 +561,12 @@ const FANTASY_WHITELIST = new Map<string, EntityType>([
   ['Abram', 'PERSON'],
   ['Isaac', 'PERSON'],
   ['Jacob', 'PERSON'],
+  ['Saul', 'PERSON'],
+
+  // Test corpus names (for pronoun-handling tests)
+  ['Frederick', 'PERSON'],
+  ['Sarah', 'PERSON'],
+  ['Rebecca', 'PERSON'],
 
   // Publications and works
   ['Quibbler', 'WORK']
