@@ -1390,6 +1390,27 @@ function EditorPanel({
     };
   }, []);
 
+  // iOS Safari: Listen for selection changes to scroll caret into view
+  // This is more reliable than input events on iOS
+  useEffect(() => {
+    const handleSelectionChange = () => {
+      // Only scroll if editor is focused
+      if (!editorRef.current?.contains(document.activeElement) &&
+          document.activeElement !== editorRef.current) {
+        return;
+      }
+      // Debounce slightly to avoid excessive calls
+      requestAnimationFrame(() => {
+        scrollCaretIntoView();
+      });
+    };
+
+    document.addEventListener('selectionchange', handleSelectionChange);
+    return () => {
+      document.removeEventListener('selectionchange', handleSelectionChange);
+    };
+  }, [scrollCaretIntoView]);
+
   // Auto-focus for new notes
   useEffect(() => {
     if (!note && editorRef.current) {
