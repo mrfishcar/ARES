@@ -745,6 +745,22 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     extractObj: 1,   // Child
     typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
   },
+  // Pronoun-aware: "she/he was the child of X and Y" - First parent
+  {
+    regex: /\b(she|he)\s+was\s+(?:equally\s+)?(?:the\s+)?(?:child|daughter|son)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+and\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/gi,
+    predicate: 'parent_of',
+    extractSubj: 2,  // First parent
+    extractObj: 1,   // Pronoun (child) - uses coreference
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // Pronoun-aware: "she/he was the child of X and Y" - Second parent
+  {
+    regex: /\b(she|he)\s+was\s+(?:equally\s+)?(?:the\s+)?(?:child|daughter|son)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+and\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/gi,
+    predicate: 'parent_of',
+    extractSubj: 3,  // Second parent
+    extractObj: 1,   // Pronoun (child) - uses coreference
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
   // Pattern: "X is the son/daughter of Y" or "Mira, daughter of Aria" or "Cael, son of Elias"
   {
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+is\s+(?:the\s+)?(?:son|daughter|child)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
