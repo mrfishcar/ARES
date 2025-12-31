@@ -997,26 +997,25 @@ function EditorPanel({
     const elRect = el.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
 
-    // Calculate visible area (account for keyboard)
+    // Calculate visible area (account for keyboard and viewport offset)
+    const viewportOffset = window.visualViewport?.offsetTop || 0;
+    const visibleTop = viewportOffset + 80; // 80px buffer for header
     const visibleBottom = window.visualViewport
-      ? window.visualViewport.height + window.visualViewport.offsetTop
-      : window.innerHeight;
+      ? window.visualViewport.height + viewportOffset - 60 // 60px buffer above keyboard
+      : window.innerHeight - 60;
 
-    // Buffer space above keyboard (where we want the caret to be)
-    const buffer = 60;
-
-    // If element bottom is below visible area, scroll it up
-    if (elRect.bottom > visibleBottom - buffer) {
-      const scrollAmount = elRect.bottom - (visibleBottom - buffer);
+    // If element bottom is below visible area, scroll up
+    if (elRect.bottom > visibleBottom) {
+      const scrollAmount = elRect.bottom - visibleBottom;
       container.scrollTo({
         top: container.scrollTop + scrollAmount,
         behavior: 'smooth'
       });
     }
 
-    // If element top is above visible area, scroll it down
-    if (elRect.top < containerRect.top + 20) {
-      const scrollAmount = containerRect.top + 20 - elRect.top;
+    // If element top is above visible area, scroll down
+    if (elRect.top < visibleTop) {
+      const scrollAmount = visibleTop - elRect.top;
       container.scrollTo({
         top: container.scrollTop - scrollAmount,
         behavior: 'smooth'
