@@ -801,7 +801,8 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: var(--ios-spacing-md);
-  /* Native scroll padding for caret visibility */
+  /* Smooth scrolling for caret tracking */
+  scroll-behavior: smooth;
   scroll-padding-top: 20px;
   scroll-padding-bottom: 120px;
 }
