@@ -462,9 +462,16 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     extractObj: 2
   },
   // === MARRIAGE PATTERNS ===
-  // "X was Y's wife/husband" → married_to
+  // "X was Y's wife/husband" → married_to (possessive)
   {
     regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:was|is)\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)'s\s+(?:wife|husband|spouse|partner)\b/g,
+    predicate: 'married_to',
+    symmetric: true,
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X was the husband/wife of Y" → married_to (prepositional)
+  {
+    regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:was|is|became)\s+the\s+(?:husband|wife|spouse|partner)\s+of\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
     predicate: 'married_to',
     symmetric: true,
     typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
