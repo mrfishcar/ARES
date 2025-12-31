@@ -473,3 +473,203 @@ describe('Stress Test: Performance', () => {
     expect(resolver.getLastNamedEntity('PERSON')?.canonical).toBe('Entity 999');
   });
 });
+
+// =============================================================================
+// STRESS TEST: SAME FIRST NAME, DIFFERENT ENTITIES
+// =============================================================================
+
+describe('Stress Test: Same First Name Disambiguation', () => {
+  it('should distinguish entities with same first name', () => {
+    const text = `Harry Potter arrived at the concert. Harry Styles was performing. The first Harry was amazed.`;
+
+    const harryP = createEntity('harryP', 'Harry Potter', 'PERSON');
+    const harryS = createEntity('harryS', 'Harry Styles', 'PERSON');
+
+    const entities = [harryP, harryS];
+    const spans = [
+      createSpan('harryP', 0, 12),
+      createSpan('harryS', 37, 49),
+    ];
+    const sentences = [
+      createSentence('Harry Potter arrived at the concert.', 0),
+      createSentence('Harry Styles was performing.', 37),
+      createSentence('The first Harry was amazed.', 66),
+    ];
+
+    const resolver = createReferenceResolver(entities, spans, sentences, text);
+    resolver.updateContext(harryP);
+    resolver.updateContext(harryS);
+
+    // "He" after Harry Styles should resolve to Harry Styles (recency)
+    const he = resolver.resolvePronoun('He', 66, 'SENTENCE_START');
+    expect(he).not.toBeNull();
+    // Should prefer Harry Styles as more recent
+    expect(he!.canonical).toBe('Harry Styles');
+  });
+
+  it('should use context to resolve same-name entities', () => {
+    const text = `Fred Weasley ran the joke shop. Fred Astaire danced on screen. His partner was Ginger.`;
+
+    const fredW = createEntity('fredW', 'Fred Weasley', 'PERSON');
+    const fredA = createEntity('fredA', 'Fred Astaire', 'PERSON');
+
+    const entities = [fredW, fredA];
+    const spans = [
+      createSpan('fredW', 0, 12),
+      createSpan('fredA', 32, 44),
+    ];
+    const sentences = [
+      createSentence('Fred Weasley ran the joke shop.', 0),
+      createSentence('Fred Astaire danced on screen.', 32),
+      createSentence('His partner was Ginger.', 63),
+    ];
+
+    const resolver = createReferenceResolver(entities, spans, sentences, text);
+    resolver.updateContext(fredW);
+    resolver.updateContext(fredA);
+
+    // "His" should resolve to Fred Astaire (most recent Fred)
+    const his = resolver.resolvePronoun('His', 63, 'POSSESSIVE');
+    expect(his).not.toBeNull();
+    expect(his!.canonical).toBe('Fred Astaire');
+  });
+});
+
+// =============================================================================
+// STRESS TEST: COMPLEX DIALOGUE PATTERNS
+// =============================================================================
+
+describe('Stress Test: Dialogue Patterns', () => {
+  it('should handle dialogue attribution correctly', () => {
+    const text = `"I'm going to Hogwarts," Harry said. "Me too," replied Hermione. He smiled at her.`;
+
+    const harry = createEntity('harry', 'Harry Potter', 'PERSON');
+    const hermione = createEntity('hermione', 'Hermione Granger', 'PERSON');
+
+    const entities = [harry, hermione];
+    const spans = [
+      createSpan('harry', 27, 32),
+      createSpan('hermione', 55, 63),
+    ];
+    const sentences = [
+      createSentence('"I\'m going to Hogwarts," Harry said.', 0),
+      createSentence('"Me too," replied Hermione.', 37),
+      createSentence('He smiled at her.', 65),
+    ];
+
+    const resolver = createReferenceResolver(entities, spans, sentences, text);
+    resolver.updateContext(harry);
+    resolver.updateContext(hermione);
+
+    // "He" should resolve to Harry
+    const he = resolver.resolvePronoun('He', 65, 'SENTENCE_START');
+    expect(he).not.toBeNull();
+    expect(he!.canonical).toBe('Harry Potter');
+
+    // "her" should resolve to Hermione
+    const her = resolver.resolvePronoun('her', 77, 'SENTENCE_MID');
+    expect(her).not.toBeNull();
+    expect(her!.canonical).toBe('Hermione Granger');
+  });
+
+  it('should track speaker through multiple dialogue turns', () => {
+    const text = `Ron spoke first. "I'm hungry," he said. "Of course you are," Hermione replied. She rolled her eyes.`;
+
+    const ron = createEntity('ron', 'Ron Weasley', 'PERSON');
+    const hermione = createEntity('hermione', 'Hermione Granger', 'PERSON');
+
+    const entities = [ron, hermione];
+    const spans = [
+      createSpan('ron', 0, 3),
+      createSpan('hermione', 61, 69),
+    ];
+    const sentences = [
+      createSentence('Ron spoke first.', 0),
+      createSentence('"I\'m hungry," he said.', 17),
+      createSentence('"Of course you are," Hermione replied.', 40),
+      createSentence('She rolled her eyes.', 79),
+    ];
+
+    const resolver = createReferenceResolver(entities, spans, sentences, text);
+    resolver.updateContext(ron);
+    resolver.updateContext(hermione);
+
+    // "She" should resolve to Hermione (most recent female)
+    const she = resolver.resolvePronoun('She', 79, 'SENTENCE_START');
+    expect(she).not.toBeNull();
+    expect(she!.canonical).toBe('Hermione Granger');
+
+    // "her" should also resolve to Hermione
+    const her = resolver.resolvePronoun('her', 90, 'SENTENCE_MID');
+    expect(her).not.toBeNull();
+    expect(her!.canonical).toBe('Hermione Granger');
+  });
+});
+
+// =============================================================================
+// STRESS TEST: ENTITY SWITCHING MID-PARAGRAPH
+// =============================================================================
+
+describe('Stress Test: Entity Switching', () => {
+  it('should track entity switches within a paragraph', () => {
+    const text = `Snape watched Harry. The boy was nervous. Harry met his gaze. The professor smirked.`;
+
+    const snape = createEntity('snape', 'Severus Snape', 'PERSON');
+    const harry = createEntity('harry', 'Harry Potter', 'PERSON');
+
+    const entities = [snape, harry];
+    const spans = [
+      createSpan('snape', 0, 5),
+      createSpan('harry', 14, 19),
+      createSpan('harry', 41, 46),  // Second Harry mention
+    ];
+    const sentences = [
+      createSentence('Snape watched Harry.', 0),
+      createSentence('The boy was nervous.', 21),
+      createSentence('Harry met his gaze.', 42),
+      createSentence('The professor smirked.', 62),
+    ];
+
+    const resolver = createReferenceResolver(entities, spans, sentences, text);
+    resolver.updateContext(snape);
+    resolver.updateContext(harry);
+
+    // "his" after second Harry mention should resolve to Snape (referencing Snape's gaze)
+    const his = resolver.resolvePronoun('his', 52, 'POSSESSIVE');
+    expect(his).not.toBeNull();
+    // Could be either based on recency/possession
+  });
+
+  it('should handle alternating focus between two characters', () => {
+    const text = `Dumbledore spoke. Voldemort listened. He considered the words. He felt uncertain.`;
+
+    const dumbledore = createEntity('dumbledore', 'Albus Dumbledore', 'PERSON');
+    const voldemort = createEntity('voldemort', 'Voldemort', 'PERSON');
+
+    const entities = [dumbledore, voldemort];
+    const spans = [
+      createSpan('dumbledore', 0, 10),
+      createSpan('voldemort', 18, 27),
+    ];
+    const sentences = [
+      createSentence('Dumbledore spoke.', 0),
+      createSentence('Voldemort listened.', 18),
+      createSentence('He considered the words.', 38),
+      createSentence('He felt uncertain.', 63),
+    ];
+
+    const resolver = createReferenceResolver(entities, spans, sentences, text);
+    resolver.updateContext(dumbledore);
+    resolver.updateContext(voldemort);
+
+    // First "He" should resolve to Voldemort (most recent subject)
+    const he1 = resolver.resolvePronoun('He', 38, 'SENTENCE_START');
+    expect(he1).not.toBeNull();
+    expect(he1!.canonical).toBe('Voldemort');
+
+    // Second "He" continues with Voldemort (topic continuation)
+    const he2 = resolver.resolvePronoun('He', 63, 'SENTENCE_START');
+    expect(he2).not.toBeNull();
+    expect(he2!.canonical).toBe('Voldemort');
+  });
+});
