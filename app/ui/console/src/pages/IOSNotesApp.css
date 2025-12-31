@@ -921,6 +921,86 @@
   color: var(--ios-red);
 }
 
+/* Format button wrapper for positioning */
+.ios-format-button-wrapper {
+  position: relative;
+}
+
+/* Format menu - similar to dropdown but positioned for toolbar */
+.ios-format-menu {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 8px;
+  min-width: 160px;
+  background: var(--ios-bg-tertiary);
+  border-radius: var(--ios-radius-lg);
+  padding: var(--ios-spacing-xs);
+  z-index: 1000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  animation: ios-menu-appear 0.15s ease-out;
+}
+
+@keyframes ios-menu-appear {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.ios-format-menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--ios-spacing-sm);
+  width: 100%;
+  padding: var(--ios-spacing-sm) var(--ios-spacing-md);
+  border: none;
+  background: none;
+  color: var(--ios-text-primary);
+  font-family: inherit;
+  font-size: var(--ios-font-body);
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--ios-radius-sm);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ios-format-menu__item:active {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.ios-format-menu__item strong {
+  font-weight: 700;
+  min-width: 20px;
+}
+
+.ios-format-menu__item em {
+  font-style: italic;
+  min-width: 20px;
+}
+
+.ios-format-menu__item s {
+  text-decoration: line-through;
+  min-width: 20px;
+}
+
+/* Light mode format menu */
+@media (prefers-color-scheme: light) {
+  .ios-format-menu {
+    background: var(--ios-bg-secondary);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .ios-format-menu__item:active {
+    background: rgba(0, 0, 0, 0.05);
+  }
+}
+
 /* ============================================================================
    EMPTY STATE
 ============================================================================ */

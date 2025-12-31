@@ -712,6 +712,7 @@ function EditorPanel({
   backLabel?: string;
 }) {
   const [showMenu, setShowMenu] = useState(false);
+  const [showFormatMenu, setShowFormatMenu] = useState(false);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const titleRef = useRef<HTMLTextAreaElement>(null);
@@ -719,18 +720,11 @@ function EditorPanel({
   const contentRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
 
-  // Toolbar button handlers with toast feedback
-  const handleToolbarAction = useCallback((action: string) => {
-    showToast(`${action} - Coming soon`);
-  }, [showToast]);
-
   // Split content into title (first line) and body (rest)
-  // Handle edge cases: empty content, no newline, etc.
   const splitContent = useMemo(() => {
     if (!content) return { title: '', body: '' };
     const newlineIndex = content.indexOf('\n');
     if (newlineIndex === -1) {
-      // No newline - entire content is title
       return { title: content, body: '' };
     }
     return {
@@ -744,6 +738,140 @@ function EditorPanel({
   // Refs for latest values to avoid stale closures
   const latestBodyRef = useRef(body);
   latestBodyRef.current = body;
+  const latestTitleRef = useRef(title);
+  latestTitleRef.current = title;
+
+  // Helper: Insert text at cursor position in body
+  const insertAtCursor = useCallback((textToInsert: string, focusAfter = true) => {
+    const textarea = bodyRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const currentBody = textarea.value;
+
+    const newBody = currentBody.substring(0, start) + textToInsert + currentBody.substring(end);
+    const newCursorPos = start + textToInsert.length;
+
+    // Update content
+    const currentTitle = latestTitleRef.current;
+    onContentChange(currentTitle + '\n' + newBody);
+
+    // Restore cursor position after React re-render
+    if (focusAfter) {
+      setTimeout(() => {
+        textarea.focus();
+        textarea.selectionStart = newCursorPos;
+        textarea.selectionEnd = newCursorPos;
+      }, 0);
+    }
+  }, [onContentChange]);
+
+  // Helper: Wrap selected text with prefix/suffix
+  const wrapSelection = useCallback((prefix: string, suffix: string) => {
+    const textarea = bodyRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const currentBody = textarea.value;
+    const selectedText = currentBody.substring(start, end);
+
+    // If no selection, just insert prefix+suffix and place cursor between
+    if (start === end) {
+      const newBody = currentBody.substring(0, start) + prefix + suffix + currentBody.substring(end);
+      const newCursorPos = start + prefix.length;
+
+      const currentTitle = latestTitleRef.current;
+      onContentChange(currentTitle + '\n' + newBody);
+
+      setTimeout(() => {
+        textarea.focus();
+        textarea.selectionStart = newCursorPos;
+        textarea.selectionEnd = newCursorPos;
+      }, 0);
+    } else {
+      // Wrap the selection
+      const newBody = currentBody.substring(0, start) + prefix + selectedText + suffix + currentBody.substring(end);
+      const newCursorPos = end + prefix.length + suffix.length;
+
+      const currentTitle = latestTitleRef.current;
+      onContentChange(currentTitle + '\n' + newBody);
+
+      setTimeout(() => {
+        textarea.focus();
+        textarea.selectionStart = start + prefix.length;
+        textarea.selectionEnd = end + prefix.length;
+      }, 0);
+    }
+  }, [onContentChange]);
+
+  // Toolbar action handlers
+  const handleChecklist = useCallback(() => {
+    insertAtCursor('- [ ] ');
+    showToast('Checklist item added');
+  }, [insertAtCursor, showToast]);
+
+  const handleBold = useCallback(() => {
+    wrapSelection('**', '**');
+    setShowFormatMenu(false);
+  }, [wrapSelection]);
+
+  const handleItalic = useCallback(() => {
+    wrapSelection('*', '*');
+    setShowFormatMenu(false);
+  }, [wrapSelection]);
+
+  const handleStrikethrough = useCallback(() => {
+    wrapSelection('~~', '~~');
+    setShowFormatMenu(false);
+  }, [wrapSelection]);
+
+  const handleHeading = useCallback(() => {
+    const textarea = bodyRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const currentBody = textarea.value;
+
+    // Find the start of the current line
+    let lineStart = start;
+    while (lineStart > 0 && currentBody[lineStart - 1] !== '\n') {
+      lineStart--;
+    }
+
+    // Insert # at the start of the line
+    const newBody = currentBody.substring(0, lineStart) + '# ' + currentBody.substring(lineStart);
+
+    const currentTitle = latestTitleRef.current;
+    onContentChange(currentTitle + '\n' + newBody);
+
+    setTimeout(() => {
+      textarea.focus();
+      textarea.selectionStart = start + 2;
+      textarea.selectionEnd = start + 2;
+    }, 0);
+
+    setShowFormatMenu(false);
+  }, [onContentChange]);
+
+  const handleTable = useCallback(() => {
+    const tableTemplate = '\n| Column 1 | Column 2 | Column 3 |\n|----------|----------|----------|\n| Cell 1   | Cell 2   | Cell 3   |\n| Cell 4   | Cell 5   | Cell 6   |\n';
+    insertAtCursor(tableTemplate);
+    showToast('Table inserted');
+  }, [insertAtCursor, showToast]);
+
+  const handleAttachment = useCallback(() => {
+    showToast('Attachments - Coming soon');
+  }, [showToast]);
+
+  const handleMarkup = useCallback(() => {
+    showToast('Markup - Coming soon');
+  }, [showToast]);
+
+  const handleSearch = useCallback(() => {
+    showToast('Search - Coming soon');
+  }, [showToast]);
 
   const handleTitleChange = useCallback((newTitle: string) => {
     // Prevent newlines in title - move to body on Enter
@@ -762,10 +890,6 @@ function EditorPanel({
       onContentChange(newTitle + (currentBody ? '\n' + currentBody : ''));
     }
   }, [onContentChange]);
-
-  // Handle body changes - use ref to get latest title value
-  const latestTitleRef = useRef(title);
-  latestTitleRef.current = title;
 
   const handleBodyChange = useCallback((newBody: string) => {
     const currentTitle = latestTitleRef.current;
@@ -858,12 +982,33 @@ function EditorPanel({
 
         {/* iPad toolbar icons */}
         <div className="ios-editor-panel__toolbar-center">
-          <button type="button" className="ios-icon-button" aria-label="Search in note" onClick={() => handleToolbarAction('Search')}>{Icons.search}</button>
-          <button type="button" className="ios-icon-button" aria-label="Text format" onClick={() => handleToolbarAction('Text formatting')}>{Icons.textFormat}</button>
-          <button type="button" className="ios-icon-button" aria-label="Checklist" onClick={() => handleToolbarAction('Checklist')}>{Icons.checklist}</button>
-          <button type="button" className="ios-icon-button" aria-label="Table" onClick={() => handleToolbarAction('Table')}>{Icons.table}</button>
-          <button type="button" className="ios-icon-button" aria-label="Attachment" onClick={() => handleToolbarAction('Attachments')}>{Icons.attachment}</button>
-          <button type="button" className="ios-icon-button" aria-label="Markup" onClick={() => handleToolbarAction('Markup')}>{Icons.markup}</button>
+          <button type="button" className="ios-icon-button" aria-label="Search in note" onClick={handleSearch}>{Icons.search}</button>
+          <div className="ios-format-button-wrapper">
+            <button type="button" className="ios-icon-button" aria-label="Text format" onClick={() => setShowFormatMenu(!showFormatMenu)}>{Icons.textFormat}</button>
+            {showFormatMenu && (
+              <>
+                <div className="ios-menu-backdrop" onClick={() => setShowFormatMenu(false)} />
+                <div className="ios-format-menu" role="menu">
+                  <button className="ios-format-menu__item" onClick={handleBold} role="menuitem">
+                    <strong>B</strong> Bold
+                  </button>
+                  <button className="ios-format-menu__item" onClick={handleItalic} role="menuitem">
+                    <em>I</em> Italic
+                  </button>
+                  <button className="ios-format-menu__item" onClick={handleStrikethrough} role="menuitem">
+                    <s>S</s> Strikethrough
+                  </button>
+                  <button className="ios-format-menu__item" onClick={handleHeading} role="menuitem">
+                    <span style={{ fontWeight: 700 }}>#</span> Heading
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+          <button type="button" className="ios-icon-button" aria-label="Checklist" onClick={handleChecklist}>{Icons.checklist}</button>
+          <button type="button" className="ios-icon-button" aria-label="Table" onClick={handleTable}>{Icons.table}</button>
+          <button type="button" className="ios-icon-button" aria-label="Attachment" onClick={handleAttachment}>{Icons.attachment}</button>
+          <button type="button" className="ios-icon-button" aria-label="Markup" onClick={handleMarkup}>{Icons.markup}</button>
         </div>
 
         <div className="ios-editor-panel__header-right">
@@ -900,6 +1045,7 @@ function EditorPanel({
               onClick={async () => {
                 try {
                   await navigator.clipboard.writeText(content);
+                  showToast('Copied to clipboard');
                 } catch {
                   // Fallback for older browsers
                   const textarea = document.createElement('textarea');
@@ -910,6 +1056,7 @@ function EditorPanel({
                   textarea.select();
                   document.execCommand('copy');
                   document.body.removeChild(textarea);
+                  showToast('Copied to clipboard');
                 }
                 setShowMenu(false);
               }}
@@ -971,10 +1118,10 @@ function EditorPanel({
           aria-label="Text formatting"
           style={{ bottom: `${keyboardHeight}px` }}
         >
-          <button type="button" className="ios-toolbar-button" aria-label="Checklist" onClick={() => handleToolbarAction('Checklist')}>{Icons.checklist}</button>
-          <button type="button" className="ios-toolbar-button" aria-label="Text format" onClick={() => handleToolbarAction('Text formatting')}>{Icons.textFormat}</button>
-          <button type="button" className="ios-toolbar-button" aria-label="Table" onClick={() => handleToolbarAction('Table')}>{Icons.table}</button>
-          <button type="button" className="ios-toolbar-button" aria-label="Attachment" onClick={() => handleToolbarAction('Attachments')}>{Icons.attachment}</button>
+          <button type="button" className="ios-toolbar-button" aria-label="Checklist" onClick={handleChecklist}>{Icons.checklist}</button>
+          <button type="button" className="ios-toolbar-button" aria-label="Bold" onClick={handleBold}><strong>B</strong></button>
+          <button type="button" className="ios-toolbar-button" aria-label="Italic" onClick={handleItalic}><em>I</em></button>
+          <button type="button" className="ios-toolbar-button" aria-label="Table" onClick={handleTable}>{Icons.table}</button>
           <div className="ios-keyboard-toolbar__spacer" />
           <button
             type="button"
@@ -992,10 +1139,10 @@ function EditorPanel({
 
       {/* Mobile bottom toolbar - hidden when keyboard is open */}
       <footer className={`ios-editor-panel__footer ${isKeyboardOpen ? 'ios-editor-panel__footer--hidden' : ''}`} role="toolbar" aria-label="Note actions">
-        <button type="button" className="ios-toolbar-button" aria-label="Checklist" onClick={() => handleToolbarAction('Checklist')}>{Icons.checklist}</button>
-        <button type="button" className="ios-toolbar-button" aria-label="Text format" onClick={() => handleToolbarAction('Text formatting')}>{Icons.textFormat}</button>
-        <button type="button" className="ios-toolbar-button" aria-label="Attachment" onClick={() => handleToolbarAction('Attachments')}>{Icons.attachment}</button>
-        <button type="button" className="ios-toolbar-button" aria-label="Markup" onClick={() => handleToolbarAction('Markup')}>{Icons.markup}</button>
+        <button type="button" className="ios-toolbar-button" aria-label="Checklist" onClick={handleChecklist}>{Icons.checklist}</button>
+        <button type="button" className="ios-toolbar-button" aria-label="Bold" onClick={handleBold}><strong>B</strong></button>
+        <button type="button" className="ios-toolbar-button" aria-label="Attachment" onClick={handleAttachment}>{Icons.attachment}</button>
+        <button type="button" className="ios-toolbar-button" aria-label="Markup" onClick={handleMarkup}>{Icons.markup}</button>
         <button type="button" className="ios-compose-button ios-compose-button--prominent" aria-label="Create new note" onClick={onCreateNote}>{Icons.compose}</button>
       </footer>
     </div>
