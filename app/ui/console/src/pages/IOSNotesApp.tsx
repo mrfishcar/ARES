@@ -1026,12 +1026,19 @@ function EditorPanel({
       // Check if marker is below visible area
       if (markerBottomInContainer > visibleHeight - scrollPadding) {
         const scrollAmount = markerBottomInContainer - visibleHeight + scrollPadding;
-        scrollContainer.scrollTop += scrollAmount;
+        // Use scrollTo with smooth behavior for native-like animation
+        scrollContainer.scrollTo({
+          top: scrollContainer.scrollTop + scrollAmount,
+          behavior: 'smooth'
+        });
       }
       // Check if marker is above visible area
       else if (markerTopInContainer < scrollPadding) {
         const scrollAmount = markerTopInContainer - scrollPadding;
-        scrollContainer.scrollTop += scrollAmount;
+        scrollContainer.scrollTo({
+          top: scrollContainer.scrollTop + scrollAmount,
+          behavior: 'smooth'
+        });
       }
     } catch (e) {
       console.warn('scrollCaretIntoView error:', e);

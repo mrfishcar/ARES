@@ -801,6 +801,8 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: var(--ios-spacing-md);
+  /* Smooth scrolling for caret tracking */
+  scroll-behavior: smooth;
 }
 
 .ios-editor-panel__date {
