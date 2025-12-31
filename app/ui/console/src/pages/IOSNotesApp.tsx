@@ -1292,10 +1292,10 @@ function EditorPanel({
     };
 
     viewport.addEventListener('resize', handleResize);
-    handleResize();
-
+    viewport.addEventListener('scroll', handleResize);
     return () => {
       viewport.removeEventListener('resize', handleResize);
+      viewport.removeEventListener('scroll', handleResize);
     };
   }, []);
 

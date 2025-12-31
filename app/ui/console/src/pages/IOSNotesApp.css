@@ -755,11 +755,6 @@
   flex-direction: column;
   background: var(--ios-bg-secondary);
   min-width: 0;
-  /* Ensure panel fills available space and contains its children */
-  min-height: 0;
-  max-height: 100%;
-  overflow: hidden;
-  position: relative;
 }
 
 .ios-editor-panel__header {
@@ -767,12 +762,12 @@
   align-items: center;
   justify-content: space-between;
   height: 44px;
-  min-height: 44px;
   padding: 0 var(--ios-spacing-sm);
   padding-top: env(safe-area-inset-top, 0);
   background: var(--ios-bg-secondary);
   border-bottom: 0.5px solid var(--ios-separator);
-  /* Fixed positioning to survive iOS keyboard scroll */
+  flex-shrink: 0;
+  /* Fixed to survive iOS keyboard scroll */
   position: fixed;
   top: 0;
   left: 0;
@@ -780,18 +775,17 @@
   z-index: 100;
 }
 
-/* On tablet, header should only cover editor area, not sidebars */
+/* Tablet: account for notes sidebar */
 @media (min-width: 768px) {
   .ios-editor-panel__header {
-    left: auto;
-    right: 0;
-    width: calc(100% - 320px); /* Account for sidebar */
+    left: 320px;
   }
 }
 
+/* Large tablet: account for both sidebars */
 @media (min-width: 1024px) {
   .ios-editor-panel__header {
-    width: calc(100% - 520px); /* Account for both sidebars */
+    left: 520px;
   }
 }
 
@@ -820,8 +814,17 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: var(--ios-spacing-md);
-  /* Account for fixed header */
+  /* Account for fixed header: 44px header + safe-area-inset-top */
   padding-top: calc(44px + env(safe-area-inset-top, 0) + var(--ios-spacing-md));
+  /* Account for fixed footer on mobile: ~60px footer + safe-area-inset-bottom */
+  padding-bottom: calc(60px + env(safe-area-inset-bottom, 0) + var(--ios-spacing-md));
+}
+
+/* On tablet, no footer so reset padding-bottom */
+@media (min-width: 768px) {
+  .ios-editor-panel__content {
+    padding-bottom: var(--ios-spacing-md);
+  }
 }
 
 .ios-editor-panel__date {
@@ -1067,11 +1070,18 @@
   border-top: 0.5px solid var(--ios-separator);
   flex-shrink: 0;
   transition: transform 0.2s ease-out, opacity 0.2s;
+  /* Fixed to survive iOS keyboard scroll */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   z-index: 100;
 }
 
 .ios-editor-panel__footer--hidden {
-  display: none;
+  transform: translateY(100%);
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* Keyboard accessory toolbar */
