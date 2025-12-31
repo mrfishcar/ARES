@@ -982,61 +982,74 @@ function EditorPanel({
     return title + (bodyText ? '\n' + bodyText : '');
   }, []);
 
+  // Debounce ref to prevent too many scroll calls
+  const scrollTimeoutRef = useRef<number | null>(null);
+
   // Scroll caret into view (iOS Safari fix)
   // Uses marker for accurate position measurement
-  const scrollCaretIntoView = useCallback(() => {
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
+  const scrollCaretIntoView = useCallback((immediate = false) => {
+    // Debounce to reduce caret jumping from marker insertion
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
 
-    const range = selection.getRangeAt(0);
-    if (!range.collapsed) return;
+    const doScroll = () => {
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return;
 
-    const scrollContainer = contentRef.current;
-    if (!scrollContainer) return;
+      const range = selection.getRangeAt(0);
+      if (!range.collapsed) return;
 
-    // Create a temporary marker span at caret position
-    const marker = document.createElement('span');
-    marker.style.cssText = 'display:inline-block;width:1px;height:1em;';
+      const scrollContainer = contentRef.current;
+      if (!scrollContainer) return;
 
-    // Clone range so we don't disrupt the actual selection
-    const markerRange = range.cloneRange();
-    markerRange.collapse(false);
+      // Create a temporary marker span at caret position
+      const marker = document.createElement('span');
+      marker.style.cssText = 'display:inline-block;width:1px;height:1em;';
 
-    try {
-      markerRange.insertNode(marker);
+      // Clone range so we don't disrupt the actual selection
+      const markerRange = range.cloneRange();
+      markerRange.collapse(false);
 
-      const markerRect = marker.getBoundingClientRect();
-      const containerRect = scrollContainer.getBoundingClientRect();
+      try {
+        markerRange.insertNode(marker);
 
-      const markerTopInContainer = markerRect.top - containerRect.top;
-      const markerBottomInContainer = markerRect.bottom - containerRect.top;
+        const markerRect = marker.getBoundingClientRect();
+        const containerRect = scrollContainer.getBoundingClientRect();
 
-      const vv = window.visualViewport;
-      const visibleHeight = vv
-        ? Math.min(containerRect.height, vv.height - Math.max(0, containerRect.top - vv.offsetTop))
-        : containerRect.height;
+        const markerTopInContainer = markerRect.top - containerRect.top;
+        const markerBottomInContainer = markerRect.bottom - containerRect.top;
 
-      const lineHeight = 24;
-      const topPadding = 80;
-      const bottomPadding = isKeyboardOpen ? (120 + lineHeight) : 60;
+        const vv = window.visualViewport;
+        const visibleHeight = vv
+          ? Math.min(containerRect.height, vv.height - Math.max(0, containerRect.top - vv.offsetTop))
+          : containerRect.height;
 
-      if (markerBottomInContainer > visibleHeight - bottomPadding) {
-        const scrollAmount = markerBottomInContainer - visibleHeight + bottomPadding + lineHeight;
-        scrollContainer.scrollTo({
-          top: scrollContainer.scrollTop + scrollAmount,
-          behavior: 'smooth'
-        });
-      } else if (markerTopInContainer < topPadding) {
-        const scrollAmount = markerTopInContainer - topPadding;
-        scrollContainer.scrollTo({
-          top: scrollContainer.scrollTop + scrollAmount,
-          behavior: 'smooth'
-        });
+        const lineHeight = 24;
+        const topPadding = 80;
+        const bottomPadding = isKeyboardOpen ? (120 + lineHeight) : 60;
+
+        // Scrolling DOWN (caret below visible area)
+        if (markerBottomInContainer > visibleHeight - bottomPadding) {
+          const scrollAmount = markerBottomInContainer - visibleHeight + bottomPadding + lineHeight;
+          scrollContainer.scrollTop += scrollAmount;
+        }
+        // Scrolling UP (caret above visible area)
+        else if (markerTopInContainer < topPadding) {
+          const scrollAmount = markerTopInContainer - topPadding;
+          scrollContainer.scrollTop += scrollAmount;
+        }
+      } finally {
+        if (marker.parentNode) {
+          marker.remove();
+        }
       }
-    } finally {
-      if (marker.parentNode) {
-        marker.remove();
-      }
+    };
+
+    if (immediate) {
+      doScroll();
+    } else {
+      scrollTimeoutRef.current = window.setTimeout(doScroll, 50);
     }
   }, [isKeyboardOpen]);
 
