@@ -1008,13 +1008,19 @@ function EditorPanel({
     // If element bottom is below visible area, scroll it up
     if (elRect.bottom > visibleBottom - buffer) {
       const scrollAmount = elRect.bottom - (visibleBottom - buffer);
-      container.scrollTop += scrollAmount;
+      container.scrollTo({
+        top: container.scrollTop + scrollAmount,
+        behavior: 'smooth'
+      });
     }
 
     // If element top is above visible area, scroll it down
     if (elRect.top < containerRect.top + 20) {
       const scrollAmount = containerRect.top + 20 - elRect.top;
-      container.scrollTop -= scrollAmount;
+      container.scrollTo({
+        top: container.scrollTop - scrollAmount,
+        behavior: 'smooth'
+      });
     }
   }, []);
 
