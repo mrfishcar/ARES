@@ -233,13 +233,23 @@ function getParagraphIndex(sentences: Sentence[], sentenceIndex: number, text: s
 function inferGender(entity: Entity): Gender {
   const name = entity.canonical.toLowerCase();
 
-  // Male indicators
-  const maleNames = ['harry', 'ron', 'aragorn', 'frodo', 'gandalf', 'sam', 'mark', 'john', 'james', 'michael'];
-  const malePatterns = /\b(mr\.|mister|sir|king|prince|lord|father|dad|son|brother|he|him|his)\b/i;
+  // Male indicators - expanded with common fiction names
+  const maleNames = [
+    'harry', 'ron', 'aragorn', 'frodo', 'gandalf', 'sam', 'mark', 'john', 'james', 'michael',
+    'draco', 'severus', 'albus', 'voldemort', 'tom', 'neville', 'remus', 'sirius', 'peter',
+    'arthur', 'bill', 'charlie', 'percy', 'fred', 'george', 'cedric', 'viktor', 'dumbledore',
+    'hagrid', 'lupin', 'snape', 'malfoy', 'riddle', 'grindelwald', 'scrimgeour', 'fudge'
+  ];
+  const malePatterns = /\b(mr\.|mister|sir|king|prince|lord|father|dad|son|brother|he|him|his|uncle|nephew|grandfather|grandson)\b/i;
 
-  // Female indicators
-  const femaleNames = ['hermione', 'ginny', 'arwen', 'galadriel', 'eowyn', 'anne', 'mary', 'sarah', 'elizabeth'];
-  const femalePatterns = /\b(mrs\.|miss|ms\.|lady|queen|princess|mother|mom|daughter|sister|she|her)\b/i;
+  // Female indicators - expanded with common fiction names
+  const femaleNames = [
+    'hermione', 'ginny', 'arwen', 'galadriel', 'eowyn', 'anne', 'mary', 'sarah', 'elizabeth',
+    'lily', 'molly', 'bellatrix', 'narcissa', 'petunia', 'minerva', 'dolores', 'nymphadora',
+    'fleur', 'cho', 'luna', 'lavender', 'parvati', 'padma', 'pansy', 'katie', 'angelina',
+    'alice', 'helena', 'rowena', 'helga'
+  ];
+  const femalePatterns = /\b(mrs\.|miss|ms\.|lady|queen|princess|mother|mom|daughter|sister|she|her|aunt|niece|grandmother|granddaughter)\b/i;
 
   if (maleNames.some(n => name.includes(n)) || malePatterns.test(name)) {
     return 'male';
@@ -487,9 +497,15 @@ function resolvePronounStacks(
     let foundLocal = false;
 
     // If the pronoun appears at the very start of a sentence, bias toward the
-    // subject of the previous sentence in the same paragraph. This helps cases
-    // like "His father Arthur..." where the most recent male subject (Ron) is
-    // in the prior sentence, not earlier mentions with higher salience (Harry).
+    // subject of the previous sentence in the same paragraph.
+    //
+    // IMPORTANT: For subject pronouns (He, She, They) at sentence start, prefer the
+    // FIRST entity in the previous sentence (typically the subject).
+    // Example: "Harry Potter was the son of James. He lived..." → "He" = Harry Potter
+    //
+    // For possessive pronouns (His, Her, Their) at sentence start, prefer the
+    // LAST entity in the previous sentence (typically the most recent referent).
+    // Example: "Ron came from a large family. His father Arthur..." → "His" = Ron
     const positionInSentence = mention.start - currentSentence.start;
     if (positionInSentence <= 5 && mention.sentence_index > 0) {
       const prevSentenceIndex = mention.sentence_index - 1;
@@ -500,19 +516,43 @@ function resolvePronounStacks(
           .filter(span => span.start >= prevSentence.start && span.start < prevSentence.end)
           .sort((a, b) => a.start - b.start);
 
-        for (let i = prevSpans.length - 1; i >= 0; i--) {
-          const span = prevSpans[i];
-          const entity = entities.find(e => e.id === span.entity_id);
+        // Determine if this is a subject pronoun or possessive pronoun
+        const subjectPronouns = new Set(['he', 'she', 'they', 'it']);
+        const isSubjectPronoun = subjectPronouns.has(pronoun);
 
-          if (entity && matchesGenderNumber(entity, pronounInfo.gender, pronounInfo.number)) {
-            links.push({
-              mention,
-              entity_id: entity.id,
-              confidence: 0.75,
-              method: 'pronoun_stack',
-            });
-            foundLocal = true;
-            break;
+        if (isSubjectPronoun) {
+          // For subject pronouns, iterate forward to prefer the subject of the previous sentence
+          for (let i = 0; i < prevSpans.length; i++) {
+            const span = prevSpans[i];
+            const entity = entities.find(e => e.id === span.entity_id);
+
+            if (entity && matchesGenderNumber(entity, pronounInfo.gender, pronounInfo.number)) {
+              links.push({
+                mention,
+                entity_id: entity.id,
+                confidence: 0.75,
+                method: 'pronoun_stack',
+              });
+              foundLocal = true;
+              break;
+            }
+          }
+        } else {
+          // For possessive pronouns, iterate backward to prefer the most recent referent
+          for (let i = prevSpans.length - 1; i >= 0; i--) {
+            const span = prevSpans[i];
+            const entity = entities.find(e => e.id === span.entity_id);
+
+            if (entity && matchesGenderNumber(entity, pronounInfo.gender, pronounInfo.number)) {
+              links.push({
+                mention,
+                entity_id: entity.id,
+                confidence: 0.75,
+                method: 'pronoun_stack',
+              });
+              foundLocal = true;
+              break;
+            }
           }
         }
       }

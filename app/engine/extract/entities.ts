@@ -500,6 +500,7 @@ const FANTASY_WHITELIST = new Map<string, EntityType>([
   ['Ginny Weasley', 'PERSON'],
   ['Molly Weasley', 'PERSON'],
   ['Arthur', 'PERSON'],
+  ['Arthur Weasley', 'PERSON'],
   ['Bill Weasley', 'PERSON'],
   ['Fred', 'PERSON'],
   ['George', 'PERSON'],
@@ -510,6 +511,19 @@ const FANTASY_WHITELIST = new Map<string, EntityType>([
   ['Professor McGonagall', 'PERSON'],
   ['Voldemort', 'PERSON'],
   ['Fawkes', 'PERSON'],
+  ['James', 'PERSON'],
+  ['James Potter', 'PERSON'],
+  ['Lily', 'PERSON'],
+  ['Lily Potter', 'PERSON'],
+  ['Sirius', 'PERSON'],
+  ['Sirius Black', 'PERSON'],
+  ['Remus', 'PERSON'],
+  ['Remus Lupin', 'PERSON'],
+  ['Peter Pettigrew', 'PERSON'],
+  ['Neville', 'PERSON'],
+  ['Neville Longbottom', 'PERSON'],
+  ['Cedric', 'PERSON'],
+  ['Cedric Diggory', 'PERSON'],
 
   // Harry Potter locations
   ['Hogwarts', 'ORG'],  // School = ORG

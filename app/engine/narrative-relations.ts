@@ -647,6 +647,22 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     predicate: 'leads',
     typeGuard: { subj: ['PERSON'], obj: ['ORG', 'HOUSE'] }
   },
+  // "She/He was (also) the head of Y" - PRONOUN VERSION
+  {
+    regex: /\b((?:He|She|They|he|she|they))\s+(?:was|is|were)\s+(?:also\s+)?the\s+head\s+of\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)/g,
+    predicate: 'leads',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG', 'HOUSE'] },
+    extractSubj: 1,
+    extractObj: 2
+  },
+  // "The X later became headmaster/headmistress" - nominal subject
+  {
+    regex: /\bThe\s+(?:\w+\s+)?(?:professor|teacher|wizard|witch)\s+(?:later\s+)?became\s+(?:the\s+)?(?:headmaster|headmistress|head|principal)\b/gi,
+    predicate: 'leads',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG'] },
+    extractSubj: null, // Requires nominal resolution
+    extractObj: null   // Requires school context
+  },
 
   // === LOCATION/RESIDENCE PATTERNS ===
   // "He/She lived at Y" - PRONOUN VERSION
@@ -668,6 +684,14 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:lived|dwelt|dwelled|resides|resided)\s+with\s+[^.]+?\s+in\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
     predicate: 'lives_in',
     typeGuard: { subj: ['PERSON'], obj: ['PLACE'] }
+  },
+  // "He/She lived with X in Y" - PRONOUN VERSION
+  {
+    regex: /\b((?:He|She|They|he|she|they))\s+(?:lived|dwelt|dwelled|resides|resided)\s+with\s+[^.]+?\s+in\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
+    predicate: 'lives_in',
+    typeGuard: { subj: ['PERSON'], obj: ['PLACE'] },
+    extractSubj: 1,
+    extractObj: 2
   },
   // Simple "X lived in Y"
   {
@@ -1036,6 +1060,14 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:was|were)\s+sorted\s+into\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/g,
     predicate: 'member_of',
     typeGuard: { subj: ['PERSON'], obj: ['ORG', 'HOUSE'] }
+  },
+  // "She/He was sorted into Y" - PRONOUN VERSION
+  {
+    regex: /\b((?:He|She|They|he|she|they))\s+(?:was|were)\s+sorted\s+into\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/g,
+    predicate: 'member_of',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG', 'HOUSE'] },
+    extractSubj: 1,
+    extractObj: 2
   },
   // "X joined Y", "X, ..., joined Y" (handles intervening phrases)
   {
@@ -2155,25 +2187,82 @@ function resolvePronounReference(
 }
 
 /**
- * Build a map of pronoun text → entity ID from coref links
- * Used for mention-aware pronoun resolution during pattern matching
+ * Pronoun resolution entry with position information
  */
-function buildPronounResolutionMap(corefLinks: CorefLinks | undefined): Map<string, string> {
-  const map = new Map<string, string>();
+interface PronounResolutionEntry {
+  entityId: string;
+  start: number;
+  end: number;
+}
+
+/**
+ * Build a position-aware pronoun resolution map
+ * Returns a map from pronoun text → array of all resolutions with their positions
+ */
+function buildPronounResolutionMap(corefLinks: CorefLinks | undefined): Map<string, PronounResolutionEntry[]> {
+  const map = new Map<string, PronounResolutionEntry[]>();
   if (!corefLinks || !corefLinks.links) {
     console.log('[buildPronounResolutionMap] No coref links found');
     return map;
   }
 
-  // For each coref link, if the mention text is a pronoun, map it to the entity id
+  // For each coref link, if the mention text is a pronoun, add it with position
   for (const link of corefLinks.links) {
     if (link.mention && isPronoun(link.mention.text)) {
-      map.set(link.mention.text.toLowerCase(), link.entity_id);
-      console.log(`[buildPronounResolutionMap] Mapped "${link.mention.text}" → ${link.entity_id}`);
+      const key = link.mention.text.toLowerCase();
+      const entry: PronounResolutionEntry = {
+        entityId: link.entity_id,
+        start: link.mention.start,
+        end: link.mention.end
+      };
+
+      if (!map.has(key)) {
+        map.set(key, []);
+      }
+      map.get(key)!.push(entry);
+      console.log(`[buildPronounResolutionMap] Added "${link.mention.text}" @ ${link.mention.start}-${link.mention.end} → ${link.entity_id}`);
     }
   }
-  console.log(`[buildPronounResolutionMap] Total pronoun mappings: ${map.size}`);
+
+  // Count total resolutions
+  let total = 0;
+  for (const entries of map.values()) {
+    total += entries.length;
+  }
+  console.log(`[buildPronounResolutionMap] Total pronoun mappings: ${total} across ${map.size} pronouns`);
   return map;
+}
+
+/**
+ * Find the best pronoun resolution for a given position
+ * Prefers exact overlap, then closest preceding resolution
+ */
+function findPronounResolution(
+  entries: PronounResolutionEntry[] | undefined,
+  position: number
+): string | null {
+  if (!entries || entries.length === 0) return null;
+
+  // First try exact overlap
+  for (const entry of entries) {
+    if (position >= entry.start && position < entry.end) {
+      return entry.entityId;
+    }
+  }
+
+  // Then find the closest entry (prefer preceding)
+  let closest: PronounResolutionEntry | null = null;
+  let closestDistance = Infinity;
+
+  for (const entry of entries) {
+    const distance = Math.abs(position - entry.start);
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closest = entry;
+    }
+  }
+
+  return closest?.entityId ?? null;
 }
 
 function matchEntity(surface: string, entities: EntityLookup[]): EntityLookup | null {
@@ -2284,21 +2373,30 @@ export function extractNarrativeRelations(
   const pronounMap = buildPronounResolutionMap(corefLinks);
 
   /**
-   * Mention-aware entity matching: try direct lookup first, then pronoun resolution
+   * Mention-aware entity matching: try direct lookup first, then position-aware pronoun resolution
+   * @param surface - The surface text to match
+   * @param position - The character position in the text (for position-aware pronoun resolution)
    */
-  const matchEntityWithCoref = (surface: string): EntityLookup | null => {
+  const matchEntityWithCoref = (surface: string, position?: number): EntityLookup | null => {
     // Try normal matching first
     let entity = matchEntity(surface, entities);
     if (entity) return entity;
 
-    // If normal matching fails and surface is a pronoun, try coref resolution
+    // If normal matching fails and surface is a pronoun, try position-aware coref resolution
     if (isPronoun(surface)) {
-      const resolvedEntityId = pronounMap.get(surface.toLowerCase());
-      if (resolvedEntityId) {
-        const resolvedEntity = entitiesById.get(resolvedEntityId);
-        if (resolvedEntity) {
-          console.log(`[NarrativeRelations:coref] Resolved pronoun "${surface}" → ${resolvedEntity.canonical}`);
-          return resolvedEntity;
+      const entries = pronounMap.get(surface.toLowerCase());
+      if (entries && entries.length > 0) {
+        // Use position-aware lookup if position is provided
+        const resolvedEntityId = position !== undefined
+          ? findPronounResolution(entries, position)
+          : entries[0].entityId; // Fallback to first entry if no position
+
+        if (resolvedEntityId) {
+          const resolvedEntity = entitiesById.get(resolvedEntityId);
+          if (resolvedEntity) {
+            console.log(`[NarrativeRelations:coref] Resolved pronoun "${surface}" @ ${position ?? 'unknown'} → ${resolvedEntity.canonical}`);
+            return resolvedEntity;
+          }
         }
       }
     }
@@ -2326,9 +2424,14 @@ export function extractNarrativeRelations(
 
         // Case 1: Subject-Object coordination (e.g., "Harry and Ron studied at Hogwarts")
         if (obj) {
+          const matchStart = match.index;
           for (const subjSurface of [firstSubj, secondSubj]) {
-            const subjEntity = matchEntityWithCoref(subjSurface);
-            const objEntity = matchEntityWithCoref(obj);
+            const subjOffset = match[0].indexOf(subjSurface);
+            const subjPosition = subjOffset >= 0 ? matchStart + subjOffset : matchStart;
+            const objOffset = match[0].indexOf(obj);
+            const objPosition = objOffset >= 0 ? matchStart + objOffset : matchStart;
+            const subjEntity = matchEntityWithCoref(subjSurface, subjPosition);
+            const objEntity = matchEntityWithCoref(obj, objPosition);
 
             if (subjEntity && objEntity && passesTypeGuard(pattern, subjEntity, objEntity)) {
               const matchStart = match.index;
@@ -2371,8 +2474,13 @@ export function extractNarrativeRelations(
         }
         // Case 2: Symmetric coordination (e.g., "Harry and Ron were friends")
         else if (pattern.symmetric) {
-          const entity1 = matchEntityWithCoref(firstSubj);
-          const entity2 = matchEntityWithCoref(secondSubj);
+          const matchStart = match.index;
+          const firstOffset = match[0].indexOf(firstSubj);
+          const secondOffset = match[0].indexOf(secondSubj);
+          const firstPosition = firstOffset >= 0 ? matchStart + firstOffset : matchStart;
+          const secondPosition = secondOffset >= 0 ? matchStart + secondOffset : matchStart;
+          const entity1 = matchEntityWithCoref(firstSubj, firstPosition);
+          const entity2 = matchEntityWithCoref(secondSubj, secondPosition);
 
           if (entity1 && entity2 && passesTypeGuard(pattern, entity1, entity2)) {
             const matchStart = match.index;
@@ -2506,13 +2614,15 @@ export function extractNarrativeRelations(
       // Handle deictic object patterns (e.g., "became king there")
       if ((pattern as any).deicticObj) {
         const subjSurface = match[1];  // "He" or proper name
+        const matchPosition = match.index;
+        const subjOffset = match[0].indexOf(subjSurface);
+        const subjPosition = subjOffset >= 0 ? matchPosition + subjOffset : matchPosition;
 
-        // Resolve subject (may be pronoun "He"/"She") using mention-aware resolution
-        let subjEntity = matchEntityWithCoref(subjSurface);
+        // Resolve subject (may be pronoun "He"/"She") using position-aware resolution
+        let subjEntity = matchEntityWithCoref(subjSurface, subjPosition);
 
         // Resolve "there" to most recent PLACE entity before the match
         let objEntity: EntityLookup | null = null;
-        const matchPosition = match.index;
         for (let i = entities.length - 1; i >= 0; i--) {
           const e = entities[i];
           if (e.type === 'PLACE' || e.type === 'ORG') {
@@ -2586,7 +2696,7 @@ export function extractNarrativeRelations(
         subjEntities = resolveCollectiveReference(text, subjAbsoluteStart, corefLinks, entities);
       } else {
         // Use mention-aware resolution (includes pronoun→entity mapping from coref)
-        const subjEntity = matchEntityWithCoref(subjSurface);
+        const subjEntity = matchEntityWithCoref(subjSurface, subjAbsoluteStart);
         if (subjEntity) subjEntities = [subjEntity];
       }
 
@@ -2620,7 +2730,7 @@ export function extractNarrativeRelations(
         objEntities = resolveCollectiveReference(text, objAbsoluteStart, corefLinks, entities);
       } else {
         // Use mention-aware resolution (includes pronoun→entity mapping from coref)
-        const objEntity = matchEntityWithCoref(objSurface);
+        const objEntity = matchEntityWithCoref(objSurface, objAbsoluteStart);
         if (objEntity) objEntities = [objEntity];
       }
 
