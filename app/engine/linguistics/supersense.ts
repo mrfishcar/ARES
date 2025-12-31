@@ -34,59 +34,206 @@ export type VerbClass =
   | 'emotion';      // love, hate, fear, hope, mourn
 
 /**
- * Core verb class lookup table (~100 verbs)
+ * Core verb class lookup table (~200 verbs)
+ * Expanded for fiction narrative coverage
  */
 const VERB_CLASS_MAP: Record<string, VerbClass> = {
-  // motion
+  // -------------------------------------------------------------------------
+  // MOTION (40 verbs) - Movement and travel
+  // -------------------------------------------------------------------------
+  // Core movement
   go: 'motion', come: 'motion', walk: 'motion', run: 'motion', ride: 'motion',
   fly: 'motion', fall: 'motion', climb: 'motion', travel: 'motion', return: 'motion',
-  flee: 'motion', escape: 'motion', enter: 'motion', leave: 'motion', follow: 'motion',
-  lead: 'motion', cross: 'motion', pass: 'motion', approach: 'motion', depart: 'motion',
+  // Escape/pursuit
+  flee: 'motion', escape: 'motion', chase: 'motion', pursue: 'motion', hunt: 'motion',
+  // Entry/exit
+  enter: 'motion', leave: 'motion', exit: 'motion', depart: 'motion', arrive: 'motion',
+  // Following/leading
+  follow: 'motion', lead: 'motion', guide: 'motion', trail: 'motion',
+  // Crossing
+  cross: 'motion', pass: 'motion', traverse: 'motion',
+  // Direction
+  approach: 'motion', retreat: 'motion', advance: 'motion', withdraw: 'motion',
+  // Speed variants
+  sprint: 'motion', dash: 'motion', hurry: 'motion', rush: 'motion', race: 'motion',
+  // Slow/careful
+  stroll: 'motion', wander: 'motion', creep: 'motion', crawl: 'motion', sneak: 'motion',
+  // Vertical
+  jump: 'motion', leap: 'motion', dive: 'motion', descend: 'motion', ascend: 'motion',
+  plunge: 'motion', soar: 'motion', drop: 'motion',
 
-  // communication
-  say: 'communication', tell: 'communication', ask: 'communication', answer: 'communication',
-  speak: 'communication', call: 'communication', shout: 'communication', whisper: 'communication',
-  sing: 'communication', declare: 'communication', announce: 'communication', warn: 'communication',
-  promise: 'communication', command: 'communication', cry: 'communication',
+  // -------------------------------------------------------------------------
+  // COMMUNICATION (35 verbs) - Speech and expression
+  // -------------------------------------------------------------------------
+  // Core speech
+  say: 'communication', tell: 'communication', ask: 'communication', speak: 'communication',
+  talk: 'communication', answer: 'communication', reply: 'communication', respond: 'communication',
+  // Volume variants
+  shout: 'communication', yell: 'communication', scream: 'communication', cry: 'communication',
+  whisper: 'communication', murmur: 'communication', mutter: 'communication', mumble: 'communication',
+  // Formal speech
+  declare: 'communication', announce: 'communication', proclaim: 'communication', state: 'communication',
+  // Questions/requests
+  inquire: 'communication', query: 'communication', request: 'communication',
+  // Emotional speech
+  plead: 'communication', beg: 'communication', demand: 'communication', insist: 'communication',
+  // Warnings/promises
+  warn: 'communication', promise: 'communication', threaten: 'communication', vow: 'communication',
+  // Commands
+  command: 'communication', order: 'communication', instruct: 'communication',
+  // Reactions
+  exclaim: 'communication', gasp: 'communication', sigh: 'communication', groan: 'communication',
+  retort: 'communication',
 
-  // perception
-  see: 'perception', look: 'perception', watch: 'perception', hear: 'perception',
-  listen: 'perception', feel: 'perception', sense: 'perception', notice: 'perception',
-  observe: 'perception', smell: 'perception', taste: 'perception',
+  // -------------------------------------------------------------------------
+  // PERCEPTION (25 verbs) - Sensing and observing
+  // -------------------------------------------------------------------------
+  // Sight
+  see: 'perception', look: 'perception', watch: 'perception', gaze: 'perception',
+  stare: 'perception', glance: 'perception', glimpse: 'perception', peer: 'perception',
+  examine: 'perception', inspect: 'perception', scan: 'perception', survey: 'perception',
+  // Hearing
+  hear: 'perception', listen: 'perception', overhear: 'perception',
+  // Other senses
+  feel: 'perception', smell: 'perception', taste: 'perception', sense: 'perception',
+  // Discovery
+  notice: 'perception', observe: 'perception', spot: 'perception', detect: 'perception',
+  perceive: 'perception', discern: 'perception', witness: 'perception',
 
-  // cognition
-  think: 'cognition', know: 'cognition', believe: 'cognition', remember: 'cognition',
-  forget: 'cognition', understand: 'cognition', wonder: 'cognition', dream: 'cognition',
-  plan: 'cognition', decide: 'cognition', doubt: 'cognition', realize: 'cognition',
-  learn: 'cognition',
+  // -------------------------------------------------------------------------
+  // COGNITION (30 verbs) - Thinking and knowing
+  // -------------------------------------------------------------------------
+  // Core thinking
+  think: 'cognition', know: 'cognition', believe: 'cognition', understand: 'cognition',
+  comprehend: 'cognition', grasp: 'cognition', ponder: 'cognition', contemplate: 'cognition',
+  // Memory
+  remember: 'cognition', forget: 'cognition', recall: 'cognition', recognize: 'cognition',
+  recollect: 'cognition',
+  // Imagination
+  imagine: 'cognition', dream: 'cognition', envision: 'cognition', fantasize: 'cognition',
+  // Uncertainty
+  wonder: 'cognition', doubt: 'cognition', suspect: 'cognition', assume: 'cognition',
+  guess: 'cognition', speculate: 'cognition',
+  // Decision
+  decide: 'cognition', choose: 'cognition', consider: 'cognition', conclude: 'cognition',
+  determine: 'cognition', resolve: 'cognition',
+  // Learning/discovery
+  learn: 'cognition', discover: 'cognition', realize: 'cognition', figure: 'cognition',
+  deduce: 'cognition', infer: 'cognition',
 
-  // contact
+  // -------------------------------------------------------------------------
+  // CONTACT (30 verbs) - Physical interaction
+  // -------------------------------------------------------------------------
+  // Violence
   hit: 'contact', strike: 'contact', kill: 'contact', fight: 'contact', attack: 'contact',
-  defend: 'contact', cut: 'contact', break: 'contact', hold: 'contact', catch: 'contact',
-  throw: 'contact', push: 'contact', pull: 'contact', touch: 'contact', grab: 'contact',
-  seize: 'contact', wound: 'contact', pierce: 'contact', slay: 'contact', murder: 'contact',
+  beat: 'contact', punch: 'contact', kick: 'contact', slap: 'contact',
+  // Defense
+  defend: 'contact', block: 'contact', parry: 'contact', shield: 'contact',
+  // Weapons
+  stab: 'contact', slash: 'contact', cut: 'contact', pierce: 'contact',
+  shoot: 'contact', slay: 'contact', murder: 'contact',
+  // Physical force
+  push: 'contact', pull: 'contact', throw: 'contact', catch: 'contact',
+  grab: 'contact', seize: 'contact', grip: 'contact', clutch: 'contact',
+  // Impact
+  slam: 'contact', crash: 'contact', smash: 'contact', crush: 'contact',
+  shatter: 'contact', break: 'contact', wound: 'contact',
+  // Touch
+  touch: 'contact', hold: 'contact', embrace: 'contact', hug: 'contact',
 
-  // change
-  become: 'change', change: 'change', turn: 'change', grow: 'change', die: 'change',
-  wake: 'change', sleep: 'change', rise: 'change', heal: 'change', transform: 'change',
+  // -------------------------------------------------------------------------
+  // CHANGE (20 verbs) - State transformation
+  // -------------------------------------------------------------------------
+  // State change
+  become: 'change', turn: 'change', grow: 'change', shrink: 'change',
+  expand: 'change', contract: 'change',
+  // Life/death
+  die: 'change', perish: 'change', survive: 'change', revive: 'change',
+  // Consciousness
+  wake: 'change', awaken: 'change', sleep: 'change', faint: 'change',
+  // Physical
+  heal: 'change', recover: 'change', mend: 'change', repair: 'change',
+  // Transformation
+  transform: 'change', convert: 'change', evolve: 'change', mutate: 'change',
+  // Rising/falling
+  rise: 'change', fade: 'change', wither: 'change', decay: 'change',
 
-  // possession
-  have: 'possession', take: 'possession', give: 'possession', get: 'possession',
-  find: 'possession', lose: 'possession', keep: 'possession', bring: 'possession',
-  carry: 'possession', steal: 'possession', receive: 'possession',
+  // -------------------------------------------------------------------------
+  // POSSESSION (20 verbs) - Ownership and transfer
+  // -------------------------------------------------------------------------
+  // Having
+  have: 'possession', own: 'possession', possess: 'possession',
+  // Acquiring
+  take: 'possession', get: 'possession', receive: 'possession', obtain: 'possession',
+  acquire: 'possession', gain: 'possession', earn: 'possession',
+  // Giving
+  give: 'possession', hand: 'possession', offer: 'possession', present: 'possession',
+  donate: 'possession', grant: 'possession',
+  // Keeping
+  keep: 'possession', retain: 'possession', hold: 'possession',
+  // Losing
+  lose: 'possession', abandon: 'possession', surrender: 'possession', forfeit: 'possession',
+  // Transfer
+  steal: 'possession', rob: 'possession', borrow: 'possession', lend: 'possession',
+  bring: 'possession', carry: 'possession', deliver: 'possession',
 
-  // social
-  meet: 'social', marry: 'social', serve: 'social', help: 'social', rule: 'social',
-  obey: 'social', betray: 'social', trust: 'social', join: 'social', unite: 'social',
-  divide: 'social',
+  // -------------------------------------------------------------------------
+  // SOCIAL (25 verbs) - Interpersonal interactions
+  // -------------------------------------------------------------------------
+  // Meeting
+  meet: 'social', encounter: 'social', greet: 'social', welcome: 'social',
+  // Relationships
+  marry: 'social', wed: 'social', divorce: 'social', befriend: 'social',
+  // Service
+  serve: 'social', help: 'social', assist: 'social', aid: 'social', support: 'social',
+  // Authority
+  rule: 'social', govern: 'social', reign: 'social', lead: 'social',
+  obey: 'social', submit: 'social', comply: 'social',
+  // Groups
+  join: 'social', unite: 'social', gather: 'social', assemble: 'social',
+  divide: 'social', separate: 'social',
+  // Conflict
+  betray: 'social', deceive: 'social', trick: 'social', abandon: 'social',
+  reject: 'social', dismiss: 'social', banish: 'social', exile: 'social',
+  // Trust
+  trust: 'social', rely: 'social', depend: 'social',
 
-  // creation
-  make: 'creation', create: 'creation', build: 'creation', forge: 'creation',
-  write: 'creation', destroy: 'creation', burn: 'creation',
+  // -------------------------------------------------------------------------
+  // CREATION (15 verbs) - Making and destroying
+  // -------------------------------------------------------------------------
+  // Making
+  make: 'creation', create: 'creation', build: 'creation', construct: 'creation',
+  erect: 'creation', establish: 'creation',
+  // Crafting
+  craft: 'creation', forge: 'creation', shape: 'creation', form: 'creation',
+  mold: 'creation', sculpt: 'creation',
+  // Writing/art
+  write: 'creation', compose: 'creation', author: 'creation',
+  paint: 'creation', draw: 'creation', design: 'creation',
+  // Destruction
+  destroy: 'creation', demolish: 'creation', ruin: 'creation',
+  burn: 'creation', erase: 'creation', annihilate: 'creation',
 
-  // emotion
-  love: 'emotion', hate: 'emotion', fear: 'emotion', hope: 'emotion',
-  laugh: 'emotion', weep: 'emotion', mourn: 'emotion', rejoice: 'emotion',
+  // -------------------------------------------------------------------------
+  // EMOTION (20 verbs) - Feeling and expressing emotion
+  // -------------------------------------------------------------------------
+  // Positive
+  love: 'emotion', adore: 'emotion', cherish: 'emotion', treasure: 'emotion',
+  like: 'emotion', enjoy: 'emotion', appreciate: 'emotion',
+  // Negative
+  hate: 'emotion', despise: 'emotion', loathe: 'emotion', detest: 'emotion',
+  resent: 'emotion', envy: 'emotion',
+  // Fear
+  fear: 'emotion', dread: 'emotion', worry: 'emotion', panic: 'emotion',
+  // Sadness
+  mourn: 'emotion', grieve: 'emotion', lament: 'emotion', weep: 'emotion',
+  // Joy
+  rejoice: 'emotion', celebrate: 'emotion', delight: 'emotion',
+  laugh: 'emotion', smile: 'emotion',
+  // Hope
+  hope: 'emotion', wish: 'emotion', long: 'emotion', yearn: 'emotion',
+  // Anger
+  rage: 'emotion', fume: 'emotion',
 };
 
 /**
