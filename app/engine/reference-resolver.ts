@@ -891,6 +891,13 @@ export class ReferenceResolver {
     const sentence = this.sentences[sentenceIndex];
     return (position - sentence.start) <= 5;
   }
+
+  /**
+   * Get entity by ID (for TokenResolver adapter)
+   */
+  getEntityById(entityId: string): Entity | undefined {
+    return this.entitiesById.get(entityId);
+  }
 }
 
 // =============================================================================
@@ -940,4 +947,210 @@ export function matchesGenderNumber(entity: Entity, pronoun: string): boolean {
   // Need to initialize with the entity so gender is inferred
   resolver.initialize([entity], [], [], '');
   return resolver.matchesGenderNumber(entity, pronoun);
+}
+
+// =============================================================================
+// TOKEN RESOLVER ADAPTER
+// =============================================================================
+// This adapter bridges between Token-level operations (used by relations.ts)
+// and the ReferenceResolver service.
+
+/**
+ * Token type from parse-types.ts
+ */
+export interface AdapterToken {
+  i: number;
+  text: string;
+  lemma: string;
+  pos: string;
+  tag: string;
+  dep: string;
+  head: number;
+  ent: string;
+  start: number;
+  end: number;
+}
+
+/**
+ * TokenResolver provides Token-level pronoun resolution using ReferenceResolver.
+ * This allows relations.ts to gradually migrate from lastNamedSubject tracking
+ * to the unified ReferenceResolver.
+ *
+ * Usage in relations.ts:
+ * 1. Create TokenResolver with entities and their first mention tokens
+ * 2. Use resolveToken() instead of checking lastNamedSubject
+ *
+ * Example migration:
+ *   Before: if (tok.pos === 'PRON' && lastNamedSubject) { tok = lastNamedSubject; }
+ *   After:  tok = tokenResolver.resolveToken(tok, position, context);
+ */
+export class TokenResolver {
+  private referenceResolver: ReferenceResolver;
+  private entityTokenMap: Map<string, AdapterToken>; // entity_id -> first mention token
+  private recentPersonTokens: AdapterToken[] = [];
+
+  constructor() {
+    this.referenceResolver = new ReferenceResolver();
+    this.entityTokenMap = new Map();
+  }
+
+  /**
+   * Initialize with entities, their tokens, and the text context
+   */
+  initialize(
+    entities: Entity[],
+    entitySpans: EntitySpan[],
+    sentences: Sentence[],
+    text: string,
+    sentenceTokens: AdapterToken[][]
+  ): void {
+    // Initialize the underlying ReferenceResolver
+    this.referenceResolver.initialize(entities, entitySpans, sentences, text);
+    this.referenceResolver.learnGenderFromContext();
+
+    // Build mapping from entity_id -> first mention token
+    this.entityTokenMap.clear();
+    this.recentPersonTokens = [];
+
+    for (const span of entitySpans) {
+      if (this.entityTokenMap.has(span.entity_id)) continue; // Only keep first mention
+
+      // Find the token at this position
+      for (const tokens of sentenceTokens) {
+        for (const tok of tokens) {
+          if (tok.start === span.start) {
+            this.entityTokenMap.set(span.entity_id, tok);
+
+            // Track recent person tokens for plural pronoun resolution
+            const entity = entities.find(e => e.id === span.entity_id);
+            if (entity?.type === 'PERSON') {
+              this.recentPersonTokens.push(tok);
+            }
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Resolve a pronoun token to its antecedent token
+   *
+   * @param tok The token to potentially resolve
+   * @param context The resolution context
+   * @returns The resolved token (original if not a pronoun or no resolution found)
+   */
+  resolveToken(
+    tok: AdapterToken,
+    context: ResolutionContext = 'SENTENCE_MID'
+  ): AdapterToken {
+    // Only resolve pronouns
+    if (tok.pos !== 'PRON') return tok;
+
+    // Use ReferenceResolver to find the antecedent entity
+    const resolved = this.referenceResolver.resolvePronoun(
+      tok.text,
+      tok.start,
+      context,
+      ['PERSON'] // Default to person resolution
+    );
+
+    if (!resolved) return tok;
+
+    // Look up the token for the resolved entity
+    const resolvedToken = this.entityTokenMap.get(resolved.id);
+    if (!resolvedToken) return tok;
+
+    return resolvedToken;
+  }
+
+  /**
+   * Resolve possessive pronouns (his/her/their) to owner token(s)
+   *
+   * @param tok The possessive pronoun token
+   * @returns Array of resolved tokens (for plural) or single token (for singular)
+   */
+  resolvePossessors(tok: AdapterToken): AdapterToken[] {
+    if (tok.pos !== 'PRON') return [tok];
+
+    const lower = tok.text.toLowerCase();
+
+    // Handle plural possessives
+    if (lower === 'their' && this.recentPersonTokens.length >= 2) {
+      return this.recentPersonTokens.slice(0, 2);
+    }
+
+    // Handle singular possessives
+    if (lower === 'his' || lower === 'her') {
+      const resolved = this.referenceResolver.resolvePronoun(
+        tok.text,
+        tok.start,
+        'POSSESSIVE',
+        ['PERSON']
+      );
+
+      if (resolved) {
+        const resolvedToken = this.entityTokenMap.get(resolved.id);
+        if (resolvedToken) return [resolvedToken];
+      }
+    }
+
+    // Fallback to most recent person
+    if (this.recentPersonTokens.length > 0) {
+      return [this.recentPersonTokens[0]];
+    }
+
+    return [];
+  }
+
+  /**
+   * Check if a token is a pronoun
+   */
+  isPronoun(tok: AdapterToken): boolean {
+    return tok.pos === 'PRON';
+  }
+
+  /**
+   * Get the ReferenceResolver for direct access if needed
+   */
+  getResolver(): ReferenceResolver {
+    return this.referenceResolver;
+  }
+
+  /**
+   * Track a new named entity mention (updates recent persons list)
+   */
+  trackMention(tok: AdapterToken, entityId: string): void {
+    if (!this.entityTokenMap.has(entityId)) {
+      this.entityTokenMap.set(entityId, tok);
+    }
+
+    // Update recent persons list
+    const entity = this.referenceResolver.getEntityById(entityId);
+    if (entity?.type === 'PERSON') {
+      // Add to front, remove duplicates
+      this.recentPersonTokens = this.recentPersonTokens.filter(
+        t => t.start !== tok.start
+      );
+      this.recentPersonTokens.unshift(tok);
+      if (this.recentPersonTokens.length > 6) {
+        this.recentPersonTokens.pop();
+      }
+    }
+  }
+}
+
+/**
+ * Factory function to create a TokenResolver
+ */
+export function createTokenResolver(
+  entities: Entity[],
+  entitySpans: EntitySpan[],
+  sentences: Sentence[],
+  text: string,
+  sentenceTokens: AdapterToken[][]
+): TokenResolver {
+  const resolver = new TokenResolver();
+  resolver.initialize(entities, entitySpans, sentences, text, sentenceTokens);
+  return resolver;
 }
