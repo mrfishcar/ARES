@@ -2873,10 +2873,10 @@ export function extractPossessiveFamilyRelations(
     }
   }
 
-  // Pattern 2: "their daughter/son" or "his wife" → resolve pronoun, then create family relations
+  // Pattern 2: "their daughter/son" or "his wife" or "her partner" → resolve pronoun, then create family relations
   // Allow optional adjectives like "late", "younger", "older", etc.
   // NOTE: This pattern is conservative to avoid false positives (e.g., "He loved her" → parent_of)
-  const theirPattern = /\b(their|his|her)\s+(?:[a-z]+\s+)*(daughter|son|child|parent|father|mother|wife|husband|spouse|brother|sister)\b/gi;
+  const theirPattern = /\b(their|his|her)\s+(?:[a-z]+\s+)*(daughter|son|child|parent|father|mother|wife|husband|spouse|partner|brother|sister)\b/gi;
 
   while ((match = theirPattern.exec(text)) !== null) {
     const pronoun = match[1].toLowerCase();
@@ -2949,7 +2949,7 @@ export function extractPossessiveFamilyRelations(
       predicate = 'parent_of';
     } else if (['parent', 'father', 'mother'].includes(roleWord)) {
       predicate = 'child_of';
-    } else if (['wife', 'husband', 'spouse'].includes(roleWord)) {
+    } else if (['wife', 'husband', 'spouse', 'partner'].includes(roleWord)) {
       predicate = 'married_to';
     } else if (['brother', 'sister'].includes(roleWord)) {
       predicate = 'sibling_of';

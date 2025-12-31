@@ -248,6 +248,12 @@ export async function runRelationFilteringStage(
           }
 
           // Determine if coordination or appositive
+          // For family relations (parent_of, child_of), use larger threshold since
+          // "their children" could refer to a couple mentioned sentences apart
+          const pred = group[0].rel.pred;
+          const isFamilyRelation = ['parent_of', 'child_of', 'lives_in'].includes(pred);
+          const distanceThreshold = isFamilyRelation ? 250 : 100;
+
           const isCoordination = group.every((item, idx) => {
             if (idx === 0) return true;
             const prevCanonical = group[idx - 1].subjectCanonical;
@@ -267,10 +273,10 @@ export async function runRelationFilteringStage(
               return false;
             }
 
-            // If very close (within 100 chars), likely coordination
+            // If close enough, likely coordination
             const distance = Math.abs(currPosition - prevPosition);
-            console.log(`[${STAGE_NAME}]   Distance between ${prevCanonical} and ${currCanonical}: ${distance}`);
-            return distance < 100;
+            console.log(`[${STAGE_NAME}]   Distance between ${prevCanonical} and ${currCanonical}: ${distance} (threshold: ${distanceThreshold})`);
+            return distance < distanceThreshold;
           });
 
           console.log(`[${STAGE_NAME}]   isCoordination: ${isCoordination}`);
