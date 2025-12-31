@@ -180,18 +180,23 @@ export async function runAliasResolutionStage(
       // 1. Add aliases from coreference links (descriptive mentions ONLY - filter pronouns and coordinations)
       // - Pronouns (he, she, it, etc.) are context-dependent and should NOT be permanent aliases
       // - Coordinations ("X and Y") should not be aliases for individual entities
+      // - Title back-links ("the king", "the wizard") are descriptive references, not proper name variants
       // - Garbage aliases (short tokens, generic descriptors, truncated artifacts) are filtered
       for (const link of input.corefLinks) {
         if (link.entity_id === entity.id) {
           const mentionText = link.mention.text.trim();
 
-          // CRITICAL: Filter out pronouns, coordinations, garbage aliases, and context-dependent terms
+          // CRITICAL: Filter out pronouns, coordinations, title back-links, garbage aliases, and context-dependent terms
+          // Title back-links (e.g., "the king" → Aragorn) should NOT become canonical names or aliases
+          // because they are descriptive references, not proper name variants
           if (
             mentionText &&
             mentionText !== entity.canonical &&
             !isContextDependent(mentionText) &&
             !isGarbageAlias(mentionText) &&
-            link.method !== 'coordination'
+            link.method !== 'coordination' &&
+            link.method !== 'title_match' &&
+            link.method !== 'nominal_match'
           ) {
             aliasSet.add(mentionText);
           }

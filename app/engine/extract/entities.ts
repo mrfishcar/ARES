@@ -4453,17 +4453,22 @@ const mergedEntries = Array.from(mergedMap.values());
     for (const entity of entities) {
       const aliasSet = new Set<string>(entity.aliases);
 
-      // Add mentions from coreference links (FILTER PRONOUNS and COORDINATIONS - they're context-dependent)
+      // Add mentions from coreference links (FILTER PRONOUNS, COORDINATIONS, TITLE/NOMINAL BACK-LINKS)
+      // - Pronouns (he, she, it) are context-dependent and should NOT be permanent aliases
+      // - Coordinations ("X and Y") should not be aliases for individual entities
+      // - Title back-links ("the king" → Aragorn) are descriptive references, not proper name variants
+      // - Nominal back-links ("the wizard" → Gandalf) are also descriptive references
       for (const link of corefLinks.links) {
         if (link.entity_id === entity.id) {
           const mentionText = link.mention.text.trim();
-          // Add if different from canonical, not empty, NOT a pronoun, AND NOT a coordination
-          // Coordinations ("X and Y") should not be aliases for individual entities
+          // Add if different from canonical, not empty, NOT a pronoun, AND NOT a descriptive reference
           if (mentionText &&
               mentionText !== entity.canonical &&
               mentionText.toLowerCase() !== entity.canonical.toLowerCase() &&
               !isContextDependent(mentionText) &&
-              link.method !== 'coordination') {
+              link.method !== 'coordination' &&
+              link.method !== 'title_match' &&
+              link.method !== 'nominal_match') {
             const strength = classifyAliasStrength(mentionText, entity.canonical);
             if (strength) {
               aliasSet.add(mentionText);
