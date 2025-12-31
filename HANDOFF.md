@@ -1,3 +1,192 @@
+# ReferenceResolver Implementation Session (Continued)
+
+**Date**: 2025-12-31 (23:00 UTC)
+**Branch**: `claude/ares-story-compiler-VAWSy`
+**Status**: ✅ **PHASE 2 PREPARATIONS COMPLETE - TokenResolver Adapter Ready**
+
+---
+
+## Session 2 Summary
+
+This session continued the coreference consolidation work, creating the bridge layer needed for migrating `relations.ts` to use the unified ReferenceResolver.
+
+### Key Accomplishments
+
+1. ✅ **Created TokenResolver Adapter** (`app/engine/reference-resolver.ts`)
+   - Bridges between Token-level operations and ReferenceResolver
+   - `resolveToken()`: Resolves pronoun tokens to their antecedent tokens
+   - `resolvePossessors()`: Handles possessive pronouns (his/her/their)
+   - `trackMention()`: Tracks new entity mentions for recency updates
+   - Factory function `createTokenResolver()` for easy instantiation
+
+2. ✅ **Added getEntityById to ReferenceResolver**
+   - Allows TokenResolver to look up entities for proper Token mapping
+
+3. ✅ **TokenResolver Test Suite** - 12 tests
+   - Basic pronoun resolution (He → entity token)
+   - Possessive pronoun resolution (his/her/their)
+   - Non-pronoun handling
+   - Utility methods
+   - Mention tracking
+   - Edge cases
+
+4. ✅ **Additional Stress Tests** - 9 more tests (30 → 39)
+   - Complex nested possessive patterns
+   - Quoted speech with pronouns
+   - Reflexive pronoun handling
+   - Family relationship disambiguation
+   - Long distance resolution
+   - Performance edge cases
+
+### Test Results
+
+| Test Suite | Result |
+|------------|--------|
+| ReferenceResolver | 83/83 passing |
+| TokenResolver | 12/12 passing |
+| Level 1 | ✅ Entity P=95%, R=89.2%; Relation P=90%, R=90% |
+| Level 2 | ✅ Passed |
+| Level 3 | ✅ Passed |
+| extraction-patterns | ✅ 86/86 passing |
+| Key Tests Total | 163+ passing |
+
+### Commits This Session (2)
+
+1. `38336661` - feat: Add TokenResolver adapter for relations.ts migration
+2. `dde09f28` - test: Add 9 more stress tests for complex edge cases
+
+---
+
+## relations.ts Migration Plan (Phase 2)
+
+### Overview
+
+The `relations.ts` file has **40+ references** to `lastNamedSubject`, a simple recency-based pronoun resolution pattern. The migration will replace this with TokenResolver calls.
+
+### Current Pattern
+
+```typescript
+// relations.ts lines 1017-1085
+let lastNamedSubject: Token | null = null;
+
+const updateLastNamedSubject = (candidate?: Token) => {
+  if (!candidate || candidate.pos === 'PRON') return;
+  if (isNameToken(candidate)) {
+    lastNamedSubject = candidate;
+    pushRecentPerson(candidate);
+  }
+};
+
+// Used throughout:
+if (subj.pos === 'PRON' && lastNamedSubject) {
+  subj = lastNamedSubject;
+}
+```
+
+### Target Pattern
+
+```typescript
+// Option A: Full migration
+const tokenResolver = createTokenResolver(entities, spans, sentences, text, sentenceTokens);
+
+// Then throughout:
+if (subj.pos === 'PRON') {
+  subj = tokenResolver.resolveToken(subj, 'SENTENCE_MID');
+}
+```
+
+### Migration Steps
+
+1. **Add TokenResolver as optional parameter** to `extractDepRelations()`
+2. **Create helper functions** that use TokenResolver when available
+3. **Migrate in stages:**
+   - Stage A: `resolveAcademicSubject()` (1 location)
+   - Stage B: `resolvePossessors()` (already has counterpart)
+   - Stage C: Main pronoun resolution patterns (40+ locations)
+4. **Remove lastNamedSubject** after all patterns migrated
+5. **Run full test suite** after each stage
+
+### Risk Assessment
+
+| Risk | Mitigation |
+|------|------------|
+| Behavioral differences | TokenResolver uses position-aware resolution vs simple recency |
+| Test regressions | Run full suite after each stage |
+| Performance | TokenResolver is tested with 10+ entities efficiently |
+
+### Not Started Yet
+
+The actual migration of relations.ts is **not started** - only the TokenResolver adapter is ready. The migration should be done carefully with full test coverage at each step.
+
+---
+
+# Previous Session: ReferenceResolver Implementation
+
+**Date**: 2025-12-31
+**Branch**: `claude/ares-story-compiler-VAWSy`
+**Status**: ✅ **COREFERENCE CONSOLIDATION PHASE 1 COMPLETE**
+
+---
+
+## Session Summary
+
+This session addressed the coreference resolution bottleneck identified in the Pipeline Consolidation Directive. The core achievement was creating a unified `ReferenceResolver` service that consolidates the four scattered pronoun resolution systems.
+
+### Key Accomplishments
+
+1. ✅ **Created ReferenceResolver Service** (`app/engine/reference-resolver.ts`) - 930+ lines
+   - Position-aware pronoun resolution
+   - Gender inference from names, titles, and context
+   - Cross-paragraph resolution with topic continuity
+   - Support for subject vs. possessive pronoun patterns
+
+2. ✅ **Comprehensive Test Suite** - 62 tests
+   - 32 unit tests (`tests/reference-resolver/reference-resolver.spec.ts`)
+   - 30 stress tests (`tests/reference-resolver/stress-tests.spec.ts`)
+   - Covers: same-gender pronouns, dialogue patterns, entity switching, boundary conditions
+
+3. ✅ **Integration with narrative-relations.ts**
+   - ReferenceResolver now used for pronoun resolution in pattern matching
+   - Position-aware lookup replaces simple text-based mapping
+
+4. ✅ **Cross-paragraph Pronoun Resolution Fix**
+   - For paragraph-initial "He/She", looks for subject of first sentence in previous paragraph
+   - Maintains topic continuity across paragraph boundaries
+
+5. ✅ **Fixed extraction-patterns Test**
+   - "challenged" predicate now uses direct predicate instead of normalizing to "enemy_of"
+
+### Test Results
+
+| Test Suite | Result |
+|------------|--------|
+| ReferenceResolver | 62/62 passing |
+| Level 1 | ✅ Entity P=95%, R=89.2%; Relation P=90%, R=90% |
+| Level 2 | ✅ Passed |
+| Level 3 | ✅ Entity P=97.5%, R=86.8%; Relation P=88.5%, R=83.8% |
+| Level 5 | ✅ 10/10 passing |
+| extraction-patterns | ✅ 86/86 passing |
+| Core Tests Total | 231 passing |
+
+### Commits This Session (8)
+
+1. `a61ac00b` - docs: Add Pipeline Consolidation Directive
+2. `a3445690` - feat: Add unified ReferenceResolver service for coreference
+3. `6df5b434` - feat: Add cross-paragraph pronoun resolution and stress tests
+4. `d6572478` - feat: Add comprehensive stress tests for ReferenceResolver
+5. `f1ba7c0e` - feat: Add biblical/test person names to entity whitelist
+6. `dce153f8` - feat: Add more edge case stress tests for ReferenceResolver
+7. `a54aa5c6` - docs: Update Pipeline Consolidation Directive with status
+8. `cc606e84` - fix: Use 'challenged' predicate instead of 'enemy_of'
+
+### Next Steps (Phase 2)
+
+- Migrate `relations.ts` from `lastNamedSubject` to ReferenceResolver
+- Quarantine BookNLP code
+- Remove pipeline-switching env flags
+
+---
+
 # UI Refinement & Bug Fixes Session
 
 **Date**: 2025-12-13
