@@ -801,8 +801,9 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: var(--ios-spacing-md);
-  /* Smooth scrolling for caret tracking */
-  scroll-behavior: smooth;
+  /* Native scroll padding for caret visibility */
+  scroll-padding-top: 20px;
+  scroll-padding-bottom: 120px;
 }
 
 .ios-editor-panel__date {
@@ -885,13 +886,15 @@
 
 .ios-rich-editor {
   width: 100%;
-  min-height: 300px;
+  min-height: 100%;
   outline: none;
   font-family: inherit;
   font-size: var(--ios-font-body);
   line-height: 1.5;
   color: var(--ios-text-primary);
   caret-color: var(--ios-yellow);
+  /* Prevent scroll anchoring issues */
+  overflow-anchor: none;
 }
 
 /* Title within editor */
@@ -913,7 +916,7 @@
 .ios-rich-editor .ios-editor-body {
   font-size: var(--ios-font-body);
   line-height: 1.5;
-  min-height: 200px;
+  flex: 1;
 }
 
 .ios-rich-editor .ios-editor-body:empty::before {
