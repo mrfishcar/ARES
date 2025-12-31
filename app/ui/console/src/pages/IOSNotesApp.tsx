@@ -984,8 +984,7 @@ function EditorPanel({
 
   // Scroll caret into view (iOS Safari fix)
   // iOS Safari doesn't auto-scroll to keep caret visible while typing
-  // Parent containers have overflow:hidden which breaks scrollIntoView
-  // So we directly manipulate scrollTop of the scroll container
+  // Uses Range.getBoundingClientRect() directly - no DOM manipulation needed
   const scrollCaretIntoView = useCallback(() => {
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0) return;
@@ -996,63 +995,46 @@ function EditorPanel({
     const scrollContainer = contentRef.current;
     if (!scrollContainer) return;
 
-    // Create a temporary marker span at caret position
-    const marker = document.createElement('span');
-    marker.style.cssText = 'display:inline-block;width:1px;height:1em;';
+    // Get caret position directly from the range - no marker needed
+    const caretRect = range.getBoundingClientRect();
 
-    // Clone range so we don't disrupt the actual selection
-    const markerRange = range.cloneRange();
-    markerRange.collapse(false); // Collapse to end
+    // If rect is empty (can happen with collapsed range), bail out
+    if (caretRect.height === 0 && caretRect.width === 0) return;
 
-    try {
-      markerRange.insertNode(marker);
+    const containerRect = scrollContainer.getBoundingClientRect();
 
-      // Get positions relative to the scroll container
-      const markerRect = marker.getBoundingClientRect();
-      const containerRect = scrollContainer.getBoundingClientRect();
+    // Calculate where caret is relative to the container's visible area
+    const caretTopInContainer = caretRect.top - containerRect.top;
+    const caretBottomInContainer = caretRect.bottom - containerRect.top;
 
-      // Calculate where marker is relative to the container's visible area
-      const markerTopInContainer = markerRect.top - containerRect.top;
-      const markerBottomInContainer = markerRect.bottom - containerRect.top;
+    // Visible height of container (account for what's actually visible on screen)
+    const vv = window.visualViewport;
+    const visibleHeight = vv
+      ? Math.min(containerRect.height, vv.height - Math.max(0, containerRect.top - vv.offsetTop))
+      : containerRect.height;
 
-      // Visible height of container (account for what's actually visible on screen)
-      const vv = window.visualViewport;
-      const visibleHeight = vv
-        ? Math.min(containerRect.height, vv.height - Math.max(0, containerRect.top - vv.offsetTop))
-        : containerRect.height;
+    // Top padding: account for header area
+    const topPadding = 80;
 
-      // Top padding: account for header area
-      const topPadding = 80; // Header + some breathing room
+    // Bottom padding: account for keyboard toolbar when open
+    const lineHeight = 24;
+    const bottomPadding = isKeyboardOpen ? (120 + lineHeight) : 60;
 
-      // Bottom padding: account for keyboard toolbar when open
-      // Add extra line height (~24px) to ensure caret line is fully visible
-      const lineHeight = 24;
-      const bottomPadding = isKeyboardOpen ? (120 + lineHeight) : 60;
-
-      // Check if marker is below visible area
-      if (markerBottomInContainer > visibleHeight - bottomPadding) {
-        // Add extra line height to scroll amount to show the caret's actual line
-        const scrollAmount = markerBottomInContainer - visibleHeight + bottomPadding + lineHeight;
-        // Use scrollTo with smooth behavior for native-like animation
-        scrollContainer.scrollTo({
-          top: scrollContainer.scrollTop + scrollAmount,
-          behavior: 'smooth'
-        });
-      }
-      // Check if marker is above visible area
-      else if (markerTopInContainer < topPadding) {
-        const scrollAmount = markerTopInContainer - topPadding;
-        scrollContainer.scrollTo({
-          top: scrollContainer.scrollTop + scrollAmount,
-          behavior: 'smooth'
-        });
-      }
-    } catch (e) {
-      console.warn('scrollCaretIntoView error:', e);
-    } finally {
-      if (marker.parentNode) {
-        marker.remove();
-      }
+    // Check if caret is below visible area
+    if (caretBottomInContainer > visibleHeight - bottomPadding) {
+      const scrollAmount = caretBottomInContainer - visibleHeight + bottomPadding + lineHeight;
+      scrollContainer.scrollTo({
+        top: scrollContainer.scrollTop + scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+    // Check if caret is above visible area
+    else if (caretTopInContainer < topPadding) {
+      const scrollAmount = caretTopInContainer - topPadding;
+      scrollContainer.scrollTo({
+        top: scrollContainer.scrollTop + scrollAmount,
+        behavior: 'smooth'
+      });
     }
   }, [isKeyboardOpen]);
 
