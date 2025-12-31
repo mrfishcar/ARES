@@ -772,6 +772,7 @@
   min-height: 0;
   max-height: 100%;
   overflow: hidden;
+  position: relative;
 }
 
 .ios-editor-panel__header {
@@ -785,10 +786,10 @@
   background: var(--ios-bg-secondary);
   border-bottom: 0.5px solid var(--ios-separator);
   flex-shrink: 0;
-  /* Ensure header stays visible */
+  z-index: 100;
+  /* Sticky position to stay visible during scroll */
   position: sticky;
   top: 0;
-  z-index: 10;
 }
 
 .ios-editor-panel__header-left,
@@ -1061,16 +1062,11 @@
   border-top: 0.5px solid var(--ios-separator);
   flex-shrink: 0;
   transition: transform 0.2s ease-out, opacity 0.2s;
-  /* Ensure footer stays visible */
-  position: sticky;
-  bottom: 0;
-  z-index: 10;
+  z-index: 100;
 }
 
 .ios-editor-panel__footer--hidden {
-  transform: translateY(100%);
-  opacity: 0;
-  pointer-events: none;
+  display: none;
 }
 
 /* Keyboard accessory toolbar */

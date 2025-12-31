@@ -869,8 +869,10 @@ function EditorPanel({
   const [showFormatMenu, setShowFormatMenu] = useState(false);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [viewportOffset, setViewportOffset] = useState(0);
   const editorRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
   const { showToast } = useToast();
 
   // Track if we're initializing to prevent loops
@@ -1283,39 +1285,30 @@ function EditorPanel({
 
     const viewport = window.visualViewport;
 
-    const handleResize = () => {
+    const updateViewport = () => {
       const viewportHeight = viewport.height;
       const currentKeyboardHeight = window.innerHeight - viewportHeight;
       const isOpen = currentKeyboardHeight > 150;
       setIsKeyboardOpen(isOpen);
       setKeyboardHeight(isOpen ? currentKeyboardHeight : 0);
 
+      // Track the visual viewport offset (how much iOS has scrolled the page)
+      setViewportOffset(viewport.offsetTop);
+
       // Set CSS custom property for viewport height
       document.documentElement.style.setProperty('--viewport-height', `${viewportHeight}px`);
-
-      // Prevent iOS from scrolling the page when keyboard opens
-      if (isOpen) {
-        window.scrollTo(0, 0);
-      }
+      document.documentElement.style.setProperty('--viewport-offset', `${viewport.offsetTop}px`);
     };
 
-    // Also handle scroll events (iOS Safari scrolls the page when keyboard opens)
-    const handleScroll = () => {
-      // Reset scroll position to keep toolbars in view
-      if (viewport.offsetTop > 0) {
-        window.scrollTo(0, 0);
-      }
-    };
-
-    viewport.addEventListener('resize', handleResize);
-    viewport.addEventListener('scroll', handleScroll);
+    viewport.addEventListener('resize', updateViewport);
+    viewport.addEventListener('scroll', updateViewport);
 
     // Initial call
-    handleResize();
+    updateViewport();
 
     return () => {
-      viewport.removeEventListener('resize', handleResize);
-      viewport.removeEventListener('scroll', handleScroll);
+      viewport.removeEventListener('resize', updateViewport);
+      viewport.removeEventListener('scroll', updateViewport);
     };
   }, []);
 
@@ -1336,7 +1329,11 @@ function EditorPanel({
 
   return (
     <div className="ios-editor-panel">
-      <header className="ios-editor-panel__header">
+      <header
+        ref={headerRef}
+        className="ios-editor-panel__header"
+        style={viewportOffset > 0 ? { transform: `translateY(${viewportOffset}px)` } : undefined}
+      >
         <div className="ios-editor-panel__header-left">
           {showBackButton && onBack && (
             <BackButton onClick={onBack} label={backLabel || 'Notes'} />
