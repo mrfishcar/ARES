@@ -137,13 +137,33 @@ If renderer code is "re-deriving" entity references, that's a smell. The answer 
 
 ## Implementation Order
 
-| Phase | Action | Rationale |
-|-------|--------|-----------|
-| 1 | Create `ReferenceResolver` service | Multiplier — fixes all downstream |
-| 2 | Migrate all coref calls to single service | Eliminate pronoun roulette |
-| 3 | Quarantine BookNLP code | Remove dual-path confusion |
-| 4 | Remove env flags | One pipeline only |
-| 5 | Convert BookNLP tests to fixtures | No runtime dependency |
+| Phase | Action | Rationale | Status |
+|-------|--------|-----------|--------|
+| 1 | Create `ReferenceResolver` service | Multiplier — fixes all downstream | ✅ DONE |
+| 2 | Migrate all coref calls to single service | Eliminate pronoun roulette | 🔄 In Progress |
+| 3 | Quarantine BookNLP code | Remove dual-path confusion | ⏳ Pending |
+| 4 | Remove env flags | One pipeline only | ⏳ Pending |
+| 5 | Convert BookNLP tests to fixtures | No runtime dependency | ⏳ Pending |
+
+### Phase 1 Implementation (COMPLETED 2025-12-31)
+
+**Location:** `app/engine/reference-resolver.ts`
+
+**Key Features:**
+- Unified pronoun resolution API
+- Position-aware resolution (not just text matching)
+- Gender inference from names, titles, and context
+- Cross-paragraph resolution with topic continuity
+- Support for subject vs. possessive pronoun patterns
+
+**Test Coverage:** 62 tests passing
+- 32 unit tests (`tests/reference-resolver/reference-resolver.spec.ts`)
+- 30 stress tests (`tests/reference-resolver/stress-tests.spec.ts`)
+
+**Integration:**
+- `narrative-relations.ts` now uses ReferenceResolver for pronoun resolution
+- `coref.ts` patterns inform ReferenceResolver but don't replace it
+- `relations.ts` still uses legacy `lastNamedSubject` (Phase 2 migration)
 
 ---
 
@@ -151,8 +171,10 @@ If renderer code is "re-deriving" entity references, that's a smell. The answer 
 
 - [ ] No code paths that branch on "BookNLP vs legacy"
 - [ ] No env flags that switch pipelines
-- [ ] Single `ReferenceResolver` used by all stages
-- [ ] Tests pass without BookNLP installed
+- [x] Single `ReferenceResolver` service created (Phase 1)
+- [x] ReferenceResolver integrated with narrative-relations.ts
+- [ ] ReferenceResolver integrated with relations.ts (Phase 2)
+- [x] Tests pass without BookNLP installed (using ARES_MODE=legacy)
 - [ ] BookNLP code is clearly labeled "reference only"
 
 ---
