@@ -3011,6 +3011,330 @@ export function extractPossessiveFamilyRelations(
     }
   }
 
+  // Pattern 2a: Appositive - "X, his/her [adj] wife/husband/etc." → married_to, sibling_of, etc.
+  // Handles: "Lady Elena Blackwood, his estranged wife"
+  const appositiveRolePattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*),?\s+(his|her)\s+(?:\w+\s+)?(wife|husband|spouse|brother|sister|father|mother|son|daughter)\b/gi;
+
+  while ((match = appositiveRolePattern.exec(text)) !== null) {
+    const entityName = match[1];
+    const pronoun = match[2].toLowerCase();
+    const roleWord = match[3].toLowerCase();
+
+    const targetEntity = matchEntity(entityName, entities);
+    if (!targetEntity || targetEntity.type !== 'PERSON') continue;
+
+    // Resolve the possessive pronoun to find the other entity
+    let possessorEntities = resolvePossessivePronoun(pronoun, match.index, corefLinks, entities) ?? [];
+    possessorEntities = possessorEntities.filter(e => e.type === 'PERSON' && e.id !== targetEntity.id);
+
+    // Fallback: find recent PERSON entities
+    if (!possessorEntities.length) {
+      const recentPersons = findRecentPersons(match.index).filter(e => e.id !== targetEntity.id);
+      if (recentPersons.length > 0) {
+        possessorEntities = [recentPersons[0]];
+      }
+    }
+
+    if (!possessorEntities.length) continue;
+
+    // Determine predicate based on role
+    let predicate: string;
+    let subj: string;
+    let obj: string;
+    if (['wife', 'husband', 'spouse'].includes(roleWord)) {
+      predicate = 'married_to';
+      subj = possessorEntities[0].id;
+      obj = targetEntity.id;
+    } else if (['brother', 'sister'].includes(roleWord)) {
+      predicate = 'sibling_of';
+      subj = possessorEntities[0].id;
+      obj = targetEntity.id;
+    } else if (['father', 'mother'].includes(roleWord)) {
+      predicate = 'child_of';
+      subj = possessorEntities[0].id;
+      obj = targetEntity.id;
+    } else if (['son', 'daughter'].includes(roleWord)) {
+      predicate = 'parent_of';
+      subj = possessorEntities[0].id;
+      obj = targetEntity.id;
+    } else {
+      continue;
+    }
+
+    const evidenceSpan = {
+      start: match.index,
+      end: match.index + match[0].length,
+      text: match[0]
+    };
+
+    const relation: Relation = {
+      id: uuid(),
+      subj: subj,
+      pred: predicate as any,
+      obj: obj,
+      evidence: [{
+        doc_id: docId,
+        span: evidenceSpan,
+        sentence_index: getSentenceIndex(text, match.index),
+        source: 'RULE' as const
+      }],
+      confidence: 0.85,
+      extractor: 'regex'
+    };
+
+    relations.push(relation);
+  }
+
+  // Pattern 2b: Possessive student - "X's graduate student/advisee" → mentor_of(X, student)
+  // Handles: "Professor Hartley's graduate student, John Peterson"
+  // NOTE: Using 'g' flag only, NOT 'i', to ensure [A-Z] only matches uppercase letters
+  const possessiveStudentPattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)'s\s+(?:graduate\s+)?(?:student|advisee|mentee|protege|apprentice)\b/g;
+
+  while ((match = possessiveStudentPattern.exec(text)) !== null) {
+    const mentorName = match[1];
+    const mentorEntity = matchEntity(mentorName, entities);
+    if (!mentorEntity || mentorEntity.type !== 'PERSON') continue;
+
+    // Look for student name after (within 150 chars)
+    const afterMatch = text.substring(match.index + match[0].length, match.index + match[0].length + 150);
+
+    // First try: Look for "- FullName" pattern (indicates the actual full name after a hyphen)
+    // Handles: "also named John - John Peterson" where "John Peterson" is the real name
+    const hyphenNameMatch = afterMatch.match(/\s*-\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/);
+
+    // Second try: Simple name after comma or space
+    const simpleNameMatch = afterMatch.match(/(?:,\s*)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/);
+
+    // Prefer hyphen match (more specific), fall back to simple match
+    const studentNameMatch = hyphenNameMatch || simpleNameMatch;
+
+    if (!studentNameMatch) continue;
+    const studentEntity = matchEntity(studentNameMatch[1], entities);
+    if (!studentEntity || studentEntity.type !== 'PERSON') continue;
+    if (studentEntity.id === mentorEntity.id) continue;
+
+    const evidenceSpan = {
+      start: match.index,
+      end: match.index + match[0].length,
+      text: match[0]
+    };
+
+    const relation: Relation = {
+      id: uuid(),
+      subj: mentorEntity.id,
+      pred: 'mentor_of' as any,
+      obj: studentEntity.id,
+      evidence: [{
+        doc_id: docId,
+        span: evidenceSpan,
+        sentence_index: getSentenceIndex(text, match.index),
+        source: 'RULE' as const
+      }],
+      confidence: 0.80,
+      extractor: 'regex'
+    };
+
+    relations.push(relation);
+  }
+
+  // Pattern 2c: Colleague pattern - "His/Her colleague, X" → colleague_of
+  // Handles: "His colleague, John Williams"
+  const colleaguePattern = /\b(His|Her)\s+colleague,?\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/gi;
+
+  while ((match = colleaguePattern.exec(text)) !== null) {
+    const pronoun = match[1].toLowerCase();
+    const colleagueName = match[2];
+
+    // Resolve pronoun to find the first person
+    let personEntities = resolvePossessivePronoun(pronoun === 'his' ? 'his' : 'her', match.index, corefLinks, entities) ?? [];
+    personEntities = personEntities.filter(e => e.type === 'PERSON');
+
+    // Fallback to recent persons
+    if (!personEntities.length) {
+      const recentPersons = findRecentPersons(match.index);
+      if (recentPersons.length > 0) {
+        personEntities = [recentPersons[0]];
+      }
+    }
+
+    if (!personEntities.length) continue;
+
+    // Find colleague entity
+    const colleagueEntity = matchEntity(colleagueName, entities);
+    if (!colleagueEntity || colleagueEntity.type !== 'PERSON') continue;
+    if (colleagueEntity.id === personEntities[0].id) continue;
+
+    const evidenceSpan = {
+      start: match.index,
+      end: match.index + match[0].length,
+      text: match[0]
+    };
+
+    const relation: Relation = {
+      id: uuid(),
+      subj: personEntities[0].id,
+      pred: 'colleague_of' as any,
+      obj: colleagueEntity.id,
+      evidence: [{
+        doc_id: docId,
+        span: evidenceSpan,
+        sentence_index: getSentenceIndex(text, match.index),
+        source: 'RULE' as const
+      }],
+      confidence: 0.80,
+      extractor: 'regex'
+    };
+
+    relations.push(relation);
+  }
+
+  // Pattern 2d: Pronoun-aware gave_to - "He/She gave it to X" → gave_to(resolved_pronoun, X)
+  // Handles: "He gave it to the cathedral"
+  const pronounGavePattern = /\b(He|She)\s+gave\s+(?:it|them|this|that|the\s+\w+)\s+to\s+(?:the\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/gi;
+
+  while ((match = pronounGavePattern.exec(text)) !== null) {
+    const pronoun = match[1].toLowerCase();
+    const recipientName = match[2];
+
+    // Resolve pronoun to find giver
+    let giverEntities = resolvePossessivePronoun(pronoun === 'he' ? 'his' : 'her', match.index, corefLinks, entities) ?? [];
+    giverEntities = giverEntities.filter(e => e.type === 'PERSON');
+
+    // Fallback to recent persons
+    if (!giverEntities.length) {
+      const recentPersons = findRecentPersons(match.index);
+      if (recentPersons.length > 0) {
+        giverEntities = [recentPersons[0]];
+      }
+    }
+
+    if (!giverEntities.length) continue;
+
+    // Find recipient entity
+    const recipientEntity = matchEntity(recipientName, entities);
+    if (!recipientEntity) continue;
+    if (recipientEntity.id === giverEntities[0].id) continue;
+
+    const evidenceSpan = {
+      start: match.index,
+      end: match.index + match[0].length,
+      text: match[0]
+    };
+
+    const relation: Relation = {
+      id: uuid(),
+      subj: giverEntities[0].id,
+      pred: 'gave_to' as any,
+      obj: recipientEntity.id,
+      evidence: [{
+        doc_id: docId,
+        span: evidenceSpan,
+        sentence_index: getSentenceIndex(text, match.index),
+        source: 'RULE' as const
+      }],
+      confidence: 0.75,
+      extractor: 'regex'
+    };
+
+    relations.push(relation);
+  }
+
+  // Pattern 2d: Gift pattern - "A gift for X" + speaker → gave_to
+  // Handles: "A gift for you," Marcus said → gave_to(Marcus, recipient)
+  const giftPattern = /\bA\s+gift\s+for\s+(?:you|him|her),?["']?\s*(?:,\s*)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+said\b/gi;
+
+  while ((match = giftPattern.exec(text)) !== null) {
+    const giverName = match[1];
+    const giverEntity = matchEntity(giverName, entities);
+    if (!giverEntity || giverEntity.type !== 'PERSON') continue;
+
+    // Look backwards for the recipient (within 200 chars before "A gift")
+    const beforeMatch = text.substring(Math.max(0, match.index - 200), match.index);
+
+    // Find recent person mentioned before the gift
+    const recentPersonPattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g;
+    let lastPerson = null;
+    let personMatch;
+    while ((personMatch = recentPersonPattern.exec(beforeMatch)) !== null) {
+      const possibleRecipient = matchEntity(personMatch[1], entities);
+      if (possibleRecipient && possibleRecipient.type === 'PERSON' && possibleRecipient.id !== giverEntity.id) {
+        lastPerson = possibleRecipient;
+      }
+    }
+
+    if (!lastPerson) continue;
+
+    const evidenceSpan = {
+      start: match.index,
+      end: match.index + match[0].length,
+      text: match[0]
+    };
+
+    const relation: Relation = {
+      id: uuid(),
+      subj: giverEntity.id,
+      pred: 'gave_to' as any,
+      obj: lastPerson.id,
+      evidence: [{
+        doc_id: docId,
+        span: evidenceSpan,
+        sentence_index: getSentenceIndex(text, match.index),
+        source: 'RULE' as const
+      }],
+      confidence: 0.75,
+      extractor: 'regex'
+    };
+
+    relations.push(relation);
+  }
+
+  // Pattern 2e: Purchase pattern - "X said" + "placing coins" → bought
+  // Handles: "I'll take it," said Marcus Grey, placing three gold coins
+  const purchasePattern = /(?:said|replied)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*),?\s+placing\s+(?:\w+\s+)*(?:coin|gold|silver|money)/gi;
+
+  while ((match = purchasePattern.exec(text)) !== null) {
+    const buyerName = match[1];
+    const buyerEntity = matchEntity(buyerName, entities);
+    if (!buyerEntity || buyerEntity.type !== 'PERSON') continue;
+
+    // Look for item mentioned before (within 100 chars)
+    const beforeMatch = text.substring(Math.max(0, match.index - 100), match.index);
+    const itemPattern = /\b(?:the\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g;
+    let itemMatch;
+    let itemEntity = null;
+    while ((itemMatch = itemPattern.exec(beforeMatch)) !== null) {
+      const possibleItem = matchEntity(itemMatch[1], entities);
+      if (possibleItem && possibleItem.type === 'ITEM') {
+        itemEntity = possibleItem;
+      }
+    }
+
+    if (itemEntity) {
+      const evidenceSpan = {
+        start: match.index,
+        end: match.index + match[0].length,
+        text: match[0]
+      };
+
+      const relation: Relation = {
+        id: uuid(),
+        subj: buyerEntity.id,
+        pred: 'bought' as any,
+        obj: itemEntity.id,
+        evidence: [{
+          doc_id: docId,
+          span: evidenceSpan,
+          sentence_index: getSentenceIndex(text, match.index),
+          source: 'RULE' as const
+        }],
+        confidence: 0.70,
+        extractor: 'regex'
+      };
+
+      relations.push(relation);
+    }
+  }
+
   // Pattern 3: "X had a daughter/son, Y" → parent_of(X, Y)
   const hadChildPattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:and\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+)?had\s+a\s+(daughter|son|child)\b/gi;
 
