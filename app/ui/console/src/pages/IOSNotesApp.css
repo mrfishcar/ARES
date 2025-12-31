@@ -60,9 +60,6 @@
   /* Prevent text size adjustment */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-
-  /* Use dynamic viewport height when set by JS */
-  height: var(--viewport-height, 100%);
 }
 
 /* Light mode overrides */
@@ -90,16 +87,6 @@
 .ios-notes-app--mobile {
   display: flex;
   flex-direction: column;
-  /* Use dynamic viewport height to handle keyboard on iOS */
-  height: 100dvh;
-  height: 100vh; /* Fallback for browsers that don't support dvh */
-  max-height: -webkit-fill-available; /* Safari fallback */
-}
-
-@supports (height: 100dvh) {
-  .ios-notes-app--mobile {
-    height: 100dvh;
-  }
 }
 
 .ios-notes-app--tablet {
@@ -785,11 +772,27 @@
   padding-top: env(safe-area-inset-top, 0);
   background: var(--ios-bg-secondary);
   border-bottom: 0.5px solid var(--ios-separator);
-  flex-shrink: 0;
-  z-index: 100;
-  /* Sticky position to stay visible during scroll */
-  position: sticky;
+  /* Fixed positioning to survive iOS keyboard scroll */
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+/* On tablet, header should only cover editor area, not sidebars */
+@media (min-width: 768px) {
+  .ios-editor-panel__header {
+    left: auto;
+    right: 0;
+    width: calc(100% - 320px); /* Account for sidebar */
+  }
+}
+
+@media (min-width: 1024px) {
+  .ios-editor-panel__header {
+    width: calc(100% - 520px); /* Account for both sidebars */
+  }
 }
 
 .ios-editor-panel__header-left,
@@ -817,6 +820,8 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: var(--ios-spacing-md);
+  /* Account for fixed header */
+  padding-top: calc(44px + env(safe-area-inset-top, 0) + var(--ios-spacing-md));
 }
 
 .ios-editor-panel__date {

@@ -869,10 +869,8 @@ function EditorPanel({
   const [showFormatMenu, setShowFormatMenu] = useState(false);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const [viewportOffset, setViewportOffset] = useState(0);
   const editorRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const headerRef = useRef<HTMLElement>(null);
   const { showToast } = useToast();
 
   // Track if we're initializing to prevent loops
@@ -1279,36 +1277,25 @@ function EditorPanel({
     }
   }, [handleBold, handleItalic, handleUnderline, handleInput]);
 
-  // Detect keyboard open/close and adjust viewport
+  // Detect keyboard open/close
   useEffect(() => {
     if (!window.visualViewport) return;
 
     const viewport = window.visualViewport;
 
-    const updateViewport = () => {
+    const handleResize = () => {
       const viewportHeight = viewport.height;
       const currentKeyboardHeight = window.innerHeight - viewportHeight;
       const isOpen = currentKeyboardHeight > 150;
       setIsKeyboardOpen(isOpen);
       setKeyboardHeight(isOpen ? currentKeyboardHeight : 0);
-
-      // Track the visual viewport offset (how much iOS has scrolled the page)
-      setViewportOffset(viewport.offsetTop);
-
-      // Set CSS custom property for viewport height
-      document.documentElement.style.setProperty('--viewport-height', `${viewportHeight}px`);
-      document.documentElement.style.setProperty('--viewport-offset', `${viewport.offsetTop}px`);
     };
 
-    viewport.addEventListener('resize', updateViewport);
-    viewport.addEventListener('scroll', updateViewport);
-
-    // Initial call
-    updateViewport();
+    viewport.addEventListener('resize', handleResize);
+    handleResize();
 
     return () => {
-      viewport.removeEventListener('resize', updateViewport);
-      viewport.removeEventListener('scroll', updateViewport);
+      viewport.removeEventListener('resize', handleResize);
     };
   }, []);
 
@@ -1329,11 +1316,7 @@ function EditorPanel({
 
   return (
     <div className="ios-editor-panel">
-      <header
-        ref={headerRef}
-        className="ios-editor-panel__header"
-        style={viewportOffset > 0 ? { transform: `translateY(${viewportOffset}px)` } : undefined}
-      >
+      <header className="ios-editor-panel__header">
         <div className="ios-editor-panel__header-left">
           {showBackButton && onBack && (
             <BackButton onClick={onBack} label={backLabel || 'Notes'} />
