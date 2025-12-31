@@ -102,6 +102,13 @@ export function DocumentsSidebar({
           >
             📚 BookNLP Test
           </a>
+          <a
+            href="/notes-app"
+            className="sidebar-link"
+            style={{ display: 'inline-block' }}
+          >
+            📒 Notes App
+          </a>
         </div>
       </div>
 

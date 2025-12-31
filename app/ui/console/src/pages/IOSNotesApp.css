@@ -1,0 +1,881 @@
+/**
+ * iOS Notes App Clone - Authentic iOS Styling
+ * Pixel-perfect recreation of the native iOS Notes app
+ */
+
+/* ============================================================================
+   ROOT & RESET
+============================================================================ */
+
+.ios-notes-app {
+  --ios-yellow: #FFD60A;
+  --ios-orange: #FF9500;
+  --ios-bg-primary: #F2F2F7;
+  --ios-bg-secondary: #FFFFFF;
+  --ios-bg-grouped: #F2F2F7;
+  --ios-separator: rgba(60, 60, 67, 0.12);
+  --ios-separator-opaque: #C6C6C8;
+  --ios-text-primary: #000000;
+  --ios-text-secondary: #8E8E93;
+  --ios-text-tertiary: #C7C7CC;
+  --ios-blue: #007AFF;
+  --ios-red: #FF3B30;
+  --ios-green: #34C759;
+
+  /* Spacing */
+  --ios-spacing-xs: 4px;
+  --ios-spacing-sm: 8px;
+  --ios-spacing-md: 16px;
+  --ios-spacing-lg: 20px;
+  --ios-spacing-xl: 24px;
+
+  /* Typography */
+  --ios-font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --ios-font-title-large: 34px;
+  --ios-font-title: 17px;
+  --ios-font-headline: 17px;
+  --ios-font-body: 17px;
+  --ios-font-callout: 16px;
+  --ios-font-subhead: 15px;
+  --ios-font-footnote: 13px;
+  --ios-font-caption: 12px;
+
+  /* Border Radius */
+  --ios-radius-sm: 8px;
+  --ios-radius-md: 10px;
+  --ios-radius-lg: 12px;
+  --ios-radius-xl: 16px;
+
+  /* Transitions */
+  --ios-transition-fast: 150ms ease-out;
+  --ios-transition-normal: 250ms ease-out;
+  --ios-transition-slow: 350ms ease-out;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  font-family: var(--ios-font-family);
+  font-size: var(--ios-font-body);
+  color: var(--ios-text-primary);
+  background: var(--ios-bg-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+/* Safe area support */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .ios-notes-app {
+    --safe-area-top: env(safe-area-inset-top);
+    --safe-area-bottom: env(safe-area-inset-bottom);
+    --safe-area-left: env(safe-area-inset-left);
+    --safe-area-right: env(safe-area-inset-right);
+  }
+}
+
+/* ============================================================================
+   HEADER / NAVIGATION BAR
+============================================================================ */
+
+.ios-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(242, 242, 247, 0.94);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 0.5px solid var(--ios-separator);
+  padding-top: var(--safe-area-top, 0);
+}
+
+.ios-header__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 44px;
+  padding: 0 var(--ios-spacing-md);
+}
+
+.ios-header__left,
+.ios-header__right {
+  display: flex;
+  align-items: center;
+  min-width: 80px;
+}
+
+.ios-header__right {
+  justify-content: flex-end;
+}
+
+.ios-header__title {
+  font-size: var(--ios-font-headline);
+  font-weight: 600;
+  text-align: center;
+  flex: 1;
+}
+
+.ios-header__large-title {
+  font-size: var(--ios-font-title-large);
+  font-weight: 700;
+  padding: var(--ios-spacing-xs) var(--ios-spacing-md) var(--ios-spacing-sm);
+  letter-spacing: 0.35px;
+}
+
+.ios-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ios-spacing-sm);
+}
+
+/* ============================================================================
+   BUTTONS
+============================================================================ */
+
+.ios-text-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: var(--ios-spacing-sm);
+  border: none;
+  background: none;
+  color: var(--ios-blue);
+  font-family: inherit;
+  font-size: var(--ios-font-body);
+  font-weight: 400;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity var(--ios-transition-fast);
+}
+
+.ios-text-button:active {
+  opacity: 0.5;
+}
+
+.ios-text-button--icon {
+  padding: var(--ios-spacing-sm);
+}
+
+.ios-text-button--icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.ios-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: var(--ios-spacing-sm) var(--ios-spacing-sm) var(--ios-spacing-sm) 0;
+  border: none;
+  background: none;
+  color: var(--ios-blue);
+  font-family: inherit;
+  font-size: var(--ios-font-body);
+  font-weight: 400;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity var(--ios-transition-fast);
+}
+
+.ios-back-button:active {
+  opacity: 0.5;
+}
+
+.ios-back-button svg {
+  width: 22px;
+  height: 22px;
+  margin-left: -6px;
+}
+
+.ios-compose-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: none;
+  color: var(--ios-blue);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity var(--ios-transition-fast);
+}
+
+.ios-compose-button:active {
+  opacity: 0.5;
+}
+
+.ios-compose-button svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* ============================================================================
+   SEARCH BAR
+============================================================================ */
+
+.ios-search-bar {
+  padding: 0 var(--ios-spacing-md) var(--ios-spacing-sm);
+}
+
+.ios-search-bar__container {
+  display: flex;
+  align-items: center;
+  gap: var(--ios-spacing-sm);
+  height: 36px;
+  padding: 0 var(--ios-spacing-sm);
+  background: rgba(142, 142, 147, 0.12);
+  border-radius: var(--ios-radius-md);
+}
+
+.ios-search-bar__icon {
+  width: 18px;
+  height: 18px;
+  color: var(--ios-text-secondary);
+  flex-shrink: 0;
+}
+
+.ios-search-bar__input {
+  flex: 1;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: var(--ios-font-body);
+  color: var(--ios-text-primary);
+  outline: none;
+  min-width: 0;
+}
+
+.ios-search-bar__input::placeholder {
+  color: var(--ios-text-secondary);
+}
+
+.ios-search-bar__clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: var(--ios-text-secondary);
+  color: white;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ============================================================================
+   FOLDERS VIEW
+============================================================================ */
+
+.ios-folders-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--ios-bg-grouped);
+}
+
+.ios-folders-view__content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(var(--safe-area-bottom, 0) + var(--ios-spacing-xl));
+}
+
+.ios-folder-section {
+  margin-top: var(--ios-spacing-xl);
+}
+
+.ios-folder-section__header {
+  padding: 0 var(--ios-spacing-md) var(--ios-spacing-sm);
+  font-size: var(--ios-font-footnote);
+  font-weight: 400;
+  color: var(--ios-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ios-folder-section__list {
+  background: var(--ios-bg-secondary);
+  border-radius: var(--ios-radius-lg);
+  margin: 0 var(--ios-spacing-md);
+  overflow: hidden;
+}
+
+.ios-folder-row {
+  display: flex;
+  align-items: center;
+  gap: var(--ios-spacing-md);
+  width: 100%;
+  padding: var(--ios-spacing-md);
+  border: none;
+  background: var(--ios-bg-secondary);
+  font-family: inherit;
+  font-size: var(--ios-font-body);
+  color: var(--ios-text-primary);
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--ios-transition-fast);
+}
+
+.ios-folder-row:not(:last-child) {
+  border-bottom: 0.5px solid var(--ios-separator);
+}
+
+.ios-folder-row:active {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.ios-folder-row__icon {
+  font-size: 28px;
+  width: 36px;
+  text-align: center;
+}
+
+.ios-folder-row__name {
+  flex: 1;
+  font-weight: 400;
+}
+
+.ios-folder-row__count {
+  color: var(--ios-text-secondary);
+  font-weight: 400;
+}
+
+.ios-folder-row__chevron {
+  width: 14px;
+  height: 14px;
+  color: var(--ios-text-tertiary);
+}
+
+/* ============================================================================
+   NOTES LIST VIEW
+============================================================================ */
+
+.ios-notes-list-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--ios-bg-grouped);
+}
+
+.ios-notes-list-view__content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ios-notes-section {
+  margin-top: var(--ios-spacing-md);
+}
+
+.ios-notes-section__header {
+  padding: var(--ios-spacing-md) var(--ios-spacing-md) var(--ios-spacing-sm);
+  font-size: var(--ios-font-footnote);
+  font-weight: 600;
+  color: var(--ios-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ios-notes-section__list {
+  background: var(--ios-bg-secondary);
+}
+
+.ios-note-row-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.ios-note-row-actions {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 100px;
+  display: flex;
+  align-items: stretch;
+}
+
+.ios-note-row-actions__delete {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: var(--ios-red);
+  color: white;
+  cursor: pointer;
+}
+
+.ios-note-row-actions__delete svg {
+  width: 24px;
+  height: 24px;
+}
+
+.ios-note-row {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ios-spacing-sm);
+  padding: var(--ios-spacing-md);
+  background: var(--ios-bg-secondary);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--ios-transition-fast), background var(--ios-transition-fast);
+  will-change: transform;
+}
+
+.ios-note-row:not(:last-child) {
+  border-bottom: 0.5px solid var(--ios-separator);
+}
+
+.ios-note-row:active {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.ios-note-row__pin-indicator {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ios-orange);
+}
+
+.ios-note-row__pin-indicator svg {
+  width: 14px;
+  height: 14px;
+}
+
+.ios-note-row__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.ios-note-row__title {
+  font-size: var(--ios-font-body);
+  font-weight: 600;
+  color: var(--ios-text-primary);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ios-note-row__preview {
+  display: flex;
+  align-items: center;
+  gap: var(--ios-spacing-sm);
+  font-size: var(--ios-font-subhead);
+  color: var(--ios-text-secondary);
+}
+
+.ios-note-row__date {
+  flex-shrink: 0;
+  font-weight: 400;
+}
+
+.ios-note-row__text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ============================================================================
+   NOTES LIST FOOTER
+============================================================================ */
+
+.ios-notes-list-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--ios-spacing-sm) var(--ios-spacing-md);
+  padding-bottom: calc(var(--safe-area-bottom, 0) + var(--ios-spacing-sm));
+  background: rgba(242, 242, 247, 0.94);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-top: 0.5px solid var(--ios-separator);
+}
+
+.ios-notes-list-footer__count {
+  font-size: var(--ios-font-footnote);
+  color: var(--ios-text-secondary);
+}
+
+/* ============================================================================
+   EMPTY STATE
+============================================================================ */
+
+.ios-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ios-spacing-xl);
+  text-align: center;
+  min-height: 300px;
+}
+
+.ios-empty-state__icon {
+  font-size: 64px;
+  margin-bottom: var(--ios-spacing-md);
+  opacity: 0.5;
+}
+
+.ios-empty-state__title {
+  font-size: var(--ios-font-title);
+  font-weight: 600;
+  color: var(--ios-text-primary);
+  margin-bottom: var(--ios-spacing-xs);
+}
+
+.ios-empty-state__subtitle {
+  font-size: var(--ios-font-subhead);
+  color: var(--ios-text-secondary);
+  max-width: 280px;
+}
+
+/* ============================================================================
+   NOTE EDITOR
+============================================================================ */
+
+.ios-note-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--ios-bg-secondary);
+}
+
+.ios-note-editor__content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--ios-spacing-md);
+}
+
+.ios-note-editor__date {
+  text-align: center;
+  font-size: var(--ios-font-footnote);
+  color: var(--ios-text-secondary);
+  margin-bottom: var(--ios-spacing-md);
+}
+
+.ios-note-editor__textarea {
+  width: 100%;
+  min-height: calc(100% - 40px);
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: var(--ios-font-body);
+  line-height: 1.5;
+  color: var(--ios-text-primary);
+  resize: none;
+  outline: none;
+}
+
+.ios-note-editor__textarea::placeholder {
+  color: var(--ios-text-tertiary);
+}
+
+.ios-note-editor__textarea:first-line {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* ============================================================================
+   EDITOR TOOLBAR
+============================================================================ */
+
+.ios-note-editor__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: var(--ios-spacing-sm) var(--ios-spacing-md);
+  padding-bottom: calc(var(--safe-area-bottom, 0) + var(--ios-spacing-sm));
+  background: rgba(242, 242, 247, 0.94);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-top: 0.5px solid var(--ios-separator);
+}
+
+.ios-toolbar-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: none;
+  color: var(--ios-blue);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity var(--ios-transition-fast);
+  border-radius: var(--ios-radius-sm);
+}
+
+.ios-toolbar-button:active {
+  opacity: 0.5;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.ios-toolbar-button svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* ============================================================================
+   DROPDOWN MENU
+============================================================================ */
+
+.ios-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: transparent;
+}
+
+.ios-dropdown-menu {
+  position: absolute;
+  top: 52px;
+  right: var(--ios-spacing-md);
+  z-index: 201;
+  min-width: 200px;
+  background: var(--ios-bg-secondary);
+  border-radius: var(--ios-radius-lg);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  animation: ios-dropdown-in 200ms ease-out;
+}
+
+@keyframes ios-dropdown-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.ios-dropdown-menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--ios-spacing-md);
+  width: 100%;
+  padding: var(--ios-spacing-md);
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: var(--ios-font-body);
+  color: var(--ios-text-primary);
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--ios-transition-fast);
+}
+
+.ios-dropdown-menu__item:not(:last-child) {
+  border-bottom: 0.5px solid var(--ios-separator);
+}
+
+.ios-dropdown-menu__item:active {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.ios-dropdown-menu__item svg {
+  width: 20px;
+  height: 20px;
+  color: var(--ios-blue);
+}
+
+.ios-dropdown-menu__item--danger {
+  color: var(--ios-red);
+}
+
+.ios-dropdown-menu__item--danger svg {
+  color: var(--ios-red);
+}
+
+/* ============================================================================
+   DARK MODE SUPPORT
+============================================================================ */
+
+@media (prefers-color-scheme: dark) {
+  .ios-notes-app {
+    --ios-bg-primary: #000000;
+    --ios-bg-secondary: #1C1C1E;
+    --ios-bg-grouped: #000000;
+    --ios-separator: rgba(84, 84, 88, 0.65);
+    --ios-separator-opaque: #38383A;
+    --ios-text-primary: #FFFFFF;
+    --ios-text-secondary: #8E8E93;
+    --ios-text-tertiary: #48484A;
+    --ios-blue: #0A84FF;
+    --ios-red: #FF453A;
+    --ios-green: #30D158;
+    --ios-yellow: #FFD60A;
+    --ios-orange: #FF9F0A;
+  }
+
+  .ios-header {
+    background: rgba(0, 0, 0, 0.94);
+  }
+
+  .ios-notes-list-footer,
+  .ios-note-editor__toolbar {
+    background: rgba(0, 0, 0, 0.94);
+  }
+
+  .ios-search-bar__container {
+    background: rgba(118, 118, 128, 0.24);
+  }
+
+  .ios-folder-row:active,
+  .ios-note-row:active,
+  .ios-dropdown-menu__item:active,
+  .ios-toolbar-button:active {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .ios-dropdown-menu {
+    background: #2C2C2E;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE ADJUSTMENTS
+============================================================================ */
+
+/* iPad / Tablet */
+@media (min-width: 768px) {
+  .ios-notes-app {
+    --ios-spacing-md: 20px;
+    --ios-spacing-lg: 24px;
+  }
+
+  .ios-folder-section__list,
+  .ios-notes-section__list {
+    margin: 0 auto;
+    max-width: 700px;
+  }
+
+  .ios-folders-view__content,
+  .ios-notes-list-view__content {
+    padding: 0 var(--ios-spacing-lg);
+  }
+
+  .ios-note-editor__content {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: var(--ios-spacing-lg) var(--ios-spacing-xl);
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .ios-notes-app {
+    max-width: 100%;
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .ios-folder-section__list,
+  .ios-notes-section__list {
+    max-width: 800px;
+  }
+
+  .ios-note-editor__content {
+    max-width: 800px;
+    padding: var(--ios-spacing-xl) var(--ios-spacing-xl);
+  }
+}
+
+/* ============================================================================
+   ANIMATIONS
+============================================================================ */
+
+@keyframes ios-slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes ios-slide-out-left {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-30%);
+    opacity: 0;
+  }
+}
+
+/* ============================================================================
+   SCROLLBAR STYLING (WebKit)
+============================================================================ */
+
+.ios-folders-view__content::-webkit-scrollbar,
+.ios-notes-list-view__content::-webkit-scrollbar,
+.ios-note-editor__content::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}
+
+/* ============================================================================
+   TOUCH FEEDBACK
+============================================================================ */
+
+@media (hover: hover) {
+  .ios-folder-row:hover,
+  .ios-note-row:hover {
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  .ios-dropdown-menu__item:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .ios-folder-row:hover,
+    .ios-note-row:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .ios-dropdown-menu__item:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+  }
+}
+
+/* Prevent text selection while interacting */
+.ios-note-row,
+.ios-folder-row,
+.ios-toolbar-button,
+.ios-back-button,
+.ios-text-button,
+.ios-compose-button {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Allow text selection in editor */
+.ios-note-editor__textarea {
+  user-select: text;
+  -webkit-user-select: text;
+}
