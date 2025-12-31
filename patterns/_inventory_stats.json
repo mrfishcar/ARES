@@ -1,13 +1,13 @@
 {
-  "total": 578,
+  "total": 583,
   "by_family": {
     "kinship": 46,
-    "employment": 103,
+    "employment": 104,
     "ownership": 27,
-    "social": 32,
+    "social": 34,
     "event": 33,
-    "location": 39,
-    "power": 28,
+    "location": 40,
+    "power": 29,
     "creation": 13,
     "other": 149,
     "communication": 22,
@@ -20,17 +20,17 @@
   },
   "by_predicate": {
     "married_to": 14,
-    "leads": 22,
+    "leads": 23,
     "acquired": 4,
     "invested_in": 6,
     "advised_by": 11,
     "member_of": 35,
     "owns": 18,
     "friends_with": 14,
-    "enemy_of": 12,
+    "enemy_of": 14,
     "ally_of": 6,
     "attended": 14,
-    "lives_in": 23,
+    "lives_in": 24,
     "fought_in": 2,
     "born_in": 3,
     "traveled_to": 5,
@@ -41,7 +41,7 @@
     "sibling_of": 5,
     "mentored": 3,
     "mentored_by": 1,
-    "rules": 9,
+    "rules": 10,
     "guards": 1,
     "seeks": 2,
     "possesses": 2,
@@ -156,5 +156,5 @@
     "directed": 1,
     "unknown": 1
   },
-  "unique_signatures": 561
+  "unique_signatures": 565
 }
