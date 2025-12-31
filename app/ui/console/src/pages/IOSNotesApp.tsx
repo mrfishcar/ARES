@@ -180,6 +180,12 @@ function extractTitle(content: string): string {
   return firstLine || 'New Note';
 }
 
+function escapeHtml(text: string): string {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
 // Hook for responsive breakpoint - SSR-safe with correct initial value
 function useIsTablet(): boolean {
   const [isTablet, setIsTablet] = useState(() => {
@@ -828,7 +834,7 @@ function NotesListSidebar({
   );
 }
 
-// Editor Panel with iOS-style title/body split
+// Editor Panel with iOS-style title/body split - Rich Text Editor
 function EditorPanel({
   note,
   content,
@@ -858,218 +864,303 @@ function EditorPanel({
   const [showFormatMenu, setShowFormatMenu] = useState(false);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const titleRef = useRef<HTMLTextAreaElement>(null);
-  const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
 
-  // Split content into title (first line) and body (rest)
-  const splitContent = useMemo(() => {
-    if (!content) return { title: '', body: '' };
-    const newlineIndex = content.indexOf('\n');
-    if (newlineIndex === -1) {
-      return { title: content, body: '' };
+  // Track if we're initializing to prevent loops
+  const isInitializingRef = useRef(false);
+  const lastContentRef = useRef(content);
+
+  // Convert plain text content to HTML for the editor
+  const textToHtml = useCallback((text: string): string => {
+    if (!text) return '<div class="ios-editor-title" data-placeholder="Title"></div><div class="ios-editor-body" data-placeholder="Start typing..."></div>';
+
+    const lines = text.split('\n');
+    const title = lines[0] || '';
+    const bodyLines = lines.slice(1);
+
+    // Process body lines for checklists and formatting
+    const processedBody = bodyLines.map(line => {
+      // Check for checklist items
+      if (line.match(/^- \[[ x]\] /)) {
+        const isChecked = line.match(/^- \[x\] /i);
+        const text = line.replace(/^- \[[ x]\] /, '');
+        return `<div class="ios-checklist-item${isChecked ? ' ios-checklist-item--checked' : ''}"><span class="ios-checkbox" contenteditable="false">${isChecked ? '☑' : '☐'}</span><span class="ios-checklist-text">${escapeHtml(text)}</span></div>`;
+      }
+
+      // Check for headings
+      if (line.startsWith('### ')) {
+        return `<div class="ios-subheading">${escapeHtml(line.slice(4))}</div>`;
+      }
+      if (line.startsWith('## ')) {
+        return `<div class="ios-heading">${escapeHtml(line.slice(3))}</div>`;
+      }
+      if (line.startsWith('# ')) {
+        return `<div class="ios-title-line">${escapeHtml(line.slice(2))}</div>`;
+      }
+
+      // Regular paragraph
+      return `<div>${escapeHtml(line) || '<br>'}</div>`;
+    }).join('');
+
+    return `<div class="ios-editor-title" data-placeholder="Title">${escapeHtml(title) || ''}</div><div class="ios-editor-body" data-placeholder="Start typing...">${processedBody || '<div><br></div>'}</div>`;
+  }, []);
+
+  // Convert HTML back to plain text for storage
+  const htmlToText = useCallback((html: string): string => {
+    const temp = document.createElement('div');
+    temp.innerHTML = html;
+
+    const titleEl = temp.querySelector('.ios-editor-title');
+    const bodyEl = temp.querySelector('.ios-editor-body');
+
+    const title = titleEl?.textContent || '';
+
+    let bodyText = '';
+    if (bodyEl) {
+      const processNode = (node: Node): string => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          return node.textContent || '';
+        }
+
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          const el = node as HTMLElement;
+
+          // Handle checklist items
+          if (el.classList.contains('ios-checklist-item')) {
+            const isChecked = el.classList.contains('ios-checklist-item--checked');
+            const textEl = el.querySelector('.ios-checklist-text');
+            const text = textEl?.textContent || '';
+            return `- [${isChecked ? 'x' : ' '}] ${text}`;
+          }
+
+          // Handle headings
+          if (el.classList.contains('ios-title-line')) {
+            return `# ${el.textContent || ''}`;
+          }
+          if (el.classList.contains('ios-heading')) {
+            return `## ${el.textContent || ''}`;
+          }
+          if (el.classList.contains('ios-subheading')) {
+            return `### ${el.textContent || ''}`;
+          }
+
+          // Handle divs/paragraphs
+          if (el.tagName === 'DIV' || el.tagName === 'P') {
+            const childText = Array.from(el.childNodes).map(processNode).join('');
+            return childText;
+          }
+
+          // Handle BR
+          if (el.tagName === 'BR') {
+            return '';
+          }
+
+          // Handle inline elements
+          return el.textContent || '';
+        }
+
+        return '';
+      };
+
+      const lines: string[] = [];
+      bodyEl.childNodes.forEach(node => {
+        lines.push(processNode(node));
+      });
+      bodyText = lines.join('\n');
     }
-    return {
-      title: content.substring(0, newlineIndex),
-      body: content.substring(newlineIndex + 1)
-    };
-  }, [content]);
 
-  const { title, body } = splitContent;
+    return title + (bodyText ? '\n' + bodyText : '');
+  }, []);
 
-  // Refs for latest values to avoid stale closures
-  const latestBodyRef = useRef(body);
-  latestBodyRef.current = body;
-  const latestTitleRef = useRef(title);
-  latestTitleRef.current = title;
-
-  // Helper: Insert text at cursor position in body
-  const insertAtCursor = useCallback((textToInsert: string, focusAfter = true) => {
-    const textarea = bodyRef.current;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const currentBody = textarea.value;
-
-    const newBody = currentBody.substring(0, start) + textToInsert + currentBody.substring(end);
-    const newCursorPos = start + textToInsert.length;
-
-    // Update content
-    const currentTitle = latestTitleRef.current;
-    onContentChange(currentTitle + '\n' + newBody);
-
-    // Restore cursor position after React re-render
-    if (focusAfter) {
+  // Initialize editor content when note changes
+  useEffect(() => {
+    if (editorRef.current && content !== lastContentRef.current) {
+      isInitializingRef.current = true;
+      editorRef.current.innerHTML = textToHtml(content);
+      lastContentRef.current = content;
       setTimeout(() => {
-        textarea.focus();
-        textarea.selectionStart = newCursorPos;
-        textarea.selectionEnd = newCursorPos;
+        isInitializingRef.current = false;
       }, 0);
     }
-  }, [onContentChange]);
+  }, [content, textToHtml]);
 
-  // Helper: Wrap selected text with prefix/suffix
-  const wrapSelection = useCallback((prefix: string, suffix: string) => {
-    const textarea = bodyRef.current;
-    if (!textarea) return;
+  // Handle input changes
+  const handleInput = useCallback(() => {
+    if (isInitializingRef.current || !editorRef.current) return;
 
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const currentBody = textarea.value;
-    const selectedText = currentBody.substring(start, end);
-
-    // If no selection, just insert prefix+suffix and place cursor between
-    if (start === end) {
-      const newBody = currentBody.substring(0, start) + prefix + suffix + currentBody.substring(end);
-      const newCursorPos = start + prefix.length;
-
-      const currentTitle = latestTitleRef.current;
-      onContentChange(currentTitle + '\n' + newBody);
-
-      setTimeout(() => {
-        textarea.focus();
-        textarea.selectionStart = newCursorPos;
-        textarea.selectionEnd = newCursorPos;
-      }, 0);
-    } else {
-      // Wrap the selection
-      const newBody = currentBody.substring(0, start) + prefix + selectedText + suffix + currentBody.substring(end);
-      const newCursorPos = end + prefix.length + suffix.length;
-
-      const currentTitle = latestTitleRef.current;
-      onContentChange(currentTitle + '\n' + newBody);
-
-      setTimeout(() => {
-        textarea.focus();
-        textarea.selectionStart = start + prefix.length;
-        textarea.selectionEnd = end + prefix.length;
-      }, 0);
+    const newContent = htmlToText(editorRef.current.innerHTML);
+    if (newContent !== lastContentRef.current) {
+      lastContentRef.current = newContent;
+      onContentChange(newContent);
     }
-  }, [onContentChange]);
+  }, [htmlToText, onContentChange]);
+
+  // Execute formatting command
+  const execFormat = useCallback((command: string, value?: string) => {
+    document.execCommand(command, false, value);
+    editorRef.current?.focus();
+    handleInput();
+  }, [handleInput]);
 
   // Toolbar action handlers
-  const handleChecklist = useCallback(() => {
-    insertAtCursor('- [ ] ');
-    showToast('Checklist item added');
-  }, [insertAtCursor, showToast]);
-
   const handleBold = useCallback(() => {
-    wrapSelection('**', '**');
+    execFormat('bold');
     setShowFormatMenu(false);
-  }, [wrapSelection]);
+  }, [execFormat]);
 
   const handleItalic = useCallback(() => {
-    wrapSelection('*', '*');
+    execFormat('italic');
     setShowFormatMenu(false);
-  }, [wrapSelection]);
-
-  const handleStrikethrough = useCallback(() => {
-    wrapSelection('~~', '~~');
-    setShowFormatMenu(false);
-  }, [wrapSelection]);
+  }, [execFormat]);
 
   const handleUnderline = useCallback(() => {
-    // Use HTML underline tags for markdown preview compatibility
-    wrapSelection('<u>', '</u>');
+    execFormat('underline');
     setShowFormatMenu(false);
-  }, [wrapSelection]);
+  }, [execFormat]);
 
-  // Text style handlers for the segmented control
+  const handleStrikethrough = useCallback(() => {
+    execFormat('strikeThrough');
+    setShowFormatMenu(false);
+  }, [execFormat]);
+
+  // Handle text style (heading levels)
   const handleTextStyle = useCallback((style: 'title' | 'heading' | 'subheading' | 'body') => {
-    const textarea = bodyRef.current;
-    if (!textarea) return;
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
 
-    const start = textarea.selectionStart;
-    const currentBody = textarea.value;
+    const range = selection.getRangeAt(0);
+    let container = range.startContainer;
 
-    // Find the start of the current line
-    let lineStart = start;
-    while (lineStart > 0 && currentBody[lineStart - 1] !== '\n') {
-      lineStart--;
+    // Find the parent div/block element
+    while (container && container.nodeType !== Node.ELEMENT_NODE) {
+      container = container.parentNode as Node;
     }
 
-    // Find the end of the current line
-    let lineEnd = start;
-    while (lineEnd < currentBody.length && currentBody[lineEnd] !== '\n') {
-      lineEnd++;
+    // Find the closest div in the body
+    let targetDiv = container as HTMLElement;
+    while (targetDiv && targetDiv.parentElement && !targetDiv.parentElement.classList.contains('ios-editor-body')) {
+      targetDiv = targetDiv.parentElement;
     }
 
-    const currentLine = currentBody.substring(lineStart, lineEnd);
+    if (targetDiv && targetDiv.parentElement?.classList.contains('ios-editor-body')) {
+      // Remove existing style classes
+      targetDiv.classList.remove('ios-title-line', 'ios-heading', 'ios-subheading');
 
-    // Remove existing heading markers
-    let cleanLine = currentLine.replace(/^#{1,6}\s*/, '');
+      // Add new style class
+      switch (style) {
+        case 'title':
+          targetDiv.classList.add('ios-title-line');
+          break;
+        case 'heading':
+          targetDiv.classList.add('ios-heading');
+          break;
+        case 'subheading':
+          targetDiv.classList.add('ios-subheading');
+          break;
+        case 'body':
+          // No class needed for body
+          break;
+      }
 
-    // Add new style prefix
-    let prefix = '';
-    switch (style) {
-      case 'title':
-        prefix = '# ';
-        break;
-      case 'heading':
-        prefix = '## ';
-        break;
-      case 'subheading':
-        prefix = '### ';
-        break;
-      case 'body':
-        prefix = '';
-        break;
+      handleInput();
     }
-
-    const newLine = prefix + cleanLine;
-    const newBody = currentBody.substring(0, lineStart) + newLine + currentBody.substring(lineEnd);
-
-    const currentTitle = latestTitleRef.current;
-    onContentChange(currentTitle + '\n' + newBody);
-
-    // Calculate new cursor position
-    const cursorOffset = prefix.length - (currentLine.length - cleanLine.length);
-    const newCursorPos = Math.max(lineStart, start + cursorOffset);
-
-    setTimeout(() => {
-      textarea.focus();
-      textarea.selectionStart = newCursorPos;
-      textarea.selectionEnd = newCursorPos;
-    }, 0);
 
     setShowFormatMenu(false);
-  }, [onContentChange]);
+  }, [handleInput]);
 
-  const handleHeading = useCallback(() => {
-    const textarea = bodyRef.current;
-    if (!textarea) return;
+  // Handle checklist
+  const handleChecklist = useCallback(() => {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      // No selection, insert at end
+      if (editorRef.current) {
+        const bodyEl = editorRef.current.querySelector('.ios-editor-body');
+        if (bodyEl) {
+          const newItem = document.createElement('div');
+          newItem.className = 'ios-checklist-item';
+          newItem.innerHTML = '<span class="ios-checkbox" contenteditable="false">☐</span><span class="ios-checklist-text"></span>';
+          bodyEl.appendChild(newItem);
 
-    const start = textarea.selectionStart;
-    const currentBody = textarea.value;
+          // Focus the text span
+          const textSpan = newItem.querySelector('.ios-checklist-text');
+          if (textSpan) {
+            const range = document.createRange();
+            range.selectNodeContents(textSpan);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }
+        }
+      }
+    } else {
+      // Convert current line to checklist
+      const range = selection.getRangeAt(0);
+      let container = range.startContainer;
 
-    // Find the start of the current line
-    let lineStart = start;
-    while (lineStart > 0 && currentBody[lineStart - 1] !== '\n') {
-      lineStart--;
+      while (container && container.nodeType !== Node.ELEMENT_NODE) {
+        container = container.parentNode as Node;
+      }
+
+      let targetDiv = container as HTMLElement;
+      while (targetDiv && targetDiv.parentElement && !targetDiv.parentElement.classList.contains('ios-editor-body')) {
+        targetDiv = targetDiv.parentElement;
+      }
+
+      if (targetDiv && targetDiv.parentElement?.classList.contains('ios-editor-body')) {
+        const text = targetDiv.textContent || '';
+        const newItem = document.createElement('div');
+        newItem.className = 'ios-checklist-item';
+        newItem.innerHTML = `<span class="ios-checkbox" contenteditable="false">☐</span><span class="ios-checklist-text">${escapeHtml(text)}</span>`;
+        targetDiv.replaceWith(newItem);
+      }
     }
 
-    // Insert # at the start of the line
-    const newBody = currentBody.substring(0, lineStart) + '# ' + currentBody.substring(lineStart);
+    handleInput();
+  }, [handleInput]);
 
-    const currentTitle = latestTitleRef.current;
-    onContentChange(currentTitle + '\n' + newBody);
+  // Handle checkbox click
+  const handleEditorClick = useCallback((e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.classList.contains('ios-checkbox')) {
+      const item = target.closest('.ios-checklist-item');
+      if (item) {
+        const isChecked = item.classList.toggle('ios-checklist-item--checked');
+        target.textContent = isChecked ? '☑' : '☐';
+        handleInput();
+      }
+    }
+  }, [handleInput]);
 
-    setTimeout(() => {
-      textarea.focus();
-      textarea.selectionStart = start + 2;
-      textarea.selectionEnd = start + 2;
-    }, 0);
-
-    setShowFormatMenu(false);
-  }, [onContentChange]);
-
+  // Handle table insertion
   const handleTable = useCallback(() => {
-    const tableTemplate = '\n| Column 1 | Column 2 | Column 3 |\n|----------|----------|----------|\n| Cell 1   | Cell 2   | Cell 3   |\n| Cell 4   | Cell 5   | Cell 6   |\n';
-    insertAtCursor(tableTemplate);
+    const selection = window.getSelection();
+    if (!editorRef.current) return;
+
+    const bodyEl = editorRef.current.querySelector('.ios-editor-body');
+    if (!bodyEl) return;
+
+    const table = document.createElement('table');
+    table.className = 'ios-table';
+    table.innerHTML = `
+      <thead><tr><th>Column 1</th><th>Column 2</th><th>Column 3</th></tr></thead>
+      <tbody>
+        <tr><td>Cell 1</td><td>Cell 2</td><td>Cell 3</td></tr>
+        <tr><td>Cell 4</td><td>Cell 5</td><td>Cell 6</td></tr>
+      </tbody>
+    `;
+
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      range.insertNode(table);
+    } else {
+      bodyEl.appendChild(table);
+    }
+
+    handleInput();
     showToast('Table inserted');
-  }, [insertAtCursor, showToast]);
+  }, [handleInput, showToast]);
 
   const handleAttachment = useCallback(() => {
     showToast('Attachments - Coming soon');
@@ -1083,69 +1174,113 @@ function EditorPanel({
     showToast('Search - Coming soon');
   }, [showToast]);
 
-  const handleTitleChange = useCallback((newTitle: string) => {
-    // Prevent newlines in title - move to body on Enter
-    if (newTitle.includes('\n')) {
-      const parts = newTitle.split('\n');
-      const firstPart = parts[0];
-      const rest = parts.slice(1).join('\n');
-      // Combine rest with existing body, separated by newline if both have content
-      const newBody = rest + (rest && latestBodyRef.current ? '\n' : '') + latestBodyRef.current;
-      onContentChange(firstPart + '\n' + newBody);
-      // Focus body after Enter
-      setTimeout(() => bodyRef.current?.focus(), 0);
-    } else {
-      // Preserve existing body
-      const currentBody = latestBodyRef.current;
-      onContentChange(newTitle + (currentBody ? '\n' + currentBody : ''));
-    }
-  }, [onContentChange]);
+  // Handle key events
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    // Handle Enter in title - move to body
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      const titleEl = editorRef.current?.querySelector('.ios-editor-title');
 
-  const handleBodyChange = useCallback((newBody: string) => {
-    const currentTitle = latestTitleRef.current;
-    onContentChange(currentTitle + '\n' + newBody);
-  }, [onContentChange]);
+      if (e.key === 'Enter' && titleEl?.contains(range.startContainer)) {
+        e.preventDefault();
+        const bodyEl = editorRef.current?.querySelector('.ios-editor-body');
+        if (bodyEl) {
+          const firstChild = bodyEl.firstChild;
+          if (firstChild) {
+            const newRange = document.createRange();
+            newRange.setStart(firstChild, 0);
+            newRange.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(newRange);
+          }
+        }
+        return;
+      }
 
-  // Handle title keydown for Enter key
-  const handleTitleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      bodyRef.current?.focus();
-      // Place cursor at start of body
-      if (bodyRef.current) {
-        bodyRef.current.selectionStart = 0;
-        bodyRef.current.selectionEnd = 0;
+      // Handle Enter in checklist item - create new checklist item
+      if (e.key === 'Enter') {
+        let container = range.startContainer;
+        while (container && container.nodeType !== Node.ELEMENT_NODE) {
+          container = container.parentNode as Node;
+        }
+
+        const checklistItem = (container as HTMLElement)?.closest?.('.ios-checklist-item');
+        if (checklistItem) {
+          e.preventDefault();
+          const newItem = document.createElement('div');
+          newItem.className = 'ios-checklist-item';
+          newItem.innerHTML = '<span class="ios-checkbox" contenteditable="false">☐</span><span class="ios-checklist-text"></span>';
+          checklistItem.after(newItem);
+
+          const textSpan = newItem.querySelector('.ios-checklist-text');
+          if (textSpan) {
+            const newRange = document.createRange();
+            newRange.selectNodeContents(textSpan);
+            newRange.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(newRange);
+          }
+          handleInput();
+          return;
+        }
+      }
+
+      // Handle Backspace at start of checklist item - convert to regular div
+      if (e.key === 'Backspace') {
+        let container = range.startContainer;
+        const textSpan = (container as HTMLElement)?.closest?.('.ios-checklist-text') ||
+                         (container.parentNode as HTMLElement)?.closest?.('.ios-checklist-text');
+
+        if (textSpan && range.startOffset === 0 && range.collapsed) {
+          const checklistItem = textSpan.closest('.ios-checklist-item');
+          if (checklistItem) {
+            e.preventDefault();
+            const text = textSpan.textContent || '';
+            const newDiv = document.createElement('div');
+            newDiv.textContent = text || '\u200B';
+            checklistItem.replaceWith(newDiv);
+
+            const newRange = document.createRange();
+            newRange.setStart(newDiv, 0);
+            newRange.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(newRange);
+            handleInput();
+            return;
+          }
+        }
       }
     }
-  }, []);
 
-  // Handle body keydown for Backspace at start
-  const handleBodyKeyDown = useCallback((e: React.KeyboardEvent) => {
-    const target = e.target as HTMLTextAreaElement;
-    if (e.key === 'Backspace' && target.selectionStart === 0 && target.selectionEnd === 0) {
-      e.preventDefault();
-      titleRef.current?.focus();
-      // Place cursor at end of title
-      if (titleRef.current) {
-        titleRef.current.selectionStart = title.length;
-        titleRef.current.selectionEnd = title.length;
+    // Keyboard shortcuts
+    if (e.metaKey || e.ctrlKey) {
+      switch (e.key.toLowerCase()) {
+        case 'b':
+          e.preventDefault();
+          handleBold();
+          break;
+        case 'i':
+          e.preventDefault();
+          handleItalic();
+          break;
+        case 'u':
+          e.preventDefault();
+          handleUnderline();
+          break;
       }
     }
-  }, [title.length]);
+  }, [handleBold, handleItalic, handleUnderline, handleInput]);
 
-  // Detect keyboard open/close via visualViewport and track keyboard height
+  // Detect keyboard open/close
   useEffect(() => {
     if (!window.visualViewport) return;
 
     const viewport = window.visualViewport;
-    let initialHeight = window.innerHeight;
 
     const handleResize = () => {
-      // Calculate keyboard height from viewport change
       const viewportHeight = viewport.height;
       const currentKeyboardHeight = window.innerHeight - viewportHeight;
-
-      // Keyboard is likely open if viewport shrinks significantly (> 150px)
       const isOpen = currentKeyboardHeight > 150;
       setIsKeyboardOpen(isOpen);
       setKeyboardHeight(isOpen ? currentKeyboardHeight : 0);
@@ -1159,27 +1294,20 @@ function EditorPanel({
     };
   }, []);
 
-  // Auto-focus title for new notes
+  // Auto-focus for new notes
   useEffect(() => {
-    if (!note && titleRef.current) {
-      titleRef.current.focus();
+    if (!note && editorRef.current) {
+      const titleEl = editorRef.current.querySelector('.ios-editor-title');
+      if (titleEl) {
+        const range = document.createRange();
+        range.selectNodeContents(titleEl);
+        range.collapse(true);
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+      }
     }
   }, [note]);
-
-  // Auto-resize textareas
-  const autoResize = useCallback((textarea: HTMLTextAreaElement | null) => {
-    if (!textarea) return;
-    textarea.style.height = 'auto';
-    textarea.style.height = `${textarea.scrollHeight}px`;
-  }, []);
-
-  useEffect(() => {
-    autoResize(titleRef.current);
-  }, [title, autoResize]);
-
-  useEffect(() => {
-    autoResize(bodyRef.current);
-  }, [body, autoResize]);
 
   return (
     <div className="ios-editor-panel">
@@ -1376,14 +1504,14 @@ function EditorPanel({
                   showToast('Copied to clipboard');
                 } catch {
                   // Fallback for older browsers
-                  const textarea = document.createElement('textarea');
-                  textarea.value = content;
-                  textarea.style.position = 'fixed';
-                  textarea.style.opacity = '0';
-                  document.body.appendChild(textarea);
-                  textarea.select();
+                  const el = document.createElement('textarea');
+                  el.value = content;
+                  el.style.position = 'fixed';
+                  el.style.opacity = '0';
+                  document.body.appendChild(el);
+                  el.select();
                   document.execCommand('copy');
-                  document.body.removeChild(textarea);
+                  document.body.removeChild(el);
                   showToast('Copied to clipboard');
                 }
                 setShowMenu(false);
@@ -1423,31 +1551,20 @@ function EditorPanel({
             {formatFullDate(note.updatedAt)}
           </div>
         )}
-        <div className="ios-editor-panel__editor">
-          {/* Title - large heading style */}
-          <textarea
-            ref={titleRef}
-            className="ios-editor-panel__title"
-            value={title}
-            onChange={(e) => handleTitleChange(e.target.value)}
-            onKeyDown={handleTitleKeyDown}
-            onBlur={onSave}
-            placeholder="Title"
-            rows={1}
-            aria-label="Note title"
-          />
-          {/* Body - regular text */}
-          <textarea
-            ref={bodyRef}
-            className="ios-editor-panel__body"
-            value={body}
-            onChange={(e) => handleBodyChange(e.target.value)}
-            onKeyDown={handleBodyKeyDown}
-            onBlur={onSave}
-            placeholder="Start typing..."
-            aria-label="Note content"
-          />
-        </div>
+        {/* Rich text editor using contenteditable */}
+        <div
+          ref={editorRef}
+          className="ios-rich-editor"
+          contentEditable
+          onInput={handleInput}
+          onClick={handleEditorClick}
+          onKeyDown={handleKeyDown}
+          onBlur={onSave}
+          suppressContentEditableWarning
+          role="textbox"
+          aria-multiline="true"
+          aria-label="Note content"
+        />
       </div>
 
       {/* Keyboard accessory toolbar - shows when keyboard is open, positioned above keyboard */}
@@ -1466,10 +1583,7 @@ function EditorPanel({
           <button
             type="button"
             className="ios-toolbar-button ios-toolbar-button--done"
-            onClick={() => {
-              titleRef.current?.blur();
-              bodyRef.current?.blur();
-            }}
+            onClick={() => editorRef.current?.blur()}
             aria-label="Dismiss keyboard"
           >
             Done

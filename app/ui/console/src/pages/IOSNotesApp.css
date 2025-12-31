@@ -870,6 +870,164 @@
   color: var(--ios-text-tertiary);
 }
 
+/* ============================================================================
+   RICH TEXT EDITOR
+============================================================================ */
+
+.ios-rich-editor {
+  width: 100%;
+  min-height: 300px;
+  outline: none;
+  font-family: inherit;
+  font-size: var(--ios-font-body);
+  line-height: 1.5;
+  color: var(--ios-text-primary);
+  caret-color: var(--ios-yellow);
+}
+
+/* Title within editor */
+.ios-rich-editor .ios-editor-title {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: var(--ios-spacing-sm);
+  min-height: 36px;
+}
+
+.ios-rich-editor .ios-editor-title:empty::before {
+  content: attr(data-placeholder);
+  color: var(--ios-text-tertiary);
+  font-weight: 700;
+}
+
+/* Body within editor */
+.ios-rich-editor .ios-editor-body {
+  font-size: var(--ios-font-body);
+  line-height: 1.5;
+  min-height: 200px;
+}
+
+.ios-rich-editor .ios-editor-body:empty::before {
+  content: attr(data-placeholder);
+  color: var(--ios-text-tertiary);
+}
+
+/* Title line style (# heading) */
+.ios-rich-editor .ios-title-line {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: var(--ios-spacing-md) 0 var(--ios-spacing-sm);
+}
+
+/* Heading style (## heading) */
+.ios-rich-editor .ios-heading {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: var(--ios-spacing-md) 0 var(--ios-spacing-sm);
+}
+
+/* Subheading style (### heading) */
+.ios-rich-editor .ios-subheading {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: var(--ios-spacing-sm) 0;
+}
+
+/* Checklist item */
+.ios-checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ios-spacing-sm);
+  margin: var(--ios-spacing-xs) 0;
+  line-height: 1.5;
+}
+
+.ios-checkbox {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  font-size: 18px;
+  line-height: 22px;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  color: var(--ios-yellow);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ios-checkbox:hover {
+  background: rgba(255, 214, 10, 0.1);
+}
+
+.ios-checklist-text {
+  flex: 1;
+  min-width: 0;
+  outline: none;
+}
+
+/* Checked state */
+.ios-checklist-item--checked .ios-checkbox {
+  color: var(--ios-green);
+}
+
+.ios-checklist-item--checked .ios-checklist-text {
+  text-decoration: line-through;
+  color: var(--ios-text-secondary);
+}
+
+/* Table styles */
+.ios-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--ios-spacing-md) 0;
+  font-size: var(--ios-font-body);
+}
+
+.ios-table th,
+.ios-table td {
+  border: 1px solid var(--ios-separator);
+  padding: var(--ios-spacing-sm) var(--ios-spacing-md);
+  text-align: left;
+  min-width: 80px;
+}
+
+.ios-table th {
+  background: var(--ios-bg-tertiary);
+  font-weight: 600;
+}
+
+.ios-table td {
+  background: var(--ios-bg-secondary);
+}
+
+/* Editable table cells */
+.ios-table th:focus,
+.ios-table td:focus {
+  outline: 2px solid var(--ios-yellow);
+  outline-offset: -2px;
+}
+
+/* Tablet editor adjustments */
+@media (min-width: 768px) {
+  .ios-rich-editor .ios-editor-title {
+    font-size: 32px;
+  }
+
+  .ios-rich-editor .ios-title-line {
+    font-size: 28px;
+  }
+
+  .ios-rich-editor .ios-heading {
+    font-size: 22px;
+  }
+}
+
 /* Mobile bottom toolbar */
 .ios-editor-panel__footer {
   display: flex;
