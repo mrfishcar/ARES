@@ -94,6 +94,15 @@ export function DocumentsSidebar({
         >
           BookNLP Test
         </a>
+        <a
+          href="http://localhost:4173"
+          className="sidebar-link"
+          style={{ marginTop: '6px', display: 'inline-block' }}
+          target="_blank"
+          rel="noreferrer"
+        >
+          Notes Clone (localhost:4173)
+        </a>
       </div>
 
       <div className="sidebar-content">
