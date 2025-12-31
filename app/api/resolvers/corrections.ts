@@ -14,7 +14,8 @@ import type {
   CorrectionType,
   VersionSnapshot,
   LearnedPattern,
-  EntityType
+  EntityType,
+  Predicate
 } from '../../engine/schema';
 
 // 🆕 LEARNING ENGINE INTEGRATION (Phase 4 - 2025-12-30)
@@ -619,7 +620,7 @@ const mutationResolvers = {
     const newRelation: Relation = {
       id: uuid(),
       subj: args.subjectId,
-      pred: args.predicate,
+      pred: args.predicate as Predicate,
       obj: args.objectId,
       confidence: 1.0, // Manual additions are high confidence
       evidence: [],
@@ -737,7 +738,7 @@ const mutationResolvers = {
 
     // Apply updates
     if (args.subjectId) relation.subj = args.subjectId;
-    if (args.predicate) relation.pred = args.predicate;
+    if (args.predicate) relation.pred = args.predicate as Predicate;
     if (args.objectId) relation.obj = args.objectId;
     (relation as any).manualOverride = true;
 

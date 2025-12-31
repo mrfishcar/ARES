@@ -526,7 +526,7 @@ export function resolvePronouns(
     for (const token of sentence.tokens) {
       const textLower = token.text.toLowerCase();
       if (PERSONAL_PRONOUNS[textLower]) {
-        const pos = token.start_char ?? sentence.start + token.idx;
+        const pos = token.start_char ?? token.start ?? sentence.start + (token.idx ?? token.i ?? 0);
 
         const result = resolver.resolve(
           token.text,
@@ -553,15 +553,4 @@ export function resolvePronouns(
   return { resolved, stats };
 }
 
-// =============================================================================
-// EXPORTS
-// =============================================================================
-
-export {
-  SalienceConfig,
-  SalienceEntry,
-  ResolvedPronoun,
-  ResolutionMethod,
-  UnresolvedReason,
-  PronounResolutionStats,
-};
+// Types are exported where defined

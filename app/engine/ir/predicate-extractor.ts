@@ -34,6 +34,12 @@ export interface Token {
   ent?: string;
   start?: number;
   end?: number;
+  // Aliases for compatibility
+  idx?: number;           // Alias for i
+  char_start?: number;    // Alias for start
+  char_end?: number;      // Alias for end
+  start_char?: number;    // Alias for start (spaCy style)
+  ent_type?: string;      // Alias for ent
 }
 
 /** Parsed sentence from parser service */

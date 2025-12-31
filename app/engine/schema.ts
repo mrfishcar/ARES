@@ -240,7 +240,7 @@ export interface Entity {
   booknlp_id?: string;
   mention_count?: number;
   gender?: string;
-  attrs?: Record<string, string | number | boolean>;
+  attrs?: Record<string, string | number | boolean | undefined | object | null>;
   created_at: string;
   centrality?: number;
   confidence?: number;   // Extraction confidence (0-1) from confidence-scoring.ts
@@ -267,7 +267,7 @@ export interface Relation {
 
   // Phase 3 additions
   qualifiers?: Qualifier[];  // Time/place/source metadata
-  extractor?: 'dep' | 'regex' | 'fiction-dialogue' | 'fiction-action' | 'fiction-family';  // Extraction method
+  extractor?: 'dep' | 'regex' | 'fiction-dialogue' | 'fiction-action' | 'fiction-family' | 'manual';  // Extraction method
 }
 
 // Event
@@ -589,16 +589,19 @@ export interface Correction {
  */
 export interface VersionSnapshot {
   id: string;
-  timestamp: string;
-  correctionId: string;  // Correction that triggered this snapshot
+  timestamp?: string;
+  createdAt?: string;     // Alias for timestamp
+  correctionId: string;   // Correction that triggered this snapshot
   description?: string;
+  entityCount?: number;   // For lightweight snapshots
+  relationCount?: number; // For lightweight snapshots
 
   // Changed IDs for efficient diffing
-  changedEntities: string[];
-  changedRelations: string[];
+  changedEntities?: string[];
+  changedRelations?: string[];
 
   // Full state snapshot (for complete rollback)
-  snapshot: {
+  snapshot?: {
     entities: Entity[];
     relations: Relation[];
   };

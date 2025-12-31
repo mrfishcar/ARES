@@ -248,6 +248,7 @@ export function mintEntity(
     canonical: cluster.canonicalForm,
     aliases,
     confidence: typeEvidence.confidence,
+    created_at: new Date().toISOString(),
     attrs: {
       mentionCount: cluster.mentionCount(),
       nerEvidence: Object.fromEntries(typeEvidence.nerVotes),

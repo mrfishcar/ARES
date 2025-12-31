@@ -2269,7 +2269,7 @@ export function summarizeEvent(event: StoryEvent, ir: ProjectIR): string {
 /**
  * Sort items by discourse time with stable fallback.
  */
-export function sortByDiscourseTime<T extends { time?: TimeAnchor; evidence?: EvidenceSpan[] }>(
+export function sortItemsByDiscourseTime<T extends { time?: TimeAnchor; evidence?: EvidenceSpan[] }>(
   items: T[]
 ): T[] {
   return [...items].sort((a, b) => {

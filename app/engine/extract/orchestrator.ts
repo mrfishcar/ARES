@@ -416,6 +416,7 @@ export async function extractFromSegments(
         aliases: e.aliases,
         confidence: e.confidence,
         source: e.source,
+        created_at: new Date().toISOString(),
       }));
 
       // Convert BookNLP spans to ARES span format

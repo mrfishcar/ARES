@@ -211,6 +211,7 @@ export class AliasResolver {
       canonical: targetCanonical || entity.canonical,
       aliases: [],
       confidence: targetConfidence,
+      created_at: new Date().toISOString(),
       // Infer tier from confidence (higher confidence = higher tier)
       tier: targetConfidence >= 0.85 ? 'TIER_A' : (targetConfidence >= 0.6 ? 'TIER_B' : 'TIER_C')
     };
