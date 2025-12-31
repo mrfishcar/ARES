@@ -616,8 +616,9 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
 
   // === TEACHING/LEADERSHIP PATTERNS ===
   // "X teaches at Y", "Professor X teaches at Y", "X taught [SUBJECT] at Y"
+  // Note: subject can be lowercase (e.g., "taught hydrokinetics at") or capitalized
   {
-    regex: /\b(?:Professor\s+)?([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:teaches|taught)\s+(?:[A-Z][a-z]+\s+)?at\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
+    regex: /\b(?:Professor\s+)?([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:teaches|taught)\s+(?:[a-zA-Z]+\s+)?at\s+(?:the\s+)?(?:same\s+)?([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
     predicate: 'teaches_at',
     typeGuard: { subj: ['PERSON'], obj: ['ORG'] }
   },
@@ -818,9 +819,22 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     predicate: 'studies_at',
     typeGuard: { subj: ['PERSON'], obj: ['ORG', 'PLACE'] }
   },
+  // Pronoun-aware: "She continued studying at X"
+  {
+    regex: /\b(He|She)\s+(?:(?:continued\s+(?:to\s+)?)|still\s+|kept\s+)?(?:studied|studying|studies|enrolled|attended|attends)\s+(?:at|in)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'studies_at',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG', 'PLACE'] }
+  },
   // "Kara taught at Meridian Academy", "Kara teaches at ..."
   {
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:(?:continued\s+(?:to\s+)?)|still\s+|kept\s+)?(?:taught|teaches|teach|lectured|lectures)\s+(?:at|in)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'teaches_at',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG', 'PLACE'] }
+  },
+  // Pronoun-aware: "He/She taught [subject] at X", "He continued to teach at X"
+  // Uses coref resolution to resolve pronoun to entity
+  {
+    regex: /\b(He|She)\s+(?:(?:continued\s+(?:to\s+)?)|still\s+|kept\s+)?(?:taught|teaches|teach|lectured|lectures)\s+(?:[a-zA-Z]+\s+)?(?:at|in)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
     predicate: 'teaches_at',
     typeGuard: { subj: ['PERSON'], obj: ['ORG', 'PLACE'] }
   },
