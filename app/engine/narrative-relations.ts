@@ -1634,8 +1634,9 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
   // =========================================
 
   // "X became Y" (role/title change)
+  // NOTE: king/queen removed from pattern - those are handled by the 'rules' pattern above
   {
-    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+became\s+(?:the\s+)?(?:leader|king|queen|president|ceo|head|chief)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/gi,
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+became\s+(?:the\s+)?(?:leader|president|ceo|head|chief|director|chairman|chairwoman)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/gi,
     predicate: 'became_leader_of',
     typeGuard: { subj: ['PERSON'], obj: ['ORG', 'PLACE'] }
   },

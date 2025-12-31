@@ -268,9 +268,21 @@ export async function runEntityExtractionStage(
 
         if (segmentSpans.length === 0) continue;
 
-        // Derive canonical name from first span's absolute position in document
-        const canonicalRaw = input.fullText.slice(segmentSpans[0].start, segmentSpans[0].end);
-        const canonicalText = normalizeName(canonicalRaw);
+        // Derive canonical name from the LONGEST span (most complete name form)
+        // Sort spans by length descending to prioritize "Harry Potter" over "Harry"
+        const sortedSpans = [...segmentSpans].sort((a, b) => (b.end - b.start) - (a.end - a.start));
+        const canonicalRaw = input.fullText.slice(sortedSpans[0].start, sortedSpans[0].end);
+        let canonicalText = normalizeName(canonicalRaw);
+
+        // IMPORTANT: Prefer entity's original canonical if it's a multi-word name
+        // that contains our derived canonical as a substring (e.g., prefer "Harry Potter" over "Harry")
+        const entityOriginalCanonical = normalizeName(entity.canonical);
+        if (entityOriginalCanonical && entityOriginalCanonical.split(/\s+/).length > canonicalText.split(/\s+/).length) {
+          // Original canonical has more words - check if derived is a substring
+          if (entityOriginalCanonical.toLowerCase().includes(canonicalText.toLowerCase())) {
+            canonicalText = entityOriginalCanonical;
+          }
+        }
 
         // Check if we've seen this entity before (by type + canonical)
         const entityKey = `${entity.type}::${canonicalText.toLowerCase()}`;

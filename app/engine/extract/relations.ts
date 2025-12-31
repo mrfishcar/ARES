@@ -711,7 +711,23 @@ function tryCreateRelation(
     if (ref.span) {
       const mention = text.slice(ref.span.start, ref.span.end).trim();
       const cleanedMention = cleanRelationSurface(mention);
-      if (cleanedMention) return cleanedMention;
+      if (cleanedMention) {
+        // IMPORTANT: Prefer entity's canonical if it's a multi-word name
+        // that contains the span-derived text as a substring.
+        // This ensures "Harry Potter" is used instead of just "Harry" or "Potter"
+        const canonical = ref.entity.canonical;
+        const canonicalWords = canonical.split(/\s+/);
+        const mentionWords = cleanedMention.split(/\s+/);
+        if (canonicalWords.length > mentionWords.length) {
+          // Canonical has more words - check if mention is a partial match
+          const mentionLower = cleanedMention.toLowerCase();
+          const canonicalLower = canonical.toLowerCase();
+          if (canonicalLower.includes(mentionLower)) {
+            return cleanRelationSurface(canonical);
+          }
+        }
+        return cleanedMention;
+      }
     }
     return cleanRelationSurface(fallback);
   };
