@@ -70,12 +70,28 @@ function extractNERSpans(sentence: { tokens: Token[] }): NERSpan[] {
   const spans: NERSpan[] = [];
   const tokens = sentence.tokens;
 
+  // Coordination conjunctions should not be part of NER spans
+  const COORD_CONJ = new Set(['and', 'or', '&']);
+
   let currentSpan: NERSpan | null = null;
 
   for (const token of tokens) {
     // Check if token is part of NER (has entity label or is capitalized multi-word)
     const isNER = token.ent && token.ent !== '' && token.ent !== 'O';
     const isCapitalized = /^[A-Z]/.test(token.text);
+
+    // COORDINATION FIX: Treat coordination conjunctions as span boundaries
+    // Even if spaCy tags "and" as part of a PERSON entity (e.g., "Alice and Bob"),
+    // we should break the span at the conjunction
+    const isCoordConj = COORD_CONJ.has(token.text.toLowerCase()) && token.pos === 'CCONJ';
+    if (isCoordConj) {
+      // Finalize current span if exists
+      if (currentSpan && currentSpan.tokens.length > 1) {
+        spans.push(currentSpan);
+      }
+      currentSpan = null;
+      continue;
+    }
 
     if (isNER || isCapitalized) {
       if (!currentSpan) {

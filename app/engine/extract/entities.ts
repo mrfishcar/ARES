@@ -857,11 +857,21 @@ function nerSpans(sent: ParsedSentence): Array<{ text: string; type: EntityType;
   // Common name particles that connect multi-word names
   const NAME_PARTICLES = new Set(['da', 'de', 'del', 'della', 'di', 'von', 'van', 'van der', 'van den', 'le', 'la', 'el', 'al', 'bin', 'ibn', 'abu']);
 
+  // Coordination conjunctions should not be extracted as entities even if tagged
+  const COORD_CONJ = new Set(['and', 'or', '&']);
+
   while (i < sent.tokens.length) {
     const t = sent.tokens[i];
     const mapped = mapEnt(t.ent);
 
     if (!mapped) {
+      i++;
+      continue;
+    }
+
+    // Skip coordination conjunctions - they're not entities even if spaCy tags them
+    // This can happen when spaCy groups "Alice and Bob" as a single PERSON entity
+    if (COORD_CONJ.has(t.text.toLowerCase()) && t.pos === 'CCONJ') {
       i++;
       continue;
     }
@@ -876,6 +886,14 @@ function nerSpans(sent: ParsedSentence): Array<{ text: string; type: EntityType;
       if (currToken.start - prevToken.end > 1) {
         break; // Punctuation between tokens, don't group
       }
+
+      // COORDINATION FIX: Also break on coordination conjunctions
+      // E.g., "Alice and Bob" should be 2 entities, not 1
+      // spaCy sometimes tags the conjunction as part of the entity span
+      if (COORD_CONJ.has(currToken.text.toLowerCase()) && currToken.pos === 'CCONJ') {
+        break; // Coordination conjunction, don't group
+      }
+
       j++;
     }
 

@@ -306,6 +306,22 @@ export function stitchTitlecaseSpans<T extends SpanLike & { text: string; type: 
     const allTitlecase = tokens.filter(tok => !CONNECTOR_TOKENS.has(tok.toLowerCase())).every(tok => /^[A-Z]/.test(tok));
     if (!connectorOk || !allTitlecase) continue;
 
+    // COORDINATION FIX: Don't stitch PERSON spans separated by coordination conjunctions
+    // "Harry and Ron" should remain two separate entities, not be combined into one
+    // This prevents coordinated subjects from being merged incorrectly
+    const COORD_CONJUNCTIONS = new Set(['and', 'or', '&']);
+    const middleTokens = tokens.slice(1, -1).map(t => t.toLowerCase());
+    const hasCoordConjunction = middleTokens.some(t => COORD_CONJUNCTIONS.has(t));
+
+    // If both spans are the same type (PERSON, ORG, PLACE) and there's a coordination conjunction,
+    // skip stitching - they are likely separate coordinated entities
+    // Example: "Harry and Ron" → two PERSON entities, "Gryffindor and Slytherin" → two ORG entities
+    // Note: Legitimate compound names like "Johnson and Johnson" are typically recognized as
+    // a single NER span, not two separate spans being stitched, so this shouldn't break those
+    if (hasCoordConjunction && current.type === next.type) {
+      continue;
+    }
+
     const typeChoice = TYPE_PRIORITY.reduce((best, candidate) => {
       if (candidate === best) return best;
       const typesPresent = new Set([current.type, next.type]);
