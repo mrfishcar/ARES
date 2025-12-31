@@ -1,7 +1,7 @@
 /**
  * iOS Notes App Clone
  * A pixel-perfect recreation of the native iOS Notes app
- * Mobile-first design with authentic iOS styling
+ * Mobile-first design with iPad split-view support
  */
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
@@ -28,12 +28,6 @@ interface Folder {
   isSystem: boolean;
   parentId: string | null;
 }
-
-type ViewState =
-  | { type: 'folders' }
-  | { type: 'notes'; folderId: string }
-  | { type: 'editor'; noteId: string | null; folderId: string }
-  | { type: 'search' };
 
 // ============================================================================
 // STORAGE
@@ -99,6 +93,24 @@ const DEFAULT_NOTES: Note[] = [
     updatedAt: Date.now() - 172800000,
     isPinned: false,
   },
+  {
+    id: 'sample-note-4',
+    folderId: 'notes',
+    title: 'Ideas',
+    content: 'Ideas\n\nBrainstorming session notes:\n\n1. New app features\n2. UI improvements\n3. Performance optimizations',
+    createdAt: Date.now() - 604800000, // 7 days ago
+    updatedAt: Date.now() - 604800000,
+    isPinned: false,
+  },
+  {
+    id: 'sample-note-5',
+    folderId: 'notes',
+    title: 'Travel Plans',
+    content: 'Travel Plans\n\nDestinations to consider:\n• Japan\n• Iceland\n• New Zealand',
+    createdAt: Date.now() - 2592000000, // 30 days ago
+    updatedAt: Date.now() - 2592000000,
+    isPinned: false,
+  },
 ];
 
 // ============================================================================
@@ -112,7 +124,8 @@ function generateId(): string {
 function formatDate(timestamp: number): string {
   const now = new Date();
   const date = new Date(timestamp);
-  const diffDays = Math.floor((now.getTime() - date.getTime()) / 86400000);
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / 86400000);
 
   if (diffDays === 0) {
     return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
@@ -121,8 +134,39 @@ function formatDate(timestamp: number): string {
   } else if (diffDays < 7) {
     return date.toLocaleDateString('en-US', { weekday: 'long' });
   } else {
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return date.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' });
   }
+}
+
+function formatFullDate(timestamp: number): string {
+  const date = new Date(timestamp);
+  return date.toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
+function getTimeGroup(timestamp: number): string {
+  const now = new Date();
+  const date = new Date(timestamp);
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  // Reset to start of day for comparison
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const noteDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const daysDiff = Math.floor((today.getTime() - noteDay.getTime()) / 86400000);
+
+  if (daysDiff === 0) return 'Today';
+  if (daysDiff === 1) return 'Yesterday';
+  if (daysDiff < 7) return 'Previous 7 Days';
+  if (daysDiff < 30) return 'Previous 30 Days';
+
+  // Return month and year for older notes
+  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 }
 
 function extractPreview(content: string): string {
@@ -136,76 +180,160 @@ function extractTitle(content: string): string {
   return firstLine || 'New Note';
 }
 
+// Hook for responsive breakpoint
+function useIsTablet(): boolean {
+  const [isTablet, setIsTablet] = useState(false);
+
+  useEffect(() => {
+    const checkWidth = () => setIsTablet(window.innerWidth >= 768);
+    checkWidth();
+    window.addEventListener('resize', checkWidth);
+    return () => window.removeEventListener('resize', checkWidth);
+  }, []);
+
+  return isTablet;
+}
+
+// ============================================================================
+// ICONS
+// ============================================================================
+
+const Icons = {
+  back: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+      <path d="M15 18l-6-6 6-6"/>
+    </svg>
+  ),
+  chevronRight: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+      <path d="M9 18l6-6-6-6"/>
+    </svg>
+  ),
+  search: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+  ),
+  more: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/>
+    </svg>
+  ),
+  moreCircle: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <circle cx="12" cy="12" r="10"/>
+      <circle cx="8" cy="12" r="1" fill="currentColor"/>
+      <circle cx="12" cy="12" r="1" fill="currentColor"/>
+      <circle cx="16" cy="12" r="1" fill="currentColor"/>
+    </svg>
+  ),
+  compose: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
+    </svg>
+  ),
+  share: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/>
+    </svg>
+  ),
+  trash: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+    </svg>
+  ),
+  pin: (
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M16 4l4 4-1 1-1-1-3 3v3l-1 1-3-3-4 4-1-1 4-4-3-3 1-1h3l3-3-1-1z"/>
+    </svg>
+  ),
+  plus: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M12 5v14M5 12h14"/>
+    </svg>
+  ),
+  sidebar: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <path d="M9 3v18"/>
+    </svg>
+  ),
+  textFormat: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M4 7V4h16v3M9 20h6M12 4v16"/>
+    </svg>
+  ),
+  checklist: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+    </svg>
+  ),
+  table: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <path d="M3 9h18M3 15h18M9 3v18M15 3v18"/>
+    </svg>
+  ),
+  attachment: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+    </svg>
+  ),
+  markup: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+      <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+      <path d="M2 2l7.586 7.586"/>
+      <circle cx="11" cy="11" r="2"/>
+    </svg>
+  ),
+  folder: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2v11z"/>
+    </svg>
+  ),
+  copy: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+      <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+    </svg>
+  ),
+};
+
 // ============================================================================
 // COMPONENTS
 // ============================================================================
-
-// Header Component
-function IOSHeader({
-  title,
-  leftButton,
-  rightButton,
-  isLargeTitle = false,
-  searchValue,
-  onSearchChange,
-  showSearch = false,
-}: {
-  title: string;
-  leftButton?: React.ReactNode;
-  rightButton?: React.ReactNode;
-  isLargeTitle?: boolean;
-  searchValue?: string;
-  onSearchChange?: (value: string) => void;
-  showSearch?: boolean;
-}) {
-  return (
-    <header className={`ios-header ${isLargeTitle ? 'ios-header--large' : ''}`}>
-      <div className="ios-header__nav">
-        <div className="ios-header__left">{leftButton}</div>
-        {!isLargeTitle && <div className="ios-header__title">{title}</div>}
-        <div className="ios-header__right">{rightButton}</div>
-      </div>
-      {isLargeTitle && (
-        <div className="ios-header__large-title">{title}</div>
-      )}
-      {showSearch && (
-        <div className="ios-search-bar">
-          <div className="ios-search-bar__container">
-            <svg className="ios-search-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8"/>
-              <path d="m21 21-4.35-4.35"/>
-            </svg>
-            <input
-              type="text"
-              className="ios-search-bar__input"
-              placeholder="Search"
-              value={searchValue}
-              onChange={(e) => onSearchChange?.(e.target.value)}
-            />
-            {searchValue && (
-              <button
-                className="ios-search-bar__clear"
-                onClick={() => onSearchChange?.('')}
-              >
-                ✕
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-    </header>
-  );
-}
 
 // Back Button
 function BackButton({ onClick, label = 'Back' }: { onClick: () => void; label?: string }) {
   return (
     <button className="ios-back-button" onClick={onClick}>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-        <path d="M15 18l-6-6 6-6"/>
-      </svg>
+      {Icons.back}
       <span>{label}</span>
     </button>
+  );
+}
+
+// Search Bar
+function SearchBar({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="ios-search-bar">
+      <div className="ios-search-bar__container">
+        {Icons.search}
+        <input
+          type="text"
+          className="ios-search-bar__input"
+          placeholder="Search"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
+        {value && (
+          <button className="ios-search-bar__clear" onClick={() => onChange('')}>
+            ✕
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -214,41 +342,38 @@ function FolderRow({
   folder,
   noteCount,
   onClick,
-  showChevron = true,
 }: {
   folder: Folder;
   noteCount: number;
   onClick: () => void;
-  showChevron?: boolean;
 }) {
   return (
     <button className="ios-folder-row" onClick={onClick}>
       <span className="ios-folder-row__icon">{folder.icon}</span>
       <span className="ios-folder-row__name">{folder.name}</span>
       <span className="ios-folder-row__count">{noteCount}</span>
-      {showChevron && (
-        <svg className="ios-folder-row__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <path d="M9 18l6-6-6-6"/>
-        </svg>
-      )}
+      {Icons.chevronRight}
     </button>
   );
 }
 
-// Note Row
+// Note Row with time-based grouping support
 function NoteRow({
   note,
+  folderName,
+  isSelected,
   onClick,
   onDelete,
 }: {
   note: Note;
+  folderName?: string;
+  isSelected?: boolean;
   onClick: () => void;
   onDelete: () => void;
 }) {
   const [swipeX, setSwipeX] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
   const startXRef = useRef(0);
-  const rowRef = useRef<HTMLDivElement>(null);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     startXRef.current = e.touches[0].clientX;
@@ -284,40 +409,284 @@ function NoteRow({
         style={{ opacity: Math.min(1, Math.abs(swipeX) / 80) }}
       >
         <button className="ios-note-row-actions__delete" onClick={handleDelete}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
-          </svg>
+          {Icons.trash}
         </button>
       </div>
       <div
-        ref={rowRef}
-        className="ios-note-row"
+        className={`ios-note-row ${isSelected ? 'ios-note-row--selected' : ''}`}
         onClick={onClick}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         style={{ transform: `translateX(${swipeX}px)` }}
       >
-        <div className="ios-note-row__pin-indicator">
-          {note.isPinned && (
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M16 4l4 4-1 1-1-1-3 3v3l-1 1-3-3-4 4-1-1 4-4-3-3 1-1h3l3-3-1-1z"/>
-            </svg>
-          )}
-        </div>
+        {note.isPinned && (
+          <div className="ios-note-row__pin">{Icons.pin}</div>
+        )}
         <div className="ios-note-row__content">
           <div className="ios-note-row__title">{note.title || 'New Note'}</div>
-          <div className="ios-note-row__preview">
+          <div className="ios-note-row__meta">
             <span className="ios-note-row__date">{formatDate(note.updatedAt)}</span>
-            <span className="ios-note-row__text">{extractPreview(note.content)}</span>
+            <span className="ios-note-row__preview">{extractPreview(note.content)}</span>
           </div>
+          {folderName && (
+            <div className="ios-note-row__folder">
+              <span className="ios-note-row__folder-icon">📁</span>
+              {folderName}
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-// Folders View
+// Group notes by time period
+function groupNotesByTime(notes: Note[]): Map<string, Note[]> {
+  const groups = new Map<string, Note[]>();
+
+  // Sort notes by updatedAt descending
+  const sorted = [...notes].sort((a, b) => b.updatedAt - a.updatedAt);
+
+  for (const note of sorted) {
+    const group = getTimeGroup(note.updatedAt);
+    if (!groups.has(group)) {
+      groups.set(group, []);
+    }
+    groups.get(group)!.push(note);
+  }
+
+  return groups;
+}
+
+// Notes List Sidebar (for split view on iPad)
+function NotesListSidebar({
+  folder,
+  notes,
+  selectedNoteId,
+  searchValue,
+  onSearchChange,
+  onSelectNote,
+  onCreateNote,
+  onDeleteNote,
+  onToggleSidebar,
+  showSidebarToggle,
+}: {
+  folder: Folder;
+  notes: Note[];
+  selectedNoteId: string | null;
+  searchValue: string;
+  onSearchChange: (v: string) => void;
+  onSelectNote: (noteId: string) => void;
+  onCreateNote: () => void;
+  onDeleteNote: (noteId: string) => void;
+  onToggleSidebar?: () => void;
+  showSidebarToggle?: boolean;
+}) {
+  const filteredNotes = useMemo(() => {
+    if (!searchValue) return notes;
+    const query = searchValue.toLowerCase();
+    return notes.filter(n =>
+      n.title.toLowerCase().includes(query) ||
+      n.content.toLowerCase().includes(query)
+    );
+  }, [notes, searchValue]);
+
+  // Separate pinned notes
+  const pinnedNotes = filteredNotes.filter(n => n.isPinned);
+  const unpinnedNotes = filteredNotes.filter(n => !n.isPinned);
+
+  // Group unpinned notes by time
+  const groupedNotes = groupNotesByTime(unpinnedNotes);
+
+  return (
+    <div className="ios-notes-sidebar">
+      <header className="ios-notes-sidebar__header">
+        <div className="ios-notes-sidebar__header-top">
+          {showSidebarToggle && (
+            <button className="ios-icon-button" onClick={onToggleSidebar}>
+              {Icons.sidebar}
+            </button>
+          )}
+          <div className="ios-notes-sidebar__title-group">
+            <div className="ios-notes-sidebar__title">{folder.name}</div>
+            <div className="ios-notes-sidebar__count">{notes.length} Notes</div>
+          </div>
+          <button className="ios-icon-button ios-icon-button--circle">
+            {Icons.moreCircle}
+          </button>
+          <button className="ios-icon-button" onClick={onCreateNote}>
+            {Icons.compose}
+          </button>
+        </div>
+        <SearchBar value={searchValue} onChange={onSearchChange} />
+      </header>
+
+      <div className="ios-notes-sidebar__content">
+        {filteredNotes.length === 0 ? (
+          <div className="ios-empty-state">
+            <div className="ios-empty-state__icon">📝</div>
+            <div className="ios-empty-state__title">No Notes</div>
+          </div>
+        ) : (
+          <>
+            {/* Pinned section */}
+            {pinnedNotes.length > 0 && (
+              <section className="ios-notes-section">
+                <div className="ios-notes-section__header">Pinned</div>
+                <div className="ios-notes-section__list">
+                  {pinnedNotes.map(note => (
+                    <NoteRow
+                      key={note.id}
+                      note={note}
+                      isSelected={note.id === selectedNoteId}
+                      onClick={() => onSelectNote(note.id)}
+                      onDelete={() => onDeleteNote(note.id)}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Time-grouped sections */}
+            {Array.from(groupedNotes.entries()).map(([timeGroup, groupNotes]) => (
+              <section key={timeGroup} className="ios-notes-section">
+                <div className="ios-notes-section__header">{timeGroup}</div>
+                <div className="ios-notes-section__list">
+                  {groupNotes.map(note => (
+                    <NoteRow
+                      key={note.id}
+                      note={note}
+                      folderName="Notes"
+                      isSelected={note.id === selectedNoteId}
+                      onClick={() => onSelectNote(note.id)}
+                      onDelete={() => onDeleteNote(note.id)}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Editor Panel
+function EditorPanel({
+  note,
+  content,
+  onContentChange,
+  onSave,
+  onTogglePin,
+  onDelete,
+  onShare,
+  showBackButton,
+  onBack,
+  backLabel,
+}: {
+  note: Note | null;
+  content: string;
+  onContentChange: (content: string) => void;
+  onSave: () => void;
+  onTogglePin: () => void;
+  onDelete: () => void;
+  onShare: () => void;
+  showBackButton?: boolean;
+  onBack?: () => void;
+  backLabel?: string;
+}) {
+  const [showMenu, setShowMenu] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (textareaRef.current && !note) {
+      textareaRef.current.focus();
+    }
+  }, [note]);
+
+  return (
+    <div className="ios-editor-panel">
+      <header className="ios-editor-panel__header">
+        <div className="ios-editor-panel__header-left">
+          {showBackButton && onBack && (
+            <BackButton onClick={onBack} label={backLabel || 'Notes'} />
+          )}
+        </div>
+
+        {/* iPad toolbar icons */}
+        <div className="ios-editor-panel__toolbar-center">
+          <button className="ios-icon-button">{Icons.textFormat}</button>
+          <button className="ios-icon-button">{Icons.checklist}</button>
+          <button className="ios-icon-button">{Icons.table}</button>
+          <button className="ios-icon-button">{Icons.attachment}</button>
+          <button className="ios-icon-button">{Icons.markup}</button>
+        </div>
+
+        <div className="ios-editor-panel__header-right">
+          <button className="ios-icon-button" onClick={onShare}>
+            {Icons.share}
+          </button>
+          <button
+            className="ios-icon-button"
+            onClick={() => setShowMenu(!showMenu)}
+          >
+            {Icons.more}
+          </button>
+        </div>
+      </header>
+
+      {showMenu && (
+        <>
+          <div className="ios-menu-backdrop" onClick={() => setShowMenu(false)} />
+          <div className="ios-dropdown-menu">
+            <button className="ios-dropdown-menu__item" onClick={() => { onTogglePin(); setShowMenu(false); }}>
+              {Icons.pin}
+              {note?.isPinned ? 'Unpin Note' : 'Pin Note'}
+            </button>
+            <button className="ios-dropdown-menu__item" onClick={() => { navigator.clipboard.writeText(content); setShowMenu(false); }}>
+              {Icons.copy}
+              Copy
+            </button>
+            <button className="ios-dropdown-menu__item ios-dropdown-menu__item--danger" onClick={() => { onDelete(); setShowMenu(false); }}>
+              {Icons.trash}
+              Delete
+            </button>
+          </div>
+        </>
+      )}
+
+      <div className="ios-editor-panel__content">
+        {note && (
+          <div className="ios-editor-panel__date">
+            {formatFullDate(note.updatedAt)}
+          </div>
+        )}
+        <textarea
+          ref={textareaRef}
+          className="ios-editor-panel__textarea"
+          value={content}
+          onChange={(e) => onContentChange(e.target.value)}
+          placeholder="Start typing..."
+          autoFocus={!note}
+          onBlur={onSave}
+        />
+      </div>
+
+      {/* Mobile bottom toolbar */}
+      <footer className="ios-editor-panel__footer">
+        <button className="ios-toolbar-button">{Icons.checklist}</button>
+        <button className="ios-toolbar-button">{Icons.textFormat}</button>
+        <button className="ios-toolbar-button">{Icons.attachment}</button>
+        <button className="ios-toolbar-button">{Icons.markup}</button>
+        <button className="ios-toolbar-button">{Icons.compose}</button>
+      </footer>
+    </div>
+  );
+}
+
+// Folders View (mobile only)
 function FoldersView({
   folders,
   notes,
@@ -343,20 +712,18 @@ function FoldersView({
 
   return (
     <div className="ios-folders-view">
-      <IOSHeader
-        title="Folders"
-        isLargeTitle
-        showSearch
-        searchValue={searchValue}
-        onSearchChange={setSearchValue}
-        rightButton={
-          <button className="ios-text-button" onClick={onCreateFolder}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 5v14M5 12h14"/>
-            </svg>
-          </button>
-        }
-      />
+      <header className="ios-header ios-header--large">
+        <div className="ios-header__nav">
+          <div className="ios-header__left" />
+          <div className="ios-header__right">
+            <button className="ios-icon-button" onClick={onCreateFolder}>
+              {Icons.plus}
+            </button>
+          </div>
+        </div>
+        <div className="ios-header__large-title">Folders</div>
+        <SearchBar value={searchValue} onChange={setSearchValue} />
+      </header>
 
       <div className="ios-folders-view__content">
         <section className="ios-folder-section">
@@ -392,298 +759,40 @@ function FoldersView({
   );
 }
 
-// Notes List View
-function NotesListView({
-  folder,
-  notes,
-  onBack,
-  onSelectNote,
-  onCreateNote,
-  onDeleteNote,
-}: {
-  folder: Folder;
-  notes: Note[];
-  onBack: () => void;
-  onSelectNote: (noteId: string) => void;
-  onCreateNote: () => void;
-  onDeleteNote: (noteId: string) => void;
-}) {
-  const [searchValue, setSearchValue] = useState('');
-
-  const filteredNotes = useMemo(() => {
-    let result = notes;
-    if (searchValue) {
-      const query = searchValue.toLowerCase();
-      result = result.filter(n =>
-        n.title.toLowerCase().includes(query) ||
-        n.content.toLowerCase().includes(query)
-      );
-    }
-    // Sort: pinned first, then by updated date
-    return result.sort((a, b) => {
-      if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
-      return b.updatedAt - a.updatedAt;
-    });
-  }, [notes, searchValue]);
-
-  const pinnedNotes = filteredNotes.filter(n => n.isPinned);
-  const unpinnedNotes = filteredNotes.filter(n => !n.isPinned);
-
-  return (
-    <div className="ios-notes-list-view">
-      <IOSHeader
-        title={folder.name}
-        isLargeTitle
-        showSearch
-        searchValue={searchValue}
-        onSearchChange={setSearchValue}
-        leftButton={<BackButton onClick={onBack} label="Folders" />}
-        rightButton={
-          <button className="ios-text-button ios-text-button--icon" onClick={() => {}}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/>
-            </svg>
-          </button>
-        }
-      />
-
-      <div className="ios-notes-list-view__content">
-        {filteredNotes.length === 0 ? (
-          <div className="ios-empty-state">
-            <div className="ios-empty-state__icon">📝</div>
-            <div className="ios-empty-state__title">No Notes</div>
-            <div className="ios-empty-state__subtitle">
-              {searchValue ? 'No notes match your search' : 'Tap the compose button to create a note'}
-            </div>
-          </div>
-        ) : (
-          <>
-            {pinnedNotes.length > 0 && (
-              <section className="ios-notes-section">
-                <div className="ios-notes-section__header">Pinned</div>
-                <div className="ios-notes-section__list">
-                  {pinnedNotes.map(note => (
-                    <NoteRow
-                      key={note.id}
-                      note={note}
-                      onClick={() => onSelectNote(note.id)}
-                      onDelete={() => onDeleteNote(note.id)}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {unpinnedNotes.length > 0 && (
-              <section className="ios-notes-section">
-                {pinnedNotes.length > 0 && (
-                  <div className="ios-notes-section__header">Notes</div>
-                )}
-                <div className="ios-notes-section__list">
-                  {unpinnedNotes.map(note => (
-                    <NoteRow
-                      key={note.id}
-                      note={note}
-                      onClick={() => onSelectNote(note.id)}
-                      onDelete={() => onDeleteNote(note.id)}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-          </>
-        )}
-      </div>
-
-      <footer className="ios-notes-list-footer">
-        <span className="ios-notes-list-footer__count">
-          {filteredNotes.length} {filteredNotes.length === 1 ? 'Note' : 'Notes'}
-        </span>
-        <button className="ios-compose-button" onClick={onCreateNote}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
-          </svg>
-        </button>
-      </footer>
-    </div>
-  );
-}
-
-// Note Editor View
-function NoteEditorView({
-  note,
-  folder,
-  onBack,
-  onSave,
-  onTogglePin,
-  onDelete,
-}: {
-  note: Note | null;
-  folder: Folder;
-  onBack: () => void;
-  onSave: (content: string) => void;
-  onTogglePin: () => void;
-  onDelete: () => void;
-}) {
-  const [content, setContent] = useState(note?.content || '');
-  const [showMenu, setShowMenu] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const hasChanges = content !== (note?.content || '');
-
-  useEffect(() => {
-    setContent(note?.content || '');
-  }, [note?.id]);
-
-  useEffect(() => {
-    if (textareaRef.current && !note) {
-      textareaRef.current.focus();
-    }
-  }, [note]);
-
-  const handleBack = () => {
-    if (hasChanges || (!note && content.trim())) {
-      onSave(content);
-    }
-    onBack();
-  };
-
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: extractTitle(content),
-          text: content,
-        });
-      } catch (e) {
-        // User cancelled or error
-      }
-    }
-  };
-
-  const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp);
-    return date.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-    });
-  };
-
-  return (
-    <div className="ios-note-editor">
-      <IOSHeader
-        title=""
-        leftButton={<BackButton onClick={handleBack} label={folder.name} />}
-        rightButton={
-          <div className="ios-header__actions">
-            <button className="ios-text-button ios-text-button--icon" onClick={handleShare}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/>
-              </svg>
-            </button>
-            <button
-              className="ios-text-button ios-text-button--icon"
-              onClick={() => setShowMenu(!showMenu)}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/>
-              </svg>
-            </button>
-          </div>
-        }
-      />
-
-      {showMenu && (
-        <>
-          <div className="ios-menu-backdrop" onClick={() => setShowMenu(false)} />
-          <div className="ios-dropdown-menu">
-            <button className="ios-dropdown-menu__item" onClick={() => { onTogglePin(); setShowMenu(false); }}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M16 4l4 4-1 1-1-1-3 3v3l-1 1-3-3-4 4-1-1 4-4-3-3 1-1h3l3-3-1-1z"/>
-              </svg>
-              {note?.isPinned ? 'Unpin Note' : 'Pin Note'}
-            </button>
-            <button className="ios-dropdown-menu__item" onClick={() => { navigator.clipboard.writeText(content); setShowMenu(false); }}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
-              </svg>
-              Copy
-            </button>
-            <button className="ios-dropdown-menu__item ios-dropdown-menu__item--danger" onClick={() => { onDelete(); setShowMenu(false); }}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
-              </svg>
-              Delete
-            </button>
-          </div>
-        </>
-      )}
-
-      <div className="ios-note-editor__content">
-        {note && (
-          <div className="ios-note-editor__date">
-            {formatDate(note.updatedAt)}
-          </div>
-        )}
-        <textarea
-          ref={textareaRef}
-          className="ios-note-editor__textarea"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="Start typing..."
-          autoFocus={!note}
-        />
-      </div>
-
-      <footer className="ios-note-editor__toolbar">
-        <button className="ios-toolbar-button">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-          </svg>
-        </button>
-        <button className="ios-toolbar-button">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M4 7V4h16v3M9 20h6M12 4v16"/>
-          </svg>
-        </button>
-        <button className="ios-toolbar-button">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
-          </svg>
-        </button>
-        <button className="ios-toolbar-button">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"/>
-            <path d="M14 2v6h6"/>
-          </svg>
-        </button>
-        <button className="ios-toolbar-button">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
-        </button>
-      </footer>
-    </div>
-  );
-}
-
 // ============================================================================
 // MAIN APP COMPONENT
 // ============================================================================
 
 export function IOSNotesApp() {
+  const isTablet = useIsTablet();
+
   const [folders, setFolders] = useState<Folder[]>(() =>
     loadFromStorage(STORAGE_KEYS.FOLDERS, DEFAULT_FOLDERS)
   );
   const [notes, setNotes] = useState<Note[]>(() =>
     loadFromStorage(STORAGE_KEYS.NOTES, DEFAULT_NOTES)
   );
-  const [viewState, setViewState] = useState<ViewState>({ type: 'folders' });
-  const [currentFolder, setCurrentFolder] = useState<Folder | null>(null);
-  const [currentNote, setCurrentNote] = useState<Note | null>(null);
+
+  // Mobile navigation state
+  const [mobileView, setMobileView] = useState<'folders' | 'notes' | 'editor'>('folders');
+
+  // Shared state
+  const [currentFolderId, setCurrentFolderId] = useState<string>('all');
+  const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
+  const [editorContent, setEditorContent] = useState('');
+  const [searchValue, setSearchValue] = useState('');
+  const [showSidebar, setShowSidebar] = useState(true);
+
+  // Get current folder and notes
+  const currentFolder = folders.find(f => f.id === currentFolderId) || folders[0];
+  const folderNotes = useMemo(() => {
+    if (currentFolderId === 'all') {
+      return notes.filter(n => n.folderId !== 'recently-deleted');
+    }
+    return notes.filter(n => n.folderId === currentFolderId);
+  }, [notes, currentFolderId]);
+
+  const selectedNote = selectedNoteId ? notes.find(n => n.id === selectedNoteId) || null : null;
 
   // Persist to storage
   useEffect(() => {
@@ -694,79 +803,89 @@ export function IOSNotesApp() {
     saveToStorage(STORAGE_KEYS.NOTES, notes);
   }, [notes]);
 
-  // Navigation handlers
-  const handleSelectFolder = useCallback((folderId: string) => {
-    const folder = folders.find(f => f.id === folderId);
-    if (folder) {
-      setCurrentFolder(folder);
-      setViewState({ type: 'notes', folderId });
+  // Sync editor content with selected note
+  useEffect(() => {
+    setEditorContent(selectedNote?.content || '');
+  }, [selectedNote?.id]);
+
+  // Auto-select first note on tablet if none selected
+  useEffect(() => {
+    if (isTablet && !selectedNoteId && folderNotes.length > 0) {
+      const firstNote = folderNotes.find(n => n.isPinned) || folderNotes[0];
+      setSelectedNoteId(firstNote.id);
     }
-  }, [folders]);
+  }, [isTablet, selectedNoteId, folderNotes]);
+
+  // Handlers
+  const handleSelectFolder = useCallback((folderId: string) => {
+    setCurrentFolderId(folderId);
+    setSelectedNoteId(null);
+    setMobileView('notes');
+  }, []);
 
   const handleSelectNote = useCallback((noteId: string) => {
-    const note = notes.find(n => n.id === noteId);
-    if (note && currentFolder) {
-      setCurrentNote(note);
-      setViewState({ type: 'editor', noteId, folderId: currentFolder.id });
-    }
-  }, [notes, currentFolder]);
+    setSelectedNoteId(noteId);
+    setMobileView('editor');
+  }, []);
 
   const handleCreateNote = useCallback(() => {
-    if (currentFolder) {
-      setCurrentNote(null);
-      setViewState({ type: 'editor', noteId: null, folderId: currentFolder.id });
-    }
-  }, [currentFolder]);
+    const newNote: Note = {
+      id: generateId(),
+      folderId: currentFolderId === 'all' ? 'notes' : currentFolderId,
+      title: '',
+      content: '',
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      isPinned: false,
+    };
+    setNotes(prev => [newNote, ...prev]);
+    setSelectedNoteId(newNote.id);
+    setEditorContent('');
+    setMobileView('editor');
+  }, [currentFolderId]);
 
-  const handleSaveNote = useCallback((content: string) => {
-    if (!content.trim()) return;
+  const handleSaveNote = useCallback(() => {
+    if (!selectedNoteId) return;
 
-    const title = extractTitle(content);
-    const now = Date.now();
-
-    if (currentNote) {
-      // Update existing note
-      setNotes(prev => prev.map(n =>
-        n.id === currentNote.id
-          ? { ...n, content, title, updatedAt: now }
-          : n
-      ));
-    } else if (currentFolder) {
-      // Create new note
-      const newNote: Note = {
-        id: generateId(),
-        folderId: currentFolder.id,
-        title,
-        content,
-        createdAt: now,
-        updatedAt: now,
-        isPinned: false,
-      };
-      setNotes(prev => [newNote, ...prev]);
-      setCurrentNote(newNote);
-    }
-  }, [currentNote, currentFolder]);
+    const title = extractTitle(editorContent);
+    setNotes(prev => prev.map(n =>
+      n.id === selectedNoteId
+        ? { ...n, content: editorContent, title, updatedAt: Date.now() }
+        : n
+    ));
+  }, [selectedNoteId, editorContent]);
 
   const handleDeleteNote = useCallback((noteId: string) => {
     setNotes(prev => prev.filter(n => n.id !== noteId));
-    if (currentNote?.id === noteId) {
-      setCurrentNote(null);
-      if (currentFolder) {
-        setViewState({ type: 'notes', folderId: currentFolder.id });
+    if (selectedNoteId === noteId) {
+      setSelectedNoteId(null);
+      if (!isTablet) {
+        setMobileView('notes');
       }
     }
-  }, [currentNote, currentFolder]);
+  }, [selectedNoteId, isTablet]);
 
   const handleTogglePin = useCallback(() => {
-    if (currentNote) {
-      setNotes(prev => prev.map(n =>
-        n.id === currentNote.id
-          ? { ...n, isPinned: !n.isPinned }
-          : n
-      ));
-      setCurrentNote(prev => prev ? { ...prev, isPinned: !prev.isPinned } : null);
+    if (!selectedNoteId) return;
+    setNotes(prev => prev.map(n =>
+      n.id === selectedNoteId
+        ? { ...n, isPinned: !n.isPinned }
+        : n
+    ));
+  }, [selectedNoteId]);
+
+  const handleShare = useCallback(async () => {
+    if (navigator.share && editorContent) {
+      try {
+        await navigator.share({
+          title: extractTitle(editorContent),
+          text: editorContent,
+        });
+      } catch (e) {
+        // User cancelled
+      }
     }
-  }, [currentNote]);
+  }, [editorContent]);
 
   const handleCreateFolder = useCallback(() => {
     const name = prompt('Enter folder name:');
@@ -782,31 +901,58 @@ export function IOSNotesApp() {
     }
   }, []);
 
-  const handleBack = useCallback(() => {
-    if (viewState.type === 'editor') {
-      if (currentFolder) {
-        setViewState({ type: 'notes', folderId: currentFolder.id });
-      }
-      setCurrentNote(null);
-    } else if (viewState.type === 'notes') {
-      setViewState({ type: 'folders' });
-      setCurrentFolder(null);
+  const handleMobileBack = useCallback(() => {
+    if (mobileView === 'editor') {
+      handleSaveNote();
+      setMobileView('notes');
+    } else if (mobileView === 'notes') {
+      setMobileView('folders');
     }
-  }, [viewState, currentFolder]);
+  }, [mobileView, handleSaveNote]);
 
-  // Get notes for current folder
-  const folderNotes = useMemo(() => {
-    if (!currentFolder) return [];
-    if (currentFolder.id === 'all') {
-      return notes.filter(n => n.folderId !== 'recently-deleted');
-    }
-    return notes.filter(n => n.folderId === currentFolder.id);
-  }, [notes, currentFolder]);
+  // =========================================================================
+  // RENDER
+  // =========================================================================
 
-  // Render based on view state
+  // TABLET LAYOUT: Split view
+  if (isTablet) {
+    return (
+      <div className="ios-notes-app ios-notes-app--tablet">
+        {showSidebar && (
+          <NotesListSidebar
+            folder={currentFolder}
+            notes={folderNotes}
+            selectedNoteId={selectedNoteId}
+            searchValue={searchValue}
+            onSearchChange={setSearchValue}
+            onSelectNote={handleSelectNote}
+            onCreateNote={handleCreateNote}
+            onDeleteNote={handleDeleteNote}
+            onToggleSidebar={() => setShowSidebar(false)}
+            showSidebarToggle
+          />
+        )}
+
+        <EditorPanel
+          note={selectedNote}
+          content={editorContent}
+          onContentChange={setEditorContent}
+          onSave={handleSaveNote}
+          onTogglePin={handleTogglePin}
+          onDelete={() => selectedNoteId && handleDeleteNote(selectedNoteId)}
+          onShare={handleShare}
+          showBackButton={!showSidebar}
+          onBack={() => setShowSidebar(true)}
+          backLabel={currentFolder.name}
+        />
+      </div>
+    );
+  }
+
+  // MOBILE LAYOUT: Stacked navigation
   return (
-    <div className="ios-notes-app">
-      {viewState.type === 'folders' && (
+    <div className="ios-notes-app ios-notes-app--mobile">
+      {mobileView === 'folders' && (
         <FoldersView
           folders={folders}
           notes={notes}
@@ -815,28 +961,136 @@ export function IOSNotesApp() {
         />
       )}
 
-      {viewState.type === 'notes' && currentFolder && (
-        <NotesListView
-          folder={currentFolder}
-          notes={folderNotes}
-          onBack={handleBack}
-          onSelectNote={handleSelectNote}
-          onCreateNote={handleCreateNote}
-          onDeleteNote={handleDeleteNote}
-        />
+      {mobileView === 'notes' && (
+        <div className="ios-notes-list-view">
+          <header className="ios-header ios-header--large">
+            <div className="ios-header__nav">
+              <div className="ios-header__left">
+                <BackButton onClick={handleMobileBack} label="Folders" />
+              </div>
+              <div className="ios-header__right">
+                <button className="ios-icon-button">{Icons.more}</button>
+              </div>
+            </div>
+            <div className="ios-header__large-title">{currentFolder.name}</div>
+            <SearchBar value={searchValue} onChange={setSearchValue} />
+          </header>
+
+          <div className="ios-notes-list-view__content">
+            <NotesListContent
+              notes={folderNotes}
+              searchValue={searchValue}
+              selectedNoteId={selectedNoteId}
+              onSelectNote={handleSelectNote}
+              onDeleteNote={handleDeleteNote}
+            />
+          </div>
+
+          <footer className="ios-notes-list-footer">
+            <span className="ios-notes-list-footer__count">
+              {folderNotes.length} {folderNotes.length === 1 ? 'Note' : 'Notes'}
+            </span>
+            <button className="ios-compose-button" onClick={handleCreateNote}>
+              {Icons.compose}
+            </button>
+          </footer>
+        </div>
       )}
 
-      {viewState.type === 'editor' && currentFolder && (
-        <NoteEditorView
-          note={currentNote}
-          folder={currentFolder}
-          onBack={handleBack}
+      {mobileView === 'editor' && (
+        <EditorPanel
+          note={selectedNote}
+          content={editorContent}
+          onContentChange={setEditorContent}
           onSave={handleSaveNote}
           onTogglePin={handleTogglePin}
-          onDelete={() => currentNote && handleDeleteNote(currentNote.id)}
+          onDelete={() => selectedNoteId && handleDeleteNote(selectedNoteId)}
+          onShare={handleShare}
+          showBackButton
+          onBack={handleMobileBack}
+          backLabel={currentFolder.name}
         />
       )}
     </div>
+  );
+}
+
+// Helper component for notes list content
+function NotesListContent({
+  notes,
+  searchValue,
+  selectedNoteId,
+  onSelectNote,
+  onDeleteNote,
+}: {
+  notes: Note[];
+  searchValue: string;
+  selectedNoteId: string | null;
+  onSelectNote: (id: string) => void;
+  onDeleteNote: (id: string) => void;
+}) {
+  const filteredNotes = useMemo(() => {
+    if (!searchValue) return notes;
+    const query = searchValue.toLowerCase();
+    return notes.filter(n =>
+      n.title.toLowerCase().includes(query) ||
+      n.content.toLowerCase().includes(query)
+    );
+  }, [notes, searchValue]);
+
+  const pinnedNotes = filteredNotes.filter(n => n.isPinned);
+  const unpinnedNotes = filteredNotes.filter(n => !n.isPinned);
+  const groupedNotes = groupNotesByTime(unpinnedNotes);
+
+  if (filteredNotes.length === 0) {
+    return (
+      <div className="ios-empty-state">
+        <div className="ios-empty-state__icon">📝</div>
+        <div className="ios-empty-state__title">No Notes</div>
+        <div className="ios-empty-state__subtitle">
+          {searchValue ? 'No notes match your search' : 'Tap the compose button to create a note'}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {pinnedNotes.length > 0 && (
+        <section className="ios-notes-section">
+          <div className="ios-notes-section__header">Pinned</div>
+          <div className="ios-notes-section__list">
+            {pinnedNotes.map(note => (
+              <NoteRow
+                key={note.id}
+                note={note}
+                isSelected={note.id === selectedNoteId}
+                onClick={() => onSelectNote(note.id)}
+                onDelete={() => onDeleteNote(note.id)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {Array.from(groupedNotes.entries()).map(([timeGroup, groupNotes]) => (
+        <section key={timeGroup} className="ios-notes-section">
+          <div className="ios-notes-section__header">{timeGroup}</div>
+          <div className="ios-notes-section__list">
+            {groupNotes.map(note => (
+              <NoteRow
+                key={note.id}
+                note={note}
+                folderName="Notes"
+                isSelected={note.id === selectedNoteId}
+                onClick={() => onSelectNote(note.id)}
+                onDelete={() => onDeleteNote(note.id)}
+              />
+            ))}
+          </div>
+        </section>
+      ))}
+    </>
   );
 }
 
