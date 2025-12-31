@@ -988,15 +988,15 @@ function EditorPanel({
 
   // Scroll caret into view - marker based for accuracy
   const scrollCaretIntoView = useCallback(() => {
-    // Throttle: max once per 150ms
+    // Throttle: max once per 200ms
     const now = Date.now();
-    if (now - lastScrollTimeRef.current < 150) {
+    if (now - lastScrollTimeRef.current < 200) {
       // Schedule for later if not already scheduled
       if (!scrollTimerRef.current) {
         scrollTimerRef.current = window.setTimeout(() => {
           scrollTimerRef.current = null;
           scrollCaretIntoView();
-        }, 150);
+        }, 200);
       }
       return;
     }
@@ -1396,48 +1396,6 @@ function EditorPanel({
       viewport.removeEventListener('scroll', handleViewportChange);
     };
   }, []);
-
-  // Listen for selection changes (arrow keys, taps, etc.)
-  useEffect(() => {
-    const handleSelectionChange = () => {
-      if (!editorRef.current?.contains(document.activeElement) &&
-          document.activeElement !== editorRef.current) {
-        return;
-      }
-      requestAnimationFrame(scrollCaretIntoView);
-    };
-
-    document.addEventListener('selectionchange', handleSelectionChange);
-    return () => document.removeEventListener('selectionchange', handleSelectionChange);
-  }, [scrollCaretIntoView]);
-
-  // Additional caret tracking on keyup and click
-  useEffect(() => {
-    const editor = editorRef.current;
-    if (!editor) return;
-
-    const handleKeyUp = () => {
-      requestAnimationFrame(scrollCaretIntoView);
-    };
-
-    const handleClick = () => {
-      setTimeout(scrollCaretIntoView, 50);
-    };
-
-    const handleTouchEnd = () => {
-      setTimeout(scrollCaretIntoView, 100);
-    };
-
-    editor.addEventListener('keyup', handleKeyUp);
-    editor.addEventListener('click', handleClick);
-    editor.addEventListener('touchend', handleTouchEnd);
-
-    return () => {
-      editor.removeEventListener('keyup', handleKeyUp);
-      editor.removeEventListener('click', handleClick);
-      editor.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, [scrollCaretIntoView]);
 
   // Auto-focus for new notes
   useEffect(() => {
