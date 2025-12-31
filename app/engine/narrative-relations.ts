@@ -1721,10 +1721,10 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     predicate: 'competed_against',
     typeGuard: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG'] }
   },
-  // "X challenged Y" → normalize to enemy_of for consistency
+  // "X challenged Y"
   {
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+challenged\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
-    predicate: 'enemy_of',
+    predicate: 'challenged',
     typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
   },
   // "X beat Y" / "X won against Y"
