@@ -1041,13 +1041,12 @@ function EditorPanel({
       ? Math.min(containerRect.height, vv.height - Math.max(0, containerRect.top - vv.offsetTop))
       : containerRect.height;
 
-    const lineHeight = 24;
-    const topPadding = 80;
-    const bottomPadding = isKeyboardOpen ? (120 + lineHeight) : 60;
+    const topPadding = 60;
+    const bottomPadding = isKeyboardOpen ? 150 : 60;
 
-    // Scrolling DOWN
+    // Scrolling DOWN - only scroll exactly enough to show caret
     if (caretBottomInContainer > visibleHeight - bottomPadding) {
-      const scrollAmount = caretBottomInContainer - visibleHeight + bottomPadding + lineHeight;
+      const scrollAmount = caretBottomInContainer - (visibleHeight - bottomPadding);
       scrollContainer.scrollTop += scrollAmount;
     }
     // Scrolling UP
