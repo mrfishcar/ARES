@@ -984,6 +984,7 @@ function EditorPanel({
 
   // Scroll caret into view (iOS Safari fix)
   // iOS Safari doesn't auto-scroll to keep caret visible while typing
+  // Uses temporary marker element approach - most reliable for iOS
   const scrollCaretIntoView = useCallback(() => {
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0) return;
@@ -991,48 +992,48 @@ function EditorPanel({
     const range = selection.getRangeAt(0);
     if (!range.collapsed) return; // Only for caret, not selections
 
-    // Try using scrollIntoViewIfNeeded first (supported on Safari)
-    const focusNode = selection.focusNode;
-    if (focusNode) {
-      const element = focusNode.nodeType === Node.ELEMENT_NODE
-        ? focusNode as Element
-        : focusNode.parentElement;
-      if (element && 'scrollIntoViewIfNeeded' in element) {
-        (element as any).scrollIntoViewIfNeeded(true);
-        return;
-      }
-    }
-
-    // Fallback: manual calculation
-    const rect = range.getBoundingClientRect();
-    if (!rect || (rect.top === 0 && rect.left === 0)) return;
-
+    // Get the scroll container
     const scrollContainer = contentRef.current;
     if (!scrollContainer) return;
 
-    const containerRect = scrollContainer.getBoundingClientRect();
+    // Create a temporary marker span at caret position
+    const marker = document.createElement('span');
+    marker.id = '__caret_marker__';
+    marker.style.cssText = 'display:inline;width:0;height:1em;vertical-align:baseline;';
 
-    // Account for visual viewport offset when keyboard is open
-    const vvOffset = window.visualViewport?.offsetTop || 0;
-    const vvHeight = window.visualViewport?.height || window.innerHeight;
+    // Clone range so we don't disrupt the actual selection
+    const markerRange = range.cloneRange();
+    markerRange.collapse(false); // Collapse to end
 
-    const headerHeight = 44 + 20; // Header + safe area + padding
-    const footerHeight = isKeyboardOpen ? keyboardHeight : 60;
-    const padding = 20;
+    try {
+      markerRange.insertNode(marker);
 
-    // Visible area bounds (accounting for keyboard)
-    const visibleTop = vvOffset + headerHeight + padding;
-    const visibleBottom = vvOffset + vvHeight - footerHeight - padding;
+      // Get marker position relative to scroll container
+      const markerRect = marker.getBoundingClientRect();
+      const containerRect = scrollContainer.getBoundingClientRect();
 
-    // Check if caret is outside visible area
-    if (rect.top < visibleTop) {
-      const scrollAmount = rect.top - visibleTop;
-      scrollContainer.scrollBy({ top: scrollAmount, behavior: 'auto' });
-    } else if (rect.bottom > visibleBottom) {
-      const scrollAmount = rect.bottom - visibleBottom;
-      scrollContainer.scrollBy({ top: scrollAmount, behavior: 'auto' });
+      // Calculate visible area accounting for keyboard
+      const vv = window.visualViewport;
+      const viewportHeight = vv?.height || window.innerHeight;
+      const viewportTop = vv?.offsetTop || 0;
+
+      // Visible bounds - account for header and keyboard
+      const topBound = containerRect.top + 60; // Header space
+      const bottomBound = viewportTop + viewportHeight - 40; // Keyboard accessory space
+
+      // Check if caret is outside visible bounds
+      if (markerRect.top < topBound) {
+        // Scroll up to show caret
+        scrollContainer.scrollTop -= (topBound - markerRect.top + 20);
+      } else if (markerRect.bottom > bottomBound) {
+        // Scroll down to show caret
+        scrollContainer.scrollTop += (markerRect.bottom - bottomBound + 20);
+      }
+    } finally {
+      // Remove marker
+      marker.remove();
     }
-  }, [isKeyboardOpen, keyboardHeight]);
+  }, []);
 
   // Initialize editor content when note changes
   useEffect(() => {
