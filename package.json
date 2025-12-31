@@ -32,7 +32,8 @@
     "fiction:ch2": "MODULE_PATH=./app/engine/fiction-extraction ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"Node\"}' scripts/run-fiction-ch2.ts",
     "run:barty-full": "ts-node --transpile-only scripts/run-barty-full.ts",
     "build:worker": "esbuild scripts/job-worker.ts --platform=node --format=cjs --bundle --outfile=dist/scripts/job-worker.js --external:better-sqlite3",
-    "worker": "npm run build:worker && node dist/scripts/job-worker.js"
+    "worker": "npm run build:worker && node dist/scripts/job-worker.js",
+    "notes:dev": "node app/ui/notes/server.js"
   },
   "keywords": [
     "knowledge-graph",

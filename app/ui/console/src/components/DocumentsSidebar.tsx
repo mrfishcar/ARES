@@ -3,7 +3,7 @@
  * Lists saved documents with load capability
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { MoreVertical, Trash2 } from 'lucide-react';
 
 interface Document {
@@ -36,6 +36,11 @@ export function DocumentsSidebar({
   deriveDocumentName,
 }: DocumentsSidebarProps) {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
+  const notesHref = useMemo(() => {
+    if (typeof window === 'undefined') return '/notes/';
+    return new URL('/notes/', window.location.origin).toString();
+  }, []);
 
   // Swipe-to-close gesture
   const [touchStart, setTouchStart] = useState<{ x: number; y: number; time: number } | null>(null);
@@ -93,6 +98,15 @@ export function DocumentsSidebar({
           style={{ marginTop: '8px', display: 'inline-block' }}
         >
           BookNLP Test
+        </a>
+        <a
+          href={notesHref}
+          className="sidebar-link"
+          style={{ marginTop: '6px', display: 'inline-block' }}
+          target="_blank"
+          rel="noreferrer"
+        >
+          Notes Clone
         </a>
       </div>
 

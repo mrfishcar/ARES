@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Notes – ARES</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="app" class="app-shell">
+      <header class="topbar">
+        <div class="brand">Notes</div>
+        <div class="topbar-actions">
+          <button class="ghost" id="toggle-list" aria-expanded="false">
+            Notes
+          </button>
+          <button class="primary" id="new-note" aria-label="Create note">
+            New
+          </button>
+        </div>
+      </header>
+
+      <main class="layout">
+        <aside class="sidebar" aria-label="Note list">
+          <div class="sidebar-header">
+            <div class="title">All Notes</div>
+            <div class="subtitle" id="note-count" aria-live="polite"></div>
+          </div>
+          <div class="search-row">
+            <label class="sr-only" for="search">Search</label>
+            <input id="search" type="search" placeholder="Search" />
+          </div>
+          <div class="note-list" id="note-list" role="list"></div>
+        </aside>
+
+        <section class="editor-pane" aria-label="Editor">
+          <div class="editor-toolbar">
+            <div class="input-row">
+              <label class="sr-only" for="note-title">Title</label>
+              <input id="note-title" type="text" placeholder="Title" />
+            </div>
+            <div class="meta">
+              <span id="status" aria-live="polite"></span>
+            </div>
+          </div>
+          <div class="editor-surface" id="editor-surface">
+            <label class="sr-only" for="note-body">Note body</label>
+            <div
+              id="note-body"
+              class="editor"
+              contenteditable="true"
+              role="textbox"
+              aria-multiline="true"
+              spellcheck="true"
+              placeholder="Start typing"
+            ></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="main.js"></script>
+  </body>
+</html>
