@@ -921,7 +921,15 @@ function nerSpans(sent: ParsedSentence): Array<{ text: string; type: EntityType;
       }
     }
 
-    const spanTokens = sent.tokens.slice(spanStart, j);
+    let spanTokens = sent.tokens.slice(spanStart, j);
+
+    // Strip leading determiners from NER spans (spaCy sometimes includes "the" in LOC/GPE entities)
+    // E.g., "the Mistward River" → "Mistward River"
+    const LEADING_DETERMINERS = new Set(['the', 'a', 'an']);
+    while (spanTokens.length > 1 && LEADING_DETERMINERS.has(spanTokens[0].text.toLowerCase())) {
+      spanTokens = spanTokens.slice(1);
+    }
+
     let text = normalizeName(spanTokens.map(x => x.text).join(" "));
     const start = spanTokens[0].start;
     const end = spanTokens[spanTokens.length - 1].end;
@@ -2156,11 +2164,11 @@ function mergeOfPatterns<T extends { text: string; type: EntityType; start: numb
 /**
  * Deduplicate entity spans
  * Priority: Keep the first occurrence per canonical form (dep > ner > fb)
- * Also removes spans that are subsumed by longer spans (e.g., "Battle" inside "Battle of Pelennor Fields")
+ * Also removes spans that are subsumed by longer spans (e.g., "Kara" inside "Kara Nightfall")
  */
 function dedupe<T extends { text: string; type: EntityType; start: number; end: number }>(spans: T[]): T[] {
   const seenCanonical = new Set<string>();
-  const out: T[] = [];
+  let out: T[] = [];
 
   for (const s of spans) {
     // Dedupe by canonical form (type + normalized text)
@@ -2170,6 +2178,31 @@ function dedupe<T extends { text: string; type: EntityType; start: number; end: 
 
     seenCanonical.add(canonicalKey);
     out.push(s);
+  }
+
+  // Second pass: remove spans that are subsumed by longer spans of the same type
+  // E.g., "Kara" at 26-30 is subsumed by "Kara Nightfall" at 26-40
+  const subsumed = new Set<number>();
+  for (let i = 0; i < out.length; i++) {
+    const shorter = out[i];
+    for (let j = 0; j < out.length; j++) {
+      if (i === j) continue;
+      const longer = out[j];
+      // Check if shorter is contained within longer (same type, position overlap)
+      if (shorter.type === longer.type &&
+          shorter.start >= longer.start &&
+          shorter.end <= longer.end &&
+          (shorter.end - shorter.start) < (longer.end - longer.start)) {
+        // shorter is subsumed by longer - mark for removal
+        subsumed.add(i);
+        break;
+      }
+    }
+  }
+
+  // Filter out subsumed spans
+  if (subsumed.size > 0) {
+    out = out.filter((_, idx) => !subsumed.has(idx));
   }
 
   return out;

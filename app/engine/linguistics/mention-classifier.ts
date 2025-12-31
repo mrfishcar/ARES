@@ -530,10 +530,12 @@ export function classifyMention(
 
   // Titlecased token(s) followed immediately by lowercase noun ("Monster Runner cards")
   // Exception: Names ending in common surname patterns or followed by verbs
+  // Exception: If followed by comma, it's likely an appositive ("Kara Nightfall, a strategist")
   if (
     tokens.every(t => /^[A-Z]/.test(t)) &&
     followingWord &&
-    /^[a-z]+s?$/.test(followingWord)
+    /^[a-z]+s?$/.test(followingWord) &&
+    !followingComma  // Don't reject if comma separates name from description
   ) {
     // Don't classify names ending in common surname patterns
     const lastToken = tokens[tokens.length - 1];
@@ -543,7 +545,7 @@ export function classifyMention(
       // Exception: if followed by appositive marker, it's likely a name ("Aragorn, son of Arathorn")
       const APPOSITIVE_MARKERS_TITLE = new Set(['son', 'daughter', 'brother', 'sister', 'mother', 'father', 'wife', 'husband', 'king', 'queen', 'prince', 'princess', 'lord', 'lady', 'heir', 'child', 'nephew', 'niece', 'cousin', 'uncle', 'aunt', 'friend', 'servant', 'master', 'student', 'apprentice', 'leader', 'chief', 'captain', 'commander', 'head', 'ruler', 'founder', 'member', 'ally', 'enemy', 'rival']);
       // Exception: if followed by a preposition, it's likely a name followed by location/time ("Arwen in 3019")
-      const COMMON_PREPS = new Set(['in', 'at', 'on', 'to', 'from', 'with', 'of', 'for', 'by', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'between', 'under', 'over', 'near', 'across', 'around', 'behind', 'beside', 'against', 'along', 'among', 'beyond', 'inside', 'outside', 'toward', 'towards', 'upon', 'within', 'without', 'until', 'since', 'except', 'despite', 'throughout', 'like', 'unlike', 'via', 'per', 'versus', 'vs']);
+      const COMMON_PREPS = new Set(['in', 'at', 'on', 'to', 'from', 'with', 'of', 'for', 'by', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'between', 'under', 'over', 'near', 'across', 'around', 'behind', 'beside', 'against', 'along', 'among', 'beyond', 'inside', 'outside', 'toward', 'towards', 'upon', 'within', 'without', 'until', 'since', 'except', 'despite', 'throughout', 'like', 'unlike', 'via', 'per', 'versus', 'vs', 'atop', 'aboard', 'underneath', 'alongside', 'beneath', 'past', 'amid', 'amidst']);
       // Exception: if followed by coordinator, it's a name in coordination ("Harry and Ron")
       const COORDINATORS = new Set(['and', 'or', 'but', 'nor']);
       if (!COMMON_VERBS.has(followingWord.toLowerCase()) && !APPOSITIVE_MARKERS_TITLE.has(followingWord.toLowerCase()) && !COMMON_PREPS.has(followingWord.toLowerCase()) && !COORDINATORS.has(followingWord.toLowerCase())) {
