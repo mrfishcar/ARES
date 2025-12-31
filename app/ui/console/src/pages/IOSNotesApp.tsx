@@ -984,7 +984,7 @@ function EditorPanel({
 
   // Scroll caret into view (iOS Safari fix)
   // iOS Safari doesn't auto-scroll to keep caret visible while typing
-  // Uses temporary marker element approach - most reliable for iOS
+  // Uses temporary marker element with scrollIntoView - simplest reliable approach
   const scrollCaretIntoView = useCallback(() => {
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0) return;
@@ -992,14 +992,9 @@ function EditorPanel({
     const range = selection.getRangeAt(0);
     if (!range.collapsed) return; // Only for caret, not selections
 
-    // Get the scroll container
-    const scrollContainer = contentRef.current;
-    if (!scrollContainer) return;
-
     // Create a temporary marker span at caret position
     const marker = document.createElement('span');
-    marker.id = '__caret_marker__';
-    marker.style.cssText = 'display:inline;width:0;height:1em;vertical-align:baseline;';
+    marker.style.cssText = 'position:absolute;';
 
     // Clone range so we don't disrupt the actual selection
     const markerRange = range.cloneRange();
@@ -1008,30 +1003,21 @@ function EditorPanel({
     try {
       markerRange.insertNode(marker);
 
-      // Get marker position relative to scroll container
-      const markerRect = marker.getBoundingClientRect();
-      const containerRect = scrollContainer.getBoundingClientRect();
-
-      // Calculate visible area accounting for keyboard
-      const vv = window.visualViewport;
-      const viewportHeight = vv?.height || window.innerHeight;
-      const viewportTop = vv?.offsetTop || 0;
-
-      // Visible bounds - account for header and keyboard
-      const topBound = containerRect.top + 60; // Header space
-      const bottomBound = viewportTop + viewportHeight - 40; // Keyboard accessory space
-
-      // Check if caret is outside visible bounds
-      if (markerRect.top < topBound) {
-        // Scroll up to show caret
-        scrollContainer.scrollTop -= (topBound - markerRect.top + 20);
-      } else if (markerRect.bottom > bottomBound) {
-        // Scroll down to show caret
-        scrollContainer.scrollTop += (markerRect.bottom - bottomBound + 20);
-      }
+      // Use scrollIntoView with block: 'nearest' to minimize scrolling
+      // This is the simplest and most reliable approach
+      marker.scrollIntoView({
+        behavior: 'instant',
+        block: 'nearest',
+        inline: 'nearest'
+      });
+    } catch (e) {
+      // Fallback for any errors
+      console.warn('scrollCaretIntoView error:', e);
     } finally {
-      // Remove marker
-      marker.remove();
+      // Always remove marker
+      if (marker.parentNode) {
+        marker.remove();
+      }
     }
   }, []);
 
