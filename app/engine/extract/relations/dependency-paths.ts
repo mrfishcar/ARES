@@ -609,11 +609,15 @@ const PATH_PATTERNS: PathPattern[] = [
   // "X's mother/father/parent"
   { signature: /^(mother|father|parent):↓poss:(\w+)$/, predicate: 'child_of', subjectFirst: false },
 
-  // "Y, son/daughter of X"
+  // "Y, son/daughter of X" - when path goes UP to appos
   { signature: /^(\w+):↑appos:(son|daughter|child):↓prep:of:↓pobj:(\w+)$/, predicate: 'child_of', subjectFirst: true },
 
-  // "Y, child of X"
+  // "Y, child of X" - when path goes UP to appos
   { signature: /^(\w+):↑appos:child:↓prep:of:↓pobj:(\w+)$/, predicate: 'child_of', subjectFirst: true },
+
+  // "Y, son/daughter of X" - when path goes DOWN from head (e.g., Aragorn → son → of → Arathorn)
+  // This handles "Aragorn, son of Arathorn" where Aragorn is ROOT and son is its appositive
+  { signature: /^(\w+):↓appos:(son|daughter|child):↓prep:of:↓pobj:(\w+)$/, predicate: 'child_of', subjectFirst: true },
 
   // "X and Y are siblings"
   { signature: /^(\w+):↑conj:(\w+):↑nsubj:be:↓attr:sibling$/, predicate: 'sibling_of', subjectFirst: true },
@@ -933,25 +937,34 @@ const PATH_PATTERNS: PathPattern[] = [
   // "X forms part of Y" - forms relation
   { signature: /^(\w+):↑nsubj:form:↓(dobj|obj):part:↓prep:of:↓pobj:(\w+)$/, predicate: 'part_of', subjectFirst: true },
 
-  // === GENERATED PATTERNS ===
-  // Auto-generated from scripts/integrate-patterns.ts
+  // === CORRECTED GENERATED PATTERNS ===
+  // Fixed from incorrect auto-generated patterns
 
-  { signature: /^(\w+):↑nsubj:married:↓(?:dobj|obj):(\w+)$/, predicate: 'parent_of', subjectFirst: true },
-  { signature: /^(\w+):↑nsubj:wed:↓(?:dobj|obj):(\w+)$/, predicate: 'child_of', subjectFirst: true },
-  { signature: /^(\w+):↑nsubj:begat:↓(?:dobj|obj):(\w+)$/, predicate: 'sibling_of', subjectFirst: true },
-  { signature: /^(\w+):↑appos:father:↓prep:of:↓pobj:(\w+)$/, predicate: 'married_to', subjectFirst: true },
-  { signature: /^(\w+):↑appos:father:↓prep:to:↓pobj:(\w+)$/, predicate: 'cousin_of', subjectFirst: true },
-  { signature: /^(\w+):↑appos:mother:↓prep:of:↓pobj:(\w+)$/, predicate: 'ancestor_of', subjectFirst: true },
-  { signature: /^(\w+):↑appos:mother:↓prep:to:↓pobj:(\w+)$/, predicate: 'descendant_of', subjectFirst: true },
+  // Marriage patterns (these were wrongly mapped before)
+  { signature: /^(\w+):↑nsubj:married:↓(?:dobj|obj):(\w+)$/, predicate: 'married_to', subjectFirst: true },
+  { signature: /^(\w+):↑nsubj:wed:↓(?:dobj|obj):(\w+)$/, predicate: 'married_to', subjectFirst: true },
+  { signature: /^(\w+):↑nsubjpass:married:↓agent:by:↓pobj:(\w+)$/, predicate: 'married_to', subjectFirst: false },
+
+  // Parent-child patterns via begat
+  { signature: /^(\w+):↑nsubj:begat:↓(?:dobj|obj):(\w+)$/, predicate: 'parent_of', subjectFirst: true },
+  { signature: /^(\w+):↑nsubj:begot:↓(?:dobj|obj):(\w+)$/, predicate: 'parent_of', subjectFirst: true },
+
+  // Appositive family patterns - "X, father of Y"
+  { signature: /^(\w+):↑appos:father:↓prep:of:↓pobj:(\w+)$/, predicate: 'parent_of', subjectFirst: true },
+  { signature: /^(\w+):↑appos:mother:↓prep:of:↓pobj:(\w+)$/, predicate: 'parent_of', subjectFirst: true },
   { signature: /^(\w+):↑appos:parent:↓prep:of:↓pobj:(\w+)$/, predicate: 'parent_of', subjectFirst: true },
-  { signature: /^(\w+):↑appos:parent:↓prep:to:↓pobj:(\w+)$/, predicate: 'child_of', subjectFirst: true },
-  { signature: /^(\w+):↑nsubjpass:married:↓agent:by:↓pobj:(\w+)$/, predicate: 'sibling_of', subjectFirst: false },
-  { signature: /^father:↓poss:(\w+)$/, predicate: 'cousin_of', subjectFirst: true },
-  { signature: /^mother:↓poss:(\w+)$/, predicate: 'ancestor_of', subjectFirst: true },
-  { signature: /^(\w+):↑nsubj:be:↓attr:father:↓prep:of:↓pobj:(\w+)$/, predicate: 'descendant_of', subjectFirst: true },
-  { signature: /^(\w+):↑nsubj:be:↓attr:father:↓prep:to:↓pobj:(\w+)$/, predicate: 'parent_of', subjectFirst: true },
-  { signature: /^(\w+):↑nsubj:be:↓attr:mother:↓prep:of:↓pobj:(\w+)$/, predicate: 'child_of', subjectFirst: true },
-  { signature: /^(\w+):↑nsubj:be:↓attr:mother:↓prep:to:↓pobj:(\w+)$/, predicate: 'sibling_of', subjectFirst: true },
+  { signature: /^(\w+):↑appos:son:↓prep:of:↓pobj:(\w+)$/, predicate: 'child_of', subjectFirst: true },
+  { signature: /^(\w+):↑appos:daughter:↓prep:of:↓pobj:(\w+)$/, predicate: 'child_of', subjectFirst: true },
+
+  // Possessive patterns - "Y's father"
+  { signature: /^father:↓poss:(\w+)$/, predicate: 'parent_of', subjectFirst: false },
+  { signature: /^mother:↓poss:(\w+)$/, predicate: 'parent_of', subjectFirst: false },
+
+  // "X is the father of Y" patterns
+  { signature: /^(\w+):↑nsubj:be:↓attr:father:↓prep:of:↓pobj:(\w+)$/, predicate: 'parent_of', subjectFirst: true },
+  { signature: /^(\w+):↑nsubj:be:↓attr:mother:↓prep:of:↓pobj:(\w+)$/, predicate: 'parent_of', subjectFirst: true },
+  { signature: /^(\w+):↑nsubj:be:↓attr:son:↓prep:of:↓pobj:(\w+)$/, predicate: 'child_of', subjectFirst: true },
+  { signature: /^(\w+):↑nsubj:be:↓attr:daughter:↓prep:of:↓pobj:(\w+)$/, predicate: 'child_of', subjectFirst: true },
   { signature: /^(\w+):↑nsubj:owns:↓(?:dobj|obj):(\w+)$/, predicate: 'owns', subjectFirst: true },
   { signature: /^(\w+):↑nsubj:owned:↓(?:dobj|obj):(\w+)$/, predicate: 'owned_by', subjectFirst: true },
   { signature: /^(\w+):↑nsubj:possesses:↓(?:dobj|obj):(\w+)$/, predicate: 'belongs_to', subjectFirst: true },

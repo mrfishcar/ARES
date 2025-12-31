@@ -394,7 +394,10 @@ function resolveAppositiveSubject(tok: Token, tokens: Token[]): Token {
  * Handles cases like "Gandalf the Grey", "Professor McGonagall", "Minas Tirith"
  */
 function expandNP(tok: Token, tokens: Token[]): { start: number; end: number } {
-  const include = new Set(['compound', 'appos', 'flat', 'det', 'amod', 'nmod', 'nummod']);
+  // Note: 'appos' is intentionally excluded - appositives are separate entities/descriptions,
+  // not part of the noun phrase. Including 'appos' caused "Aragorn, son of Arathorn, married Arwen"
+  // to expand Aragorn's NP to include the entire sentence.
+  const include = new Set(['compound', 'flat', 'det', 'amod', 'nmod', 'nummod']);
   const stack = [tok];
   const members: Token[] = [tok];
   const seen = new Set([tok.i]);
@@ -795,7 +798,10 @@ function tryCreateRelation(
       console.log(`[COORD-EXTEND] Base tokens for span ${baseSpan.start}-${baseSpan.end}:`, baseTokens.map(t => `${t.text}/${t.dep}/head=${t.head}`));
     }
 
-    const coordDeps = new Set(['compound', 'conj', 'cc', 'appos', 'flat']);
+    // Note: 'appos' is intentionally excluded - appositives describe/clarify an entity,
+    // they are NOT coordinations. Including 'appos' caused "Aragorn, son of Arathorn, married Arwen"
+    // to create spurious married_to relations with Arathorn (the parent).
+    const coordDeps = new Set(['compound', 'conj', 'cc', 'flat']);
     const members: Token[] = [...baseTokens];
     const queue: Token[] = [...baseTokens];
     const seen = new Set(queue.map(t => t.i));
@@ -1930,6 +1936,13 @@ function extractDepRelations(
           subj = lastNamedSubject;
         }
         updateLastNamedSubject(subj);
+
+        // DEBUG: Trace married_to creation
+        if (process.env.DEBUG_MARRIED) {
+          console.log(`[MARRIED-DEBUG] Creating married_to: subj="${text.slice(subj.start, subj.end)}" obj="${text.slice(obj.start, obj.end)}"`);
+          console.log(`[MARRIED-DEBUG]   married.dep=${tok.dep}, married.head=${tok.head}`);
+        }
+
         const produced = tryCreateRelation(
           text, entities, spans, 'married_to',
           subj.start, subj.end, obj.start, obj.end, 'DEP',
