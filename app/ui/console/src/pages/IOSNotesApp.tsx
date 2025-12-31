@@ -180,18 +180,35 @@ function extractTitle(content: string): string {
   return firstLine || 'New Note';
 }
 
-// Hook for responsive breakpoint
+// Hook for responsive breakpoint - SSR-safe with correct initial value
 function useIsTablet(): boolean {
-  const [isTablet, setIsTablet] = useState(false);
+  const [isTablet, setIsTablet] = useState(() => {
+    // Check on initial render to avoid flash of incorrect layout
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 768;
+    }
+    return false;
+  });
 
   useEffect(() => {
     const checkWidth = () => setIsTablet(window.innerWidth >= 768);
-    checkWidth();
     window.addEventListener('resize', checkWidth);
     return () => window.removeEventListener('resize', checkWidth);
   }, []);
 
   return isTablet;
+}
+
+// Hook for debounced value - prevents excessive saves
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+
+  return debouncedValue;
 }
 
 // ============================================================================
@@ -314,22 +331,42 @@ function BackButton({ onClick, label = 'Back' }: { onClick: () => void; label?: 
   );
 }
 
-// Search Bar
+// Search Bar with proper touch targets
 function SearchBar({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleClear = useCallback(() => {
+    onChange('');
+    // Refocus input after clearing
+    inputRef.current?.focus();
+  }, [onChange]);
+
   return (
     <div className="ios-search-bar">
       <div className="ios-search-bar__container">
         {Icons.search}
         <input
-          type="text"
+          ref={inputRef}
+          type="search"
           className="ios-search-bar__input"
           placeholder="Search"
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
+          enterKeyHint="search"
+          aria-label="Search notes"
         />
         {value && (
-          <button className="ios-search-bar__clear" onClick={() => onChange('')}>
-            ✕
+          <button
+            className="ios-search-bar__clear"
+            onClick={handleClear}
+            type="button"
+            aria-label="Clear search"
+          >
+            <span className="ios-search-bar__clear-icon">✕</span>
           </button>
         )}
       </div>
@@ -357,7 +394,7 @@ function FolderRow({
   );
 }
 
-// Note Row with time-based grouping support
+// Note Row with time-based grouping support and improved swipe
 function NoteRow({
   note,
   folderName,
@@ -374,6 +411,7 @@ function NoteRow({
   const [swipeX, setSwipeX] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
   const startXRef = useRef(0);
+  const rowRef = useRef<HTMLDivElement>(null);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     startXRef.current = e.touches[0].clientX;
@@ -385,6 +423,9 @@ function NoteRow({
     const diff = e.touches[0].clientX - startXRef.current;
     if (diff < 0) {
       setSwipeX(Math.max(diff, -100));
+    } else if (swipeX < 0) {
+      // Allow swiping back
+      setSwipeX(Math.min(0, swipeX + (e.touches[0].clientX - startXRef.current)));
     }
   };
 
@@ -397,38 +438,78 @@ function NoteRow({
     }
   };
 
+  // Close swipe when clicking elsewhere
+  useEffect(() => {
+    if (swipeX !== 0) {
+      const handleClickOutside = (e: MouseEvent) => {
+        if (rowRef.current && !rowRef.current.contains(e.target as Node)) {
+          setSwipeX(0);
+        }
+      };
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [swipeX]);
+
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     onDelete();
   };
 
+  const handleRowClick = () => {
+    if (swipeX !== 0) {
+      setSwipeX(0);
+    } else {
+      onClick();
+    }
+  };
+
+  // Keyboard navigation support
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick();
+    } else if (e.key === 'Delete' || e.key === 'Backspace') {
+      e.preventDefault();
+      onDelete();
+    }
+  }, [onClick, onDelete]);
+
   return (
-    <div className="ios-note-row-wrapper">
+    <div className="ios-note-row-wrapper" ref={rowRef}>
       <div
         className="ios-note-row-actions"
         style={{ opacity: Math.min(1, Math.abs(swipeX) / 80) }}
       >
-        <button className="ios-note-row-actions__delete" onClick={handleDelete}>
+        <button className="ios-note-row-actions__delete" onClick={handleDelete} aria-label="Delete note">
           {Icons.trash}
         </button>
       </div>
       <div
-        className={`ios-note-row ${isSelected ? 'ios-note-row--selected' : ''}`}
-        onClick={onClick}
+        className={`ios-note-row ${isSelected ? 'ios-note-row--selected' : ''} ${isSwiping ? 'ios-note-row--swiping' : ''}`}
+        onClick={handleRowClick}
+        onKeyDown={handleKeyDown}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         style={{ transform: `translateX(${swipeX}px)` }}
+        role="button"
+        tabIndex={0}
+        aria-label={`Open note: ${note.title || 'New Note'}`}
+        aria-selected={isSelected}
       >
         {note.isPinned && (
-          <div className="ios-note-row__pin">{Icons.pin}</div>
+          <div className="ios-note-row__pin" aria-label="Pinned">{Icons.pin}</div>
         )}
         <div className="ios-note-row__content">
+          {/* Title on its own line */}
           <div className="ios-note-row__title">{note.title || 'New Note'}</div>
-          <div className="ios-note-row__meta">
+          {/* Date and preview on second line */}
+          <div className="ios-note-row__subtitle">
             <span className="ios-note-row__date">{formatDate(note.updatedAt)}</span>
             <span className="ios-note-row__preview">{extractPreview(note.content)}</span>
           </div>
+          {/* Folder on third line if present */}
           {folderName && (
             <div className="ios-note-row__folder">
               <span className="ios-note-row__folder-icon">📁</span>
@@ -573,7 +654,7 @@ function NotesListSidebar({
   );
 }
 
-// Editor Panel
+// Editor Panel with iOS-style title/body split
 function EditorPanel({
   note,
   content,
@@ -598,13 +679,101 @@ function EditorPanel({
   backLabel?: string;
 }) {
   const [showMenu, setShowMenu] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const titleRef = useRef<HTMLTextAreaElement>(null);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
+  // Split content into title (first line) and body (rest)
+  const lines = content.split('\n');
+  const title = lines[0] || '';
+  const body = lines.slice(1).join('\n');
+
+  // Handle title changes
+  const handleTitleChange = useCallback((newTitle: string) => {
+    // Prevent newlines in title - move to body on Enter
+    if (newTitle.includes('\n')) {
+      const parts = newTitle.split('\n');
+      const firstPart = parts[0];
+      const rest = parts.slice(1).join('\n');
+      onContentChange(firstPart + '\n' + rest + body);
+      // Focus body after Enter
+      setTimeout(() => bodyRef.current?.focus(), 0);
+    } else {
+      onContentChange(newTitle + '\n' + body);
+    }
+  }, [body, onContentChange]);
+
+  // Handle body changes
+  const handleBodyChange = useCallback((newBody: string) => {
+    onContentChange(title + '\n' + newBody);
+  }, [title, onContentChange]);
+
+  // Handle title keydown for Enter key
+  const handleTitleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      bodyRef.current?.focus();
+      // Place cursor at start of body
+      if (bodyRef.current) {
+        bodyRef.current.selectionStart = 0;
+        bodyRef.current.selectionEnd = 0;
+      }
+    }
+  }, []);
+
+  // Handle body keydown for Backspace at start
+  const handleBodyKeyDown = useCallback((e: React.KeyboardEvent) => {
+    const target = e.target as HTMLTextAreaElement;
+    if (e.key === 'Backspace' && target.selectionStart === 0 && target.selectionEnd === 0) {
+      e.preventDefault();
+      titleRef.current?.focus();
+      // Place cursor at end of title
+      if (titleRef.current) {
+        titleRef.current.selectionStart = title.length;
+        titleRef.current.selectionEnd = title.length;
+      }
+    }
+  }, [title.length]);
+
+  // Detect keyboard open/close via visualViewport
   useEffect(() => {
-    if (textareaRef.current && !note) {
-      textareaRef.current.focus();
+    if (!window.visualViewport) return;
+
+    const viewport = window.visualViewport;
+    const initialHeight = viewport.height;
+
+    const handleResize = () => {
+      // Keyboard is likely open if viewport shrinks significantly
+      const heightDiff = initialHeight - viewport.height;
+      setIsKeyboardOpen(heightDiff > 150);
+    };
+
+    viewport.addEventListener('resize', handleResize);
+    return () => viewport.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Auto-focus title for new notes
+  useEffect(() => {
+    if (!note && titleRef.current) {
+      titleRef.current.focus();
     }
   }, [note]);
+
+  // Auto-resize textareas
+  const autoResize = useCallback((textarea: HTMLTextAreaElement | null) => {
+    if (!textarea) return;
+    textarea.style.height = 'auto';
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }, []);
+
+  useEffect(() => {
+    autoResize(titleRef.current);
+  }, [title, autoResize]);
+
+  useEffect(() => {
+    autoResize(bodyRef.current);
+  }, [body, autoResize]);
 
   return (
     <div className="ios-editor-panel">
@@ -617,22 +786,27 @@ function EditorPanel({
 
         {/* iPad toolbar icons */}
         <div className="ios-editor-panel__toolbar-center">
-          <button className="ios-icon-button">{Icons.textFormat}</button>
-          <button className="ios-icon-button">{Icons.checklist}</button>
-          <button className="ios-icon-button">{Icons.table}</button>
-          <button className="ios-icon-button">{Icons.attachment}</button>
-          <button className="ios-icon-button">{Icons.markup}</button>
+          <button type="button" className="ios-icon-button" aria-label="Search in note">{Icons.search}</button>
+          <button type="button" className="ios-icon-button" aria-label="Text format">{Icons.textFormat}</button>
+          <button type="button" className="ios-icon-button" aria-label="Checklist">{Icons.checklist}</button>
+          <button type="button" className="ios-icon-button" aria-label="Table">{Icons.table}</button>
+          <button type="button" className="ios-icon-button" aria-label="Attachment">{Icons.attachment}</button>
+          <button type="button" className="ios-icon-button" aria-label="Markup">{Icons.markup}</button>
         </div>
 
         <div className="ios-editor-panel__header-right">
-          <button className="ios-icon-button" onClick={onShare}>
+          <button type="button" className="ios-icon-button" onClick={onShare} aria-label="Share">
             {Icons.share}
           </button>
           <button
-            className="ios-icon-button"
+            type="button"
+            className="ios-icon-button ios-icon-button--filled-circle"
             onClick={() => setShowMenu(!showMenu)}
+            aria-label="More options"
+            aria-expanded={showMenu}
+            aria-haspopup="menu"
           >
-            {Icons.more}
+            {Icons.moreCircle}
           </button>
         </div>
       </header>
@@ -640,16 +814,43 @@ function EditorPanel({
       {showMenu && (
         <>
           <div className="ios-menu-backdrop" onClick={() => setShowMenu(false)} />
-          <div className="ios-dropdown-menu">
-            <button className="ios-dropdown-menu__item" onClick={() => { onTogglePin(); setShowMenu(false); }}>
+          <div className="ios-dropdown-menu" role="menu">
+            <button
+              className="ios-dropdown-menu__item"
+              onClick={() => { onTogglePin(); setShowMenu(false); }}
+              role="menuitem"
+            >
               {Icons.pin}
               {note?.isPinned ? 'Unpin Note' : 'Pin Note'}
             </button>
-            <button className="ios-dropdown-menu__item" onClick={() => { navigator.clipboard.writeText(content); setShowMenu(false); }}>
+            <button
+              className="ios-dropdown-menu__item"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(content);
+                } catch {
+                  // Fallback for older browsers
+                  const textarea = document.createElement('textarea');
+                  textarea.value = content;
+                  textarea.style.position = 'fixed';
+                  textarea.style.opacity = '0';
+                  document.body.appendChild(textarea);
+                  textarea.select();
+                  document.execCommand('copy');
+                  document.body.removeChild(textarea);
+                }
+                setShowMenu(false);
+              }}
+              role="menuitem"
+            >
               {Icons.copy}
               Copy
             </button>
-            <button className="ios-dropdown-menu__item ios-dropdown-menu__item--danger" onClick={() => { onDelete(); setShowMenu(false); }}>
+            <button
+              className="ios-dropdown-menu__item ios-dropdown-menu__item--danger"
+              onClick={() => { onDelete(); setShowMenu(false); }}
+              role="menuitem"
+            >
               {Icons.trash}
               Delete
             </button>
@@ -657,30 +858,68 @@ function EditorPanel({
         </>
       )}
 
-      <div className="ios-editor-panel__content">
+      <div className="ios-editor-panel__content" ref={contentRef}>
         {note && (
           <div className="ios-editor-panel__date">
             {formatFullDate(note.updatedAt)}
           </div>
         )}
-        <textarea
-          ref={textareaRef}
-          className="ios-editor-panel__textarea"
-          value={content}
-          onChange={(e) => onContentChange(e.target.value)}
-          placeholder="Start typing..."
-          autoFocus={!note}
-          onBlur={onSave}
-        />
+        <div className="ios-editor-panel__editor">
+          {/* Title - large heading style */}
+          <textarea
+            ref={titleRef}
+            className="ios-editor-panel__title"
+            value={title}
+            onChange={(e) => handleTitleChange(e.target.value)}
+            onKeyDown={handleTitleKeyDown}
+            onBlur={onSave}
+            placeholder="Title"
+            rows={1}
+            aria-label="Note title"
+          />
+          {/* Body - regular text */}
+          <textarea
+            ref={bodyRef}
+            className="ios-editor-panel__body"
+            value={body}
+            onChange={(e) => handleBodyChange(e.target.value)}
+            onKeyDown={handleBodyKeyDown}
+            onBlur={onSave}
+            placeholder="Start typing..."
+            aria-label="Note content"
+          />
+        </div>
       </div>
 
-      {/* Mobile bottom toolbar */}
-      <footer className="ios-editor-panel__footer">
-        <button className="ios-toolbar-button">{Icons.checklist}</button>
-        <button className="ios-toolbar-button">{Icons.textFormat}</button>
-        <button className="ios-toolbar-button">{Icons.attachment}</button>
-        <button className="ios-toolbar-button">{Icons.markup}</button>
-        <button className="ios-toolbar-button">{Icons.compose}</button>
+      {/* Keyboard accessory toolbar - shows when keyboard is open */}
+      {isKeyboardOpen && (
+        <div className="ios-editor-panel__keyboard-toolbar" role="toolbar" aria-label="Text formatting">
+          <button type="button" className="ios-toolbar-button" aria-label="Checklist">{Icons.checklist}</button>
+          <button type="button" className="ios-toolbar-button" aria-label="Text format">{Icons.textFormat}</button>
+          <button type="button" className="ios-toolbar-button" aria-label="Table">{Icons.table}</button>
+          <button type="button" className="ios-toolbar-button" aria-label="Attachment">{Icons.attachment}</button>
+          <div className="ios-keyboard-toolbar__spacer" />
+          <button
+            type="button"
+            className="ios-toolbar-button ios-toolbar-button--done"
+            onClick={() => {
+              titleRef.current?.blur();
+              bodyRef.current?.blur();
+            }}
+            aria-label="Dismiss keyboard"
+          >
+            Done
+          </button>
+        </div>
+      )}
+
+      {/* Mobile bottom toolbar - hidden when keyboard is open */}
+      <footer className={`ios-editor-panel__footer ${isKeyboardOpen ? 'ios-editor-panel__footer--hidden' : ''}`} role="toolbar" aria-label="Note actions">
+        <button type="button" className="ios-toolbar-button" aria-label="Checklist">{Icons.checklist}</button>
+        <button type="button" className="ios-toolbar-button" aria-label="Text format">{Icons.textFormat}</button>
+        <button type="button" className="ios-toolbar-button" aria-label="Attachment">{Icons.attachment}</button>
+        <button type="button" className="ios-toolbar-button" aria-label="Markup">{Icons.markup}</button>
+        <button type="button" className="ios-compose-button ios-compose-button--prominent" aria-label="Create new note">{Icons.compose}</button>
       </footer>
     </div>
   );
@@ -847,6 +1086,14 @@ export function IOSNotesApp() {
   const handleSaveNote = useCallback(() => {
     if (!selectedNoteId) return;
 
+    // Check if note is empty (just whitespace)
+    const trimmedContent = editorContent.trim();
+    if (!trimmedContent) {
+      // Delete empty notes instead of saving them
+      setNotes(prev => prev.filter(n => n.id !== selectedNoteId));
+      return;
+    }
+
     const title = extractTitle(editorContent);
     setNotes(prev => prev.map(n =>
       n.id === selectedNoteId
@@ -854,6 +1101,19 @@ export function IOSNotesApp() {
         : n
     ));
   }, [selectedNoteId, editorContent]);
+
+  // Debounced auto-save while typing
+  const debouncedContent = useDebounce(editorContent, 1000);
+  useEffect(() => {
+    if (selectedNoteId && debouncedContent) {
+      const title = extractTitle(debouncedContent);
+      setNotes(prev => prev.map(n =>
+        n.id === selectedNoteId
+          ? { ...n, content: debouncedContent, title, updatedAt: Date.now() }
+          : n
+      ));
+    }
+  }, [selectedNoteId, debouncedContent]);
 
   const handleDeleteNote = useCallback((noteId: string) => {
     setNotes(prev => prev.filter(n => n.id !== noteId));

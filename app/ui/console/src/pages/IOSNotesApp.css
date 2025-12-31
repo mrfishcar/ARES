@@ -52,6 +52,14 @@
   background: var(--ios-bg-primary);
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
+
+  /* Prevent pull-to-refresh and overscroll */
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+
+  /* Prevent text size adjustment */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 /* Light mode overrides */
@@ -111,6 +119,16 @@
 }
 
 .ios-icon-button--circle svg {
+  width: 28px;
+  height: 28px;
+}
+
+/* Filled circle button (like iOS more button) */
+.ios-icon-button--filled-circle {
+  position: relative;
+}
+
+.ios-icon-button--filled-circle svg {
   width: 28px;
   height: 28px;
 }
@@ -181,19 +199,36 @@
   color: var(--ios-text-secondary);
 }
 
+/* Clear button with 44x44 tap area but small visual */
 .ios-search-bar__clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Larger tap area for accessibility (iOS HIG: 44pt minimum) */
+  width: 44px;
+  height: 44px;
+  margin: -13px -10px -13px 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ios-search-bar__clear-icon {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 18px;
   height: 18px;
-  border: none;
   background: var(--ios-text-secondary);
   color: var(--ios-bg-secondary);
   border-radius: 50%;
   font-size: 10px;
   font-weight: 600;
-  cursor: pointer;
+}
+
+.ios-search-bar__clear:active .ios-search-bar__clear-icon {
+  opacity: 0.7;
 }
 
 /* ============================================================================
@@ -349,10 +384,10 @@
   background: var(--ios-bg-secondary);
 }
 
-/* Note Row */
+/* Note Row - Fixed swipe clipping */
 .ios-note-row-wrapper {
   position: relative;
-  overflow: hidden;
+  /* No overflow: hidden here - we handle clipping on the row itself */
 }
 
 .ios-note-row-actions {
@@ -362,6 +397,7 @@
   bottom: 0;
   width: 100px;
   display: flex;
+  z-index: 1;
 }
 
 .ios-note-row-actions__delete {
@@ -373,11 +409,16 @@
   background: var(--ios-red);
   color: white;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .ios-note-row-actions__delete svg {
   width: 24px;
   height: 24px;
+}
+
+.ios-note-row-actions__delete:active {
+  opacity: 0.8;
 }
 
 .ios-note-row {
@@ -389,15 +430,22 @@
   background: var(--ios-bg-secondary);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: transform 0.15s ease-out;
+  transition: transform 0.2s ease-out, background 0.15s;
   will-change: transform;
+  z-index: 2;
+  /* Extend background to cover action buttons when not swiped */
+  margin-right: 0;
+}
+
+.ios-note-row--swiping {
+  transition: none;
 }
 
 .ios-note-row:not(:last-child) {
   border-bottom: 0.5px solid var(--ios-separator);
 }
 
-.ios-note-row:active {
+.ios-note-row:active:not(.ios-note-row--selected) {
   background: var(--ios-bg-tertiary);
 }
 
@@ -412,7 +460,8 @@
 .ios-note-row--selected .ios-note-row__title,
 .ios-note-row--selected .ios-note-row__date,
 .ios-note-row--selected .ios-note-row__preview,
-.ios-note-row--selected .ios-note-row__folder {
+.ios-note-row--selected .ios-note-row__folder,
+.ios-note-row--selected .ios-note-row__subtitle {
   color: #000000 !important;
 }
 
@@ -436,36 +485,44 @@
 .ios-note-row__content {
   flex: 1;
   min-width: 0;
+  overflow: hidden;
 }
 
+/* Title - bold, on its own line */
 .ios-note-row__title {
   font-size: var(--ios-font-body);
   font-weight: 600;
   color: var(--ios-text-primary);
-  margin-bottom: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin-bottom: 2px;
 }
 
-.ios-note-row__meta {
+/* Subtitle row - date + preview */
+.ios-note-row__subtitle {
   display: flex;
   align-items: center;
   gap: var(--ios-spacing-sm);
   font-size: var(--ios-font-subhead);
   color: var(--ios-text-secondary);
+  line-height: 1.3;
 }
 
 .ios-note-row__date {
   flex-shrink: 0;
+  font-weight: 400;
 }
 
 .ios-note-row__preview {
+  flex: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: var(--ios-text-secondary);
 }
 
+/* Folder indicator - third line */
 .ios-note-row__folder {
   display: flex;
   align-items: center;
@@ -505,11 +562,30 @@
   background: none;
   color: var(--ios-yellow);
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .ios-compose-button svg {
   width: 24px;
   height: 24px;
+}
+
+/* Prominent compose button with filled background */
+.ios-compose-button--prominent {
+  width: 32px;
+  height: 32px;
+  background: var(--ios-yellow);
+  color: #000000;
+  border-radius: 8px;
+}
+
+.ios-compose-button--prominent svg {
+  width: 18px;
+  height: 18px;
+}
+
+.ios-compose-button--prominent:active {
+  opacity: 0.8;
 }
 
 /* ============================================================================
@@ -620,6 +696,56 @@
   margin-bottom: var(--ios-spacing-md);
 }
 
+/* Editor with title/body split */
+.ios-editor-panel__editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Title - iOS Notes style large heading */
+.ios-editor-panel__title {
+  width: 100%;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--ios-text-primary);
+  resize: none;
+  outline: none;
+  overflow: hidden;
+  min-height: 36px;
+  padding: 0;
+  margin-bottom: var(--ios-spacing-sm);
+}
+
+.ios-editor-panel__title::placeholder {
+  color: var(--ios-text-tertiary);
+  font-weight: 700;
+}
+
+/* Body - regular text */
+.ios-editor-panel__body {
+  width: 100%;
+  min-height: 200px;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: var(--ios-font-body);
+  line-height: 1.5;
+  color: var(--ios-text-primary);
+  resize: none;
+  outline: none;
+  padding: 0;
+}
+
+.ios-editor-panel__body::placeholder {
+  color: var(--ios-text-tertiary);
+}
+
+/* Legacy textarea (fallback) */
 .ios-editor-panel__textarea {
   width: 100%;
   min-height: 300px;
@@ -647,12 +773,57 @@
   background: var(--ios-bg-primary);
   border-top: 0.5px solid var(--ios-separator);
   flex-shrink: 0;
+  transition: transform 0.2s ease-out, opacity 0.2s;
+}
+
+.ios-editor-panel__footer--hidden {
+  transform: translateY(100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Keyboard accessory toolbar */
+.ios-editor-panel__keyboard-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--ios-spacing-xs);
+  padding: var(--ios-spacing-xs) var(--ios-spacing-md);
+  background: var(--ios-bg-tertiary);
+  border-top: 0.5px solid var(--ios-separator);
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  /* Position above keyboard using safe area */
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.ios-keyboard-toolbar__spacer {
+  flex: 1;
+}
+
+.ios-toolbar-button--done {
+  color: var(--ios-yellow);
+  font-family: inherit;
+  font-size: var(--ios-font-body);
+  font-weight: 600;
+  width: auto;
+  padding: 0 var(--ios-spacing-sm);
 }
 
 /* Hide footer toolbar on tablet - use header toolbar instead */
 @media (min-width: 768px) {
   .ios-editor-panel__footer {
     display: none;
+  }
+
+  .ios-editor-panel__keyboard-toolbar {
+    display: none;
+  }
+
+  .ios-editor-panel__title {
+    font-size: 32px;
   }
 }
 
@@ -835,9 +1006,49 @@
 }
 
 .ios-editor-panel__textarea,
+.ios-editor-panel__title,
+.ios-editor-panel__body,
 .ios-search-bar__input {
   user-select: text;
   -webkit-user-select: text;
+}
+
+/* ============================================================================
+   FOCUS STATES (Accessibility)
+============================================================================ */
+
+/* Focus visible for keyboard navigation */
+.ios-note-row:focus-visible,
+.ios-folder-row:focus-visible,
+.ios-toolbar-button:focus-visible,
+.ios-icon-button:focus-visible,
+.ios-compose-button:focus-visible,
+.ios-back-button:focus-visible {
+  outline: 2px solid var(--ios-yellow);
+  outline-offset: 2px;
+}
+
+.ios-dropdown-menu__item:focus-visible {
+  outline: 2px solid var(--ios-yellow);
+  outline-offset: -2px;
+}
+
+/* Hide outline on mouse/touch */
+.ios-note-row:focus:not(:focus-visible),
+.ios-folder-row:focus:not(:focus-visible),
+.ios-toolbar-button:focus:not(:focus-visible),
+.ios-icon-button:focus:not(:focus-visible),
+.ios-compose-button:focus:not(:focus-visible),
+.ios-back-button:focus:not(:focus-visible),
+.ios-dropdown-menu__item:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Input focus states */
+.ios-search-bar__input:focus,
+.ios-editor-panel__title:focus,
+.ios-editor-panel__body:focus {
+  outline: none;
 }
 
 /* ============================================================================
