@@ -1,0 +1,221 @@
+# STRESS TEST CORPUS: The Warden's Dilemma
+# Designed to expose failure modes in narrative extraction
+# Features: similar names, dialogue, timeline, pronoun chains, character evolution
+
+## CHAPTER 1: THE MEETING
+
+The great hall of Thornhold Castle was quiet when Lord Edward Blackwood entered. His brother, Edmund Blackwood, was already seated at the long table, reading a letter. Their father, old Lord Edgar Blackwood, had died three winters past, leaving the estate to Edward as eldest son.
+
+"You've seen the message from Lady Margaret?" Edmund asked without looking up.
+
+"Which Margaret?" Edward replied, settling into the chair opposite his brother. "There are three Lady Margarets at court."
+
+"Margaret Ashford. The one father betrothed you to before he died."
+
+Edward frowned. He remembered Margaret Ashford from their childhood - a thin girl with dark hair who had spent summers at Thornhold. She was nothing like Margaret Thornbury, who Edward had loved since they danced at the Harvest Festival. And neither was anything like Margaret Stone, his mother's old friend, who still wrote occasionally from the southern provinces.
+
+"What does Lady Margaret Ashford want?" he asked.
+
+"She's coming to Thornhold. Her letter says she arrives within the fortnight."
+
+The brothers sat in silence. Edmund was the clever one - everyone said so. He had studied at the University of Greymoor while Edward learned the sword. But Edward was Lord now, and the decision was his to make.
+
+"I'll write to her," Edward said finally. "And I'll speak with Margaret Thornbury first. She deserves to know."
+
+
+## CHAPTER 2: THE ARRIVAL
+
+Two weeks later, Lady Margaret Ashford's carriage rolled through Thornhold's gates. Edward watched from his study window as she emerged - no longer the thin girl he remembered, but a woman grown, tall and composed.
+
+Edmund met her at the door. "Lady Margaret, welcome to Thornhold."
+
+"Lord Edmund." She curtsied. "Is your brother not here to greet me?"
+
+"He is... occupied. I'll take you to him."
+
+They walked through the castle's corridors. Margaret noticed how Edmund watched her from the corner of his eye. She knew what he was thinking - the same thing everyone thought. Edward didn't want this marriage. He loved someone else.
+
+When they reached Edward's study, he stood. "Lady Margaret. It's been many years."
+
+"Fifteen years, my lord. Since your father last brought you to Ashford Manor."
+
+"Much has changed since then."
+
+"Yes," she agreed. "Your father is dead. Mine as well. We are orphans both, betrothed by men who are no longer here to enforce their wishes."
+
+Edward blinked. He hadn't expected such directness.
+
+"You don't want to marry me," Margaret continued. "I can see it in your eyes. You love Margaret Thornbury - everyone knows it. So here is my proposal: release me from this betrothal, and I will release you."
+
+Edmund stepped forward. "Lady Margaret, the contracts—"
+
+"Can be dissolved," she interrupted. "If both parties agree. My father is dead. Lord Edward is head of House Blackwood now. No one else has standing to object."
+
+
+## CHAPTER 3: COMPLICATIONS
+
+But someone did object. Three days after Margaret Ashford's arrival, a messenger came from the capital. King Harold had taken an interest in the Blackwood-Ashford alliance. He commanded that the marriage proceed as planned.
+
+"The King himself?" Edmund read the letter twice. "Why would Harold care about our minor house?"
+
+"Because Margaret Ashford's mother was his cousin," Edward realized. "She's of royal blood."
+
+They found Margaret in the garden, walking with Edward's steward, old Thomas Grant. Thomas had served the Blackwoods for forty years - he had known Edward and Edmund since they were boys.
+
+"My lady, we need to speak with you," Edward called.
+
+Margaret dismissed Thomas with a nod. The old steward bowed and retreated.
+
+"What is it, Lord Edward?"
+
+"The King has commanded our marriage."
+
+Margaret's composure cracked for the first time. "Harold? Why would he—" She stopped. "My mother. Of course. He sees this as a chance to bind Ashford lands to a loyal house."
+
+"Will you defy him?" Edward asked.
+
+"Will you?"
+
+Neither spoke for a long moment. Then Edmund stepped between them. "There may be another way. What if Lord Edward were already married when the King's command arrived?"
+
+"Marry Margaret Thornbury in secret?" Edward's voice was sharp. "That would only delay the crisis. The King would annul the marriage and punish us all."
+
+"Not Margaret Thornbury," Edmund said quietly. "Me."
+
+Both Edward and Lady Margaret stared at him.
+
+"I am a Blackwood," Edmund explained. "If I marry Lady Margaret, the alliance is preserved. The King's blood remains bound to our house. Edward is free to marry for love."
+
+"You would do this?" Margaret asked. "Sacrifice yourself for your brother?"
+
+Edmund smiled - that clever, knowing smile that Edward had seen a thousand times. "Who says it's a sacrifice? You're intelligent, Lady Margaret. Direct. Those are rare qualities. I could do far worse."
+
+
+## CHAPTER 4: THE TRUTH
+
+The plan nearly worked. Edmund and Margaret were married quietly in Thornhold's chapel, with only Thomas Grant and two servants as witnesses. Edward wrote to the King, explaining that the alliance was complete - a Blackwood had wed an Ashford.
+
+But King Harold was not so easily satisfied.
+
+His response came swiftly: "I commanded that LORD Edward Blackwood marry Lady Margaret Ashford. Not his brother. This substitution is unacceptable. I summon all parties to the capital for judgment."
+
+Edward rode south the next morning. Edmund insisted on coming, though Margaret urged him to stay.
+
+"You're my wife now," Edmund said. "Where you are judged, I will stand beside you."
+
+"And if the King orders our marriage annulled? What then?"
+
+"Then I will fight for you. Edward isn't the only Blackwood who knows how to use a sword."
+
+They traveled together - Edward, Edmund, and Margaret - arriving at the capital after a week's hard riding. The King received them in his throne room, surrounded by courtiers and guards.
+
+"Lord Edward Blackwood," Harold said coldly. "You have displeased us."
+
+"Your Majesty, I meant no offense. The alliance you commanded exists. House Ashford and House Blackwood are joined."
+
+"Through the wrong brother." Harold's eyes moved to Edmund. "You must have known this was not what we intended."
+
+"I knew, Your Majesty. But I also knew my brother loved another. I thought—"
+
+"You thought to outsmart your King." Harold rose from his throne. "That was unwise."
+
+The guards moved forward. For a terrible moment, Edward was certain they would all be arrested. But then a voice spoke from the crowd.
+
+"Your Majesty, if I may?"
+
+It was Margaret Thornbury.
+
+
+## CHAPTER 5: RESOLUTION
+
+Margaret Thornbury had not traveled to the capital for the trial. She had been there already, serving as lady-in-waiting to the Queen. When she heard that Edward was coming, she had prepared.
+
+"Lady Margaret." The King paused. "You have something to say?"
+
+"I do, Your Majesty." She stepped forward, ignoring the whispers of the court. "I have known Lord Edward Blackwood since childhood. He is a good man - honorable and true. He did not conspire against you. He merely tried to honor both his father's promise and his own heart."
+
+"And you are his heart?" Harold's tone was mocking.
+
+"I am." She met his gaze without flinching. "But if my love for Edward causes him harm, I will renounce it. I will leave the capital. I will never see him again. Just spare him, Your Majesty. And spare Lord Edmund, who only tried to help his brother."
+
+The King was silent for a long moment. Then, slowly, he sat back down.
+
+"You love him that much?"
+
+"More than my own life, Your Majesty."
+
+Harold turned to Edward. "Is this true, Lord Blackwood? You would throw away an alliance with royal blood for this woman?"
+
+Edward looked at Margaret Thornbury - his Margaret, who had just offered to sacrifice everything for him. He looked at Edmund and Margaret Ashford, who had already sacrificed so much. He thought of his father, dead these three years, who had arranged the Ashford betrothal without ever asking Edward what he wanted.
+
+"Yes, Your Majesty," he said clearly. "I would."
+
+To everyone's surprise, King Harold laughed.
+
+"Well spoken. It seems House Blackwood breeds men of conviction, if not diplomacy." He waved his hand. "The marriage between Edmund Blackwood and Margaret Ashford will stand. Lord Edward is free to marry whom he chooses. But in return, I expect the Blackwoods to remember this mercy when I call upon them."
+
+Edward bowed low. "We will not forget, Your Majesty."
+
+
+## CHAPTER 6: AFTERWARDS
+
+Six months later, Edward Blackwood married Margaret Thornbury in the great hall of Thornhold Castle. His brother Edmund stood beside him as witness. Margaret Ashford - now Margaret Blackwood - sat in the front row, smiling.
+
+Old Thomas Grant wept openly. He had served three generations of Blackwoods, and he had never seen such a wedding.
+
+"You're not losing a brother," Margaret Ashford teased Edmund during the feast. "You're gaining a sister."
+
+"I gained a wife," Edmund corrected her. "And somehow, against all reason, I find I'm pleased about it."
+
+Margaret laughed. She took his hand under the table.
+
+"You know," she said quietly, "you never asked me what I wanted. Before the secret marriage. You just assumed I would agree to your plan."
+
+"Did I assume wrongly?"
+
+"No. But you should have asked."
+
+Edmund nodded slowly. "You're right. I should have. I'm sorry."
+
+"Don't apologize. Just don't forget - I'm your partner now, not your problem to solve. We make decisions together."
+
+"Together," Edmund agreed. "I can learn."
+
+Across the hall, Edward was dancing with his new bride. Margaret Thornbury - Margaret Blackwood now - was radiant in her wedding dress. Edward had never seen her so happy.
+
+"What are you thinking?" she asked him.
+
+"I'm thinking that I'm the luckiest man alive. And I'm thinking about my father."
+
+"Do you think he would have approved?"
+
+Edward considered. His father, Lord Edgar Blackwood, had been a practical man. He had arranged the Ashford betrothal for political reasons, not romantic ones. But he had also loved Edward and Edmund's mother fiercely, until the day she died.
+
+"I think he would understand," Edward said finally. "In the end, he always wanted us to be happy."
+
+
+## EPILOGUE: TWENTY YEARS LATER
+
+Lord Edward Blackwood died in the winter of his sixty-third year. His son, young Edgar - named for his grandfather - became the new lord of Thornhold.
+
+Edmund Blackwood had passed five years earlier, taken by fever. Margaret, his widow, still lived in the east wing of the castle. She had become something of a grandmother to young Edgar, though they shared no blood.
+
+Margaret Thornbury - Lady Margaret Blackwood, Dowager Lady of Thornhold - survived her husband by only three months. Some said she died of grief. Others said she simply didn't want to live in a world without him.
+
+Young Lord Edgar found her journals after her death. In them, she had written about that day at court, when she had offered to give up everything for love.
+
+"I would do it again," she had written. "A thousand times. For Edward was my heart, and without him, I was nothing. But with him, even for those few short years, I was everything."
+
+Edgar closed the journal. He thought about his parents, about his uncle Edmund and aunt Margaret, about old Thomas Grant who had died when Edgar was a boy. He thought about love and duty, about the choices that shape a life.
+
+Then he went to find his own wife, Lady Catherine, to tell her that he loved her.
+
+Because that was the lesson the Blackwoods had learned: love spoken is love remembered.
+
+And love remembered is love eternal.
+
+---
+END OF STRESS TEST CORPUS
+Word count: approximately 2000 words
+Characters: Edward Blackwood, Edmund Blackwood, Margaret Ashford, Margaret Thornbury, Margaret Stone (mentioned), King Harold, Thomas Grant, Edgar Blackwood (young), Lady Catherine, Lord Edgar Blackwood (old, deceased)
+Challenges: 3 characters named Margaret, 2 generations of Edwards/Edgars, pronoun resolution in dialogue, timeline spanning 20+ years, character name changes through marriage

@@ -170,7 +170,7 @@ const VERB_CLASS_MAP: Record<string, VerbClass> = {
   give: 'possession', hand: 'possession', offer: 'possession', present: 'possession',
   donate: 'possession', grant: 'possession',
   // Keeping
-  keep: 'possession', retain: 'possession', hold: 'possession',
+  keep: 'possession', retain: 'possession', // 'hold' already in contact
   // Losing
   lose: 'possession', abandon: 'possession', surrender: 'possession', forfeit: 'possession',
   // Transfer
@@ -187,13 +187,13 @@ const VERB_CLASS_MAP: Record<string, VerbClass> = {
   // Service
   serve: 'social', help: 'social', assist: 'social', aid: 'social', support: 'social',
   // Authority
-  rule: 'social', govern: 'social', reign: 'social', lead: 'social',
+  rule: 'social', govern: 'social', reign: 'social', // 'lead' already in motion
   obey: 'social', submit: 'social', comply: 'social',
   // Groups
   join: 'social', unite: 'social', gather: 'social', assemble: 'social',
   divide: 'social', separate: 'social',
   // Conflict
-  betray: 'social', deceive: 'social', trick: 'social', abandon: 'social',
+  betray: 'social', deceive: 'social', trick: 'social', // 'abandon' already in possession
   reject: 'social', dismiss: 'social', banish: 'social', exile: 'social',
   // Trust
   trust: 'social', rely: 'social', depend: 'social',

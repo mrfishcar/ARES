@@ -84,6 +84,56 @@ const traceSpan = (stage: string, source: string, start: number, end: number, va
 };
 
 /**
+ * Strip markdown headers and document structure elements from text.
+ * Replaces with spaces to preserve character offsets for span tracking.
+ *
+ * Handles:
+ * - Markdown headers (lines starting with #)
+ * - Chapter titles (lines with CHAPTER, EPILOGUE, PROLOGUE, etc.)
+ * - Section dividers (---, ===)
+ */
+function stripMarkdownHeaders(text: string): string {
+  // Split into lines while tracking positions
+  const lines = text.split('\n');
+  const result: string[] = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    // Skip empty lines (preserve as-is)
+    if (trimmed === '') {
+      result.push(line);
+      continue;
+    }
+
+    // Markdown headers: lines starting with #
+    if (/^#{1,6}\s/.test(trimmed)) {
+      // Replace with spaces of same length
+      result.push(' '.repeat(line.length));
+      continue;
+    }
+
+    // Chapter/section titles: ALL-CAPS words at start of line
+    // Matches: "CHAPTER 1", "EPILOGUE: TWENTY YEARS LATER", "## PART ONE"
+    if (/^(?:#{1,6}\s+)?(?:CHAPTER|PROLOGUE|EPILOGUE|PART|BOOK|ACT|SCENE|INTRODUCTION|CONCLUSION|APPENDIX|PREFACE|FOREWORD|END|STRESS\s+TEST)\b/i.test(trimmed)) {
+      result.push(' '.repeat(line.length));
+      continue;
+    }
+
+    // Section dividers: lines of just --- or ===
+    if (/^[-=]{3,}$/.test(trimmed)) {
+      result.push(' '.repeat(line.length));
+      continue;
+    }
+
+    // Otherwise keep the line
+    result.push(line);
+  }
+
+  return result.join('\n');
+}
+
+/**
  * Validate that a span's positions actually extract the expected text from the source
  * This prevents corrupted entity names when token boundaries are misaligned
  */
@@ -238,7 +288,8 @@ const PLACE_GAZETTEER = new Set([
 const EVENT_KEYWORDS = /\b(treaty|accord|agreement|pact|armistice|charter|decree|edict|truce|capitulation|convention|summit|protocol|compact|conference|council|synod|concordat|peace)\b/i;
 
 // Organizational descriptors that should not be tagged as PERSON
-const ORG_DESCRIPTOR_PATTERN = /\b(faction|order|alliance|league|dynasty|empire|kingdom|company|council|guild|army|brigade|regiment|church|abbey|cathedral|monastery|university|college|academy|institute|ministry|government|parliament|senate|assembly|society|fellowship)\b/i;
+// "House X" patterns are noble houses/families which are organizational entities
+const ORG_DESCRIPTOR_PATTERN = /\b(house|faction|order|alliance|league|dynasty|empire|kingdom|company|council|guild|army|brigade|regiment|church|abbey|cathedral|monastery|university|college|academy|institute|ministry|government|parliament|senate|assembly|society|fellowship)\b/i;
 
 const GENERIC_TITLES = new Set([
   'mr', 'mrs', 'miss', 'ms', 'dr', 'doctor',
@@ -378,7 +429,13 @@ const STOP = new Set([
   "Order",
   "Let","Send","Count","Go","Come","Speak","Talk","Behold","Thus","Therefore",
   // Transition/temporal words that should not be entities
-  "Meanwhile","However","Moreover","Furthermore","Therefore","Nevertheless","Nonetheless"
+  "Meanwhile","However","Moreover","Furthermore","Therefore","Nevertheless","Nonetheless",
+  // Markdown/document structure words that should not be entities
+  "CHAPTER","Chapter","PROLOGUE","Prologue","EPILOGUE","Epilogue",
+  "PART","Part","BOOK","Book","ACT","Act","SCENE","Scene",
+  "ARRIVAL","DEPARTURE","COMPLICATIONS","RESOLUTION","AFTERWARDS",
+  "INTRODUCTION","CONCLUSION","APPENDIX","PREFACE","FOREWORD",
+  "END","END OF","STRESS","TEST","CORPUS"
 ]);
 for (const word of Array.from(STOP)) {
   STOP.add(word.toLowerCase());
@@ -2566,15 +2623,20 @@ export async function extractEntities(text: string): Promise<{
   let durableMentions = 0;
   let rejectedMentions = 0;
   let classifierEntityRejected = 0;
+
+  // 0) Pre-process: Strip markdown headers to prevent contamination
+  // Replace with spaces to preserve character offsets for span tracking
+  const cleanedText = stripMarkdownHeaders(text);
+
   // 1) Parse with spaCy
-  const parsed = await parseWithService(text);
+  const parsed = await parseWithService(cleanedText);
 
   const parserBackend = (process.env.PARSER_ACTIVE_BACKEND || "").toLowerCase();
   const isMockBackend = parserBackend === "mock";
 
   // 1a) Build TokenStats for linguistic filtering (NF-1, CN-1, etc.)
   // This analyzes token usage patterns across the full document
-  const tokenStats = buildTokenStatsFromParse(text, parsed);
+  const tokenStats = buildTokenStatsFromParse(cleanedText, parsed);
   if (DEBUG_ENTITIES) {
     console.log(`[EXTRACT-ENTITIES][DEBUG] Built token stats for ${tokenStats.byToken.size} unique tokens`);
   }
@@ -2596,7 +2658,7 @@ export async function extractEntities(text: string): Promise<{
   // 2) Extract NER spans from all sentences with clause awareness, then split coordinations
   const ner = parsed.sentences.flatMap(sent => {
     const spans = nerSpans(sent);
-    const clauses = detectClauses(sent, text);
+    const clauses = detectClauses(sent, cleanedText);
 
     if (!clauses.length) {
       return splitCoordination(sent, spans);
@@ -2623,30 +2685,30 @@ export async function extractEntities(text: string): Promise<{
   const dep = isMockBackend ? [] : parsed.sentences.flatMap(depBasedEntities);
 
   // 4) Gazetteer-based place extraction
-  const gazPlaces = gazetterPlaces(text);
+  const gazPlaces = gazetterPlaces(cleanedText);
 
   // 4a) Ambiguous place extraction with contextual cues
-  const ambiguousPlaces = extractAmbiguousPlaces(text);
+  const ambiguousPlaces = extractAmbiguousPlaces(cleanedText);
 
   // 5) Fantasy/Fiction entity extraction (new 15 types)
-  const fantasy = extractFantasyEntities(text);
+  const fantasy = extractFantasyEntities(cleanedText);
 
   // 6) Fallback: capitalized names with context classification
-  const fb = fallbackNames(text);
+  const fb = fallbackNames(cleanedText);
 
   // 7) Merge all sources, deduplicate
   // Priority: dependency-based > NER > fantasy > fallback > whitelist
   // Dependency patterns are most reliable, then spaCy NER, then fantasy patterns, then regex fallback, then whitelisted names
-  const years = extractYearSpans(text);
-  const families = isMockBackend ? [] : extractFamilySpans(text);
-  const whitelisted = extractWhitelistedNames(text);
-  const titledNames = extractTitledNames(text);
-  const acronymPairs = extractAcronymPairs(text);
+  const years = extractYearSpans(cleanedText);
+  const families = isMockBackend ? [] : extractFamilySpans(cleanedText);
+  const whitelisted = extractWhitelistedNames(cleanedText);
+  const titledNames = extractTitledNames(cleanedText);
+  const acronymPairs = extractAcronymPairs(cleanedText);
 
   const fallbackSchoolSpans: TaggedSpan[] = [];
   const schoolPattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\s+(?:Jr\.?|Jr|Junior High School|Junior High|High School|School|Academy|University|College|Institute))\b/g;
   let schoolMatch: RegExpExecArray | null;
-  while ((schoolMatch = schoolPattern.exec(text)) !== null) {
+  while ((schoolMatch = schoolPattern.exec(cleanedText)) !== null) {
     const full = schoolMatch[1];
     const prefixMatch = full.match(/^(At|In|On|From)\s+/i);
     let spanText = full.trim();
@@ -2671,7 +2733,7 @@ export async function extractEntities(text: string): Promise<{
 
   // Extract conjunctive names (e.g., "Mahlon and Chilion") - must run after NER to know which names are known
   const allNERSpans = [...ner, ...dep, ...gazPlaces, ...ambiguousPlaces, ...fantasy, ...fb, ...families, ...whitelisted, ...titledNames];
-  const conjunctive = isMockBackend ? [] : extractConjunctiveNames(text, allNERSpans);
+  const conjunctive = isMockBackend ? [] : extractConjunctiveNames(cleanedText, allNERSpans);
 
   // Tag spans with extraction source
   type TaggedSpan = { text: string; type: EntityType; start: number; end: number; source: ExtractorSource };
@@ -2724,7 +2786,7 @@ export async function extractEntities(text: string): Promise<{
       return spans;
     })
   ];
-  const stitched = stitchTitlecaseSpans(taggedSpans, text);
+  const stitched = stitchTitlecaseSpans(taggedSpans, cleanedText);
   const rawSpans = [...taggedSpans, ...stitched];
 
   const deduped = dedupe(rawSpans);
@@ -2739,7 +2801,7 @@ export async function extractEntities(text: string): Promise<{
 
 
   // Merge "X of Y" patterns (e.g., "Battle" + "of" + "Pelennor Fields" → "Battle of Pelennor Fields")
-  const merged = mergeOfPatterns(deduped, text);
+  const merged = mergeOfPatterns(deduped, cleanedText);
 
   // Validate all spans before processing to prevent corruption
   let validated = merged.filter(span => {
@@ -2753,7 +2815,7 @@ export async function extractEntities(text: string): Promise<{
     }
     return true;
   });
-  const stitchedPersons = stitchPersonFullNames(validated, text);
+  const stitchedPersons = stitchPersonFullNames(validated, cleanedText);
   validated = stitchedPersons.spans;
   const aliasHintsBySpanKey = stitchedPersons.aliasHints;
 
@@ -2766,7 +2828,7 @@ export async function extractEntities(text: string): Promise<{
   const viabilityDrops: typeof validated = [];
   const beforeViability = validated.length;
   validated = validated.filter(span => {
-    const keep = isViableEntitySpan(span, text, parsed);
+    const keep = isViableEntitySpan(span, cleanedText, parsed);
     if (!keep && viabilityDrops.length < 10) {
       viabilityDrops.push(span);
     }
