@@ -982,7 +982,8 @@ function EditorPanel({
     return title + (bodyText ? '\n' + bodyText : '');
   }, []);
 
-  // Scroll caret into view - uses marker for accurate position on iOS
+  // Scroll caret into view (iOS Safari fix)
+  // Uses marker for accurate position measurement
   const scrollCaretIntoView = useCallback(() => {
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0) return;
@@ -993,50 +994,49 @@ function EditorPanel({
     const scrollContainer = contentRef.current;
     if (!scrollContainer) return;
 
-    // Try Range API first
-    let caretRect = range.getBoundingClientRect();
+    // Create a temporary marker span at caret position
+    const marker = document.createElement('span');
+    marker.style.cssText = 'display:inline-block;width:1px;height:1em;';
 
-    // If Range API returns empty (common on iOS), use marker fallback
-    if (caretRect.height === 0 || caretRect.width === 0) {
-      const marker = document.createElement('span');
-      marker.textContent = '\u200B'; // Zero-width space
-      const clonedRange = range.cloneRange();
-      clonedRange.insertNode(marker);
-      caretRect = marker.getBoundingClientRect();
-      marker.remove();
-      // Restore selection
-      selection.removeAllRanges();
-      selection.addRange(range);
-    }
+    // Clone range so we don't disrupt the actual selection
+    const markerRange = range.cloneRange();
+    markerRange.collapse(false);
 
-    if (caretRect.height === 0) return;
+    try {
+      markerRange.insertNode(marker);
 
-    const containerRect = scrollContainer.getBoundingClientRect();
-    const caretTopInContainer = caretRect.top - containerRect.top;
-    const caretBottomInContainer = caretRect.bottom - containerRect.top;
+      const markerRect = marker.getBoundingClientRect();
+      const containerRect = scrollContainer.getBoundingClientRect();
 
-    // Account for keyboard
-    const vv = window.visualViewport;
-    const visibleHeight = vv
-      ? Math.min(containerRect.height, vv.height - Math.max(0, containerRect.top - vv.offsetTop))
-      : containerRect.height;
+      const markerTopInContainer = markerRect.top - containerRect.top;
+      const markerBottomInContainer = markerRect.bottom - containerRect.top;
 
-    const lineHeight = 24;
-    const topPadding = 80;
-    const bottomPadding = isKeyboardOpen ? (120 + lineHeight) : 60;
+      const vv = window.visualViewport;
+      const visibleHeight = vv
+        ? Math.min(containerRect.height, vv.height - Math.max(0, containerRect.top - vv.offsetTop))
+        : containerRect.height;
 
-    if (caretBottomInContainer > visibleHeight - bottomPadding) {
-      const scrollAmount = caretBottomInContainer - visibleHeight + bottomPadding + lineHeight;
-      scrollContainer.scrollTo({
-        top: scrollContainer.scrollTop + scrollAmount,
-        behavior: 'smooth'
-      });
-    } else if (caretTopInContainer < topPadding) {
-      const scrollAmount = caretTopInContainer - topPadding;
-      scrollContainer.scrollTo({
-        top: scrollContainer.scrollTop + scrollAmount,
-        behavior: 'smooth'
-      });
+      const lineHeight = 24;
+      const topPadding = 80;
+      const bottomPadding = isKeyboardOpen ? (120 + lineHeight) : 60;
+
+      if (markerBottomInContainer > visibleHeight - bottomPadding) {
+        const scrollAmount = markerBottomInContainer - visibleHeight + bottomPadding + lineHeight;
+        scrollContainer.scrollTo({
+          top: scrollContainer.scrollTop + scrollAmount,
+          behavior: 'smooth'
+        });
+      } else if (markerTopInContainer < topPadding) {
+        const scrollAmount = markerTopInContainer - topPadding;
+        scrollContainer.scrollTo({
+          top: scrollContainer.scrollTop + scrollAmount,
+          behavior: 'smooth'
+        });
+      }
+    } finally {
+      if (marker.parentNode) {
+        marker.remove();
+      }
     }
   }, [isKeyboardOpen]);
 
