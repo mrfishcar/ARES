@@ -1334,6 +1334,369 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:raised|reared|nurtured)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
     predicate: 'raised',
     typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+
+  // =========================================
+  // TEMPORAL RELATIONS
+  // =========================================
+
+  // "X before Y" / "X preceded Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:came|happened|occurred)\s+(?:before|prior to)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/gi,
+    predicate: 'before',
+    typeGuard: { subj: ['PERSON', 'EVENT'], obj: ['PERSON', 'EVENT'] }
+  },
+  // "X after Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:came|happened|occurred)\s+after\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/gi,
+    predicate: 'after',
+    typeGuard: { subj: ['PERSON', 'EVENT'], obj: ['PERSON', 'EVENT'] }
+  },
+  // "During X, Y" pattern
+  {
+    regex: /\bduring\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*),?\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/gi,
+    predicate: 'during',
+    typeGuard: { subj: ['PERSON', 'EVENT'], obj: ['EVENT'] }
+  },
+  // "X outlived Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+outlived\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'outlived',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+
+  // =========================================
+  // COMMUNICATION PATTERNS
+  // =========================================
+
+  // "X warned Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+warned\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'warned',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X asked Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+asked\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'asked',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X answered Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+answered\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'answered',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X informed Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+informed\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'informed',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X promised Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+promised\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'promised',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X thanked Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+thanked\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'thanked',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X greeted Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+greeted\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'greeted',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X called Y" (communication sense)
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+called\s+(?:out\s+to\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'called',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X summoned Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+summoned\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'summoned',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X commanded Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+commanded\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'commanded',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+
+  // =========================================
+  // CAUSATION PATTERNS
+  // =========================================
+
+  // "X caused Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+caused\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'caused',
+    typeGuard: { subj: ['PERSON', 'ORG', 'EVENT'], obj: ['EVENT', 'PERSON'] }
+  },
+  // "X led to Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+led\s+to\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'led_to',
+    typeGuard: { subj: ['PERSON', 'ORG', 'EVENT'], obj: ['EVENT', 'PERSON'] }
+  },
+  // "X prevented Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+prevented\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'prevented',
+    typeGuard: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'EVENT'] }
+  },
+  // "X enabled Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+enabled\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'enabled',
+    typeGuard: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'EVENT'] }
+  },
+  // "X triggered Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+triggered\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'triggered',
+    typeGuard: { subj: ['PERSON', 'ORG', 'EVENT'], obj: ['EVENT'] }
+  },
+  // "X stopped Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+stopped\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'stopped',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON', 'EVENT'] }
+  },
+
+  // =========================================
+  // TRANSFER/EXCHANGE PATTERNS
+  // =========================================
+
+  // "X gave Y to Z" - captured as gave(X, Z)
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+gave\s+(?:\w+\s+)*to\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'gave_to',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON', 'ORG'] }
+  },
+  // "X received from Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+received\s+(?:\w+\s+)*from\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'received_from',
+    typeGuard: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG'] }
+  },
+  // "X donated to Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+donated\s+(?:\w+\s+)*to\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'donated_to',
+    typeGuard: { subj: ['PERSON', 'ORG'], obj: ['ORG', 'PERSON'] }
+  },
+  // "X sent Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+sent\s+(?:\w+\s+)*to\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'sent_to',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON', 'PLACE'] }
+  },
+  // "X stole from Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+stole\s+(?:\w+\s+)*from\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'stole_from',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON', 'ORG'] }
+  },
+  // "X lent to Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+lent\s+(?:\w+\s+)*to\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'lent_to',
+    typeGuard: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG'] }
+  },
+  // "X borrowed from Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+borrowed\s+(?:\w+\s+)*from\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'borrowed_from',
+    typeGuard: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG'] }
+  },
+
+  // =========================================
+  // PERCEPTION/WITNESS PATTERNS
+  // =========================================
+
+  // "X saw Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+saw\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'saw',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON', 'PLACE', 'EVENT'] }
+  },
+  // "X witnessed Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+witnessed\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'witnessed',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON', 'EVENT'] }
+  },
+  // "X heard Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+heard\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'heard',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON', 'EVENT'] }
+  },
+  // "X observed Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+observed\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'observed',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON', 'EVENT'] }
+  },
+  // "X recognized Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+recognized\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'recognized',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X noticed Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+noticed\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'noticed',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON', 'EVENT'] }
+  },
+
+  // =========================================
+  // COMPETITION/CONTEST PATTERNS
+  // =========================================
+
+  // "X competed against Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+competed\s+(?:against|with)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'competed_against',
+    typeGuard: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG'] }
+  },
+  // "X challenged Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+challenged\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'challenged',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X beat Y" / "X won against Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:beat|won\s+against)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'beat',
+    typeGuard: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG'] }
+  },
+  // "X lost to Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+lost\s+to\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'lost_to',
+    typeGuard: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG'] }
+  },
+
+  // =========================================
+  // ASSISTANCE/SUPPORT PATTERNS
+  // =========================================
+
+  // "X assisted Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+assisted\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'assisted',
+    typeGuard: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG'] }
+  },
+  // "X supported Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+supported\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'supported',
+    typeGuard: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG'] }
+  },
+  // "X backed Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+backed\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'backed',
+    typeGuard: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG'] }
+  },
+  // "X endorsed Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+endorsed\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'endorsed',
+    typeGuard: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG'] }
+  },
+  // "X funded Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+funded\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'funded',
+    typeGuard: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG'] }
+  },
+  // "X sponsored Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+sponsored\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'sponsored',
+    typeGuard: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG', 'EVENT'] }
+  },
+
+  // =========================================
+  // TRANSFORMATION PATTERNS
+  // =========================================
+
+  // "X became Y" (role/title change)
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+became\s+(?:the\s+)?(?:leader|king|queen|president|ceo|head|chief)\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/gi,
+    predicate: 'became_leader_of',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG', 'PLACE'] }
+  },
+  // "X replaced Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+replaced\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'replaced',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X overthrew Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+overthrew\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'overthrew',
+    typeGuard: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG'] }
+  },
+  // "X dethroned Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+dethroned\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'dethroned',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X joined Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+joined\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'joined',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG', 'PERSON'] }
+  },
+
+  // =========================================
+  // KNOWLEDGE/BELIEF PATTERNS
+  // =========================================
+
+  // "X knows Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+knows\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'knows',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X remembered Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+remembered\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'remembered',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON', 'EVENT'] }
+  },
+  // "X forgot Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+forgot\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'forgot',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON', 'EVENT'] }
+  },
+  // "X believed in Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+believed\s+in\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'believed_in',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON', 'ORG'] }
+  },
+  // "X doubted Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+doubted\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'doubted',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
   }
 ];
 
