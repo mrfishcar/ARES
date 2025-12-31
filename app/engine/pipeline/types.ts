@@ -176,6 +176,7 @@ export interface RelationFilterStats {
   removedByReason: {
     marriedToSuppression: number;
     siblingDetection: number;
+    familyFriendsSuppression: number;
     appositiveFiltering: number;
     confidenceThreshold: number;
   };

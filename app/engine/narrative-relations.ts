@@ -1397,10 +1397,10 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     symmetric: true,
     typeGuard: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG'] }
   },
-  // "X opposed Y"
+  // "X opposed Y" → normalize to enemy_of for consistency
   {
-    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:opposed|resisted|challenged)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
-    predicate: 'opposed',
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:opposed|resisted)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'enemy_of',
     typeGuard: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG'] }
   },
 
@@ -1651,10 +1651,10 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     predicate: 'competed_against',
     typeGuard: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG'] }
   },
-  // "X challenged Y"
+  // "X challenged Y" → normalize to enemy_of for consistency
   {
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+challenged\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
-    predicate: 'challenged',
+    predicate: 'enemy_of',
     typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
   },
   // "X beat Y" / "X won against Y"

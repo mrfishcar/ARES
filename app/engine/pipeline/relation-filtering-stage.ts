@@ -6,12 +6,14 @@
  * Filters:
  * 1. Married_to proximity suppression - Don't extract parent_of between spouses
  * 2. Sibling detection - Block parent_of/child_of for entities marked as siblings
- * 3. Appositive filtering - Handle coordinated vs appositive subjects
- * 4. Confidence thresholding - Remove low-confidence extractions
+ * 3. Family friends_with suppression - Block friends_with between family members
+ * 4. Appositive filtering - Handle coordinated vs appositive subjects
+ * 5. Confidence thresholding - Remove low-confidence extractions
  *
  * Example:
  * "Aragorn married Arwen. They had a son Eldarion."
  * → Block parent_of(Aragorn, Arwen) due to married_to in proximity
+ * → Block friends_with(Aragorn, Eldarion) because they are parent/child
  * → Keep parent_of(Aragorn, Eldarion)
  *
  * Expected Impact: +15-20% precision improvement
@@ -60,6 +62,7 @@ export async function runRelationFilteringStage(
       removedByReason: {
         marriedToSuppression: 0,
         siblingDetection: 0,
+        familyFriendsSuppression: 0,
         appositiveFiltering: 0,
         confidenceThreshold: 0
       }
@@ -193,7 +196,123 @@ export async function runRelationFilteringStage(
     }
 
     // ========================================================================
-    // FILTER 3: APPOSITIVE FILTERING
+    // FILTER 3: FAMILY FRIENDS_WITH SUPPRESSION
+    // ========================================================================
+    // If two entities have a family relation (parent_of, child_of, married_to,
+    // sibling_of), don't extract friends_with between them
+    {
+      // Build family relationship map from existing relations
+      const familyPairs = new Set<string>();
+
+      for (const rel of filteredRelations) {
+        if (['parent_of', 'child_of', 'married_to', 'sibling_of'].includes(rel.pred)) {
+          // Add both directions
+          familyPairs.add(`${rel.subj}:${rel.obj}`);
+          familyPairs.add(`${rel.obj}:${rel.subj}`);
+        }
+      }
+
+      // Also detect siblings by shared parent
+      // If A child_of P and B child_of P, then A and B are siblings
+      const parentToChildren = new Map<string, Set<string>>();
+      for (const rel of filteredRelations) {
+        if (rel.pred === 'child_of') {
+          if (!parentToChildren.has(rel.obj)) {
+            parentToChildren.set(rel.obj, new Set());
+          }
+          parentToChildren.get(rel.obj)!.add(rel.subj);
+        }
+      }
+
+      // Add sibling pairs
+      for (const children of parentToChildren.values()) {
+        const childArray = Array.from(children);
+        for (let i = 0; i < childArray.length; i++) {
+          for (let j = i + 1; j < childArray.length; j++) {
+            familyPairs.add(`${childArray[i]}:${childArray[j]}`);
+            familyPairs.add(`${childArray[j]}:${childArray[i]}`);
+          }
+        }
+      }
+
+      const preFamilyFriendsFilter = filteredRelations.length;
+
+      filteredRelations = filteredRelations.filter(rel => {
+        // Suppress friends_with between family members
+        if (rel.pred === 'friends_with') {
+          const key = `${rel.subj}:${rel.obj}`;
+          if (familyPairs.has(key)) {
+            const subj = input.entities.find(e => e.id === rel.subj);
+            const obj = input.entities.find(e => e.id === rel.obj);
+            console.log(
+              `[${STAGE_NAME}] Suppressing friends_with: ${subj?.canonical} -> ${obj?.canonical} (family members)`
+            );
+            stats.removedByReason.familyFriendsSuppression++;
+            return false;
+          }
+        }
+        // Suppress enemy_of between family members (children don't become enemies of parents)
+        if (rel.pred === 'enemy_of') {
+          const key = `${rel.subj}:${rel.obj}`;
+          if (familyPairs.has(key)) {
+            const subj = input.entities.find(e => e.id === rel.subj);
+            const obj = input.entities.find(e => e.id === rel.obj);
+            console.log(
+              `[${STAGE_NAME}] Suppressing enemy_of: ${subj?.canonical} -> ${obj?.canonical} (family members)`
+            );
+            stats.removedByReason.familyFriendsSuppression++;
+            return false;
+          }
+        }
+        return true;
+      });
+
+      console.log(
+        `[${STAGE_NAME}] Family friends suppression: ${preFamilyFriendsFilter} → ${filteredRelations.length} (-${preFamilyFriendsFilter - filteredRelations.length})`
+      );
+
+      // Also suppress teaches_at when subject is a child (has child_of or is object of parent_of)
+      // Children are students, not teachers
+      const children = new Set<string>();
+      for (const rel of filteredRelations) {
+        if (rel.pred === 'child_of') {
+          children.add(rel.subj);
+        }
+        // Also check parent_of - the object is the child
+        if (rel.pred === 'parent_of') {
+          children.add(rel.obj);
+        }
+      }
+      // Debug logging (uncomment if needed)
+      // if (children.size > 0) {
+      //   const childNames = Array.from(children).map(id => input.entities.find(e => e.id === id)?.canonical || id);
+      //   console.log(`[${STAGE_NAME}] Detected children: ${childNames.join(', ')}`);
+      // }
+
+      const preChildTeachesFilter = filteredRelations.length;
+
+      filteredRelations = filteredRelations.filter(rel => {
+        if (rel.pred === 'teaches_at' && children.has(rel.subj)) {
+          const subj = input.entities.find(e => e.id === rel.subj);
+          const obj = input.entities.find(e => e.id === rel.obj);
+          console.log(
+            `[${STAGE_NAME}] Suppressing teaches_at: ${subj?.canonical} -> ${obj?.canonical} (subject is a child)`
+          );
+          stats.removedByReason.familyFriendsSuppression++;
+          return false;
+        }
+        return true;
+      });
+
+      if (preChildTeachesFilter !== filteredRelations.length) {
+        console.log(
+          `[${STAGE_NAME}] Child teaches suppression: ${preChildTeachesFilter} → ${filteredRelations.length} (-${preChildTeachesFilter - filteredRelations.length})`
+        );
+      }
+    }
+
+    // ========================================================================
+    // FILTER 4: APPOSITIVE FILTERING
     // ========================================================================
 
     if (input.config.appositiveFilteringEnabled) {
@@ -336,6 +455,7 @@ export async function runRelationFilteringStage(
     console.log(`[${STAGE_NAME}] Removal breakdown:`);
     console.log(`  - Married_to suppression: ${stats.removedByReason.marriedToSuppression}`);
     console.log(`  - Sibling detection: ${stats.removedByReason.siblingDetection}`);
+    console.log(`  - Family friends suppression: ${stats.removedByReason.familyFriendsSuppression}`);
     console.log(`  - Appositive filtering: ${stats.removedByReason.appositiveFiltering}`);
     console.log(`  - Confidence threshold: ${stats.removedByReason.confidenceThreshold}`);
 
