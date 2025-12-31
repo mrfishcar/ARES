@@ -869,8 +869,11 @@ function EditorPanel({
   const [showFormatMenu, setShowFormatMenu] = useState(false);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [viewportOffset, setViewportOffset] = useState(0);
   const editorRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+  const footerRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
 
   // Track if we're initializing to prevent loops
@@ -1277,25 +1280,54 @@ function EditorPanel({
     }
   }, [handleBold, handleItalic, handleUnderline, handleInput]);
 
-  // Detect keyboard open/close
+  // Detect keyboard open/close and adjust fixed elements
   useEffect(() => {
     if (!window.visualViewport) return;
 
     const viewport = window.visualViewport;
 
-    const handleResize = () => {
+    const handleViewportChange = () => {
       const viewportHeight = viewport.height;
       const currentKeyboardHeight = window.innerHeight - viewportHeight;
       const isOpen = currentKeyboardHeight > 150;
       setIsKeyboardOpen(isOpen);
       setKeyboardHeight(isOpen ? currentKeyboardHeight : 0);
+
+      // Track the offset from the top of the layout viewport to the visual viewport
+      // This is how much iOS Safari has scrolled to keep the focused element in view
+      const offset = viewport.offsetTop;
+      setViewportOffset(offset);
+
+      // Apply transform to header to keep it visible
+      if (headerRef.current) {
+        headerRef.current.style.transform = `translateY(${offset}px)`;
+      }
+
+      // Apply position to footer to keep it at bottom of visual viewport
+      if (footerRef.current) {
+        if (isOpen) {
+          // Position footer at the bottom of the visual viewport
+          footerRef.current.style.position = 'fixed';
+          footerRef.current.style.top = `${viewport.height + offset}px`;
+          footerRef.current.style.bottom = 'auto';
+          footerRef.current.style.transform = 'translateY(-100%)';
+        } else {
+          // Reset to normal position
+          footerRef.current.style.position = '';
+          footerRef.current.style.top = '';
+          footerRef.current.style.bottom = '';
+          footerRef.current.style.transform = '';
+        }
+      }
     };
 
-    viewport.addEventListener('resize', handleResize);
-    viewport.addEventListener('scroll', handleResize);
+    viewport.addEventListener('resize', handleViewportChange);
+    viewport.addEventListener('scroll', handleViewportChange);
+    handleViewportChange(); // Initialize
+
     return () => {
-      viewport.removeEventListener('resize', handleResize);
-      viewport.removeEventListener('scroll', handleResize);
+      viewport.removeEventListener('resize', handleViewportChange);
+      viewport.removeEventListener('scroll', handleViewportChange);
     };
   }, []);
 
@@ -1316,7 +1348,7 @@ function EditorPanel({
 
   return (
     <div className="ios-editor-panel">
-      <header className="ios-editor-panel__header">
+      <header ref={headerRef} className="ios-editor-panel__header">
         <div className="ios-editor-panel__header-left">
           {showBackButton && onBack && (
             <BackButton onClick={onBack} label={backLabel || 'Notes'} />
@@ -1597,7 +1629,7 @@ function EditorPanel({
       )}
 
       {/* Mobile bottom toolbar - hidden when keyboard is open */}
-      <footer className={`ios-editor-panel__footer ${isKeyboardOpen ? 'ios-editor-panel__footer--hidden' : ''}`} role="toolbar" aria-label="Note actions">
+      <footer ref={footerRef} className={`ios-editor-panel__footer ${isKeyboardOpen ? 'ios-editor-panel__footer--hidden' : ''}`} role="toolbar" aria-label="Note actions">
         <button type="button" className="ios-toolbar-button" aria-label="Checklist" onClick={handleChecklist}>{Icons.checklist}</button>
         <button type="button" className="ios-toolbar-button" aria-label="Bold" onClick={handleBold}><strong>B</strong></button>
         <button type="button" className="ios-toolbar-button" aria-label="Attachment" onClick={handleAttachment}>{Icons.attachment}</button>

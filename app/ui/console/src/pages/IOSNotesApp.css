@@ -771,6 +771,9 @@
   border-bottom: 0.5px solid var(--ios-separator);
   flex-shrink: 0;
   z-index: 100;
+  /* Enable transform for iOS keyboard viewport offset */
+  position: relative;
+  will-change: transform;
 }
 
 .ios-editor-panel__header-left,
@@ -1043,6 +1046,10 @@
   border-top: 0.5px solid var(--ios-separator);
   flex-shrink: 0;
   transition: transform 0.2s ease-out, opacity 0.2s;
+  /* Enable positioning for iOS keyboard */
+  left: 0;
+  right: 0;
+  will-change: transform, top;
 }
 
 .ios-editor-panel__footer--hidden {
