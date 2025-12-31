@@ -71,13 +71,6 @@ import { deduplicateRelations, isDeduplicationEnabled, getDeduplicationStats } f
 // Apply learned patterns to improve extraction based on user corrections
 import { applyPatternsToBatch } from '../pattern-applier';
 
-// 🆕 EVENT EXTRACTION (Phase 5 - 2025-12-30)
-// Extract narrative events with agent/patient roles
-import {
-  extractEventsFromParsed,
-  type NarrativeEvent,
-  type EventExtractionResult,
-} from './events';
 
 // Select relation patterns mode from environment (baseline | expanded | hybrid)
 const PATTERNS_MODE: PatternsMode = (process.env.RELATION_PATTERNS_MODE as PatternsMode) || 'baseline';
@@ -313,12 +306,6 @@ export async function extractFromSegments(
     speaker_name: string | null;
     confidence: number;
   }>;
-  events?: NarrativeEvent[];  // 🆕 Narrative events with agent/patient roles (Phase 5)
-  eventStats?: {
-    totalEvents: number;
-    withAgent: number;
-    withPatient: number;
-  };
 }> {
   // FAST PATH: Synthetic performance fixtures (PersonX_Y worked with PersonX_Z)
   // The Level 5B performance tests generate documents with dozens of simple
@@ -1812,40 +1799,6 @@ export async function extractFromSegments(
     console.log(`[ORCHESTRATOR] 💬 Quotes: ${quotes.length} found, ${attributed} with speaker attribution`);
   }
 
-  // ============================================================================
-  // 🆕 EVENT EXTRACTION (Phase 5 - 2025-12-30)
-  // ============================================================================
-  // Extract narrative events with agent/patient roles when enabled.
-  // This provides BookNLP-equivalent event detection.
-  // Enable with ARES_EXTRACT_EVENTS=true
-  let events: NarrativeEvent[] = [];
-  let eventStats = { totalEvents: 0, withAgent: 0, withPatient: 0 };
-
-  if (process.env.ARES_EXTRACT_EVENTS === 'true') {
-    try {
-      // Parse full text to get sentences for event extraction
-      const eventParseResponse = await parseWithService(fullText);
-      const eventResult = extractEventsFromParsed(
-        eventParseResponse.sentences,
-        docId,
-        filteredEntities
-      );
-
-      events = eventResult.events;
-      eventStats = {
-        totalEvents: eventResult.stats.totalEvents,
-        withAgent: eventResult.stats.withAgent,
-        withPatient: eventResult.stats.withPatient,
-      };
-
-      if (events.length > 0) {
-        console.log(`[ORCHESTRATOR] 🎬 Events: ${events.length} extracted (${eventStats.withAgent} with agent, ${eventStats.withPatient} with patient)`);
-      }
-    } catch (err) {
-      console.warn('[ORCHESTRATOR] Event extraction failed:', err);
-    }
-  }
-
   return {
     entities: filteredEntities,
     spans: filteredSpans, // Don't include virtual spans in output
@@ -1855,8 +1808,6 @@ export async function extractFromSegments(
     herts,     // Return HERTs if generated
     mode: 'legacy' as const,  // Legacy extraction path
     quotes,   // 🆕 Include quotes for TELL extraction
-    events,   // 🆕 Narrative events with agent/patient roles (Phase 5)
-    eventStats: events.length > 0 ? eventStats : undefined,
     stats: {
       entities: {
         kept: filteredEntities.length,
