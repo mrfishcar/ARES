@@ -12,6 +12,7 @@ import type { Relation, EntityType } from "./schema";
 import type { CorefLinks, CorefLink } from "./coref";
 import { getDynamicPatterns, type RelationPattern as DynamicRelationPattern } from "./dynamic-pattern-loader";
 import { resolveMentionToCanonical, isPronoun } from "./pipeline/coref-utils";
+import { ReferenceResolver, type EntitySpan as RefEntitySpan, type Sentence as RefSentence } from "./reference-resolver";
 
 // =============================================================================
 // LIGHTWEIGHT PRONOUN RESOLVER
@@ -2368,12 +2369,54 @@ export function extractNarrativeRelations(
   // Normalize text for pattern matching (removes leading conjunctions/articles)
   const normalizedText = normalizeTextForPatterns(text);
 
-  // Build entity map and pronoun resolution map for mention-aware resolution
+  // Build entity map for direct lookup
   const entitiesById = new Map(entities.map(e => [e.id, e]));
-  const pronounMap = buildPronounResolutionMap(corefLinks);
+
+  // Create unified ReferenceResolver for pronoun resolution
+  // Convert EntityLookup[] to format expected by ReferenceResolver
+  const schemaEntities = entities.map(e => ({
+    id: e.id,
+    canonical: e.canonical,
+    type: e.type,
+    aliases: e.aliases || [],
+    created_at: new Date().toISOString(),
+    confidence: 0.99,
+  }));
+
+  // Build entity spans from coref links (we don't have full span info, so approximate)
+  const entitySpans: RefEntitySpan[] = [];
+  if (corefLinks?.links) {
+    for (const link of corefLinks.links) {
+      entitySpans.push({
+        entity_id: link.entity_id,
+        start: link.mention.start,
+        end: link.mention.end,
+        text: link.mention.text,
+      });
+    }
+  }
+
+  // Create and initialize the resolver
+  const resolver = new ReferenceResolver();
+  resolver.initialize(schemaEntities, entitySpans, [], text);
+
+  // Build pronoun map from coref links for position-aware resolution
+  if (corefLinks?.links) {
+    resolver.buildPronounMap(corefLinks.links.map(link => ({
+      mention: link.mention,
+      entity_id: link.entity_id,
+      confidence: link.confidence,
+      method: link.method === 'pronoun_stack' ? 'pronoun' as const :
+              link.method === 'title_match' ? 'title' as const :
+              link.method === 'nominal_match' ? 'nominal' as const :
+              link.method === 'quote_attr' ? 'quote' as const :
+              link.method === 'coordination' ? 'coordination' as const :
+              'pronoun' as const,
+    })));
+  }
 
   /**
-   * Mention-aware entity matching: try direct lookup first, then position-aware pronoun resolution
+   * Mention-aware entity matching using unified ReferenceResolver
    * @param surface - The surface text to match
    * @param position - The character position in the text (for position-aware pronoun resolution)
    */
@@ -2382,21 +2425,14 @@ export function extractNarrativeRelations(
     let entity = matchEntity(surface, entities);
     if (entity) return entity;
 
-    // If normal matching fails and surface is a pronoun, try position-aware coref resolution
-    if (isPronoun(surface)) {
-      const entries = pronounMap.get(surface.toLowerCase());
-      if (entries && entries.length > 0) {
-        // Use position-aware lookup if position is provided
-        const resolvedEntityId = position !== undefined
-          ? findPronounResolution(entries, position)
-          : entries[0].entityId; // Fallback to first entry if no position
-
-        if (resolvedEntityId) {
-          const resolvedEntity = entitiesById.get(resolvedEntityId);
-          if (resolvedEntity) {
-            console.log(`[NarrativeRelations:coref] Resolved pronoun "${surface}" @ ${position ?? 'unknown'} → ${resolvedEntity.canonical}`);
-            return resolvedEntity;
-          }
+    // If normal matching fails and surface is a pronoun, use ReferenceResolver
+    if (isPronoun(surface) && position !== undefined) {
+      const resolved = resolver.resolvePronoun(surface, position, 'PATTERN_MATCH');
+      if (resolved) {
+        const lookupEntity = entitiesById.get(resolved.id);
+        if (lookupEntity) {
+          console.log(`[NarrativeRelations:coref] Resolved pronoun "${surface}" @ ${position} → ${resolved.canonical}`);
+          return lookupEntity;
         }
       }
     }
