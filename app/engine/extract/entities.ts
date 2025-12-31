@@ -298,6 +298,163 @@ const GENERIC_TITLES = new Set([
   'father', 'mother', 'son', 'daughter'
 ]);
 
+// ============================================================================
+// FICTION-SPECIFIC ENTITY TYPE HEADWORDS
+// ============================================================================
+
+// Spell/Magic headwords → SPELL type
+const SPELL_HEADWORDS = new Set([
+  // Harry Potter spells
+  'curse', 'hex', 'jinx', 'charm', 'spell', 'incantation',
+  'expelliarmus', 'stupefy', 'crucio', 'imperio', 'avadakedavra',
+  'lumos', 'nox', 'accio', 'patronum', 'riddikulus',
+  'petrificus', 'totalus', 'wingardium', 'leviosa', 'alohomora',
+  'obliviate', 'protego', 'sectumsempra', 'levicorpus', 'morsmordre',
+  // D&D/Fantasy spells
+  'fireball', 'lightning bolt', 'teleport', 'resurrection',
+  'healing', 'shield', 'barrier', 'blast', 'nova', 'meteor',
+  // Generic magic terms
+  'enchantment', 'conjuration', 'transmutation', 'evocation',
+  'necromancy', 'divination', 'illusion', 'abjuration',
+]);
+
+// Artifact headwords → ARTIFACT type
+const ARTIFACT_HEADWORDS = new Set([
+  // Weapons
+  'sword', 'blade', 'dagger', 'axe', 'bow', 'spear', 'staff',
+  'wand', 'scepter', 'sceptre', 'mace', 'hammer', 'lance',
+  // Jewelry/Wearables
+  'ring', 'amulet', 'necklace', 'crown', 'tiara', 'helm',
+  'helmet', 'gauntlet', 'glove', 'cloak', 'robe', 'armor',
+  'armour', 'shield', 'pendant', 'bracelet', 'circlet',
+  // Containers/Objects
+  'chalice', 'grail', 'goblet', 'cup', 'orb', 'crystal',
+  'stone', 'gem', 'jewel', 'mirror', 'lamp', 'lantern',
+  'horn', 'harp', 'lyre', 'tome', 'grimoire', 'scroll',
+  // Famous artifacts
+  'excalibur', 'mjolnir', 'sting', 'glamdring', 'anduril',
+  'narsil', 'horcrux',
+]);
+
+// Creature headwords → CREATURE type
+const CREATURE_HEADWORDS = new Set([
+  // Classic fantasy
+  'dragon', 'drake', 'wyrm', 'wyvern', 'phoenix', 'griffin',
+  'griffon', 'gryphon', 'unicorn', 'pegasus', 'basilisk',
+  'hydra', 'chimera', 'manticore', 'sphinx', 'minotaur',
+  // Undead/Dark
+  'vampire', 'werewolf', 'zombie', 'skeleton', 'wraith',
+  'specter', 'spectre', 'ghost', 'phantom', 'lich', 'ghoul',
+  'banshee', 'dementor', 'inferi', 'revenant',
+  // Humanoid monsters
+  'troll', 'ogre', 'giant', 'golem', 'elemental', 'demon',
+  'devil', 'imp', 'kobold', 'gnoll',
+  // Nature/Fey
+  'treant', 'ent', 'dryad', 'nymph', 'fairy', 'faerie',
+  'pixie', 'sprite', 'brownie', 'leprechaun', 'satyr',
+  // Sea creatures
+  'kraken', 'leviathan', 'mermaid', 'merman', 'selkie', 'siren',
+  // Named creatures
+  'smaug', 'fawkes', 'buckbeak', 'aragog', 'fluffy', 'norbert',
+  'hedwig', 'nagini', 'scabbers', 'crookshanks',
+]);
+
+// Race headwords → RACE type
+const RACE_HEADWORDS = new Set([
+  // Tolkien races
+  'elves', 'elven', 'elvish', 'elfin',
+  'dwarves', 'dwarven', 'dwarfish',
+  'hobbits', 'halflings',
+  'orcs', 'orcish', 'uruks',
+  'ents', 'entish',
+  // D&D/Fantasy races
+  'gnomes', 'gnomish',
+  'tieflings',
+  'dragonborn',
+  'goliaths',
+  // Harry Potter
+  'muggles', 'squibs',
+  'wizards', 'witches',
+  'veela', 'giants', 'centaurs',
+  'goblins', 'merpeople',
+]);
+
+// Deity headwords → DEITY type
+const DEITY_HEADWORDS = new Set([
+  // Generic
+  'god', 'gods', 'goddess', 'goddesses', 'deity', 'deities',
+  'titan', 'titans', 'divine', 'immortals',
+  // Greek
+  'zeus', 'hera', 'poseidon', 'hades', 'athena', 'apollo',
+  'artemis', 'ares', 'aphrodite', 'hermes', 'hephaestus',
+  'dionysus', 'demeter', 'persephone',
+  // Norse
+  'odin', 'thor', 'loki', 'freya', 'freyja', 'frigg', 'tyr',
+  'heimdall', 'baldur', 'balder',
+  // Egyptian
+  'ra', 'osiris', 'isis', 'anubis', 'horus', 'thoth', 'seth',
+  // Tolkien divine
+  'valar', 'maiar', 'eru', 'iluvatar', 'morgoth', 'melkor',
+  'sauron',
+]);
+
+// Ability headwords → ABILITY type
+const ABILITY_HEADWORDS = new Set([
+  'parseltongue', 'legilimency', 'occlumency', 'animagus',
+  'metamorphmagus', 'apparition', 'disapparition',
+  'telepathy', 'telekinesis', 'pyrokinesis', 'cryokinesis',
+  'invisibility', 'immortality', 'invulnerability',
+  'shapeshifting', 'regeneration', 'precognition',
+]);
+
+// Material headwords → MATERIAL type
+const MATERIAL_HEADWORDS = new Set([
+  'mithril', 'adamantine', 'adamantium', 'orichalcum',
+  'vibranium', 'unobtainium', 'carbonadium',
+  'dragonscale', 'moonstone', 'sunstone', 'bloodstone',
+]);
+
+// Potion headwords → ITEM type (potions are items)
+const POTION_HEADWORDS = new Set([
+  'potion', 'elixir', 'philter', 'philtre', 'draught', 'brew',
+  'tonic', 'serum', 'antidote', 'poison', 'venom',
+  'veritaserum', 'polyjuice', 'amortentia', 'wolfsbane',
+]);
+
+/**
+ * Check if text matches a fiction entity headword pattern
+ * Returns the appropriate EntityType or null if no match
+ */
+function checkFictionHeadwords(text: string): EntityType | null {
+  const lower = text.toLowerCase().trim();
+  const words = lower.split(/\s+/);
+  const lastWord = words[words.length - 1];
+
+  // Check last word (headword position)
+  if (SPELL_HEADWORDS.has(lastWord)) return 'SPELL';
+  if (ARTIFACT_HEADWORDS.has(lastWord)) return 'ARTIFACT';
+  if (CREATURE_HEADWORDS.has(lastWord)) return 'CREATURE';
+  if (RACE_HEADWORDS.has(lastWord)) return 'RACE';
+  if (DEITY_HEADWORDS.has(lastWord)) return 'DEITY';
+  if (ABILITY_HEADWORDS.has(lastWord)) return 'ABILITY';
+  if (MATERIAL_HEADWORDS.has(lastWord)) return 'MATERIAL';
+  if (POTION_HEADWORDS.has(lastWord)) return 'ITEM';
+
+  // For single-word entities, also check the full word
+  if (words.length === 1) {
+    if (SPELL_HEADWORDS.has(lower)) return 'SPELL';
+    if (ARTIFACT_HEADWORDS.has(lower)) return 'ARTIFACT';
+    if (CREATURE_HEADWORDS.has(lower)) return 'CREATURE';
+    if (RACE_HEADWORDS.has(lower)) return 'RACE';
+    if (DEITY_HEADWORDS.has(lower)) return 'DEITY';
+    if (ABILITY_HEADWORDS.has(lower)) return 'ABILITY';
+    if (MATERIAL_HEADWORDS.has(lower)) return 'MATERIAL';
+    if (POTION_HEADWORDS.has(lower)) return 'ITEM';
+  }
+
+  return null;
+}
+
 // Fantasy/Biblical gazetteer for golden corpus names
 const FANTASY_WHITELIST = new Map<string, EntityType>([
   // LotR places
@@ -666,6 +823,13 @@ function refineEntityType(type: EntityType, text: string): EntityType {
   const whitelistMatch = lookupWhitelist(trimmed);
   if (whitelistMatch) {
     return whitelistMatch.type;
+  }
+
+  // Check fiction-specific entity types (spells, artifacts, creatures, etc.)
+  // These have priority over standard type assignments
+  const fictionType = checkFictionHeadwords(trimmed);
+  if (fictionType) {
+    return fictionType;
   }
 
   // Override with KNOWN_ORGS first (highest priority)
