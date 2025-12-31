@@ -1023,19 +1023,31 @@ function EditorPanel({
     }
   }, []);
 
-  // Trigger scroll on Enter and Backspace
+  // Trigger scroll on Enter and Backspace (debounced to avoid conflicts during rapid typing)
+  const scrollTimeoutRef = useRef<number | null>(null);
+
   useEffect(() => {
     const editor = editorRef.current;
     if (!editor) return;
 
     const handleKeyUp = (e: KeyboardEvent) => {
       if (e.key === 'Enter' || e.key === 'Backspace') {
-        setTimeout(scrollCaretIntoView, 50);
+        // Clear any pending scroll to avoid conflicts
+        if (scrollTimeoutRef.current) {
+          clearTimeout(scrollTimeoutRef.current);
+        }
+        // Wait for typing to settle before scrolling
+        scrollTimeoutRef.current = window.setTimeout(scrollCaretIntoView, 150);
       }
     };
 
     editor.addEventListener('keyup', handleKeyUp);
-    return () => editor.removeEventListener('keyup', handleKeyUp);
+    return () => {
+      editor.removeEventListener('keyup', handleKeyUp);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
   }, [scrollCaretIntoView]);
 
   // Initialize editor content when note changes
