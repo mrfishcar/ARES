@@ -993,33 +993,25 @@ function EditorPanel({
     const el = node.nodeType === Node.TEXT_NODE ? node.parentElement : node as HTMLElement;
     if (!el) return;
 
-    // Get element position relative to container
+    // Get element position (screen coordinates)
     const elRect = el.getBoundingClientRect();
-    const containerRect = container.getBoundingClientRect();
 
-    // Calculate visible area (account for keyboard and viewport offset)
-    const viewportOffset = window.visualViewport?.offsetTop || 0;
-    const visibleTop = viewportOffset + 80; // 80px buffer for header
+    // Screen boundaries (simple: header at top, keyboard at bottom)
+    const headerHeight = 100; // Header + some buffer
     const visibleBottom = window.visualViewport
-      ? window.visualViewport.height + viewportOffset - 60 // 60px buffer above keyboard
+      ? window.visualViewport.height - 60 // 60px buffer above keyboard
       : window.innerHeight - 60;
 
     // If element bottom is below visible area, scroll up
     if (elRect.bottom > visibleBottom) {
       const scrollAmount = elRect.bottom - visibleBottom;
-      container.scrollTo({
-        top: container.scrollTop + scrollAmount,
-        behavior: 'smooth'
-      });
+      container.scrollTop += scrollAmount;
     }
 
-    // If element top is above visible area, scroll down
-    if (elRect.top < visibleTop) {
-      const scrollAmount = visibleTop - elRect.top;
-      container.scrollTo({
-        top: container.scrollTop - scrollAmount,
-        behavior: 'smooth'
-      });
+    // If element top is above/behind header, scroll down
+    if (elRect.top < headerHeight) {
+      const scrollAmount = headerHeight - elRect.top;
+      container.scrollTop -= scrollAmount;
     }
   }, []);
 
