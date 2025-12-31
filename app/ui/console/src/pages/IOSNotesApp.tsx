@@ -1707,6 +1707,7 @@ export function IOSNotesApp() {
   const [showSidebar, setShowSidebar] = useState(true);
   const [showFoldersSidebar, setShowFoldersSidebar] = useState(true);
   const [showNotesSidebar, setShowNotesSidebar] = useState(true);
+  const [showMobileFolderMenu, setShowMobileFolderMenu] = useState(false);
 
   // Get current folder and notes
   const currentFolder = folders.find(f => f.id === currentFolderId) || folders[0];
@@ -2006,12 +2007,62 @@ export function IOSNotesApp() {
                   <BackButton onClick={handleMobileBack} label="Folders" />
                 </div>
                 <div className="ios-header__right">
-                  <button className="ios-icon-button">{Icons.more}</button>
+                  <button
+                    className="ios-icon-button"
+                    onClick={() => setShowMobileFolderMenu(!showMobileFolderMenu)}
+                    aria-label="Folder options"
+                    aria-expanded={showMobileFolderMenu}
+                    aria-haspopup="menu"
+                  >
+                    {Icons.more}
+                  </button>
                 </div>
               </div>
               <div className="ios-header__large-title">{currentFolder.name}</div>
               <SearchBar value={searchValue} onChange={setSearchValue} />
             </header>
+
+            {/* Mobile Folder Options Menu */}
+            {showMobileFolderMenu && (
+              <>
+                <div className="ios-menu-backdrop" onClick={() => setShowMobileFolderMenu(false)} />
+                <div className="ios-dropdown-menu ios-dropdown-menu--ios ios-dropdown-menu--header" role="menu">
+                  <button
+                    className="ios-dropdown-menu__item"
+                    onClick={() => setShowMobileFolderMenu(false)}
+                    role="menuitem"
+                  >
+                    {Icons.checklist}
+                    Select Notes
+                  </button>
+                  <button
+                    className="ios-dropdown-menu__item"
+                    onClick={() => setShowMobileFolderMenu(false)}
+                    role="menuitem"
+                  >
+                    {Icons.grid}
+                    View as Gallery
+                  </button>
+                  <div className="ios-dropdown-menu__divider" />
+                  <button
+                    className="ios-dropdown-menu__item"
+                    onClick={() => setShowMobileFolderMenu(false)}
+                    role="menuitem"
+                  >
+                    {Icons.folder}
+                    Select All
+                  </button>
+                  <button
+                    className="ios-dropdown-menu__item"
+                    onClick={() => setShowMobileFolderMenu(false)}
+                    role="menuitem"
+                  >
+                    {Icons.attachment}
+                    View Attachments
+                  </button>
+                </div>
+              </>
+            )}
 
             <div className="ios-notes-list-view__content">
               <NotesListContent

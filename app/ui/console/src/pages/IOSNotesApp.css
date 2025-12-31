@@ -1144,6 +1144,14 @@
   padding: var(--ios-spacing-sm) 0;
 }
 
+/* Dropdown positioned below header (for mobile notes view) */
+.ios-dropdown-menu--header {
+  position: fixed;
+  top: env(safe-area-inset-top, 20px);
+  right: var(--ios-spacing-md);
+  margin-top: 44px;
+}
+
 @keyframes ios-dropdown-in {
   from {
     opacity: 0;
