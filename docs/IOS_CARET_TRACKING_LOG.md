@@ -71,7 +71,7 @@ element.scrollIntoViewIfNeeded();
 **Result**: Can contribute to drift during native scrolling
 **Removed**: Now using default scroll behavior
 
-### 6. scrollIntoView on focusNode 🧪 (Current Test)
+### 6. scrollIntoView on focusNode ❌
 **Method**: Call scrollIntoView on the element containing the caret
 ```javascript
 const node = selection.focusNode;
@@ -79,8 +79,21 @@ const el = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
 el.scrollIntoView({ block: 'nearest', behavior: 'auto' });
 ```
 **Trigger**: Only on Enter key
+**Result**: Too coarse - scrolls entire element, not caret position within it
+**Why**: scrollIntoView operates on element boundaries, not caret position
+
+### 7. Manual scroll calculation 🧪 (Current Test)
+**Method**: Calculate if element is outside visible area, scroll container directly
+```javascript
+const elRect = el.getBoundingClientRect();
+const visibleBottom = window.visualViewport.height + window.visualViewport.offsetTop;
+if (elRect.bottom > visibleBottom - buffer) {
+  container.scrollTop += elRect.bottom - (visibleBottom - buffer);
+}
+```
+**Trigger**: Enter and Backspace keys
 **Status**: Testing now
-**Theory**: No DOM modification, should not cause drift
+**Theory**: Direct container scroll, uses visualViewport for accurate visible area
 
 ---
 
