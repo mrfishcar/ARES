@@ -1669,7 +1669,15 @@ function EditorPanel({
         </>
       )}
 
-      <div className="ios-editor-panel__content" ref={contentRef}>
+      <div
+        className="ios-editor-panel__content"
+        ref={contentRef}
+        style={{
+          // When keyboard is open, add padding to create scrollable space
+          // This allows the caret to scroll into view above the keyboard
+          paddingBottom: isKeyboardOpen ? `${keyboardHeight}px` : undefined
+        }}
+      >
         {note && (
           <div className="ios-editor-panel__date">
             {formatFullDate(note.updatedAt)}
