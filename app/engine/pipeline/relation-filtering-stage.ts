@@ -310,32 +310,8 @@ export async function runRelationFilteringStage(
         );
       }
 
-      // Also suppress "taught" relations between parents and children
-      // Parents naturally teach their children - it's not a noteworthy relation
-      const preParentTaughtFilter = filteredRelations.length;
-
-      filteredRelations = filteredRelations.filter(rel => {
-        if (rel.pred === 'taught') {
-          const key1 = `${rel.subj}:${rel.obj}`;
-          const key2 = `${rel.obj}:${rel.subj}`;
-          if (familyPairs.has(key1) || familyPairs.has(key2)) {
-            const subj = input.entities.find(e => e.id === rel.subj);
-            const obj = input.entities.find(e => e.id === rel.obj);
-            console.log(
-              `[${STAGE_NAME}] Suppressing taught: ${subj?.canonical} -> ${obj?.canonical} (family members)`
-            );
-            stats.removedByReason.familyFriendsSuppression++;
-            return false;
-          }
-        }
-        return true;
-      });
-
-      if (preParentTaughtFilter !== filteredRelations.length) {
-        console.log(
-          `[${STAGE_NAME}] Parent taught suppression: ${preParentTaughtFilter} → ${filteredRelations.length} (-${preParentTaughtFilter - filteredRelations.length})`
-        );
-      }
+      // Note: "taught" predicate removed - it was not a valid Predicate type
+      // If family teaching suppression is needed, use 'mentored' or 'teaches_at' instead
     }
 
     // ========================================================================
