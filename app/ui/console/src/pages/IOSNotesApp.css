@@ -60,6 +60,9 @@
   /* Prevent text size adjustment */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+
+  /* Use dynamic viewport height when set by JS */
+  height: var(--viewport-height, 100%);
 }
 
 /* Light mode overrides */
@@ -87,6 +90,16 @@
 .ios-notes-app--mobile {
   display: flex;
   flex-direction: column;
+  /* Use dynamic viewport height to handle keyboard on iOS */
+  height: 100dvh;
+  height: 100vh; /* Fallback for browsers that don't support dvh */
+  max-height: -webkit-fill-available; /* Safari fallback */
+}
+
+@supports (height: 100dvh) {
+  .ios-notes-app--mobile {
+    height: 100dvh;
+  }
 }
 
 .ios-notes-app--tablet {
@@ -755,6 +768,10 @@
   flex-direction: column;
   background: var(--ios-bg-secondary);
   min-width: 0;
+  /* Ensure panel fills available space and contains its children */
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
 }
 
 .ios-editor-panel__header {
@@ -762,11 +779,16 @@
   align-items: center;
   justify-content: space-between;
   height: 44px;
+  min-height: 44px;
   padding: 0 var(--ios-spacing-sm);
   padding-top: env(safe-area-inset-top, 0);
   background: var(--ios-bg-secondary);
   border-bottom: 0.5px solid var(--ios-separator);
   flex-shrink: 0;
+  /* Ensure header stays visible */
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .ios-editor-panel__header-left,
@@ -1039,6 +1061,10 @@
   border-top: 0.5px solid var(--ios-separator);
   flex-shrink: 0;
   transition: transform 0.2s ease-out, opacity 0.2s;
+  /* Ensure footer stays visible */
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
 }
 
 .ios-editor-panel__footer--hidden {

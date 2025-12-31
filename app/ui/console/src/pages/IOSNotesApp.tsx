@@ -1277,7 +1277,7 @@ function EditorPanel({
     }
   }, [handleBold, handleItalic, handleUnderline, handleInput]);
 
-  // Detect keyboard open/close
+  // Detect keyboard open/close and adjust viewport
   useEffect(() => {
     if (!window.visualViewport) return;
 
@@ -1289,13 +1289,33 @@ function EditorPanel({
       const isOpen = currentKeyboardHeight > 150;
       setIsKeyboardOpen(isOpen);
       setKeyboardHeight(isOpen ? currentKeyboardHeight : 0);
+
+      // Set CSS custom property for viewport height
+      document.documentElement.style.setProperty('--viewport-height', `${viewportHeight}px`);
+
+      // Prevent iOS from scrolling the page when keyboard opens
+      if (isOpen) {
+        window.scrollTo(0, 0);
+      }
+    };
+
+    // Also handle scroll events (iOS Safari scrolls the page when keyboard opens)
+    const handleScroll = () => {
+      // Reset scroll position to keep toolbars in view
+      if (viewport.offsetTop > 0) {
+        window.scrollTo(0, 0);
+      }
     };
 
     viewport.addEventListener('resize', handleResize);
-    viewport.addEventListener('scroll', handleResize);
+    viewport.addEventListener('scroll', handleScroll);
+
+    // Initial call
+    handleResize();
+
     return () => {
       viewport.removeEventListener('resize', handleResize);
-      viewport.removeEventListener('scroll', handleResize);
+      viewport.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
