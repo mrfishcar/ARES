@@ -974,3 +974,168 @@ describe('Knowledge/Belief Patterns', () => {
     expect(hasRelation(relations, 'doubted', 'e1', 'e2')).toBe(true);
   });
 });
+
+describe('Passive Voice Patterns', () => {
+  it('should extract defeated from "X was defeated by Y" pattern', () => {
+    const text = `Sauron was defeated by Isildur.`;
+    const entities = [
+      makeEntity('e1', 'Sauron'),
+      makeEntity('e2', 'Isildur'),
+    ];
+
+    const relations = extractAllNarrativeRelations(text, entities, 'test');
+
+    // Y defeated X → Isildur defeated Sauron
+    expect(hasRelation(relations, 'defeated', 'e2', 'e1')).toBe(true);
+  });
+
+  it('should extract saved from "X was saved by Y" pattern', () => {
+    const text = `Frodo was saved by Sam.`;
+    const entities = [
+      makeEntity('e1', 'Frodo'),
+      makeEntity('e2', 'Sam'),
+    ];
+
+    const relations = extractAllNarrativeRelations(text, entities, 'test');
+
+    // Sam saved Frodo
+    expect(hasRelation(relations, 'saved', 'e2', 'e1')).toBe(true);
+  });
+
+  it('should extract raised from "X was raised by Y" pattern', () => {
+    const text = `Harry was raised by Vernon.`;
+    const entities = [
+      makeEntity('e1', 'Harry'),
+      makeEntity('e2', 'Vernon'),
+    ];
+
+    const relations = extractAllNarrativeRelations(text, entities, 'test');
+
+    // Vernon raised Harry
+    expect(hasRelation(relations, 'raised', 'e2', 'e1')).toBe(true);
+  });
+
+  it('should extract inspired from "X was inspired by Y" pattern', () => {
+    const text = `Faramir was inspired by Gandalf.`;
+    const entities = [
+      makeEntity('e1', 'Faramir'),
+      makeEntity('e2', 'Gandalf'),
+    ];
+
+    const relations = extractAllNarrativeRelations(text, entities, 'test');
+
+    // Gandalf inspired Faramir
+    expect(hasRelation(relations, 'inspired', 'e2', 'e1')).toBe(true);
+  });
+
+  it('should extract overthrew from "X was overthrown by Y" pattern', () => {
+    const text = `Saruman was overthrown by Gandalf.`;
+    const entities = [
+      makeEntity('e1', 'Saruman'),
+      makeEntity('e2', 'Gandalf'),
+    ];
+
+    const relations = extractAllNarrativeRelations(text, entities, 'test');
+
+    // Gandalf overthrew Saruman
+    expect(hasRelation(relations, 'overthrew', 'e2', 'e1')).toBe(true);
+  });
+});
+
+describe('Relational Adjective Patterns', () => {
+  it('should extract devoted_to from "X was devoted to Y" pattern', () => {
+    const text = `Sam was devoted to Frodo.`;
+    const entities = [
+      makeEntity('e1', 'Sam'),
+      makeEntity('e2', 'Frodo'),
+    ];
+
+    const relations = extractAllNarrativeRelations(text, entities, 'test');
+
+    expect(hasRelation(relations, 'devoted_to', 'e1', 'e2')).toBe(true);
+  });
+
+  it('should extract hostile_to from "X was hostile to Y" pattern', () => {
+    const text = `Sauron was hostile to Gandalf.`;
+    const entities = [
+      makeEntity('e1', 'Sauron'),
+      makeEntity('e2', 'Gandalf'),
+    ];
+
+    const relations = extractAllNarrativeRelations(text, entities, 'test');
+
+    expect(hasRelation(relations, 'hostile_to', 'e1', 'e2')).toBe(true);
+  });
+
+  it('should extract jealous_of from "X was jealous of Y" pattern', () => {
+    const text = `Boromir was jealous of Aragorn.`;
+    const entities = [
+      makeEntity('e1', 'Boromir'),
+      makeEntity('e2', 'Aragorn'),
+    ];
+
+    const relations = extractAllNarrativeRelations(text, entities, 'test');
+
+    expect(hasRelation(relations, 'jealous_of', 'e1', 'e2')).toBe(true);
+  });
+
+  it('should extract fears from "X was afraid of Y" pattern', () => {
+    const text = `Pippin was afraid of Denethor.`;
+    const entities = [
+      makeEntity('e1', 'Pippin'),
+      makeEntity('e2', 'Denethor'),
+    ];
+
+    const relations = extractAllNarrativeRelations(text, entities, 'test');
+
+    expect(hasRelation(relations, 'fears', 'e1', 'e2')).toBe(true);
+  });
+
+  it('should extract grateful_to from "X was grateful to Y" pattern', () => {
+    const text = `Frodo was grateful to Galadriel.`;
+    const entities = [
+      makeEntity('e1', 'Frodo'),
+      makeEntity('e2', 'Galadriel'),
+    ];
+
+    const relations = extractAllNarrativeRelations(text, entities, 'test');
+
+    expect(hasRelation(relations, 'grateful_to', 'e1', 'e2')).toBe(true);
+  });
+
+  it('should extract related_to from "X is related to Y" pattern', () => {
+    const text = `Faramir is related to Boromir.`;
+    const entities = [
+      makeEntity('e1', 'Faramir'),
+      makeEntity('e2', 'Boromir'),
+    ];
+
+    const relations = extractAllNarrativeRelations(text, entities, 'test');
+
+    expect(hasRelation(relations, 'related_to', 'e1', 'e2')).toBe(true);
+  });
+
+  it('should extract loves from "X fell in love with Y" pattern', () => {
+    const text = `Aragorn fell in love with Arwen.`;
+    const entities = [
+      makeEntity('e1', 'Aragorn'),
+      makeEntity('e2', 'Arwen'),
+    ];
+
+    const relations = extractAllNarrativeRelations(text, entities, 'test');
+
+    expect(hasRelation(relations, 'loves', 'e1', 'e2')).toBe(true);
+  });
+
+  it('should extract close_to from "X grew close to Y" pattern', () => {
+    const text = `Legolas grew close to Gimli.`;
+    const entities = [
+      makeEntity('e1', 'Legolas'),
+      makeEntity('e2', 'Gimli'),
+    ];
+
+    const relations = extractAllNarrativeRelations(text, entities, 'test');
+
+    expect(hasRelation(relations, 'close_to', 'e1', 'e2')).toBe(true);
+  });
+});

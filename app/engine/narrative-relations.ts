@@ -1697,6 +1697,214 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+doubted\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
     predicate: 'doubted',
     typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+
+  // =========================================
+  // PASSIVE VOICE PATTERNS
+  // Using extractSubj: 2, extractObj: 1 to swap capture groups
+  // "X was defeated by Y" → Y defeated X
+  // =========================================
+
+  // "X was defeated by Y" (passive) → Y defeated X
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+was\s+defeated\s+by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'defeated',
+    extractSubj: 2,
+    extractObj: 1,
+    typeGuard: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG'] }
+  },
+  // "X was saved by Y" (passive) → Y saved X
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+was\s+saved\s+by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'saved',
+    extractSubj: 2,
+    extractObj: 1,
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X was helped by Y" (passive) → Y helped X
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+was\s+helped\s+by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'helped',
+    extractSubj: 2,
+    extractObj: 1,
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X was protected by Y" (passive) → Y protected X
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+was\s+protected\s+by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'protected',
+    extractSubj: 2,
+    extractObj: 1,
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON', 'PLACE'] }
+  },
+  // "X was attacked by Y" (passive) → Y attacked X
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+was\s+attacked\s+by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'attacked',
+    extractSubj: 2,
+    extractObj: 1,
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON', 'PLACE'] }
+  },
+  // "X was warned by Y" (passive) → Y warned X
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+was\s+warned\s+by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'warned',
+    extractSubj: 2,
+    extractObj: 1,
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X was summoned by Y" (passive) → Y summoned X
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+was\s+summoned\s+by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'summoned',
+    extractSubj: 2,
+    extractObj: 1,
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X was supported by Y" (passive) → Y supported X
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+was\s+supported\s+by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'supported',
+    extractSubj: 2,
+    extractObj: 1,
+    typeGuard: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG'] }
+  },
+  // "X was replaced by Y" (passive) → Y replaced X
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+was\s+replaced\s+by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'replaced',
+    extractSubj: 2,
+    extractObj: 1,
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X was overthrown by Y" (passive) → Y overthrew X
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+was\s+overthrown\s+by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'overthrew',
+    extractSubj: 2,
+    extractObj: 1,
+    typeGuard: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG'] }
+  },
+  // "X was inspired by Y" (passive) → Y inspired X
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+was\s+inspired\s+by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'inspired',
+    extractSubj: 2,
+    extractObj: 1,
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X was influenced by Y" (passive) → Y influenced X
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+was\s+influenced\s+by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'influenced',
+    extractSubj: 2,
+    extractObj: 1,
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X was raised by Y" (passive) → Y raised X
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+was\s+raised\s+by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'raised',
+    extractSubj: 2,
+    extractObj: 1,
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X was mentored by Y" (passive) → Y mentor_of X
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+was\s+mentored\s+by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'mentor_of',
+    extractSubj: 2,
+    extractObj: 1,
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+
+  // =========================================
+  // RELATIONAL ADJECTIVE PATTERNS
+  // =========================================
+
+  // "X is/was loyal to Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is|was|remained|stayed)\s+loyal\s+to\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'loyal_to',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON', 'ORG'] }
+  },
+  // "X is/was devoted to Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is|was|remained)\s+devoted\s+to\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'devoted_to',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON', 'ORG'] }
+  },
+  // "X is/was hostile to Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is|was|remained|became)\s+hostile\s+to\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'hostile_to',
+    typeGuard: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG'] }
+  },
+  // "X is/was suspicious of Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is|was|remained|became)\s+suspicious\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'suspicious_of',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X is/was jealous of Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is|was|became)\s+jealous\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'jealous_of',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X is/was afraid of Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is|was|became)\s+afraid\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'fears',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X is/was grateful to Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is|was|remained)\s+grateful\s+to\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'grateful_to',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X is/was indebted to Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is|was)\s+indebted\s+to\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'indebted_to',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON', 'ORG'] }
+  },
+  // "X is/was related to Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is|was)\s+related\s+to\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'related_to',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X is/was close to Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is|was|remained|grew)\s+close\s+to\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'close_to',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X is/was dependent on Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is|was|became)\s+dependent\s+on\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'dependent_on',
+    typeGuard: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG'] }
+  },
+  // "X is/was responsible for Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is|was)\s+responsible\s+for\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'responsible_for',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON', 'EVENT'] }
+  },
+  // "X is/was in love with Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is|was|fell)\s+in\s+love\s+with\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'loves',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X is/was envious of Y"
+  {
+    regex: /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:is|was|became)\s+envious\s+of\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    predicate: 'envious_of',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
   }
 ];
 
