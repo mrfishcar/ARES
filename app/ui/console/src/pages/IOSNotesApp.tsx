@@ -984,7 +984,8 @@ function EditorPanel({
 
   // Scroll caret into view (iOS Safari fix)
   // iOS Safari doesn't auto-scroll to keep caret visible while typing
-  // Uses temporary marker element with scrollIntoView - simplest reliable approach
+  // Parent containers have overflow:hidden which breaks scrollIntoView
+  // So we directly manipulate scrollTop of the scroll container
   const scrollCaretIntoView = useCallback(() => {
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0) return;
@@ -992,9 +993,12 @@ function EditorPanel({
     const range = selection.getRangeAt(0);
     if (!range.collapsed) return; // Only for caret, not selections
 
+    const scrollContainer = contentRef.current;
+    if (!scrollContainer) return;
+
     // Create a temporary marker span at caret position
     const marker = document.createElement('span');
-    marker.style.cssText = 'position:absolute;';
+    marker.style.cssText = 'display:inline-block;width:1px;height:1em;';
 
     // Clone range so we don't disrupt the actual selection
     const markerRange = range.cloneRange();
@@ -1003,18 +1007,35 @@ function EditorPanel({
     try {
       markerRange.insertNode(marker);
 
-      // Use scrollIntoView with block: 'nearest' to minimize scrolling
-      // This is the simplest and most reliable approach
-      marker.scrollIntoView({
-        behavior: 'instant',
-        block: 'nearest',
-        inline: 'nearest'
-      });
+      // Get positions relative to the scroll container
+      const markerRect = marker.getBoundingClientRect();
+      const containerRect = scrollContainer.getBoundingClientRect();
+
+      // Calculate where marker is relative to the container's visible area
+      const markerTopInContainer = markerRect.top - containerRect.top;
+      const markerBottomInContainer = markerRect.bottom - containerRect.top;
+
+      // Visible height of container (account for what's actually visible on screen)
+      const vv = window.visualViewport;
+      const visibleHeight = vv
+        ? Math.min(containerRect.height, vv.height - Math.max(0, containerRect.top - vv.offsetTop))
+        : containerRect.height;
+
+      const scrollPadding = 60; // Padding from edges
+
+      // Check if marker is below visible area
+      if (markerBottomInContainer > visibleHeight - scrollPadding) {
+        const scrollAmount = markerBottomInContainer - visibleHeight + scrollPadding;
+        scrollContainer.scrollTop += scrollAmount;
+      }
+      // Check if marker is above visible area
+      else if (markerTopInContainer < scrollPadding) {
+        const scrollAmount = markerTopInContainer - scrollPadding;
+        scrollContainer.scrollTop += scrollAmount;
+      }
     } catch (e) {
-      // Fallback for any errors
       console.warn('scrollCaretIntoView error:', e);
     } finally {
-      // Always remove marker
       if (marker.parentNode) {
         marker.remove();
       }
