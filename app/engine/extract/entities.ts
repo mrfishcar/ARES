@@ -573,7 +573,24 @@ const PERSON_BLOCKLIST = new Set([
   'physics',
   'chemistry',
   'biology',
-  'economics'
+  'economics',
+  // Collective nouns (should not be extracted as individual persons)
+  'couple',
+  'trio',
+  'pair',
+  'group',
+  'family',
+  'friends',
+  'team',
+  'crew',
+  'band',
+  'party',
+  'squad',
+  'crowd',
+  'audience',
+  'committee',
+  'council',
+  'board'
 ]);
 
 // Well-known places (US states, major cities, countries)
@@ -3639,11 +3656,26 @@ const mergedEntries = Array.from(mergedMap.values());
     const canonicalLower = entry.entity.canonical.toLowerCase();
     const isMcG = canonicalLower.includes('mcgonagall');
 
-    if (entry.entity.type === 'PERSON' && PERSON_BLOCKLIST.has(canonicalLower)) {
-      if (isMcG) {
-        console.log('[DEBUG-MCG] filtered out by PERSON_BLOCKLIST', entry.entity.canonical);
+    // Check PERSON_BLOCKLIST - both exact match and individual word match
+    if (entry.entity.type === 'PERSON') {
+      // Exact match
+      if (PERSON_BLOCKLIST.has(canonicalLower)) {
+        if (isMcG) {
+          console.log('[DEBUG-MCG] filtered out by PERSON_BLOCKLIST (exact)', entry.entity.canonical);
+        }
+        return false;
       }
-      return false;
+      // Also check if any word in the canonical is a blocked collective noun
+      // This catches phrases like "The couple had" where "couple" is blocked
+      const words = canonicalLower.split(/\s+/);
+      for (const word of words) {
+        if (PERSON_BLOCKLIST.has(word)) {
+          if (process.env.L4_DEBUG === '1') {
+            console.log(`[PERSON-BLOCKLIST] Filtering "${entry.entity.canonical}" - contains blocked word "${word}"`);
+          }
+          return false;
+        }
+      }
     }
 
     if (entry.entity.type === 'DATE') {

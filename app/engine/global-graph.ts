@@ -798,17 +798,63 @@ export function chooseBestCanonical(names: string[]): string {
     'teens'
   ]);
 
+  // Collective nouns that should not be chosen as canonical person names
+  const COLLECTIVE_NOUNS = new Set([
+    'couple',
+    'trio',
+    'pair',
+    'group',
+    'family',
+    'friends',
+    'team',
+    'crew',
+    'band',
+    'party',
+    'squad'
+  ]);
+
+  // Common verbs that shouldn't appear in a canonical name
+  const COMMON_VERBS = new Set([
+    'had',
+    'has',
+    'have',
+    'was',
+    'were',
+    'is',
+    'are',
+    'did',
+    'does',
+    'do',
+    'met',
+    'married',
+    'lived',
+    'worked',
+    'went',
+    'came',
+    'said',
+    'told'
+  ]);
+
   const scoreName = (name: string): number => {
     const tokens = name.split(/\s+/).filter(Boolean);
+    const lowerTokens = tokens.map(t => t.toLowerCase());
     const hasSpace = tokens.length >= 2;
     const hasUpper = /[A-Z]/.test(name);
     const head = tokens[tokens.length - 1]?.toLowerCase();
     const hasGenericHead = head ? GENERIC_GROUPS.has(head) : false;
 
+    // Check for collective nouns anywhere in the name
+    const hasCollectiveNoun = lowerTokens.some(t => COLLECTIVE_NOUNS.has(t));
+
+    // Check for verbs anywhere in the name (names shouldn't contain verbs)
+    const hasVerb = lowerTokens.some(t => COMMON_VERBS.has(t));
+
     let score = 0;
     if (hasSpace) score += 2;
     if (hasUpper) score += 1;
     if (hasGenericHead) score -= 3;
+    if (hasCollectiveNoun) score -= 10; // Strong penalty for collective nouns
+    if (hasVerb) score -= 10; // Strong penalty for verbs
     score += Math.min(tokens.length, 4) * 0.1; // slight preference for longer names
     return score;
   };

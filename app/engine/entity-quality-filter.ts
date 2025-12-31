@@ -374,6 +374,17 @@ function looksLikeSurname(word: string): boolean {
     'aw', 'ew',                 // Ravenclaw, Crenshaw, etc.
     'om', 'um',                 // Longbottom, etc.
     'in', 'an', 'on',           // Lupin, Petunia->Pettigrew pattern (wider), etc.
+    // Fantasy/fictional name endings
+    'rne', 'ne',                // Thorne, Bourne, Wayne, etc.
+    'rk', 'ark', 'ork',         // Park, Clark, York, etc.
+    'en', 'ren', 'rren',        // Warren, Marren, Wren, etc.
+    'all', 'ell', 'ill',        // Nightfall, Crandall, Marshall, etc.
+    'ght', 'ight',              // Knight, Bright, Wright, etc.
+    'ock', 'uck',               // Hancock, Buck, etc.
+    'ald', 'old',               // Fitzgerald, Arnold, etc.
+    'ner', 'ter',               // Gardener, Carpenter, etc.
+    'ey', 'ay',                 // Finley, Murray, etc.
+    'tt', 'ott',                // Scott, Abbott, etc.
   ];
 
   if (surnameEndings.some(end => lower.endsWith(end))) {
