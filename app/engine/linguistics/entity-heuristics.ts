@@ -11,8 +11,22 @@ const SENTENCE_STARTERS = new Set([
 ]);
 
 const TITLE_WORDS = new Set([
+  // Honorifics
   'mr', 'mrs', 'ms', 'miss', 'dr', 'doctor', 'coach', 'detective', 'nurse',
-  'principal', 'prof', 'professor'
+  'principal', 'prof', 'professor',
+  // Royal/nobility titles
+  'king', 'queen', 'prince', 'princess', 'lord', 'lady', 'duke', 'duchess',
+  'earl', 'count', 'countess', 'baron', 'baroness', 'sir', 'dame', 'emperor',
+  'empress', 'tsar', 'tsarina', 'sultan', 'sultana', 'pharaoh', 'chief',
+  // Religious titles
+  'father', 'mother', 'brother', 'sister', 'pope', 'bishop', 'archbishop',
+  'cardinal', 'reverend', 'rabbi', 'imam', 'sheikh',
+  // Military titles
+  'general', 'colonel', 'major', 'captain', 'lieutenant', 'sergeant',
+  'admiral', 'commander', 'marshal',
+  // Academic/professional titles
+  'judge', 'justice', 'senator', 'governor', 'president', 'chancellor',
+  'mayor', 'minister', 'ambassador', 'secretary'
 ]);
 
 const COLOR_ADJECTIVES = new Set([
@@ -98,6 +112,20 @@ export function shouldSuppressSentenceInitialPerson(
   const { prev, next, nextTwo } = getSurroundingTokens(text, span.start, span.end);
   const hasTitleNeighbor = (prev && TITLE_WORDS.has(prev.toLowerCase())) || (next && TITLE_WORDS.has(next.toLowerCase()));
   if (hasTitleNeighbor) return { suppress: false };
+
+  // Check if span starts with a title word (e.g., span is "King David" but canonical is "David")
+  // This handles cases where title was included in span but stripped from canonical
+  const spanText = text.slice(span.start, span.end);
+  const spanFirstToken = spanText.split(/\s+/)[0];
+  if (DEBUG_HEURISTICS) {
+    console.log(`[ENTITY-HEURISTICS] spanText="${spanText}" spanFirstToken="${spanFirstToken}" inTitleWords=${TITLE_WORDS.has(spanFirstToken?.toLowerCase() || '')}`);
+  }
+  if (spanFirstToken && TITLE_WORDS.has(spanFirstToken.toLowerCase())) {
+    if (DEBUG_HEURISTICS) {
+      console.log(`[ENTITY-HEURISTICS] TITLE PREFIX DETECTED - returning suppress: false`);
+    }
+    return { suppress: false };
+  }
 
   const hasNearbyProperContinuation = nextTwo?.some(tok => tok && /^[A-Z]/.test(tok)) ?? false;
   if (hasNearbyProperContinuation) return { suppress: false };

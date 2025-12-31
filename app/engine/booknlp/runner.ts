@@ -231,7 +231,7 @@ async function runBookNLPService(
       throw new Error(`BookNLP service error ${response.status}: ${body}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as { booknlp?: { files?: unknown } };
 
     // The existing service returns raw TSV files - we need to transform
     // For now, throw if using old service format

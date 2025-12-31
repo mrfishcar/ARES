@@ -2420,6 +2420,7 @@ function applyLinguisticFilters(
   sentenceStarts: Set<number>
 ): Entity[] {
   const DEBUG = process.env.DEBUG_ENTITY_DECISIONS === 'true';
+  const FILTER_DEBUG = process.env.FILTER_DEBUG === '1';
   const filtered: Entity[] = [];
   const isSentenceInitialPosition = (charPos: number): boolean => {
     for (const start of sentenceStarts) {
@@ -2588,7 +2589,12 @@ function applyLinguisticFilters(
 
     // Rule NF-1: Filter attached-only fragments
     // If this is a single-token entity that only appears embedded in longer proper names
+    if (FILTER_DEBUG && tokens.length === 1) {
+      const isFragment = isAttachedOnlyFragment(tokenStats, tokens[0]);
+      console.log(`[FILTER_DEBUG] NF-1 check: ${entity.canonical} isAttachedOnlyFragment=${isFragment}`);
+    }
     if (tokens.length === 1 && isAttachedOnlyFragment(tokenStats, tokens[0])) {
+      if (FILTER_DEBUG) console.log(`[FILTER_DEBUG] NF-1 FILTERED: ${entity.canonical}`);
       shouldKeep = false;
       logEntityDecision({
         entityId: entity.id,
@@ -2639,7 +2645,12 @@ function applyLinguisticFilters(
 
       const allowedPerson = looksLikePersonName(npContext, tokenStats);
 
+      if (FILTER_DEBUG) {
+        console.log(`[FILTER_DEBUG] CN check: ${entity.canonical} allowedPerson=${allowedPerson} hasDeterminer=${hasDeterminer} isSentenceInitial=${isSentenceInitial} followedByComma=${followedByComma}`);
+      }
+
       if (!allowedPerson) {
+        if (FILTER_DEBUG) console.log(`[FILTER_DEBUG] CN-1/2/3/4 FILTERED: ${entity.canonical}`);
         shouldKeep = false;
         logEntityDecision({
           entityId: entity.id,
