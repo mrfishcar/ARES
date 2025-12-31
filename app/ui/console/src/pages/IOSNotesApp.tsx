@@ -1021,11 +1021,15 @@ function EditorPanel({
         ? Math.min(containerRect.height, vv.height - Math.max(0, containerRect.top - vv.offsetTop))
         : containerRect.height;
 
-      const scrollPadding = 60; // Padding from edges
+      // Top padding: account for header area
+      const topPadding = 80; // Header + some breathing room
+
+      // Bottom padding: account for keyboard toolbar when open
+      const bottomPadding = isKeyboardOpen ? 100 : 60; // More space when keyboard is up
 
       // Check if marker is below visible area
-      if (markerBottomInContainer > visibleHeight - scrollPadding) {
-        const scrollAmount = markerBottomInContainer - visibleHeight + scrollPadding;
+      if (markerBottomInContainer > visibleHeight - bottomPadding) {
+        const scrollAmount = markerBottomInContainer - visibleHeight + bottomPadding;
         // Use scrollTo with smooth behavior for native-like animation
         scrollContainer.scrollTo({
           top: scrollContainer.scrollTop + scrollAmount,
@@ -1033,8 +1037,8 @@ function EditorPanel({
         });
       }
       // Check if marker is above visible area
-      else if (markerTopInContainer < scrollPadding) {
-        const scrollAmount = markerTopInContainer - scrollPadding;
+      else if (markerTopInContainer < topPadding) {
+        const scrollAmount = markerTopInContainer - topPadding;
         scrollContainer.scrollTo({
           top: scrollContainer.scrollTop + scrollAmount,
           behavior: 'smooth'
@@ -1047,7 +1051,7 @@ function EditorPanel({
         marker.remove();
       }
     }
-  }, []);
+  }, [isKeyboardOpen]);
 
   // Initialize editor content when note changes
   useEffect(() => {
