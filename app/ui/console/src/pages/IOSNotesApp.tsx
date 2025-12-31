@@ -1007,15 +1007,22 @@ function EditorPanel({
       ? Math.min(containerRect.height, vv.height - Math.max(0, containerRect.top - vv.offsetTop))
       : containerRect.height;
 
-    const topPadding = 60;
-    const bottomPadding = isKeyboardOpen ? 100 : 40;
+    const lineHeight = 24;
+    const topPadding = 80;
+    const bottomPadding = isKeyboardOpen ? (120 + lineHeight) : 60;
 
     if (caretBottomInContainer > visibleHeight - bottomPadding) {
-      const scrollAmount = caretBottomInContainer - visibleHeight + bottomPadding;
-      scrollContainer.scrollTop += scrollAmount;
+      const scrollAmount = caretBottomInContainer - visibleHeight + bottomPadding + lineHeight;
+      scrollContainer.scrollTo({
+        top: scrollContainer.scrollTop + scrollAmount,
+        behavior: 'smooth'
+      });
     } else if (caretTopInContainer < topPadding) {
       const scrollAmount = caretTopInContainer - topPadding;
-      scrollContainer.scrollTop += scrollAmount;
+      scrollContainer.scrollTo({
+        top: scrollContainer.scrollTop + scrollAmount,
+        behavior: 'smooth'
+      });
     }
   }, [isKeyboardOpen]);
 
@@ -1370,6 +1377,20 @@ function EditorPanel({
       viewport.removeEventListener('scroll', handleViewportChange);
     };
   }, []);
+
+  // Listen for selection changes (arrow keys, taps, etc.)
+  useEffect(() => {
+    const handleSelectionChange = () => {
+      if (!editorRef.current?.contains(document.activeElement) &&
+          document.activeElement !== editorRef.current) {
+        return;
+      }
+      requestAnimationFrame(scrollCaretIntoView);
+    };
+
+    document.addEventListener('selectionchange', handleSelectionChange);
+    return () => document.removeEventListener('selectionchange', handleSelectionChange);
+  }, [scrollCaretIntoView]);
 
   // Auto-focus for new notes
   useEffect(() => {
