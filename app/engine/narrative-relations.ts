@@ -102,8 +102,40 @@ function inferGenderFromName(name: string): Gender {
 }
 
 /**
- * Simple recency-based pronoun resolver
- * Returns CorefLinks object for pronouns in text
+ * Find sentence boundaries in text
+ */
+function findSentenceBoundaries(text: string): number[] {
+  const boundaries: number[] = [0];
+  const sentenceEnders = /[.!?]+\s+/g;
+  let match;
+  while ((match = sentenceEnders.exec(text)) !== null) {
+    boundaries.push(match.index + match[0].length);
+  }
+  return boundaries;
+}
+
+/**
+ * Check if position is near start of a sentence (subject position)
+ */
+function isSubjectPosition(position: number, sentenceBoundaries: number[]): boolean {
+  for (const boundary of sentenceBoundaries) {
+    // Within first 30% of sentence or first 50 chars after boundary
+    if (position >= boundary && position < boundary + 50) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Advanced recency-based pronoun resolver with salience scoring
+ *
+ * Features:
+ * - Gender-based matching (he→male, she→female, they→any)
+ * - Recency-based resolution (closer mentions preferred)
+ * - Subject position prioritization (entities at sentence start get bonus)
+ * - Ambiguity detection (lowers confidence if multiple candidates are close)
+ * - Sentence boundary awareness (paragraph breaks reduce salience)
  */
 function buildSimpleCorefLinks(
   text: string,
@@ -124,8 +156,19 @@ function buildSimpleCorefLinks(
     return { links, quotes };
   }
 
-  // Find all entity mentions with positions
-  const entityMentions: Array<{ entityId: string; name: string; position: number; gender: Gender }> = [];
+  // Find sentence boundaries for subject position detection
+  const sentenceBoundaries = findSentenceBoundaries(text);
+
+  // Find all entity mentions with positions and salience info
+  interface EntityMention {
+    entityId: string;
+    name: string;
+    position: number;
+    gender: Gender;
+    isSubject: boolean;
+  }
+
+  const entityMentions: EntityMention[] = [];
 
   for (const entity of personEntities) {
     // Find canonical name
@@ -137,6 +180,7 @@ function buildSimpleCorefLinks(
         name: entity.canonical,
         position: match.index,
         gender: entity.gender,
+        isSubject: isSubjectPosition(match.index, sentenceBoundaries),
       });
     }
 
@@ -152,6 +196,7 @@ function buildSimpleCorefLinks(
             name: firstName,
             position: match.index,
             gender: entity.gender,
+            isSubject: isSubjectPosition(match.index, sentenceBoundaries),
           });
         }
       }
@@ -161,7 +206,7 @@ function buildSimpleCorefLinks(
   // Sort by position
   entityMentions.sort((a, b) => a.position - b.position);
 
-  // Find pronouns and resolve them
+  // Find pronouns and resolve them with salience scoring
   const pronounRegex = /\b(He|She|They|he|she|they|Him|Her|Them|him|her|them|His|Her|Their|his|her|their)\b/g;
   let pronounMatch;
 
@@ -172,12 +217,17 @@ function buildSimpleCorefLinks(
 
     if (!pronounInfo) continue;
 
-    // Find most recent entity with matching gender (within 500 chars)
     const pronounPos = pronounMatch.index;
     const maxDistance = 500;
 
-    let bestMatch: typeof entityMentions[0] | null = null;
-    let bestDistance = Infinity;
+    // Score all candidates
+    interface ScoredCandidate {
+      mention: EntityMention;
+      score: number;
+      distance: number;
+    }
+
+    const candidates: ScoredCandidate[] = [];
 
     for (const mention of entityMentions) {
       // Only consider mentions before the pronoun
@@ -194,27 +244,56 @@ function buildSimpleCorefLinks(
 
       if (!genderMatch) continue;
 
-      // Prefer closer matches
-      if (distance < bestDistance) {
-        bestDistance = distance;
-        bestMatch = mention;
+      // Calculate salience score
+      // Base: recency (exponential decay with distance)
+      let score = Math.exp(-distance / 200);
+
+      // Bonus: subject position (3x weight like in salience-resolver)
+      if (mention.isSubject) {
+        score *= 3.0;
       }
+
+      // Penalty: crossing sentence boundaries
+      const sentencesCrossed = sentenceBoundaries.filter(
+        b => b > mention.position && b < pronounPos
+      ).length;
+      score *= Math.pow(0.8, sentencesCrossed); // 0.8 decay per sentence
+
+      candidates.push({ mention, score, distance });
     }
 
-    if (bestMatch) {
-      links.push({
-        mention: {
-          text: pronounText,
-          start: pronounPos,
-          end: pronounPos + pronounText.length,
-          sentence_index: 0, // Simplified
-          type: 'pronoun',
-        },
-        entity_id: bestMatch.entityId,
-        confidence: 0.75,
-        method: 'pronoun_stack',
-      });
+    if (candidates.length === 0) continue;
+
+    // Sort by score descending
+    candidates.sort((a, b) => b.score - a.score);
+
+    const best = candidates[0];
+    const second = candidates[1];
+
+    // Check for ambiguity (if second-best is within 1.5x of best)
+    let confidence = 0.75;
+    if (second && second.score > best.score / 1.5) {
+      // Ambiguous case - lower confidence
+      confidence = 0.55;
     }
+
+    // Very close match gets higher confidence
+    if (best.distance < 50 && !second) {
+      confidence = 0.85;
+    }
+
+    links.push({
+      mention: {
+        text: pronounText,
+        start: pronounPos,
+        end: pronounPos + pronounText.length,
+        sentence_index: 0, // Simplified
+        type: 'pronoun',
+      },
+      entity_id: best.mention.entityId,
+      confidence,
+      method: 'pronoun_stack',
+    });
   }
 
   return { links, quotes };
