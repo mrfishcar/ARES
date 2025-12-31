@@ -199,6 +199,24 @@ function useIsTablet(): boolean {
   return isTablet;
 }
 
+// Hook for detecting large iPad (3-column layout)
+function useIsLargeTablet(): boolean {
+  const [isLargeTablet, setIsLargeTablet] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 1024;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const checkWidth = () => setIsLargeTablet(window.innerWidth >= 1024);
+    window.addEventListener('resize', checkWidth);
+    return () => window.removeEventListener('resize', checkWidth);
+  }, []);
+
+  return isLargeTablet;
+}
+
 // Hook for debounced value - prevents excessive saves
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -344,6 +362,44 @@ const Icons = {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
       <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+    </svg>
+  ),
+  scan: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"/>
+      <rect x="7" y="7" width="10" height="10" rx="1"/>
+    </svg>
+  ),
+  lock: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+      <path d="M7 11V7a5 5 0 0110 0v4"/>
+    </svg>
+  ),
+  find: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="11" cy="11" r="8"/>
+      <path d="m21 21-4.35-4.35"/>
+      <path d="M11 8v6M8 11h6"/>
+    </svg>
+  ),
+  move: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2v11z"/>
+      <path d="M12 11v6M9 14l3-3 3 3"/>
+    </svg>
+  ),
+  grid: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <path d="M3 9h18M3 15h18"/>
+    </svg>
+  ),
+  print: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M6 9V2h12v7"/>
+      <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
+      <rect x="6" y="14" width="12" height="8"/>
     </svg>
   ),
 };
@@ -569,6 +625,84 @@ function groupNotesByTime(notes: Note[]): Map<string, Note[]> {
   }
 
   return groups;
+}
+
+// Folders Sidebar (for 3-column layout on large iPads)
+function FoldersSidebar({
+  folders,
+  notes,
+  currentFolderId,
+  onSelectFolder,
+  onCreateFolder,
+}: {
+  folders: Folder[];
+  notes: Note[];
+  currentFolderId: string;
+  onSelectFolder: (folderId: string) => void;
+  onCreateFolder: () => void;
+}) {
+  const [searchValue, setSearchValue] = useState('');
+
+  const icloudFolders = folders.filter(f => f.parentId === 'all' || f.id === 'all');
+  const systemFolders = folders.filter(f => f.id === 'recently-deleted');
+
+  const getNotesCount = (folderId: string): number => {
+    if (folderId === 'all') {
+      return notes.filter(n => n.folderId !== 'recently-deleted').length;
+    }
+    return notes.filter(n => n.folderId === folderId).length;
+  };
+
+  return (
+    <div className="ios-folders-sidebar">
+      <header className="ios-folders-sidebar__header">
+        <div className="ios-folders-sidebar__header-top">
+          <div className="ios-folders-sidebar__title">Folders</div>
+          <button className="ios-icon-button" onClick={onCreateFolder} aria-label="New folder">
+            {Icons.plus}
+          </button>
+        </div>
+        <SearchBar value={searchValue} onChange={setSearchValue} />
+      </header>
+
+      <div className="ios-folders-sidebar__content">
+        <section className="ios-folder-section ios-folder-section--compact">
+          <div className="ios-folder-section__header">iCloud</div>
+          <div className="ios-folder-section__list ios-folder-section__list--flush">
+            {icloudFolders.map(folder => (
+              <button
+                key={folder.id}
+                className={`ios-folder-row ios-folder-row--compact ${folder.id === currentFolderId ? 'ios-folder-row--selected' : ''}`}
+                onClick={() => onSelectFolder(folder.id)}
+              >
+                <span className="ios-folder-row__icon">{folder.icon}</span>
+                <span className="ios-folder-row__name">{folder.name}</span>
+                <span className="ios-folder-row__count">{getNotesCount(folder.id)}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {systemFolders.length > 0 && (
+          <section className="ios-folder-section ios-folder-section--compact">
+            <div className="ios-folder-section__list ios-folder-section__list--flush">
+              {systemFolders.map(folder => (
+                <button
+                  key={folder.id}
+                  className={`ios-folder-row ios-folder-row--compact ${folder.id === currentFolderId ? 'ios-folder-row--selected' : ''}`}
+                  onClick={() => onSelectFolder(folder.id)}
+                >
+                  <span className="ios-folder-row__icon">{folder.icon}</span>
+                  <span className="ios-folder-row__name">{folder.name}</span>
+                  <span className="ios-folder-row__count">{getNotesCount(folder.id)}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
+    </div>
+  );
 }
 
 // Notes List Sidebar (for split view on iPad)
@@ -827,6 +961,73 @@ function EditorPanel({
     setShowFormatMenu(false);
   }, [wrapSelection]);
 
+  const handleUnderline = useCallback(() => {
+    // Use HTML underline tags for markdown preview compatibility
+    wrapSelection('<u>', '</u>');
+    setShowFormatMenu(false);
+  }, [wrapSelection]);
+
+  // Text style handlers for the segmented control
+  const handleTextStyle = useCallback((style: 'title' | 'heading' | 'subheading' | 'body') => {
+    const textarea = bodyRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const currentBody = textarea.value;
+
+    // Find the start of the current line
+    let lineStart = start;
+    while (lineStart > 0 && currentBody[lineStart - 1] !== '\n') {
+      lineStart--;
+    }
+
+    // Find the end of the current line
+    let lineEnd = start;
+    while (lineEnd < currentBody.length && currentBody[lineEnd] !== '\n') {
+      lineEnd++;
+    }
+
+    const currentLine = currentBody.substring(lineStart, lineEnd);
+
+    // Remove existing heading markers
+    let cleanLine = currentLine.replace(/^#{1,6}\s*/, '');
+
+    // Add new style prefix
+    let prefix = '';
+    switch (style) {
+      case 'title':
+        prefix = '# ';
+        break;
+      case 'heading':
+        prefix = '## ';
+        break;
+      case 'subheading':
+        prefix = '### ';
+        break;
+      case 'body':
+        prefix = '';
+        break;
+    }
+
+    const newLine = prefix + cleanLine;
+    const newBody = currentBody.substring(0, lineStart) + newLine + currentBody.substring(lineEnd);
+
+    const currentTitle = latestTitleRef.current;
+    onContentChange(currentTitle + '\n' + newBody);
+
+    // Calculate new cursor position
+    const cursorOffset = prefix.length - (currentLine.length - cleanLine.length);
+    const newCursorPos = Math.max(lineStart, start + cursorOffset);
+
+    setTimeout(() => {
+      textarea.focus();
+      textarea.selectionStart = newCursorPos;
+      textarea.selectionEnd = newCursorPos;
+    }, 0);
+
+    setShowFormatMenu(false);
+  }, [onContentChange]);
+
   const handleHeading = useCallback(() => {
     const textarea = bodyRef.current;
     if (!textarea) return;
@@ -988,19 +1189,77 @@ function EditorPanel({
             {showFormatMenu && (
               <>
                 <div className="ios-menu-backdrop" onClick={() => setShowFormatMenu(false)} />
-                <div className="ios-format-menu" role="menu">
-                  <button className="ios-format-menu__item" onClick={handleBold} role="menuitem">
-                    <strong>B</strong> Bold
-                  </button>
-                  <button className="ios-format-menu__item" onClick={handleItalic} role="menuitem">
-                    <em>I</em> Italic
-                  </button>
-                  <button className="ios-format-menu__item" onClick={handleStrikethrough} role="menuitem">
-                    <s>S</s> Strikethrough
-                  </button>
-                  <button className="ios-format-menu__item" onClick={handleHeading} role="menuitem">
-                    <span style={{ fontWeight: 700 }}>#</span> Heading
-                  </button>
+                <div className="ios-format-menu ios-format-menu--ios" role="menu">
+                  {/* Segmented control for text styles */}
+                  <div className="ios-format-menu__segment-control">
+                    <button
+                      className="ios-format-menu__segment"
+                      onClick={() => handleTextStyle('title')}
+                      role="menuitem"
+                    >
+                      Title
+                    </button>
+                    <button
+                      className="ios-format-menu__segment"
+                      onClick={() => handleTextStyle('heading')}
+                      role="menuitem"
+                    >
+                      Heading
+                    </button>
+                    <button
+                      className="ios-format-menu__segment"
+                      onClick={() => handleTextStyle('subheading')}
+                      role="menuitem"
+                    >
+                      Subheading
+                    </button>
+                    <button
+                      className="ios-format-menu__segment"
+                      onClick={() => handleTextStyle('body')}
+                      role="menuitem"
+                    >
+                      Body
+                    </button>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="ios-format-menu__divider" />
+
+                  {/* Format buttons row: B I U S */}
+                  <div className="ios-format-menu__buttons-row">
+                    <button
+                      className="ios-format-menu__format-btn"
+                      onClick={handleBold}
+                      role="menuitem"
+                      aria-label="Bold"
+                    >
+                      <strong>B</strong>
+                    </button>
+                    <button
+                      className="ios-format-menu__format-btn"
+                      onClick={handleItalic}
+                      role="menuitem"
+                      aria-label="Italic"
+                    >
+                      <em>I</em>
+                    </button>
+                    <button
+                      className="ios-format-menu__format-btn"
+                      onClick={handleUnderline}
+                      role="menuitem"
+                      aria-label="Underline"
+                    >
+                      <span style={{ textDecoration: 'underline' }}>U</span>
+                    </button>
+                    <button
+                      className="ios-format-menu__format-btn"
+                      onClick={handleStrikethrough}
+                      role="menuitem"
+                      aria-label="Strikethrough"
+                    >
+                      <s>S</s>
+                    </button>
+                  </div>
                 </div>
               </>
             )}
@@ -1031,14 +1290,74 @@ function EditorPanel({
       {showMenu && (
         <>
           <div className="ios-menu-backdrop" onClick={() => setShowMenu(false)} />
-          <div className="ios-dropdown-menu" role="menu">
+          <div className="ios-dropdown-menu ios-dropdown-menu--ios" role="menu">
+            {/* Icon row at top */}
+            <div className="ios-dropdown-menu__icon-row">
+              <button
+                className="ios-dropdown-menu__icon-btn"
+                onClick={() => { showToast('Scan Document - Coming soon'); setShowMenu(false); }}
+                role="menuitem"
+              >
+                {Icons.scan}
+                <span>Scan</span>
+              </button>
+              <button
+                className="ios-dropdown-menu__icon-btn"
+                onClick={() => { onTogglePin(); setShowMenu(false); }}
+                role="menuitem"
+              >
+                {Icons.pin}
+                <span>{note?.isPinned ? 'Unpin' : 'Pin'}</span>
+              </button>
+              <button
+                className="ios-dropdown-menu__icon-btn"
+                onClick={() => { showToast('Lock Note - Coming soon'); setShowMenu(false); }}
+                role="menuitem"
+              >
+                {Icons.lock}
+                <span>Lock</span>
+              </button>
+            </div>
+
+            {/* Divider */}
+            <div className="ios-dropdown-menu__divider" />
+
+            {/* Menu items */}
             <button
               className="ios-dropdown-menu__item"
-              onClick={() => { onTogglePin(); setShowMenu(false); }}
+              onClick={() => { showToast('Find in Note - Coming soon'); setShowMenu(false); }}
               role="menuitem"
             >
-              {Icons.pin}
-              {note?.isPinned ? 'Unpin Note' : 'Pin Note'}
+              {Icons.search}
+              Find in Note
+            </button>
+            <button
+              className="ios-dropdown-menu__item"
+              onClick={() => { showToast('Move Note - Coming soon'); setShowMenu(false); }}
+              role="menuitem"
+            >
+              {Icons.move}
+              Move Note
+            </button>
+            <button
+              className="ios-dropdown-menu__item"
+              onClick={() => { showToast('Lines & Grids - Coming soon'); setShowMenu(false); }}
+              role="menuitem"
+            >
+              {Icons.grid}
+              Lines & Grids
+            </button>
+
+            {/* Divider */}
+            <div className="ios-dropdown-menu__divider" />
+
+            <button
+              className="ios-dropdown-menu__item"
+              onClick={() => { onShare(); setShowMenu(false); }}
+              role="menuitem"
+            >
+              {Icons.share}
+              Share Note
             </button>
             <button
               className="ios-dropdown-menu__item"
@@ -1063,8 +1382,20 @@ function EditorPanel({
               role="menuitem"
             >
               {Icons.copy}
-              Copy
+              Send a Copy
             </button>
+            <button
+              className="ios-dropdown-menu__item"
+              onClick={() => { showToast('Print - Coming soon'); setShowMenu(false); }}
+              role="menuitem"
+            >
+              {Icons.print}
+              Print
+            </button>
+
+            {/* Divider */}
+            <div className="ios-dropdown-menu__divider" />
+
             <button
               className="ios-dropdown-menu__item ios-dropdown-menu__item--danger"
               onClick={() => { onDelete(); setShowMenu(false); }}
@@ -1228,6 +1559,7 @@ function FoldersView({
 
 export function IOSNotesApp() {
   const isTablet = useIsTablet();
+  const isLargeTablet = useIsLargeTablet();
 
   const [folders, setFolders] = useState<Folder[]>(() =>
     loadFromStorage(STORAGE_KEYS.FOLDERS, DEFAULT_FOLDERS)
@@ -1429,7 +1761,52 @@ export function IOSNotesApp() {
   // RENDER
   // =========================================================================
 
-  // TABLET LAYOUT: Split view
+  // Handle folder selection for 3-column layout
+  const handleFolderSelect = useCallback((folderId: string) => {
+    setCurrentFolderId(folderId);
+    // Don't clear selected note - keep it selected
+  }, []);
+
+  // LARGE TABLET LAYOUT: 3-column view (Folders | Notes | Editor)
+  if (isLargeTablet) {
+    return (
+      <ToastProvider>
+        <div className="ios-notes-app ios-notes-app--large-tablet">
+          <FoldersSidebar
+            folders={folders}
+            notes={notes}
+            currentFolderId={currentFolderId}
+            onSelectFolder={handleFolderSelect}
+            onCreateFolder={handleCreateFolder}
+          />
+
+          <NotesListSidebar
+            folder={currentFolder}
+            notes={folderNotes}
+            selectedNoteId={selectedNoteId}
+            searchValue={searchValue}
+            onSearchChange={setSearchValue}
+            onSelectNote={handleSelectNote}
+            onCreateNote={handleCreateNote}
+            onDeleteNote={handleDeleteNote}
+          />
+
+          <EditorPanel
+            note={selectedNote}
+            content={editorContent}
+            onContentChange={setEditorContent}
+            onSave={handleSaveNote}
+            onTogglePin={handleTogglePin}
+            onDelete={() => selectedNoteId && handleDeleteNote(selectedNoteId)}
+            onShare={handleShare}
+            onCreateNote={handleCreateNote}
+          />
+        </div>
+      </ToastProvider>
+    );
+  }
+
+  // TABLET LAYOUT: Split view (2 columns)
   if (isTablet) {
     return (
       <ToastProvider>
