@@ -11,3 +11,4 @@ export * from './adapter';
 export * from './runner';
 export * from './graph-projection';
 export * from './enhanced-extraction';
+export * from './token-analyzer';

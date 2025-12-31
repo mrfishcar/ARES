@@ -9766,6 +9766,40 @@
     "family": "employment"
   },
   {
+    "hash": "665a02878e0b7e85",
+    "lemmas": [
+      "also",
+      "head"
+    ],
+    "roles": [],
+    "prepositions": [
+      "of"
+    ],
+    "voice": "neutral",
+    "structure": "X-leads-Y",
+    "family": "employment"
+  },
+  {
+    "hash": "fe2d4ed7b005dcd1",
+    "lemmas": [
+      "dwell",
+      "dwelt",
+      "live",
+      "resid",
+      "reside",
+      "she",
+      "they"
+    ],
+    "roles": [],
+    "prepositions": [
+      "at",
+      "in"
+    ],
+    "voice": "neutral",
+    "structure": "X-lives_in-Y",
+    "family": "location"
+  },
+  {
     "hash": "9e14d62db7ac5be1",
     "lemmas": [
       "dwell",
@@ -9820,6 +9854,28 @@
     "voice": "neutral",
     "structure": "X-works_at-Y",
     "family": "employment"
+  },
+  {
+    "hash": "c6db98028bd92162",
+    "lemmas": [
+      "adversarie",
+      "adversary",
+      "became",
+      "enemie",
+      "enemy",
+      "remain",
+      "rival",
+      "she",
+      "they"
+    ],
+    "roles": [],
+    "prepositions": [
+      "of",
+      "to"
+    ],
+    "voice": "neutral",
+    "structure": "X-enemy_of-Y",
+    "family": "social"
   },
   {
     "hash": "664345df320ff635",
@@ -10045,18 +10101,46 @@
     "family": "power"
   },
   {
-    "hash": "c2ec3707c7ce1139",
+    "hash": "e71f1c0ce57e2614",
     "lemmas": [
       "became",
+      "emperor",
+      "empres",
       "k",
       "leader",
+      "monarch",
+      "over",
+      "pharaoh",
       "queen",
-      "ruler"
+      "ruler",
+      "sultan"
     ],
     "roles": [],
     "prepositions": [
+      "in",
       "of"
     ],
+    "voice": "neutral",
+    "structure": "X-rules-Y",
+    "family": "power"
+  },
+  {
+    "hash": "4431ae8bee29a3c6",
+    "lemmas": [
+      "became",
+      "emperor",
+      "empres",
+      "k",
+      "leader",
+      "monarch",
+      "pharaoh",
+      "queen",
+      "ruler",
+      "sultan",
+      "there"
+    ],
+    "roles": [],
+    "prepositions": [],
     "voice": "neutral",
     "structure": "X-rules-Y",
     "family": "power"

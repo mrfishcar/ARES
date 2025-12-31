@@ -1277,3 +1277,77 @@ describe('TRANSFER Event Extraction', () => {
     });
   });
 });
+
+// =============================================================================
+// VERB CLASS FALLBACK ROUTING (Step C Integration)
+// =============================================================================
+
+describe('Verb Class Fallback Routing', () => {
+  it('should route motion verbs not in explicit tables via verb class', () => {
+    // 'climb' is in verb class map (motion) but NOT in MOVE_PREDICATES
+    // Tests use base verb forms (lemmas) as assertions would in production
+    const entities = [
+      makeEntity('entity_frodo', 'PERSON', 'Frodo'),
+      makeEntity('entity_mountain', 'PLACE', 'Caradhras'),
+    ];
+    const entityMap = makeEntityMap(entities);
+
+    const assertion = makeAssertion({
+      subject: 'entity_frodo',
+      predicate: 'climb',  // Base form (lemma)
+      object: 'entity_mountain',
+      evidence: [makeEvidence('Frodo climbed the mountain')],
+    });
+
+    const candidates = extractEventCandidates([assertion], entityMap);
+
+    // Should extract MOVE event via verb class fallback
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0].type).toBe('MOVE');
+  });
+
+  it('should route contact verbs not in explicit tables via verb class', () => {
+    // 'push' is in verb class map (contact) but NOT in ATTACK_PREDICATES
+    const entities = [
+      makeEntity('entity_aragorn', 'PERSON', 'Aragorn'),
+      makeEntity('entity_orc', 'PERSON', 'the orc'),
+    ];
+    const entityMap = makeEntityMap(entities);
+
+    const assertion = makeAssertion({
+      subject: 'entity_aragorn',
+      predicate: 'push',  // Base form (lemma)
+      object: 'entity_orc',
+      evidence: [makeEvidence('Aragorn pushed the orc')],
+    });
+
+    const candidates = extractEventCandidates([assertion], entityMap);
+
+    // Should extract ATTACK event via verb class fallback
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0].type).toBe('ATTACK');
+  });
+
+  it('should prefer explicit predicate tables over verb class fallback', () => {
+    // 'kill' is in BOTH explicit DEATH_PREDICATES AND verb class map (contact)
+    // Should use explicit table (DEATH) not verb class (ATTACK)
+    const entities = [
+      makeEntity('entity_gandalf', 'PERSON', 'Gandalf'),
+      makeEntity('entity_balrog', 'PERSON', 'the Balrog'),
+    ];
+    const entityMap = makeEntityMap(entities);
+
+    const assertion = makeAssertion({
+      subject: 'entity_gandalf',
+      predicate: 'killed',
+      object: 'entity_balrog',
+      evidence: [makeEvidence('Gandalf killed the Balrog')],
+    });
+
+    const candidates = extractEventCandidates([assertion], entityMap);
+
+    // Should extract DEATH event (explicit) not ATTACK (verb class)
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0].type).toBe('DEATH');
+  });
+});

@@ -34,6 +34,9 @@ import type {
   PredicateType,
 } from './types';
 
+// Verb semantic class for expanded event type routing
+import { getVerbClass, type VerbClass } from '../linguistics/supersense';
+
 // =============================================================================
 // EVENT CANDIDATE TYPE
 // =============================================================================
@@ -676,11 +679,16 @@ export function extractEventCandidates(
 /**
  * Determine which event type a predicate maps to.
  * Returns null if no match.
+ *
+ * Uses two-tier lookup:
+ * 1. Primary: explicit predicate lookup tables (high precision)
+ * 2. Fallback: verb semantic class from supersense module (broader coverage)
  */
 function getEventTypeForPredicate(predicate: string): EventType | null {
   // Normalize predicate first (e.g., 'say' → 'said', 'go' → 'went')
   const normalized = normalizePredicate(predicate);
 
+  // Primary lookup: explicit predicate tables
   if (MOVE_PREDICATES.has(normalized)) return 'MOVE';
   if (DEATH_PREDICATES.has(normalized)) return 'DEATH';
   if (TELL_PREDICATES.has(normalized)) return 'TELL';
@@ -689,7 +697,44 @@ function getEventTypeForPredicate(predicate: string): EventType | null {
   if (ATTACK_PREDICATES.has(normalized)) return 'ATTACK';
   if (MEET_PREDICATES.has(normalized)) return 'MEET';
   if (TRANSFER_PREDICATES.has(normalized)) return 'TRANSFER';
+
+  // Fallback: verb semantic class lookup
+  // This extends coverage to verbs not in explicit tables
+  const verbClass = getVerbClass(normalized);
+  if (verbClass) {
+    return mapVerbClassToEventType(verbClass);
+  }
+
   return null;
+}
+
+/**
+ * Map verb semantic class to event type.
+ * This provides fallback coverage for verbs not in explicit predicate tables.
+ */
+function mapVerbClassToEventType(verbClass: VerbClass): EventType | null {
+  switch (verbClass) {
+    case 'motion':
+      return 'MOVE';
+    case 'communication':
+      return 'TELL';
+    case 'perception':
+    case 'cognition':
+      return 'LEARN';
+    case 'contact':
+      return 'ATTACK';
+    case 'possession':
+      return 'TRANSFER';
+    case 'social':
+      return 'MEET';
+    // These classes don't map to specific event types
+    case 'change':
+    case 'creation':
+    case 'emotion':
+      return null;
+    default:
+      return null;
+  }
 }
 
 /**

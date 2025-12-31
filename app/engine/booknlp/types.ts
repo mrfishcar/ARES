@@ -104,7 +104,11 @@ export interface ARESEntity {
   booknlp_id?: string;  // Original BookNLP character ID
   mention_count?: number;
   gender?: string;
+  agent_score?: number;  // BookNLP agent score (0-1, how much agency the character has)
   eid?: number;
+  // Quote tracking (Phase 5.2)
+  quote_count?: number;  // Number of quotes attributed to this entity
+  quote_ids?: string[];  // IDs of quotes attributed to this entity
 }
 
 export interface ARESSpan {
@@ -140,4 +144,27 @@ export interface BookNLPResult {
   coref_links: ARESCorefLink[];
   metadata: BookNLPMetadata;
   raw_contract?: BookNLPContract;
+
+  // 🆕 Token analysis results (Phase 5 - 2025-12-30)
+  // Structure extracted from BookNLP tokens for enhanced processing
+  tokenAnalysis?: {
+    paragraphs: Array<{
+      index: number;
+      startChar: number;
+      endChar: number;
+      tokenCount: number;
+    }>;
+    sentences: Array<{
+      index: number;
+      startChar: number;
+      endChar: number;
+      tokenCount: number;
+    }>;
+    posQualitySignals?: {
+      properNounDensity: number;
+      pronounDensity: number;
+      verbDensity: number;
+      qualityScore: number;
+    };
+  };
 }

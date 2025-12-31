@@ -710,8 +710,57 @@ export interface ConfidenceBreakdown {
   contextBonus?: number;
   /** Penalty from low-quality signals */
   qualityPenalty?: number;
+  /** Namehood score from structural evidence (0-10+, maps to tier assignment) */
+  namehoodScore?: number;
   /** Final computed confidence */
   final: number;
+}
+
+/**
+ * Unified Entity Quality Score
+ *
+ * Bridges confidence scoring (0-1) with namehood scoring (0-10+) and tier assignment.
+ * This interface provides a single view of entity quality across all scoring systems.
+ *
+ * Score Mapping:
+ * - namehoodScore >= 3 → TIER_A (confidence ~0.75+)
+ * - namehoodScore >= 2 → TIER_B (confidence ~0.55+)
+ * - namehoodScore < 2  → TIER_C (confidence < 0.55)
+ *
+ * The unified score allows consistent quality decisions across the pipeline.
+ */
+export interface EntityQualityScore {
+  /** Raw confidence from extraction source (0-1) */
+  rawConfidence: number;
+
+  /** Structural namehood score from evidence (0-10+) */
+  namehoodScore: number;
+
+  /** Final computed confidence after all adjustments (0-1) */
+  finalConfidence: number;
+
+  /** Assigned tier based on evidence */
+  tier: EntityTier;
+
+  /** Primary reason for tier assignment */
+  tierReason: string;
+
+  /** Whether entity passes quality filter threshold */
+  passesFilter: boolean;
+
+  /** Confidence breakdown components */
+  breakdown: ConfidenceBreakdown;
+
+  /** Evidence signals that contributed to score */
+  evidence: {
+    occursNonInitial: boolean;
+    isMultiToken: boolean;
+    hasHonorific: boolean;
+    hasNERSupport: boolean;
+    mentionCount: number;
+    appearsInDialogue: boolean;
+    hasAppositive: boolean;
+  };
 }
 
 /**

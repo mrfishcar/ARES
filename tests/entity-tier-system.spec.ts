@@ -158,15 +158,15 @@ describe('Entity Tier Assignment', () => {
       expect(canMerge).toBe(true);
     });
 
-    it('prevents TIER_C from merging with TIER_A', () => {
+    it('prevents TIER_C from merging with TIER_A when confidence below threshold', () => {
       const entity1 = createEntity('Barty', 'PERSON', 0.35);
       entity1.tier = 'TIER_C';
-      const entity2 = createEntity('Beauregard', 'PERSON', 0.80);
+      const entity2 = createEntity('Beauregard', 'PERSON', 0.80); // Below 0.85 threshold
       entity2.tier = 'TIER_A';
 
       const { canMerge, reason } = canMergeByTier(entity1, entity2);
       expect(canMerge).toBe(false);
-      expect(reason).toBe('tier_c_isolated');
+      expect(reason).toBe('tier_c_to_tier_a_confidence_below_threshold');
     });
 
     it('prevents TIER_C from merging with TIER_C', () => {
@@ -333,9 +333,24 @@ describe('Tiered Entity Filtering', () => {
 });
 
 describe('Tier Isolation Safety', () => {
-  it('TIER_C entities do not contaminate TIER_A clusters', () => {
+  it('TIER_C entities with low confidence do not merge with TIER_A', () => {
     // This test ensures that low-confidence provisional entities
     // cannot pollute high-confidence entity alias clusters
+    // (unless they meet the softened isolation threshold of >= 0.85)
+
+    const tierA = createEntity('Barty Beauregard', 'PERSON', 0.7);
+    tierA.tier = 'TIER_A';
+
+    const tierC = createEntity('Barty', 'PERSON', 0.35);
+    tierC.tier = 'TIER_C';
+
+    // TIER_C cannot merge with TIER_A when max confidence < 0.85
+    const { canMerge } = canMergeByTier(tierC, tierA);
+    expect(canMerge).toBe(false);
+  });
+
+  it('TIER_C entities with high confidence CAN merge with TIER_A (Phase 3.1 softening)', () => {
+    // Phase 3.1: Allow TIER_C → TIER_A merge when confidence >= 0.85
 
     const tierA = createEntity('Barty Beauregard', 'PERSON', 0.9);
     tierA.tier = 'TIER_A';
@@ -343,9 +358,10 @@ describe('Tier Isolation Safety', () => {
     const tierC = createEntity('Barty', 'PERSON', 0.35);
     tierC.tier = 'TIER_C';
 
-    // TIER_C cannot merge with TIER_A
-    const { canMerge } = canMergeByTier(tierC, tierA);
-    expect(canMerge).toBe(false);
+    // TIER_C CAN merge with TIER_A when max confidence >= 0.85
+    const { canMerge, reason } = canMergeByTier(tierC, tierA);
+    expect(canMerge).toBe(true);
+    expect(reason).toContain('tier_c_to_tier_a');
   });
 
   it('maintains separate entity counts for different tiers', () => {
@@ -473,7 +489,31 @@ describe('Quality-Based Demotions', () => {
     expect(tier).toBe('TIER_A');
   });
 
-  it('preserves TIER_C isolation after quality demotions', () => {
+  it('preserves TIER_C isolation after quality demotions when confidence below threshold', () => {
+    // Create garbage entity with lower confidence to test isolation below threshold
+    const garbage = createEntity('ifying\ufffd in', 'SPELL', 0.70);
+    const legitimate = createEntity('Barty Beauregard', 'PERSON', 0.75);
+
+    const garbageFeatures = extractTierFeatures(garbage);
+    const legitimateFeatures = extractTierFeatures(legitimate);
+
+    const garbageResult = assignEntityTier(garbage, garbageFeatures);
+    const legitimateResult = assignEntityTier(legitimate, legitimateFeatures);
+
+    expect(garbageResult.tier).toBe('TIER_C');
+    expect(legitimateResult.tier).toBe('TIER_A');
+
+    // TIER_C cannot merge with TIER_A when max confidence < 0.85
+    const mergeResult = canMergeByTier(
+      { ...garbage, tier: garbageResult.tier },
+      { ...legitimate, tier: legitimateResult.tier }
+    );
+    expect(mergeResult.canMerge).toBe(false);
+    expect(mergeResult.reason).toBe('tier_c_to_tier_a_confidence_below_threshold');
+  });
+
+  it('allows TIER_C to merge with TIER_A when confidence >= 0.85 (Phase 3.1)', () => {
+    // Phase 3.1: Softened TIER_C isolation allows merge with high confidence
     const garbage = createEntity('ifying\ufffd in', 'SPELL', 0.95);
     const legitimate = createEntity('Barty Beauregard', 'PERSON', 0.90);
 
@@ -486,13 +526,13 @@ describe('Quality-Based Demotions', () => {
     expect(garbageResult.tier).toBe('TIER_C');
     expect(legitimateResult.tier).toBe('TIER_A');
 
-    // TIER_C cannot merge with TIER_A
+    // TIER_C CAN merge with TIER_A when max confidence >= 0.85
     const mergeResult = canMergeByTier(
       { ...garbage, tier: garbageResult.tier },
       { ...legitimate, tier: legitimateResult.tier }
     );
-    expect(mergeResult.canMerge).toBe(false);
-    expect(mergeResult.reason).toBe('tier_c_isolated');
+    expect(mergeResult.canMerge).toBe(true);
+    expect(mergeResult.reason).toContain('tier_c_to_tier_a');
   });
 });
 

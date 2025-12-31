@@ -1,0 +1,188 @@
+{
+  "timestamp": "2025-12-31T01:55:37.909Z",
+  "corpus": "stress-test-narrative.txt",
+  "wordCount": 2015,
+  "entities": {
+    "count": 15,
+    "expected": 13,
+    "items": [
+      {
+        "id": "e1024302-fb0d-4bd2-bd13-f4bae9508f25",
+        "canonical": "Thornhold Castle",
+        "type": "PLACE",
+        "aliases": []
+      },
+      {
+        "id": "d2f6ed0b-56aa-4fc3-8050-45fd2a218716",
+        "canonical": "Edward Blackwood",
+        "type": "PERSON",
+        "aliases": [
+          "Edward",
+          "Blackwood",
+          "Lord Blackwood"
+        ]
+      },
+      {
+        "id": "37ad8d15-8987-45c7-b41a-d43cde059b47",
+        "canonical": "Edmund Blackwood",
+        "type": "PERSON",
+        "aliases": [
+          "Edmund",
+          "Blackwood",
+          "Lord Blackwood"
+        ]
+      },
+      {
+        "id": "23e1ccaf-047e-4a63-b587-ab8e6a7650c9",
+        "canonical": "Edgar Blackwood",
+        "type": "PERSON",
+        "aliases": [
+          "Edgar",
+          "Blackwood",
+          "Lord Blackwood"
+        ]
+      },
+      {
+        "id": "b0003b09-a989-4305-b663-0f36879d0754",
+        "canonical": "Margaret Ashford",
+        "type": "PERSON",
+        "aliases": [
+          "Margaret",
+          "Ashford"
+        ]
+      },
+      {
+        "id": "cad95a7b-3d9c-433d-a93e-16d51e2f901f",
+        "canonical": "Thornhold",
+        "type": "PERSON",
+        "aliases": []
+      },
+      {
+        "id": "e97f2100-fda5-4371-b8ce-a7aa019c6927",
+        "canonical": "House Blackwood",
+        "type": "ORG",
+        "aliases": []
+      },
+      {
+        "id": "e68ede9e-4141-4681-aac9-163769c98683",
+        "canonical": "Harold",
+        "type": "PERSON",
+        "aliases": [
+          "The King",
+          "the King"
+        ]
+      },
+      {
+        "id": "bc2b792f-7d8a-4080-a9b9-a62c86acedaa",
+        "canonical": "Thomas Grant",
+        "type": "PERSON",
+        "aliases": [
+          "Thomas",
+          "Grant"
+        ]
+      },
+      {
+        "id": "cbd9fd6f-073a-4167-b1cd-f46bfe584f0f",
+        "canonical": "House Ashford",
+        "type": "ORG",
+        "aliases": []
+      },
+      {
+        "id": "13f8bcda-c4cf-480a-821b-0cbef679d1cc",
+        "canonical": "Blackwood",
+        "type": "RACE",
+        "aliases": []
+      },
+      {
+        "id": "172bc4d6-414c-4156-9393-ff9b9ec9aa60",
+        "canonical": "Margaret Thornbury",
+        "type": "PERSON",
+        "aliases": [
+          "Thornbury"
+        ]
+      },
+      {
+        "id": "ea66ee15-6a82-4795-b37b-d7a7feda70e9",
+        "canonical": "Margaret Blackwood",
+        "type": "PERSON",
+        "aliases": [
+          "Margaret",
+          "Blackwood",
+          "Lord Blackwood"
+        ]
+      },
+      {
+        "id": "87928214-6785-472d-ac56-b825a89091fd",
+        "canonical": "Young",
+        "type": "RACE",
+        "aliases": []
+      },
+      {
+        "id": "6b888eb3-a115-4163-a6a7-f5a8e4021fde",
+        "canonical": "For Edward",
+        "type": "PERSON",
+        "aliases": [
+          "For",
+          "Edward",
+          "Lord Edward"
+        ]
+      }
+    ]
+  },
+  "relations": {
+    "count": 8,
+    "expected": 10,
+    "items": [
+      {
+        "subject": "Edward Blackwood",
+        "predicate": "married_to",
+        "object": "Margaret Thornbury",
+        "confidence": 0.7
+      },
+      {
+        "subject": "Margaret Thornbury",
+        "predicate": "married_to",
+        "object": "Edward Blackwood",
+        "confidence": 0.7
+      },
+      {
+        "subject": "Margaret Ashford",
+        "predicate": "child_of",
+        "object": "Edward Blackwood",
+        "confidence": 0.8
+      },
+      {
+        "subject": "Edward Blackwood",
+        "predicate": "sibling_of",
+        "object": "Edmund Blackwood",
+        "confidence": 0.8
+      },
+      {
+        "subject": "Edward Blackwood",
+        "predicate": "child_of",
+        "object": "Edgar Blackwood",
+        "confidence": 0.8
+      },
+      {
+        "subject": "Edmund Blackwood",
+        "predicate": "child_of",
+        "object": "Edgar Blackwood",
+        "confidence": 0.8
+      },
+      {
+        "subject": "Edmund Blackwood",
+        "predicate": "child_of",
+        "object": "Margaret Ashford",
+        "confidence": 0.8
+      },
+      {
+        "subject": "Margaret Thornbury",
+        "predicate": "child_of",
+        "object": "Edgar Blackwood",
+        "confidence": 0.8
+      }
+    ]
+  },
+  "failures": [],
+  "warnings": []
+}

@@ -24,6 +24,15 @@ import type {
 } from './types';
 import { toBookNLPEID, toBookNLPStableEntityId, toBookNLPNonCharEntityId, toBookNLPNonCharEID } from './identity';
 
+// 🆕 TOKEN ANALYZER INTEGRATION (Phase 5 - 2025-12-30)
+// Use token analysis for paragraph/sentence structure and POS quality signals
+import {
+  createTokenAnalyzer,
+  type TokenAnalyzer,
+  type Paragraph,
+  type SentenceBoundary,
+} from './token-analyzer';
+
 // ============================================================================
 // TYPE MAPPING
 // ============================================================================
@@ -61,22 +70,44 @@ function mapEntityType(
 
 /**
  * Convert BookNLP characters to ARES entities
+ * Now includes agent_score for Phase 5.2
  */
 export function adaptCharacters(
-  characters: BookNLPCharacter[]
+  characters: BookNLPCharacter[],
+  quotes?: BookNLPQuote[]
 ): ARESEntity[] {
-  return characters.map(char => ({
-    id: toBookNLPStableEntityId(char.id),
-    canonical: char.canonical_name,
-    type: 'PERSON',  // BookNLP characters are always PERSON
-    aliases: char.aliases.map(a => a.text),
-    confidence: 0.95,  // High confidence for BookNLP character clusters
-    source: 'booknlp' as const,
-    booknlp_id: char.id,
-    mention_count: char.mention_count,
-    gender: char.gender || undefined,
-    eid: toBookNLPEID(char.id),
-  }));
+  // Build quote attribution counts per character
+  const quotesByCharacter = new Map<string, { count: number; ids: string[] }>();
+  if (quotes) {
+    for (const quote of quotes) {
+      if (quote.speaker_id) {
+        const existing = quotesByCharacter.get(quote.speaker_id) || { count: 0, ids: [] };
+        existing.count++;
+        existing.ids.push(quote.id);
+        quotesByCharacter.set(quote.speaker_id, existing);
+      }
+    }
+  }
+
+  return characters.map(char => {
+    const quoteData = quotesByCharacter.get(char.id);
+    return {
+      id: toBookNLPStableEntityId(char.id),
+      canonical: char.canonical_name,
+      type: 'PERSON' as const,  // BookNLP characters are always PERSON
+      aliases: char.aliases.map(a => a.text),
+      confidence: 0.95,  // High confidence for BookNLP character clusters
+      source: 'booknlp' as const,
+      booknlp_id: char.id,
+      mention_count: char.mention_count,
+      gender: char.gender || undefined,
+      agent_score: char.agent_score,  // Phase 5.2: Include agent score
+      eid: toBookNLPEID(char.id),
+      // Phase 5.2: Quote tracking per entity
+      quote_count: quoteData?.count,
+      quote_ids: quoteData?.ids,
+    };
+  });
 }
 
 /**
@@ -305,8 +336,8 @@ export function adaptBookNLPContract(
     c => c.mention_count >= minMentionCount
   );
 
-  // Convert characters to PERSON entities
-  const characterEntities = adaptCharacters(filteredCharacters);
+  // Convert characters to PERSON entities (pass quotes for attribution tracking)
+  const characterEntities = adaptCharacters(filteredCharacters, contract.quotes);
 
   // Build character ID mapping
   const characterIdMap = new Map<string, string>();
@@ -341,6 +372,48 @@ export function adaptBookNLPContract(
   // Build coref links
   const coref_links = adaptCorefChains(contract, characterIdMap);
 
+  // 🆕 TOKEN ANALYSIS: Extract document structure from tokens
+  // This provides paragraph/sentence boundaries and POS quality signals
+  let tokenAnalysis: BookNLPResult['tokenAnalysis'] = undefined;
+
+  if (contract.tokens && contract.tokens.length > 0) {
+    try {
+      const analyzer = createTokenAnalyzer(contract);
+
+      // Extract structure
+      const paragraphs = analyzer.getParagraphs().map(p => ({
+        index: p.index,
+        startChar: p.startChar,
+        endChar: p.endChar,
+        tokenCount: p.tokens.length,
+      }));
+
+      const sentences = analyzer.getSentences().map(s => ({
+        index: s.index,
+        startChar: s.startChar,
+        endChar: s.endChar,
+        tokenCount: s.tokenCount,
+      }));
+
+      // Get quality signals for the full document
+      const posSignals = analyzer.getQualitySignalsFor(contract.tokens);
+
+      tokenAnalysis = {
+        paragraphs,
+        sentences,
+        posQualitySignals: posSignals,
+      };
+
+      console.log(`[BOOKNLP] Token analysis: ${paragraphs.length} paragraphs, ${sentences.length} sentences`);
+      if (posSignals) {
+        console.log(`[BOOKNLP] POS quality score: ${posSignals.qualityScore.toFixed(2)}`);
+      }
+    } catch (error) {
+      console.warn(`[BOOKNLP] Token analysis failed:`, error);
+      // Continue without token analysis
+    }
+  }
+
   return {
     entities,
     spans,
@@ -348,6 +421,7 @@ export function adaptBookNLPContract(
     coref_links,
     metadata: contract.metadata,
     raw_contract: includeRawContract ? contract : undefined,
+    tokenAnalysis,
   };
 }
 
