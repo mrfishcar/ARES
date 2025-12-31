@@ -9,9 +9,227 @@
 
 import { v4 as uuid } from "uuid";
 import type { Relation, EntityType } from "./schema";
-import type { CorefLinks } from "./coref";
+import type { CorefLinks, CorefLink } from "./coref";
 import { getDynamicPatterns, type RelationPattern as DynamicRelationPattern } from "./dynamic-pattern-loader";
-import { resolveMentionToCanonical, isPronoun, type CorefLink } from "./pipeline/coref-utils";
+import { resolveMentionToCanonical, isPronoun } from "./pipeline/coref-utils";
+
+// =============================================================================
+// LIGHTWEIGHT PRONOUN RESOLVER
+// =============================================================================
+
+/**
+ * Gender type for pronoun resolution
+ */
+type Gender = 'male' | 'female' | 'neutral' | 'unknown';
+
+/**
+ * Pronoun gender/number info
+ */
+interface PronounInfo {
+  gender: Gender;
+  plural: boolean;
+}
+
+/**
+ * Common personal pronouns with gender info
+ */
+const PRONOUN_INFO: Record<string, PronounInfo> = {
+  // Male singular
+  'he': { gender: 'male', plural: false },
+  'him': { gender: 'male', plural: false },
+  'his': { gender: 'male', plural: false },
+  'himself': { gender: 'male', plural: false },
+  // Female singular
+  'she': { gender: 'female', plural: false },
+  'her': { gender: 'female', plural: false },
+  'hers': { gender: 'female', plural: false },
+  'herself': { gender: 'female', plural: false },
+  // Plural/neutral
+  'they': { gender: 'neutral', plural: true },
+  'them': { gender: 'neutral', plural: true },
+  'their': { gender: 'neutral', plural: true },
+  'theirs': { gender: 'neutral', plural: true },
+  'themselves': { gender: 'neutral', plural: true },
+};
+
+/**
+ * Common male names for gender inference
+ */
+const MALE_NAMES = new Set([
+  'james', 'john', 'robert', 'michael', 'william', 'david', 'richard', 'joseph',
+  'thomas', 'charles', 'christopher', 'daniel', 'matthew', 'anthony', 'mark',
+  'donald', 'steven', 'paul', 'andrew', 'joshua', 'kenneth', 'kevin', 'brian',
+  'george', 'edward', 'ronald', 'timothy', 'jason', 'jeffrey', 'ryan', 'jacob',
+  'gary', 'nicholas', 'eric', 'jonathan', 'stephen', 'larry', 'justin', 'scott',
+  'harry', 'ron', 'draco', 'severus', 'albus', 'sirius', 'remus', 'peter',
+  'aragorn', 'gandalf', 'frodo', 'sam', 'legolas', 'gimli', 'boromir', 'faramir',
+  'arthur', 'merlin', 'lancelot', 'mordred', 'uther', 'percival', 'gawain',
+  'caesar', 'brutus', 'augustus', 'nero', 'tiberius', 'marcus', 'gaius',
+  'alexander', 'aristotle', 'plato', 'socrates', 'homer', 'achilles', 'odysseus',
+]);
+
+/**
+ * Common female names for gender inference
+ */
+const FEMALE_NAMES = new Set([
+  'mary', 'patricia', 'jennifer', 'linda', 'barbara', 'elizabeth', 'susan',
+  'jessica', 'sarah', 'karen', 'nancy', 'lisa', 'betty', 'margaret', 'sandra',
+  'ashley', 'kimberly', 'emily', 'donna', 'michelle', 'dorothy', 'carol',
+  'amanda', 'melissa', 'deborah', 'stephanie', 'rebecca', 'sharon', 'laura',
+  'hermione', 'ginny', 'luna', 'cho', 'minerva', 'molly', 'bellatrix', 'lily',
+  'arwen', 'galadriel', 'eowyn', 'rosie',
+  'guinevere', 'morgana', 'igraine', 'nimue',
+  'cleopatra', 'livia', 'agrippina', 'julia',
+  'helen', 'athena', 'aphrodite', 'artemis', 'persephone', 'penelope',
+  'catelyn', 'sansa', 'arya', 'cersei', 'daenerys', 'brienne', 'margaery',
+]);
+
+/**
+ * Infer gender from entity name
+ */
+function inferGenderFromName(name: string): Gender {
+  const firstName = name.split(/\s+/)[0].toLowerCase();
+
+  // Check name lists
+  if (MALE_NAMES.has(firstName)) return 'male';
+  if (FEMALE_NAMES.has(firstName)) return 'female';
+
+  // Check title prefixes
+  if (/^(mr|sir|lord|king|prince|duke|baron)\b/i.test(name)) return 'male';
+  if (/^(mrs|ms|miss|lady|queen|princess|duchess|baroness)\b/i.test(name)) return 'female';
+
+  return 'unknown';
+}
+
+/**
+ * Simple recency-based pronoun resolver
+ * Returns CorefLinks object for pronouns in text
+ */
+function buildSimpleCorefLinks(
+  text: string,
+  entities: { id: string; canonical: string; type: EntityType }[]
+): CorefLinks {
+  const links: CorefLink[] = [];
+  const quotes: CorefLinks['quotes'] = [];
+
+  // Only resolve for PERSON entities
+  const personEntities = entities
+    .filter(e => e.type === 'PERSON')
+    .map(e => ({
+      ...e,
+      gender: inferGenderFromName(e.canonical),
+    }));
+
+  if (personEntities.length === 0) {
+    return { links, quotes };
+  }
+
+  // Find all entity mentions with positions
+  const entityMentions: Array<{ entityId: string; name: string; position: number; gender: Gender }> = [];
+
+  for (const entity of personEntities) {
+    // Find canonical name
+    const canonicalRegex = new RegExp(`\\b${escapeRegex(entity.canonical)}\\b`, 'gi');
+    let match;
+    while ((match = canonicalRegex.exec(text)) !== null) {
+      entityMentions.push({
+        entityId: entity.id,
+        name: entity.canonical,
+        position: match.index,
+        gender: entity.gender,
+      });
+    }
+
+    // Also search for first names only (e.g., "Harry" for "Harry Potter")
+    const firstName = entity.canonical.split(/\s+/)[0];
+    if (firstName.length > 2 && firstName !== entity.canonical) {
+      const firstNameRegex = new RegExp(`\\b${escapeRegex(firstName)}\\b`, 'gi');
+      while ((match = firstNameRegex.exec(text)) !== null) {
+        // Avoid duplicates
+        if (!entityMentions.some(m => m.position === match!.index)) {
+          entityMentions.push({
+            entityId: entity.id,
+            name: firstName,
+            position: match.index,
+            gender: entity.gender,
+          });
+        }
+      }
+    }
+  }
+
+  // Sort by position
+  entityMentions.sort((a, b) => a.position - b.position);
+
+  // Find pronouns and resolve them
+  const pronounRegex = /\b(He|She|They|he|she|they|Him|Her|Them|him|her|them|His|Her|Their|his|her|their)\b/g;
+  let pronounMatch;
+
+  while ((pronounMatch = pronounRegex.exec(text)) !== null) {
+    const pronounText = pronounMatch[0];
+    const pronounLower = pronounText.toLowerCase();
+    const pronounInfo = PRONOUN_INFO[pronounLower];
+
+    if (!pronounInfo) continue;
+
+    // Find most recent entity with matching gender (within 500 chars)
+    const pronounPos = pronounMatch.index;
+    const maxDistance = 500;
+
+    let bestMatch: typeof entityMentions[0] | null = null;
+    let bestDistance = Infinity;
+
+    for (const mention of entityMentions) {
+      // Only consider mentions before the pronoun
+      if (mention.position >= pronounPos) continue;
+
+      const distance = pronounPos - mention.position;
+      if (distance > maxDistance) continue;
+
+      // Check gender compatibility
+      const genderMatch =
+        pronounInfo.gender === 'neutral' ||
+        mention.gender === 'unknown' ||
+        pronounInfo.gender === mention.gender;
+
+      if (!genderMatch) continue;
+
+      // Prefer closer matches
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        bestMatch = mention;
+      }
+    }
+
+    if (bestMatch) {
+      links.push({
+        mention: {
+          text: pronounText,
+          start: pronounPos,
+          end: pronounPos + pronounText.length,
+          sentence_index: 0, // Simplified
+          type: 'pronoun',
+        },
+        entity_id: bestMatch.entityId,
+        confidence: 0.75,
+        method: 'pronoun_stack',
+      });
+    }
+  }
+
+  return { links, quotes };
+}
+
+/**
+ * Escape special regex characters
+ */
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// =============================================================================
+// TEXT NORMALIZATION
+// =============================================================================
 
 /**
  * Normalize text for pattern matching
@@ -2237,6 +2455,9 @@ export function extractPossessiveFamilyRelations(
 
 /**
  * Combine all narrative extraction methods
+ *
+ * If no corefLinks are provided, uses built-in lightweight pronoun resolver
+ * for basic recency-based pronoun resolution.
  */
 export function extractAllNarrativeRelations(
   text: string,
@@ -2244,8 +2465,17 @@ export function extractAllNarrativeRelations(
   docId: string = 'current',
   corefLinks?: CorefLinks
 ): Relation[] {
-  const narrativeRelations = extractNarrativeRelations(text, entities, docId, corefLinks);
-  const possessiveRelations = extractPossessiveFamilyRelations(text, entities, docId, corefLinks);
+  // If no coref links provided, build simple ones using recency-based resolution
+  let effectiveCorefLinks = corefLinks;
+  if (!effectiveCorefLinks) {
+    effectiveCorefLinks = buildSimpleCorefLinks(text, entities);
+    if (effectiveCorefLinks.links.length > 0) {
+      console.log(`[NarrativeRelations] Built ${effectiveCorefLinks.links.length} simple coref links`);
+    }
+  }
+
+  const narrativeRelations = extractNarrativeRelations(text, entities, docId, effectiveCorefLinks);
+  const possessiveRelations = extractPossessiveFamilyRelations(text, entities, docId, effectiveCorefLinks);
 
   return [...narrativeRelations, ...possessiveRelations];
 }
