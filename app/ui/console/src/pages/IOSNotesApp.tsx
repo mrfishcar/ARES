@@ -982,62 +982,6 @@ function EditorPanel({
     return title + (bodyText ? '\n' + bodyText : '');
   }, []);
 
-  // Scroll caret into view (iOS Safari fix)
-  // iOS Safari doesn't auto-scroll to keep caret visible while typing
-  // Uses Range.getBoundingClientRect() directly - no DOM manipulation needed
-  const scrollCaretIntoView = useCallback(() => {
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
-
-    const range = selection.getRangeAt(0);
-    if (!range.collapsed) return; // Only for caret, not selections
-
-    const scrollContainer = contentRef.current;
-    if (!scrollContainer) return;
-
-    // Get caret position directly from the range - no marker needed
-    const caretRect = range.getBoundingClientRect();
-
-    // If rect is empty (can happen with collapsed range), bail out
-    if (caretRect.height === 0 && caretRect.width === 0) return;
-
-    const containerRect = scrollContainer.getBoundingClientRect();
-
-    // Calculate where caret is relative to the container's visible area
-    const caretTopInContainer = caretRect.top - containerRect.top;
-    const caretBottomInContainer = caretRect.bottom - containerRect.top;
-
-    // Visible height of container (account for what's actually visible on screen)
-    const vv = window.visualViewport;
-    const visibleHeight = vv
-      ? Math.min(containerRect.height, vv.height - Math.max(0, containerRect.top - vv.offsetTop))
-      : containerRect.height;
-
-    // Top padding: account for header area
-    const topPadding = 80;
-
-    // Bottom padding: account for keyboard toolbar when open
-    const lineHeight = 24;
-    const bottomPadding = isKeyboardOpen ? (120 + lineHeight) : 60;
-
-    // Check if caret is below visible area
-    if (caretBottomInContainer > visibleHeight - bottomPadding) {
-      const scrollAmount = caretBottomInContainer - visibleHeight + bottomPadding + lineHeight;
-      scrollContainer.scrollTo({
-        top: scrollContainer.scrollTop + scrollAmount,
-        behavior: 'smooth'
-      });
-    }
-    // Check if caret is above visible area
-    else if (caretTopInContainer < topPadding) {
-      const scrollAmount = caretTopInContainer - topPadding;
-      scrollContainer.scrollTo({
-        top: scrollContainer.scrollTop + scrollAmount,
-        behavior: 'smooth'
-      });
-    }
-  }, [isKeyboardOpen]);
-
   // Initialize editor content when note changes
   useEffect(() => {
     if (editorRef.current && content !== lastContentRef.current) {
@@ -1059,13 +1003,7 @@ function EditorPanel({
       lastContentRef.current = newContent;
       onContentChange(newContent);
     }
-
-    // iOS Safari fix: manually scroll caret into view
-    // Use requestAnimationFrame to ensure DOM has updated
-    requestAnimationFrame(() => {
-      scrollCaretIntoView();
-    });
-  }, [htmlToText, onContentChange, scrollCaretIntoView]);
+  }, [htmlToText, onContentChange]);
 
   // Execute formatting command
   const execFormat = useCallback((command: string, value?: string) => {
@@ -1392,27 +1330,6 @@ function EditorPanel({
       viewport.removeEventListener('scroll', handleViewportChange);
     };
   }, []);
-
-  // iOS Safari: Listen for selection changes to scroll caret into view
-  // This is more reliable than input events on iOS
-  useEffect(() => {
-    const handleSelectionChange = () => {
-      // Only scroll if editor is focused
-      if (!editorRef.current?.contains(document.activeElement) &&
-          document.activeElement !== editorRef.current) {
-        return;
-      }
-      // Debounce slightly to avoid excessive calls
-      requestAnimationFrame(() => {
-        scrollCaretIntoView();
-      });
-    };
-
-    document.addEventListener('selectionchange', handleSelectionChange);
-    return () => {
-      document.removeEventListener('selectionchange', handleSelectionChange);
-    };
-  }, [scrollCaretIntoView]);
 
   // Auto-focus for new notes
   useEffect(() => {
