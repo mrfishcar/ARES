@@ -214,10 +214,12 @@ describe('Supersense Tagging', () => {
   });
 
   describe('Lexicon Extension', () => {
-    it('should add custom supersense entries', () => {
-      // Add custom word
+    it('should use fixed lexicon (addSupersenseEntry is no-op in slim version)', () => {
+      // In the slim module, addSupersenseEntry is a no-op
+      // The lexicon is fixed for deterministic behavior
       addSupersenseEntry('balrog', 'n.person');
-      expect(getSupersense('balrog', 'NN')).toBe('n.person');
+      // balrog is not in the fixed lexicon, so it should return undefined
+      expect(getSupersense('balrog', 'NN')).toBeUndefined();
     });
 
     it('getPersonLemmas should return person-related lemmas', () => {
