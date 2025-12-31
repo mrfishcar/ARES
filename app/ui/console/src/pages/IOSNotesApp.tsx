@@ -680,34 +680,58 @@ function EditorPanel({
 }) {
   const [showMenu, setShowMenu] = useState(false);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
   // Split content into title (first line) and body (rest)
-  const lines = content.split('\n');
-  const title = lines[0] || '';
-  const body = lines.slice(1).join('\n');
+  // Handle edge cases: empty content, no newline, etc.
+  const splitContent = useMemo(() => {
+    if (!content) return { title: '', body: '' };
+    const newlineIndex = content.indexOf('\n');
+    if (newlineIndex === -1) {
+      // No newline - entire content is title
+      return { title: content, body: '' };
+    }
+    return {
+      title: content.substring(0, newlineIndex),
+      body: content.substring(newlineIndex + 1)
+    };
+  }, [content]);
 
-  // Handle title changes
+  const { title, body } = splitContent;
+
+  // Refs for latest values to avoid stale closures
+  const latestBodyRef = useRef(body);
+  latestBodyRef.current = body;
+
   const handleTitleChange = useCallback((newTitle: string) => {
     // Prevent newlines in title - move to body on Enter
     if (newTitle.includes('\n')) {
       const parts = newTitle.split('\n');
       const firstPart = parts[0];
       const rest = parts.slice(1).join('\n');
-      onContentChange(firstPart + '\n' + rest + body);
+      // Combine rest with existing body, separated by newline if both have content
+      const newBody = rest + (rest && latestBodyRef.current ? '\n' : '') + latestBodyRef.current;
+      onContentChange(firstPart + '\n' + newBody);
       // Focus body after Enter
       setTimeout(() => bodyRef.current?.focus(), 0);
     } else {
-      onContentChange(newTitle + '\n' + body);
+      // Preserve existing body
+      const currentBody = latestBodyRef.current;
+      onContentChange(newTitle + (currentBody ? '\n' + currentBody : ''));
     }
-  }, [body, onContentChange]);
+  }, [onContentChange]);
 
-  // Handle body changes
+  // Handle body changes - use ref to get latest title value
+  const latestTitleRef = useRef(title);
+  latestTitleRef.current = title;
+
   const handleBodyChange = useCallback((newBody: string) => {
-    onContentChange(title + '\n' + newBody);
-  }, [title, onContentChange]);
+    const currentTitle = latestTitleRef.current;
+    onContentChange(currentTitle + '\n' + newBody);
+  }, [onContentChange]);
 
   // Handle title keydown for Enter key
   const handleTitleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -736,21 +760,30 @@ function EditorPanel({
     }
   }, [title.length]);
 
-  // Detect keyboard open/close via visualViewport
+  // Detect keyboard open/close via visualViewport and track keyboard height
   useEffect(() => {
     if (!window.visualViewport) return;
 
     const viewport = window.visualViewport;
-    const initialHeight = viewport.height;
+    let initialHeight = window.innerHeight;
 
     const handleResize = () => {
-      // Keyboard is likely open if viewport shrinks significantly
-      const heightDiff = initialHeight - viewport.height;
-      setIsKeyboardOpen(heightDiff > 150);
+      // Calculate keyboard height from viewport change
+      const viewportHeight = viewport.height;
+      const currentKeyboardHeight = window.innerHeight - viewportHeight;
+
+      // Keyboard is likely open if viewport shrinks significantly (> 150px)
+      const isOpen = currentKeyboardHeight > 150;
+      setIsKeyboardOpen(isOpen);
+      setKeyboardHeight(isOpen ? currentKeyboardHeight : 0);
     };
 
     viewport.addEventListener('resize', handleResize);
-    return () => viewport.removeEventListener('resize', handleResize);
+    viewport.addEventListener('scroll', handleResize);
+    return () => {
+      viewport.removeEventListener('resize', handleResize);
+      viewport.removeEventListener('scroll', handleResize);
+    };
   }, []);
 
   // Auto-focus title for new notes
@@ -891,9 +924,14 @@ function EditorPanel({
         </div>
       </div>
 
-      {/* Keyboard accessory toolbar - shows when keyboard is open */}
+      {/* Keyboard accessory toolbar - shows when keyboard is open, positioned above keyboard */}
       {isKeyboardOpen && (
-        <div className="ios-editor-panel__keyboard-toolbar" role="toolbar" aria-label="Text formatting">
+        <div
+          className="ios-editor-panel__keyboard-toolbar"
+          role="toolbar"
+          aria-label="Text formatting"
+          style={{ bottom: `${keyboardHeight}px` }}
+        >
           <button type="button" className="ios-toolbar-button" aria-label="Checklist">{Icons.checklist}</button>
           <button type="button" className="ios-toolbar-button" aria-label="Text format">{Icons.textFormat}</button>
           <button type="button" className="ios-toolbar-button" aria-label="Table">{Icons.table}</button>
@@ -1047,6 +1085,25 @@ export function IOSNotesApp() {
     setEditorContent(selectedNote?.content || '');
   }, [selectedNote?.id]);
 
+  // Track previous note ID to prevent saving stale content when switching
+  const previousNoteIdRef = useRef<string | null>(null);
+  const isInitialMountRef = useRef(true);
+
+  // Update ref when selected note changes
+  useEffect(() => {
+    // Skip initial mount
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+      previousNoteIdRef.current = selectedNoteId;
+      return;
+    }
+    // When note changes, update the ref after a delay to prevent stale saves
+    const timer = setTimeout(() => {
+      previousNoteIdRef.current = selectedNoteId;
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [selectedNoteId]);
+
   // Auto-select first note on tablet if none selected
   useEffect(() => {
     if (isTablet && !selectedNoteId && folderNotes.length > 0) {
@@ -1105,15 +1162,27 @@ export function IOSNotesApp() {
   // Debounced auto-save while typing
   const debouncedContent = useDebounce(editorContent, 1000);
   useEffect(() => {
-    if (selectedNoteId && debouncedContent) {
-      const title = extractTitle(debouncedContent);
-      setNotes(prev => prev.map(n =>
-        n.id === selectedNoteId
-          ? { ...n, content: debouncedContent, title, updatedAt: Date.now() }
-          : n
-      ));
-    }
-  }, [selectedNoteId, debouncedContent]);
+    // Don't save if:
+    // 1. No note selected
+    // 2. Content is empty
+    // 3. We just switched notes (selectedNoteId doesn't match previous)
+    if (!selectedNoteId || !debouncedContent) return;
+    if (previousNoteIdRef.current !== selectedNoteId) return;
+
+    // Also verify the content actually belongs to this note (matches current note's content pattern)
+    const currentNote = notes.find(n => n.id === selectedNoteId);
+    if (!currentNote) return;
+
+    // Only save if content has actually changed
+    if (currentNote.content === debouncedContent) return;
+
+    const title = extractTitle(debouncedContent);
+    setNotes(prev => prev.map(n =>
+      n.id === selectedNoteId
+        ? { ...n, content: debouncedContent, title, updatedAt: Date.now() }
+        : n
+    ));
+  }, [selectedNoteId, debouncedContent, notes]);
 
   const handleDeleteNote = useCallback((noteId: string) => {
     setNotes(prev => prev.filter(n => n.id !== noteId));

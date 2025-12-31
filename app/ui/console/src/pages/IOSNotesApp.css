@@ -787,16 +787,18 @@
   display: flex;
   align-items: center;
   gap: var(--ios-spacing-xs);
-  padding: var(--ios-spacing-xs) var(--ios-spacing-md);
+  padding: var(--ios-spacing-sm) var(--ios-spacing-md);
   background: var(--ios-bg-tertiary);
   border-top: 0.5px solid var(--ios-separator);
   position: fixed;
   left: 0;
   right: 0;
+  /* bottom is set dynamically via inline style based on keyboard height */
   bottom: 0;
-  z-index: 100;
-  /* Position above keyboard using safe area */
-  padding-bottom: env(safe-area-inset-bottom, 0);
+  z-index: 1000;
+  /* Blur effect like iOS */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .ios-keyboard-toolbar__spacer {
