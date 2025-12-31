@@ -982,7 +982,7 @@ function EditorPanel({
     return title + (bodyText ? '\n' + bodyText : '');
   }, []);
 
-  // Scroll caret into view - uses native Range API, no DOM manipulation
+  // Scroll caret into view - uses marker for accurate position on iOS
   const scrollCaretIntoView = useCallback(() => {
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0) return;
@@ -993,9 +993,23 @@ function EditorPanel({
     const scrollContainer = contentRef.current;
     if (!scrollContainer) return;
 
-    // Get caret position directly from the range
-    const caretRect = range.getBoundingClientRect();
-    if (caretRect.height === 0 && caretRect.width === 0) return;
+    // Try Range API first
+    let caretRect = range.getBoundingClientRect();
+
+    // If Range API returns empty (common on iOS), use marker fallback
+    if (caretRect.height === 0 || caretRect.width === 0) {
+      const marker = document.createElement('span');
+      marker.textContent = '\u200B'; // Zero-width space
+      const clonedRange = range.cloneRange();
+      clonedRange.insertNode(marker);
+      caretRect = marker.getBoundingClientRect();
+      marker.remove();
+      // Restore selection
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+
+    if (caretRect.height === 0) return;
 
     const containerRect = scrollContainer.getBoundingClientRect();
     const caretTopInContainer = caretRect.top - containerRect.top;
