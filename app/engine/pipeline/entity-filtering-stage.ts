@@ -19,15 +19,30 @@ import {
   filterLowQualityEntities,
   isEntityFilterEnabled,
   getFilterConfig,
-  getFilterStats
+  getFilterStats,
+  type EntityQualityConfig
 } from '../entity-quality-filter';
 import type {
   EntityFilteringInput,
   EntityFilteringOutput,
-  FilterStats
+  FilterStats,
+  EntityFilterConfig
 } from './types';
 
 const STAGE_NAME = 'EntityFilteringStage';
+
+/**
+ * Convert EntityFilterConfig (pipeline type) to EntityQualityConfig (filter type)
+ */
+function toQualityConfig(config: EntityFilterConfig): EntityQualityConfig {
+  return {
+    minConfidence: config.minConfidence,
+    minNameLength: config.minLength,
+    blockedTokens: new Set(config.blockedTokens),
+    requireCapitalization: config.requireCapitalization,
+    strictMode: config.strictMode,
+  };
+}
 
 /**
  * Filter low-quality entity candidates
@@ -58,7 +73,10 @@ export async function runEntityFilteringStage(
 
     // Check if filtering is enabled (either via config or global flag)
     if (input.config.enabled || isEntityFilterEnabled()) {
-      const config = input.config.enabled ? input.config : getFilterConfig();
+      // Convert pipeline config to quality filter config
+      const config: EntityQualityConfig = input.config.enabled
+        ? toQualityConfig(input.config)
+        : getFilterConfig();
 
       // Apply quality filter
       filteredEntities = filterLowQualityEntities(input.entities, config);
