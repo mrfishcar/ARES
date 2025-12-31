@@ -982,6 +982,43 @@ function EditorPanel({
     return title + (bodyText ? '\n' + bodyText : '');
   }, []);
 
+  // Scroll caret into view - uses native Range API, no DOM manipulation
+  const scrollCaretIntoView = useCallback(() => {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    if (!range.collapsed) return;
+
+    const scrollContainer = contentRef.current;
+    if (!scrollContainer) return;
+
+    // Get caret position directly from the range
+    const caretRect = range.getBoundingClientRect();
+    if (caretRect.height === 0 && caretRect.width === 0) return;
+
+    const containerRect = scrollContainer.getBoundingClientRect();
+    const caretTopInContainer = caretRect.top - containerRect.top;
+    const caretBottomInContainer = caretRect.bottom - containerRect.top;
+
+    // Account for keyboard
+    const vv = window.visualViewport;
+    const visibleHeight = vv
+      ? Math.min(containerRect.height, vv.height - Math.max(0, containerRect.top - vv.offsetTop))
+      : containerRect.height;
+
+    const topPadding = 60;
+    const bottomPadding = isKeyboardOpen ? 100 : 40;
+
+    if (caretBottomInContainer > visibleHeight - bottomPadding) {
+      const scrollAmount = caretBottomInContainer - visibleHeight + bottomPadding;
+      scrollContainer.scrollTop += scrollAmount;
+    } else if (caretTopInContainer < topPadding) {
+      const scrollAmount = caretTopInContainer - topPadding;
+      scrollContainer.scrollTop += scrollAmount;
+    }
+  }, [isKeyboardOpen]);
+
   // Initialize editor content when note changes
   useEffect(() => {
     if (editorRef.current && content !== lastContentRef.current) {
@@ -1003,7 +1040,10 @@ function EditorPanel({
       lastContentRef.current = newContent;
       onContentChange(newContent);
     }
-  }, [htmlToText, onContentChange]);
+
+    // Keep caret visible
+    requestAnimationFrame(scrollCaretIntoView);
+  }, [htmlToText, onContentChange, scrollCaretIntoView]);
 
   // Execute formatting command
   const execFormat = useCallback((command: string, value?: string) => {
