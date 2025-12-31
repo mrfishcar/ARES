@@ -30,6 +30,14 @@ const PLACE_CANONICALS = new Set([
   "london"
 ]);
 
+// Pronouns should not be tagged as entities even when capitalized (sentence-initial)
+const PRONOUNS = new Set([
+  "he", "she", "it", "they", "we", "i", "you",
+  "him", "her", "them", "us", "me",
+  "his", "her", "hers", "its", "their", "theirs", "our", "ours", "my", "mine", "your", "yours",
+  "himself", "herself", "itself", "themselves", "ourselves", "myself", "yourself", "yourselves"
+]);
+
 function splitSentences(text: string): Array<{ text: string; start: number; end: number }> {
   const segments: Array<{ text: string; start: number; end: number }> = [];
   let lastIndex = 0;
@@ -93,6 +101,12 @@ function annotateNamedEntities(tokens: Token[], fullText: string): void {
 
     const isCapitalized = /^[A-Z]/.test(text) || /-[A-Z]/.test(text);
     if (!isCapitalized) {
+      i += 1;
+      continue;
+    }
+
+    // Skip pronouns - they should not be tagged as entities even when capitalized
+    if (PRONOUNS.has(text.toLowerCase())) {
       i += 1;
       continue;
     }
@@ -172,7 +186,10 @@ function buildTokens(sentenceText: string, offset: number, fullText: string): To
     let pos: string;
     let tag: string;
 
-    if (DETERMINERS.has(lowerRaw)) {
+    if (PRONOUNS.has(lowerRaw)) {
+      pos = "PRON";
+      tag = "PRP";
+    } else if (DETERMINERS.has(lowerRaw)) {
       pos = "DET";
       tag = "DT";
     } else if (PREPOSITIONS.has(lowerRaw)) {
