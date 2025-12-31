@@ -982,69 +982,6 @@ function EditorPanel({
     return title + (bodyText ? '\n' + bodyText : '');
   }, []);
 
-  // Debounce timer
-  const scrollTimerRef = useRef<number | null>(null);
-  const lastScrollTimeRef = useRef<number>(0);
-
-  // Scroll caret into view - marker based for accuracy
-  const scrollCaretIntoView = useCallback(() => {
-    // Throttle: max once per 200ms
-    const now = Date.now();
-    if (now - lastScrollTimeRef.current < 200) {
-      // Schedule for later if not already scheduled
-      if (!scrollTimerRef.current) {
-        scrollTimerRef.current = window.setTimeout(() => {
-          scrollTimerRef.current = null;
-          scrollCaretIntoView();
-        }, 200);
-      }
-      return;
-    }
-    lastScrollTimeRef.current = now;
-
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
-
-    const range = selection.getRangeAt(0);
-    if (!range.collapsed) return;
-
-    const scrollContainer = contentRef.current;
-    if (!scrollContainer) return;
-
-    // Create marker to get accurate caret position
-    const marker = document.createElement('span');
-    marker.style.cssText = 'display:inline-block;width:0;height:1em;vertical-align:baseline;';
-
-    const markerRange = range.cloneRange();
-    markerRange.collapse(false);
-
-    try {
-      markerRange.insertNode(marker);
-      const markerRect = marker.getBoundingClientRect();
-      const containerRect = scrollContainer.getBoundingClientRect();
-
-      const markerTop = markerRect.top - containerRect.top;
-      const markerBottom = markerRect.bottom - containerRect.top;
-
-      const vv = window.visualViewport;
-      const visibleHeight = vv
-        ? Math.min(containerRect.height, vv.height - Math.max(0, containerRect.top - vv.offsetTop))
-        : containerRect.height;
-
-      const topPadding = 60;
-      const bottomPadding = isKeyboardOpen ? 150 : 60;
-
-      // Only scroll if actually out of view
-      if (markerBottom > visibleHeight - bottomPadding) {
-        scrollContainer.scrollTop += markerBottom - (visibleHeight - bottomPadding);
-      } else if (markerTop < topPadding) {
-        scrollContainer.scrollTop += markerTop - topPadding;
-      }
-    } finally {
-      marker.remove();
-    }
-  }, [isKeyboardOpen]);
-
   // Initialize editor content when note changes
   useEffect(() => {
     if (editorRef.current && content !== lastContentRef.current) {
@@ -1066,10 +1003,7 @@ function EditorPanel({
       lastContentRef.current = newContent;
       onContentChange(newContent);
     }
-
-    // Keep caret visible
-    requestAnimationFrame(scrollCaretIntoView);
-  }, [htmlToText, onContentChange, scrollCaretIntoView]);
+  }, [htmlToText, onContentChange]);
 
   // Execute formatting command
   const execFormat = useCallback((command: string, value?: string) => {
