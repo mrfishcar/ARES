@@ -102,6 +102,74 @@ function inferGenderFromName(name: string): Gender {
 }
 
 /**
+ * Learn gender from contextual patterns in text
+ * E.g., "Their son, Cael Calder" → Cael Calder is male
+ *       "The couple's daughter, Mira" → Mira is female
+ */
+function learnGenderFromContext(text: string): Map<string, Gender> {
+  const learnedGender = new Map<string, Gender>();
+
+  // Pattern: "their/the couple's son/daughter, Name" or "their son/daughter Name"
+  const sonDaughterPattern = /\b(?:their|the\s+couple'?s?|his|her)\s+(son|daughter|child)\s*,?\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/gi;
+  let match;
+  while ((match = sonDaughterPattern.exec(text)) !== null) {
+    const role = match[1].toLowerCase();
+    const name = match[2];
+    const normalizedName = name.toLowerCase();
+
+    if (role === 'son') {
+      learnedGender.set(normalizedName, 'male');
+    } else if (role === 'daughter') {
+      learnedGender.set(normalizedName, 'female');
+    }
+  }
+
+  // Pattern: "Name, the/their son/daughter" or "Name, son of X"
+  const appositivePattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*,\s*(?:the\s+)?(?:their\s+)?(son|daughter|child)\b/gi;
+  while ((match = appositivePattern.exec(text)) !== null) {
+    const name = match[1];
+    const role = match[2].toLowerCase();
+    const normalizedName = name.toLowerCase();
+
+    if (role === 'son') {
+      learnedGender.set(normalizedName, 'male');
+    } else if (role === 'daughter') {
+      learnedGender.set(normalizedName, 'female');
+    }
+  }
+
+  // Pattern: "wife/husband Name" or "his wife Name"
+  const spousePattern = /\b(?:his|her|the)\s+(wife|husband)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/gi;
+  while ((match = spousePattern.exec(text)) !== null) {
+    const role = match[1].toLowerCase();
+    const name = match[2];
+    const normalizedName = name.toLowerCase();
+
+    if (role === 'husband') {
+      learnedGender.set(normalizedName, 'male');
+    } else if (role === 'wife') {
+      learnedGender.set(normalizedName, 'female');
+    }
+  }
+
+  // Pattern: "brother/sister Name"
+  const siblingPattern = /\b(?:his|her|their)\s+(brother|sister)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/gi;
+  while ((match = siblingPattern.exec(text)) !== null) {
+    const role = match[1].toLowerCase();
+    const name = match[2];
+    const normalizedName = name.toLowerCase();
+
+    if (role === 'brother') {
+      learnedGender.set(normalizedName, 'male');
+    } else if (role === 'sister') {
+      learnedGender.set(normalizedName, 'female');
+    }
+  }
+
+  return learnedGender;
+}
+
+/**
  * Find sentence boundaries in text
  */
 function findSentenceBoundaries(text: string): number[] {
@@ -144,13 +212,27 @@ function buildSimpleCorefLinks(
   const links: CorefLink[] = [];
   const quotes: CorefLinks['quotes'] = [];
 
+  // Learn gender from contextual patterns like "their son, Cael Calder"
+  const learnedGenders = learnGenderFromContext(text);
+
   // Only resolve for PERSON entities
   const personEntities = entities
     .filter(e => e.type === 'PERSON')
-    .map(e => ({
-      ...e,
-      gender: inferGenderFromName(e.canonical),
-    }));
+    .map(e => {
+      // First try name-based inference
+      let gender = inferGenderFromName(e.canonical);
+
+      // If unknown, try learned gender from context
+      if (gender === 'unknown') {
+        const normalizedName = e.canonical.toLowerCase();
+        const contextGender = learnedGenders.get(normalizedName);
+        if (contextGender) {
+          gender = contextGender;
+        }
+      }
+
+      return { ...e, gender };
+    });
 
   if (personEntities.length === 0) {
     return { links, quotes };
