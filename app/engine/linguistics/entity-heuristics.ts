@@ -115,6 +115,12 @@ export function shouldSuppressSentenceInitialPerson(
   const followingCommaCapital = /^\s*,\s+[A-Z]/.test(text.slice(span.end, span.end + 20));
   if (followingCommaCapital) return { suppress: false };
 
+  // Check if followed by a verb - indicates name as subject ("Frodo is", "Harry married")
+  const COMMON_VERBS = new Set(['could', 'would', 'should', 'will', 'can', 'may', 'might', 'must', 'shall', 'was', 'is', 'are', 'were', 'has', 'had', 'have', 'did', 'does', 'do', 'walked', 'smiled', 'spoke', 'said', 'went', 'came', 'looked', 'turned', 'stood', 'sat', 'ran', 'fell', 'woke', 'slept', 'ate', 'drank', 'thought', 'felt', 'knew', 'saw', 'heard', 'asked', 'told', 'replied', 'nodded', 'shook', 'laughed', 'cried', 'screamed', 'whispered', 'shouted', 'arrived', 'left', 'entered', 'exited', 'began', 'started', 'finished', 'stopped', 'continued', 'tried', 'wanted', 'needed', 'loved', 'hated', 'liked', 'married', 'dwelt', 'lived', 'taught', 'fought', 'brought', 'caught', 'bought', 'sought', 'wrought', 'ruled', 'worked', 'traveled', 'travelled', 'founded', 'attended', 'carried', 'followed', 'helped', 'reached', 'returned', 'saved', 'killed', 'died', 'rose', 'flew', 'swam', 'drove', 'rode', 'climbed', 'jumped', 'held', 'kept', 'gave', 'took', 'made', 'created', 'built', 'destroyed', 'teaches', 'teaches', 'played', 'claimed', 'owns', 'runs', 'leads', 'serves', 'writes', 'reads', 'lives', 'works', 'rules', 'guards', 'fights', 'travels', 'wanders', 'visits', 'meets', 'joins', 'becomes', 'became', 'remains', 'studies', 'studied', 'passed', 'decided', 'discovered', 'learned', 'learned', 'found', 'met', 'lost', 'won', 'defeated']);
+  if (next && COMMON_VERBS.has(next.toLowerCase())) {
+    return { suppress: false };
+  }
+
   const starter = SENTENCE_STARTERS.has(token.toLowerCase());
   if (starter) {
     logDebug(`Suppressing sentence-initial starter ${token}`);
