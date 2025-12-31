@@ -982,78 +982,87 @@ function EditorPanel({
     return title + (bodyText ? '\n' + bodyText : '');
   }, []);
 
+  // Debounce timer for scroll
+  const scrollTimerRef = useRef<number | null>(null);
+
   // Scroll caret into view (iOS Safari fix)
   const scrollCaretIntoView = useCallback(() => {
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
-
-    const range = selection.getRangeAt(0);
-    if (!range.collapsed) return;
-
-    const scrollContainer = contentRef.current;
-    if (!scrollContainer) return;
-
-    // Try multiple methods to get caret position
-    let caretRect: DOMRect | null = null;
-
-    // Method 1: getClientRects() - often works better for collapsed ranges
-    const rects = range.getClientRects();
-    if (rects.length > 0) {
-      caretRect = rects[0];
+    // Debounce - wait for typing to pause
+    if (scrollTimerRef.current) {
+      clearTimeout(scrollTimerRef.current);
     }
 
-    // Method 2: getBoundingClientRect()
-    if (!caretRect || caretRect.height === 0) {
-      const boundingRect = range.getBoundingClientRect();
-      if (boundingRect.height > 0) {
-        caretRect = boundingRect;
+    scrollTimerRef.current = window.setTimeout(() => {
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return;
+
+      const range = selection.getRangeAt(0);
+      if (!range.collapsed) return;
+
+      const scrollContainer = contentRef.current;
+      if (!scrollContainer) return;
+
+      // Try multiple methods to get caret position
+      let caretRect: DOMRect | null = null;
+
+      // Method 1: getClientRects() - often works better for collapsed ranges
+      const rects = range.getClientRects();
+      if (rects.length > 0) {
+        caretRect = rects[0];
       }
-    }
 
-    // Method 3: Use focusNode position + offset estimation
-    if (!caretRect || caretRect.height === 0) {
-      const node = selection.focusNode;
-      if (node) {
-        const el = node.nodeType === Node.TEXT_NODE ? node.parentElement : node as Element;
-        if (el) {
-          const elRect = el.getBoundingClientRect();
-          // Estimate caret position within element based on focusOffset
-          const lineHeight = 24;
-          const lines = Math.floor(selection.focusOffset / 40); // rough chars per line
-          caretRect = new DOMRect(
-            elRect.left,
-            elRect.top + (lines * lineHeight),
-            1,
-            lineHeight
-          );
+      // Method 2: getBoundingClientRect()
+      if (!caretRect || caretRect.height === 0) {
+        const boundingRect = range.getBoundingClientRect();
+        if (boundingRect.height > 0) {
+          caretRect = boundingRect;
         }
       }
-    }
 
-    if (!caretRect || caretRect.height === 0) return;
+      // Method 3: Use focusNode position + offset estimation
+      if (!caretRect || caretRect.height === 0) {
+        const node = selection.focusNode;
+        if (node) {
+          const el = node.nodeType === Node.TEXT_NODE ? node.parentElement : node as Element;
+          if (el) {
+            const elRect = el.getBoundingClientRect();
+            const lineHeight = 24;
+            const lines = Math.floor(selection.focusOffset / 40);
+            caretRect = new DOMRect(
+              elRect.left,
+              elRect.top + (lines * lineHeight),
+              1,
+              lineHeight
+            );
+          }
+        }
+      }
 
-    const containerRect = scrollContainer.getBoundingClientRect();
-    const caretTopInContainer = caretRect.top - containerRect.top;
-    const caretBottomInContainer = caretRect.bottom - containerRect.top;
+      if (!caretRect || caretRect.height === 0) return;
 
-    const vv = window.visualViewport;
-    const visibleHeight = vv
-      ? Math.min(containerRect.height, vv.height - Math.max(0, containerRect.top - vv.offsetTop))
-      : containerRect.height;
+      const containerRect = scrollContainer.getBoundingClientRect();
+      const caretTopInContainer = caretRect.top - containerRect.top;
+      const caretBottomInContainer = caretRect.bottom - containerRect.top;
 
-    const topPadding = 60;
-    const bottomPadding = isKeyboardOpen ? 150 : 60;
+      const vv = window.visualViewport;
+      const visibleHeight = vv
+        ? Math.min(containerRect.height, vv.height - Math.max(0, containerRect.top - vv.offsetTop))
+        : containerRect.height;
 
-    // Scrolling DOWN - only scroll exactly enough to show caret
-    if (caretBottomInContainer > visibleHeight - bottomPadding) {
-      const scrollAmount = caretBottomInContainer - (visibleHeight - bottomPadding);
-      scrollContainer.scrollTop += scrollAmount;
-    }
-    // Scrolling UP
-    else if (caretTopInContainer < topPadding) {
-      const scrollAmount = caretTopInContainer - topPadding;
-      scrollContainer.scrollTop += scrollAmount;
-    }
+      const topPadding = 60;
+      const bottomPadding = isKeyboardOpen ? 150 : 60;
+
+      // Scrolling DOWN
+      if (caretBottomInContainer > visibleHeight - bottomPadding) {
+        const scrollAmount = caretBottomInContainer - (visibleHeight - bottomPadding);
+        scrollContainer.scrollTop += scrollAmount;
+      }
+      // Scrolling UP
+      else if (caretTopInContainer < topPadding) {
+        const scrollAmount = caretTopInContainer - topPadding;
+        scrollContainer.scrollTop += scrollAmount;
+      }
+    }, 100); // 100ms debounce
   }, [isKeyboardOpen]);
 
   // Initialize editor content when note changes
