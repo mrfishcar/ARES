@@ -397,6 +397,31 @@ html, body {
   letter-spacing: 0.5px;
 }
 
+/* Collapsible section header with chevron */
+.ios-folder-section__header--collapsible {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ios-folder-section__header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+}
+
+.ios-folder-section__header-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
 .ios-folder-section__list {
   background: var(--ios-bg-secondary);
   border-radius: var(--ios-radius-lg);
@@ -430,9 +455,17 @@ html, body {
 }
 
 .ios-folder-row__icon {
-  font-size: 28px;
-  width: 36px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: var(--ios-yellow);
+}
+
+.ios-folder-row__icon svg {
+  width: 24px;
+  height: 24px;
 }
 
 .ios-folder-row__name {
@@ -719,14 +752,36 @@ html, body {
 .ios-folders-sidebar__header-top {
   display: flex;
   align-items: center;
-  gap: var(--ios-spacing-xs);
-  padding: var(--ios-spacing-md) var(--ios-spacing-md) var(--ios-spacing-sm);
+  justify-content: space-between;
+  padding: var(--ios-spacing-sm) var(--ios-spacing-sm) 0;
+}
+
+.ios-folders-sidebar__header-right {
+  display: flex;
+  align-items: center;
+}
+
+/* Text button (like Edit) */
+.ios-text-button {
+  border: none;
+  background: none;
+  color: var(--ios-yellow);
+  font-family: inherit;
+  font-size: var(--ios-font-body);
+  padding: var(--ios-spacing-sm);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s ease-out;
+}
+
+.ios-text-button:active {
+  opacity: 0.5;
 }
 
 .ios-folders-sidebar__title {
-  flex: 1;
   font-size: var(--ios-font-title-large);
   font-weight: 700;
+  padding: var(--ios-spacing-xs) var(--ios-spacing-md) var(--ios-spacing-sm);
 }
 
 .ios-folders-sidebar__content {
@@ -766,8 +821,13 @@ html, body {
 }
 
 .ios-folder-row--compact .ios-folder-row__icon {
-  font-size: 22px;
   width: 28px;
+  height: 28px;
+}
+
+.ios-folder-row--compact .ios-folder-row__icon svg {
+  width: 20px;
+  height: 20px;
 }
 
 .ios-folder-row--compact .ios-folder-row__count {
@@ -810,8 +870,20 @@ html, body {
 .ios-notes-sidebar__header-top {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: var(--ios-spacing-sm);
+}
+
+.ios-notes-sidebar__header-left {
+  display: flex;
+  align-items: center;
   gap: var(--ios-spacing-xs);
+  min-width: 0;
+}
+
+.ios-notes-sidebar__header-right {
+  display: flex;
+  align-items: center;
 }
 
 .ios-notes-sidebar__title-group {
@@ -897,6 +969,8 @@ html, body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: var(--ios-spacing-md);
+  padding-left: 20px;
+  padding-right: 20px;
   scroll-padding-top: 20px;
   scroll-padding-bottom: 120px;
 }
@@ -1614,13 +1688,17 @@ html, body {
   }
 
   .ios-editor-panel__content {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: var(--ios-spacing-lg);
+    padding: 20px 28px;
   }
 
   .ios-editor-panel__textarea {
     font-size: 18px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .ios-editor-panel__content {
+    padding: 24px 40px;
   }
 }
 

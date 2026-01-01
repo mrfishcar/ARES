@@ -60,10 +60,24 @@ function saveToStorage<T>(key: string, value: T): void {
 // ============================================================================
 
 const DEFAULT_FOLDERS: Folder[] = [
-  { id: 'all', name: 'All iCloud', icon: '☁️', isSystem: true, parentId: null },
-  { id: 'notes', name: 'Notes', icon: '📁', isSystem: true, parentId: 'all' },
-  { id: 'recently-deleted', name: 'Recently Deleted', icon: '🗑️', isSystem: true, parentId: null },
+  { id: 'all', name: 'All iCloud', icon: 'cloudFolder', isSystem: true, parentId: null },
+  { id: 'notes', name: 'Notes', icon: 'folder', isSystem: true, parentId: 'all' },
+  { id: 'recently-deleted', name: 'Recently Deleted', icon: 'trash', isSystem: true, parentId: null },
 ];
+
+// Helper to get folder icon
+function getFolderIcon(iconName: string): React.ReactNode {
+  const iconMap: Record<string, React.ReactNode> = {
+    cloudFolder: Icons.cloudFolder,
+    folder: Icons.folder,
+    folderFilled: Icons.folderFilled,
+    trash: Icons.trash,
+    quickNote: Icons.quickNote,
+    phoneRecord: Icons.phoneRecord,
+    personCircle: Icons.personCircle,
+  };
+  return iconMap[iconName] || Icons.folder;
+}
 
 const DEFAULT_NOTES: Note[] = [
   {
@@ -408,6 +422,56 @@ const Icons = {
       <rect x="6" y="14" width="12" height="8"/>
     </svg>
   ),
+  // Folder icons
+  folderFilled: (
+    <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+      <path d="M3 6a2 2 0 012-2h4.586a1 1 0 01.707.293L12 6h7a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V6z"/>
+    </svg>
+  ),
+  cloudFolder: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M3 8a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
+      <path d="M8 13a2.5 2.5 0 015 0M15.5 13a2 2 0 00-2-2h-.5M8 13a2 2 0 002 2h5a2 2 0 002-2" strokeLinecap="round"/>
+    </svg>
+  ),
+  quickNote: (
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M13 3L4 14h7v7l9-11h-7V3z"/>
+    </svg>
+  ),
+  phoneRecord: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
+      <circle cx="18" cy="6" r="3" fill="currentColor" stroke="none"/>
+    </svg>
+  ),
+  personCircle: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <circle cx="12" cy="12" r="10"/>
+      <circle cx="12" cy="10" r="3"/>
+      <path d="M6.168 18.849A4 4 0 0110 16h4a4 4 0 013.834 2.855"/>
+    </svg>
+  ),
+  chevronDown: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+      <path d="M6 9l6 6 6-6"/>
+    </svg>
+  ),
+  diagonalArrow: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M7 17L17 7M17 7H7M17 7v10"/>
+    </svg>
+  ),
+  doubleChevron: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M13 17l5-5-5-5M6 17l5-5-5-5"/>
+    </svg>
+  ),
+  listView: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
+    </svg>
+  ),
 };
 
 // ============================================================================
@@ -479,7 +543,7 @@ function FolderRow({
 }) {
   return (
     <button className="ios-folder-row" onClick={onClick}>
-      <span className="ios-folder-row__icon">{folder.icon}</span>
+      <span className="ios-folder-row__icon">{getFolderIcon(folder.icon)}</span>
       <span className="ios-folder-row__name">{folder.name}</span>
       <span className="ios-folder-row__count">{noteCount}</span>
       {Icons.chevronRight}
@@ -665,22 +729,30 @@ function FoldersSidebar({
     <div className="ios-folders-sidebar">
       <header className="ios-folders-sidebar__header">
         <div className="ios-folders-sidebar__header-top">
-          {onToggleSidebar && (
-            <button className="ios-icon-button" onClick={onToggleSidebar} aria-label="Hide folders">
-              {Icons.sidebar}
-            </button>
-          )}
-          <div className="ios-folders-sidebar__title">Folders</div>
-          <button className="ios-icon-button" onClick={onCreateFolder} aria-label="New folder">
-            {Icons.plus}
+          <button className="ios-text-button" aria-label="Edit folders">
+            Edit
           </button>
+          <div className="ios-folders-sidebar__header-right">
+            <button className="ios-icon-button" onClick={onCreateFolder} aria-label="New folder">
+              {Icons.plus}
+            </button>
+            {onToggleSidebar && (
+              <button className="ios-icon-button" onClick={onToggleSidebar} aria-label="Toggle view">
+                {Icons.listView}
+              </button>
+            )}
+          </div>
         </div>
+        <div className="ios-folders-sidebar__title">Folders</div>
         <SearchBar value={searchValue} onChange={setSearchValue} />
       </header>
 
       <div className="ios-folders-sidebar__content">
         <section className="ios-folder-section ios-folder-section--compact">
-          <div className="ios-folder-section__header">iCloud</div>
+          <button className="ios-folder-section__header ios-folder-section__header--collapsible">
+            <span className="ios-folder-section__header-icon">{Icons.chevronDown}</span>
+            <span>iCloud</span>
+          </button>
           <div className="ios-folder-section__list ios-folder-section__list--flush">
             {icloudFolders.map(folder => (
               <button
@@ -688,7 +760,7 @@ function FoldersSidebar({
                 className={`ios-folder-row ios-folder-row--compact ${folder.id === currentFolderId ? 'ios-folder-row--selected' : ''}`}
                 onClick={() => onSelectFolder(folder.id)}
               >
-                <span className="ios-folder-row__icon">{folder.icon}</span>
+                <span className="ios-folder-row__icon">{getFolderIcon(folder.icon)}</span>
                 <span className="ios-folder-row__name">{folder.name}</span>
                 <span className="ios-folder-row__count">{getNotesCount(folder.id)}</span>
               </button>
@@ -705,7 +777,7 @@ function FoldersSidebar({
                   className={`ios-folder-row ios-folder-row--compact ${folder.id === currentFolderId ? 'ios-folder-row--selected' : ''}`}
                   onClick={() => onSelectFolder(folder.id)}
                 >
-                  <span className="ios-folder-row__icon">{folder.icon}</span>
+                  <span className="ios-folder-row__icon">{getFolderIcon(folder.icon)}</span>
                   <span className="ios-folder-row__name">{folder.name}</span>
                   <span className="ios-folder-row__count">{getNotesCount(folder.id)}</span>
                 </button>
@@ -769,30 +841,39 @@ function NotesListSidebar({
     <div className="ios-notes-sidebar">
       <header className="ios-notes-sidebar__header">
         <div className="ios-notes-sidebar__header-top">
-          {showFoldersToggle && (
-            <button className="ios-icon-button" onClick={onToggleFolders} aria-label="Show folders">
-              {Icons.folder}
-            </button>
-          )}
-          {showSidebarToggle && (
-            <button className="ios-icon-button" onClick={onToggleSidebar}>
-              {Icons.sidebar}
-            </button>
-          )}
-          <div className="ios-notes-sidebar__title-group">
-            <div className="ios-notes-sidebar__title">{folder.name}</div>
-            <div className="ios-notes-sidebar__count">{notes.length} Notes</div>
+          <div className="ios-notes-sidebar__header-left">
+            {showFoldersToggle && (
+              <button className="ios-icon-button" onClick={onToggleFolders} aria-label="Show folders">
+                {Icons.sidebar}
+              </button>
+            )}
+            {showSidebarToggle && !showFoldersToggle && (
+              <button className="ios-icon-button" onClick={onToggleSidebar}>
+                {Icons.sidebar}
+              </button>
+            )}
+            <div className="ios-notes-sidebar__title-group">
+              <div className="ios-notes-sidebar__title">{folder.name}</div>
+              <div className="ios-notes-sidebar__count">{notes.length} Notes</div>
+            </div>
           </div>
-          <button
-            className="ios-icon-button ios-icon-button--circle"
-            onClick={() => showToast('Folder options - Coming soon')}
-            aria-label="Folder options"
-          >
-            {Icons.moreCircle}
-          </button>
-          <button className="ios-icon-button" onClick={onCreateNote}>
-            {Icons.compose}
-          </button>
+          <div className="ios-notes-sidebar__header-right">
+            <button
+              className="ios-icon-button ios-icon-button--circle"
+              onClick={() => showToast('Folder options - Coming soon')}
+              aria-label="Folder options"
+            >
+              {Icons.moreCircle}
+            </button>
+            {showSidebarToggle && (
+              <button className="ios-icon-button" onClick={onToggleSidebar} aria-label="Collapse sidebar">
+                {Icons.diagonalArrow}
+              </button>
+            )}
+            <button className="ios-icon-button" onClick={onCreateNote} aria-label="New note">
+              {Icons.compose}
+            </button>
+          </div>
         </div>
         <SearchBar value={searchValue} onChange={onSearchChange} />
       </header>
@@ -1425,11 +1506,18 @@ function EditorPanel({
           {showBackButton && onBack && (
             <BackButton onClick={onBack} label={backLabel || 'Notes'} />
           )}
+          {!showBackButton && (
+            <>
+              <button type="button" className="ios-icon-button" aria-label="Focus mode" onClick={() => showToast('Focus mode - Coming soon')}>{Icons.diagonalArrow}</button>
+              {onCreateNote && (
+                <button type="button" className="ios-icon-button" aria-label="New note" onClick={onCreateNote}>{Icons.compose}</button>
+              )}
+            </>
+          )}
         </div>
 
         {/* iPad toolbar icons */}
         <div className="ios-editor-panel__toolbar-center">
-          <button type="button" className="ios-icon-button" aria-label="Search in note" onClick={handleSearch}>{Icons.search}</button>
           <div className="ios-format-button-wrapper">
             <button type="button" className="ios-icon-button" aria-label="Text format" onClick={() => setShowFormatMenu(!showFormatMenu)}>{Icons.textFormat}</button>
             {showFormatMenu && (
@@ -1530,6 +1618,8 @@ function EditorPanel({
           >
             {Icons.moreCircle}
           </button>
+          <button type="button" className="ios-icon-button" aria-label="Collapse toolbar" onClick={() => showToast('Collapse toolbar - Coming soon')}>{Icons.doubleChevron}</button>
+          <button type="button" className="ios-icon-button" aria-label="Search in note" onClick={handleSearch}>{Icons.search}</button>
         </div>
       </header>
 
