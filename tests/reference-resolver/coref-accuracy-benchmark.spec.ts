@@ -1389,6 +1389,49 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'He', position: 15, context: 'SENTENCE_START', expected: 'Ron Weasley' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 81: MORE COREF CASES
+  // =========================================================================
+
+  // Case 61: Possessive with object
+  {
+    name: 'Possessive with object entity',
+    text: 'Harry grabbed the wand. Its power was immense.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+      createEntity('wand', 'Elder Wand', 'ITEM'),
+    ],
+    spans: [
+      createSpan('harry', 0, 5),
+      createSpan('wand', 18, 22),
+    ],
+    sentences: [
+      createSentence('Harry grabbed the wand.', 0),
+      createSentence('Its power was immense.', 24),
+    ],
+    pronounTests: [
+      { pronoun: 'Its', position: 24, context: 'SENTENCE_START', expected: 'Elder Wand' },
+    ],
+  },
+
+  // Case 62: Reflexive with action verb
+  {
+    name: 'Reflexive with action verb',
+    text: 'Ron pushed himself harder.',
+    entities: [
+      createEntity('ron', 'Ron Weasley', 'PERSON'),
+    ],
+    spans: [
+      createSpan('ron', 0, 3),
+    ],
+    sentences: [
+      createSentence('Ron pushed himself harder.', 0),
+    ],
+    pronounTests: [
+      { pronoun: 'himself', position: 12, context: 'SENTENCE_MID', expected: 'Ron Weasley' },
+    ],
+  },
 ];
 
 // =============================================================================
