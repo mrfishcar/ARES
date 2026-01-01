@@ -290,6 +290,56 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 49: MORE THROUGHPUT TESTS
+  // =========================================================================
+
+  describe('Mixed entity types text', () => {
+    it('should handle text with varied entity types', async () => {
+      const templates = [
+        'Bill Gates worked at Microsoft in Seattle.',
+        'The Ministry of Magic was located in London.',
+        'Harry Potter read the Daily Prophet newspaper.',
+        'Apple and Google competed in California.',
+      ];
+
+      const sentences: string[] = [];
+      for (let i = 0; i < 200; i++) {
+        sentences.push(templates[i % templates.length]);
+      }
+
+      const text = sentences.join(' ');
+      const result = await benchmarkExtraction(text);
+      results.push(result);
+
+      console.log(`Mixed entity types: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
+  describe('Nested clauses text', () => {
+    it('should handle complex sentence structures', async () => {
+      const templates = [
+        'Harry, who was the chosen one, defeated Voldemort, who feared death.',
+        'Hermione, the brightest witch, studied at Hogwarts, the magical school.',
+        'Ron, Harry\'s best friend, helped them defeat the dark lord.',
+        'Dumbledore, the headmaster, protected the students from danger.',
+      ];
+
+      const sentences: string[] = [];
+      for (let i = 0; i < 150; i++) {
+        sentences.push(templates[i % templates.length]);
+      }
+
+      const text = sentences.join(' ');
+      const result = await benchmarkExtraction(text);
+      results.push(result);
+
+      console.log(`Nested clauses: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(50); // Lower for complex parsing
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
