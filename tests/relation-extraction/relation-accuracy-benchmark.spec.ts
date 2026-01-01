@@ -474,6 +474,28 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
       { subject: 'Sirius', predicate: 'escaped', object: 'Azkaban', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 97: MORE OBVIOUS RELATIONS
+  // =========================================================================
+
+  // Owned relation
+  {
+    name: 'Owned relation',
+    text: 'Malfoy owned a house-elf.',
+    expectedRelations: [
+      { subject: 'Malfoy', predicate: 'owned', object: 'house-elf', shouldExist: true },
+    ],
+  },
+
+  // Trusted relation
+  {
+    name: 'Trusted relation',
+    text: 'Harry trusted Dumbledore completely.',
+    expectedRelations: [
+      { subject: 'Harry', predicate: 'trusted', object: 'Dumbledore', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================

@@ -603,6 +603,32 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 98: ACTION-HEAVY/EXCLAMATION TEXT
+  // =========================================================================
+
+  describe('Action-heavy text', () => {
+    it('should handle action sequences with exclamations', async () => {
+      const templates = [
+        'Harry ran! Hermione followed quickly!',
+        'Voldemort attacked! The Order fought back!',
+        'Dumbledore shouted a warning! Everyone ducked!',
+        'The dragon roared! Hagrid cheered wildly!',
+      ];
+
+      let text = '';
+      for (let i = 0; i < 100; i++) {
+        text += templates[i % templates.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`Action-heavy: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
