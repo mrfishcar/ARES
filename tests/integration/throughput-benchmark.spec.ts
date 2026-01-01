@@ -382,6 +382,31 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 68: MORE THROUGHPUT TESTS
+  // =========================================================================
+
+  describe('Long paragraphs (few boundaries)', () => {
+    it('should handle long flowing paragraphs', async () => {
+      // Longer sentences with fewer boundaries
+      const longSentences = [
+        'Harry Potter and his friends Ron Weasley and Hermione Granger walked through the corridors of Hogwarts School of Witchcraft and Wizardry on their way to the Great Hall for the evening feast.',
+        'The ancient castle was filled with magical portraits that moved and talked to anyone who passed by, and the staircases would often shift and change direction without warning.',
+        'Professor Dumbledore sat at the high table with the other teachers including Professor McGonagall, Professor Snape, and the newest Defense Against the Dark Arts teacher.',
+      ];
+      let text = '';
+      for (let i = 0; i < 20; i++) {
+        text += longSentences[i % longSentences.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`Long paragraphs: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
