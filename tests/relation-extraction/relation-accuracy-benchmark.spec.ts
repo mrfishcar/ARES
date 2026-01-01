@@ -199,6 +199,46 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
       { subject: 'Dumbledore', predicate: 'ally_of', object: 'Order', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 40: MORE RELATION CASES
+  // =========================================================================
+
+  // Grandfather relation
+  {
+    name: 'Grandfather relation',
+    text: 'Fleamont Potter was the grandfather of Harry Potter.',
+    expectedRelations: [
+      { subject: 'Fleamont', predicate: 'parent_of', object: 'Harry', shouldExist: true },
+    ],
+  },
+
+  // Co-founded relation
+  {
+    name: 'Co-founder relation',
+    text: 'Larry Page and Sergey Brin founded Google together.',
+    expectedRelations: [
+      { subject: 'Larry', predicate: 'founded', object: 'Google', shouldExist: true },
+    ],
+  },
+
+  // Leader of relation - different form
+  {
+    name: 'CEO relation',
+    text: 'Tim Cook is the CEO of Apple.',
+    expectedRelations: [
+      { subject: 'Tim', predicate: 'leader_of', object: 'Apple', shouldExist: true },
+    ],
+  },
+
+  // Works for relation
+  {
+    name: 'Works for relation',
+    text: 'Hermione works for the Ministry of Magic.',
+    expectedRelations: [
+      { subject: 'Hermione', predicate: 'works_at', object: 'Ministry', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
