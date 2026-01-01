@@ -760,6 +760,32 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 128: INNER MONOLOGUE TEXT
+  // =========================================================================
+
+  describe('Inner monologue text', () => {
+    it('should handle internal thoughts', async () => {
+      const templates = [
+        'Harry thought about what he should do next.',
+        'He wondered if Voldemort was getting stronger.',
+        'She considered whether to tell her friends.',
+        'Ron pondered the strange events of the day.',
+      ];
+
+      let text = '';
+      for (let i = 0; i < 100; i++) {
+        text += templates[i % templates.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`Inner monologue: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
