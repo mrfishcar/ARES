@@ -606,6 +606,28 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
       { subject: 'Snape', predicate: 'took', object: 'points', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 127: MORE OBVIOUS RELATIONS
+  // =========================================================================
+
+  // Sent relation
+  {
+    name: 'Sent relation',
+    text: 'Hedwig sent the letter to Sirius.',
+    expectedRelations: [
+      { subject: 'Hedwig', predicate: 'sent', object: 'letter', shouldExist: true },
+    ],
+  },
+
+  // Received relation
+  {
+    name: 'Received relation',
+    text: 'Harry received a Firebolt from Sirius.',
+    expectedRelations: [
+      { subject: 'Harry', predicate: 'received', object: 'Firebolt', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
