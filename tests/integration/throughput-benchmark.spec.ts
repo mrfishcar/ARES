@@ -551,6 +551,32 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 88: FIRST-PERSON NARRATIVE
+  // =========================================================================
+
+  describe('First-person narrative', () => {
+    it('should handle first-person pronouns', async () => {
+      const templates = [
+        'I walked through the halls of Hogwarts.',
+        'We studied potions with Professor Snape.',
+        'My wand chose me at Ollivanders.',
+        'Our team won the Quidditch Cup.',
+      ];
+
+      let text = '';
+      for (let i = 0; i < 100; i++) {
+        text += templates[i % templates.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`First-person: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
