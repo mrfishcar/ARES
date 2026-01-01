@@ -729,7 +729,9 @@ function NotesListSidebar({
   onCreateNote,
   onDeleteNote,
   onToggleSidebar,
+  onToggleFolders,
   showSidebarToggle,
+  showFoldersToggle,
   showFolderInNotes = true,
 }: {
   folder: Folder;
@@ -741,7 +743,9 @@ function NotesListSidebar({
   onCreateNote: () => void;
   onDeleteNote: (noteId: string) => void;
   onToggleSidebar?: () => void;
+  onToggleFolders?: () => void;
   showSidebarToggle?: boolean;
+  showFoldersToggle?: boolean;
   showFolderInNotes?: boolean;
 }) {
   const { showToast } = useToast();
@@ -765,6 +769,11 @@ function NotesListSidebar({
     <div className="ios-notes-sidebar">
       <header className="ios-notes-sidebar__header">
         <div className="ios-notes-sidebar__header-top">
+          {showFoldersToggle && (
+            <button className="ios-icon-button" onClick={onToggleFolders} aria-label="Show folders">
+              {Icons.folder}
+            </button>
+          )}
           {showSidebarToggle && (
             <button className="ios-icon-button" onClick={onToggleSidebar}>
               {Icons.sidebar}
@@ -2004,32 +2013,30 @@ export function IOSNotesApp() {
     return (
       <ToastProvider>
         <div className={`ios-notes-app ios-notes-app--large-tablet ${!showFoldersSidebar ? 'ios-notes-app--folders-hidden' : ''} ${!showNotesSidebar ? 'ios-notes-app--notes-hidden' : ''}`}>
-          {showFoldersSidebar && (
-            <FoldersSidebar
-              folders={folders}
-              notes={notes}
-              currentFolderId={currentFolderId}
-              onSelectFolder={handleFolderSelect}
-              onCreateFolder={handleCreateFolder}
-              onToggleSidebar={() => setShowFoldersSidebar(false)}
-            />
-          )}
+          <FoldersSidebar
+            folders={folders}
+            notes={notes}
+            currentFolderId={currentFolderId}
+            onSelectFolder={handleFolderSelect}
+            onCreateFolder={handleCreateFolder}
+            onToggleSidebar={() => setShowFoldersSidebar(!showFoldersSidebar)}
+          />
 
-          {showNotesSidebar && (
-            <NotesListSidebar
-              folder={currentFolder}
-              notes={folderNotes}
-              selectedNoteId={selectedNoteId}
-              searchValue={searchValue}
-              onSearchChange={setSearchValue}
-              onSelectNote={handleSelectNote}
-              onCreateNote={handleCreateNote}
-              onDeleteNote={handleDeleteNote}
-              onToggleSidebar={() => setShowNotesSidebar(false)}
-              showSidebarToggle
-              showFolderInNotes={currentFolderId === 'all'}
-            />
-          )}
+          <NotesListSidebar
+            folder={currentFolder}
+            notes={folderNotes}
+            selectedNoteId={selectedNoteId}
+            searchValue={searchValue}
+            onSearchChange={setSearchValue}
+            onSelectNote={handleSelectNote}
+            onCreateNote={handleCreateNote}
+            onDeleteNote={handleDeleteNote}
+            onToggleSidebar={() => setShowNotesSidebar(!showNotesSidebar)}
+            onToggleFolders={() => setShowFoldersSidebar(!showFoldersSidebar)}
+            showSidebarToggle
+            showFoldersToggle={!showFoldersSidebar}
+            showFolderInNotes={currentFolderId === 'all'}
+          />
 
           <EditorPanel
             note={selectedNote}

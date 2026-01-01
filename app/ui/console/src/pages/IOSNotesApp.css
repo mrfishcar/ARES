@@ -670,7 +670,7 @@ html, body {
   flex-direction: column;
   background: var(--ios-bg-primary);
   border-right: 0.5px solid var(--ios-separator);
-  transition: transform 0.3s ease-out, width 0.3s ease-out, margin 0.3s ease-out;
+  transition: transform 0.3s ease-out, width 0.3s ease-out, opacity 0.3s ease-out;
 }
 
 .ios-folders-sidebar__header {
@@ -761,7 +761,7 @@ html, body {
   flex-direction: column;
   background: var(--ios-bg-primary);
   border-right: 0.5px solid var(--ios-separator);
-  transition: transform 0.3s ease-out, width 0.3s ease-out, margin 0.3s ease-out;
+  transition: transform 0.3s ease-out, width 0.3s ease-out, opacity 0.3s ease-out;
 }
 
 .ios-notes-sidebar__header {
@@ -1599,22 +1599,22 @@ html, body {
 
 /* Hidden folders sidebar - slides off to the left */
 .ios-notes-app--folders-hidden .ios-folders-sidebar {
+  transform: translateX(-100%);
   width: 0;
-  margin-left: -260px;
-  overflow: hidden;
+  min-width: 0;
+  border-right: none;
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* Hidden notes sidebar - slides off to the left */
 .ios-notes-app--notes-hidden .ios-notes-sidebar {
+  transform: translateX(-100%);
   width: 0;
-  margin-left: -320px;
-  overflow: hidden;
-}
-
-@media (min-width: 1024px) {
-  .ios-notes-app--notes-hidden .ios-notes-sidebar {
-    margin-left: -380px;
-  }
+  min-width: 0;
+  border-right: none;
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* ============================================================================
