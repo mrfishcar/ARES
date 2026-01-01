@@ -439,6 +439,20 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   { name: 'Gandalf', type: 'PERSON', expectedValid: true },
   { name: 'Frodo', type: 'PERSON', expectedValid: true },
   { name: 'Aragorn', type: 'PERSON', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 129: VIDEO GAME CHARACTERS
+  // =========================================================================
+
+  // Nintendo
+  { name: 'Mario', type: 'PERSON', expectedValid: true },
+  { name: 'Zelda', type: 'PERSON', expectedValid: true },
+  { name: 'Link', type: 'PERSON', expectedValid: true },
+
+  // Other games
+  { name: 'Kratos', type: 'PERSON', expectedValid: true },
+  { name: 'Geralt', type: 'PERSON', expectedValid: true },
+  { name: 'Lara', type: 'PERSON', expectedValid: true },
 ];
 
 // =============================================================================
