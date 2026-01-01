@@ -407,6 +407,54 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 73: UNICODE AND MIXED CONTENT
+  // =========================================================================
+
+  describe('Unicode names (accented characters)', () => {
+    it('should handle accented names efficiently', async () => {
+      const templates = [
+        'José García met María López in Barcelona.',
+        'François Müller worked with Søren Bjørnsen.',
+        'Naïve Björk visited Zürich and München.',
+        'Renée Zellweger attended the café meeting.',
+      ];
+
+      let text = '';
+      for (let i = 0; i < 100; i++) {
+        text += templates[i % templates.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`Unicode names: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(50);
+    });
+  });
+
+  describe('Numbers mixed with names', () => {
+    it('should handle text with many numbers', async () => {
+      const templates = [
+        'Harry Potter was born on July 31, 1980.',
+        'The Battle of Hogwarts happened in 1998.',
+        'Dumbledore died at age 150 in the tower.',
+        'Ron had 6 siblings in his family.',
+      ];
+
+      let text = '';
+      for (let i = 0; i < 150; i++) {
+        text += templates[i % templates.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`Numbers mixed: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
