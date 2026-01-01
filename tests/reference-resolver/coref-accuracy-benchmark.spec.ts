@@ -1599,6 +1599,29 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'his', position: 11, context: 'POSSESSIVE', expected: 'Ron Weasley' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 116: PRONOUN ACROSS DIALOGUE
+  // =========================================================================
+
+  // Case 70: Pronoun after reported speech
+  {
+    name: 'Pronoun after reported speech',
+    text: 'Dumbledore said the prophecy was true. He then left.',
+    entities: [
+      createEntity('dumbledore', 'Albus Dumbledore', 'PERSON'),
+    ],
+    spans: [
+      createSpan('dumbledore', 0, 10),
+    ],
+    sentences: [
+      createSentence('Dumbledore said the prophecy was true.', 0),
+      createSentence('He then left.', 39),
+    ],
+    pronounTests: [
+      { pronoun: 'He', position: 39, context: 'SENTENCE_START', expected: 'Albus Dumbledore' },
+    ],
+  },
 ];
 
 // =============================================================================
