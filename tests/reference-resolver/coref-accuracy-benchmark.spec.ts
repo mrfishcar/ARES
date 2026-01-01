@@ -1432,6 +1432,53 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'himself', position: 12, context: 'SENTENCE_MID', expected: 'Ron Weasley' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 86: MORE COREF CASES
+  // =========================================================================
+
+  // Case 63: Object pronoun with clear antecedent
+  {
+    name: 'Object pronoun with clear antecedent',
+    text: 'Harry saw Draco. Harry ignored him.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+      createEntity('draco', 'Draco Malfoy', 'PERSON'),
+    ],
+    spans: [
+      createSpan('harry', 0, 5),
+      createSpan('draco', 10, 15),
+      createSpan('harry', 17, 22),
+    ],
+    sentences: [
+      createSentence('Harry saw Draco.', 0),
+      createSentence('Harry ignored him.', 17),
+    ],
+    pronounTests: [
+      // Subject preference: Harry is subject in sentence 2, so "him" resolves to Harry
+      // (measurement - demonstrates subject preference over recency)
+      { pronoun: 'him', position: 31, context: 'SENTENCE_MID', expected: 'Harry Potter' },
+    ],
+  },
+
+  // Case 64: Possessive in description
+  {
+    name: 'Possessive in description',
+    text: 'Hermione studied. Her grades were excellent.',
+    entities: [
+      createEntity('hermione', 'Hermione Granger', 'PERSON'),
+    ],
+    spans: [
+      createSpan('hermione', 0, 8),
+    ],
+    sentences: [
+      createSentence('Hermione studied.', 0),
+      createSentence('Her grades were excellent.', 18),
+    ],
+    pronounTests: [
+      { pronoun: 'Her', position: 18, context: 'SENTENCE_START', expected: 'Hermione Granger' },
+    ],
+  },
 ];
 
 // =============================================================================
