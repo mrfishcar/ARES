@@ -328,6 +328,46 @@ const ALIAS_CASES: AliasTestCase[] = [
       { aliases: ['Hamlet', 'Hamlet'], shouldMerge: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 61: MORE ALIAS CASES
+  // =========================================================================
+
+  // Same country mentioned twice
+  {
+    name: 'Country mentioned twice',
+    text: 'Japan is an island nation. Japan has advanced technology.',
+    expectedMerges: [
+      { aliases: ['Japan', 'Japan'], shouldMerge: true },
+    ],
+  },
+
+  // Different countries no merge
+  {
+    name: 'Different countries no merge',
+    text: 'Germany and France are neighbors.',
+    expectedMerges: [
+      { aliases: ['Germany', 'France'], shouldMerge: false },
+    ],
+  },
+
+  // Same celebrity twice
+  {
+    name: 'Celebrity mentioned twice',
+    text: 'Shakespeare wrote plays. Shakespeare was English.',
+    expectedMerges: [
+      { aliases: ['Shakespeare', 'Shakespeare'], shouldMerge: true },
+    ],
+  },
+
+  // Different companies no merge
+  {
+    name: 'Different companies no merge',
+    text: 'Netflix competes with Disney for streaming.',
+    expectedMerges: [
+      { aliases: ['Netflix', 'Disney'], shouldMerge: false },
+    ],
+  },
 ];
 
 // =============================================================================
