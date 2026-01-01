@@ -682,6 +682,32 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 113: DENSE ENTITY TEXT
+  // =========================================================================
+
+  describe('Dense entity text', () => {
+    it('should handle many entities per sentence', async () => {
+      const templates = [
+        'Harry, Ron, Hermione, Neville, and Luna gathered together.',
+        'Dumbledore, McGonagall, Snape, and Hagrid watched closely.',
+        'Fred, George, Ginny, and Percy arrived from the Burrow.',
+        'Draco, Crabbe, Goyle, and Pansy waited in the dungeons.',
+      ];
+
+      let text = '';
+      for (let i = 0; i < 100; i++) {
+        text += templates[i % templates.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`Dense entity: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(50);
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
