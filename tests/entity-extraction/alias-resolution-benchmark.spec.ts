@@ -368,6 +368,46 @@ const ALIAS_CASES: AliasTestCase[] = [
       { aliases: ['Netflix', 'Disney'], shouldMerge: false },
     ],
   },
+
+  // =========================================================================
+  // LOOP 67: MORE ALIAS CASES
+  // =========================================================================
+
+  // Same person mentioned twice (wizard)
+  {
+    name: 'Same wizard twice',
+    text: 'Gandalf cast a spell. Gandalf smiled.',
+    expectedMerges: [
+      { aliases: ['Gandalf', 'Gandalf'], shouldMerge: true },
+    ],
+  },
+
+  // Different wizards no merge
+  {
+    name: 'Different wizards no merge',
+    text: 'Gandalf and Saruman argued.',
+    expectedMerges: [
+      { aliases: ['Gandalf', 'Saruman'], shouldMerge: false },
+    ],
+  },
+
+  // Same location twice
+  {
+    name: 'Same location twice (Mordor)',
+    text: 'Mordor was dark. Mordor was dangerous.',
+    expectedMerges: [
+      { aliases: ['Mordor', 'Mordor'], shouldMerge: true },
+    ],
+  },
+
+  // Different locations no merge
+  {
+    name: 'Different locations no merge',
+    text: 'Mordor and Gondor fought wars.',
+    expectedMerges: [
+      { aliases: ['Mordor', 'Gondor'], shouldMerge: false },
+    ],
+  },
 ];
 
 // =============================================================================
