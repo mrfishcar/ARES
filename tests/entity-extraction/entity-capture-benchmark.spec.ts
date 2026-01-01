@@ -589,6 +589,20 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   { name: 'Neil Armstrong', type: 'PERSON', expectedValid: true },
   { name: 'Edmund Hillary', type: 'PERSON', expectedValid: true },
   { name: 'Amelia Earhart', type: 'PERSON', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 179: MILITARY LEADERS
+  // =========================================================================
+
+  // Ancient
+  { name: 'Alexander the Great', type: 'PERSON', expectedValid: true },
+  { name: 'Julius Caesar', type: 'PERSON', expectedValid: true },
+  { name: 'Genghis Khan', type: 'PERSON', expectedValid: true },
+
+  // Modern
+  { name: 'Napoleon Bonaparte', type: 'PERSON', expectedValid: true },
+  { name: 'Dwight Eisenhower', type: 'PERSON', expectedValid: true },
+  { name: 'George Patton', type: 'PERSON', expectedValid: true },
 ];
 
 // =============================================================================
