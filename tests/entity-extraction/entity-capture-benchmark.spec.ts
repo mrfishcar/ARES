@@ -1148,6 +1148,18 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'that', type: 'ITEM', expectedValid: false },
   { name: 'these', type: 'ITEM', expectedValid: false },
   { name: 'those', type: 'ITEM', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 150: QUESTION WORDS
+  // =========================================================================
+
+  // Interrogatives
+  { name: 'what', type: 'ITEM', expectedValid: false },
+  { name: 'where', type: 'ITEM', expectedValid: false },
+  { name: 'when', type: 'ITEM', expectedValid: false },
+  { name: 'why', type: 'ITEM', expectedValid: false },
+  { name: 'how', type: 'ITEM', expectedValid: false },
+  { name: 'which', type: 'ITEM', expectedValid: false },
 ];
 
 // =============================================================================
