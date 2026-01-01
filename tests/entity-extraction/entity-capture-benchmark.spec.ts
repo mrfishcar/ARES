@@ -1005,6 +1005,18 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'most', type: 'ITEM', expectedValid: false },
   { name: 'all', type: 'ITEM', expectedValid: false },
   { name: 'none', type: 'ITEM', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 125: ORDINAL/SEQUENCE WORDS
+  // =========================================================================
+
+  // Ordinals
+  { name: 'first', type: 'ITEM', expectedValid: false },
+  { name: 'second', type: 'ITEM', expectedValid: false },
+  { name: 'last', type: 'ITEM', expectedValid: false },
+  { name: 'next', type: 'ITEM', expectedValid: false },
+  { name: 'final', type: 'ITEM', expectedValid: false },
+  { name: 'other', type: 'ITEM', expectedValid: false },
 ];
 
 // =============================================================================
