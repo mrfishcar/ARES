@@ -864,6 +864,32 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 148: MYSTERY/SUSPENSE TEXT
+  // =========================================================================
+
+  describe('Mystery suspense text', () => {
+    it('should handle tense mystery narratives', async () => {
+      const templates = [
+        'The detective examined the clues carefully.',
+        'Something was definitely wrong here.',
+        'She noticed the door was slightly ajar.',
+        'The footsteps grew louder behind her.',
+      ];
+
+      let text = '';
+      for (let i = 0; i < 100; i++) {
+        text += templates[i % templates.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`Mystery suspense: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
