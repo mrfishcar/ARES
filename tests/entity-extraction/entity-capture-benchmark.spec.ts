@@ -1088,6 +1088,18 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'because', type: 'ITEM', expectedValid: false },
   { name: 'while', type: 'ITEM', expectedValid: false },
   { name: 'although', type: 'ITEM', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 140: EXCLAMATIONS AND INTERJECTIONS
+  // =========================================================================
+
+  // Common interjections
+  { name: 'oh', type: 'ITEM', expectedValid: false },
+  { name: 'ah', type: 'ITEM', expectedValid: false },
+  { name: 'wow', type: 'ITEM', expectedValid: false },
+  { name: 'hey', type: 'ITEM', expectedValid: false },
+  { name: 'well', type: 'ITEM', expectedValid: false },
+  { name: 'oops', type: 'ITEM', expectedValid: false },
 ];
 
 // =============================================================================
