@@ -143,9 +143,11 @@ function createDependencyPath(start: Token, steps: PathStep[]): DependencyPath {
 const PATH_PATTERNS: PathPattern[] = [
   // === MARRIAGE ===
 
-  // "X married Y"
-  { signature: /^(\w+):↑nsubj:marry:↓(dobj|obj):(\w+)$/, predicate: 'married_to', subjectFirst: true },
-  { signature: /^(\w+):↑nsubj:wed:↓(dobj|obj):(\w+)$/, predicate: 'married_to', subjectFirst: true },
+  // "X married Y" - with optional compound prefix/suffix for multi-word names
+  { signature: /^(\w+):↑nsubj:marry:↓(dobj|obj):(\w+)(:↓compound:\w+)?$/, predicate: 'married_to', subjectFirst: true },
+  { signature: /^(\w+):↑nsubj:married:↓(dobj|obj):(\w+)(:↓compound:\w+)?$/, predicate: 'married_to', subjectFirst: true },
+  { signature: /^(\w+):↑compound:\w+:↑nsubj:married:↓(dobj|obj):(\w+)(:↓compound:\w+)?$/, predicate: 'married_to', subjectFirst: true },
+  { signature: /^(\w+):↑nsubj:wed:↓(dobj|obj):(\w+)(:↓compound:\w+)?$/, predicate: 'married_to', subjectFirst: true },
 
   // "Y was married by X" (passive)
   { signature: /^(\w+):↑nsubjpass:marry:↓agent:by:↓pobj:(\w+)$/, predicate: 'married_to', subjectFirst: false },

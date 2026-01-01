@@ -80,6 +80,8 @@ const PREDICATE_EQUIVALENTS: Record<string, string[]> = {
   'recognizes': ['recognized'],
   'admired': ['admires'],
   'admires': ['admired'],
+  'feared': ['fears'],
+  'fears': ['feared'],
   'warned': ['warns'],
   'warns': ['warned'],
   'took': ['takes'],
