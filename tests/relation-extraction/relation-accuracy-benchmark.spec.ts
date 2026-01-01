@@ -628,6 +628,28 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
       { subject: 'Harry', predicate: 'received', object: 'Firebolt', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 132: MORE OBVIOUS RELATIONS
+  // =========================================================================
+
+  // Heard relation
+  {
+    name: 'Heard relation',
+    text: 'Neville heard a strange noise.',
+    expectedRelations: [
+      { subject: 'Neville', predicate: 'heard', object: 'noise', shouldExist: true },
+    ],
+  },
+
+  // Saw relation
+  {
+    name: 'Saw relation',
+    text: 'Luna saw the Thestrals in the forest.',
+    expectedRelations: [
+      { subject: 'Luna', predicate: 'saw', object: 'Thestrals', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
