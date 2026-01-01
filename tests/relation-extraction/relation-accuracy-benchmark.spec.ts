@@ -319,6 +319,46 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
       { subject: 'Dumbledore', predicate: 'trained', object: 'Harry', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 72: MORE OBVIOUS RELATIONS
+  // =========================================================================
+
+  // Met relation
+  {
+    name: 'Met relation',
+    text: 'Harry met Hagrid at the hut.',
+    expectedRelations: [
+      { subject: 'Harry', predicate: 'met', object: 'Hagrid', shouldExist: true },
+    ],
+  },
+
+  // Attacked relation
+  {
+    name: 'Attacked relation',
+    text: 'The dragon attacked the village.',
+    expectedRelations: [
+      { subject: 'dragon', predicate: 'attacked', object: 'village', shouldExist: true },
+    ],
+  },
+
+  // Joined relation
+  {
+    name: 'Joined relation',
+    text: 'Harry joined the Quidditch team.',
+    expectedRelations: [
+      { subject: 'Harry', predicate: 'joined', object: 'Quidditch', shouldExist: true },
+    ],
+  },
+
+  // Protected relation
+  {
+    name: 'Protected relation',
+    text: 'Dumbledore protected Hogwarts from evil.',
+    expectedRelations: [
+      { subject: 'Dumbledore', predicate: 'protected', object: 'Hogwarts', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
