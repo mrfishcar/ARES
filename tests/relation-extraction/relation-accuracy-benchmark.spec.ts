@@ -650,6 +650,28 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
       { subject: 'Luna', predicate: 'saw', object: 'Thestrals', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 137: MORE OBVIOUS RELATIONS
+  // =========================================================================
+
+  // Helped relation
+  {
+    name: 'Helped relation',
+    text: 'Dobby helped Harry escape from Malfoy Manor.',
+    expectedRelations: [
+      { subject: 'Dobby', predicate: 'helped', object: 'Harry', shouldExist: true },
+    ],
+  },
+
+  // Warned relation
+  {
+    name: 'Warned relation',
+    text: 'Trelawney warned Harry about danger.',
+    expectedRelations: [
+      { subject: 'Trelawney', predicate: 'warned', object: 'Harry', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
