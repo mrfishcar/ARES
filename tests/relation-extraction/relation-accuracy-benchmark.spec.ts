@@ -518,6 +518,28 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
       { subject: 'Peter Pettigrew', predicate: 'betrayed', object: 'Potters', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 107: MORE OBVIOUS RELATIONS
+  // =========================================================================
+
+  // Saved relation
+  {
+    name: 'Saved relation',
+    text: 'Harry saved Ginny from the basilisk.',
+    expectedRelations: [
+      { subject: 'Harry', predicate: 'saved', object: 'Ginny', shouldExist: true },
+    ],
+  },
+
+  // Defeated relation
+  {
+    name: 'Defeated relation',
+    text: 'Dumbledore defeated Grindelwald in battle.',
+    expectedRelations: [
+      { subject: 'Dumbledore', predicate: 'defeated', object: 'Grindelwald', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
