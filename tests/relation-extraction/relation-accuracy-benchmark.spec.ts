@@ -390,6 +390,37 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
       { subject: 'Harry', predicate: 'destroyed', object: 'Horcrux', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 82: MORE OBVIOUS RELATIONS
+  // =========================================================================
+
+  // Visited relation
+  {
+    name: 'Visited relation',
+    text: 'Harry visited Hagrid at the hut.',
+    expectedRelations: [
+      { subject: 'Harry', predicate: 'visited', object: 'Hagrid', shouldExist: true },
+    ],
+  },
+
+  // Wrote relation
+  {
+    name: 'Wrote relation',
+    text: 'Lockhart wrote his autobiography.',
+    expectedRelations: [
+      { subject: 'Lockhart', predicate: 'wrote', object: 'autobiography', shouldExist: true },
+    ],
+  },
+
+  // Feared relation
+  {
+    name: 'Feared relation',
+    text: 'Everyone feared Voldemort.',
+    expectedRelations: [
+      { subject: 'Everyone', predicate: 'feared', object: 'Voldemort', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
