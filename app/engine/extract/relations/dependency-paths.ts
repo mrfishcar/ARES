@@ -160,6 +160,9 @@ const PATH_PATTERNS: PathPattern[] = [
   // "X took Y as husband/wife"
   { signature: /^(\w+):↑nsubj:take:↓(dobj|obj):(\w+):↓prep:as:↓pobj:(husband|wife)$/, predicate: 'married_to', subjectFirst: true },
 
+  // "X is married to Y" (adjective form)
+  { signature: /^(\w+):↑nsubj:be:↓acomp:married:↓prep:to:↓pobj:(\w+)$/, predicate: 'married_to', subjectFirst: true },
+
   // === FOUNDING / LEADS ===
 
   // "X founded/created/established Y"
@@ -348,6 +351,9 @@ const PATH_PATTERNS: PathPattern[] = [
 
   // "X, rival of Y"
   { signature: /^(\w+):↑appos:rival:↓prep:(of|to):↓pobj:(\w+)$/, predicate: 'enemy_of', subjectFirst: true },
+
+  // "X is/was the rival of Y"
+  { signature: /^(\w+):↑nsubj:be:↓attr:rival:↓prep:of:↓pobj:(\w+)$/, predicate: 'rival_of', subjectFirst: true },
 
   // === PROFESSIONAL RELATIONSHIPS ===
 
@@ -600,6 +606,9 @@ const PATH_PATTERNS: PathPattern[] = [
   // "X is the parent/mother/father of Y" → X parent_of Y
   { signature: /^(\w+):↑nsubj:be:↓attr:(parent|mother|father):↓prep:of:↓pobj:(\w+)$/, predicate: 'parent_of', subjectFirst: true },
 
+  // "X is the grandfather/grandmother of Y" → X parent_of Y (grandparent treated as parent)
+  { signature: /^(\w+):↑nsubj:be:↓attr:(grandfather|grandmother|grandparent):↓prep:of:↓pobj:(\w+)$/, predicate: 'parent_of', subjectFirst: true },
+
   // "X, parent of Y" (appositive)
   { signature: /^(\w+):↑appos:(parent|mother|father):↓prep:of:↓pobj:(\w+)$/, predicate: 'parent_of', subjectFirst: true },
 
@@ -621,6 +630,9 @@ const PATH_PATTERNS: PathPattern[] = [
 
   // "X and Y are siblings"
   { signature: /^(\w+):↑conj:(\w+):↑nsubj:be:↓attr:sibling$/, predicate: 'sibling_of', subjectFirst: true },
+
+  // "X is the brother/sister of Y"
+  { signature: /^(\w+):↑nsubj:be:↓attr:(brother|sister|sibling):↓prep:of:↓pobj:(\w+)$/, predicate: 'sibling_of', subjectFirst: true },
 
   // "X's brother/sister"
   { signature: /^(brother|sister|sibling):↓poss:(\w+)$/, predicate: 'sibling_of', subjectFirst: false },
@@ -675,8 +687,8 @@ const PATH_PATTERNS: PathPattern[] = [
   // "X fought/battled Y"
   { signature: /^(\w+):↑nsubj:(fight|battle|combat):↓(dobj|obj):(\w+)$/, predicate: 'enemy_of', subjectFirst: true },
 
-  // "X attacked Y"
-  { signature: /^(\w+):↑nsubj:(attack|assault|strike):↓(dobj|obj):(\w+)$/, predicate: 'enemy_of', subjectFirst: true },
+  // "X assaulted/struck Y"
+  { signature: /^(\w+):↑nsubj:(assault|strike):↓(dobj|obj):(\w+)$/, predicate: 'enemy_of', subjectFirst: true },
 
   // "X defeated/destroyed Y"
   { signature: /^(\w+):↑nsubj:(defeat|destroy|vanquish|conquer):↓(dobj|obj):(\w+)$/, predicate: 'defeated', subjectFirst: true },
@@ -705,7 +717,7 @@ const PATH_PATTERNS: PathPattern[] = [
   { signature: /^(\w+):↑nsubj:be:↓attr:ally:↓prep:of:↓pobj:(\w+)$/, predicate: 'ally_of', subjectFirst: true },
 
   // "X accompanied Y"
-  { signature: /^(\w+):↑nsubj:(accompany|join|follow):↓(dobj|obj):(\w+)$/, predicate: 'ally_of', subjectFirst: true },
+  { signature: /^(\w+):↑nsubj:(accompany|join):↓(dobj|obj):(\w+)$/, predicate: 'ally_of', subjectFirst: true },
 
   // === IMPRISONMENT / CONFINEMENT ===
 
@@ -717,6 +729,122 @@ const PATH_PATTERNS: PathPattern[] = [
 
   // "X escaped from Y"
   { signature: /^(\w+):↑nsubj:escape:↓prep:from:↓pobj:(\w+)$/, predicate: 'freed_from', subjectFirst: true },
+
+  // === INTERPERSONAL ACTIONS (SVO verbs) ===
+
+  // "X trusted Y"
+  { signature: /^(\w+):↑nsubj:trust:↓(dobj|obj):(\w+)$/, predicate: 'trusted', subjectFirst: true },
+
+  // "X helped Y"
+  { signature: /^(\w+):↑nsubj:help:↓(dobj|obj):(\w+)$/, predicate: 'helped', subjectFirst: true },
+
+  // "X saved/rescued Y"
+  { signature: /^(\w+):↑nsubj:(save|rescue):↓(dobj|obj):(\w+)$/, predicate: 'saved', subjectFirst: true },
+
+  // "X betrayed Y"
+  { signature: /^(\w+):↑nsubj:betray:↓(dobj|obj):(\w+)$/, predicate: 'betrayed', subjectFirst: true },
+
+  // "X protected/defended Y"
+  { signature: /^(\w+):↑nsubj:(protect|defend|guard|shield):↓(dobj|obj):(\w+)$/, predicate: 'protected', subjectFirst: true },
+
+  // "X captured/caught Y"
+  { signature: /^(\w+):↑nsubj:(capture|catch|seize|arrest):↓(dobj|obj):(\w+)$/, predicate: 'captured', subjectFirst: true },
+
+  // "X feared/dreaded Y"
+  { signature: /^(\w+):↑nsubj:(fear|dread):↓(dobj|obj):(\w+)$/, predicate: 'feared', subjectFirst: true },
+
+  // "X followed Y"
+  { signature: /^(\w+):↑nsubj:follow:↓(dobj|obj):(\w+)$/, predicate: 'followed', subjectFirst: true },
+
+  // "X attacked Y"
+  { signature: /^(\w+):↑nsubj:attack:↓(dobj|obj):(\w+)$/, predicate: 'attacked', subjectFirst: true },
+
+  // "X loved Y"
+  { signature: /^(\w+):↑nsubj:love:↓(dobj|obj):(\w+)$/, predicate: 'loved', subjectFirst: true },
+
+  // "X hated Y"
+  { signature: /^(\w+):↑nsubj:hate:↓(dobj|obj):(\w+)$/, predicate: 'hated', subjectFirst: true },
+
+  // "X wrote Y"
+  { signature: /^(\w+):↑nsubj:write:↓(dobj|obj):(\w+)$/, predicate: 'wrote', subjectFirst: true },
+
+  // "X created Y"
+  { signature: /^(\w+):↑nsubj:create:↓(dobj|obj):(\w+)$/, predicate: 'created', subjectFirst: true },
+
+  // "X destroyed Y"
+  { signature: /^(\w+):↑nsubj:destroy:↓(dobj|obj):(\w+)$/, predicate: 'destroyed', subjectFirst: true },
+
+  // "X built Y"
+  { signature: /^(\w+):↑nsubj:build:↓(dobj|obj):(\w+)$/, predicate: 'built', subjectFirst: true },
+
+  // "X taught Y"
+  { signature: /^(\w+):↑nsubj:teach:↓(dobj|obj):(\w+)$/, predicate: 'taught', subjectFirst: true },
+
+  // "X studied Y"
+  { signature: /^(\w+):↑nsubj:study:↓(dobj|obj):(\w+)$/, predicate: 'studied', subjectFirst: true },
+
+  // "X found Y"
+  { signature: /^(\w+):↑nsubj:find:↓(dobj|obj):(\w+)$/, predicate: 'found', subjectFirst: true },
+
+  // "X led Y"
+  { signature: /^(\w+):↑nsubj:lead:↓(dobj|obj):(\w+)$/, predicate: 'led', subjectFirst: true },
+
+  // "X defended Y"
+  { signature: /^(\w+):↑nsubj:defend:↓(dobj|obj):(\w+)$/, predicate: 'defended', subjectFirst: true },
+
+  // "X warned Y"
+  { signature: /^(\w+):↑nsubj:warn:↓(dobj|obj):(\w+)$/, predicate: 'warned', subjectFirst: true },
+
+  // "X saw Y"
+  { signature: /^(\w+):↑nsubj:see:↓(dobj|obj):(\w+)$/, predicate: 'saw', subjectFirst: true },
+
+  // "X heard Y"
+  { signature: /^(\w+):↑nsubj:hear:↓(dobj|obj):(\w+)$/, predicate: 'heard', subjectFirst: true },
+
+  // "X discovered Y"
+  { signature: /^(\w+):↑nsubj:discover:↓(dobj|obj):(\w+)$/, predicate: 'discovered', subjectFirst: true },
+
+  // "X lost Y"
+  { signature: /^(\w+):↑nsubj:lose:↓(dobj|obj):(\w+)$/, predicate: 'lost', subjectFirst: true },
+
+  // "X read Y"
+  { signature: /^(\w+):↑nsubj:read:↓(dobj|obj):(\w+)$/, predicate: 'read', subjectFirst: true },
+
+  // "X knew Y"
+  { signature: /^(\w+):↑nsubj:know:↓(dobj|obj):(\w+)$/, predicate: 'knew', subjectFirst: true },
+
+  // "X guided Y"
+  { signature: /^(\w+):↑nsubj:guide:↓(dobj|obj):(\w+)$/, predicate: 'guided', subjectFirst: true },
+
+  // "X took Y"
+  { signature: /^(\w+):↑nsubj:take:↓(dobj|obj):(\w+)$/, predicate: 'took', subjectFirst: true },
+
+  // "X gave Y"
+  { signature: /^(\w+):↑nsubj:give:↓(dobj|obj):(\w+)$/, predicate: 'gave', subjectFirst: true },
+
+  // "X received Y"
+  { signature: /^(\w+):↑nsubj:receive:↓(dobj|obj):(\w+)$/, predicate: 'received', subjectFirst: true },
+
+  // "X sent Y"
+  { signature: /^(\w+):↑nsubj:send:↓(dobj|obj):(\w+)$/, predicate: 'sent', subjectFirst: true },
+
+  // "X told Y"
+  { signature: /^(\w+):↑nsubj:tell:↓(dobj|obj):(\w+)$/, predicate: 'told', subjectFirst: true },
+
+  // "X asked Y"
+  { signature: /^(\w+):↑nsubj:ask:↓(dobj|obj):(\w+)$/, predicate: 'asked', subjectFirst: true },
+
+  // "X visited Y"
+  { signature: /^(\w+):↑nsubj:visit:↓(dobj|obj):(\w+)$/, predicate: 'visited', subjectFirst: true },
+
+  // "X met Y"
+  { signature: /^(\w+):↑nsubj:meet:↓(dobj|obj):(\w+)$/, predicate: 'met', subjectFirst: true },
+
+  // "X owned Y"
+  { signature: /^(\w+):↑nsubj:own:↓(dobj|obj):(\w+)$/, predicate: 'owned', subjectFirst: true },
+
+  // "X escaped from Y"
+  { signature: /^(\w+):↑nsubj:escape:↓prep:from:↓pobj:(\w+)$/, predicate: 'escaped', subjectFirst: true },
 
   // === COUNCIL / GROUP MEMBERSHIP ===
 
