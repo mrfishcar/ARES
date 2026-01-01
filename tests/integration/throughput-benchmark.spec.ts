@@ -135,6 +135,80 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =============================================================================
+  // STRESS TESTS - Loop 23
+  // =============================================================================
+
+  describe('Massive text (15000 words)', () => {
+    it('should handle very large documents', async () => {
+      const text = generateNarrativeText(15000);
+      const result = await benchmarkExtraction(text);
+      results.push(result);
+
+      console.log(`Massive text: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
+  describe('Dense entity text (500 unique entities)', () => {
+    it('should handle high entity density', async () => {
+      // Generate text with many unique named entities
+      const entities = [
+        'Alice', 'Bob', 'Charlie', 'David', 'Emma', 'Frank', 'Grace', 'Henry',
+        'Isabella', 'Jack', 'Katherine', 'Liam', 'Maria', 'Nathan', 'Olivia', 'Peter',
+        'Quinn', 'Rachel', 'Samuel', 'Tina', 'Ulysses', 'Victoria', 'William', 'Xavier',
+        'Yolanda', 'Zachary', 'Andrew', 'Bella', 'Cameron', 'Diana', 'Edward', 'Fiona',
+        'George', 'Hannah', 'Ivan', 'Julia', 'Kevin', 'Laura', 'Michael', 'Nancy',
+        'Oscar', 'Patricia', 'Quincy', 'Rebecca', 'Steven', 'Teresa', 'Uma', 'Vincent',
+      ];
+      const locations = ['London', 'Paris', 'Tokyo', 'Berlin', 'Madrid', 'Rome', 'Vienna'];
+      const orgs = ['Microsoft', 'Google', 'Amazon', 'Apple', 'Netflix', 'Tesla', 'SpaceX'];
+
+      const sentences: string[] = [];
+      for (let i = 0; i < 500; i++) {
+        const person = entities[i % entities.length] + (i >= entities.length ? i.toString() : '');
+        const loc = locations[i % locations.length];
+        const org = orgs[i % orgs.length];
+        sentences.push(`${person} works at ${org} in ${loc}.`);
+      }
+
+      const text = sentences.join(' ');
+      const result = await benchmarkExtraction(text);
+      results.push(result);
+
+      console.log(`Dense entities: ${result.wordsPerSecond.toFixed(1)} words/sec, ${result.entityCount} entities`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(50); // Lower threshold for dense entities
+    });
+  });
+
+  describe('Pronoun-heavy text (reference resolution)', () => {
+    it('should handle many pronouns efficiently', async () => {
+      // Text with pronouns that need resolution
+      const templates = [
+        'Harry met Ron. He told him about the plan.',
+        'Hermione studied. She found the answer in her book.',
+        'The wizard cast a spell. He was powerful.',
+        'Luna saw Neville. She waved to him.',
+        'Dumbledore spoke. His words were wise.',
+        'McGonagall transformed. Her skills were legendary.',
+        'Snape brewed. His potions were perfect.',
+        'Hagrid arrived. He brought his creatures.',
+      ];
+
+      const sentences: string[] = [];
+      for (let i = 0; i < 300; i++) {
+        sentences.push(templates[i % templates.length]);
+      }
+
+      const text = sentences.join(' ');
+      const result = await benchmarkExtraction(text);
+      results.push(result);
+
+      console.log(`Pronoun-heavy: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
