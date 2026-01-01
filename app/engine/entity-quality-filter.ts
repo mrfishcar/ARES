@@ -393,6 +393,14 @@ function looksLikeSurname(word: string): boolean {
     'ner', 'ter',               // Gardener, Carpenter, etc.
     'ey', 'ay',                 // Finley, Murray, etc.
     'tt', 'ott',                // Scott, Abbott, etc.
+    // Common vowel endings for non-Anglo surnames
+    'ama', 'ima', 'uma',        // Obama, Fujima, etc.
+    'aro', 'ero', 'iro', 'oro', 'uro', // Castro, Shapiro, etc.
+    'ez', 'az', 'iz', 'oz', 'uz',     // Hernandez, Diaz, Ortiz, Cruz, etc.
+    'ia', 'io',                 // Garcia, Ortega->via, Antonio, etc.
+    'elli', 'ini', 'oni', 'ani', // Morelli, Rossini, Belloni, etc.
+    'ov', 'ev', 'ova', 'eva',   // Petrov, Ivanov, Petrova, etc.
+    'uk', 'ko', 'ka',           // Kovalchuk, Shevchenko, etc.
   ];
 
   if (surnameEndings.some(end => lower.endsWith(end))) {
