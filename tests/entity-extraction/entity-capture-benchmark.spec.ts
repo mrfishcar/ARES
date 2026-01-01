@@ -467,6 +467,25 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   { name: 'Merlin', type: 'PERSON', expectedValid: true },
   { name: 'Tinkerbell', type: 'PERSON', expectedValid: true },
   { name: 'Rumpelstiltskin', type: 'PERSON', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 139: SPORTS FIGURES
+  // =========================================================================
+
+  // Football
+  { name: 'Lionel Messi', type: 'PERSON', expectedValid: true },
+  { name: 'Cristiano Ronaldo', type: 'PERSON', expectedValid: true },
+  { name: 'Pelé', type: 'PERSON', expectedValid: true },
+
+  // Basketball
+  { name: 'Michael Jordan', type: 'PERSON', expectedValid: true },
+  { name: 'LeBron James', type: 'PERSON', expectedValid: true },
+  { name: 'Kobe Bryant', type: 'PERSON', expectedValid: true },
+
+  // Tennis
+  { name: 'Roger Federer', type: 'PERSON', expectedValid: true },
+  { name: 'Serena Williams', type: 'PERSON', expectedValid: true },
+  { name: 'Rafael Nadal', type: 'PERSON', expectedValid: true },
 ];
 
 // =============================================================================
