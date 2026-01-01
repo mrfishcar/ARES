@@ -655,6 +655,33 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 108: MULTI-PARAGRAPH TEXT
+  // =========================================================================
+
+  describe('Multi-paragraph text', () => {
+    it('should handle text with paragraph breaks', async () => {
+      const paragraphs = [
+        'Harry walked through the castle. The halls were empty.',
+        'Hermione waited in the library. She had important news.',
+        'Ron joined them later. The three friends began to plan.',
+        'Dumbledore watched from afar. He trusted their judgment.',
+      ];
+
+      let text = paragraphs.join('\n\n');
+      // Repeat to get more words
+      for (let i = 0; i < 10; i++) {
+        text += '\n\n' + paragraphs.join('\n\n');
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`Multi-paragraph: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
