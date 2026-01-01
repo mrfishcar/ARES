@@ -1085,6 +1085,51 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'It', position: 30, context: 'SENTENCE_START', expected: 'Daily Prophet' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 43: MORE COREF CASES
+  // =========================================================================
+
+  // Case 47: His + possessive continuation
+  {
+    name: 'Possessive chain with male',
+    text: 'Dumbledore raised his wand. His spell was powerful.',
+    entities: [
+      createEntity('dumbledore', 'Albus Dumbledore', 'PERSON'),
+    ],
+    spans: [
+      createSpan('dumbledore', 0, 10),
+    ],
+    sentences: [
+      createSentence('Dumbledore raised his wand.', 0),
+      createSentence('His spell was powerful.', 28),
+    ],
+    pronounTests: [
+      { pronoun: 'his', position: 18, context: 'SENTENCE_MID', expected: 'Albus Dumbledore' },
+      { pronoun: 'His', position: 28, context: 'SENTENCE_START', expected: 'Albus Dumbledore' },
+    ],
+  },
+
+  // Case 48: Simple him reference
+  {
+    name: 'Object pronoun to male',
+    text: 'Ron waited. Hermione found him.',
+    entities: [
+      createEntity('ron', 'Ron Weasley', 'PERSON'),
+      createEntity('hermione', 'Hermione Granger', 'PERSON'),
+    ],
+    spans: [
+      createSpan('ron', 0, 3),
+      createSpan('hermione', 12, 20),
+    ],
+    sentences: [
+      createSentence('Ron waited.', 0),
+      createSentence('Hermione found him.', 12),
+    ],
+    pronounTests: [
+      { pronoun: 'him', position: 27, context: 'SENTENCE_MID', expected: 'Ron Weasley' },
+    ],
+  },
 ];
 
 // =============================================================================
