@@ -672,6 +672,37 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
       { subject: 'Trelawney', predicate: 'warned', object: 'Harry', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 142: DESTROYED/CREATED VERBS
+  // =========================================================================
+
+  // Destroyed relation
+  {
+    name: 'Destroyed relation',
+    text: 'Harry destroyed the Horcrux.',
+    expectedRelations: [
+      { subject: 'Harry', predicate: 'destroyed', object: 'Horcrux', shouldExist: true },
+    ],
+  },
+
+  // Created relation
+  {
+    name: 'Created relation',
+    text: 'Voldemort created seven Horcruxes.',
+    expectedRelations: [
+      { subject: 'Voldemort', predicate: 'created', object: 'Horcruxes', shouldExist: true },
+    ],
+  },
+
+  // Built relation
+  {
+    name: 'Built relation',
+    text: 'The founders built Hogwarts together.',
+    expectedRelations: [
+      { subject: 'founders', predicate: 'built', object: 'Hogwarts', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
