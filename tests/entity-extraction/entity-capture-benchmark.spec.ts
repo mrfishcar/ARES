@@ -760,6 +760,22 @@ const ADVERSARIAL_CASES: ObviousEntityCase[] = [
   // Brand names as organizations (valid)
   { name: 'Apple', type: 'ORG', expectedValid: true },
   { name: 'Amazon', type: 'ORG', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 63: MORE ADVERSARIAL CASES
+  // =========================================================================
+
+  // Day names as surnames (valid with NER)
+  { name: 'Friday', type: 'PERSON', expectedValid: true, context: { fullText: 'Robinson Crusoe met Friday.', hasNERSupport: true } },
+  { name: 'Monday', type: 'PERSON', expectedValid: true, context: { fullText: 'Joe Monday investigated.', hasNERSupport: true } },
+
+  // Month names in person names (valid with NER)
+  { name: 'August', type: 'PERSON', expectedValid: true, context: { fullText: 'August Wilson was a playwright.', hasNERSupport: true } },
+  { name: 'March', type: 'PERSON', expectedValid: true, context: { fullText: 'Jo March was a writer.', hasNERSupport: true } },
+
+  // Historical places (valid)
+  { name: 'Constantinople', type: 'PLACE', expectedValid: true },
+  { name: 'Babylon', type: 'PLACE', expectedValid: true },
 ];
 
 // =============================================================================
