@@ -796,6 +796,37 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
       { subject: 'Hagrid', predicate: 'recognized', object: 'Harry', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 162: LOVED/HATED VERBS
+  // =========================================================================
+
+  // Loved relation
+  {
+    name: 'Loved relation',
+    text: 'Snape loved Lily deeply.',
+    expectedRelations: [
+      { subject: 'Snape', predicate: 'loved', object: 'Lily', shouldExist: true },
+    ],
+  },
+
+  // Hated relation
+  {
+    name: 'Hated relation',
+    text: 'Draco hated Harry from the start.',
+    expectedRelations: [
+      { subject: 'Draco', predicate: 'hated', object: 'Harry', shouldExist: true },
+    ],
+  },
+
+  // Admired relation
+  {
+    name: 'Admired relation',
+    text: 'Harry admired Dumbledore greatly.',
+    expectedRelations: [
+      { subject: 'Harry', predicate: 'admired', object: 'Dumbledore', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
