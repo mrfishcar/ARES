@@ -425,6 +425,42 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'third', type: 'PERSON', expectedValid: false },
   { name: 'fourth', type: 'PERSON', expectedValid: false },
   { name: 'fifth', type: 'PERSON', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 29: MORE JUNK CASES
+  // =========================================================================
+
+  // Articles/Determiners
+  { name: 'the', type: 'PERSON', expectedValid: false },
+  { name: 'a', type: 'PERSON', expectedValid: false },
+  { name: 'an', type: 'PERSON', expectedValid: false },
+  { name: 'this', type: 'PERSON', expectedValid: false },
+  { name: 'that', type: 'PERSON', expectedValid: false },
+  { name: 'these', type: 'PERSON', expectedValid: false },
+  { name: 'those', type: 'PERSON', expectedValid: false },
+
+  // Comparative/superlative adjectives
+  { name: 'more', type: 'PERSON', expectedValid: false },
+  { name: 'less', type: 'PERSON', expectedValid: false },
+  { name: 'other', type: 'PERSON', expectedValid: false },
+  { name: 'another', type: 'PERSON', expectedValid: false },
+  { name: 'same', type: 'PERSON', expectedValid: false },
+  { name: 'different', type: 'PERSON', expectedValid: false },
+  { name: 'similar', type: 'PERSON', expectedValid: false },
+
+  // Auxiliary verbs
+  { name: 'is', type: 'PERSON', expectedValid: false },
+  { name: 'was', type: 'PERSON', expectedValid: false },
+  { name: 'are', type: 'PERSON', expectedValid: false },
+  { name: 'were', type: 'PERSON', expectedValid: false },
+  { name: 'been', type: 'PERSON', expectedValid: false },
+  { name: 'being', type: 'PERSON', expectedValid: false },
+  { name: 'have', type: 'PERSON', expectedValid: false },
+  { name: 'has', type: 'PERSON', expectedValid: false },
+  { name: 'had', type: 'PERSON', expectedValid: false },
+  { name: 'do', type: 'PERSON', expectedValid: false },
+  { name: 'does', type: 'PERSON', expectedValid: false },
+  { name: 'did', type: 'PERSON', expectedValid: false },
 ];
 
 // =============================================================================
