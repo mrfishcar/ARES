@@ -765,6 +765,37 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
       { subject: 'Luna', predicate: 'studied', object: 'articles', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 157: KNEW/MET VERBS
+  // =========================================================================
+
+  // Knew relation
+  {
+    name: 'Knew relation',
+    text: 'Dumbledore knew Tom Riddle as a student.',
+    expectedRelations: [
+      { subject: 'Dumbledore', predicate: 'knew', object: 'Tom Riddle', shouldExist: true },
+    ],
+  },
+
+  // Met relation
+  {
+    name: 'Met relation',
+    text: 'Harry met Sirius in the Shrieking Shack.',
+    expectedRelations: [
+      { subject: 'Harry', predicate: 'met', object: 'Sirius', shouldExist: true },
+    ],
+  },
+
+  // Recognized relation
+  {
+    name: 'Recognized relation',
+    text: 'Hagrid recognized Harry immediately.',
+    expectedRelations: [
+      { subject: 'Hagrid', predicate: 'recognized', object: 'Harry', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
