@@ -868,6 +868,23 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'everybody', type: 'PERSON', expectedValid: false },
   { name: 'myself', type: 'PERSON', expectedValid: false },
   { name: 'yourself', type: 'PERSON', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 100 MILESTONE: ABSTRACT CONCEPTS AND STATES
+  // =========================================================================
+
+  // Abstract concepts (should never be entities)
+  { name: 'truth', type: 'ITEM', expectedValid: false },
+  { name: 'freedom', type: 'ITEM', expectedValid: false },
+  { name: 'peace', type: 'ITEM', expectedValid: false },
+  { name: 'war', type: 'ITEM', expectedValid: false },
+  { name: 'love', type: 'ITEM', expectedValid: false },
+  { name: 'death', type: 'ITEM', expectedValid: false },
+
+  // Physical states
+  { name: 'darkness', type: 'ITEM', expectedValid: false },
+  { name: 'silence', type: 'ITEM', expectedValid: false },
+  { name: 'chaos', type: 'ITEM', expectedValid: false },
 ];
 
 // =============================================================================
