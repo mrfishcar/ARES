@@ -209,6 +209,60 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 28: MORE THROUGHPUT EDGE CASES
+  // =========================================================================
+
+  describe('Dialogue-heavy text', () => {
+    it('should handle dialogue patterns efficiently', async () => {
+      const templates = [
+        '"I will find you," said Harry.',
+        '"Never," replied Voldemort.',
+        '"Help me," whispered Hermione.',
+        '"Follow me," commanded Dumbledore.',
+        '"Be careful," warned McGonagall.',
+        '"Stay here," ordered Snape.',
+      ];
+
+      const sentences: string[] = [];
+      for (let i = 0; i < 300; i++) {
+        sentences.push(templates[i % templates.length]);
+      }
+
+      const text = sentences.join(' ');
+      const result = await benchmarkExtraction(text);
+      results.push(result);
+
+      console.log(`Dialogue-heavy: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
+  describe('Relation-heavy text', () => {
+    it('should handle many relations efficiently', async () => {
+      const templates = [
+        'Harry Potter is the son of James Potter.',
+        'Ron Weasley is the brother of Ginny Weasley.',
+        'Dumbledore was the headmaster of Hogwarts.',
+        'Snape worked at Hogwarts School.',
+        'Hermione married Ron Weasley.',
+        'Draco was the enemy of Harry.',
+      ];
+
+      const sentences: string[] = [];
+      for (let i = 0; i < 300; i++) {
+        sentences.push(templates[i % templates.length]);
+      }
+
+      const text = sentences.join(' ');
+      const result = await benchmarkExtraction(text);
+      results.push(result);
+
+      console.log(`Relation-heavy: ${result.wordsPerSecond.toFixed(1)} words/sec, ${result.relationCount} relations`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(50); // Lower for relation extraction
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
