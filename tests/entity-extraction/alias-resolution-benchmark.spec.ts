@@ -168,6 +168,46 @@ const ALIAS_CASES: AliasTestCase[] = [
       { aliases: ['Potter', 'Weasley'], shouldMerge: false },
     ],
   },
+
+  // =========================================================================
+  // LOOP 32: MORE ALIAS CASES
+  // =========================================================================
+
+  // Nickname to full name
+  {
+    name: 'Same entity mentioned twice',
+    text: 'Gandalf spoke. Gandalf smiled.',
+    expectedMerges: [
+      { aliases: ['Gandalf', 'Gandalf'], shouldMerge: true },
+    ],
+  },
+
+  // Place aliases
+  {
+    name: 'Place full and short form',
+    text: 'New York City is large. New York has many people.',
+    expectedMerges: [
+      { aliases: ['New York City', 'New York'], shouldMerge: true },
+    ],
+  },
+
+  // Organization consistency
+  {
+    name: 'Organization repeated',
+    text: 'Apple announced earnings. Apple stock rose.',
+    expectedMerges: [
+      { aliases: ['Apple', 'Apple'], shouldMerge: true },
+    ],
+  },
+
+  // Different people same surname (should NOT merge)
+  {
+    name: 'Different people same surname',
+    text: 'Harry Potter arrived. James Potter waited.',
+    expectedMerges: [
+      { aliases: ['Harry Potter', 'James Potter'], shouldMerge: false },
+    ],
+  },
 ];
 
 // =============================================================================
