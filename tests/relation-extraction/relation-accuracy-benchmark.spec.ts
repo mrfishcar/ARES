@@ -375,6 +375,26 @@ const DIRECTION_TEST_CASES: RelationTestCase[] = [
       { subject: 'Harry', predicate: 'friends_with', object: 'Ron', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 55: MORE DIRECTION TESTS
+  // =========================================================================
+
+  {
+    name: 'Creator direction',
+    text: 'J.K. Rowling created Harry Potter.',
+    expectedRelations: [
+      { subject: 'Rowling', predicate: 'created', object: 'Harry', shouldExist: true },
+      { subject: 'Harry', predicate: 'created', object: 'Rowling', shouldExist: false },
+    ],
+  },
+  {
+    name: 'Employee of direction',
+    text: 'Dobby served the Malfoy family.',
+    expectedRelations: [
+      { subject: 'Dobby', predicate: 'works_at', object: 'Malfoy', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
