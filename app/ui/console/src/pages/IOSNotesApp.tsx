@@ -1798,8 +1798,8 @@ export function IOSNotesApp() {
     loadFromStorage(STORAGE_KEYS.NOTES, DEFAULT_NOTES)
   );
 
-  // Mobile navigation state
-  const [mobileView, setMobileView] = useState<'folders' | 'notes' | 'editor'>('folders');
+  // Mobile navigation state - start on notes view (All Notes)
+  const [mobileView, setMobileView] = useState<'folders' | 'notes' | 'editor'>('notes');
 
   // Shared state
   const [currentFolderId, setCurrentFolderId] = useState<string>('all');
@@ -2105,7 +2105,13 @@ export function IOSNotesApp() {
             <header className="ios-header ios-header--large">
               <div className="ios-header__nav">
                 <div className="ios-header__left">
-                  <BackButton onClick={handleMobileBack} label="Folders" />
+                  <button
+                    className="ios-icon-button"
+                    onClick={() => setMobileView('folders')}
+                    aria-label="Folders"
+                  >
+                    {Icons.folder}
+                  </button>
                 </div>
                 <div className="ios-header__right">
                   <button className="ios-icon-button">{Icons.more}</button>

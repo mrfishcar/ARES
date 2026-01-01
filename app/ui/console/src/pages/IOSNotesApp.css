@@ -113,6 +113,46 @@ html, body {
 }
 
 /* ============================================================================
+   MOBILE VIEW TRANSITIONS
+============================================================================ */
+
+/* Slide in from right (push navigation - going deeper) */
+@keyframes ios-slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0.8;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Slide in from left (pop navigation - going back) */
+@keyframes ios-slide-in-left {
+  from {
+    transform: translateX(-30%);
+    opacity: 0.5;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Apply animations to mobile views */
+.ios-notes-app--mobile > .ios-folders-view,
+.ios-notes-app--mobile > .ios-notes-list-view,
+.ios-notes-app--mobile > .ios-editor-panel {
+  animation: ios-slide-in-right 0.3s ease-out;
+}
+
+/* Going back animation (folders view appearing) */
+.ios-notes-app--mobile > .ios-folders-view {
+  animation: ios-slide-in-left 0.25s ease-out;
+}
+
+/* ============================================================================
    COMMON ELEMENTS
 ============================================================================ */
 
@@ -129,6 +169,7 @@ html, body {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   padding: 0;
+  transition: opacity 0.15s ease-out;
 }
 
 .ios-icon-button svg {
@@ -169,6 +210,7 @@ html, body {
   font-size: var(--ios-font-body);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s ease-out;
 }
 
 .ios-back-button svg {
@@ -339,6 +381,7 @@ html, body {
   text-align: left;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s ease-out;
 }
 
 .ios-folder-row:not(:last-child) {
@@ -590,6 +633,7 @@ html, body {
   color: var(--ios-yellow);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s ease-out;
 }
 
 .ios-compose-button svg {
@@ -626,6 +670,7 @@ html, body {
   flex-direction: column;
   background: var(--ios-bg-primary);
   border-right: 0.5px solid var(--ios-separator);
+  transition: transform 0.3s ease-out, width 0.3s ease-out, margin 0.3s ease-out;
 }
 
 .ios-folders-sidebar__header {
@@ -716,6 +761,7 @@ html, body {
   flex-direction: column;
   background: var(--ios-bg-primary);
   border-right: 0.5px solid var(--ios-separator);
+  transition: transform 0.3s ease-out, width 0.3s ease-out, margin 0.3s ease-out;
 }
 
 .ios-notes-sidebar__header {
@@ -983,6 +1029,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background 0.15s ease-out, color 0.15s ease-out;
 }
 
 .ios-checkbox:hover {
@@ -1132,6 +1179,7 @@ html, body {
   background: none;
   color: var(--ios-yellow);
   cursor: pointer;
+  transition: opacity 0.15s ease-out;
 }
 
 .ios-toolbar-button svg {
@@ -1206,6 +1254,7 @@ html, body {
   border-radius: var(--ios-radius-sm);
   min-width: 64px;
   -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s ease-out;
 }
 
 .ios-dropdown-menu__icon-btn svg {
@@ -1243,6 +1292,7 @@ html, body {
   text-align: left;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s ease-out;
 }
 
 .ios-dropdown-menu__item:hover {
@@ -1540,6 +1590,30 @@ html, body {
 @media (min-width: 1024px) {
   .ios-notes-sidebar {
     width: 380px;
+  }
+}
+
+/* ============================================================================
+   SIDEBAR SLIDE ANIMATIONS (Tablet)
+============================================================================ */
+
+/* Hidden folders sidebar - slides off to the left */
+.ios-notes-app--folders-hidden .ios-folders-sidebar {
+  width: 0;
+  margin-left: -260px;
+  overflow: hidden;
+}
+
+/* Hidden notes sidebar - slides off to the left */
+.ios-notes-app--notes-hidden .ios-notes-sidebar {
+  width: 0;
+  margin-left: -320px;
+  overflow: hidden;
+}
+
+@media (min-width: 1024px) {
+  .ios-notes-app--notes-hidden .ios-notes-sidebar {
+    margin-left: -380px;
   }
 }
 
