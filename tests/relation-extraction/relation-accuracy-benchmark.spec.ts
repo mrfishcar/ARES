@@ -421,6 +421,37 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
       { subject: 'Everyone', predicate: 'feared', object: 'Voldemort', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 87: MORE OBVIOUS RELATIONS
+  // =========================================================================
+
+  // Built relation
+  {
+    name: 'Built relation',
+    text: 'Rowena built a tower.',
+    expectedRelations: [
+      { subject: 'Rowena', predicate: 'built', object: 'tower', shouldExist: true },
+    ],
+  },
+
+  // Found relation
+  {
+    name: 'Found relation',
+    text: 'Harry found the Chamber of Secrets.',
+    expectedRelations: [
+      { subject: 'Harry', predicate: 'found', object: 'Chamber', shouldExist: true },
+    ],
+  },
+
+  // Led relation
+  {
+    name: 'Led relation',
+    text: 'Dumbledore led the Order.',
+    expectedRelations: [
+      { subject: 'Dumbledore', predicate: 'led', object: 'Order', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
