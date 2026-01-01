@@ -213,6 +213,12 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
   'hand', 'hands', 'head', 'heads', 'heart', 'hearts', 'eyes', 'eye', 'face', 'faces',
   'arm', 'arms', 'leg', 'legs', 'foot', 'feet', 'finger', 'fingers',
 
+  // Direction words
+  'north', 'south', 'east', 'west', 'up', 'down',
+
+  // Common gerunds/present participles
+  'running', 'walking', 'talking', 'fighting', 'waiting', 'looking', 'thinking',
+
   // Generic nouns that are too vague
   'thing', 'things', 'stuff', 'nothing', 'everything', 'something', 'anything',
   'person', 'people', 'somebody', 'someone', 'anybody', 'anyone', 'nobody', 'everyone',

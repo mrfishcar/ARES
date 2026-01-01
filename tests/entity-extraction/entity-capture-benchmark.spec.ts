@@ -784,6 +784,22 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'tiny', type: 'PERSON', expectedValid: false },
   { name: 'huge', type: 'PERSON', expectedValid: false },
   { name: 'small', type: 'PERSON', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 85: MORE JUNK CASES
+  // =========================================================================
+
+  // Direction words
+  { name: 'north', type: 'PERSON', expectedValid: false },
+  { name: 'south', type: 'PERSON', expectedValid: false },
+  { name: 'east', type: 'PERSON', expectedValid: false },
+  { name: 'west', type: 'PERSON', expectedValid: false },
+
+  // Action words (common verbs)
+  { name: 'running', type: 'PERSON', expectedValid: false },
+  { name: 'walking', type: 'PERSON', expectedValid: false },
+  { name: 'talking', type: 'PERSON', expectedValid: false },
+  { name: 'fighting', type: 'PERSON', expectedValid: false },
 ];
 
 // =============================================================================
