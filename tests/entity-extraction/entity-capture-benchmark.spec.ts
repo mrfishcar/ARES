@@ -519,6 +519,20 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   { name: 'Immanuel Kant', type: 'PERSON', expectedValid: true },
   { name: 'Friedrich Nietzsche', type: 'PERSON', expectedValid: true },
   { name: 'Jean-Paul Sartre', type: 'PERSON', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 154: ARTISTS
+  // =========================================================================
+
+  // Painters
+  { name: 'Leonardo da Vinci', type: 'PERSON', expectedValid: true },
+  { name: 'Vincent van Gogh', type: 'PERSON', expectedValid: true },
+  { name: 'Pablo Picasso', type: 'PERSON', expectedValid: true },
+
+  // Sculptors
+  { name: 'Michelangelo', type: 'PERSON', expectedValid: true },
+  { name: 'Auguste Rodin', type: 'PERSON', expectedValid: true },
+  { name: 'Donatello', type: 'PERSON', expectedValid: true },
 ];
 
 // =============================================================================
