@@ -1031,6 +1031,18 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'next', type: 'ITEM', expectedValid: false },
   { name: 'final', type: 'ITEM', expectedValid: false },
   { name: 'other', type: 'ITEM', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 130 MILESTONE: MODAL VERBS
+  // =========================================================================
+
+  // Modal verbs (should never be entities)
+  { name: 'could', type: 'ITEM', expectedValid: false },
+  { name: 'would', type: 'ITEM', expectedValid: false },
+  { name: 'should', type: 'ITEM', expectedValid: false },
+  { name: 'might', type: 'ITEM', expectedValid: false },
+  { name: 'must', type: 'ITEM', expectedValid: false },
+  { name: 'shall', type: 'ITEM', expectedValid: false },
 ];
 
 // =============================================================================
