@@ -575,6 +575,20 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   { name: 'Steve Jobs', type: 'PERSON', expectedValid: true },
   { name: 'Bill Gates', type: 'PERSON', expectedValid: true },
   { name: 'Elon Musk', type: 'PERSON', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 174: EXPLORERS
+  // =========================================================================
+
+  // Historical explorers
+  { name: 'Christopher Columbus', type: 'PERSON', expectedValid: true },
+  { name: 'Marco Polo', type: 'PERSON', expectedValid: true },
+  { name: 'Ferdinand Magellan', type: 'PERSON', expectedValid: true },
+
+  // Modern explorers
+  { name: 'Neil Armstrong', type: 'PERSON', expectedValid: true },
+  { name: 'Edmund Hillary', type: 'PERSON', expectedValid: true },
+  { name: 'Amelia Earhart', type: 'PERSON', expectedValid: true },
 ];
 
 // =============================================================================
