@@ -175,18 +175,22 @@
   flex-direction: column;
   overflow: hidden;
   min-width: 0;
+  /* Ensures flex children respect overflow properly */
+  min-height: 0;
 }
 
 .notes-editor__mobile-header {
   display: none;
+  flex-shrink: 0; /* Don't shrink the mobile header */
 }
 
 .notes-editor__content {
   flex: 1;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
-  overscroll-behavior: contain;
+  overscroll-behavior-y: contain;
+  /* Critical: min-height: 0 allows this to shrink and scroll properly */
+  min-height: 0;
 }
 
 .notes-editor__empty {
@@ -294,8 +298,7 @@
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
-  overscroll-behavior: contain;
+  overscroll-behavior-y: contain;
 }
 
 /* Individual note item - minimum 44px height for touch */
@@ -424,7 +427,12 @@
   padding: var(--ne-spacing-sm) var(--ne-spacing-md);
   background: var(--ne-bg-secondary);
   border-bottom: 1px solid var(--ne-separator);
+
+  /* Ensure toolbar stays at top, doesn't shrink or scroll away */
   flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 5;
 }
 
 .editor-toolbar__group {

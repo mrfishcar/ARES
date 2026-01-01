@@ -158,8 +158,8 @@
   flex-direction: column;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
-  overscroll-behavior: contain;
+  /* Removed touch-action: pan-y - was interfering with text selection */
+  overscroll-behavior-y: contain;
 
   /* Fallback font stack for non-Apple devices */
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', system-ui, sans-serif;
@@ -355,20 +355,21 @@
 .ios-tiptap-editor li[data-type="taskItem"] {
   display: flex;
   align-items: flex-start;
-  gap: var(--ios-spacing-sm); /* 8px */
+  gap: var(--ios-spacing-xs); /* 4px - tighter gap */
   margin: var(--ios-spacing-xs) 0;
 }
 
-/* Checkbox label - 44px touch target per Apple HIG */
+/* Checkbox label - sized to checkbox, not oversized touch target
+   The oversized target was blocking text input */
 .ios-tiptap-editor li[data-type="taskItem"] > label {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--ios-touch-target-min); /* 44px */
-  height: var(--ios-touch-target-min); /* 44px */
-  margin-top: -0.5em; /* Align with first line of text */
-  margin-left: -11px; /* Center the 22px checkbox in 44px target */
+  /* Keep visual size compact to not block text */
+  width: 28px;
+  height: 28px;
+  margin-top: 0;
   cursor: pointer;
 }
 
@@ -426,10 +427,18 @@
   font-weight: 600;
 }
 
+/* Task item content - takes remaining space */
 .ios-tiptap-editor li[data-type="taskItem"] > div {
   flex: 1;
   min-width: 0;
-  padding-top: 0.125em; /* Slight alignment adjustment */
+  /* Ensure text is vertically aligned with checkbox */
+  padding-top: 0.25em;
+}
+
+/* Ensure the paragraph inside is clickable/editable */
+.ios-tiptap-editor li[data-type="taskItem"] > div > p {
+  margin: 0;
+  min-height: 1.5em;
 }
 
 .ios-tiptap-editor li[data-type="taskItem"][data-checked="true"] > div p {
