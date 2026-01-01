@@ -812,6 +812,32 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 138: BATTLE SCENE TEXT
+  // =========================================================================
+
+  describe('Battle scene text', () => {
+    it('should handle action-packed battle sequences', async () => {
+      const templates = [
+        'Harry dodged the curse and fired back.',
+        'Spells flew across the battlefield rapidly.',
+        'Voldemort raised his wand menacingly.',
+        'The defenders held their ground bravely.',
+      ];
+
+      let text = '';
+      for (let i = 0; i < 100; i++) {
+        text += templates[i % templates.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`Battle scene: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
