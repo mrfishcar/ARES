@@ -119,6 +119,55 @@ const ALIAS_CASES: AliasTestCase[] = [
       { aliases: ['Google Cloud', 'Amazon'], shouldMerge: false },
     ],
   },
+
+  // =========================================================================
+  // LOOP 26: ADDITIONAL ALIAS CASES
+  // =========================================================================
+
+  // Simple first name only consistency
+  {
+    name: 'Repeated first name same entity',
+    text: 'Harry saw the train. Harry was excited.',
+    expectedMerges: [
+      { aliases: ['Harry', 'Harry'], shouldMerge: true },
+    ],
+  },
+
+  // Simple last name only consistency
+  {
+    name: 'Repeated last name same entity',
+    text: 'Potter walked in. Potter sat down.',
+    expectedMerges: [
+      { aliases: ['Potter', 'Potter'], shouldMerge: true },
+    ],
+  },
+
+  // Full name repeated
+  {
+    name: 'Repeated full name same entity',
+    text: 'Ron Weasley laughed. Ron Weasley was happy.',
+    expectedMerges: [
+      { aliases: ['Ron Weasley', 'Ron Weasley'], shouldMerge: true },
+    ],
+  },
+
+  // Different first names should NOT merge
+  {
+    name: 'Different first names no merge',
+    text: 'Harry spoke. Ron listened.',
+    expectedMerges: [
+      { aliases: ['Harry', 'Ron'], shouldMerge: false },
+    ],
+  },
+
+  // Two different last names
+  {
+    name: 'Different last names no merge',
+    text: 'Potter arrived. Weasley followed.',
+    expectedMerges: [
+      { aliases: ['Potter', 'Weasley'], shouldMerge: false },
+    ],
+  },
 ];
 
 // =============================================================================
