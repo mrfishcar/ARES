@@ -225,6 +225,28 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   { name: 'World Health Organization', type: 'ORG', expectedValid: true },
   { name: 'European Union', type: 'ORG', expectedValid: true },
   { name: 'NASA', type: 'ORG', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 37: MORE OBVIOUS ENTITIES
+  // =========================================================================
+
+  // Scientists
+  { name: 'Isaac Newton', type: 'PERSON', expectedValid: true },
+  { name: 'Charles Darwin', type: 'PERSON', expectedValid: true },
+  { name: 'Stephen Hawking', type: 'PERSON', expectedValid: true },
+  { name: 'Nikola Tesla', type: 'PERSON', expectedValid: true },
+
+  // Literary figures
+  { name: 'William Shakespeare', type: 'PERSON', expectedValid: true },
+  { name: 'Jane Austen', type: 'PERSON', expectedValid: true },
+  { name: 'Charles Dickens', type: 'PERSON', expectedValid: true },
+  { name: 'Mark Twain', type: 'PERSON', expectedValid: true },
+
+  // More places
+  { name: 'Paris', type: 'PLACE', expectedValid: true },
+  { name: 'Tokyo', type: 'PLACE', expectedValid: true },
+  { name: 'Sydney', type: 'PLACE', expectedValid: true },
+  { name: 'Cairo', type: 'PLACE', expectedValid: true },
 ];
 
 // =============================================================================
