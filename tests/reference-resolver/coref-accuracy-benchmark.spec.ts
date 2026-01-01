@@ -2073,6 +2073,46 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'She', position: 27, expected: 'Hermione Granger' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 176: PRONOUN IN COMPLEX SENTENCE
+  // =========================================================================
+
+  // Case 93: Pronoun in compound sentence
+  {
+    name: 'Pronoun in compound sentence',
+    text: 'Harry studied hard, practiced daily, and he improved.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+    ],
+    spans: [
+      createSpan('harry', 0, 5),
+    ],
+    sentences: [
+      createSentence('Harry studied hard, practiced daily, and he improved.', 0),
+    ],
+    pronounTests: [
+      { pronoun: 'he', position: 41, expected: 'Harry Potter' },
+    ],
+  },
+
+  // Case 94: Pronoun after parenthetical
+  {
+    name: 'Pronoun after parenthetical',
+    text: 'Ron, the best friend, said he would help.',
+    entities: [
+      createEntity('ron', 'Ron Weasley', 'PERSON'),
+    ],
+    spans: [
+      createSpan('ron', 0, 3),
+    ],
+    sentences: [
+      createSentence('Ron, the best friend, said he would help.', 0),
+    ],
+    pronounTests: [
+      { pronoun: 'he', position: 27, expected: 'Ron Weasley' },
+    ],
+  },
 ];
 
 // =============================================================================
