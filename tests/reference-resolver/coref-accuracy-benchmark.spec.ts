@@ -1669,6 +1669,28 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'her', position: 15, context: 'POSSESSIVE', expected: 'Luna Lovegood' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 131: PRONOUN IN CONDITIONAL
+  // =========================================================================
+
+  // Case 73: Pronoun in if-clause
+  {
+    name: 'Pronoun in conditional clause',
+    text: 'If Harry failed, he would be expelled.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+    ],
+    spans: [
+      createSpan('harry', 3, 8),
+    ],
+    sentences: [
+      createSentence('If Harry failed, he would be expelled.', 0),
+    ],
+    pronounTests: [
+      { pronoun: 'he', position: 17, context: 'CLAUSE', expected: 'Harry Potter' },
+    ],
+  },
 ];
 
 // =============================================================================
