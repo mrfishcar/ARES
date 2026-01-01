@@ -1,0 +1,297 @@
+/**
+ * TipTap Editor Styles for iOS Notes
+ *
+ * Matches the iOS Notes app look while leveraging TipTap's structure
+ */
+
+/* Wrapper */
+.ios-tiptap-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Main editor */
+.ios-tiptap-editor {
+  flex: 1;
+  outline: none;
+  padding: var(--ios-spacing-md, 16px);
+  padding-left: 20px;
+  padding-right: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--ios-text-primary, #fff);
+}
+
+@media (min-width: 768px) {
+  .ios-tiptap-editor {
+    padding: 20px 28px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .ios-tiptap-editor {
+    padding: 24px 40px;
+  }
+}
+
+/* Placeholder */
+.ios-tiptap-editor.is-editor-empty::before {
+  content: attr(data-placeholder);
+  color: var(--ios-text-tertiary, #636366);
+  pointer-events: none;
+  position: absolute;
+  height: 0;
+}
+
+.ios-tiptap-editor p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--ios-text-tertiary, #636366);
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+
+/* Paragraphs */
+.ios-tiptap-editor p {
+  margin: 0;
+  padding: 0;
+  min-height: 1.5em;
+}
+
+.ios-tiptap-editor p + p {
+  margin-top: 0.5em;
+}
+
+/* Headings - iOS Notes style */
+.ios-tiptap-editor h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--ios-yellow, #ffd60a);
+  margin: 0 0 0.5em 0;
+  line-height: 1.2;
+}
+
+.ios-tiptap-editor h2 {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ios-text-primary, #fff);
+  margin: 1em 0 0.5em 0;
+  line-height: 1.3;
+}
+
+.ios-tiptap-editor h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ios-text-secondary, #98989d);
+  margin: 1em 0 0.5em 0;
+  line-height: 1.4;
+}
+
+/* Bold, italic, etc */
+.ios-tiptap-editor strong {
+  font-weight: 600;
+}
+
+.ios-tiptap-editor em {
+  font-style: italic;
+}
+
+.ios-tiptap-editor u {
+  text-decoration: underline;
+}
+
+.ios-tiptap-editor s {
+  text-decoration: line-through;
+}
+
+/* Highlight (for future entity highlighting) */
+.ios-tiptap-editor mark {
+  background-color: var(--ios-yellow, #ffd60a);
+  color: var(--ios-bg-primary, #000);
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+/* Lists */
+.ios-tiptap-editor ul,
+.ios-tiptap-editor ol {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+
+.ios-tiptap-editor li {
+  margin: 0.25em 0;
+}
+
+.ios-tiptap-editor li p {
+  margin: 0;
+}
+
+/* Bullet list */
+.ios-tiptap-editor ul:not([data-type="taskList"]) {
+  list-style-type: disc;
+}
+
+.ios-tiptap-editor ul:not([data-type="taskList"]) li::marker {
+  color: var(--ios-yellow, #ffd60a);
+}
+
+/* Numbered list */
+.ios-tiptap-editor ol {
+  list-style-type: decimal;
+}
+
+.ios-tiptap-editor ol li::marker {
+  color: var(--ios-yellow, #ffd60a);
+  font-weight: 500;
+}
+
+/* Task list - iOS circular checkboxes */
+.ios-tiptap-editor ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+  margin: 0.5em 0;
+}
+
+.ios-tiptap-editor li[data-type="taskItem"] {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.ios-tiptap-editor li[data-type="taskItem"] > label {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  cursor: pointer;
+}
+
+.ios-tiptap-editor li[data-type="taskItem"] > label > input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--ios-text-tertiary, #636366);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.15s ease-out;
+  position: relative;
+}
+
+.ios-tiptap-editor li[data-type="taskItem"] > label > input[type="checkbox"]:hover {
+  border-color: var(--ios-yellow, #ffd60a);
+}
+
+.ios-tiptap-editor li[data-type="taskItem"] > label > input[type="checkbox"]:checked {
+  background: var(--ios-yellow, #ffd60a);
+  border-color: var(--ios-yellow, #ffd60a);
+}
+
+.ios-tiptap-editor li[data-type="taskItem"] > label > input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  color: var(--ios-bg-primary, #000);
+  font-weight: 600;
+}
+
+.ios-tiptap-editor li[data-type="taskItem"] > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.ios-tiptap-editor li[data-type="taskItem"][data-checked="true"] > div p {
+  text-decoration: line-through;
+  color: var(--ios-text-secondary, #98989d);
+}
+
+/* Blockquote */
+.ios-tiptap-editor blockquote {
+  border-left: 3px solid var(--ios-yellow, #ffd60a);
+  margin: 0.5em 0;
+  padding-left: 1em;
+  color: var(--ios-text-secondary, #98989d);
+}
+
+/* Code */
+.ios-tiptap-editor code {
+  background: var(--ios-bg-tertiary, #2c2c2e);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'SF Mono', Menlo, Monaco, monospace;
+  font-size: 0.9em;
+}
+
+.ios-tiptap-editor pre {
+  background: var(--ios-bg-tertiary, #2c2c2e);
+  padding: 12px 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 0.5em 0;
+}
+
+.ios-tiptap-editor pre code {
+  background: none;
+  padding: 0;
+}
+
+/* Horizontal rule */
+.ios-tiptap-editor hr {
+  border: none;
+  border-top: 1px solid var(--ios-separator, #38383a);
+  margin: 1em 0;
+}
+
+/* Links */
+.ios-tiptap-editor a {
+  color: var(--ios-blue, #0a84ff);
+  text-decoration: underline;
+}
+
+/* Selection */
+.ios-tiptap-editor ::selection {
+  background: var(--ios-yellow, #ffd60a);
+  color: var(--ios-bg-primary, #000);
+}
+
+/* Focus indicator for accessibility */
+.ios-tiptap-wrapper:focus-within {
+  outline: none;
+}
+
+/* Light mode overrides */
+@media (prefers-color-scheme: light) {
+  .ios-tiptap-editor {
+    color: var(--ios-text-primary, #000);
+  }
+
+  .ios-tiptap-editor h1 {
+    color: var(--ios-text-primary, #000);
+  }
+
+  .ios-tiptap-editor mark {
+    background-color: #fff3b0;
+    color: #000;
+  }
+
+  .ios-tiptap-editor code {
+    background: var(--ios-bg-tertiary, #e5e5ea);
+  }
+
+  .ios-tiptap-editor pre {
+    background: var(--ios-bg-tertiary, #e5e5ea);
+  }
+}

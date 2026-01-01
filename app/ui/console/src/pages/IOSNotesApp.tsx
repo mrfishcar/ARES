@@ -6,6 +6,8 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import './IOSNotesApp.css';
+import { TipTapEditor, TipTapEditorRef } from '../components/TipTapEditor';
+import '../components/TipTapEditor.css';
 
 // ============================================================================
 // TYPES
