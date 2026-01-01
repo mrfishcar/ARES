@@ -858,6 +858,37 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
       { subject: 'McGonagall', predicate: 'guided', object: 'students', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 172: ATTACKED/PROTECTED VERBS
+  // =========================================================================
+
+  // Attacked relation
+  {
+    name: 'Attacked relation',
+    text: 'Voldemort attacked the Ministry directly.',
+    expectedRelations: [
+      { subject: 'Voldemort', predicate: 'attacked', object: 'Ministry', shouldExist: true },
+    ],
+  },
+
+  // Protected relation
+  {
+    name: 'Protected relation',
+    text: 'Dumbledore protected Harry from harm.',
+    expectedRelations: [
+      { subject: 'Dumbledore', predicate: 'protected', object: 'Harry', shouldExist: true },
+    ],
+  },
+
+  // Defended relation
+  {
+    name: 'Defended relation',
+    text: 'The Order defended Hogwarts valiantly.',
+    expectedRelations: [
+      { subject: 'Order', predicate: 'defended', object: 'Hogwarts', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
