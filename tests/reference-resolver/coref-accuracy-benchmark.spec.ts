@@ -1301,6 +1301,47 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'It', position: 21, context: 'SENTENCE_START', expected: 'Hogwarts' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 71: MORE COREF CASES
+  // =========================================================================
+
+  // Case 57: Multiple possessives same entity
+  {
+    name: 'Multiple possessives same entity',
+    text: 'Harry grabbed his wand and raised his hand.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+    ],
+    spans: [
+      createSpan('harry', 0, 5),
+    ],
+    sentences: [
+      createSentence('Harry grabbed his wand and raised his hand.', 0),
+    ],
+    pronounTests: [
+      { pronoun: 'his', position: 14, context: 'SENTENCE_MID', expected: 'Harry Potter' },
+      { pronoun: 'his', position: 35, context: 'SENTENCE_MID', expected: 'Harry Potter' },
+    ],
+  },
+
+  // Case 58: Female subject with her object
+  {
+    name: 'Female subject with her',
+    text: 'Hermione opened her book.',
+    entities: [
+      createEntity('hermione', 'Hermione Granger', 'PERSON'),
+    ],
+    spans: [
+      createSpan('hermione', 0, 8),
+    ],
+    sentences: [
+      createSentence('Hermione opened her book.', 0),
+    ],
+    pronounTests: [
+      { pronoun: 'her', position: 17, context: 'SENTENCE_MID', expected: 'Hermione Granger' },
+    ],
+  },
 ];
 
 // =============================================================================
