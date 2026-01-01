@@ -786,6 +786,32 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 133: LETTER/WRITTEN TEXT
+  // =========================================================================
+
+  describe('Letter/written text', () => {
+    it('should handle epistolary content', async () => {
+      const templates = [
+        'Dear Harry, I hope this letter finds you well.',
+        'Yours sincerely, Albus Dumbledore wrote at the end.',
+        'The note read: Meet me at the usual place.',
+        'He signed the parchment with his name carefully.',
+      ];
+
+      let text = '';
+      for (let i = 0; i < 100; i++) {
+        text += templates[i % templates.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`Letter text: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
