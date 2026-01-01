@@ -1775,6 +1775,64 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'He', position: 28, expected: 'Neville Longbottom' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 146: PRONOUN IN RELATIVE CLAUSE
+  // =========================================================================
+
+  // Case 78: Possessive after relative clause
+  {
+    name: 'Possessive after relative clause',
+    text: 'Harry, who was brave, faced his fears.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+    ],
+    spans: [
+      createSpan('harry', 0, 5),
+    ],
+    sentences: [
+      createSentence('Harry, who was brave, faced his fears.', 0),
+    ],
+    pronounTests: [
+      { pronoun: 'his', position: 29, expected: 'Harry Potter' },
+    ],
+  },
+
+  // Case 79: Pronoun after subordinate clause
+  {
+    name: 'Pronoun after subordinate clause',
+    text: 'When Hermione arrived, she immediately started studying.',
+    entities: [
+      createEntity('hermione', 'Hermione Granger', 'PERSON'),
+    ],
+    spans: [
+      createSpan('hermione', 5, 13),
+    ],
+    sentences: [
+      createSentence('When Hermione arrived, she immediately started studying.', 0),
+    ],
+    pronounTests: [
+      { pronoun: 'she', position: 23, expected: 'Hermione Granger' },
+    ],
+  },
+
+  // Case 80: Pronoun with temporal clause
+  {
+    name: 'Pronoun with temporal clause',
+    text: 'After Ron finished, he celebrated loudly.',
+    entities: [
+      createEntity('ron', 'Ron Weasley', 'PERSON'),
+    ],
+    spans: [
+      createSpan('ron', 6, 9),
+    ],
+    sentences: [
+      createSentence('After Ron finished, he celebrated loudly.', 0),
+    ],
+    pronounTests: [
+      { pronoun: 'he', position: 20, expected: 'Ron Weasley' },
+    ],
+  },
 ];
 
 // =============================================================================
