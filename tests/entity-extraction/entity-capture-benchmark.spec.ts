@@ -486,6 +486,25 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   { name: 'Roger Federer', type: 'PERSON', expectedValid: true },
   { name: 'Serena Williams', type: 'PERSON', expectedValid: true },
   { name: 'Rafael Nadal', type: 'PERSON', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 144: SCIENTISTS
+  // =========================================================================
+
+  // Physics
+  { name: 'Albert Einstein', type: 'PERSON', expectedValid: true },
+  { name: 'Isaac Newton', type: 'PERSON', expectedValid: true },
+  { name: 'Stephen Hawking', type: 'PERSON', expectedValid: true },
+
+  // Chemistry
+  { name: 'Marie Curie', type: 'PERSON', expectedValid: true },
+  { name: 'Dmitri Mendeleev', type: 'PERSON', expectedValid: true },
+  { name: 'Linus Pauling', type: 'PERSON', expectedValid: true },
+
+  // Biology
+  { name: 'Charles Darwin', type: 'PERSON', expectedValid: true },
+  { name: 'Gregor Mendel', type: 'PERSON', expectedValid: true },
+  { name: 'Jane Goodall', type: 'PERSON', expectedValid: true },
 ];
 
 // =============================================================================
