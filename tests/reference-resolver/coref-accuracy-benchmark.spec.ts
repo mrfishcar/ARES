@@ -294,6 +294,177 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'He', position: 36, context: 'SENTENCE_START', expected: 'The Wizard' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 4: HARDER COREF CASES
+  // =========================================================================
+
+  // Case 11: Reflexive pronouns
+  {
+    name: 'Reflexive pronoun resolution',
+    text: 'Harry prepared himself for the battle. He knew what to expect.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+    ],
+    spans: [
+      createSpan('harry', 0, 5),
+    ],
+    sentences: [
+      createSentence('Harry prepared himself for the battle.', 0),
+      createSentence('He knew what to expect.', 39),
+    ],
+    pronounTests: [
+      { pronoun: 'himself', position: 15, context: 'SENTENCE_MID', expected: 'Harry Potter' },
+      { pronoun: 'He', position: 39, context: 'SENTENCE_START', expected: 'Harry Potter' },
+    ],
+  },
+
+  // Case 12: Long distance reference (3 sentences)
+  {
+    name: 'Long distance reference (3 sentences)',
+    text: 'Snape entered the dungeon. The students fell silent. Potions were on the table. He began the lesson.',
+    entities: [
+      createEntity('snape', 'Severus Snape', 'PERSON'),
+    ],
+    spans: [
+      createSpan('snape', 0, 5),
+    ],
+    sentences: [
+      createSentence('Snape entered the dungeon.', 0),
+      createSentence('The students fell silent.', 27),
+      createSentence('Potions were on the table.', 53),
+      createSentence('He began the lesson.', 80),
+    ],
+    pronounTests: [
+      // "He" should still resolve to Snape despite intervening sentences
+      { pronoun: 'He', position: 80, context: 'SENTENCE_START', expected: 'Severus Snape' },
+    ],
+  },
+
+  // Case 13: Place pronoun (it)
+  {
+    name: 'Place with "it" pronoun',
+    text: 'Hogwarts was founded in 990 AD. It has trained thousands of wizards.',
+    entities: [
+      createEntity('hogwarts', 'Hogwarts', 'PLACE'),
+    ],
+    spans: [
+      createSpan('hogwarts', 0, 8),
+    ],
+    sentences: [
+      createSentence('Hogwarts was founded in 990 AD.', 0),
+      createSentence('It has trained thousands of wizards.', 32),
+    ],
+    pronounTests: [
+      { pronoun: 'It', position: 32, context: 'SENTENCE_START', expected: 'Hogwarts' },
+    ],
+  },
+
+  // Case 14: Mixed gender with clear context
+  {
+    name: 'Mixed gender with semantic context',
+    text: 'Molly cooked while Arthur read. She made stew. He enjoyed his paper.',
+    entities: [
+      createEntity('molly', 'Molly Weasley', 'PERSON'),
+      createEntity('arthur', 'Arthur Weasley', 'PERSON'),
+    ],
+    spans: [
+      createSpan('molly', 0, 5),
+      createSpan('arthur', 19, 25),
+    ],
+    sentences: [
+      createSentence('Molly cooked while Arthur read.', 0),
+      createSentence('She made stew.', 32),
+      createSentence('He enjoyed his paper.', 47),
+    ],
+    pronounTests: [
+      { pronoun: 'She', position: 32, context: 'SENTENCE_START', expected: 'Molly Weasley' },
+      { pronoun: 'He', position: 47, context: 'SENTENCE_START', expected: 'Arthur Weasley' },
+      { pronoun: 'his', position: 58, context: 'POSSESSIVE', expected: 'Arthur Weasley' },
+    ],
+  },
+
+  // Case 15: Item pronoun (it)
+  {
+    name: 'Item with "it" pronoun',
+    text: 'The sword glowed blue. It was ancient and powerful.',
+    entities: [
+      createEntity('sword', 'The Sword of Gryffindor', 'ITEM'),
+    ],
+    spans: [
+      createSpan('sword', 0, 9),
+    ],
+    sentences: [
+      createSentence('The sword glowed blue.', 0),
+      createSentence('It was ancient and powerful.', 23),
+    ],
+    pronounTests: [
+      { pronoun: 'It', position: 23, context: 'SENTENCE_START', expected: 'The Sword of Gryffindor' },
+    ],
+  },
+
+  // Case 16: Pronoun in relative clause
+  {
+    name: 'Pronoun in relative clause context',
+    text: 'Dumbledore, who knew everything, called Harry. He wanted to discuss the prophecy.',
+    entities: [
+      createEntity('dumbledore', 'Albus Dumbledore', 'PERSON'),
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+    ],
+    spans: [
+      createSpan('dumbledore', 0, 10),
+      createSpan('harry', 40, 45),
+    ],
+    sentences: [
+      createSentence('Dumbledore, who knew everything, called Harry.', 0),
+      createSentence('He wanted to discuss the prophecy.', 47),
+    ],
+    pronounTests: [
+      // Subject of previous sentence = Dumbledore
+      { pronoun: 'He', position: 47, context: 'SENTENCE_START', expected: 'Albus Dumbledore' },
+    ],
+  },
+
+  // Case 17: Female reflexive
+  {
+    name: 'Female reflexive pronoun',
+    text: 'Hermione convinced herself to try again. She never gave up.',
+    entities: [
+      createEntity('hermione', 'Hermione Granger', 'PERSON'),
+    ],
+    spans: [
+      createSpan('hermione', 0, 8),
+    ],
+    sentences: [
+      createSentence('Hermione convinced herself to try again.', 0),
+      createSentence('She never gave up.', 41),
+    ],
+    pronounTests: [
+      { pronoun: 'herself', position: 19, context: 'SENTENCE_MID', expected: 'Hermione Granger' },
+      { pronoun: 'She', position: 41, context: 'SENTENCE_START', expected: 'Hermione Granger' },
+    ],
+  },
+
+  // Case 18: Nested possessives
+  {
+    name: 'Nested possessive references',
+    text: "Harry's wand was in his pocket. His bag held his books.",
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+    ],
+    spans: [
+      createSpan('harry', 0, 5),
+    ],
+    sentences: [
+      createSentence("Harry's wand was in his pocket.", 0),
+      createSentence('His bag held his books.', 32),
+    ],
+    pronounTests: [
+      { pronoun: 'his', position: 20, context: 'POSSESSIVE', expected: 'Harry Potter' },
+      { pronoun: 'His', position: 32, context: 'SENTENCE_START', expected: 'Harry Potter' },
+      { pronoun: 'his', position: 45, context: 'POSSESSIVE', expected: 'Harry Potter' },
+    ],
+  },
 ];
 
 // =============================================================================
