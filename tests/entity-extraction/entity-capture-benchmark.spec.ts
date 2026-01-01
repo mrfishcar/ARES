@@ -505,6 +505,20 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   { name: 'Charles Darwin', type: 'PERSON', expectedValid: true },
   { name: 'Gregor Mendel', type: 'PERSON', expectedValid: true },
   { name: 'Jane Goodall', type: 'PERSON', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 149: PHILOSOPHERS
+  // =========================================================================
+
+  // Ancient
+  { name: 'Socrates', type: 'PERSON', expectedValid: true },
+  { name: 'Plato', type: 'PERSON', expectedValid: true },
+  { name: 'Aristotle', type: 'PERSON', expectedValid: true },
+
+  // Modern
+  { name: 'Immanuel Kant', type: 'PERSON', expectedValid: true },
+  { name: 'Friedrich Nietzsche', type: 'PERSON', expectedValid: true },
+  { name: 'Jean-Paul Sartre', type: 'PERSON', expectedValid: true },
 ];
 
 // =============================================================================
