@@ -1217,6 +1217,49 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'It', position: 17, context: 'SENTENCE_START', expected: 'Elder Wand' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 59: MORE COREF CASES
+  // =========================================================================
+
+  // Case 53: Female reflexive pronoun
+  {
+    name: 'Female reflexive herself',
+    text: 'Hermione prepared herself for the exam.',
+    entities: [
+      createEntity('hermione', 'Hermione Granger', 'PERSON'),
+    ],
+    spans: [
+      createSpan('hermione', 0, 8),
+    ],
+    sentences: [
+      createSentence('Hermione prepared herself for the exam.', 0),
+    ],
+    pronounTests: [
+      { pronoun: 'herself', position: 18, context: 'SENTENCE_MID', expected: 'Hermione Granger' },
+    ],
+  },
+
+  // Case 54: Male object with different subject
+  {
+    name: 'Male object after female subject',
+    text: 'Ron entered. Ginny saw him and smiled.',
+    entities: [
+      createEntity('ron', 'Ron Weasley', 'PERSON'),
+      createEntity('ginny', 'Ginny Weasley', 'PERSON'),
+    ],
+    spans: [
+      createSpan('ron', 0, 3),
+      createSpan('ginny', 13, 18),
+    ],
+    sentences: [
+      createSentence('Ron entered.', 0),
+      createSentence('Ginny saw him and smiled.', 13),
+    ],
+    pronounTests: [
+      { pronoun: 'him', position: 23, context: 'SENTENCE_MID', expected: 'Ron Weasley' },
+    ],
+  },
 ];
 
 // =============================================================================
