@@ -584,6 +584,28 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
       { subject: 'Ron', predicate: 'asked', object: 'Hermione', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 122: MORE OBVIOUS RELATIONS
+  // =========================================================================
+
+  // Gave relation
+  {
+    name: 'Gave relation',
+    text: 'Dumbledore gave Harry the Invisibility Cloak.',
+    expectedRelations: [
+      { subject: 'Dumbledore', predicate: 'gave', object: 'Harry', shouldExist: true },
+    ],
+  },
+
+  // Took relation
+  {
+    name: 'Took relation',
+    text: 'Snape took points from Gryffindor.',
+    expectedRelations: [
+      { subject: 'Snape', predicate: 'took', object: 'points', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
