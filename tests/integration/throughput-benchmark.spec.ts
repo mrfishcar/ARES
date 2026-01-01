@@ -916,6 +916,32 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 158: HORROR/THRILLER TEXT
+  // =========================================================================
+
+  describe('Horror thriller text', () => {
+    it('should handle scary thriller narratives', async () => {
+      const templates = [
+        'The shadow moved across the wall.',
+        'A cold chill ran down her spine.',
+        'Something was watching from the darkness.',
+        'The door creaked open slowly.',
+      ];
+
+      let text = '';
+      for (let i = 0; i < 100; i++) {
+        text += templates[i % templates.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`Horror thriller: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
