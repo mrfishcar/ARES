@@ -8,11 +8,12 @@
  * - 8-point grid system for spacing
  * - 44pt minimum touch targets
  * - WCAG 2.1 AA compliant text resizing
+ * - Apple-inspired spring motion design
  *
  * References:
- * - Apple Human Interface Guidelines (Typography, Layout)
+ * - Apple Human Interface Guidelines (Typography, Layout, Motion)
  * - WCAG 1.4.4 Resize Text (200% zoom support)
- * - Smashing Magazine: Modern Fluid Typography
+ * - WWDC23: Animate with springs
  */
 
 /* ============================================================================
@@ -21,9 +22,52 @@
    ============================================================================ */
 
 :root {
-  /* Typography Scale (Apple SF Pro Text sizes) */
-  /* Using clamp() for fluid sizing: clamp(min, preferred, max) */
-  /* Preferred value uses calc(rem + vw) for accessibility (responds to zoom) */
+  /* -------------------------------------------------------------------------
+     MOTION DESIGN SYSTEM
+     Based on Apple's spring animation principles (WWDC23)
+     Using cubic-bezier with overshoot to approximate spring physics
+     ------------------------------------------------------------------------- */
+
+  /* Spring Curves - Approximate iOS spring physics */
+  /* These use cubic-bezier with values >1 to create overshoot/bounce */
+
+  /* Responsive Spring: For buttons, toggles, immediate feedback
+     Fast response, subtle bounce - feels snappy and alive */
+  --motion-spring-responsive: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Gentle Spring: For hover states, focus rings
+     Subtle overshoot, settles quickly */
+  --motion-spring-gentle: cubic-bezier(0.175, 0.885, 0.32, 1.1);
+
+  /* Expressive Spring: For modal/panel animations, major transitions
+     More pronounced bounce, feels playful and iOS-like */
+  --motion-spring-expressive: cubic-bezier(0.34, 1.8, 0.64, 1);
+
+  /* Slide Spring: For slide-in panels, navigation transitions
+     Smooth deceleration with slight overshoot */
+  --motion-spring-slide: cubic-bezier(0.25, 1.25, 0.5, 1);
+
+  /* Standard Easing (non-spring, for subtle changes) */
+  --motion-ease-out: cubic-bezier(0.33, 1, 0.68, 1);
+  --motion-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* Duration Scale - Based on Apple's "quick, precise" principle */
+  --motion-duration-instant: 100ms;   /* Micro-interactions */
+  --motion-duration-fast: 150ms;      /* Button states, toggles */
+  --motion-duration-normal: 250ms;    /* Standard transitions */
+  --motion-duration-slow: 350ms;      /* Panel slides, modal */
+  --motion-duration-slower: 500ms;    /* Complex choreography */
+
+  /* Combined Transition Presets */
+  --motion-button: var(--motion-duration-fast) var(--motion-spring-responsive);
+  --motion-hover: var(--motion-duration-fast) var(--motion-spring-gentle);
+  --motion-toggle: var(--motion-duration-normal) var(--motion-spring-responsive);
+  --motion-slide: var(--motion-duration-slow) var(--motion-spring-slide);
+  --motion-fade: var(--motion-duration-normal) var(--motion-ease-out);
+
+  /* -------------------------------------------------------------------------
+     TYPOGRAPHY SCALE
+     ------------------------------------------------------------------------- */
 
   /* Large Title: 34pt native, scales 28-40px */
   --ios-font-large-title: clamp(1.75rem, calc(1.5rem + 1vw), 2.5rem);
@@ -338,17 +382,37 @@
   border-radius: 50%;
   background: transparent;
   cursor: pointer;
-  transition: all 0.15s ease-out;
   position: relative;
+
+  /* Spring transition for satisfying toggle feel */
+  transition:
+    background-color var(--motion-toggle),
+    border-color var(--motion-toggle),
+    transform var(--motion-button);
+
+  /* GPU acceleration for smooth 60fps */
+  will-change: transform, background-color;
 }
 
 .ios-tiptap-editor li[data-type="taskItem"] > label > input[type="checkbox"]:hover {
   border-color: var(--ios-yellow);
 }
 
+/* Tactile press feedback */
+.ios-tiptap-editor li[data-type="taskItem"] > label > input[type="checkbox"]:active {
+  transform: scale(0.9);
+}
+
 .ios-tiptap-editor li[data-type="taskItem"] > label > input[type="checkbox"]:checked {
   background: var(--ios-yellow);
   border-color: var(--ios-yellow);
+  /* Subtle pop effect on check */
+  animation: checkbox-pop var(--motion-duration-normal) var(--motion-spring-expressive);
+}
+
+@keyframes checkbox-pop {
+  0% { transform: scale(0.8); }
+  100% { transform: scale(1); }
 }
 
 .ios-tiptap-editor li[data-type="taskItem"] > label > input[type="checkbox"]:checked::after {
@@ -468,7 +532,17 @@
    ============================================================================ */
 
 @media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
   .ios-tiptap-editor li[data-type="taskItem"] > label > input[type="checkbox"] {
     transition: none;
+    animation: none;
+    will-change: auto;
   }
 }
