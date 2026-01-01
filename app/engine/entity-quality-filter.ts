@@ -188,12 +188,16 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
   'here', 'there', 'everywhere', 'nowhere', 'somewhere', 'anywhere',
   'now', 'then', 'later', 'soon', 'today', 'yesterday', 'tomorrow',
   'suddenly', 'quickly', 'slowly', 'quietly', 'loudly', 'finally', 'immediately',
+  'quite', 'rather', 'fairly', 'pretty', 'extremely', 'absolutely', 'not',
+  'inside', 'outside', 'ahead', 'behind',
 
   // Common adjectives that shouldn't be entities
   'good', 'bad', 'new', 'old', 'first', 'second', 'third', 'last', 'long', 'short',
   'big', 'small', 'great', 'little', 'own', 'other', 'different', 'same',
   'high', 'low', 'next', 'early', 'young', 'important', 'large', 'small',
   'able', 'ready', 'sure', 'certain', 'clear', 'full', 'free',
+  'better', 'best', 'worse', 'worst', 'more', 'most', 'less', 'least',
+  'neither',
 
   // Generic nouns that are too vague
   'thing', 'things', 'stuff',

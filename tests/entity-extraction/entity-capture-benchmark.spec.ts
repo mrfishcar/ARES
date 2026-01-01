@@ -278,6 +278,53 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'each', type: 'PERSON', expectedValid: false },
   { name: 'every', type: 'PERSON', expectedValid: false },
   { name: 'any', type: 'PERSON', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 10: MORE EDGE CASE JUNK
+  // =========================================================================
+
+  // Intensifiers and degree adverbs
+  { name: 'very', type: 'PERSON', expectedValid: false },
+  { name: 'quite', type: 'PERSON', expectedValid: false },
+  { name: 'rather', type: 'PERSON', expectedValid: false },
+  { name: 'fairly', type: 'PERSON', expectedValid: false },
+  { name: 'pretty', type: 'PERSON', expectedValid: false },
+  { name: 'extremely', type: 'PERSON', expectedValid: false },
+  { name: 'absolutely', type: 'PERSON', expectedValid: false },
+
+  // Negation words
+  { name: 'not', type: 'PERSON', expectedValid: false },
+  { name: 'no', type: 'PERSON', expectedValid: false },
+  { name: 'neither', type: 'PERSON', expectedValid: false },
+  { name: 'nor', type: 'PERSON', expectedValid: false },
+  { name: 'without', type: 'PERSON', expectedValid: false },
+
+  // Common verbs (more forms)
+  { name: 'being', type: 'PERSON', expectedValid: false },
+  { name: 'having', type: 'PERSON', expectedValid: false },
+  { name: 'doing', type: 'PERSON', expectedValid: false },
+  { name: 'going', type: 'PERSON', expectedValid: false },
+  { name: 'getting', type: 'PERSON', expectedValid: false },
+  { name: 'making', type: 'PERSON', expectedValid: false },
+  { name: 'taking', type: 'PERSON', expectedValid: false },
+
+  // Common adjective forms
+  { name: 'better', type: 'PERSON', expectedValid: false },
+  { name: 'best', type: 'PERSON', expectedValid: false },
+  { name: 'worse', type: 'PERSON', expectedValid: false },
+  { name: 'worst', type: 'PERSON', expectedValid: false },
+  { name: 'more', type: 'PERSON', expectedValid: false },
+  { name: 'most', type: 'PERSON', expectedValid: false },
+  { name: 'less', type: 'PERSON', expectedValid: false },
+  { name: 'least', type: 'PERSON', expectedValid: false },
+
+  // Generic location/time words
+  { name: 'inside', type: 'PLACE', expectedValid: false },
+  { name: 'outside', type: 'PLACE', expectedValid: false },
+  { name: 'above', type: 'PLACE', expectedValid: false },
+  { name: 'below', type: 'PLACE', expectedValid: false },
+  { name: 'ahead', type: 'PLACE', expectedValid: false },
+  { name: 'behind', type: 'PLACE', expectedValid: false },
 ];
 
 // =============================================================================
