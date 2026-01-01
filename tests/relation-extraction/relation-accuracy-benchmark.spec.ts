@@ -562,6 +562,28 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
       { subject: 'Hermione', predicate: 'studied', object: 'Ancient Runes', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 117: MORE OBVIOUS RELATIONS
+  // =========================================================================
+
+  // Told relation
+  {
+    name: 'Told relation',
+    text: 'Hagrid told Harry about the dragons.',
+    expectedRelations: [
+      { subject: 'Hagrid', predicate: 'told', object: 'Harry', shouldExist: true },
+    ],
+  },
+
+  // Asked relation
+  {
+    name: 'Asked relation',
+    text: 'Ron asked Hermione for help.',
+    expectedRelations: [
+      { subject: 'Ron', predicate: 'asked', object: 'Hermione', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
