@@ -75,6 +75,7 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
   'say', 'says', 'said', 'saying',
   'tell', 'tells', 'told', 'telling',
   'ask', 'asks', 'asked', 'asking',
+  'reply', 'replied', 'replying', 'answer', 'answered', 'answering',
   'give', 'gives', 'gave', 'giving', 'given',
   'find', 'finds', 'found', 'finding',
   'want', 'wants', 'wanted', 'wanting',

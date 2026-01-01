@@ -625,6 +625,28 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'less', type: 'PERSON', expectedValid: false },
   { name: 'most', type: 'PERSON', expectedValid: false },
   { name: 'least', type: 'PERSON', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 54: MORE JUNK CASES
+  // =========================================================================
+
+  // Conjunction words
+  { name: 'and', type: 'PERSON', expectedValid: false },
+  { name: 'or', type: 'PERSON', expectedValid: false },
+  { name: 'but', type: 'PERSON', expectedValid: false },
+  { name: 'so', type: 'PERSON', expectedValid: false },
+
+  // Prepositions
+  { name: 'in', type: 'PLACE', expectedValid: false },
+  { name: 'on', type: 'PLACE', expectedValid: false },
+  { name: 'at', type: 'PLACE', expectedValid: false },
+  { name: 'to', type: 'PLACE', expectedValid: false },
+
+  // Common nouns that could be sentence-initial
+  { name: 'said', type: 'PERSON', expectedValid: false },
+  { name: 'asked', type: 'PERSON', expectedValid: false },
+  { name: 'replied', type: 'PERSON', expectedValid: false },
+  { name: 'answered', type: 'PERSON', expectedValid: false },
 ];
 
 // =============================================================================
