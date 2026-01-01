@@ -969,6 +969,76 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'He', position: 38, context: 'SENTENCE_START', expected: 'Ron Weasley' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 34: COREF STRESS TESTS
+  // =========================================================================
+
+  // Case 42: Multiple pronoun chain same entity
+  {
+    name: 'Pronoun chain for single entity',
+    text: 'Luna saw the creature. She studied it. She wrote in her notebook.',
+    entities: [
+      createEntity('luna', 'Luna Lovegood', 'PERSON'),
+    ],
+    spans: [
+      createSpan('luna', 0, 4),
+    ],
+    sentences: [
+      createSentence('Luna saw the creature.', 0),
+      createSentence('She studied it.', 23),
+      createSentence('She wrote in her notebook.', 39),
+    ],
+    pronounTests: [
+      { pronoun: 'She', position: 23, context: 'SENTENCE_START', expected: 'Luna Lovegood' },
+      { pronoun: 'She', position: 39, context: 'SENTENCE_START', expected: 'Luna Lovegood' },
+      { pronoun: 'her', position: 52, context: 'POSSESSIVE', expected: 'Luna Lovegood' },
+    ],
+  },
+
+  // Case 43: Place with multiple 'it' references
+  {
+    name: 'Place with multiple it pronouns',
+    text: 'London is historic. It has many museums. It attracts tourists.',
+    entities: [
+      createEntity('london', 'London', 'PLACE'),
+    ],
+    spans: [
+      createSpan('london', 0, 6),
+    ],
+    sentences: [
+      createSentence('London is historic.', 0),
+      createSentence('It has many museums.', 20),
+      createSentence('It attracts tourists.', 41),
+    ],
+    pronounTests: [
+      { pronoun: 'It', position: 20, context: 'SENTENCE_START', expected: 'London' },
+      { pronoun: 'It', position: 41, context: 'SENTENCE_START', expected: 'London' },
+    ],
+  },
+
+  // Case 44: Mixed pronouns in close succession
+  {
+    name: 'Mixed pronouns in dialogue context',
+    text: 'Harry saw Ginny. He waved. She smiled back.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+      createEntity('ginny', 'Ginny Weasley', 'PERSON'),
+    ],
+    spans: [
+      createSpan('harry', 0, 5),
+      createSpan('ginny', 10, 15),
+    ],
+    sentences: [
+      createSentence('Harry saw Ginny.', 0),
+      createSentence('He waved.', 17),
+      createSentence('She smiled back.', 27),
+    ],
+    pronounTests: [
+      { pronoun: 'He', position: 17, context: 'SENTENCE_START', expected: 'Harry Potter' },
+      { pronoun: 'She', position: 27, context: 'SENTENCE_START', expected: 'Ginny Weasley' },
+    ],
+  },
 ];
 
 // =============================================================================
