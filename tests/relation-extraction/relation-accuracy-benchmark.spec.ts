@@ -240,6 +240,33 @@ const DIRECTION_TEST_CASES: RelationTestCase[] = [
       { subject: 'Luke', predicate: 'mentor_of', object: 'Obi-Wan', shouldExist: false },
     ],
   },
+
+  // =========================================================================
+  // LOOP 31: MORE DIRECTION TESTS
+  // =========================================================================
+
+  {
+    name: 'Marriage direction symmetric',
+    text: 'Harry Potter married Ginny Weasley.',
+    expectedRelations: [
+      { subject: 'Harry', predicate: 'married_to', object: 'Ginny', shouldExist: true },
+    ],
+  },
+  {
+    name: 'Sibling direction symmetric',
+    text: 'Fred Weasley and George Weasley are brothers.',
+    expectedRelations: [
+      { subject: 'Fred', predicate: 'sibling_of', object: 'George', shouldExist: true },
+    ],
+  },
+  {
+    name: 'Location direction correct',
+    text: 'Sherlock Holmes lived at Baker Street.',
+    expectedRelations: [
+      { subject: 'Sherlock', predicate: 'lives_in', object: 'Baker Street', shouldExist: true },
+      { subject: 'Baker Street', predicate: 'lives_in', object: 'Sherlock', shouldExist: false },
+    ],
+  },
 ];
 
 // =============================================================================
