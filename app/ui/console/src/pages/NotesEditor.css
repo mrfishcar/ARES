@@ -35,10 +35,16 @@
 .notes-editor {
   display: flex;
   height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile */
   background: var(--ne-bg-primary);
   color: var(--ne-text-primary);
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
   overflow: hidden;
+  /* Safe area insets for notched devices */
+  padding-top: env(safe-area-inset-top, 0);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-left: env(safe-area-inset-left, 0);
+  padding-right: env(safe-area-inset-right, 0);
 }
 
 .notes-editor--loading {
@@ -77,6 +83,8 @@
   flex: 1;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
 }
 
 .notes-editor__empty {
@@ -148,6 +156,8 @@
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
 }
 
 .notes-list__item {

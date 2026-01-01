@@ -11,6 +11,8 @@
   flex-direction: column;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
 }
 
 /* Main editor */

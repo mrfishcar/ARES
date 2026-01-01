@@ -66,25 +66,73 @@ function textToHtml(text: string): string {
   const lines = text.split('\n');
   const htmlLines: string[] = [];
   let inTaskList = false;
+  let inBulletList = false;
+  let inOrderedList = false;
+
+  const closeOpenLists = () => {
+    if (inTaskList) {
+      htmlLines.push('</ul>');
+      inTaskList = false;
+    }
+    if (inBulletList) {
+      htmlLines.push('</ul>');
+      inBulletList = false;
+    }
+    if (inOrderedList) {
+      htmlLines.push('</ol>');
+      inOrderedList = false;
+    }
+  };
 
   for (const line of lines) {
     // Check for task list items
     if (line.match(/^- \[[ x]\] /)) {
+      // Close other list types if open
+      if (inBulletList) { htmlLines.push('</ul>'); inBulletList = false; }
+      if (inOrderedList) { htmlLines.push('</ol>'); inOrderedList = false; }
+
       if (!inTaskList) {
         htmlLines.push('<ul data-type="taskList">');
         inTaskList = true;
       }
       const isChecked = line.match(/^- \[x\] /i);
-      const text = line.replace(/^- \[[ x]\] /, '');
-      htmlLines.push(`<li data-type="taskItem" data-checked="${isChecked ? 'true' : 'false'}"><p>${escapeHtml(text)}</p></li>`);
+      const itemText = line.replace(/^- \[[ x]\] /, '');
+      htmlLines.push(`<li data-type="taskItem" data-checked="${isChecked ? 'true' : 'false'}"><p>${escapeHtml(itemText)}</p></li>`);
       continue;
     }
 
-    // Close task list if we were in one
-    if (inTaskList) {
-      htmlLines.push('</ul>');
-      inTaskList = false;
+    // Check for bullet list (but not task list markers)
+    if ((line.startsWith('• ') || line.startsWith('- ')) && !line.match(/^- \[[ x]\] /)) {
+      // Close other list types if open
+      if (inTaskList) { htmlLines.push('</ul>'); inTaskList = false; }
+      if (inOrderedList) { htmlLines.push('</ol>'); inOrderedList = false; }
+
+      if (!inBulletList) {
+        htmlLines.push('<ul>');
+        inBulletList = true;
+      }
+      const itemText = line.slice(2);
+      htmlLines.push(`<li><p>${escapeHtml(itemText)}</p></li>`);
+      continue;
     }
+
+    // Check for numbered list
+    if (line.match(/^\d+\. /)) {
+      // Close other list types if open
+      if (inTaskList) { htmlLines.push('</ul>'); inTaskList = false; }
+      if (inBulletList) { htmlLines.push('</ul>'); inBulletList = false; }
+
+      if (!inOrderedList) {
+        htmlLines.push('<ol>');
+        inOrderedList = true;
+      }
+      const itemText = line.replace(/^\d+\. /, '');
+      htmlLines.push(`<li><p>${escapeHtml(itemText)}</p></li>`);
+      continue;
+    }
+
+    // Close any open lists for non-list content
+    closeOpenLists();
 
     // Check for headings
     if (line.startsWith('### ')) {
@@ -100,27 +148,12 @@ function textToHtml(text: string): string {
       continue;
     }
 
-    // Check for bullet list
-    if (line.startsWith('• ') || line.startsWith('- ')) {
-      htmlLines.push(`<ul><li><p>${escapeHtml(line.slice(2))}</p></li></ul>`);
-      continue;
-    }
-
-    // Check for numbered list
-    if (line.match(/^\d+\. /)) {
-      const text = line.replace(/^\d+\. /, '');
-      htmlLines.push(`<ol><li><p>${escapeHtml(text)}</p></li></ol>`);
-      continue;
-    }
-
     // Regular paragraph
     htmlLines.push(`<p>${escapeHtml(line) || '<br>'}</p>`);
   }
 
-  // Close task list if still open
-  if (inTaskList) {
-    htmlLines.push('</ul>');
-  }
+  // Close any remaining open lists
+  closeOpenLists();
 
   return htmlLines.join('');
 }
@@ -196,10 +229,20 @@ function htmlToText(html: string): string {
   return lines.join('\n');
 }
 
+// Reusable element for HTML escaping (created once)
+const escapeDiv = typeof document !== 'undefined' ? document.createElement('div') : null;
+
 function escapeHtml(text: string): string {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
+  if (!escapeDiv) {
+    // SSR fallback
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+  escapeDiv.textContent = text;
+  return escapeDiv.innerHTML;
 }
 
 // ============================================================================

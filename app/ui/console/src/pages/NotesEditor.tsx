@@ -290,6 +290,11 @@ interface EditorToolbarProps {
 }
 
 function EditorToolbar({ editorRef, onDelete, onTogglePin, isPinned }: EditorToolbarProps) {
+  // Prevent focus stealing from editor on mobile
+  const preventFocusLoss = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+  };
+
   const handleUndo = () => editorRef.current?.undo();
   const handleRedo = () => editorRef.current?.redo();
   const handleBold = () => editorRef.current?.toggleBold();
@@ -300,61 +305,76 @@ function EditorToolbar({ editorRef, onDelete, onTogglePin, isPinned }: EditorToo
   const handleTaskList = () => editorRef.current?.toggleTaskList();
   const handleHeading = () => editorRef.current?.setHeading(2);
 
+  // Toolbar button with focus protection
+  const ToolbarButton = ({ onClick, title, children, active, danger }: {
+    onClick: () => void;
+    title: string;
+    children: React.ReactNode;
+    active?: boolean;
+    danger?: boolean;
+  }) => (
+    <button
+      className={`editor-toolbar__btn ${active ? 'editor-toolbar__btn--active' : ''} ${danger ? 'editor-toolbar__btn--danger' : ''}`}
+      onClick={onClick}
+      onMouseDown={preventFocusLoss}
+      onTouchStart={preventFocusLoss}
+      title={title}
+    >
+      {children}
+    </button>
+  );
+
   return (
     <div className="editor-toolbar">
       <div className="editor-toolbar__group">
-        <button className="editor-toolbar__btn" onClick={handleUndo} title="Undo">
+        <ToolbarButton onClick={handleUndo} title="Undo">
           {Icons.undo}
-        </button>
-        <button className="editor-toolbar__btn" onClick={handleRedo} title="Redo">
+        </ToolbarButton>
+        <ToolbarButton onClick={handleRedo} title="Redo">
           {Icons.redo}
-        </button>
+        </ToolbarButton>
       </div>
 
       <div className="editor-toolbar__divider" />
 
       <div className="editor-toolbar__group">
-        <button className="editor-toolbar__btn" onClick={handleHeading} title="Heading">
+        <ToolbarButton onClick={handleHeading} title="Heading">
           {Icons.heading}
-        </button>
-        <button className="editor-toolbar__btn" onClick={handleBold} title="Bold">
+        </ToolbarButton>
+        <ToolbarButton onClick={handleBold} title="Bold">
           {Icons.bold}
-        </button>
-        <button className="editor-toolbar__btn" onClick={handleItalic} title="Italic">
+        </ToolbarButton>
+        <ToolbarButton onClick={handleItalic} title="Italic">
           {Icons.italic}
-        </button>
-        <button className="editor-toolbar__btn" onClick={handleUnderline} title="Underline">
+        </ToolbarButton>
+        <ToolbarButton onClick={handleUnderline} title="Underline">
           {Icons.underline}
-        </button>
+        </ToolbarButton>
       </div>
 
       <div className="editor-toolbar__divider" />
 
       <div className="editor-toolbar__group">
-        <button className="editor-toolbar__btn" onClick={handleBulletList} title="Bullet List">
+        <ToolbarButton onClick={handleBulletList} title="Bullet List">
           {Icons.list}
-        </button>
-        <button className="editor-toolbar__btn" onClick={handleOrderedList} title="Numbered List">
+        </ToolbarButton>
+        <ToolbarButton onClick={handleOrderedList} title="Numbered List">
           {Icons.listOrdered}
-        </button>
-        <button className="editor-toolbar__btn" onClick={handleTaskList} title="Task List">
+        </ToolbarButton>
+        <ToolbarButton onClick={handleTaskList} title="Task List">
           {Icons.checkbox}
-        </button>
+        </ToolbarButton>
       </div>
 
       <div className="editor-toolbar__spacer" />
 
       <div className="editor-toolbar__group">
-        <button
-          className={`editor-toolbar__btn ${isPinned ? 'editor-toolbar__btn--active' : ''}`}
-          onClick={onTogglePin}
-          title={isPinned ? 'Unpin' : 'Pin'}
-        >
+        <ToolbarButton onClick={onTogglePin} title={isPinned ? 'Unpin' : 'Pin'} active={isPinned}>
           {isPinned ? Icons.pinFilled : Icons.pin}
-        </button>
-        <button className="editor-toolbar__btn editor-toolbar__btn--danger" onClick={onDelete} title="Delete">
+        </ToolbarButton>
+        <ToolbarButton onClick={onDelete} title="Delete" danger>
           {Icons.trash}
-        </button>
+        </ToolbarButton>
       </div>
     </div>
   );
@@ -364,6 +384,20 @@ function EditorToolbar({ editorRef, onDelete, onTogglePin, isPinned }: EditorToo
 // MAIN COMPONENT
 // ============================================================================
 
+// Debounce helper for save operations
+function useDebounce<T extends (...args: any[]) => void>(fn: T, delay: number): T {
+  const timeoutRef = useRef<number | null>(null);
+
+  return useCallback((...args: Parameters<T>) => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = window.setTimeout(() => {
+      fn(...args);
+    }, delay);
+  }, [fn, delay]) as T;
+}
+
 export default function NotesEditor() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
@@ -372,6 +406,7 @@ export default function NotesEditor() {
   const [showList, setShowList] = useState(true);
 
   const editorRef = useRef<TipTapEditorRef>(null);
+  const saveTimeoutRef = useRef<number | null>(null);
 
   // Load data on mount
   useEffect(() => {
@@ -383,9 +418,9 @@ export default function NotesEditor() {
       setNotes(loadedNotes);
       setFolders(loadedFolders);
 
-      // Select first note
-      if (loadedNotes.length > 0 && !selectedNoteId) {
-        setSelectedNoteId(loadedNotes[0].id);
+      // Select first note if none selected
+      if (loadedNotes.length > 0) {
+        setSelectedNoteId(prev => prev ?? loadedNotes[0].id);
       }
 
       setIsLoading(false);
@@ -393,11 +428,26 @@ export default function NotesEditor() {
     loadData();
   }, []);
 
-  // Save notes when they change
+  // Debounced save - prevents saving on every keystroke
   useEffect(() => {
-    if (!isLoading) {
-      StorageService.saveNotes(notes);
+    if (isLoading) return;
+
+    // Clear existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
     }
+
+    // Save after 500ms of inactivity
+    saveTimeoutRef.current = window.setTimeout(() => {
+      StorageService.saveNotes(notes);
+    }, 500);
+
+    // Cleanup
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
   }, [notes, isLoading]);
 
   // Get selected note
@@ -433,16 +483,23 @@ export default function NotesEditor() {
     setTimeout(() => editorRef.current?.focus(), 100);
   }, []);
 
-  // Delete note
+  // Delete note - uses functional update to avoid stale closure
   const handleDeleteNote = useCallback(() => {
     if (!selectedNoteId) return;
 
-    setNotes(prev => prev.filter(n => n.id !== selectedNoteId));
-
-    // Select next note
-    const remaining = notes.filter(n => n.id !== selectedNoteId);
-    setSelectedNoteId(remaining[0]?.id || null);
-  }, [selectedNoteId, notes]);
+    setNotes(prev => {
+      const remaining = prev.filter(n => n.id !== selectedNoteId);
+      // Select next note (use setTimeout to batch state updates)
+      setTimeout(() => {
+        setSelectedNoteId(remaining[0]?.id || null);
+        // Show list on mobile if no notes left
+        if (remaining.length === 0) {
+          setShowList(true);
+        }
+      }, 0);
+      return remaining;
+    });
+  }, [selectedNoteId]);
 
   // Toggle pin
   const handleTogglePin = useCallback(() => {
