@@ -435,6 +435,35 @@ const DIRECTION_TEST_CASES: RelationTestCase[] = [
       { subject: 'Dobby', predicate: 'works_at', object: 'Malfoy', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 66: MORE DIRECTION TESTS
+  // =========================================================================
+
+  {
+    name: 'Saved by direction',
+    text: 'Dobby saved Harry Potter from danger.',
+    expectedRelations: [
+      { subject: 'Dobby', predicate: 'saved', object: 'Harry', shouldExist: true },
+      { subject: 'Harry', predicate: 'saved', object: 'Dobby', shouldExist: false },
+    ],
+  },
+  {
+    name: 'Defeated direction',
+    text: 'Neville Longbottom defeated the snake Nagini.',
+    expectedRelations: [
+      { subject: 'Neville', predicate: 'defeated', object: 'Nagini', shouldExist: true },
+      { subject: 'Nagini', predicate: 'defeated', object: 'Neville', shouldExist: false },
+    ],
+  },
+  {
+    name: 'Helped direction',
+    text: 'Luna Lovegood helped Hermione Granger.',
+    expectedRelations: [
+      { subject: 'Luna', predicate: 'helped', object: 'Hermione', shouldExist: true },
+      { subject: 'Hermione', predicate: 'helped', object: 'Luna', shouldExist: false },
+    ],
+  },
 ];
 
 // =============================================================================
