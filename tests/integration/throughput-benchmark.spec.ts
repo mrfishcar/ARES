@@ -734,6 +734,32 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 123: DESCRIPTIVE NARRATIVE
+  // =========================================================================
+
+  describe('Descriptive narrative text', () => {
+    it('should handle descriptive passages', async () => {
+      const templates = [
+        'The Great Hall was magnificent with its enchanted ceiling.',
+        'Ancient stone walls surrounded the courtyard completely.',
+        'Tall towers reached toward the cloudy gray sky.',
+        'The forbidden forest loomed dark and mysterious.',
+      ];
+
+      let text = '';
+      for (let i = 0; i < 100; i++) {
+        text += templates[i % templates.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`Descriptive narrative: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
