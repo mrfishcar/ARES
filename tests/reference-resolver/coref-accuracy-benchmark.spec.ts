@@ -876,6 +876,99 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'He', position: 20, context: 'SENTENCE_START', expected: 'Ron Weasley' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 30: MORE CHALLENGING COREF CASES
+  // =========================================================================
+
+  // Case 38: Possessive after subject action
+  {
+    name: 'Possessive after subject action',
+    text: 'Harry arrived. Dumbledore spoke to him. His eyes twinkled.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+      createEntity('dumbledore', 'Albus Dumbledore', 'PERSON'),
+    ],
+    spans: [
+      createSpan('harry', 0, 5),
+      createSpan('dumbledore', 15, 25),
+    ],
+    sentences: [
+      createSentence('Harry arrived.', 0),
+      createSentence('Dumbledore spoke to him.', 15),
+      createSentence('His eyes twinkled.', 40),
+    ],
+    pronounTests: [
+      // "His" after Dumbledore's action - refers to subject Dumbledore
+      { pronoun: 'His', position: 40, context: 'SENTENCE_START', expected: 'Albus Dumbledore' },
+    ],
+  },
+
+  // Case 39: Sequential actions with pronouns
+  {
+    name: 'Sequential actions same person',
+    text: 'Hermione opened her book. She began to read. She smiled.',
+    entities: [
+      createEntity('hermione', 'Hermione Granger', 'PERSON'),
+    ],
+    spans: [
+      createSpan('hermione', 0, 8),
+    ],
+    sentences: [
+      createSentence('Hermione opened her book.', 0),
+      createSentence('She began to read.', 26),
+      createSentence('She smiled.', 45),
+    ],
+    pronounTests: [
+      { pronoun: 'her', position: 16, context: 'POSSESSIVE', expected: 'Hermione Granger' },
+      { pronoun: 'She', position: 26, context: 'SENTENCE_START', expected: 'Hermione Granger' },
+      { pronoun: 'She', position: 45, context: 'SENTENCE_START', expected: 'Hermione Granger' },
+    ],
+  },
+
+  // Case 40: Organization pronoun
+  {
+    name: 'Organization with it pronoun',
+    text: 'The Ministry was corrupt. It had been infiltrated.',
+    entities: [
+      createEntity('ministry', 'The Ministry of Magic', 'ORG'),
+    ],
+    spans: [
+      createSpan('ministry', 0, 12),
+    ],
+    sentences: [
+      createSentence('The Ministry was corrupt.', 0),
+      createSentence('It had been infiltrated.', 26),
+    ],
+    pronounTests: [
+      { pronoun: 'It', position: 26, context: 'SENTENCE_START', expected: 'The Ministry of Magic' },
+    ],
+  },
+
+  // Case 41: Multiple males with explicit subject switch
+  {
+    name: 'Explicit subject switch',
+    text: 'Harry watched Ron. Ron turned around. He smiled at Harry.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+      createEntity('ron', 'Ron Weasley', 'PERSON'),
+    ],
+    spans: [
+      createSpan('harry', 0, 5),
+      createSpan('ron', 14, 17),
+      createSpan('ron', 19, 22),
+      createSpan('harry', 50, 55),
+    ],
+    sentences: [
+      createSentence('Harry watched Ron.', 0),
+      createSentence('Ron turned around.', 19),
+      createSentence('He smiled at Harry.', 38),
+    ],
+    pronounTests: [
+      // "He" after Ron's action
+      { pronoun: 'He', position: 38, context: 'SENTENCE_START', expected: 'Ron Weasley' },
+    ],
+  },
 ];
 
 // =============================================================================
