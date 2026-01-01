@@ -503,6 +503,54 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 83: LIST AND ENUMERATION HANDLING
+  // =========================================================================
+
+  describe('List text (enumerations)', () => {
+    it('should handle lists efficiently', async () => {
+      const templates = [
+        'Harry needed: a wand, a cloak, and a stone.',
+        'The team included Ron, Hermione, and Harry.',
+        'They visited London, Paris, and Rome.',
+        'Options were: fight, flee, or hide.',
+      ];
+
+      let text = '';
+      for (let i = 0; i < 100; i++) {
+        text += templates[i % templates.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`List text: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
+  describe('Colon-heavy text', () => {
+    it('should handle colons and definitions', async () => {
+      const templates = [
+        'Definition: A wizard is a magical being.',
+        'Note: Hogwarts was founded in 990 AD.',
+        'Warning: Dragons are dangerous creatures.',
+        'Fact: Harry Potter defeated Voldemort.',
+      ];
+
+      let text = '';
+      for (let i = 0; i < 100; i++) {
+        text += templates[i % templates.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`Colon-heavy: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
