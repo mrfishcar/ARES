@@ -35,6 +35,10 @@ export const COMMON_VERBS_FOR_NAME_DETECTION = new Set([
   'made', 'created', 'built', 'destroyed', 'played', 'claimed',
   'passed', 'decided', 'discovered', 'learned', 'found', 'met', 'lost',
   'won', 'defeated', 'studied',
+  // Additional action verbs for name detection
+  'trained', 'protected', 'attacked', 'escaped', 'captured', 'rescued',
+  'guided', 'warned', 'admired', 'trusted', 'defended', 'released',
+  'joined', 'visited', 'heard', 'knew', 'recognized', 'led', 'succeeded',
 
   // Additional past tense verbs (cognitive, possessive, emotional)
   'formed', 'believed', 'published', 'possessed', 'owned', 'used', 'wore',
