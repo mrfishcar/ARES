@@ -291,6 +291,24 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   { name: 'Red Cross', type: 'ORG', expectedValid: true },
   { name: 'Greenpeace', type: 'ORG', expectedValid: true },
   { name: 'Amnesty International', type: 'ORG', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 79: MORE OBVIOUS ENTITIES
+  // =========================================================================
+
+  // Movie characters
+  { name: 'Darth Vader', type: 'PERSON', expectedValid: true },
+  { name: 'Indiana Jones', type: 'PERSON', expectedValid: true },
+  { name: 'James Bond', type: 'PERSON', expectedValid: true },
+
+  // Famous landmarks
+  { name: 'Colosseum', type: 'PLACE', expectedValid: true },
+  { name: 'Stonehenge', type: 'PLACE', expectedValid: true },
+  { name: 'Taj Mahal', type: 'PLACE', expectedValid: true },
+
+  // Music entities
+  { name: 'The Beatles', type: 'ORG', expectedValid: true },
+  { name: 'Rolling Stones', type: 'ORG', expectedValid: true },
 ];
 
 // =============================================================================
