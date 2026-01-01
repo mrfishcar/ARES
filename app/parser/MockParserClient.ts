@@ -111,10 +111,46 @@ function annotateNamedEntities(tokens: Token[], fullText: string): void {
       continue;
     }
 
+    // Skip determiners at the start of an entity span - they shouldn't start entities
+    const DETERMINERS = new Set(['the', 'a', 'an', 'this', 'that', 'these', 'those', 'my', 'your', 'his', 'her', 'its', 'our', 'their']);
+    if (DETERMINERS.has(text.toLowerCase())) {
+      i += 1;
+      continue;
+    }
+
     let j = i + 1;
     while (j < tokens.length) {
       const next = tokens[j];
       const nextCap = /^[A-Z]/.test(next.text) || /-[A-Z]/.test(next.text);
+
+      // "X of Y" PATTERN: Bridge lowercase connectors to form multi-word entities
+      // e.g., "Order of the Phoenix", "Ministry of Magic", "Department of Mysteries"
+      if (!nextCap && !next.ent) {
+        const BRIDGE_WORDS = new Set(['of', 'the', 'and', 'de', 'la', 'le', 'di', 'del', 'von', 'van']);
+        const isBridge = BRIDGE_WORDS.has(next.text.toLowerCase());
+        if (isBridge && j + 1 < tokens.length) {
+          // Look ahead for capitalized continuation
+          const afterBridge = tokens[j + 1];
+          const afterBridgeCap = /^[A-Z]/.test(afterBridge.text);
+          if (afterBridgeCap && !afterBridge.ent) {
+            // Include bridge word and continue
+            j += 1;
+            continue;
+          }
+          // Check two-word bridge: "of the"
+          if (j + 2 < tokens.length && next.text.toLowerCase() === 'of') {
+            const maybeThe = tokens[j + 1];
+            const afterThe = tokens[j + 2];
+            if (maybeThe.text.toLowerCase() === 'the' && /^[A-Z]/.test(afterThe.text) && !afterThe.ent) {
+              // Skip both "of" and "the"
+              j += 2;
+              continue;
+            }
+          }
+        }
+        break;
+      }
+
       if (!nextCap || next.ent === "DATE") break;
 
       // COORDINATION FIX: Don't group across commas (coordination lists)

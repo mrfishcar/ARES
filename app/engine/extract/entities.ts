@@ -872,16 +872,20 @@ function refineEntityType(type: EntityType, text: string): EntityType {
     return 'HOUSE';
   }
 
-  // School/Academy/House names should be ORG not PLACE (Stage 3 fix)
+  // School/Academy/House names should be ORG not PLACE or PERSON (Stage 3 fix)
   // Fixes: "Hogwarts" being classified as PLACE instead of ORG
+  // Also fixes: "Order of the Phoenix" being classified as PERSON instead of ORG
   const ORG_INDICATORS = [
     'School', 'Academy', 'University', 'College', 'Institute',
     'Hogwarts', 'Gryffindor', 'Slytherin', 'Ravenclaw', 'Hufflepuff',
     'Ministry', 'Department', 'Office', 'Bureau', 'Agency', 'Council',
-    'Order of', 'Guild', 'Clan', 'Brotherhood', 'Sisterhood'
+    'Order of', 'Guild', 'Clan', 'Brotherhood', 'Sisterhood', 'Society',
+    'League', 'Alliance', 'Federation', 'Union', 'Association', 'Foundation'
   ];
 
-  if (type === 'PLACE' && ORG_INDICATORS.some(keyword => trimmed.includes(keyword))) {
+  // Convert PLACE or PERSON → ORG when org indicators are present
+  // PERSON check needed because MockParser defaults unknown multi-word entities to PERSON
+  if ((type === 'PLACE' || type === 'PERSON') && ORG_INDICATORS.some(keyword => trimmed.includes(keyword))) {
     return 'ORG';
   }
 
@@ -1007,7 +1011,9 @@ export function normalizeName(s: string): string {
   normalized = normalized.replace(/['']s$/i, "");
   normalized = normalized.replace(/\bHouse$/i, "");
   const hadFamilySuffix = /\bfamily$/i.test(normalized);
-  const capitalized = normalized.match(/[A-Z][A-Za-z0-9''\-]*(?:\s+(?:of|the|and|&)?\s*[A-Z][A-Za-z0-9''\-]*)*/);
+  // Match capitalized words with optional connector words (of, the, and, &) between them
+  // Support multiple connectors like "Order of the Phoenix" (of + the before Phoenix)
+  const capitalized = normalized.match(/[A-Z][A-Za-z0-9''\-]*(?:\s+(?:(?:of|the|and|&|de|la|le|von|van)\s+)*[A-Z][A-Za-z0-9''\-]*)*/);
   if (capitalized) {
     normalized = capitalized[0];
     if (hadFamilySuffix && !/\bfamily$/i.test(normalized)) {
@@ -2429,8 +2435,15 @@ const VERB_PHRASE_STARTERS = new Set([
 
 const SINGLE_TOKEN_GARBAGE = new Set(['mr', 'mrs', 'ms', 'the', 'a', 'an', 'and', 'or', 'but']);
 
+// Connector words that are conventionally lowercase in proper names
+const TITLECASE_CONNECTORS = new Set(['of', 'the', 'and', 'or', 'in', 'at', 'to', 'for', 'by', 'on', 'a', 'an', 'de', 'la', 'le', 'von', 'van', 'del', 'di', 'da']);
+
 function isTitleCase(tokens: string[]): boolean {
-  return tokens.length > 0 && tokens.every(tok => /^[A-Z]/.test(tok));
+  // Consider title case if all tokens are either:
+  // 1. Capitalized (start with uppercase)
+  // 2. Connector words (of, the, and, etc.) - these are conventionally lowercase in titles
+  if (tokens.length === 0) return false;
+  return tokens.every(tok => /^[A-Z]/.test(tok) || TITLECASE_CONNECTORS.has(tok.toLowerCase()));
 }
 
 function isMostlyLowercase(value: string): boolean {
