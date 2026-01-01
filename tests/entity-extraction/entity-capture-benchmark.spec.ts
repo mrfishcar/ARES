@@ -475,6 +475,19 @@ const ADVERSARIAL_CASES: ObviousEntityCase[] = [
   { name: 'The White House', type: 'ORG', expectedValid: true },
   { name: 'The Black Panthers', type: 'ORG', expectedValid: true },
   { name: 'The Golden Gate Bridge', type: 'PLACE', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 27: MORE ADVERSARIAL CASES
+  // =========================================================================
+
+  // Directional as place (valid)
+  { name: 'North Korea', type: 'PLACE', expectedValid: true },
+  { name: 'South America', type: 'PLACE', expectedValid: true },
+  { name: 'West Virginia', type: 'PLACE', expectedValid: true },
+
+  // Common words that are surnames with title
+  { name: 'Best', type: 'PERSON', expectedValid: true, context: { fullText: 'Mr. Best arrived.', spanStart: 4, spanEnd: 8 } },
+  { name: 'Young', type: 'PERSON', expectedValid: true, context: { fullText: 'Dr. Young examined.', spanStart: 4, spanEnd: 9 } },
 ];
 
 // =============================================================================
