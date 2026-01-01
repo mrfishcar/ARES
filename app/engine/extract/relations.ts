@@ -31,6 +31,14 @@ type Span = { entity_id: string; start: number; end: number };
 const TRACE_REL = process.env.L3_REL_TRACE === "1";
 const COORD_TRACE = process.env.L3_COORD_DEBUG === "1";
 const L3_DEBUG = process.env.L3_DEBUG === "1";
+
+/**
+ * When true, disables ALL legacy fallback paths (lastNamedSubject, recentPersons, etc.)
+ * and forces TokenResolver as the sole pronoun resolution source.
+ * Used for testing TokenResolver-only mode before deleting legacy code.
+ */
+const FORCE_TOKEN_RESOLVER = process.env.FORCE_TOKEN_RESOLVER === "1";
+
 function traceRelation(stage: "candidate" | "final", rel: {
   pred: Predicate;
   subj: Entity | null;
@@ -1133,7 +1141,8 @@ function extractDepRelations(
       return tokenResolver.resolveToken(tok, context);
     }
 
-    // Legacy fallback: use lastNamedSubject
+    // Legacy fallback: use lastNamedSubject (skip if FORCE_TOKEN_RESOLVER)
+    if (FORCE_TOKEN_RESOLVER) return tok;
     return lastNamedSubject ?? tok;
   };
 
@@ -1152,7 +1161,8 @@ function extractDepRelations(
       return tokenResolver.resolvePossessors(possessor);
     }
 
-    // Legacy fallback
+    // Legacy fallback (skip if FORCE_TOKEN_RESOLVER)
+    if (FORCE_TOKEN_RESOLVER) return [];
     return resolvePossessors(possessor);
   };
 
@@ -1172,7 +1182,8 @@ function extractDepRelations(
       return;
     }
 
-    // Legacy fallback
+    // Legacy fallback (skip if FORCE_TOKEN_RESOLVER)
+    if (FORCE_TOKEN_RESOLVER) return;
     updateLastNamedSubject(tok);
   };
 
@@ -1312,7 +1323,8 @@ function extractDepRelations(
       }
     }
 
-    if (!candidateEntities.length && recentPersons.length) {
+    // Legacy fallback using recentPersons (skip if FORCE_TOKEN_RESOLVER)
+    if (!FORCE_TOKEN_RESOLVER && !candidateEntities.length && recentPersons.length) {
       for (const token of recentPersons) {
         if (token.start >= placeSpan.start && token.start <= placeSpan.end) continue;
         const surface = text.slice(token.start, token.end);
@@ -1736,10 +1748,13 @@ function extractDepRelations(
           }
         }
 
-        if (entityType === 'PERSON' || entityType === 'NORP') {
-          pushRecentPerson(tok);
-        } else if (entityType === 'ORG' || entityType === 'FAC') {
-          pushRecentOrg(tok);
+        // Update legacy tracking state (skip if FORCE_TOKEN_RESOLVER)
+        if (!FORCE_TOKEN_RESOLVER) {
+          if (entityType === 'PERSON' || entityType === 'NORP') {
+            pushRecentPerson(tok);
+          } else if (entityType === 'ORG' || entityType === 'FAC') {
+            pushRecentOrg(tok);
+          }
         }
       }
 
@@ -2078,8 +2093,9 @@ function extractDepRelations(
         if (headVerb && ['include', 'includes', 'included', 'be', 'were', 'was', 'are', 'list', 'lists', 'listed'].includes(verbLemma || '')) {
           let parentTokens = tokens
             .filter(t => t.dep === 'poss' && t.head === tok.i)
-            .flatMap(resolvePossessors);
-          if (!parentTokens.length && lastNamedSubject) {
+            .flatMap(resolvePossessorsUnified);
+          // Legacy fallback (skip if FORCE_TOKEN_RESOLVER)
+          if (!FORCE_TOKEN_RESOLVER && !parentTokens.length && lastNamedSubject) {
             parentTokens = [lastNamedSubject];
           }
           const parentRefs: EntityRef[] = [];
@@ -2590,7 +2606,8 @@ function extractDepRelations(
               t.text.toLowerCase() === 'of'
             );
             let orgTok = ofPrep ? tokens.find(t => t.dep === 'pobj' && t.head === ofPrep.i) : undefined;
-            if (!orgTok) {
+            // Legacy fallback to tracked org (skip if FORCE_TOKEN_RESOLVER)
+            if (!FORCE_TOKEN_RESOLVER && !orgTok) {
               orgTok = lastSchoolOrg ?? lastNamedOrg ?? undefined;
             }
             if (orgTok) {
@@ -2611,7 +2628,8 @@ function extractDepRelations(
                 subjSpan
               );
               const isProfessor = !!subjRef && subjRef.entity.canonical.toLowerCase().includes('professor');
-              if (isProfessor && lastSchoolOrg) {
+              // Legacy fallback for professor → school (skip if FORCE_TOKEN_RESOLVER)
+              if (!FORCE_TOKEN_RESOLVER && isProfessor && lastSchoolOrg) {
                 const schoolSpan = expandNP(lastSchoolOrg, tokens);
                 const teachingRelations = tryCreateRelation(
                   text, entities, spans, 'teaches_at',
@@ -2704,6 +2722,13 @@ function extractDepRelations(
         const resolveToken = (token: Token | undefined | null): Token | null => {
           if (!token) return null;
           if (token.pos === 'PRON') {
+            // Use TokenResolver when available
+            if (tokenResolver) {
+              const resolved = tokenResolver.resolveToken(token, 'SENTENCE_MID');
+              return resolved !== token ? resolved : null;
+            }
+            // Legacy fallback (skip if FORCE_TOKEN_RESOLVER)
+            if (FORCE_TOKEN_RESOLVER) return null;
             const lower = token.text.toLowerCase();
             if (recentPersons.length) {
               return recentPersons[0];
@@ -2735,19 +2760,39 @@ function extractDepRelations(
           const expanded: Token[] = [];
           for (const tok of group) {
             if (tok.pos === 'PRON') {
-              const lower = tok.text.toLowerCase();
-              if ((lower === 'they' || lower === 'them') && recentPersons.length) {
-                const limit = Math.min(3, recentPersons.length);
-                expanded.push(...recentPersons.slice(0, limit));
-                continue;
+              // Use TokenResolver when available
+              if (tokenResolver) {
+                const lower = tok.text.toLowerCase();
+                if (lower === 'they' || lower === 'them') {
+                  const resolved = tokenResolver.resolvePossessors(tok);
+                  if (resolved.length) {
+                    expanded.push(...resolved);
+                    continue;
+                  }
+                } else {
+                  const resolved = tokenResolver.resolveToken(tok, 'SENTENCE_MID');
+                  if (resolved !== tok) {
+                    expanded.push(resolved);
+                    continue;
+                  }
+                }
               }
-              if ((lower === 'she' || lower === 'her' || lower === 'he' || lower === 'him') && recentPersons.length) {
-                expanded.push(recentPersons[0]);
-                continue;
-              }
-              if (lastNamedSubject) {
-                expanded.push(lastNamedSubject);
-                continue;
+              // Legacy fallback (skip if FORCE_TOKEN_RESOLVER)
+              if (!FORCE_TOKEN_RESOLVER) {
+                const lower = tok.text.toLowerCase();
+                if ((lower === 'they' || lower === 'them') && recentPersons.length) {
+                  const limit = Math.min(3, recentPersons.length);
+                  expanded.push(...recentPersons.slice(0, limit));
+                  continue;
+                }
+                if ((lower === 'she' || lower === 'her' || lower === 'he' || lower === 'him') && recentPersons.length) {
+                  expanded.push(recentPersons[0]);
+                  continue;
+                }
+                if (lastNamedSubject) {
+                  expanded.push(lastNamedSubject);
+                  continue;
+                }
               }
             }
             expanded.push(tok);
@@ -2794,41 +2839,43 @@ function extractDepRelations(
           if (!descriptorPattern.test(surface)) return [];
           const lowerSurface = surface.toLowerCase();
           const desired = options.limit ?? descriptorLimitFromSurface(lowerSurface);
-          const available = Math.max(1, Math.min(desired, recentPersons.length || desired));
+          const available = Math.max(1, Math.min(desired, FORCE_TOKEN_RESOLVER ? desired : (recentPersons.length || desired)));
           const resolved: EntityRef[] = [];
           const seen = new Set<string>();
 
-
-          for (const recent of recentPersons) {
-            const ref = mapRecentTokenToEntity(recent);
-            if (
-              ref &&
-              ref.entity.type === 'PERSON' &&
-              !seen.has(ref.entity.id) &&
-              !options.avoidIds?.has(ref.entity.id)
-            ) {
-              const canonicalLower = ref.entity.canonical.toLowerCase();
-              if (descriptorEntityPattern.test(canonicalLower)) {
-                continue;
-              }
-              seen.add(ref.entity.id);
-              resolved.push(ref);
-              if (resolved.length >= available) {
-                break;
+          // Legacy path using recentPersons (skip if FORCE_TOKEN_RESOLVER)
+          if (!FORCE_TOKEN_RESOLVER) {
+            for (const recent of recentPersons) {
+              const ref = mapRecentTokenToEntity(recent);
+              if (
+                ref &&
+                ref.entity.type === 'PERSON' &&
+                !seen.has(ref.entity.id) &&
+                !options.avoidIds?.has(ref.entity.id)
+              ) {
+                const canonicalLower = ref.entity.canonical.toLowerCase();
+                if (descriptorEntityPattern.test(canonicalLower)) {
+                  continue;
+                }
+                seen.add(ref.entity.id);
+                resolved.push(ref);
+                if (resolved.length >= available) {
+                  break;
+                }
               }
             }
-          }
 
-          if (!resolved.length && lastNamedSubject) {
-            const fallback = mapRecentTokenToEntity(lastNamedSubject);
-            if (
-              fallback &&
-              fallback.entity.type === 'PERSON' &&
-              !options.avoidIds?.has(fallback.entity.id)
-            ) {
-              const canonicalLower = fallback.entity.canonical.toLowerCase();
-              if (!descriptorEntityPattern.test(canonicalLower)) {
-                resolved.push(fallback);
+            if (!resolved.length && lastNamedSubject) {
+              const fallback = mapRecentTokenToEntity(lastNamedSubject);
+              if (
+                fallback &&
+                fallback.entity.type === 'PERSON' &&
+                !options.avoidIds?.has(fallback.entity.id)
+              ) {
+                const canonicalLower = fallback.entity.canonical.toLowerCase();
+                if (!descriptorEntityPattern.test(canonicalLower)) {
+                  resolved.push(fallback);
+                }
               }
             }
           }
@@ -3050,13 +3097,20 @@ function extractDepRelations(
         );
         let subjTok = resolveSubjectToken(tok, tokens);
         if (subjTok && subjTok.pos === 'PRON') {
-          if (lastNamedSubject) {
-            subjTok = lastNamedSubject;
-          } else if (sent.sentence_index > 0) {
-            const prevSentence = sentences[sent.sentence_index - 1];
-            const prevSubject = [...prevSentence.tokens].reverse().find(t => t.dep === 'nsubj' && isNameToken(t));
-            if (prevSubject) {
-              subjTok = prevSubject;
+          // Use unified pronoun resolution
+          const resolved = resolvePronounToken(subjTok, 'SENTENCE_MID');
+          if (resolved !== subjTok) {
+            subjTok = resolved;
+          } else if (!FORCE_TOKEN_RESOLVER) {
+            // Legacy fallback
+            if (lastNamedSubject) {
+              subjTok = lastNamedSubject;
+            } else if (sent.sentence_index > 0) {
+              const prevSentence = sentences[sent.sentence_index - 1];
+              const prevSubject = [...prevSentence.tokens].reverse().find(t => t.dep === 'nsubj' && isNameToken(t));
+              if (prevSubject) {
+                subjTok = prevSubject;
+              }
             }
           }
         }
@@ -3167,7 +3221,8 @@ function extractDepRelations(
             }
           }
 
-          if (!parentEntityEntry && lastNamedOrg) {
+          // Legacy fallback to lastNamedOrg (skip if FORCE_TOKEN_RESOLVER)
+          if (!FORCE_TOKEN_RESOLVER && !parentEntityEntry && lastNamedOrg) {
             const lastOrgToken = lastNamedOrg;
             const orgEntity = entityFromSpan(lastOrgToken.start, lastOrgToken.end);
             if (orgEntity && orgEntity.type === 'ORG') {
@@ -3301,14 +3356,36 @@ function extractDepRelations(
                 if (isNameToken(possTok)) {
                   parentTokenCandidates.push(possTok);
                 } else if (possTok.pos === 'PRON') {
-                  parentTokenCandidates.push(...recentPersons.slice(0, 2));
+                  // Use TokenResolver when available
+                  if (tokenResolver) {
+                    const resolved = tokenResolver.resolvePossessors(possTok);
+                    if (resolved.length) {
+                      parentTokenCandidates.push(...resolved);
+                      continue;
+                    }
+                  }
+                  // Legacy fallback using recentPersons (skip if FORCE_TOKEN_RESOLVER)
+                  if (!FORCE_TOKEN_RESOLVER) {
+                    parentTokenCandidates.push(...recentPersons.slice(0, 2));
+                  }
                 }
               }
             }
 
             if (!parentTokenCandidates.length) {
-              if (lastNamedSubject) parentTokenCandidates.push(lastNamedSubject);
-              if (!parentTokenCandidates.length) parentTokenCandidates.push(...recentPersons.slice(0, 2));
+              // Use TokenResolver fallback when available
+              if (tokenResolver) {
+                const dummyPron = { pos: 'PRON', text: 'their', start: sent.start } as Token;
+                const resolved = tokenResolver.resolvePossessors(dummyPron);
+                if (resolved.length) {
+                  parentTokenCandidates.push(...resolved.slice(0, 2));
+                }
+              }
+              // Legacy fallback (skip if FORCE_TOKEN_RESOLVER)
+              if (!FORCE_TOKEN_RESOLVER && !parentTokenCandidates.length) {
+                if (lastNamedSubject) parentTokenCandidates.push(lastNamedSubject);
+                if (!parentTokenCandidates.length) parentTokenCandidates.push(...recentPersons.slice(0, 2));
+              }
             }
 
             const parentEntities: { entity: Entity; span: Span }[] = [];
@@ -3561,7 +3638,8 @@ function extractDepRelations(
         260
       );
 
-      if (!containerRef && lastNamedOrg) {
+      // Legacy fallback to lastNamedOrg (skip if FORCE_TOKEN_RESOLVER)
+      if (!FORCE_TOKEN_RESOLVER && !containerRef && lastNamedOrg) {
         const entity = entityFromSpan(lastNamedOrg.start, lastNamedOrg.end);
         if (entity && ['ORG', 'HOUSE', 'TRIBE'].includes(entity.type)) {
           containerRef = {
