@@ -627,6 +627,140 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'she', position: 19, context: 'SENTENCE_MID', expected: 'Luna Lovegood' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 18: ADDITIONAL EDGE CASES
+  // =========================================================================
+
+  // Case 27: Male reflexive with female present
+  {
+    name: 'Male reflexive with female in sentence',
+    text: 'Harry told Hermione about himself. She listened.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+      createEntity('hermione', 'Hermione Granger', 'PERSON'),
+    ],
+    spans: [
+      createSpan('harry', 0, 5),
+      createSpan('hermione', 11, 19),
+    ],
+    sentences: [
+      createSentence('Harry told Hermione about himself.', 0),
+      createSentence('She listened.', 35),
+    ],
+    pronounTests: [
+      { pronoun: 'himself', position: 26, context: 'SENTENCE_MID', expected: 'Harry Potter' },
+      { pronoun: 'She', position: 35, context: 'SENTENCE_START', expected: 'Hermione Granger' },
+    ],
+  },
+
+  // Case 28: Distant antecedent (3 sentences back)
+  {
+    name: 'Distant antecedent resolution',
+    text: 'Snape brewed the potion. It bubbled. The fumes rose. He added ingredients.',
+    entities: [
+      createEntity('snape', 'Severus Snape', 'PERSON'),
+      createEntity('potion', 'the potion', 'ITEM'),
+    ],
+    spans: [
+      createSpan('snape', 0, 5),
+      createSpan('potion', 17, 23),
+    ],
+    sentences: [
+      createSentence('Snape brewed the potion.', 0),
+      createSentence('It bubbled.', 25),
+      createSentence('The fumes rose.', 37),
+      createSentence('He added ingredients.', 53),
+    ],
+    pronounTests: [
+      { pronoun: 'It', position: 25, context: 'SENTENCE_START', expected: 'the potion' },
+      { pronoun: 'He', position: 53, context: 'SENTENCE_START', expected: 'Severus Snape' },
+    ],
+  },
+
+  // Case 29: Entity type discrimination
+  {
+    name: 'Entity type constrains pronoun resolution',
+    text: 'Harry found the sword. He picked it up.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+      createEntity('sword', 'the sword', 'ITEM'),
+    ],
+    spans: [
+      createSpan('harry', 0, 5),
+      createSpan('sword', 16, 21),
+    ],
+    sentences: [
+      createSentence('Harry found the sword.', 0),
+      createSentence('He picked it up.', 23),
+    ],
+    pronounTests: [
+      { pronoun: 'He', position: 23, context: 'SENTENCE_START', expected: 'Harry Potter' },
+      { pronoun: 'it', position: 33, context: 'SENTENCE_MID', expected: 'the sword' },
+    ],
+  },
+
+  // Case 30: Object pronoun after clause
+  {
+    name: 'Object pronoun after complex clause',
+    text: 'When Harry entered, Hermione saw him.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+      createEntity('hermione', 'Hermione Granger', 'PERSON'),
+    ],
+    spans: [
+      createSpan('harry', 5, 10),
+      createSpan('hermione', 20, 28),
+    ],
+    sentences: [
+      createSentence('When Harry entered, Hermione saw him.', 0),
+    ],
+    pronounTests: [
+      { pronoun: 'him', position: 33, context: 'SENTENCE_MID', expected: 'Harry Potter' },
+    ],
+  },
+
+  // Case 31: Place with "it" pronoun
+  {
+    name: 'Place with neutral pronoun',
+    text: 'Hogwarts stood on the hill. It dominated the landscape.',
+    entities: [
+      createEntity('hogwarts', 'Hogwarts', 'PLACE'),
+    ],
+    spans: [
+      createSpan('hogwarts', 0, 8),
+    ],
+    sentences: [
+      createSentence('Hogwarts stood on the hill.', 0),
+      createSentence('It dominated the landscape.', 28),
+    ],
+    pronounTests: [
+      { pronoun: 'It', position: 28, context: 'SENTENCE_START', expected: 'Hogwarts' },
+    ],
+  },
+
+  // Case 32: Multiple females - simpler pattern
+  {
+    name: 'Two females - sentence-start She',
+    text: 'Ginny arrived first. Hermione came later. She brought snacks.',
+    entities: [
+      createEntity('ginny', 'Ginny Weasley', 'PERSON'),
+      createEntity('hermione', 'Hermione Granger', 'PERSON'),
+    ],
+    spans: [
+      createSpan('ginny', 0, 5),
+      createSpan('hermione', 21, 29),
+    ],
+    sentences: [
+      createSentence('Ginny arrived first.', 0),
+      createSentence('Hermione came later.', 21),
+      createSentence('She brought snacks.', 42),
+    ],
+    pronounTests: [
+      // "She" after Hermione's action should be Hermione
+      { pronoun: 'She', position: 42, context: 'SENTENCE_START', expected: 'Hermione Granger' },
+    ],
+  },
 ];
 
 // =============================================================================
