@@ -1130,6 +1130,49 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'him', position: 27, context: 'SENTENCE_MID', expected: 'Ron Weasley' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 48: MORE COREF CASES
+  // =========================================================================
+
+  // Case 49: Female possessive
+  {
+    name: 'Female possessive her',
+    text: 'Luna read her book. She smiled.',
+    entities: [
+      createEntity('luna', 'Luna Lovegood', 'PERSON'),
+    ],
+    spans: [
+      createSpan('luna', 0, 4),
+    ],
+    sentences: [
+      createSentence('Luna read her book.', 0),
+      createSentence('She smiled.', 20),
+    ],
+    pronounTests: [
+      { pronoun: 'her', position: 10, context: 'SENTENCE_MID', expected: 'Luna Lovegood' },
+      { pronoun: 'She', position: 20, context: 'SENTENCE_START', expected: 'Luna Lovegood' },
+    ],
+  },
+
+  // Case 50: Male after action
+  {
+    name: 'Male pronoun after action',
+    text: 'Neville cast the spell. He was nervous.',
+    entities: [
+      createEntity('neville', 'Neville Longbottom', 'PERSON'),
+    ],
+    spans: [
+      createSpan('neville', 0, 7),
+    ],
+    sentences: [
+      createSentence('Neville cast the spell.', 0),
+      createSentence('He was nervous.', 24),
+    ],
+    pronounTests: [
+      { pronoun: 'He', position: 24, context: 'SENTENCE_START', expected: 'Neville Longbottom' },
+    ],
+  },
 ];
 
 // =============================================================================
