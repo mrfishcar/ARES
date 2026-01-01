@@ -561,6 +561,26 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'sleeping', type: 'PERSON', expectedValid: false },
   { name: 'eating', type: 'PERSON', expectedValid: false },
   { name: 'drinking', type: 'PERSON', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 42: MORE JUNK CASES
+  // =========================================================================
+
+  // Time expressions
+  { name: 'today', type: 'PLACE', expectedValid: false },
+  { name: 'yesterday', type: 'PLACE', expectedValid: false },
+  { name: 'tomorrow', type: 'PLACE', expectedValid: false },
+  { name: 'morning', type: 'PLACE', expectedValid: false },
+  { name: 'evening', type: 'PLACE', expectedValid: false },
+  { name: 'night', type: 'PLACE', expectedValid: false },
+
+  // Question words
+  { name: 'what', type: 'PERSON', expectedValid: false },
+  { name: 'when', type: 'PERSON', expectedValid: false },
+  { name: 'where', type: 'PLACE', expectedValid: false },
+  { name: 'why', type: 'PERSON', expectedValid: false },
+  { name: 'how', type: 'PERSON', expectedValid: false },
+  { name: 'who', type: 'PERSON', expectedValid: false },
 ];
 
 // =============================================================================

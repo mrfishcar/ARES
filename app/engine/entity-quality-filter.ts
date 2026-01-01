@@ -209,6 +209,7 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
   'sleeping', 'eating', 'drinking',
   'place', 'places', 'somewhere', 'anywhere', 'nowhere', 'everywhere',
   'time', 'times', 'day', 'days', 'year', 'years', 'moment', 'moments',
+  'morning', 'evening', 'night', 'afternoon', 'noon', 'midnight',
   'way', 'ways', 'kind', 'sort', 'type',
   'case', 'cases', 'point', 'points', 'part', 'parts',
   'number', 'numbers', 'group', 'groups',
