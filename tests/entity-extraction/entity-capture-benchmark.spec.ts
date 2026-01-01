@@ -247,6 +247,28 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   { name: 'Tokyo', type: 'PLACE', expectedValid: true },
   { name: 'Sydney', type: 'PLACE', expectedValid: true },
   { name: 'Cairo', type: 'PLACE', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 41: MORE OBVIOUS ENTITIES
+  // =========================================================================
+
+  // Modern tech leaders
+  { name: 'Elon Musk', type: 'PERSON', expectedValid: true },
+  { name: 'Jeff Bezos', type: 'PERSON', expectedValid: true },
+  { name: 'Satya Nadella', type: 'PERSON', expectedValid: true },
+  { name: 'Sundar Pichai', type: 'PERSON', expectedValid: true },
+
+  // Modern tech companies
+  { name: 'SpaceX', type: 'ORG', expectedValid: true },
+  { name: 'OpenAI', type: 'ORG', expectedValid: true },
+  { name: 'Netflix', type: 'ORG', expectedValid: true },
+  { name: 'Spotify', type: 'ORG', expectedValid: true },
+
+  // More works
+  { name: 'War and Peace', type: 'WORK', expectedValid: true },
+  { name: 'Pride and Prejudice', type: 'WORK', expectedValid: true },
+  { name: 'The Great Gatsby', type: 'WORK', expectedValid: true },
+  { name: 'To Kill a Mockingbird', type: 'WORK', expectedValid: true },
 ];
 
 // =============================================================================
