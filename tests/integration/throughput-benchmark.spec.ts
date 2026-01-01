@@ -455,6 +455,54 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 78: PUNCTUATION AND QUOTATION HANDLING
+  // =========================================================================
+
+  describe('Quotation-heavy text', () => {
+    it('should handle dialogue with quotes', async () => {
+      const templates = [
+        '"I am Harry Potter," said Harry.',
+        '"Where is he?" asked Hermione.',
+        '"Follow me," Dumbledore commanded.',
+        '"Never!" shouted Ron defiantly.',
+      ];
+
+      let text = '';
+      for (let i = 0; i < 150; i++) {
+        text += templates[i % templates.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`Quotation-heavy: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
+  describe('Punctuation variety text', () => {
+    it('should handle varied punctuation', async () => {
+      const templates = [
+        'Harry (the chosen one) fought bravely.',
+        'Hermione — the brightest witch — studied.',
+        'Ron, Fred, and George laughed; it was funny!',
+        'What did Dumbledore say? No one knew...',
+      ];
+
+      let text = '';
+      for (let i = 0; i < 100; i++) {
+        text += templates[i % templates.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`Punctuation variety: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(50);
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
