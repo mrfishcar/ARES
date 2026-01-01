@@ -489,6 +489,34 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'do', type: 'PERSON', expectedValid: false },
   { name: 'does', type: 'PERSON', expectedValid: false },
   { name: 'did', type: 'PERSON', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 35: MORE JUNK CASES
+  // =========================================================================
+
+  // Common nouns that shouldn't be entities
+  { name: 'man', type: 'PERSON', expectedValid: false },
+  { name: 'woman', type: 'PERSON', expectedValid: false },
+  { name: 'boy', type: 'PERSON', expectedValid: false },
+  { name: 'girl', type: 'PERSON', expectedValid: false },
+  { name: 'child', type: 'PERSON', expectedValid: false },
+  { name: 'children', type: 'PERSON', expectedValid: false },
+  { name: 'friend', type: 'PERSON', expectedValid: false },
+  { name: 'friends', type: 'PERSON', expectedValid: false },
+
+  // Generic role words
+  { name: 'king', type: 'PERSON', expectedValid: false },
+  { name: 'queen', type: 'PERSON', expectedValid: false },
+  { name: 'prince', type: 'PERSON', expectedValid: false },
+  { name: 'princess', type: 'PERSON', expectedValid: false },
+  { name: 'lord', type: 'PERSON', expectedValid: false },
+  { name: 'lady', type: 'PERSON', expectedValid: false },
+
+  // More action words
+  { name: 'running', type: 'PERSON', expectedValid: false },
+  { name: 'sleeping', type: 'PERSON', expectedValid: false },
+  { name: 'eating', type: 'PERSON', expectedValid: false },
+  { name: 'drinking', type: 'PERSON', expectedValid: false },
 ];
 
 // =============================================================================

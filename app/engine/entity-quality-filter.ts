@@ -204,6 +204,9 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
   // Generic nouns that are too vague
   'thing', 'things', 'stuff',
   'person', 'people', 'somebody', 'someone', 'anybody', 'anyone', 'nobody', 'everyone',
+  'man', 'woman', 'boy', 'girl', 'child', 'children', 'friend', 'friends',
+  'king', 'queen', 'prince', 'princess', 'lord', 'lady',
+  'sleeping', 'eating', 'drinking',
   'place', 'places', 'somewhere', 'anywhere', 'nowhere', 'everywhere',
   'time', 'times', 'day', 'days', 'year', 'years', 'moment', 'moments',
   'way', 'ways', 'kind', 'sort', 'type',
