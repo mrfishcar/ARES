@@ -141,6 +141,64 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
       { subject: 'Albus', predicate: 'leader_of', object: 'Hogwarts', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 24: ADDITIONAL RELATION CASES
+  // =========================================================================
+
+  // More family relations - mother/child
+  {
+    name: 'Mother-child relation',
+    text: 'Lily Potter was the mother of Harry Potter.',
+    expectedRelations: [
+      { subject: 'Lily', predicate: 'parent_of', object: 'Harry', shouldExist: true },
+    ],
+  },
+
+  // Spouse relation - different form
+  {
+    name: 'Spouse relation is-married-to',
+    text: 'Ron Weasley is married to Hermione Granger.',
+    expectedRelations: [
+      { subject: 'Ron', predicate: 'married_to', object: 'Hermione', shouldExist: true },
+    ],
+  },
+
+  // Enemy relation
+  {
+    name: 'Enemy relation',
+    text: 'Voldemort was the enemy of Harry Potter.',
+    expectedRelations: [
+      { subject: 'Voldemort', predicate: 'enemy_of', object: 'Harry', shouldExist: true },
+    ],
+  },
+
+  // Born in relation
+  {
+    name: 'Born in relation',
+    text: 'Shakespeare was born in Stratford-upon-Avon.',
+    expectedRelations: [
+      { subject: 'Shakespeare', predicate: 'born_in', object: 'Stratford', shouldExist: true },
+    ],
+  },
+
+  // Studied at relation
+  {
+    name: 'Studied at relation',
+    text: 'Harry Potter studied at Hogwarts School.',
+    expectedRelations: [
+      { subject: 'Harry', predicate: 'student_of', object: 'Hogwarts', shouldExist: true },
+    ],
+  },
+
+  // Ally relation
+  {
+    name: 'Ally relation',
+    text: 'Dumbledore was an ally of the Order of the Phoenix.',
+    expectedRelations: [
+      { subject: 'Dumbledore', predicate: 'ally_of', object: 'Order', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
@@ -162,6 +220,24 @@ const DIRECTION_TEST_CASES: RelationTestCase[] = [
     expectedRelations: [
       { subject: 'McGonagall', predicate: 'taught', object: 'Harry', shouldExist: true },
       { subject: 'Harry', predicate: 'taught', object: 'McGonagall', shouldExist: false },
+    ],
+  },
+
+  // Loop 24: More direction tests
+  {
+    name: 'Founder direction correct',
+    text: 'Bill Gates founded Microsoft Corporation.',
+    expectedRelations: [
+      { subject: 'Bill', predicate: 'founded', object: 'Microsoft', shouldExist: true },
+      { subject: 'Microsoft', predicate: 'founded', object: 'Bill', shouldExist: false },
+    ],
+  },
+  {
+    name: 'Mentor direction correct',
+    text: 'Obi-Wan Kenobi mentored Luke Skywalker.',
+    expectedRelations: [
+      { subject: 'Obi-Wan', predicate: 'mentor_of', object: 'Luke', shouldExist: true },
+      { subject: 'Luke', predicate: 'mentor_of', object: 'Obi-Wan', shouldExist: false },
     ],
   },
 ];
