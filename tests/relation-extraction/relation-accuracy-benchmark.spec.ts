@@ -279,6 +279,46 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
       { subject: 'Hagrid', predicate: 'owns', object: 'Norbert', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 60: MORE OBVIOUS RELATIONS
+  // =========================================================================
+
+  // Helped relation
+  {
+    name: 'Helped relation',
+    text: 'Hermione helped Harry with his homework.',
+    expectedRelations: [
+      { subject: 'Hermione', predicate: 'helped', object: 'Harry', shouldExist: true },
+    ],
+  },
+
+  // Saved relation
+  {
+    name: 'Saved relation',
+    text: 'Harry saved Ginny in the Chamber of Secrets.',
+    expectedRelations: [
+      { subject: 'Harry', predicate: 'saved', object: 'Ginny', shouldExist: true },
+    ],
+  },
+
+  // Defeated relation
+  {
+    name: 'Defeated relation',
+    text: 'Harry Potter defeated Lord Voldemort.',
+    expectedRelations: [
+      { subject: 'Harry', predicate: 'defeated', object: 'Voldemort', shouldExist: true },
+    ],
+  },
+
+  // Trained relation
+  {
+    name: 'Trained relation',
+    text: 'Dumbledore trained Harry in magic.',
+    expectedRelations: [
+      { subject: 'Dumbledore', predicate: 'trained', object: 'Harry', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
