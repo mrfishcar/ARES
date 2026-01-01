@@ -327,6 +327,20 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   // Historical figures
   { name: 'Julius Caesar', type: 'PERSON', expectedValid: true },
   { name: 'Queen Victoria', type: 'PERSON', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 89: MORE OBVIOUS ENTITIES
+  // =========================================================================
+
+  // Sci-fi entities
+  { name: 'Enterprise', type: 'ITEM', expectedValid: true },
+  { name: 'Millennium Falcon', type: 'ITEM', expectedValid: true },
+  { name: 'Death Star', type: 'PLACE', expectedValid: true },
+
+  // Newspapers and media
+  { name: 'New York Times', type: 'ORG', expectedValid: true },
+  { name: 'BBC', type: 'ORG', expectedValid: true },
+  { name: 'CNN', type: 'ORG', expectedValid: true },
 ];
 
 // =============================================================================
