@@ -1212,25 +1212,21 @@ function EditorPanel({
     handleInput();
   }, [handleInput]);
 
-  // Toolbar action handlers
+  // Toolbar action handlers - inline formatting keeps menu open
   const handleBold = useCallback(() => {
     execFormat('bold');
-    setShowFormatMenu(false);
   }, [execFormat]);
 
   const handleItalic = useCallback(() => {
     execFormat('italic');
-    setShowFormatMenu(false);
   }, [execFormat]);
 
   const handleUnderline = useCallback(() => {
     execFormat('underline');
-    setShowFormatMenu(false);
   }, [execFormat]);
 
   const handleStrikethrough = useCallback(() => {
     execFormat('strikeThrough');
-    setShowFormatMenu(false);
   }, [execFormat]);
 
   // Handle list types
@@ -1277,8 +1273,7 @@ function EditorPanel({
       targetDiv.replaceWith(newItem);
       handleInput();
     }
-
-    setShowFormatMenu(false);
+    // Menu stays open for additional formatting
   }, [handleInput]);
 
   // Handle indentation
@@ -1311,8 +1306,7 @@ function EditorPanel({
 
       handleInput();
     }
-
-    setShowFormatMenu(false);
+    // Menu stays open for additional formatting
   }, [handleInput]);
 
   // Handle text style (heading levels)
@@ -1356,8 +1350,7 @@ function EditorPanel({
 
       handleInput();
     }
-
-    setShowFormatMenu(false);
+    // Menu stays open for additional formatting
   }, [handleInput]);
 
   // Handle checklist
