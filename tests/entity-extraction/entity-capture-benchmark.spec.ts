@@ -153,6 +153,91 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'Like', type: 'PERSON', expectedValid: false, context: { isSentenceInitial: true, hasNERSupport: false } },
   { name: 'Perched', type: 'PERSON', expectedValid: false, context: { isSentenceInitial: true, hasNERSupport: false } },
   { name: 'Familiar', type: 'PERSON', expectedValid: false, context: { isSentenceInitial: true, hasNERSupport: false } },
+
+  // =========================================================================
+  // LOOP 3: HARDER JUNK CASES
+  // =========================================================================
+
+  // More discourse markers
+  { name: 'also', type: 'PERSON', expectedValid: false },
+  { name: 'perhaps', type: 'PERSON', expectedValid: false },
+  { name: 'maybe', type: 'PERSON', expectedValid: false },
+  { name: 'indeed', type: 'PERSON', expectedValid: false },
+  { name: 'certainly', type: 'PERSON', expectedValid: false },
+  { name: 'obviously', type: 'PERSON', expectedValid: false },
+  { name: 'clearly', type: 'PERSON', expectedValid: false },
+  { name: 'actually', type: 'PERSON', expectedValid: false },
+
+  // Temporal words (not names, just time expressions)
+  { name: 'today', type: 'PERSON', expectedValid: false },
+  { name: 'tomorrow', type: 'PERSON', expectedValid: false },
+  { name: 'yesterday', type: 'PERSON', expectedValid: false },
+  { name: 'now', type: 'PERSON', expectedValid: false },
+  { name: 'then', type: 'PERSON', expectedValid: false },
+  { name: 'later', type: 'PERSON', expectedValid: false },
+  { name: 'soon', type: 'PERSON', expectedValid: false },
+  { name: 'never', type: 'PERSON', expectedValid: false },
+  { name: 'always', type: 'PERSON', expectedValid: false },
+
+  // Sequence/ordinal words
+  { name: 'first', type: 'PERSON', expectedValid: false },
+  { name: 'second', type: 'PERSON', expectedValid: false },
+  { name: 'next', type: 'PERSON', expectedValid: false },
+  { name: 'last', type: 'PERSON', expectedValid: false },
+  { name: 'finally', type: 'PERSON', expectedValid: false },
+
+  // More verbs
+  { name: 'thought', type: 'PERSON', expectedValid: false },
+  { name: 'knew', type: 'PERSON', expectedValid: false },
+  { name: 'felt', type: 'PERSON', expectedValid: false },
+  { name: 'seemed', type: 'PERSON', expectedValid: false },
+  { name: 'appeared', type: 'PERSON', expectedValid: false },
+  { name: 'started', type: 'PERSON', expectedValid: false },
+  { name: 'began', type: 'PERSON', expectedValid: false },
+  { name: 'continued', type: 'PERSON', expectedValid: false },
+  { name: 'stopped', type: 'PERSON', expectedValid: false },
+
+  // Possessive/reflexive pronouns
+  { name: 'myself', type: 'PERSON', expectedValid: false },
+  { name: 'yourself', type: 'PERSON', expectedValid: false },
+  { name: 'himself', type: 'PERSON', expectedValid: false },
+  { name: 'herself', type: 'PERSON', expectedValid: false },
+  { name: 'itself', type: 'ITEM', expectedValid: false },
+  { name: 'themselves', type: 'PERSON', expectedValid: false },
+  { name: 'ourselves', type: 'PERSON', expectedValid: false },
+
+  // Existential/relative pronouns
+  { name: 'there', type: 'PLACE', expectedValid: false },
+  { name: 'here', type: 'PLACE', expectedValid: false },
+  { name: 'where', type: 'PLACE', expectedValid: false },
+  { name: 'who', type: 'PERSON', expectedValid: false },
+  { name: 'what', type: 'ITEM', expectedValid: false },
+  { name: 'which', type: 'ITEM', expectedValid: false },
+
+  // Modal verbs
+  { name: 'could', type: 'PERSON', expectedValid: false },
+  { name: 'would', type: 'PERSON', expectedValid: false },
+  { name: 'should', type: 'PERSON', expectedValid: false },
+  { name: 'might', type: 'PERSON', expectedValid: false },
+  { name: 'must', type: 'PERSON', expectedValid: false },
+
+  // Conjunctions/prepositions that might get capitalized
+  { name: 'And', type: 'PERSON', expectedValid: false, context: { isSentenceInitial: true, hasNERSupport: false } },
+  { name: 'But', type: 'PERSON', expectedValid: false, context: { isSentenceInitial: true, hasNERSupport: false } },
+  { name: 'Or', type: 'PERSON', expectedValid: false, context: { isSentenceInitial: true, hasNERSupport: false } },
+  { name: 'So', type: 'PERSON', expectedValid: false, context: { isSentenceInitial: true, hasNERSupport: false } },
+  { name: 'Yet', type: 'PERSON', expectedValid: false, context: { isSentenceInitial: true, hasNERSupport: false } },
+
+  // Quantity/number words
+  { name: 'many', type: 'PERSON', expectedValid: false },
+  { name: 'few', type: 'PERSON', expectedValid: false },
+  { name: 'some', type: 'PERSON', expectedValid: false },
+  { name: 'all', type: 'PERSON', expectedValid: false },
+  { name: 'none', type: 'PERSON', expectedValid: false },
+  { name: 'both', type: 'PERSON', expectedValid: false },
+  { name: 'each', type: 'PERSON', expectedValid: false },
+  { name: 'every', type: 'PERSON', expectedValid: false },
+  { name: 'any', type: 'PERSON', expectedValid: false },
 ];
 
 // =============================================================================

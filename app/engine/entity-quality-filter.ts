@@ -56,7 +56,7 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
 
   // Determiners and particles
   'the', 'a', 'an', 'this', 'that', 'these', 'those',
-  'some', 'any', 'all', 'each', 'every', 'both', 'few', 'many', 'much',
+  'some', 'any', 'all', 'each', 'every', 'both', 'few', 'many', 'much', 'none',
 
   // High-frequency verbs that shouldn't be entities (even when capitalized at sentence start)
   'like', 'just', 'really', 'actually', 'maybe', 'must', 'should', 'could',
@@ -138,6 +138,7 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
   'expect', 'expects', 'expected', 'expecting',
   'build', 'builds', 'built', 'building',
   'stay', 'stays', 'stayed', 'staying',
+  'start', 'starts', 'started', 'starting',
   'fall', 'falls', 'fell', 'falling', 'fallen',
   'cut', 'cuts', 'cutting',
   'reach', 'reaches', 'reached', 'reaching',
@@ -189,7 +190,7 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
   'suddenly', 'quickly', 'slowly', 'quietly', 'loudly', 'finally', 'immediately',
 
   // Common adjectives that shouldn't be entities
-  'good', 'bad', 'new', 'old', 'first', 'last', 'long', 'short',
+  'good', 'bad', 'new', 'old', 'first', 'second', 'third', 'last', 'long', 'short',
   'big', 'small', 'great', 'little', 'own', 'other', 'different', 'same',
   'high', 'low', 'next', 'early', 'young', 'important', 'large', 'small',
   'able', 'ready', 'sure', 'certain', 'clear', 'full', 'free',
