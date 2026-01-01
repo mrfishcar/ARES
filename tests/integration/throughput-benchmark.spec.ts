@@ -942,6 +942,32 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 163: COMEDY/HUMOR TEXT
+  // =========================================================================
+
+  describe('Comedy humor text', () => {
+    it('should handle humorous light narratives', async () => {
+      const templates = [
+        'Fred and George laughed mischievously.',
+        'The joke landed perfectly on target.',
+        'Everyone burst into hysterical laughter.',
+        'Ron turned bright red with embarrassment.',
+      ];
+
+      let text = '';
+      for (let i = 0; i < 100; i++) {
+        text += templates[i % templates.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`Comedy humor: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
