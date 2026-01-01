@@ -889,6 +889,37 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
       { subject: 'Order', predicate: 'defended', object: 'Hogwarts', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 177: CAPTURED/RELEASED VERBS
+  // =========================================================================
+
+  // Captured relation
+  {
+    name: 'Captured relation',
+    text: 'The Death Eaters captured Luna.',
+    expectedRelations: [
+      { subject: 'Death Eaters', predicate: 'captured', object: 'Luna', shouldExist: true },
+    ],
+  },
+
+  // Released relation
+  {
+    name: 'Released relation',
+    text: 'Dobby released the prisoners safely.',
+    expectedRelations: [
+      { subject: 'Dobby', predicate: 'released', object: 'prisoners', shouldExist: true },
+    ],
+  },
+
+  // Rescued relation
+  {
+    name: 'Rescued relation',
+    text: 'Harry rescued Sirius from the dementors.',
+    expectedRelations: [
+      { subject: 'Harry', predicate: 'rescued', object: 'Sirius', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
