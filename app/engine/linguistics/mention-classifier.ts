@@ -11,7 +11,7 @@
  */
 
 import type { MentionType } from '../mention-tracking';
-import { COMMON_VERBS_FOR_NAME_DETECTION } from './shared-vocabulary';
+// Note: COMMON_VERBS_FOR_NAME_DETECTION removed - now using default-KEEP strategy
 
 export type MentionClass = 'DURABLE_NAME' | 'CONTEXT_ONLY' | 'NON_ENTITY';
 
@@ -95,7 +95,16 @@ const SENTENCE_INITIAL_NON_NAMES = new Set([
   'visitors', 'detective', 'once', 'suddenly', 'originally', 'exactly', 'fortunately',
   'finally', 'afterward', 'afterwards', 'someday', 'eventually', 'perhaps', 'maybe',
   'certainly', 'probably', 'obviously', 'apparently', 'unfortunately', 'surprisingly',
-  'interestingly', 'importantly', 'naturally', 'clearly', 'surely', 'hopefully'
+  'interestingly', 'importantly', 'naturally', 'clearly', 'surely', 'hopefully',
+  // Time words
+  'yesterday', 'tomorrow', 'today', 'tonight', 'nowadays',
+  // Document structure words
+  'chapter', 'section', 'part', 'paragraph', 'page', 'figure', 'table', 'appendix',
+  // Common nouns often mistaken for names at sentence start
+  'song', 'music', 'dance', 'food', 'water', 'fire', 'earth', 'air', 'light', 'dark',
+  'silence', 'noise', 'rain', 'snow', 'wind', 'thunder', 'lightning', 'weather',
+  'morning', 'evening', 'night', 'afternoon', 'midnight', 'dawn', 'dusk',
+  'summer', 'winter', 'spring', 'autumn', 'fall'
 ]);
 
 // ============================
@@ -183,6 +192,12 @@ function isVerbObjectFragment(tokens: string[]): { isJunk: boolean; reason?: str
 
 /**
  * Detect sentence-initial capitalization traps (e.g., "Dead", "Hearing", "Whatever")
+ *
+ * STRATEGY: Default to KEEP for sentence-initial capitalized words.
+ * Only REJECT when there's strong counter-evidence:
+ * - Known discourse starters/adverbs
+ * - Determiners/articles (The, A, An, Some, etc.)
+ * - Month names followed by lowercase
  */
 function isSentenceInitialTrap(surface: string, text: string, start: number): { isTrap: boolean; reason?: string } {
   const tokens = surface.split(/\s+/).filter(Boolean);
@@ -194,38 +209,37 @@ function isSentenceInitialTrap(surface: string, text: string, start: number): { 
   // Only check if at sentence start
   if (!isSentenceStart(text, start)) return { isTrap: false };
 
-  // Check against known non-name words
+  // REJECT: Known non-name words (adverbs, discourse markers)
   if (SENTENCE_INITIAL_NON_NAMES.has(tokenLower)) {
     return { isTrap: true, reason: 'sentence-initial-non-name' };
   }
 
-  // Check against discourse starters
+  // REJECT: Discourse starters
   if (DISCOURSE_STARTERS.has(tokenLower)) {
     return { isTrap: true, reason: 'discourse-starter' };
   }
 
-  // Check if followed by lowercase (indicates it's not a name)
-  const following = nextWord(text, start + surface.length);
-  if (following && /^[a-z]/.test(following)) {
-    // Exception: if this looks like a name (ends with common name patterns)
-    if (!/(?:son|man|ton|ley|field|berg|ski|well|ford|wood|ston|worth|ham|burg|land|holm|wick|dale|shaw|cox|fox|beck|ney|ray|ey)$/i.test(token)) {
-      // Exception: if followed by comma, it's likely vocative ("Honey, if I...")
-      const hasComma = /^[\s]*,/.test(text.slice(start + surface.length));
-      if (!hasComma) {
-        // Exception: if followed by a coordinator, it's likely a name in coordination ("Harry and Ron", "Frodo and Sam")
-        const COORDINATORS = new Set(['and', 'or', 'but', 'nor']);
-        if (COORDINATORS.has(following.toLowerCase())) {
-          // This is coordination - don't reject
-        } else {
-          // Exception: if followed by a verb, it's likely a name as subject ("Frederick could", "Barty smiled", "Harry married")
-          if (!COMMON_VERBS_FOR_NAME_DETECTION.has(following.toLowerCase())) {
-            return { isTrap: true, reason: 'sentence-initial-followed-by-lowercase' };
-          }
-        }
-      }
-    }
+  // REJECT: Determiners/articles at sentence start (they're never names)
+  const SENTENCE_DETERMINERS = new Set(['the', 'a', 'an', 'some', 'any', 'no', 'every', 'each', 'this', 'that', 'these', 'those', 'my', 'your', 'his', 'her', 'its', 'our', 'their']);
+  if (SENTENCE_DETERMINERS.has(tokenLower)) {
+    return { isTrap: true, reason: 'sentence-initial-determiner' };
   }
 
+  // REJECT: Prepositions at sentence start (typically not names)
+  const SENTENCE_PREPS = new Set(['in', 'on', 'at', 'to', 'from', 'with', 'by', 'for', 'of', 'into', 'onto', 'upon', 'through', 'across', 'between', 'among', 'within', 'without', 'before', 'after', 'during', 'since', 'until', 'unless', 'despite', 'although', 'though', 'because', 'while', 'if']);
+  if (SENTENCE_PREPS.has(tokenLower)) {
+    return { isTrap: true, reason: 'sentence-initial-preposition' };
+  }
+
+  // REJECT: Month names (commonly capitalized at sentence start but not entities)
+  const MONTHS = new Set(['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']);
+  const following = nextWord(text, start + surface.length);
+  if (MONTHS.has(tokenLower) && following && /^[a-z0-9]/.test(following)) {
+    return { isTrap: true, reason: 'sentence-initial-month' };
+  }
+
+  // DEFAULT: KEEP - sentence-initial capitalized words are likely names
+  // This includes names followed by any verb (trained, attacked, protected, etc.)
   return { isTrap: false };
 }
 
@@ -434,20 +448,16 @@ export function classifyMention(
   }
 
   // Sentence-start imperative single token with next lowercase word ("Check the door.")
-  // Exception: Names ending in common surname patterns (-son, -man, -ton, etc.) or followed by verbs
-  // Exception: Followed by appositive markers ("Aragorn, son of Arathorn")
+  // STRATEGY: Default KEEP for sentence-initial capitalized tokens.
+  // Only REJECT if the token is a known imperative command verb.
   if (sentenceStart && isSingleToken && followingWord && /^[a-z]/.test(followingWord)) {
-    // Don't classify common surname patterns as CONTEXT_ONLY
-    if (!/(?:son|man|ton|ley|field|berg|ski|well|ford|wood|ston|worth|ham|burg|land|holm|wick|dale|shaw|cox|fox|beck)$/i.test(raw)) {
-      // Exception: if followed by a verb, it's likely a name as subject ("Frederick could", "Mary said", "Harry married")
-      // Exception: followed by appositive relationship markers ("Aragorn, son of Arathorn")
-      const APPOSITIVE_MARKERS = new Set(['son', 'daughter', 'brother', 'sister', 'mother', 'father', 'wife', 'husband', 'king', 'queen', 'prince', 'princess', 'lord', 'lady', 'heir', 'child', 'nephew', 'niece', 'cousin', 'uncle', 'aunt', 'friend', 'servant', 'master', 'student', 'apprentice', 'leader', 'chief', 'captain', 'commander', 'head', 'ruler', 'founder', 'member', 'ally', 'enemy', 'rival']);
-      // Exception: followed by coordinators ("Harry and Ron", "Frodo and Sam")
-      const COORDINATORS = new Set(['and', 'or', 'but', 'nor']);
-      if (!COMMON_VERBS_FOR_NAME_DETECTION.has(followingWord.toLowerCase()) && !APPOSITIVE_MARKERS.has(followingWord.toLowerCase()) && !COORDINATORS.has(followingWord.toLowerCase())) {
-        return { mentionClass: 'CONTEXT_ONLY', reason: 'imperative-single' };
-      }
+    // REJECT only if: token IS a known imperative verb (Check, Look, Tell, etc.)
+    // These are words that commonly start commands, not names
+    if (IMPERATIVE_START.has(raw.toLowerCase())) {
+      return { mentionClass: 'CONTEXT_ONLY', reason: 'imperative-single' };
     }
+    // DEFAULT: KEEP - capitalized token at sentence start is likely a name
+    // Names like "Dumbledore trained Harry" should be kept regardless of following verb
   }
 
   // Sentence/utterance start command with no following word ("Check.")
@@ -471,20 +481,16 @@ export function classifyMention(
     return { mentionClass: 'NON_ENTITY', reason: 'verb-object-fragment' };
   }
 
-  // Demonym/adjective before lowercase noun ("Jersey accent")
-  // Exception: if followed by comma, it's likely vocative ("Honey, if I...")
-  // Exception: if followed by verb, it's likely a name ("Frederick could", "Mary said")
-  // Exception: if followed by coordinator, it's a name in coordination ("Harry and Ron")
+  // Demonym/adjective before lowercase noun ("Jersey accent", "French cuisine")
+  // STRATEGY: Default KEEP. Only reject when followed by known demonym-target nouns.
+  // This check is now very narrow - most sentence-initial capitalized tokens are names.
   if (sentenceStart && isSingleToken && followingWord && /^[a-z]/.test(followingWord) && !followingComma) {
-    // Also exclude names ending in common surname patterns
-    if (!/(?:son|man|ton|ley|field|berg|ski|well|ford|wood|ston|worth|ham|burg|land|holm|wick|dale|shaw|cox|fox|beck)$/i.test(raw)) {
-      // Exception: if followed by a verb, it's likely a name as subject ("Harry married")
-      // Exception: if followed by coordinator, it's likely a name in coordination ("Harry and Ron")
-      const COORDINATORS = new Set(['and', 'or', 'but', 'nor']);
-      if (!COMMON_VERBS_FOR_NAME_DETECTION.has(followingWord.toLowerCase()) && !COORDINATORS.has(followingWord.toLowerCase())) {
-        return { mentionClass: 'NON_ENTITY', reason: 'adjectival-demonym' };
-      }
+    // Only reject if followed by words that indicate demonym/adjective usage
+    const DEMONYM_TARGETS = new Set(['accent', 'style', 'cuisine', 'food', 'shore', 'coast', 'dialect', 'fashion', 'culture', 'tradition', 'music', 'art', 'architecture', 'language', 'weather', 'climate', 'landscape', 'countryside', 'hospitality', 'wine', 'cheese', 'cooking', 'recipe', 'heritage', 'influence', 'flavor', 'flavour']);
+    if (DEMONYM_TARGETS.has(followingWord.toLowerCase())) {
+      return { mentionClass: 'NON_ENTITY', reason: 'adjectival-demonym' };
     }
+    // DEFAULT: KEEP - capitalized token is likely a name
   }
 
   // Mid-sentence demonym/adjective after determiner ("a Jersey accent", "the French cuisine")
@@ -527,7 +533,7 @@ export function classifyMention(
   }
 
   // Titlecased token(s) followed immediately by lowercase noun ("Monster Runner cards")
-  // Exception: Names ending in common surname patterns or followed by verbs
+  // STRATEGY: Default KEEP. Only reject for clear collectible/product patterns.
   // Exception: If followed by comma, it's likely an appositive ("Kara Nightfall, a strategist")
   if (
     tokens.every(t => /^[A-Z]/.test(t)) &&
@@ -535,20 +541,14 @@ export function classifyMention(
     /^[a-z]+s?$/.test(followingWord) &&
     !followingComma  // Don't reject if comma separates name from description
   ) {
-    // Don't classify names ending in common surname patterns
-    const lastToken = tokens[tokens.length - 1];
-    if (!/(?:son|man|ton|ley|field|berg|ski|well|ford|wood|ston|worth|ham|burg|land|holm|wick|dale|shaw|cox|fox|beck|ney|ray|ey)$/i.test(lastToken)) {
-      // Exception: if followed by a verb, it's likely a name as subject ("Barty smiled")
-      // Exception: if followed by appositive marker, it's likely a name ("Aragorn, son of Arathorn")
-      const APPOSITIVE_MARKERS_TITLE = new Set(['son', 'daughter', 'brother', 'sister', 'mother', 'father', 'wife', 'husband', 'king', 'queen', 'prince', 'princess', 'lord', 'lady', 'heir', 'child', 'nephew', 'niece', 'cousin', 'uncle', 'aunt', 'friend', 'servant', 'master', 'student', 'apprentice', 'leader', 'chief', 'captain', 'commander', 'head', 'ruler', 'founder', 'member', 'ally', 'enemy', 'rival']);
-      // Exception: if followed by a preposition, it's likely a name followed by location/time ("Arwen in 3019")
-      const COMMON_PREPS = new Set(['in', 'at', 'on', 'to', 'from', 'with', 'of', 'for', 'by', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'between', 'under', 'over', 'near', 'across', 'around', 'behind', 'beside', 'against', 'along', 'among', 'beyond', 'inside', 'outside', 'toward', 'towards', 'upon', 'within', 'without', 'until', 'since', 'except', 'despite', 'throughout', 'like', 'unlike', 'via', 'per', 'versus', 'vs', 'atop', 'aboard', 'underneath', 'alongside', 'beneath', 'past', 'amid', 'amidst']);
-      // Exception: if followed by coordinator, it's a name in coordination ("Harry and Ron")
-      const COORDINATORS = new Set(['and', 'or', 'but', 'nor']);
-      if (!COMMON_VERBS_FOR_NAME_DETECTION.has(followingWord.toLowerCase()) && !APPOSITIVE_MARKERS_TITLE.has(followingWord.toLowerCase()) && !COMMON_PREPS.has(followingWord.toLowerCase()) && !COORDINATORS.has(followingWord.toLowerCase())) {
-        return { mentionClass: 'NON_ENTITY', reason: 'titlecase-plus-lower-follow' };
-      }
+    // Only reject if followed by words indicating collectible/product context
+    // (cards, figures, toys, merchandise, etc.)
+    const COLLECTIBLE_NOUNS = new Set(['cards', 'card', 'figures', 'figure', 'toys', 'toy', 'merchandise', 'merch', 'posters', 'poster', 'stickers', 'sticker', 'decks', 'deck', 'packs', 'pack', 'sets', 'set', 'pieces', 'piece', 'models', 'model', 'miniatures', 'miniature', 'figurines', 'figurine', 'items', 'item', 'stuff', 'gear', 'accessories', 'accessory', 'products', 'product', 'collectibles', 'collectible']);
+    if (COLLECTIBLE_NOUNS.has(followingWord.toLowerCase())) {
+      return { mentionClass: 'NON_ENTITY', reason: 'titlecase-plus-lower-follow' };
     }
+    // DEFAULT: KEEP - titlecased tokens followed by any other lowercase word is fine
+    // "Dumbledore trained Harry" - "trained" is lowercase but Dumbledore is a name
   }
 
   // ============================

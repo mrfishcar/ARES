@@ -1,7 +1,7 @@
 import type { Entity, EntityType } from '../schema';
 import { hasLowercaseEcho, isAttachedOnlyFragment, type TokenStats } from './token-stats';
 import { isBlocklistedPersonHead } from './common-noun-filters';
-import { COMMON_VERBS_FOR_NAME_DETECTION } from './shared-vocabulary';
+// Note: COMMON_VERBS_FOR_NAME_DETECTION removed - now using default-KEEP strategy
 
 type SpanLike = { start: number; end: number; type?: EntityType };
 
@@ -145,19 +145,18 @@ export function shouldSuppressSentenceInitialPerson(
   const followingCommaCapital = /^\s*,\s+[A-Z]/.test(text.slice(span.end, span.end + 20));
   if (followingCommaCapital) return { suppress: false };
 
-  // Check if followed by a verb - indicates name as subject ("Frodo is", "Harry married")
-  // Uses shared vocabulary for consistency across the codebase
-  if (next && COMMON_VERBS_FOR_NAME_DETECTION.has(next.toLowerCase())) {
-    return { suppress: false };
-  }
-
+  // STRATEGY: Default KEEP for sentence-initial capitalized tokens.
+  // Only SUPPRESS if the token is a KNOWN non-name (discourse starter, adverb, etc.)
   const starter = SENTENCE_STARTERS.has(token.toLowerCase());
   if (starter) {
     logDebug(`Suppressing sentence-initial starter ${token}`);
     return { suppress: true, reason: 'sentence_initial_starter' };
   }
 
-  return { suppress: true, reason: 'sentence_initial_single_token' };
+  // DEFAULT: KEEP - sentence-initial capitalized tokens are likely names
+  // This avoids the "verb whitelist" problem where valid names are dropped
+  // because the following verb wasn't in the list.
+  return { suppress: false };
 }
 
 export function shouldSuppressAdjectiveColorPerson(

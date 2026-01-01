@@ -136,15 +136,20 @@ function extractNERSpans(sentence: { tokens: Token[] }): NERSpan[] {
           tokens: [token],
         };
       } else {
-        // Extend current span if consecutive
+        // Extend current span if consecutive AND same entity type
         const prevToken = currentSpan.tokens[currentSpan.tokens.length - 1];
         const gap = token.start - prevToken.end;
 
-        if (gap <= 1) { // Allow single space between tokens
+        // ENTITY TYPE BOUNDARY FIX: Don't group different entity types together
+        // "Dumbledore may" should NOT be grouped just because "may" is tagged DATE
+        const sameEntityType = token.ent === prevToken.ent;
+        const bothCapitalized = isCapitalized && /^[A-Z]/.test(prevToken.text);
+
+        if (gap <= 1 && (sameEntityType || (bothCapitalized && !token.ent && !prevToken.ent))) {
           currentSpan.end = token.end;
           currentSpan.tokens.push(token);
         } else {
-          // Gap too large, finalize current span
+          // Gap too large or different entity types, finalize current span
           if (currentSpan.tokens.length > 1) {
             spans.push(currentSpan);
           }
