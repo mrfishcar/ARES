@@ -204,7 +204,14 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
   'strange', 'unknown', 'ancient', 'modern', 'famous', 'powerful',
   'happy', 'sad', 'angry', 'afraid', 'scared', 'worried', 'excited', 'tired',
   'better', 'best', 'worse', 'worst', 'more', 'most', 'less', 'least',
-  'neither',
+  'neither', 'tiny', 'huge',
+
+  // Weather terms
+  'rain', 'snow', 'wind', 'storm', 'sun', 'cloud', 'fog', 'thunder', 'lightning',
+
+  // Body parts
+  'hand', 'hands', 'head', 'heads', 'heart', 'hearts', 'eyes', 'eye', 'face', 'faces',
+  'arm', 'arms', 'leg', 'legs', 'foot', 'feet', 'finger', 'fingers',
 
   // Generic nouns that are too vague
   'thing', 'things', 'stuff', 'nothing', 'everything', 'something', 'anything',

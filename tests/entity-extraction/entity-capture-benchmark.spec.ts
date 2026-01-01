@@ -744,6 +744,28 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'sad', type: 'PERSON', expectedValid: false },
   { name: 'angry', type: 'PERSON', expectedValid: false },
   { name: 'afraid', type: 'PERSON', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 80: MORE JUNK CASES (MILESTONE)
+  // =========================================================================
+
+  // Weather terms
+  { name: 'rain', type: 'PERSON', expectedValid: false },
+  { name: 'snow', type: 'PERSON', expectedValid: false },
+  { name: 'wind', type: 'PERSON', expectedValid: false },
+  { name: 'storm', type: 'PERSON', expectedValid: false },
+
+  // Body parts (common junk)
+  { name: 'hand', type: 'PERSON', expectedValid: false },
+  { name: 'head', type: 'PERSON', expectedValid: false },
+  { name: 'heart', type: 'PERSON', expectedValid: false },
+  { name: 'eyes', type: 'PERSON', expectedValid: false },
+
+  // Size words
+  { name: 'large', type: 'PERSON', expectedValid: false },
+  { name: 'tiny', type: 'PERSON', expectedValid: false },
+  { name: 'huge', type: 'PERSON', expectedValid: false },
+  { name: 'small', type: 'PERSON', expectedValid: false },
 ];
 
 // =============================================================================
