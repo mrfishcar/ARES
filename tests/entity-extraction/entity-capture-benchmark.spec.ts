@@ -369,6 +369,20 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   { name: 'Beatles', type: 'ORG', expectedValid: true },
   { name: 'Pink Floyd', type: 'ORG', expectedValid: true },
   { name: 'Rolling Stones', type: 'ORG', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 104: HISTORICAL FIGURES
+  // =========================================================================
+
+  // Ancient leaders
+  { name: 'Caesar', type: 'PERSON', expectedValid: true },
+  { name: 'Cleopatra', type: 'PERSON', expectedValid: true },
+  { name: 'Alexander', type: 'PERSON', expectedValid: true },
+
+  // Modern historical
+  { name: 'Einstein', type: 'PERSON', expectedValid: true },
+  { name: 'Darwin', type: 'PERSON', expectedValid: true },
+  { name: 'Newton', type: 'PERSON', expectedValid: true },
 ];
 
 // =============================================================================
