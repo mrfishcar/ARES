@@ -547,6 +547,20 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   { name: 'Frédéric Chopin', type: 'PERSON', expectedValid: true },
   { name: 'Pyotr Ilyich Tchaikovsky', type: 'PERSON', expectedValid: true },
   { name: 'Richard Wagner', type: 'PERSON', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 164: POLITICAL FIGURES
+  // =========================================================================
+
+  // US Presidents
+  { name: 'Abraham Lincoln', type: 'PERSON', expectedValid: true },
+  { name: 'George Washington', type: 'PERSON', expectedValid: true },
+  { name: 'Franklin Roosevelt', type: 'PERSON', expectedValid: true },
+
+  // World Leaders
+  { name: 'Winston Churchill', type: 'PERSON', expectedValid: true },
+  { name: 'Nelson Mandela', type: 'PERSON', expectedValid: true },
+  { name: 'Mahatma Gandhi', type: 'PERSON', expectedValid: true },
 ];
 
 // =============================================================================
