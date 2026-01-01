@@ -647,6 +647,26 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'asked', type: 'PERSON', expectedValid: false },
   { name: 'replied', type: 'PERSON', expectedValid: false },
   { name: 'answered', type: 'PERSON', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 58: MORE JUNK CASES
+  // =========================================================================
+
+  // Modal verbs
+  { name: 'would', type: 'PERSON', expectedValid: false },
+  { name: 'could', type: 'PERSON', expectedValid: false },
+  { name: 'should', type: 'PERSON', expectedValid: false },
+  { name: 'might', type: 'PERSON', expectedValid: false },
+  { name: 'may', type: 'PERSON', expectedValid: false },
+  { name: 'must', type: 'PERSON', expectedValid: false },
+
+  // Linking/transition words
+  { name: 'however', type: 'PERSON', expectedValid: false },
+  { name: 'therefore', type: 'PERSON', expectedValid: false },
+  { name: 'moreover', type: 'PERSON', expectedValid: false },
+  { name: 'furthermore', type: 'PERSON', expectedValid: false },
+  { name: 'thus', type: 'PERSON', expectedValid: false },
+  { name: 'hence', type: 'PERSON', expectedValid: false },
 ];
 
 // =============================================================================
