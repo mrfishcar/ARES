@@ -163,6 +163,40 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   { name: 'Holy Grail', type: 'ITEM', expectedValid: true },
   { name: 'Ark of the Covenant', type: 'ITEM', expectedValid: true },
   { name: 'Philosophers Stone', type: 'ITEM', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 21: MORE OBVIOUS ENTITIES
+  // =========================================================================
+
+  // More famous people
+  { name: 'Abraham Lincoln', type: 'PERSON', expectedValid: true },
+  { name: 'George Washington', type: 'PERSON', expectedValid: true },
+  { name: 'Cleopatra', type: 'PERSON', expectedValid: true },
+  { name: 'Napoleon Bonaparte', type: 'PERSON', expectedValid: true },
+  { name: 'Mahatma Gandhi', type: 'PERSON', expectedValid: true },
+
+  // More organizations
+  { name: 'Harvard University', type: 'ORG', expectedValid: true },
+  { name: 'Microsoft', type: 'ORG', expectedValid: true },
+  { name: 'Red Cross', type: 'ORG', expectedValid: true },
+  { name: 'Supreme Court', type: 'ORG', expectedValid: true },
+
+  // More places
+  { name: 'Mount Everest', type: 'PLACE', expectedValid: true },
+  { name: 'Grand Canyon', type: 'PLACE', expectedValid: true },
+  { name: 'Great Wall of China', type: 'PLACE', expectedValid: true },
+  { name: 'Eiffel Tower', type: 'PLACE', expectedValid: true },
+
+  // More works
+  { name: 'Hamlet', type: 'WORK', expectedValid: true },
+  { name: 'Romeo and Juliet', type: 'WORK', expectedValid: true },
+  { name: 'The Great Gatsby', type: 'WORK', expectedValid: true },
+  { name: 'War and Peace', type: 'WORK', expectedValid: true },
+
+  // Events
+  { name: 'World War II', type: 'EVENT', expectedValid: true },
+  { name: 'The Renaissance', type: 'EVENT', expectedValid: true },
+  { name: 'Olympic Games', type: 'EVENT', expectedValid: true },
 ];
 
 // =============================================================================
