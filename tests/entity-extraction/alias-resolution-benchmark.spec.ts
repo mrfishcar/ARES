@@ -288,6 +288,46 @@ const ALIAS_CASES: AliasTestCase[] = [
       { aliases: ['Hermione', 'Ginny'], shouldMerge: false },
     ],
   },
+
+  // =========================================================================
+  // LOOP 53: MORE ALIAS CASES
+  // =========================================================================
+
+  // Place mentioned twice
+  {
+    name: 'Place mentioned twice (Hogwarts)',
+    text: 'Hogwarts is magical. Hogwarts has ghosts.',
+    expectedMerges: [
+      { aliases: ['Hogwarts', 'Hogwarts'], shouldMerge: true },
+    ],
+  },
+
+  // Different orgs
+  {
+    name: 'Different orgs (Facebook/Twitter)',
+    text: 'Facebook has billions of users. Twitter is popular.',
+    expectedMerges: [
+      { aliases: ['Facebook', 'Twitter'], shouldMerge: false },
+    ],
+  },
+
+  // Same person mentioned twice with different titles
+  {
+    name: 'Same person with title variation',
+    text: 'Doctor Strange saved the world. Strange was powerful.',
+    expectedMerges: [
+      { aliases: ['Doctor Strange', 'Strange'], shouldMerge: true },
+    ],
+  },
+
+  // Work title repeated
+  {
+    name: 'Work title mentioned twice',
+    text: 'Hamlet is a tragedy. Hamlet is famous.',
+    expectedMerges: [
+      { aliases: ['Hamlet', 'Hamlet'], shouldMerge: true },
+    ],
+  },
 ];
 
 // =============================================================================
