@@ -1119,6 +1119,21 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'hey', type: 'ITEM', expectedValid: false },
   { name: 'well', type: 'ITEM', expectedValid: false },
   { name: 'oops', type: 'ITEM', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 145: ARTICLES AND DETERMINERS
+  // =========================================================================
+
+  // Articles
+  { name: 'the', type: 'ITEM', expectedValid: false },
+  { name: 'a', type: 'ITEM', expectedValid: false },
+  { name: 'an', type: 'ITEM', expectedValid: false },
+
+  // Demonstratives
+  { name: 'this', type: 'ITEM', expectedValid: false },
+  { name: 'that', type: 'ITEM', expectedValid: false },
+  { name: 'these', type: 'ITEM', expectedValid: false },
+  { name: 'those', type: 'ITEM', expectedValid: false },
 ];
 
 // =============================================================================
