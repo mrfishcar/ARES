@@ -979,6 +979,18 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'right', type: 'ITEM', expectedValid: false },
   { name: 'top', type: 'ITEM', expectedValid: false },
   { name: 'bottom', type: 'ITEM', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 120 MILESTONE: QUANTITY WORDS
+  // =========================================================================
+
+  // Quantity words (should never be entities)
+  { name: 'many', type: 'ITEM', expectedValid: false },
+  { name: 'few', type: 'ITEM', expectedValid: false },
+  { name: 'some', type: 'ITEM', expectedValid: false },
+  { name: 'most', type: 'ITEM', expectedValid: false },
+  { name: 'all', type: 'ITEM', expectedValid: false },
+  { name: 'none', type: 'ITEM', expectedValid: false },
 ];
 
 // =============================================================================
