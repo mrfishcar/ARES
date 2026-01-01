@@ -1386,12 +1386,11 @@ function EditorPanel({
     };
 
     viewport.addEventListener('resize', handleViewportChange);
-    viewport.addEventListener('scroll', handleViewportChange);
+    // Don't listen to scroll - only resize matters for keyboard detection
     handleViewportChange(); // Initialize
 
     return () => {
       viewport.removeEventListener('resize', handleViewportChange);
-      viewport.removeEventListener('scroll', handleViewportChange);
     };
   }, []);
 
