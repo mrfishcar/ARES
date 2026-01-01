@@ -734,6 +734,37 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
       { subject: 'Hermione', predicate: 'discovered', object: 'passage', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 152: WROTE/READ VERBS
+  // =========================================================================
+
+  // Wrote relation
+  {
+    name: 'Wrote relation',
+    text: 'Rita Skeeter wrote the article about Harry.',
+    expectedRelations: [
+      { subject: 'Rita Skeeter', predicate: 'wrote', object: 'article', shouldExist: true },
+    ],
+  },
+
+  // Read relation
+  {
+    name: 'Read relation',
+    text: 'Hermione read the book carefully.',
+    expectedRelations: [
+      { subject: 'Hermione', predicate: 'read', object: 'book', shouldExist: true },
+    ],
+  },
+
+  // Studied relation
+  {
+    name: 'Studied relation',
+    text: 'Luna studied the Quibbler articles.',
+    expectedRelations: [
+      { subject: 'Luna', predicate: 'studied', object: 'articles', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
