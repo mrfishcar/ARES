@@ -1039,6 +1039,52 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'She', position: 27, context: 'SENTENCE_START', expected: 'Ginny Weasley' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 38: MORE COREF CASES
+  // =========================================================================
+
+  // Case 45: Single female throughout
+  {
+    name: 'Single female entity consistency',
+    text: 'McGonagall entered. She was stern. Her eyes narrowed.',
+    entities: [
+      createEntity('mcgonagall', 'Minerva McGonagall', 'PERSON'),
+    ],
+    spans: [
+      createSpan('mcgonagall', 0, 10),
+    ],
+    sentences: [
+      createSentence('McGonagall entered.', 0),
+      createSentence('She was stern.', 20),
+      createSentence('Her eyes narrowed.', 35),
+    ],
+    pronounTests: [
+      { pronoun: 'She', position: 20, context: 'SENTENCE_START', expected: 'Minerva McGonagall' },
+      { pronoun: 'Her', position: 35, context: 'SENTENCE_START', expected: 'Minerva McGonagall' },
+    ],
+  },
+
+  // Case 46: Work entity with 'it'
+  {
+    name: 'Work entity with neutral pronoun',
+    text: 'Harry read the Daily Prophet. It had bad news.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+      createEntity('prophet', 'Daily Prophet', 'WORK'),
+    ],
+    spans: [
+      createSpan('harry', 0, 5),
+      createSpan('prophet', 15, 28),
+    ],
+    sentences: [
+      createSentence('Harry read the Daily Prophet.', 0),
+      createSentence('It had bad news.', 30),
+    ],
+    pronounTests: [
+      { pronoun: 'It', position: 30, context: 'SENTENCE_START', expected: 'Daily Prophet' },
+    ],
+  },
 ];
 
 // =============================================================================
