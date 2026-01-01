@@ -82,22 +82,36 @@ el.scrollIntoView({ block: 'nearest', behavior: 'auto' });
 **Result**: Too coarse - scrolls entire element, not caret position within it
 **Why**: scrollIntoView operates on element boundaries, not caret position
 
-### 7. Manual scroll calculation ✅ WORKS
-**Method**: Calculate if element is outside visible area, scroll container directly
+### 7. Manual scroll calculation with instant scroll ✅ BEST STATE
+**Method**: Calculate if element is outside visible area, scroll container directly with instant scroll
 ```javascript
 const elRect = el.getBoundingClientRect();
-const visibleBottom = window.visualViewport.height + window.visualViewport.offsetTop;
-if (elRect.bottom > visibleBottom - buffer) {
-  container.scrollTo({
-    top: container.scrollTop + scrollAmount,
-    behavior: 'smooth'
-  });
+const headerHeight = 100;
+const visibleBottom = window.visualViewport
+  ? window.visualViewport.height - 60
+  : window.innerHeight - 60;
+
+// Scroll down (new lines)
+if (elRect.bottom > visibleBottom) {
+  container.scrollTop += elRect.bottom - visibleBottom;
+}
+
+// Scroll up (backspace)
+if (elRect.top < headerHeight) {
+  container.scrollTop -= headerHeight - elRect.top;
 }
 ```
-**Trigger**: Enter and Backspace keys
-**Result**: Works! Keeps caret visible without causing drift
+**Trigger**: Enter and Backspace keys (debounced 150ms)
+**Result**: Works reliably for both up and down tracking
 **Why it works**: Only reads positions (getBoundingClientRect), never writes to DOM near caret
-**Enhancement**: Added `behavior: 'smooth'` for smooth line transitions
+
+### 8. Smooth scrolling attempts ❌
+**Tested**: `behavior: 'smooth'` on scrollTo
+**Result**: Breaks upward tracking (backspace), causes jumping
+**Variations tried**:
+- Smooth for both directions - breaks upward
+- Smooth down only, instant up - still breaks upward
+**Conclusion**: Smooth scrolling conflicts with iOS Safari caret tracking
 
 ---
 
@@ -111,12 +125,19 @@ if (elRect.bottom > visibleBottom - buffer) {
 
 4. **Dynamic padding is essential** - Creates the scroll space needed for the caret to be scrolled into view
 
+5. **Smooth scrolling breaks upward tracking** - `behavior: 'smooth'` conflicts with iOS Safari's caret management during backspace
+
+6. **Simple screen coordinates work best** - Don't mix viewportOffset with screen coordinates; just use headerHeight and visualViewport.height
+
 ---
 
-## Still Need to Solve
+## Current Best State
 
-1. **Backspace tracking** - When deleting lines and moving up the document
-2. **General typing** - If scrollIntoView doesn't work, need another approach
+**Commit**: 35455509
+**Description**: Instant scroll in both directions, debounced 150ms
+**Status**: ✅ Reliable tracking up and down
+
+**Future improvement**: Investigate alternative smooth scrolling approaches (requestAnimationFrame, CSS transitions)
 
 ---
 
@@ -126,17 +147,21 @@ if (elRect.bottom > visibleBottom - buffer) {
 |--------|-------------|--------|
 | 0b62907e | Working version with marker-based tracking | Works but has drift |
 | 90a3699b | Remove all scroll tracking to test | No drift, no tracking |
-| afded29f | scrollIntoView on focusNode, Enter only | Testing |
+| afded29f | scrollIntoView on focusNode, Enter only | Too coarse |
+| 7aac204a | Simplified coordinates, instant scroll | ✅ Works |
+| 5d24d967 | Re-add smooth scrolling test | Breaks upward |
+| 6aeea1d1 | Smooth down, instant up | Still breaks |
+| 35455509 | All instant scroll | ✅ BEST STATE |
 
 ---
 
-## Next Options If Current Approach Fails
+## Future: Smooth Scrolling Options to Try
 
-1. **Intersection Observer** - Watch for caret element leaving viewport
-2. **CSS scroll-snap** - Use scroll snap points
-3. **Manual scroll calculation** - Calculate based on line height without DOM insertion
-4. **Accept native behavior** - Rely entirely on iOS Safari's native caret following
+1. **requestAnimationFrame** - Manual 2-3 frame interpolation
+2. **CSS transition on scrollTop** - Animate via CSS instead of JS
+3. **Shorter duration** - Custom smooth with faster animation
+4. **Only smooth after pause** - Detect typing stopped for 500ms+
 
 ---
 
-*Last Updated: Session continuing caret tracking work*
+*Last Updated: Best state achieved - instant scroll, reliable tracking*
