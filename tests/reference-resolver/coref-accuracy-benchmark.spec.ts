@@ -465,6 +465,108 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'his', position: 45, context: 'POSSESSIVE', expected: 'Harry Potter' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 9: EVEN HARDER COREF CASES
+  // =========================================================================
+
+  // Case 19: Four males in sequence
+  {
+    name: 'Four males - sequence tracking',
+    text: 'Harry spoke. Ron listened. Neville nodded. Draco smirked. He was still jealous.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+      createEntity('ron', 'Ron Weasley', 'PERSON'),
+      createEntity('neville', 'Neville Longbottom', 'PERSON'),
+      createEntity('draco', 'Draco Malfoy', 'PERSON'),
+    ],
+    spans: [
+      createSpan('harry', 0, 5),
+      createSpan('ron', 13, 16),
+      createSpan('neville', 28, 35),
+      createSpan('draco', 44, 49),
+    ],
+    sentences: [
+      createSentence('Harry spoke.', 0),
+      createSentence('Ron listened.', 13),
+      createSentence('Neville nodded.', 28),
+      createSentence('Draco smirked.', 44),
+      createSentence('He was still jealous.', 59),
+    ],
+    pronounTests: [
+      // "He" after Draco's action should resolve to Draco
+      { pronoun: 'He', position: 59, context: 'SENTENCE_START', expected: 'Draco Malfoy' },
+    ],
+  },
+
+  // Case 20: Pronoun after action verb
+  {
+    name: 'Pronoun after action with object',
+    text: 'Harry defeated Voldemort. He was exhausted.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+      createEntity('voldemort', 'Lord Voldemort', 'PERSON'),
+    ],
+    spans: [
+      createSpan('harry', 0, 5),
+      createSpan('voldemort', 15, 24),
+    ],
+    sentences: [
+      createSentence('Harry defeated Voldemort.', 0),
+      createSentence('He was exhausted.', 26),
+    ],
+    pronounTests: [
+      // Subject of defeat is Harry
+      { pronoun: 'He', position: 26, context: 'SENTENCE_START', expected: 'Harry Potter' },
+    ],
+  },
+
+  // Case 21: Organization "they" - SKIPPED: requires plural pronoun → ORG feature
+  // TODO: Add support for "they" resolving to organizations
+
+  // Case 22: Alternating speakers in dialogue
+  {
+    name: 'Alternating dialogue speakers',
+    text: '"Ready?" asked Harry. "Yes," said Hermione. She drew her wand. He stepped forward.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+      createEntity('hermione', 'Hermione Granger', 'PERSON'),
+    ],
+    spans: [
+      createSpan('harry', 15, 20),
+      createSpan('hermione', 34, 42),
+    ],
+    sentences: [
+      createSentence('"Ready?" asked Harry.', 0),
+      createSentence('"Yes," said Hermione.', 22),
+      createSentence('She drew her wand.', 44),
+      createSentence('He stepped forward.', 63),
+    ],
+    pronounTests: [
+      { pronoun: 'She', position: 44, context: 'SENTENCE_START', expected: 'Hermione Granger' },
+      { pronoun: 'her', position: 53, context: 'POSSESSIVE', expected: 'Hermione Granger' },
+      { pronoun: 'He', position: 63, context: 'SENTENCE_START', expected: 'Harry Potter' },
+    ],
+  },
+
+  // Case 23: Work pronoun (it)
+  {
+    name: 'Work with "it" pronoun',
+    text: 'The Hobbit was published in 1937. It became a classic.',
+    entities: [
+      createEntity('hobbit', 'The Hobbit', 'WORK'),
+    ],
+    spans: [
+      createSpan('hobbit', 0, 10),
+    ],
+    sentences: [
+      createSentence('The Hobbit was published in 1937.', 0),
+      createSentence('It became a classic.', 34),
+    ],
+    pronounTests: [
+      { pronoun: 'It', position: 34, context: 'SENTENCE_START', expected: 'The Hobbit' },
+    ],
+  },
 ];
 
 // =============================================================================
