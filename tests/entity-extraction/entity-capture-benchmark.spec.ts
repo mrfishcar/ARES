@@ -953,6 +953,18 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'dawn', type: 'ITEM', expectedValid: false },
   { name: 'dusk', type: 'ITEM', expectedValid: false },
   { name: 'noon', type: 'ITEM', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 115: POSITIONAL/SPATIAL WORDS
+  // =========================================================================
+
+  // Positional words
+  { name: 'front', type: 'ITEM', expectedValid: false },
+  { name: 'back', type: 'ITEM', expectedValid: false },
+  { name: 'left', type: 'ITEM', expectedValid: false },
+  { name: 'right', type: 'ITEM', expectedValid: false },
+  { name: 'top', type: 'ITEM', expectedValid: false },
+  { name: 'bottom', type: 'ITEM', expectedValid: false },
 ];
 
 // =============================================================================
