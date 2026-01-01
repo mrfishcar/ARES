@@ -1951,6 +1951,47 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'he', position: 32, expected: 'Ron Weasley' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 161: PRONOUN WITH PURPOSE CLAUSE
+  // =========================================================================
+
+  // Case 87: Pronoun after purpose infinitive
+  {
+    name: 'Pronoun after purpose infinitive',
+    text: 'Hermione read to learn. She loved knowledge.',
+    entities: [
+      createEntity('hermione', 'Hermione Granger', 'PERSON'),
+    ],
+    spans: [
+      createSpan('hermione', 0, 8),
+    ],
+    sentences: [
+      createSentence('Hermione read to learn.', 0),
+      createSentence('She loved knowledge.', 24),
+    ],
+    pronounTests: [
+      { pronoun: 'She', position: 24, expected: 'Hermione Granger' },
+    ],
+  },
+
+  // Case 88: Pronoun with so that clause
+  {
+    name: 'Pronoun with so that',
+    text: 'Ron hid so that he could escape.',
+    entities: [
+      createEntity('ron', 'Ron Weasley', 'PERSON'),
+    ],
+    spans: [
+      createSpan('ron', 0, 3),
+    ],
+    sentences: [
+      createSentence('Ron hid so that he could escape.', 0),
+    ],
+    pronounTests: [
+      { pronoun: 'he', position: 16, expected: 'Ron Weasley' },
+    ],
+  },
 ];
 
 // =============================================================================
