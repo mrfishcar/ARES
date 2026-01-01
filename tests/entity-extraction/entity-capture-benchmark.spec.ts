@@ -844,6 +844,16 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'never', type: 'PERSON', expectedValid: false },
   { name: 'sometimes', type: 'PERSON', expectedValid: false },
   { name: 'often', type: 'PERSON', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 95: MORE JUNK CASES
+  // =========================================================================
+
+  // Pronouns (edge cases)
+  { name: 'nobody', type: 'PERSON', expectedValid: false },
+  { name: 'everybody', type: 'PERSON', expectedValid: false },
+  { name: 'myself', type: 'PERSON', expectedValid: false },
+  { name: 'yourself', type: 'PERSON', expectedValid: false },
 ];
 
 // =============================================================================

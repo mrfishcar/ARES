@@ -225,6 +225,10 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
   // Temporal adverbs
   'always', 'sometimes', 'often', 'rarely', 'usually', 'frequently',
 
+  // Reflexive pronouns
+  'myself', 'yourself', 'himself', 'herself', 'itself', 'ourselves', 'themselves',
+  'nobody', 'everybody',
+
   // Generic nouns that are too vague
   'thing', 'things', 'stuff', 'nothing', 'everything', 'something', 'anything',
   'person', 'people', 'somebody', 'someone', 'anybody', 'anyone', 'nobody', 'everyone',
