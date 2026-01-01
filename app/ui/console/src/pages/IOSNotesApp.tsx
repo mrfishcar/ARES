@@ -93,7 +93,7 @@ const DEFAULT_NOTES: Note[] = [
     id: 'sample-note-2',
     folderId: 'notes',
     title: 'Shopping List',
-    content: 'Shopping List\n\n☐ Milk\n☐ Bread\n☐ Eggs\n☐ Coffee\n☐ Fruits',
+    content: 'Shopping List\n\n- [ ] Milk\n- [ ] Bread\n- [ ] Eggs\n- [ ] Coffee\n- [ ] Fruits',
     createdAt: Date.now() - 172800000,
     updatedAt: Date.now() - 3600000,
     isPinned: false,
@@ -350,8 +350,14 @@ const Icons = {
     </svg>
   ),
   checklist: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <circle cx="5" cy="6" r="3"/>
+      <path d="M11 6h10"/>
+      <circle cx="5" cy="12" r="3"/>
+      <path d="M3.5 12l1.5 1.5 2-2"/>
+      <path d="M11 12h10"/>
+      <circle cx="5" cy="18" r="3"/>
+      <path d="M11 18h10"/>
     </svg>
   ),
   table: (
@@ -1028,7 +1034,7 @@ function EditorPanel({
       if (line.match(/^- \[[ x]\] /)) {
         const isChecked = line.match(/^- \[x\] /i);
         const text = line.replace(/^- \[[ x]\] /, '');
-        return `<div class="ios-checklist-item${isChecked ? ' ios-checklist-item--checked' : ''}"><span class="ios-checkbox" contenteditable="false">${isChecked ? '☑' : '☐'}</span><span class="ios-checklist-text">${escapeHtml(text)}</span></div>`;
+        return `<div class="ios-checklist-item${isChecked ? ' ios-checklist-item--checked' : ''}"><span class="ios-checkbox" contenteditable="false">${isChecked ? '✓' : ''}</span><span class="ios-checklist-text">${escapeHtml(text)}</span></div>`;
       }
 
       // Check for headings
@@ -1264,7 +1270,7 @@ function EditorPanel({
           break;
         case 'checkbox':
           newItem.className = 'ios-checklist-item';
-          newItem.innerHTML = `<span class="ios-checkbox" contenteditable="false">☐</span><span class="ios-checklist-text">${escapeHtml(text)}</span>`;
+          newItem.innerHTML = `<span class="ios-checkbox" contenteditable="false"></span><span class="ios-checklist-text">${escapeHtml(text)}</span>`;
           break;
       }
 
@@ -1364,7 +1370,7 @@ function EditorPanel({
         if (bodyEl) {
           const newItem = document.createElement('div');
           newItem.className = 'ios-checklist-item';
-          newItem.innerHTML = '<span class="ios-checkbox" contenteditable="false">☐</span><span class="ios-checklist-text" contenteditable="true"></span>';
+          newItem.innerHTML = '<span class="ios-checkbox" contenteditable="false"></span><span class="ios-checklist-text" contenteditable="true"></span>';
           bodyEl.appendChild(newItem);
 
           // Focus the text span
@@ -1396,7 +1402,7 @@ function EditorPanel({
         const text = targetDiv.textContent || '';
         const newItem = document.createElement('div');
         newItem.className = 'ios-checklist-item';
-        newItem.innerHTML = `<span class="ios-checkbox" contenteditable="false">☐</span><span class="ios-checklist-text" contenteditable="true">${escapeHtml(text)}</span>`;
+        newItem.innerHTML = `<span class="ios-checkbox" contenteditable="false"></span><span class="ios-checklist-text" contenteditable="true">${escapeHtml(text)}</span>`;
         targetDiv.replaceWith(newItem);
       }
     }
@@ -1411,7 +1417,7 @@ function EditorPanel({
       const item = target.closest('.ios-checklist-item');
       if (item) {
         const isChecked = item.classList.toggle('ios-checklist-item--checked');
-        target.textContent = isChecked ? '☑' : '☐';
+        target.textContent = isChecked ? '✓' : '';
         handleInput();
       }
     }
@@ -1494,7 +1500,7 @@ function EditorPanel({
           e.preventDefault();
           const newItem = document.createElement('div');
           newItem.className = 'ios-checklist-item';
-          newItem.innerHTML = '<span class="ios-checkbox" contenteditable="false">☐</span><span class="ios-checklist-text" contenteditable="true"></span>';
+          newItem.innerHTML = '<span class="ios-checkbox" contenteditable="false"></span><span class="ios-checklist-text" contenteditable="true"></span>';
           checklistItem.after(newItem);
 
           const textSpan = newItem.querySelector('.ios-checklist-text');

@@ -1136,21 +1136,24 @@ html, body {
   flex-shrink: 0;
   width: 22px;
   height: 22px;
-  font-size: 18px;
+  font-size: 14px;
   line-height: 22px;
   text-align: center;
   cursor: pointer;
   user-select: none;
-  color: var(--ios-yellow);
+  color: transparent;
+  border: 2px solid var(--ios-text-tertiary);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s ease-out, color 0.15s ease-out;
+  transition: all 0.15s ease-out;
+  background: transparent;
+  margin-top: 2px;
 }
 
 .ios-checkbox:hover {
-  background: rgba(255, 214, 10, 0.1);
+  border-color: var(--ios-yellow);
 }
 
 .ios-checklist-text {
@@ -1161,7 +1164,9 @@ html, body {
 
 /* Checked state */
 .ios-checklist-item--checked .ios-checkbox {
-  color: var(--ios-green);
+  background: var(--ios-yellow);
+  border-color: var(--ios-yellow);
+  color: var(--ios-bg-primary);
 }
 
 .ios-checklist-item--checked .ios-checklist-text {
