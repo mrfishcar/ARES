@@ -994,6 +994,32 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 173: FANTASY WORLD-BUILDING TEXT
+  // =========================================================================
+
+  describe('Fantasy worldbuilding text', () => {
+    it('should handle fantasy world-building narratives', async () => {
+      const templates = [
+        'The ancient kingdom stretched for miles.',
+        'Magic flowed through the land freely.',
+        'Dragons soared above the mountains.',
+        'The prophecy spoke of great change.',
+      ];
+
+      let text = '';
+      for (let i = 0; i < 100; i++) {
+        text += templates[i % templates.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`Fantasy worldbuilding: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
