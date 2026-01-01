@@ -219,6 +219,12 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
   // Common gerunds/present participles
   'running', 'walking', 'talking', 'fighting', 'waiting', 'looking', 'thinking',
 
+  // Common adjectives
+  'beautiful', 'terrible', 'wonderful', 'horrible', 'amazing', 'awful',
+
+  // Temporal adverbs
+  'always', 'sometimes', 'often', 'rarely', 'usually', 'frequently',
+
   // Generic nouns that are too vague
   'thing', 'things', 'stuff', 'nothing', 'everything', 'something', 'anything',
   'person', 'people', 'somebody', 'someone', 'anybody', 'anyone', 'nobody', 'everyone',

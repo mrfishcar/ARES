@@ -814,6 +814,22 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'walking', type: 'PERSON', expectedValid: false },
   { name: 'talking', type: 'PERSON', expectedValid: false },
   { name: 'fighting', type: 'PERSON', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 90: MORE JUNK CASES (MILESTONE)
+  // =========================================================================
+
+  // Common adjectives
+  { name: 'beautiful', type: 'PERSON', expectedValid: false },
+  { name: 'terrible', type: 'PERSON', expectedValid: false },
+  { name: 'wonderful', type: 'PERSON', expectedValid: false },
+  { name: 'horrible', type: 'PERSON', expectedValid: false },
+
+  // Temporal words
+  { name: 'always', type: 'PERSON', expectedValid: false },
+  { name: 'never', type: 'PERSON', expectedValid: false },
+  { name: 'sometimes', type: 'PERSON', expectedValid: false },
+  { name: 'often', type: 'PERSON', expectedValid: false },
 ];
 
 // =============================================================================
