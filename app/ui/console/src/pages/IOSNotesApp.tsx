@@ -2031,7 +2031,15 @@ export function IOSNotesApp() {
             onSelectNote={handleSelectNote}
             onCreateNote={handleCreateNote}
             onDeleteNote={handleDeleteNote}
-            onToggleSidebar={() => setShowNotesSidebar(!showNotesSidebar)}
+            onToggleSidebar={() => {
+              // If hiding notes, also hide folders (folders can't be alone)
+              if (showNotesSidebar) {
+                setShowNotesSidebar(false);
+                setShowFoldersSidebar(false);
+              } else {
+                setShowNotesSidebar(true);
+              }
+            }}
             onToggleFolders={() => setShowFoldersSidebar(!showFoldersSidebar)}
             showSidebarToggle
             showFoldersToggle={!showFoldersSidebar}

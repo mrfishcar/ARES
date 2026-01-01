@@ -108,8 +108,45 @@ html, body {
 }
 
 .ios-notes-app--large-tablet {
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: 260px 320px 1fr;
+  transition: grid-template-columns 0.3s ease-out;
+  overflow: hidden; /* Clip sidebars as they slide off the left edge */
+}
+
+/* When folders hidden, collapse its column */
+.ios-notes-app--large-tablet.ios-notes-app--folders-hidden {
+  grid-template-columns: 0px 320px 1fr;
+}
+
+/* When notes hidden (folders also hidden), collapse both columns */
+.ios-notes-app--large-tablet.ios-notes-app--notes-hidden {
+  grid-template-columns: 0px 0px 1fr;
+}
+
+/* Responsive grid columns */
+@media (min-width: 768px) {
+  .ios-notes-app--large-tablet {
+    grid-template-columns: 260px 350px 1fr;
+  }
+  .ios-notes-app--large-tablet.ios-notes-app--folders-hidden {
+    grid-template-columns: 0px 350px 1fr;
+  }
+  .ios-notes-app--large-tablet.ios-notes-app--notes-hidden {
+    grid-template-columns: 0px 0px 1fr;
+  }
+}
+
+@media (min-width: 1024px) {
+  .ios-notes-app--large-tablet {
+    grid-template-columns: 260px 380px 1fr;
+  }
+  .ios-notes-app--large-tablet.ios-notes-app--folders-hidden {
+    grid-template-columns: 0px 380px 1fr;
+  }
+  .ios-notes-app--large-tablet.ios-notes-app--notes-hidden {
+    grid-template-columns: 0px 0px 1fr;
+  }
 }
 
 /* ============================================================================
@@ -664,13 +701,13 @@ html, body {
 ============================================================================ */
 
 .ios-folders-sidebar {
-  width: 260px;
-  flex-shrink: 0;
+  min-width: 260px;
   display: flex;
   flex-direction: column;
   background: var(--ios-bg-primary);
   border-right: 0.5px solid var(--ios-separator);
-  transition: margin-left 0.3s ease-out, opacity 0.3s ease-out;
+  overflow: hidden; /* Clip content as grid column shrinks */
+  transition: opacity 0.3s ease-out;
 }
 
 .ios-folders-sidebar__header {
@@ -755,13 +792,13 @@ html, body {
 ============================================================================ */
 
 .ios-notes-sidebar {
-  width: 320px;
-  flex-shrink: 0;
+  min-width: 320px;
   display: flex;
   flex-direction: column;
   background: var(--ios-bg-primary);
   border-right: 0.5px solid var(--ios-separator);
-  transition: margin-left 0.3s ease-out, opacity 0.3s ease-out;
+  overflow: hidden; /* Clip content as grid column shrinks */
+  transition: opacity 0.3s ease-out;
 }
 
 .ios-notes-sidebar__header {
@@ -1573,7 +1610,7 @@ html, body {
 
 @media (min-width: 768px) {
   .ios-notes-sidebar {
-    width: 350px;
+    min-width: 350px;
   }
 
   .ios-editor-panel__content {
@@ -1589,7 +1626,7 @@ html, body {
 
 @media (min-width: 1024px) {
   .ios-notes-sidebar {
-    width: 380px;
+    min-width: 380px;
   }
 }
 
@@ -1597,31 +1634,18 @@ html, body {
    SIDEBAR SLIDE ANIMATIONS (Tablet)
 ============================================================================ */
 
-/* Hidden folders sidebar - slides off to the left */
+/* Hidden folders sidebar */
 .ios-notes-app--folders-hidden .ios-folders-sidebar {
-  margin-left: -260px; /* Negative margin = sidebar width, removes from layout */
   pointer-events: none;
   opacity: 0;
+  border-right: none;
 }
 
-/* Hidden notes sidebar - slides off to the left */
+/* Hidden notes sidebar */
 .ios-notes-app--notes-hidden .ios-notes-sidebar {
-  margin-left: -320px; /* Negative margin = sidebar width at base size */
   pointer-events: none;
   opacity: 0;
-}
-
-/* Responsive: match sidebar widths at different breakpoints */
-@media (min-width: 768px) {
-  .ios-notes-app--notes-hidden .ios-notes-sidebar {
-    margin-left: -350px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .ios-notes-app--notes-hidden .ios-notes-sidebar {
-    margin-left: -380px;
-  }
+  border-right: none;
 }
 
 /* ============================================================================
