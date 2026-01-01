@@ -1,12 +1,103 @@
 # ReferenceResolver Implementation Session (Continued)
 
-**Date**: 2025-12-31 (23:00 UTC) - Updated 23:28 UTC
+**Date**: 2026-01-01 (03:00 UTC)
 **Branch**: `claude/ares-story-compiler-VAWSy`
-**Status**: ✅ **PHASE 2 PREPARATIONS COMPLETE + Entity Recognition Bug Fixed**
+**Status**: ✅ **PHASE 2 COMPLETE - relations.ts Migration Done**
 
 ---
 
-## Session 2 Summary (Continued)
+## Session 3 Summary - relations.ts Migration Complete
+
+This session completed the coreference consolidation work by migrating `relations.ts` to use the unified TokenResolver for all pronoun resolution.
+
+### Key Accomplishments
+
+1. ✅ **COMMON_VERBS Consolidation Complete**
+   - Created `app/engine/linguistics/shared-vocabulary.ts` as single source of truth
+   - Consolidated 6 separate COMMON_VERBS definitions into 2 canonical sets:
+     - `COMMON_VERBS_FOR_NAME_DETECTION` (~150 verbs)
+     - `VERBS_BLOCKLIST_FOR_ENTITY_NAMES` (blocklist)
+   - Added 15 tests to prevent future divergence
+   - Fixed entity-heuristics.ts which was missing 'appeared'
+
+2. ✅ **relations.ts Pronoun Resolution Migration Complete**
+   - Added TokenResolver import and creation in `extractRelations()`
+   - Created 4 adapter functions with legacy fallback:
+     - `resolvePronounToken()` - resolves pronouns via TokenResolver
+     - `resolvePossessorsUnified()` - handles possessive pronouns
+     - `trackEntityMention()` - updates entity tracking
+     - `resolveAcademicSubjectUnified()` - handles academic titles
+   - Migrated 13+ `lastNamedSubject` patterns
+   - Migrated all `updateLastNamedSubject` calls
+   - Migrated `resolvePossessors` calls
+
+3. ✅ **Integration Tests Added** - 11 tests
+   - Pronoun resolution adapters
+   - Sentence-initial resolution
+   - Possessive pronoun chains
+   - Cross-sentence context maintenance
+   - Edge cases (empty entities, gender mismatch)
+
+### Test Results
+
+| Test Suite | Result |
+|------------|--------|
+| ReferenceResolver | 32/32 passing |
+| TokenResolver | 12/12 passing |
+| Stress Tests | 39/39 passing |
+| Relations Integration | 11/11 passing |
+| Shared Vocabulary | 15/15 passing |
+| **Total Core Tests** | **109/109 passing** |
+
+### Commits This Session (4)
+
+1. `510cacc3` - refactor: Consolidate COMMON_VERBS into shared vocabulary module
+2. `6c6ac7a9` - refactor: Migrate relations.ts to use unified TokenResolver
+3. `a8f90cdd` - test: Add relations.ts TokenResolver integration tests
+4. (Current) - docs: Update HANDOFF.md with migration status
+
+### Files Changed
+
+**New Files:**
+- `app/engine/linguistics/shared-vocabulary.ts` - Shared verb constants
+- `tests/linguistics/shared-vocabulary.spec.ts` - Divergence prevention tests
+- `tests/reference-resolver/relations-integration.spec.ts` - Integration tests
+
+**Modified Files:**
+- `app/engine/extract/relations.ts` - TokenResolver integration (+227 lines)
+- `app/engine/linguistics/mention-classifier.ts` - Use shared vocabulary
+- `app/engine/entity-quality-filter.ts` - Use shared vocabulary
+- `app/engine/entity-type-validators.ts` - Use shared vocabulary
+- `app/engine/global-graph.ts` - Use shared vocabulary
+- `app/engine/linguistics/entity-heuristics.ts` - Use shared vocabulary
+
+---
+
+## Remaining Work
+
+### Task 4: Remove lastNamedSubject/recentPersons
+The legacy variables are still defined in relations.ts for fallback. Once confident the TokenResolver path works in production, these can be removed:
+- `lastNamedSubject`
+- `lastNamedOrg`
+- `lastSchoolOrg`
+- `recentPersons`
+- `pushRecentPerson()`
+- `pushRecentOrg()`
+- `resolvePossessors()` (legacy version)
+- `updateLastNamedSubject()`
+- `resolveAcademicSubject()` (legacy version)
+
+### Task 5: Final Cleanup
+- Remove pipeline-switching env flags
+- Quarantine BookNLP code
+- Update documentation
+
+---
+
+# Previous: Session 2 Summary
+
+**Date**: 2025-12-31 (23:00 UTC)
+**Status**: ✅ **PHASE 2 PREPARATIONS COMPLETE + Entity Recognition Bug Fixed**
 
 This session continued the coreference consolidation work, creating the TokenResolver adapter and fixing a critical entity recognition bug.
 
@@ -27,105 +118,15 @@ This session continued the coreference consolidation work, creating the TokenRes
    - `trackMention()`: Tracks new entity mentions for recency updates
    - Factory function `createTokenResolver()` for easy instantiation
 
-2. ✅ **Added getEntityById to ReferenceResolver**
-   - Allows TokenResolver to look up entities for proper Token mapping
-
 3. ✅ **TokenResolver Test Suite** - 12 tests
-   - Basic pronoun resolution (He → entity token)
-   - Possessive pronoun resolution (his/her/their)
-   - Non-pronoun handling
-   - Utility methods
-   - Mention tracking
-   - Edge cases
 
 4. ✅ **Additional Stress Tests** - 9 more tests (30 → 39)
-   - Complex nested possessive patterns
-   - Quoted speech with pronouns
-   - Reflexive pronoun handling
-   - Family relationship disambiguation
-   - Long distance resolution
-   - Performance edge cases
 
-### Test Results
-
-| Test Suite | Result |
-|------------|--------|
-| ReferenceResolver | 83/83 passing |
-| TokenResolver | 12/12 passing |
-| Level 1 | ✅ Entity P=95%, R=89.2%; Relation P=90%, R=90% |
-| Level 2 | ✅ Passed |
-| Level 3 | ✅ Passed |
-| extraction-patterns | ✅ 86/86 passing |
-| Key Tests Total | 163+ passing |
-
-### Commits This Session (3)
+### Commits Session 2 (3)
 
 1. `38336661` - feat: Add TokenResolver adapter for relations.ts migration
 2. `dde09f28` - test: Add 9 more stress tests for complex edge cases
 3. `fe0a0f88` - fix: Improve sentence-initial entity recognition
-
----
-
-## relations.ts Migration Plan (Phase 2)
-
-### Overview
-
-The `relations.ts` file has **40+ references** to `lastNamedSubject`, a simple recency-based pronoun resolution pattern. The migration will replace this with TokenResolver calls.
-
-### Current Pattern
-
-```typescript
-// relations.ts lines 1017-1085
-let lastNamedSubject: Token | null = null;
-
-const updateLastNamedSubject = (candidate?: Token) => {
-  if (!candidate || candidate.pos === 'PRON') return;
-  if (isNameToken(candidate)) {
-    lastNamedSubject = candidate;
-    pushRecentPerson(candidate);
-  }
-};
-
-// Used throughout:
-if (subj.pos === 'PRON' && lastNamedSubject) {
-  subj = lastNamedSubject;
-}
-```
-
-### Target Pattern
-
-```typescript
-// Option A: Full migration
-const tokenResolver = createTokenResolver(entities, spans, sentences, text, sentenceTokens);
-
-// Then throughout:
-if (subj.pos === 'PRON') {
-  subj = tokenResolver.resolveToken(subj, 'SENTENCE_MID');
-}
-```
-
-### Migration Steps
-
-1. **Add TokenResolver as optional parameter** to `extractDepRelations()`
-2. **Create helper functions** that use TokenResolver when available
-3. **Migrate in stages:**
-   - Stage A: `resolveAcademicSubject()` (1 location)
-   - Stage B: `resolvePossessors()` (already has counterpart)
-   - Stage C: Main pronoun resolution patterns (40+ locations)
-4. **Remove lastNamedSubject** after all patterns migrated
-5. **Run full test suite** after each stage
-
-### Risk Assessment
-
-| Risk | Mitigation |
-|------|------------|
-| Behavioral differences | TokenResolver uses position-aware resolution vs simple recency |
-| Test regressions | Run full suite after each stage |
-| Performance | TokenResolver is tested with 10+ entities efficiently |
-
-### Not Started Yet
-
-The actual migration of relations.ts is **not started** - only the TokenResolver adapter is ready. The migration should be done carefully with full test coverage at each step.
 
 ---
 
