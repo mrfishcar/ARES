@@ -2032,6 +2032,47 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'she', position: 23, expected: 'Hermione Granger' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 171: PRONOUN WITH COMPARISON
+  // =========================================================================
+
+  // Case 91: Pronoun with comparison (single entity)
+  {
+    name: 'Pronoun with comparison',
+    text: 'Harry was faster than before, so he won.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+    ],
+    spans: [
+      createSpan('harry', 0, 5),
+    ],
+    sentences: [
+      createSentence('Harry was faster than before, so he won.', 0),
+    ],
+    pronounTests: [
+      { pronoun: 'he', position: 33, expected: 'Harry Potter' },
+    ],
+  },
+
+  // Case 92: Pronoun after superlative
+  {
+    name: 'Pronoun after superlative',
+    text: 'Hermione was the smartest. She always knew.',
+    entities: [
+      createEntity('hermione', 'Hermione Granger', 'PERSON'),
+    ],
+    spans: [
+      createSpan('hermione', 0, 8),
+    ],
+    sentences: [
+      createSentence('Hermione was the smartest.', 0),
+      createSentence('She always knew.', 27),
+    ],
+    pronounTests: [
+      { pronoun: 'She', position: 27, expected: 'Hermione Granger' },
+    ],
+  },
 ];
 
 // =============================================================================
