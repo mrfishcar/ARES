@@ -307,6 +307,34 @@ const DIRECTION_TEST_CASES: RelationTestCase[] = [
       { subject: 'Baker Street', predicate: 'lives_in', object: 'Sherlock', shouldExist: false },
     ],
   },
+
+  // =========================================================================
+  // LOOP 44: MORE DIRECTION TESTS
+  // =========================================================================
+
+  {
+    name: 'Child of direction',
+    text: 'Draco Malfoy is the son of Lucius Malfoy.',
+    expectedRelations: [
+      { subject: 'Draco', predicate: 'child_of', object: 'Lucius', shouldExist: true },
+      { subject: 'Lucius', predicate: 'child_of', object: 'Draco', shouldExist: false },
+    ],
+  },
+  {
+    name: 'Killed by direction',
+    text: 'Voldemort killed Cedric Diggory.',
+    expectedRelations: [
+      { subject: 'Voldemort', predicate: 'killed', object: 'Cedric', shouldExist: true },
+      { subject: 'Cedric', predicate: 'killed', object: 'Voldemort', shouldExist: false },
+    ],
+  },
+  {
+    name: 'Friend relation symmetric',
+    text: 'Harry and Ron are best friends.',
+    expectedRelations: [
+      { subject: 'Harry', predicate: 'friends_with', object: 'Ron', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
