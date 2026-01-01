@@ -927,6 +927,18 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'loud', type: 'ITEM', expectedValid: false },
   { name: 'quiet', type: 'ITEM', expectedValid: false },
   { name: 'silent', type: 'ITEM', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 110 MILESTONE: TEMPORAL EXPRESSIONS
+  // =========================================================================
+
+  // Time of day
+  { name: 'morning', type: 'ITEM', expectedValid: false },
+  { name: 'evening', type: 'ITEM', expectedValid: false },
+  { name: 'midnight', type: 'ITEM', expectedValid: false },
+  { name: 'dawn', type: 'ITEM', expectedValid: false },
+  { name: 'dusk', type: 'ITEM', expectedValid: false },
+  { name: 'noon', type: 'ITEM', expectedValid: false },
 ];
 
 // =============================================================================
