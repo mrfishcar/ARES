@@ -352,6 +352,45 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'below', type: 'PLACE', expectedValid: false },
   { name: 'ahead', type: 'PLACE', expectedValid: false },
   { name: 'behind', type: 'PLACE', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 19: ADDITIONAL JUNK CASES
+  // =========================================================================
+
+  // Common prepositions (that might be sentence-initial)
+  { name: 'over', type: 'PLACE', expectedValid: false },
+  { name: 'under', type: 'PLACE', expectedValid: false },
+  { name: 'through', type: 'PLACE', expectedValid: false },
+  { name: 'between', type: 'PLACE', expectedValid: false },
+  { name: 'around', type: 'PLACE', expectedValid: false },
+  { name: 'among', type: 'PLACE', expectedValid: false },
+
+  // Question words (can be sentence-initial)
+  { name: 'what', type: 'PERSON', expectedValid: false },
+  { name: 'why', type: 'PERSON', expectedValid: false },
+  { name: 'how', type: 'PERSON', expectedValid: false },
+  { name: 'where', type: 'PLACE', expectedValid: false },
+  { name: 'when', type: 'DATE', expectedValid: false },
+
+  // Conjunctions
+  { name: 'and', type: 'PERSON', expectedValid: false },
+  { name: 'but', type: 'PERSON', expectedValid: false },
+  { name: 'because', type: 'PERSON', expectedValid: false },
+  { name: 'although', type: 'PERSON', expectedValid: false },
+
+  // More common words
+  { name: 'even', type: 'PERSON', expectedValid: false },
+  { name: 'just', type: 'PERSON', expectedValid: false },
+  { name: 'only', type: 'PERSON', expectedValid: false },
+  { name: 'still', type: 'PERSON', expectedValid: false },
+  { name: 'already', type: 'PERSON', expectedValid: false },
+  { name: 'almost', type: 'PERSON', expectedValid: false },
+  { name: 'nearly', type: 'PERSON', expectedValid: false },
+
+  // Ordinals
+  { name: 'third', type: 'PERSON', expectedValid: false },
+  { name: 'fourth', type: 'PERSON', expectedValid: false },
+  { name: 'fifth', type: 'PERSON', expectedValid: false },
 ];
 
 // =============================================================================

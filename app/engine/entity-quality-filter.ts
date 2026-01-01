@@ -181,6 +181,7 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
   'in', 'on', 'at', 'by', 'with', 'from', 'to', 'of', 'for', 'about',
   'through', 'during', 'before', 'after', 'above', 'below', 'between',
   'among', 'under', 'over', 'into', 'onto', 'upon', 'within', 'without',
+  'around', 'across', 'along', 'behind',
 
   // Adverbs
   'very', 'too', 'also', 'only', 'even', 'still', 'never', 'always',
@@ -189,10 +190,11 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
   'now', 'then', 'later', 'soon', 'today', 'yesterday', 'tomorrow',
   'suddenly', 'quickly', 'slowly', 'quietly', 'loudly', 'finally', 'immediately',
   'quite', 'rather', 'fairly', 'pretty', 'extremely', 'absolutely', 'not',
-  'inside', 'outside', 'ahead', 'behind',
+  'inside', 'outside', 'ahead',
+  'already', 'almost', 'nearly', 'just',
 
   // Common adjectives that shouldn't be entities
-  'good', 'bad', 'new', 'old', 'first', 'second', 'third', 'last', 'long', 'short',
+  'good', 'bad', 'new', 'old', 'first', 'second', 'third', 'fourth', 'fifth', 'last', 'long', 'short',
   'big', 'small', 'great', 'little', 'own', 'other', 'different', 'same',
   'high', 'low', 'next', 'early', 'young', 'important', 'large', 'small',
   'able', 'ready', 'sure', 'certain', 'clear', 'full', 'free',
