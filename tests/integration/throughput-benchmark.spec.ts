@@ -577,6 +577,32 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 93: QUESTION-HEAVY TEXT
+  // =========================================================================
+
+  describe('Question-heavy text', () => {
+    it('should handle many questions', async () => {
+      const templates = [
+        'Where did Harry go? What did he find?',
+        'Who was Voldemort? Why did he fear death?',
+        'How did Dumbledore know? When did he learn?',
+        'What was the secret? Who could tell?',
+      ];
+
+      let text = '';
+      for (let i = 0; i < 100; i++) {
+        text += templates[i % templates.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`Question-heavy: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
