@@ -359,6 +359,37 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
       { subject: 'Dumbledore', predicate: 'protected', object: 'Hogwarts', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 77: MORE OBVIOUS RELATIONS
+  // =========================================================================
+
+  // Loved relation
+  {
+    name: 'Loved relation',
+    text: 'Harry loved his friends deeply.',
+    expectedRelations: [
+      { subject: 'Harry', predicate: 'loved', object: 'friends', shouldExist: true },
+    ],
+  },
+
+  // Created relation
+  {
+    name: 'Created relation',
+    text: 'Rowena Ravenclaw created the diadem.',
+    expectedRelations: [
+      { subject: 'Rowena', predicate: 'created', object: 'diadem', shouldExist: true },
+    ],
+  },
+
+  // Destroyed relation
+  {
+    name: 'Destroyed relation',
+    text: 'Harry destroyed the Horcrux.',
+    expectedRelations: [
+      { subject: 'Harry', predicate: 'destroyed', object: 'Horcrux', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
