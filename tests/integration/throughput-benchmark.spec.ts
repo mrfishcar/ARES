@@ -340,6 +340,23 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 56: MORE THROUGHPUT TESTS
+  // =========================================================================
+
+  describe('Repetitive text (same sentence)', () => {
+    it('should handle highly repetitive content', async () => {
+      const sentence = 'Harry Potter cast a spell at Hogwarts. ';
+      const text = sentence.repeat(200);
+
+      const result = await benchmarkExtraction(text);
+      results.push(result);
+
+      console.log(`Repetitive text: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
