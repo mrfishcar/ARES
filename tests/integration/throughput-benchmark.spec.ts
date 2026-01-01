@@ -1020,6 +1020,32 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 178: HISTORICAL NARRATIVE TEXT
+  // =========================================================================
+
+  describe('Historical narrative text', () => {
+    it('should handle historical narratives', async () => {
+      const templates = [
+        'The empire expanded across continents.',
+        'Great leaders rose and fell swiftly.',
+        'Wars shaped the course of history.',
+        'Civilizations flourished then declined.',
+      ];
+
+      let text = '';
+      for (let i = 0; i < 100; i++) {
+        text += templates[i % templates.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`Historical narrative: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
