@@ -688,6 +688,20 @@ const ADVERSARIAL_CASES: ObviousEntityCase[] = [
   // Common words that are surnames with title
   { name: 'Best', type: 'PERSON', expectedValid: true, context: { fullText: 'Mr. Best arrived.', spanStart: 4, spanEnd: 8 } },
   { name: 'Young', type: 'PERSON', expectedValid: true, context: { fullText: 'Dr. Young examined.', spanStart: 4, spanEnd: 9 } },
+
+  // =========================================================================
+  // LOOP 50: MORE ADVERSARIAL CASES
+  // =========================================================================
+
+  // More named places
+  { name: 'East Germany', type: 'PLACE', expectedValid: true },
+  { name: 'Central Park', type: 'PLACE', expectedValid: true },
+  { name: 'Middle Earth', type: 'PLACE', expectedValid: true },
+
+  // Occupation surnames with titles
+  { name: 'Fisher', type: 'PERSON', expectedValid: true, context: { fullText: 'Mrs. Fisher cooked.', spanStart: 5, spanEnd: 11 } },
+  { name: 'Hunter', type: 'PERSON', expectedValid: true, context: { fullText: 'Captain Hunter sailed.', spanStart: 8, spanEnd: 14 } },
+  { name: 'Farmer', type: 'PERSON', expectedValid: true, context: { fullText: 'Mr. Farmer plowed.', spanStart: 4, spanEnd: 10 } },
 ];
 
 // =============================================================================
