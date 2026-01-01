@@ -667,6 +667,26 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'furthermore', type: 'PERSON', expectedValid: false },
   { name: 'thus', type: 'PERSON', expectedValid: false },
   { name: 'hence', type: 'PERSON', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 64: MORE JUNK CASES
+  // =========================================================================
+
+  // Relative time words
+  { name: 'yesterday', type: 'PERSON', expectedValid: false },
+  { name: 'tomorrow', type: 'PERSON', expectedValid: false },
+  { name: 'today', type: 'PERSON', expectedValid: false },
+  { name: 'tonight', type: 'PERSON', expectedValid: false },
+  { name: 'later', type: 'PERSON', expectedValid: false },
+  { name: 'earlier', type: 'PERSON', expectedValid: false },
+
+  // Common sentence-initial verbs
+  { name: 'think', type: 'PERSON', expectedValid: false },
+  { name: 'know', type: 'PERSON', expectedValid: false },
+  { name: 'believe', type: 'PERSON', expectedValid: false },
+  { name: 'remember', type: 'PERSON', expectedValid: false },
+  { name: 'forget', type: 'PERSON', expectedValid: false },
+  { name: 'understand', type: 'PERSON', expectedValid: false },
 ];
 
 // =============================================================================
