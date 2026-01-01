@@ -83,6 +83,7 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
   'work', 'works', 'worked', 'working',
   'call', 'calls', 'called', 'calling',
   'feel', 'feels', 'felt', 'feeling',
+  'look', 'looks', 'looked', 'looking',
   'seem', 'seems', 'seemed', 'seeming',
   'leave', 'leaves', 'left', 'leaving',
   'keep', 'keeps', 'kept', 'keeping',
@@ -185,6 +186,7 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
   'often', 'sometimes', 'usually', 'rarely', 'seldom',
   'here', 'there', 'everywhere', 'nowhere', 'somewhere', 'anywhere',
   'now', 'then', 'later', 'soon', 'today', 'yesterday', 'tomorrow',
+  'suddenly', 'quickly', 'slowly', 'quietly', 'loudly', 'finally', 'immediately',
 
   // Common adjectives that shouldn't be entities
   'good', 'bad', 'new', 'old', 'first', 'last', 'long', 'short',

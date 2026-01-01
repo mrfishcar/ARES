@@ -31,7 +31,8 @@ const TITLE_WORDS = new Set([
 ]);
 
 const COLOR_ADJECTIVES = new Set([
-  'black', 'white', 'blue', 'green', 'gold', 'silver', 'brown', 'gray', 'grey',
+  'black', 'white', 'blue', 'green', 'red', 'yellow', 'orange', 'purple', 'pink',
+  'gold', 'silver', 'brown', 'gray', 'grey', 'tan', 'beige',
   'scarlet', 'crimson', 'amber', 'blonde', 'blond', 'hot', 'cold', 'aged', 'stained'
 ]);
 
