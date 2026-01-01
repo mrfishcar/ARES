@@ -1200,6 +1200,20 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'were', type: 'ITEM', expectedValid: false },
   { name: 'been', type: 'ITEM', expectedValid: false },
   { name: 'being', type: 'ITEM', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 160: HAVE/DO FORMS
+  // =========================================================================
+
+  // Have forms
+  { name: 'have', type: 'ITEM', expectedValid: false },
+  { name: 'has', type: 'ITEM', expectedValid: false },
+  { name: 'had', type: 'ITEM', expectedValid: false },
+
+  // Do forms
+  { name: 'do', type: 'ITEM', expectedValid: false },
+  { name: 'does', type: 'ITEM', expectedValid: false },
+  { name: 'did', type: 'ITEM', expectedValid: false },
 ];
 
 // =============================================================================
