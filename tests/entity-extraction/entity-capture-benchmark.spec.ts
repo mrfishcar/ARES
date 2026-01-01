@@ -1174,6 +1174,18 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'why', type: 'ITEM', expectedValid: false },
   { name: 'how', type: 'ITEM', expectedValid: false },
   { name: 'which', type: 'ITEM', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 155: AUXILIARY VERBS
+  // =========================================================================
+
+  // Be forms
+  { name: 'is', type: 'ITEM', expectedValid: false },
+  { name: 'are', type: 'ITEM', expectedValid: false },
+  { name: 'was', type: 'ITEM', expectedValid: false },
+  { name: 'were', type: 'ITEM', expectedValid: false },
+  { name: 'been', type: 'ITEM', expectedValid: false },
+  { name: 'being', type: 'ITEM', expectedValid: false },
 ];
 
 // =============================================================================
