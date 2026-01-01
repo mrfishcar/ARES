@@ -561,6 +561,20 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   { name: 'Winston Churchill', type: 'PERSON', expectedValid: true },
   { name: 'Nelson Mandela', type: 'PERSON', expectedValid: true },
   { name: 'Mahatma Gandhi', type: 'PERSON', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 169: INVENTORS
+  // =========================================================================
+
+  // Tech pioneers
+  { name: 'Thomas Edison', type: 'PERSON', expectedValid: true },
+  { name: 'Nikola Tesla', type: 'PERSON', expectedValid: true },
+  { name: 'Alexander Graham Bell', type: 'PERSON', expectedValid: true },
+
+  // Modern inventors
+  { name: 'Steve Jobs', type: 'PERSON', expectedValid: true },
+  { name: 'Bill Gates', type: 'PERSON', expectedValid: true },
+  { name: 'Elon Musk', type: 'PERSON', expectedValid: true },
 ];
 
 // =============================================================================
