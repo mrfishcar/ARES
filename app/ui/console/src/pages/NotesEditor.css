@@ -1,0 +1,679 @@
+/**
+ * Notes Editor Styles
+ *
+ * Standards Applied:
+ * - iOS Dynamic Type support via -apple-system-body
+ * - Apple HIG 8-point grid system
+ * - 44pt minimum touch targets
+ * - Responsive margins: 16px iPhone, 24px iPad
+ * - WCAG 2.1 AA compliant
+ * - Apple-inspired spring motion design (WWDC23)
+ *
+ * References:
+ * - Apple Human Interface Guidelines (Typography, Layout, Motion)
+ * - WCAG 1.4.4 Resize Text
+ * - WWDC23: Animate with springs
+ */
+
+/* ============================================================================
+   CSS CUSTOM PROPERTIES - Design Tokens
+   ============================================================================ */
+
+:root {
+  /* -------------------------------------------------------------------------
+     MOTION DESIGN SYSTEM
+     Based on Apple's spring animation principles
+     Cubic-bezier with overshoot values approximates spring physics
+     ------------------------------------------------------------------------- */
+
+  /* Spring Curves */
+  --ne-spring-responsive: cubic-bezier(0.34, 1.56, 0.64, 1);   /* Buttons, toggles */
+  --ne-spring-gentle: cubic-bezier(0.175, 0.885, 0.32, 1.1);   /* Hover states */
+  --ne-spring-expressive: cubic-bezier(0.34, 1.8, 0.64, 1);    /* Modals, emphasis */
+  --ne-spring-slide: cubic-bezier(0.25, 1.25, 0.5, 1);         /* Panel slides */
+  --ne-spring-bounce: cubic-bezier(0.68, -0.6, 0.32, 1.6);     /* Playful bounce */
+
+  /* Standard Easing */
+  --ne-ease-out: cubic-bezier(0.33, 1, 0.68, 1);
+  --ne-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* Durations - Apple's "quick, precise" principle */
+  --ne-duration-instant: 100ms;
+  --ne-duration-fast: 150ms;
+  --ne-duration-normal: 250ms;
+  --ne-duration-slow: 350ms;
+  --ne-duration-slower: 450ms;
+
+  /* Transition Presets */
+  --ne-motion-button: var(--ne-duration-fast) var(--ne-spring-responsive);
+  --ne-motion-hover: var(--ne-duration-fast) var(--ne-spring-gentle);
+  --ne-motion-toggle: var(--ne-duration-normal) var(--ne-spring-responsive);
+  --ne-motion-slide: var(--ne-duration-slow) var(--ne-spring-slide);
+  --ne-motion-fade: var(--ne-duration-normal) var(--ne-ease-out);
+  --ne-motion-scale: var(--ne-duration-fast) var(--ne-spring-expressive);
+
+  /* -------------------------------------------------------------------------
+     COLORS - iOS System Colors
+     ------------------------------------------------------------------------- */
+  --ne-bg-primary: #000;
+  --ne-bg-secondary: #1c1c1e;
+  --ne-bg-tertiary: #2c2c2e;
+  --ne-text-primary: #fff;
+  --ne-text-secondary: #98989d;
+  --ne-text-tertiary: #636366;
+  --ne-accent: #ffd60a;
+  --ne-accent-secondary: #0a84ff;
+  --ne-danger: #ff453a;
+  --ne-separator: #38383a;
+
+  /* -------------------------------------------------------------------------
+     TYPOGRAPHY - Fluid sizing with clamp()
+     ------------------------------------------------------------------------- */
+  --ne-font-large-title: clamp(1.75rem, calc(1.5rem + 1vw), 2.5rem);
+  --ne-font-title1: clamp(1.5rem, calc(1.25rem + 0.75vw), 2.125rem);
+  --ne-font-body: clamp(1rem, calc(0.9375rem + 0.25vw), 1.25rem);
+  --ne-font-callout: clamp(0.9375rem, calc(0.875rem + 0.1875vw), 1.125rem);
+  --ne-font-subhead: clamp(0.875rem, calc(0.8125rem + 0.125vw), 1rem);
+
+  /* -------------------------------------------------------------------------
+     SPACING - 8-point grid system
+     ------------------------------------------------------------------------- */
+  --ne-spacing-xs: 4px;
+  --ne-spacing-sm: 8px;
+  --ne-spacing-md: 16px;
+  --ne-spacing-lg: 24px;
+  --ne-spacing-xl: 32px;
+  --ne-spacing-2xl: 40px;
+
+  /* -------------------------------------------------------------------------
+     TOUCH & LAYOUT
+     ------------------------------------------------------------------------- */
+  --ne-touch-target: 44px;
+  --ne-radius-sm: 6px;
+  --ne-radius-md: 10px;
+  --ne-radius-lg: 12px;
+  --ne-sidebar-width: 320px;
+}
+
+/* Light mode overrides */
+@media (prefers-color-scheme: light) {
+  :root {
+    --ne-bg-primary: #fff;
+    --ne-bg-secondary: #f2f2f7;
+    --ne-bg-tertiary: #e5e5ea;
+    --ne-text-primary: #000;
+    --ne-text-secondary: #6c6c70;
+    --ne-text-tertiary: #aeaeb2;
+    --ne-separator: #c6c6c8;
+  }
+}
+
+/* ============================================================================
+   iOS DYNAMIC TYPE SUPPORT
+   ============================================================================ */
+
+@supports (font: -apple-system-body) {
+  .notes-editor {
+    font: -apple-system-body;
+  }
+}
+
+/* ============================================================================
+   MAIN CONTAINER
+   ============================================================================ */
+
+.notes-editor {
+  display: flex;
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile */
+  background: var(--ne-bg-primary);
+  color: var(--ne-text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', system-ui, sans-serif;
+  font-size: var(--ne-font-body);
+  overflow: hidden;
+
+  /* Safe area insets for notched devices */
+  padding-top: env(safe-area-inset-top, 0);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-left: env(safe-area-inset-left, 0);
+  padding-right: env(safe-area-inset-right, 0);
+
+  /* Text rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.notes-editor--loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--ne-font-body);
+  color: var(--ne-text-secondary);
+}
+
+/* ============================================================================
+   SIDEBAR
+   ============================================================================ */
+
+.notes-editor__sidebar {
+  width: var(--ne-sidebar-width);
+  flex-shrink: 0;
+  background: var(--ne-bg-secondary);
+  border-right: 1px solid var(--ne-separator);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ============================================================================
+   MAIN CONTENT AREA
+   ============================================================================ */
+
+.notes-editor__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+  /* Ensures flex children respect overflow properly */
+  min-height: 0;
+}
+
+.notes-editor__mobile-header {
+  display: none;
+  flex-shrink: 0; /* Don't shrink the mobile header */
+}
+
+.notes-editor__content {
+  flex: 1;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  /* Critical: min-height: 0 allows this to shrink and scroll properly */
+  min-height: 0;
+}
+
+.notes-editor__empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ne-spacing-md);
+  color: var(--ne-text-secondary);
+  padding: var(--ne-spacing-md);
+}
+
+.notes-editor__empty p {
+  font-size: var(--ne-font-body);
+}
+
+/* Empty state button - 44px minimum height */
+.notes-editor__empty button {
+  min-height: var(--ne-touch-target);
+  padding: var(--ne-spacing-sm) var(--ne-spacing-lg);
+  background: var(--ne-accent);
+  color: #000;
+  border: none;
+  border-radius: var(--ne-radius-md);
+  font-size: var(--ne-font-body);
+  font-weight: 600;
+  cursor: pointer;
+
+  /* Spring animation */
+  transition: transform var(--ne-motion-button);
+  will-change: transform;
+}
+
+.notes-editor__empty button:hover {
+  transform: scale(1.03);
+}
+
+.notes-editor__empty button:active {
+  transform: scale(0.97);
+  transition-duration: var(--ne-duration-instant);
+}
+
+/* ============================================================================
+   NOTES LIST
+   ============================================================================ */
+
+.notes-list {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Header with proper padding per Apple HIG */
+.notes-list__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* iPhone: 16px padding, adjusts via media queries for iPad */
+  padding: var(--ne-spacing-md);
+  border-bottom: 1px solid var(--ne-separator);
+}
+
+.notes-list__header h1 {
+  font-size: var(--ne-font-large-title);
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.022em; /* Apple Large Title tracking */
+}
+
+/* New note button - 44px minimum touch target */
+.notes-list__new-btn {
+  width: var(--ne-touch-target);
+  height: var(--ne-touch-target);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ne-accent);
+  color: #000;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+
+  /* Spring scale animation */
+  transition: transform var(--ne-motion-button);
+  will-change: transform;
+}
+
+.notes-list__new-btn:hover {
+  transform: scale(1.05);
+}
+
+.notes-list__new-btn:active {
+  transform: scale(0.92);
+  transition-duration: var(--ne-duration-instant);
+}
+
+.notes-list__new-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Notes list items container */
+.notes-list__items {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+/* Individual note item - minimum 44px height for touch */
+.notes-list__item {
+  display: block;
+  width: 100%;
+  min-height: var(--ne-touch-target);
+  padding: var(--ne-spacing-sm) var(--ne-spacing-md);
+  text-align: left;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--ne-separator);
+  color: var(--ne-text-primary);
+  cursor: pointer;
+
+  /* Spring hover animation */
+  transition:
+    background-color var(--ne-motion-hover),
+    transform var(--ne-motion-button);
+  will-change: background-color, transform;
+}
+
+.notes-list__item:hover {
+  background: var(--ne-bg-tertiary);
+}
+
+/* Subtle press feedback */
+.notes-list__item:active {
+  transform: scale(0.98);
+  transition-duration: var(--ne-duration-instant);
+}
+
+.notes-list__item--selected {
+  background: var(--ne-accent);
+  color: #000;
+}
+
+.notes-list__item--selected:hover {
+  background: var(--ne-accent);
+}
+
+.notes-list__item-header {
+  display: flex;
+  align-items: center;
+  gap: var(--ne-spacing-sm);
+  margin-bottom: var(--ne-spacing-xs);
+}
+
+.notes-list__item-title {
+  font-size: var(--ne-font-body);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notes-list__item-pin svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.notes-list__item-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--ne-spacing-sm);
+  font-size: var(--ne-font-subhead);
+}
+
+.notes-list__item-date {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.notes-list__item-preview {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.6;
+}
+
+.notes-list__empty {
+  padding: var(--ne-spacing-2xl) var(--ne-spacing-md);
+  text-align: center;
+  color: var(--ne-text-secondary);
+}
+
+.notes-list__empty p {
+  font-size: var(--ne-font-body);
+}
+
+.notes-list__empty button {
+  margin-top: var(--ne-spacing-md);
+  min-height: var(--ne-touch-target);
+  padding: var(--ne-spacing-sm) var(--ne-spacing-lg);
+  background: var(--ne-accent);
+  color: #000;
+  border: none;
+  border-radius: var(--ne-radius-md);
+  font-size: var(--ne-font-callout);
+  font-weight: 600;
+  cursor: pointer;
+
+  /* Spring animation */
+  transition: transform var(--ne-motion-button);
+  will-change: transform;
+}
+
+.notes-list__empty button:hover {
+  transform: scale(1.03);
+}
+
+.notes-list__empty button:active {
+  transform: scale(0.97);
+  transition-duration: var(--ne-duration-instant);
+}
+
+/* ============================================================================
+   EDITOR TOOLBAR
+   ============================================================================ */
+
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--ne-spacing-xs);
+  padding: var(--ne-spacing-sm) var(--ne-spacing-md);
+  background: var(--ne-bg-secondary);
+  border-bottom: 1px solid var(--ne-separator);
+
+  /* Ensure toolbar stays at top, doesn't shrink or scroll away */
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.editor-toolbar__group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.editor-toolbar__divider {
+  width: 1px;
+  height: var(--ne-spacing-lg);
+  background: var(--ne-separator);
+  margin: 0 var(--ne-spacing-sm);
+}
+
+.editor-toolbar__spacer {
+  flex: 1;
+}
+
+/* Toolbar buttons - 44px minimum touch target */
+.editor-toolbar__btn {
+  width: var(--ne-touch-target);
+  height: var(--ne-touch-target);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--ne-accent);
+  border-radius: var(--ne-radius-sm);
+  cursor: pointer;
+
+  /* Spring animation for button interactions */
+  transition:
+    background-color var(--ne-motion-hover),
+    transform var(--ne-motion-button),
+    color var(--ne-motion-fade);
+  will-change: transform, background-color;
+}
+
+.editor-toolbar__btn:hover {
+  background: var(--ne-bg-tertiary);
+  transform: scale(1.08);
+}
+
+.editor-toolbar__btn:active {
+  transform: scale(0.92);
+  transition-duration: var(--ne-duration-instant);
+}
+
+.editor-toolbar__btn--active {
+  background: var(--ne-accent);
+  color: #000;
+}
+
+.editor-toolbar__btn--danger {
+  color: var(--ne-danger);
+}
+
+.editor-toolbar__btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* ============================================================================
+   BACK BUTTON (Mobile)
+   44px minimum touch target
+   ============================================================================ */
+
+.notes-editor__back-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--ne-spacing-xs);
+  min-height: var(--ne-touch-target);
+  padding: var(--ne-spacing-sm) var(--ne-spacing-sm);
+  background: none;
+  border: none;
+  color: var(--ne-accent);
+  font-size: var(--ne-font-body);
+  cursor: pointer;
+
+  /* Spring animation */
+  transition:
+    transform var(--ne-motion-button),
+    opacity var(--ne-motion-fade);
+  will-change: transform;
+}
+
+.notes-editor__back-btn:active {
+  transform: scale(0.95);
+  opacity: 0.7;
+  transition-duration: var(--ne-duration-instant);
+}
+
+.notes-editor__back-btn svg {
+  width: 22px;
+  height: 22px;
+
+  /* Chevron slides slightly on press */
+  transition: transform var(--ne-motion-button);
+}
+
+.notes-editor__back-btn:active svg {
+  transform: translateX(-2px);
+}
+
+/* ============================================================================
+   MOBILE RESPONSIVE (<768px)
+   iPhone layout with 16px margins
+   ============================================================================ */
+
+@media (max-width: 767px) {
+  .notes-editor__sidebar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    z-index: 10;
+
+    /* Spring slide animation - feels like iOS navigation */
+    transition: transform var(--ne-motion-slide);
+    will-change: transform;
+  }
+
+  .notes-editor__sidebar--hidden {
+    transform: translateX(-100%);
+  }
+
+  .notes-editor__main {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+
+    /* Spring slide animation - matches sidebar */
+    transition: transform var(--ne-motion-slide);
+    will-change: transform;
+  }
+
+  .notes-editor__main--hidden {
+    transform: translateX(100%);
+  }
+
+  .notes-editor__mobile-header {
+    display: block;
+    padding: var(--ne-spacing-sm);
+    background: var(--ne-bg-secondary);
+    border-bottom: 1px solid var(--ne-separator);
+  }
+
+  /* iPhone margins - 16px */
+  .notes-list__header {
+    padding: var(--ne-spacing-md);
+  }
+}
+
+/* ============================================================================
+   TABLET RESPONSIVE (768px - 1023px)
+   iPad layout with 24px margins
+   ============================================================================ */
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* iPad margins - 24px */
+  .notes-list__header {
+    padding: var(--ne-spacing-lg);
+  }
+
+  .notes-list__item {
+    padding: var(--ne-spacing-sm) var(--ne-spacing-lg);
+  }
+
+  .editor-toolbar {
+    padding: var(--ne-spacing-sm) var(--ne-spacing-lg);
+  }
+}
+
+/* ============================================================================
+   LARGE SCREENS (1024px+)
+   Show both panels, expanded sidebar
+   ============================================================================ */
+
+@media (min-width: 1024px) {
+  .notes-editor__sidebar {
+    width: 350px;
+  }
+
+  .notes-editor__mobile-header {
+    display: none;
+  }
+
+  .notes-editor__sidebar--hidden,
+  .notes-editor__main--hidden {
+    transform: none;
+  }
+
+  /* Larger margins on desktop */
+  .notes-list__header {
+    padding: var(--ne-spacing-lg);
+  }
+
+  .notes-list__item {
+    padding: var(--ne-spacing-sm) var(--ne-spacing-lg);
+  }
+
+  .editor-toolbar {
+    padding: var(--ne-spacing-sm) var(--ne-spacing-lg);
+  }
+}
+
+/* ============================================================================
+   REDUCED MOTION
+   Respect user preference for reduced motion
+   Removes all spring/bounce effects, keeps essential state changes
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  /* Allow essential visual feedback without motion */
+  .notes-editor__sidebar,
+  .notes-editor__main {
+    transition: none;
+  }
+
+  .notes-list__new-btn,
+  .notes-list__item,
+  .notes-list__empty button,
+  .notes-editor__empty button,
+  .editor-toolbar__btn,
+  .notes-editor__back-btn,
+  .notes-editor__back-btn svg {
+    transition: none;
+    transform: none !important;
+    will-change: auto;
+  }
+}
