@@ -309,6 +309,24 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   // Music entities
   { name: 'The Beatles', type: 'ORG', expectedValid: true },
   { name: 'Rolling Stones', type: 'ORG', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 84: MORE OBVIOUS ENTITIES
+  // =========================================================================
+
+  // Tech companies
+  { name: 'SpaceX', type: 'ORG', expectedValid: true },
+  { name: 'Tesla', type: 'ORG', expectedValid: true },
+  { name: 'OpenAI', type: 'ORG', expectedValid: true },
+
+  // Rivers and bodies of water
+  { name: 'Amazon River', type: 'PLACE', expectedValid: true },
+  { name: 'Pacific Ocean', type: 'PLACE', expectedValid: true },
+  { name: 'Nile', type: 'PLACE', expectedValid: true },
+
+  // Historical figures
+  { name: 'Julius Caesar', type: 'PERSON', expectedValid: true },
+  { name: 'Queen Victoria', type: 'PERSON', expectedValid: true },
 ];
 
 // =============================================================================
