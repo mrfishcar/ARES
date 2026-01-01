@@ -1358,9 +1358,13 @@ function EditorPanel({
       const offset = viewport.offsetTop;
       setViewportOffset(offset);
 
-      // Apply transform to header to keep it visible
+      // Apply transform to header to keep it visible - ONLY when keyboard is open
       if (headerRef.current) {
-        headerRef.current.style.transform = `translateY(${offset}px)`;
+        if (isOpen) {
+          headerRef.current.style.transform = `translateY(${offset}px)`;
+        } else {
+          headerRef.current.style.transform = '';
+        }
       }
 
       // Apply position to footer to keep it at bottom of visual viewport
