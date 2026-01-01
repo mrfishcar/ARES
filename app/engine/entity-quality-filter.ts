@@ -13,6 +13,7 @@
 import type { Entity, EntityType, QualityDecision, FilterRuleCheck, EntityWithQuality } from './schema';
 import { splitSchoolName } from './linguistics/school-names';
 import { PERSON_HEAD_BLOCKLIST } from './linguistics/common-noun-filters';
+import { VERBS_BLOCKLIST_FOR_ENTITY_NAMES } from './linguistics/shared-vocabulary';
 import {
   TITLE_PREFIXES as CENTRALIZED_TITLE_PREFIXES,
   validateEntityForType,
@@ -649,13 +650,8 @@ function isSpeciesName(tokens: string[], normalized: string): boolean {
     return true;
   }
 
-  // Reject common verbs that might be mislabeled
-  const COMMON_VERBS = new Set([
-    'break', 'breaks', 'run', 'runs', 'walk', 'walks',
-    'fight', 'fights', 'attack', 'attacks', 'defend', 'defends',
-  ]);
-
-  if (COMMON_VERBS.has(normalized)) {
+  // Reject common verbs that might be mislabeled (uses shared vocabulary)
+  if (VERBS_BLOCKLIST_FOR_ENTITY_NAMES.has(normalized)) {
     return false;
   }
 

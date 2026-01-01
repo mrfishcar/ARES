@@ -11,6 +11,7 @@
 
 import type { Entity, Relation, EntityType } from './schema';
 import { splitSchoolName, schoolRootKey } from './linguistics/school-names';
+import { VERBS_BLOCKLIST_FOR_ENTITY_NAMES } from './linguistics/shared-vocabulary';
 
 /**
  * Helper: Union and deduplicate aliases from two sources
@@ -813,27 +814,7 @@ export function chooseBestCanonical(names: string[]): string {
     'squad'
   ]);
 
-  // Common verbs that shouldn't appear in a canonical name
-  const COMMON_VERBS = new Set([
-    'had',
-    'has',
-    'have',
-    'was',
-    'were',
-    'is',
-    'are',
-    'did',
-    'does',
-    'do',
-    'met',
-    'married',
-    'lived',
-    'worked',
-    'went',
-    'came',
-    'said',
-    'told'
-  ]);
+  // Common verbs that shouldn't appear in a canonical name (uses shared vocabulary)
 
   const scoreName = (name: string): number => {
     const tokens = name.split(/\s+/).filter(Boolean);
@@ -847,7 +828,7 @@ export function chooseBestCanonical(names: string[]): string {
     const hasCollectiveNoun = lowerTokens.some(t => COLLECTIVE_NOUNS.has(t));
 
     // Check for verbs anywhere in the name (names shouldn't contain verbs)
-    const hasVerb = lowerTokens.some(t => COMMON_VERBS.has(t));
+    const hasVerb = lowerTokens.some(t => VERBS_BLOCKLIST_FOR_ENTITY_NAMES.has(t));
 
     let score = 0;
     if (hasSpace) score += 2;

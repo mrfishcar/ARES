@@ -20,6 +20,7 @@ import {
   suggestEntityType,
 } from './linguistics/supersense';
 import type { Token } from '../parser/parse-types';
+import { VERBS_BLOCKLIST_FOR_ENTITY_NAMES } from './linguistics/shared-vocabulary';
 
 // ============================================================================
 // SHARED CONSTANTS
@@ -383,12 +384,8 @@ export function isValidSpeciesName(
     return true;
   }
 
-  // Reject common verbs
-  const COMMON_VERBS = new Set([
-    'break', 'breaks', 'run', 'runs', 'walk', 'walks',
-    'fight', 'fights', 'attack', 'attacks', 'defend', 'defends',
-  ]);
-  if (COMMON_VERBS.has(normalized)) {
+  // Reject common verbs (uses shared vocabulary)
+  if (VERBS_BLOCKLIST_FOR_ENTITY_NAMES.has(normalized)) {
     return false;
   }
 
