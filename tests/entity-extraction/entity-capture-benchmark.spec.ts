@@ -533,6 +533,20 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   { name: 'Michelangelo', type: 'PERSON', expectedValid: true },
   { name: 'Auguste Rodin', type: 'PERSON', expectedValid: true },
   { name: 'Donatello', type: 'PERSON', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 159: COMPOSERS
+  // =========================================================================
+
+  // Classical
+  { name: 'Wolfgang Amadeus Mozart', type: 'PERSON', expectedValid: true },
+  { name: 'Ludwig van Beethoven', type: 'PERSON', expectedValid: true },
+  { name: 'Johann Sebastian Bach', type: 'PERSON', expectedValid: true },
+
+  // Romantic
+  { name: 'Frédéric Chopin', type: 'PERSON', expectedValid: true },
+  { name: 'Pyotr Ilyich Tchaikovsky', type: 'PERSON', expectedValid: true },
+  { name: 'Richard Wagner', type: 'PERSON', expectedValid: true },
 ];
 
 // =============================================================================
