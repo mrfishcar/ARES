@@ -1892,6 +1892,65 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'he', position: 25, expected: 'Ron Weasley' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 156: PRONOUN WITH CAUSE/EFFECT
+  // =========================================================================
+
+  // Case 84: Pronoun with because clause
+  {
+    name: 'Pronoun with because',
+    text: 'Harry smiled because he won the match.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+    ],
+    spans: [
+      createSpan('harry', 0, 5),
+    ],
+    sentences: [
+      createSentence('Harry smiled because he won the match.', 0),
+    ],
+    pronounTests: [
+      { pronoun: 'he', position: 22, expected: 'Harry Potter' },
+    ],
+  },
+
+  // Case 85: Pronoun with so clause
+  {
+    name: 'Pronoun with so clause',
+    text: 'Hermione studied hard, so she passed easily.',
+    entities: [
+      createEntity('hermione', 'Hermione Granger', 'PERSON'),
+    ],
+    spans: [
+      createSpan('hermione', 0, 8),
+    ],
+    sentences: [
+      createSentence('Hermione studied hard, so she passed easily.', 0),
+    ],
+    pronounTests: [
+      { pronoun: 'she', position: 26, expected: 'Hermione Granger' },
+    ],
+  },
+
+  // Case 86: Pronoun with therefore
+  {
+    name: 'Pronoun with therefore',
+    text: 'Ron practiced daily. Therefore, he improved rapidly.',
+    entities: [
+      createEntity('ron', 'Ron Weasley', 'PERSON'),
+    ],
+    spans: [
+      createSpan('ron', 0, 3),
+    ],
+    sentences: [
+      createSentence('Ron practiced daily.', 0),
+      createSentence('Therefore, he improved rapidly.', 21),
+    ],
+    pronounTests: [
+      { pronoun: 'he', position: 32, expected: 'Ron Weasley' },
+    ],
+  },
 ];
 
 // =============================================================================
