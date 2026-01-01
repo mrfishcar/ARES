@@ -827,6 +827,37 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
       { subject: 'Harry', predicate: 'admired', object: 'Dumbledore', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 167: FOLLOWED/LED VERBS
+  // =========================================================================
+
+  // Followed relation
+  {
+    name: 'Followed relation',
+    text: 'Ron followed Harry into the forest.',
+    expectedRelations: [
+      { subject: 'Ron', predicate: 'followed', object: 'Harry', shouldExist: true },
+    ],
+  },
+
+  // Led relation
+  {
+    name: 'Led relation',
+    text: 'Dumbledore led the Order of the Phoenix.',
+    expectedRelations: [
+      { subject: 'Dumbledore', predicate: 'led', object: 'Order', shouldExist: true },
+    ],
+  },
+
+  // Guided relation
+  {
+    name: 'Guided relation',
+    text: 'McGonagall guided the students carefully.',
+    expectedRelations: [
+      { subject: 'McGonagall', predicate: 'guided', object: 'students', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
