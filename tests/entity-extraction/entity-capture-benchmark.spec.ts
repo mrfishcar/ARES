@@ -136,6 +136,33 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   { name: "The Lord of the Rings", type: 'WORK', expectedValid: true },
   { name: 'Star Wars: Episode IV', type: 'WORK', expectedValid: true },
   { name: "Harry Potter and the Sorcerer's Stone", type: 'WORK', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 14: MORE OBVIOUS ENTITIES
+  // =========================================================================
+
+  // More complex organization names
+  { name: 'United Nations', type: 'ORG', expectedValid: true },
+  { name: 'World Health Organization', type: 'ORG', expectedValid: true },
+  { name: 'European Union', type: 'ORG', expectedValid: true },
+  { name: 'International Monetary Fund', type: 'ORG', expectedValid: true },
+
+  // Historical figures
+  { name: 'Winston Churchill', type: 'PERSON', expectedValid: true },
+  { name: 'Albert Einstein', type: 'PERSON', expectedValid: true },
+  { name: 'Leonardo da Vinci', type: 'PERSON', expectedValid: true },
+  { name: 'Marie Curie', type: 'PERSON', expectedValid: true },
+
+  // Fictional places
+  { name: 'Middle Earth', type: 'PLACE', expectedValid: true },
+  { name: 'Narnia', type: 'PLACE', expectedValid: true },
+  { name: 'Westeros', type: 'PLACE', expectedValid: true },
+  { name: 'Tatooine', type: 'PLACE', expectedValid: true },
+
+  // Complex items
+  { name: 'Holy Grail', type: 'ITEM', expectedValid: true },
+  { name: 'Ark of the Covenant', type: 'ITEM', expectedValid: true },
+  { name: 'Philosophers Stone', type: 'ITEM', expectedValid: true },
 ];
 
 // =============================================================================
