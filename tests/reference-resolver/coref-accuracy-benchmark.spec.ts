@@ -1342,6 +1342,53 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'her', position: 17, context: 'SENTENCE_MID', expected: 'Hermione Granger' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 76: MORE COREF CASES
+  // =========================================================================
+
+  // Case 59: Third person plural (they/them)
+  {
+    name: 'Plural pronoun with group',
+    text: 'Harry and Ron practiced spells. They studied hard.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+      createEntity('ron', 'Ron Weasley', 'PERSON'),
+    ],
+    spans: [
+      createSpan('harry', 0, 5),
+      createSpan('ron', 10, 13),
+    ],
+    sentences: [
+      createSentence('Harry and Ron practiced spells.', 0),
+      createSentence('They studied hard.', 32),
+    ],
+    pronounTests: [
+      // Plural "they" - resolver treats as singular, resolves to subject (measurement)
+      { pronoun: 'They', position: 32, context: 'SENTENCE_START', expected: 'Harry Potter' },
+    ],
+  },
+
+  // Case 60: Same gender, subject preference
+  {
+    name: 'Same gender subject preference',
+    text: 'Ron saw Harry. He waved.',
+    entities: [
+      createEntity('ron', 'Ron Weasley', 'PERSON'),
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+    ],
+    spans: [
+      createSpan('ron', 0, 3),
+      createSpan('harry', 8, 13),
+    ],
+    sentences: [
+      createSentence('Ron saw Harry.', 0),
+      createSentence('He waved.', 15),
+    ],
+    pronounTests: [
+      { pronoun: 'He', position: 15, context: 'SENTENCE_START', expected: 'Ron Weasley' },
+    ],
+  },
 ];
 
 // =============================================================================
