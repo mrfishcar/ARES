@@ -1306,6 +1306,18 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'later', type: 'ITEM', expectedValid: false },
   { name: 'always', type: 'ITEM', expectedValid: false },
   { name: 'sometimes', type: 'ITEM', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 180: DEGREE WORDS
+  // =========================================================================
+
+  // Degree adverbs
+  { name: 'very', type: 'ITEM', expectedValid: false },
+  { name: 'quite', type: 'ITEM', expectedValid: false },
+  { name: 'rather', type: 'ITEM', expectedValid: false },
+  { name: 'really', type: 'ITEM', expectedValid: false },
+  { name: 'extremely', type: 'ITEM', expectedValid: false },
+  { name: 'somewhat', type: 'ITEM', expectedValid: false },
 ];
 
 // =============================================================================
