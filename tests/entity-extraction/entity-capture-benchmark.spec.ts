@@ -411,6 +411,20 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   { name: 'Odin', type: 'PERSON', expectedValid: true },
   { name: 'Thor', type: 'PERSON', expectedValid: true },
   { name: 'Loki', type: 'PERSON', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 119: LITERARY CHARACTERS
+  // =========================================================================
+
+  // Classic literature
+  { name: 'Sherlock', type: 'PERSON', expectedValid: true },
+  { name: 'Watson', type: 'PERSON', expectedValid: true },
+  { name: 'Dracula', type: 'PERSON', expectedValid: true },
+
+  // Children's literature
+  { name: 'Narnia', type: 'PLACE', expectedValid: true },
+  { name: 'Aslan', type: 'PERSON', expectedValid: true },
+  { name: 'Matilda', type: 'PERSON', expectedValid: true },
 ];
 
 // =============================================================================
