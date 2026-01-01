@@ -341,6 +341,20 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   { name: 'New York Times', type: 'ORG', expectedValid: true },
   { name: 'BBC', type: 'ORG', expectedValid: true },
   { name: 'CNN', type: 'ORG', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 94: MORE OBVIOUS ENTITIES
+  // =========================================================================
+
+  // Sports entities
+  { name: 'FIFA', type: 'ORG', expectedValid: true },
+  { name: 'Olympics', type: 'ORG', expectedValid: true },
+  { name: 'World Cup', type: 'ORG', expectedValid: true },
+
+  // Universities
+  { name: 'Oxford', type: 'ORG', expectedValid: true },
+  { name: 'Cambridge', type: 'ORG', expectedValid: true },
+  { name: 'Stanford', type: 'ORG', expectedValid: true },
 ];
 
 // =============================================================================
