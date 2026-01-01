@@ -761,6 +761,121 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'She', position: 42, context: 'SENTENCE_START', expected: 'Hermione Granger' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 25: ADDITIONAL EDGE CASES
+  // =========================================================================
+
+  // Case 33: Subject focus with two males (Harry then Ron)
+  {
+    name: 'Subject focus with two males',
+    text: 'Harry told Ron about the plan. He was excited.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+      createEntity('ron', 'Ron Weasley', 'PERSON'),
+    ],
+    spans: [
+      createSpan('harry', 0, 5),
+      createSpan('ron', 11, 14),
+    ],
+    sentences: [
+      createSentence('Harry told Ron about the plan.', 0),
+      createSentence('He was excited.', 31),
+    ],
+    pronounTests: [
+      // "He" - system prefers Harry (subject focus over recency)
+      { pronoun: 'He', position: 31, context: 'SENTENCE_START', expected: 'Harry Potter' },
+    ],
+  },
+
+  // Case 34: Pronoun after quotation
+  {
+    name: 'Pronoun after direct speech',
+    text: '"Watch out!" shouted Harry. He drew his wand.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+    ],
+    spans: [
+      createSpan('harry', 21, 26),
+    ],
+    sentences: [
+      createSentence('"Watch out!" shouted Harry.', 0),
+      createSentence('He drew his wand.', 28),
+    ],
+    pronounTests: [
+      { pronoun: 'He', position: 28, context: 'SENTENCE_START', expected: 'Harry Potter' },
+      { pronoun: 'his', position: 36, context: 'POSSESSIVE', expected: 'Harry Potter' },
+    ],
+  },
+
+  // Case 35: Mixed gender group then individual
+  {
+    name: 'Mixed group then male individual',
+    text: 'Harry, Hermione and Ron walked in. Harry sat down. He looked tired.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+      createEntity('hermione', 'Hermione Granger', 'PERSON'),
+      createEntity('ron', 'Ron Weasley', 'PERSON'),
+    ],
+    spans: [
+      createSpan('harry', 0, 5),
+      createSpan('hermione', 7, 15),
+      createSpan('ron', 20, 23),
+      createSpan('harry', 35, 40),
+    ],
+    sentences: [
+      createSentence('Harry, Hermione and Ron walked in.', 0),
+      createSentence('Harry sat down.', 35),
+      createSentence('He looked tired.', 51),
+    ],
+    pronounTests: [
+      { pronoun: 'He', position: 51, context: 'SENTENCE_START', expected: 'Harry Potter' },
+    ],
+  },
+
+  // Case 36: Long-distance antecedent
+  {
+    name: 'Long-distance pronoun reference',
+    text: 'Dumbledore entered the Great Hall. The students fell silent. The teachers rose. He spoke clearly.',
+    entities: [
+      createEntity('dumbledore', 'Albus Dumbledore', 'PERSON'),
+    ],
+    spans: [
+      createSpan('dumbledore', 0, 10),
+    ],
+    sentences: [
+      createSentence('Dumbledore entered the Great Hall.', 0),
+      createSentence('The students fell silent.', 35),
+      createSentence('The teachers rose.', 61),
+      createSentence('He spoke clearly.', 80),
+    ],
+    pronounTests: [
+      // "He" after distance should still resolve to Dumbledore (only male)
+      { pronoun: 'He', position: 80, context: 'SENTENCE_START', expected: 'Albus Dumbledore' },
+    ],
+  },
+
+  // Case 37: Subject persistence across sentences
+  {
+    name: 'Subject persistence across sentences',
+    text: 'Ron spoke to Harry. He was nervous.',
+    entities: [
+      createEntity('ron', 'Ron Weasley', 'PERSON'),
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+    ],
+    spans: [
+      createSpan('ron', 0, 3),
+      createSpan('harry', 13, 18),
+    ],
+    sentences: [
+      createSentence('Ron spoke to Harry.', 0),
+      createSentence('He was nervous.', 20),
+    ],
+    pronounTests: [
+      // "He" after subject "Ron spoke" - subject (Ron) preferred over object (Harry)
+      { pronoun: 'He', position: 20, context: 'SENTENCE_START', expected: 'Ron Weasley' },
+    ],
+  },
 ];
 
 // =============================================================================
