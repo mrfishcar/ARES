@@ -832,6 +832,23 @@ const ADVERSARIAL_CASES: ObviousEntityCase[] = [
   { name: 'Gandalf', type: 'PERSON', expectedValid: true, context: { hasNERSupport: true } },
   { name: 'Hermione', type: 'PERSON', expectedValid: true, context: { hasNERSupport: true } },
   { name: 'Dumbledore', type: 'PERSON', expectedValid: true, context: { hasNERSupport: true } },
+
+  // =========================================================================
+  // LOOP 74: MORE ADVERSARIAL CASES
+  // =========================================================================
+
+  // Religious/mythological figures (valid)
+  { name: 'Zeus', type: 'PERSON', expectedValid: true, context: { hasNERSupport: true } },
+  { name: 'Thor', type: 'PERSON', expectedValid: true, context: { hasNERSupport: true } },
+  { name: 'Athena', type: 'PERSON', expectedValid: true, context: { hasNERSupport: true } },
+
+  // Sports teams as organizations (valid)
+  { name: 'Lakers', type: 'ORG', expectedValid: true },
+  { name: 'Manchester United', type: 'ORG', expectedValid: true },
+
+  // Book titles as works (valid)
+  { name: 'Hamlet', type: 'WORK', expectedValid: true },
+  { name: 'War and Peace', type: 'WORK', expectedValid: true },
 ];
 
 // =============================================================================
