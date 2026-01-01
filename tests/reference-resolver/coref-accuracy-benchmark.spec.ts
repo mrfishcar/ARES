@@ -567,6 +567,66 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'It', position: 34, context: 'SENTENCE_START', expected: 'The Hobbit' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 13: MORE EDGE CASES
+  // =========================================================================
+
+  // Case 24: Pronoun after passive construction
+  {
+    name: 'Pronoun after passive voice',
+    text: 'The spell was cast by Hermione. She aimed carefully.',
+    entities: [
+      createEntity('hermione', 'Hermione Granger', 'PERSON'),
+    ],
+    spans: [
+      createSpan('hermione', 22, 30),
+    ],
+    sentences: [
+      createSentence('The spell was cast by Hermione.', 0),
+      createSentence('She aimed carefully.', 32),
+    ],
+    pronounTests: [
+      { pronoun: 'She', position: 32, context: 'SENTENCE_START', expected: 'Hermione Granger' },
+    ],
+  },
+
+  // Case 25: Pronoun with intervening clause
+  {
+    name: 'Pronoun with intervening clause',
+    text: 'Ron, who had been waiting, stood up. He walked to the door.',
+    entities: [
+      createEntity('ron', 'Ron Weasley', 'PERSON'),
+    ],
+    spans: [
+      createSpan('ron', 0, 3),
+    ],
+    sentences: [
+      createSentence('Ron, who had been waiting, stood up.', 0),
+      createSentence('He walked to the door.', 37),
+    ],
+    pronounTests: [
+      { pronoun: 'He', position: 37, context: 'SENTENCE_START', expected: 'Ron Weasley' },
+    ],
+  },
+
+  // Case 26: Same sentence pronoun
+  {
+    name: 'Pronoun in same sentence',
+    text: 'Luna believed that she could see thestrals.',
+    entities: [
+      createEntity('luna', 'Luna Lovegood', 'PERSON'),
+    ],
+    spans: [
+      createSpan('luna', 0, 4),
+    ],
+    sentences: [
+      createSentence('Luna believed that she could see thestrals.', 0),
+    ],
+    pronounTests: [
+      { pronoun: 'she', position: 19, context: 'SENTENCE_MID', expected: 'Luna Lovegood' },
+    ],
+  },
 ];
 
 // =============================================================================
