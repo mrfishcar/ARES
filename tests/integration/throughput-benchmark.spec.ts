@@ -357,6 +357,31 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 62: MORE THROUGHPUT TESTS
+  // =========================================================================
+
+  describe('Many short sentences (sentence boundaries)', () => {
+    it('should handle many sentence boundaries', async () => {
+      // Very short sentences with many boundaries
+      const shortSentences = [
+        'Harry ran.', 'Ron followed.', 'Hermione watched.',
+        'They stopped.', 'Luna smiled.', 'Neville waited.',
+        'Ginny laughed.', 'Fred joked.', 'George grinned.',
+      ];
+      let text = '';
+      for (let i = 0; i < 150; i++) {
+        text += shortSentences[i % shortSentences.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`Many short sentences: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(50); // Lower for sentence overhead
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
