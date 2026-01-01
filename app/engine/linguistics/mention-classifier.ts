@@ -30,8 +30,14 @@ const QUOTE_CHARS = new Set(['"', '\u201c', '\u201d', '\u2018', '\u2019', "'"]);
 // Imperative verbs that start commands
 const IMPERATIVE_START = new Set(['tell', 'listen', 'check', 'look', 'get', 'go', 'let', 'take', 'give', 'make', 'find', 'help', 'show']);
 
-// Theme/slogan context markers
-const THEME_LEX = new Set(['theme', 'poster', 'posters', 'called', 'titled', 'named', 'slogan', 'motto', 'banner', 'sign']);
+// Theme/slogan context markers (NOT including name-introducers)
+// 'named', 'called', 'titled' are EXCLUDED because they introduce proper names, not themes
+// e.g., "a dragon named Norbert" → Norbert is a PERSON, not a theme
+const THEME_LEX = new Set(['theme', 'poster', 'posters', 'slogan', 'motto', 'banner', 'sign']);
+
+// Name-introducer words that create entity aliases (NOT themes)
+// These are handled separately via dependency patterns, not as theme markers
+const NAME_INTRODUCERS = new Set(['named', 'called', 'titled', 'known', 'nicknamed', 'dubbed']);
 
 // Interjections that should never be entities
 const INTERJECTIONS = new Set(['yeah', 'yep', 'nope', 'uh', 'ugh', 'huh', 'whoa', 'wow', 'oops', 'oh', 'ah', 'aha', 'hmm', 'umm', 'er', 'um']);
