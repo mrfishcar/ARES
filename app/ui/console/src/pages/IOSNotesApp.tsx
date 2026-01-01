@@ -1002,19 +1002,16 @@ function EditorPanel({
       ? window.visualViewport.height - 60 // 60px buffer above keyboard
       : window.innerHeight - 60;
 
-    // If element bottom is below visible area, scroll up (smooth ok here)
+    // If element bottom is below visible area, scroll up
     if (elRect.bottom > visibleBottom) {
       const scrollAmount = elRect.bottom - visibleBottom;
-      container.scrollTo({
-        top: container.scrollTop + scrollAmount,
-        behavior: 'smooth'
-      });
+      container.scrollTop += scrollAmount;
     }
 
-    // If element top is above/behind header, scroll down (instant to avoid issues)
+    // If element top is above/behind header, scroll down
     if (elRect.top < headerHeight) {
       const scrollAmount = headerHeight - elRect.top;
-      container.scrollTop -= scrollAmount; // Instant, no smooth
+      container.scrollTop -= scrollAmount;
     }
   }, []);
 
