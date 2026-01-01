@@ -899,6 +899,20 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'darkness', type: 'ITEM', expectedValid: false },
   { name: 'silence', type: 'ITEM', expectedValid: false },
   { name: 'chaos', type: 'ITEM', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 105: SENSORY WORDS
+  // =========================================================================
+
+  // Visual words
+  { name: 'bright', type: 'ITEM', expectedValid: false },
+  { name: 'dim', type: 'ITEM', expectedValid: false },
+  { name: 'glowing', type: 'ITEM', expectedValid: false },
+
+  // Sound words
+  { name: 'loud', type: 'ITEM', expectedValid: false },
+  { name: 'quiet', type: 'ITEM', expectedValid: false },
+  { name: 'silent', type: 'ITEM', expectedValid: false },
 ];
 
 // =============================================================================
