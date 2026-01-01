@@ -201,11 +201,12 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
   'high', 'low', 'next', 'early', 'young', 'important', 'large', 'small',
   'left', 'right', 'forward', 'back', 'backward', 'behind', 'ahead',
   'able', 'ready', 'sure', 'certain', 'clear', 'full', 'free',
+  'strange', 'unknown', 'ancient', 'modern', 'famous', 'powerful',
   'better', 'best', 'worse', 'worst', 'more', 'most', 'less', 'least',
   'neither',
 
   // Generic nouns that are too vague
-  'thing', 'things', 'stuff',
+  'thing', 'things', 'stuff', 'nothing', 'everything', 'something', 'anything',
   'person', 'people', 'somebody', 'someone', 'anybody', 'anyone', 'nobody', 'everyone',
   'man', 'woman', 'boy', 'girl', 'child', 'children', 'friend', 'friends',
   'king', 'queen', 'prince', 'princess', 'lord', 'lady',

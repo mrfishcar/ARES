@@ -687,6 +687,28 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'remember', type: 'PERSON', expectedValid: false },
   { name: 'forget', type: 'PERSON', expectedValid: false },
   { name: 'understand', type: 'PERSON', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 70: MORE JUNK CASES (MILESTONE)
+  // =========================================================================
+
+  // Negative words
+  { name: 'never', type: 'PERSON', expectedValid: false },
+  { name: 'nothing', type: 'PERSON', expectedValid: false },
+  { name: 'nobody', type: 'PERSON', expectedValid: false },
+  { name: 'nowhere', type: 'PLACE', expectedValid: false },
+
+  // Indefinite pronouns
+  { name: 'everyone', type: 'PERSON', expectedValid: false },
+  { name: 'anyone', type: 'PERSON', expectedValid: false },
+  { name: 'someone', type: 'PERSON', expectedValid: false },
+  { name: 'everything', type: 'PERSON', expectedValid: false },
+
+  // Descriptive words
+  { name: 'strange', type: 'PERSON', expectedValid: false },
+  { name: 'unknown', type: 'PERSON', expectedValid: false },
+  { name: 'ancient', type: 'PERSON', expectedValid: false },
+  { name: 'modern', type: 'PERSON', expectedValid: false },
 ];
 
 // =============================================================================
