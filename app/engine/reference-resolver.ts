@@ -438,10 +438,21 @@ export class ReferenceResolver {
     pronoun: string,
     position: number,
     context: ResolutionContext,
-    allowedTypes: EntityType[] = ['PERSON']
+    allowedTypes?: EntityType[]
   ): ResolvedEntity | null {
     const info = this.getPronounInfo(pronoun);
     if (!info) return null;
+
+    // Determine allowed types based on pronoun if not explicitly provided
+    if (!allowedTypes) {
+      if (info.gender === 'neutral') {
+        // Neutral pronouns (it, its, itself) can refer to non-PERSON entities
+        allowedTypes = ['ORG', 'PLACE', 'ITEM', 'WORK', 'EVENT'];
+      } else {
+        // Gendered and plural pronouns typically refer to PERSON
+        allowedTypes = ['PERSON'];
+      }
+    }
 
     // Try existing coref links first (if already resolved)
     const existingLink = this.findExistingLink(pronoun, position);
