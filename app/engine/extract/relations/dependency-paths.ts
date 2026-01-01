@@ -1419,9 +1419,17 @@ export function extractRelationFromPath(
   tokens: Token[]
 ): { predicate: Predicate; subjectFirst: boolean; confidence: number } | null {
 
+  const DEBUG_PATH = process.env.DEBUG_PATH === '1';
+
   // Find path in both directions
   const path12 = findShortestPath(entity1Token, entity2Token, tokens);
   const path21 = findShortestPath(entity2Token, entity1Token, tokens);
+
+  if (DEBUG_PATH) {
+    console.log(`[PATH] ${entity1Token.text} → ${entity2Token.text}`);
+    if (path12) console.log(`[PATH]   path12: ${path12.signature}`);
+    if (path21) console.log(`[PATH]   path21: ${path21.signature}`);
+  }
 
   // Try matching both directions
   if (path12) {
