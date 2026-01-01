@@ -1663,6 +1663,8 @@ function EditorPanel({
               className={`ios-icon-button ${!isKeyboardOpen ? 'ios-icon-button--disabled' : ''}`}
               aria-label="Text format"
               aria-disabled={!isKeyboardOpen}
+              onMouseDown={(e) => e.preventDefault()}
+              onTouchStart={(e) => e.preventDefault()}
               onClick={() => {
                 // Only activate format menu if keyboard is open (like native iOS)
                 if (isKeyboardOpen) {
@@ -1675,7 +1677,12 @@ function EditorPanel({
             {showFormatMenu && (
               <>
                 <div className="ios-menu-backdrop" onClick={() => setShowFormatMenu(false)} />
-                <div className="ios-format-menu ios-format-menu--ios" role="menu">
+                <div
+                  className="ios-format-menu ios-format-menu--ios"
+                  role="menu"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onTouchStart={(e) => e.preventDefault()}
+                >
                   {/* Segmented control for text styles */}
                   <div className="ios-format-menu__segment-control">
                     <button
