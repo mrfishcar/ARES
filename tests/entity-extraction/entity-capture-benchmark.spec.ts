@@ -397,6 +397,20 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   { name: 'Tolkien', type: 'PERSON', expectedValid: true },
   { name: 'Hemingway', type: 'PERSON', expectedValid: true },
   { name: 'Orwell', type: 'PERSON', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 114: MYTHOLOGY AND LEGENDS
+  // =========================================================================
+
+  // Greek gods
+  { name: 'Zeus', type: 'PERSON', expectedValid: true },
+  { name: 'Athena', type: 'PERSON', expectedValid: true },
+  { name: 'Poseidon', type: 'PERSON', expectedValid: true },
+
+  // Norse gods
+  { name: 'Odin', type: 'PERSON', expectedValid: true },
+  { name: 'Thor', type: 'PERSON', expectedValid: true },
+  { name: 'Loki', type: 'PERSON', expectedValid: true },
 ];
 
 // =============================================================================
