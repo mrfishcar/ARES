@@ -452,6 +452,29 @@ const ADVERSARIAL_CASES: ObviousEntityCase[] = [
   // { name: 'After lunch', type: 'ITEM', expectedValid: false },
   // { name: 'In the morning', type: 'PLACE', expectedValid: false },
   // { name: 'At first', type: 'PLACE', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 22: MORE ADVERSARIAL CASES
+  // =========================================================================
+
+  // More color surnames with titles (valid)
+  { name: 'Gray', type: 'PERSON', expectedValid: true, context: { fullText: 'Colonel Gray commanded.', spanStart: 8, spanEnd: 12 } },
+  { name: 'Green', type: 'PERSON', expectedValid: true, context: { fullText: 'Mr. Green arrived.', spanStart: 4, spanEnd: 9 } },
+
+  // More color adjectives (invalid)
+  { name: 'Blue', type: 'PERSON', expectedValid: false, context: { fullText: 'Blue sky appeared.', spanStart: 0, spanEnd: 4 } },
+  { name: 'Green', type: 'PERSON', expectedValid: false, context: { fullText: 'Green leaves rustled.', spanStart: 0, spanEnd: 5 } },
+
+  // Common words that are also surnames (with NER = valid)
+  { name: 'Smith', type: 'PERSON', expectedValid: true, context: { hasNERSupport: true } },
+  { name: 'Turner', type: 'PERSON', expectedValid: true, context: { hasNERSupport: true } },
+  { name: 'Baker', type: 'PERSON', expectedValid: true, context: { hasNERSupport: true } },
+  { name: 'Cooper', type: 'PERSON', expectedValid: true, context: { hasNERSupport: true } },
+
+  // Organizations with common word prefixes
+  { name: 'The White House', type: 'ORG', expectedValid: true },
+  { name: 'The Black Panthers', type: 'ORG', expectedValid: true },
+  { name: 'The Golden Gate Bridge', type: 'PLACE', expectedValid: true },
 ];
 
 // =============================================================================
