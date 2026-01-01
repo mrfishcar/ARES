@@ -1260,6 +1260,47 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'him', position: 23, context: 'SENTENCE_MID', expected: 'Ron Weasley' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 65: MORE COREF CASES
+  // =========================================================================
+
+  // Case 55: Male reflexive pronoun
+  {
+    name: 'Male reflexive himself',
+    text: 'Harry prepared himself for battle.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+    ],
+    spans: [
+      createSpan('harry', 0, 5),
+    ],
+    sentences: [
+      createSentence('Harry prepared himself for battle.', 0),
+    ],
+    pronounTests: [
+      { pronoun: 'himself', position: 15, context: 'SENTENCE_MID', expected: 'Harry Potter' },
+    ],
+  },
+
+  // Case 56: Place with "it" pronoun
+  {
+    name: 'Place with neutral it',
+    text: 'Hogwarts stood tall. It was ancient.',
+    entities: [
+      createEntity('hogwarts', 'Hogwarts', 'PLACE'),
+    ],
+    spans: [
+      createSpan('hogwarts', 0, 8),
+    ],
+    sentences: [
+      createSentence('Hogwarts stood tall.', 0),
+      createSentence('It was ancient.', 21),
+    ],
+    pronounTests: [
+      { pronoun: 'It', position: 21, context: 'SENTENCE_START', expected: 'Hogwarts' },
+    ],
+  },
 ];
 
 // =============================================================================
