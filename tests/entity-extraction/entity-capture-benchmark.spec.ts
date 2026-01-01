@@ -269,6 +269,28 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   { name: 'Pride and Prejudice', type: 'WORK', expectedValid: true },
   { name: 'The Great Gatsby', type: 'WORK', expectedValid: true },
   { name: 'To Kill a Mockingbird', type: 'WORK', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 46: MORE OBVIOUS ENTITIES
+  // =========================================================================
+
+  // Political leaders
+  { name: 'Joe Biden', type: 'PERSON', expectedValid: true },
+  { name: 'Vladimir Putin', type: 'PERSON', expectedValid: true },
+  { name: 'Xi Jinping', type: 'PERSON', expectedValid: true },
+  { name: 'Angela Merkel', type: 'PERSON', expectedValid: true },
+
+  // Sports figures
+  { name: 'LeBron James', type: 'PERSON', expectedValid: true },
+  { name: 'Lionel Messi', type: 'PERSON', expectedValid: true },
+  { name: 'Serena Williams', type: 'PERSON', expectedValid: true },
+  { name: 'Michael Jordan', type: 'PERSON', expectedValid: true },
+
+  // More organizations
+  { name: 'United Nations', type: 'ORG', expectedValid: true },
+  { name: 'Red Cross', type: 'ORG', expectedValid: true },
+  { name: 'Greenpeace', type: 'ORG', expectedValid: true },
+  { name: 'Amnesty International', type: 'ORG', expectedValid: true },
 ];
 
 // =============================================================================
