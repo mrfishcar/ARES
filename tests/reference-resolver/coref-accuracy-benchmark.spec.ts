@@ -1529,6 +1529,31 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'He', position: 52, context: 'SENTENCE_START', expected: 'Albus Dumbledore' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 101: CONSECUTIVE PRONOUNS
+  // =========================================================================
+
+  // Case 67: Two consecutive same-gender pronouns
+  {
+    name: 'Consecutive same-gender pronouns',
+    text: 'Harry entered the room. He smiled. He sat down.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+    ],
+    spans: [
+      createSpan('harry', 0, 5),
+    ],
+    sentences: [
+      createSentence('Harry entered the room.', 0),
+      createSentence('He smiled.', 24),
+      createSentence('He sat down.', 35),
+    ],
+    pronounTests: [
+      { pronoun: 'He', position: 24, context: 'SENTENCE_START', expected: 'Harry Potter' },
+      { pronoun: 'He', position: 35, context: 'SENTENCE_START', expected: 'Harry Potter' },
+    ],
+  },
 ];
 
 // =============================================================================
