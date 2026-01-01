@@ -890,6 +890,32 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 153: ROMANCE/DRAMA TEXT
+  // =========================================================================
+
+  describe('Romance drama text', () => {
+    it('should handle emotional dramatic narratives', async () => {
+      const templates = [
+        'She looked into his eyes longingly.',
+        'Their hearts beat as one together.',
+        'He whispered words of love softly.',
+        'The moment felt eternal between them.',
+      ];
+
+      let text = '';
+      for (let i = 0; i < 100; i++) {
+        text += templates[i % templates.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`Romance drama: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
