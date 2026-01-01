@@ -425,6 +425,20 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   { name: 'Narnia', type: 'PLACE', expectedValid: true },
   { name: 'Aslan', type: 'PERSON', expectedValid: true },
   { name: 'Matilda', type: 'PERSON', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 124: MOVIE FRANCHISES
+  // =========================================================================
+
+  // Star Wars
+  { name: 'Vader', type: 'PERSON', expectedValid: true },
+  { name: 'Skywalker', type: 'PERSON', expectedValid: true },
+  { name: 'Yoda', type: 'PERSON', expectedValid: true },
+
+  // LOTR
+  { name: 'Gandalf', type: 'PERSON', expectedValid: true },
+  { name: 'Frodo', type: 'PERSON', expectedValid: true },
+  { name: 'Aragorn', type: 'PERSON', expectedValid: true },
 ];
 
 // =============================================================================
