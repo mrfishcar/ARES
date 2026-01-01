@@ -248,6 +248,46 @@ const ALIAS_CASES: AliasTestCase[] = [
       { aliases: ['Paris', 'London'], shouldMerge: false },
     ],
   },
+
+  // =========================================================================
+  // LOOP 45: MORE ALIAS CASES
+  // =========================================================================
+
+  // Simple single name repeat
+  {
+    name: 'Single name mentioned twice',
+    text: 'Dumbledore spoke. Dumbledore smiled.',
+    expectedMerges: [
+      { aliases: ['Dumbledore', 'Dumbledore'], shouldMerge: true },
+    ],
+  },
+
+  // Different orgs no merge
+  {
+    name: 'Different organizations no merge',
+    text: 'Apple released a phone. Google released a tablet.',
+    expectedMerges: [
+      { aliases: ['Apple', 'Google'], shouldMerge: false },
+    ],
+  },
+
+  // Same org mentioned twice
+  {
+    name: 'Same organization twice',
+    text: 'Microsoft announced Windows. Microsoft expanded.',
+    expectedMerges: [
+      { aliases: ['Microsoft', 'Microsoft'], shouldMerge: true },
+    ],
+  },
+
+  // Different people different first names
+  {
+    name: 'Different people different names',
+    text: 'Hermione studied. Ginny played Quidditch.',
+    expectedMerges: [
+      { aliases: ['Hermione', 'Ginny'], shouldMerge: false },
+    ],
+  },
 ];
 
 // =============================================================================
