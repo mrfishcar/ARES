@@ -1499,6 +1499,13 @@ function EditorPanel({
     }
   }, [note]);
 
+  // Close format menu when keyboard closes (like native iOS)
+  useEffect(() => {
+    if (!isKeyboardOpen && showFormatMenu) {
+      setShowFormatMenu(false);
+    }
+  }, [isKeyboardOpen, showFormatMenu]);
+
   return (
     <div className="ios-editor-panel">
       <header ref={headerRef} className="ios-editor-panel__header">
@@ -1519,7 +1526,20 @@ function EditorPanel({
         {/* iPad toolbar icons */}
         <div className="ios-editor-panel__toolbar-center">
           <div className="ios-format-button-wrapper">
-            <button type="button" className="ios-icon-button" aria-label="Text format" onClick={() => setShowFormatMenu(!showFormatMenu)}>{Icons.textFormat}</button>
+            <button
+              type="button"
+              className={`ios-icon-button ${!isKeyboardOpen ? 'ios-icon-button--disabled' : ''}`}
+              aria-label="Text format"
+              aria-disabled={!isKeyboardOpen}
+              onClick={() => {
+                // Only activate format menu if keyboard is open (like native iOS)
+                if (isKeyboardOpen) {
+                  setShowFormatMenu(!showFormatMenu);
+                }
+              }}
+            >
+              {Icons.textFormat}
+            </button>
             {showFormatMenu && (
               <>
                 <div className="ios-menu-backdrop" onClick={() => setShowFormatMenu(false)} />

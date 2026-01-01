@@ -233,6 +233,12 @@ html, body {
   opacity: 0.5;
 }
 
+.ios-icon-button--disabled {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}
+
 /* Back Button */
 .ios-back-button {
   display: flex;
