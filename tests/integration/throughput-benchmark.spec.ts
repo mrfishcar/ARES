@@ -629,6 +629,32 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 103: COMPOUND SENTENCE TEXT
+  // =========================================================================
+
+  describe('Compound sentence text', () => {
+    it('should handle compound sentences with conjunctions', async () => {
+      const templates = [
+        'Harry ran and Hermione followed closely.',
+        'Ron shouted but nobody answered him.',
+        'Dumbledore stood still yet he smiled warmly.',
+        'The spell hit and the shield shattered completely.',
+      ];
+
+      let text = '';
+      for (let i = 0; i < 100; i++) {
+        text += templates[i % templates.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`Compound sentences: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
