@@ -1228,6 +1228,18 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'do', type: 'ITEM', expectedValid: false },
   { name: 'does', type: 'ITEM', expectedValid: false },
   { name: 'did', type: 'ITEM', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 165: PREPOSITIONS
+  // =========================================================================
+
+  // Common prepositions
+  { name: 'in', type: 'ITEM', expectedValid: false },
+  { name: 'on', type: 'ITEM', expectedValid: false },
+  { name: 'at', type: 'ITEM', expectedValid: false },
+  { name: 'to', type: 'ITEM', expectedValid: false },
+  { name: 'for', type: 'ITEM', expectedValid: false },
+  { name: 'with', type: 'ITEM', expectedValid: false },
 ];
 
 // =============================================================================
