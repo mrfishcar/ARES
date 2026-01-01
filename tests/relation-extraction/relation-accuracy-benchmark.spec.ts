@@ -103,6 +103,44 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
 
   // NOTE: Removed ownership/membership/authorship cases - these patterns are not implemented
   // Keep benchmark focused on patterns that exist in the system
+
+  // =========================================================================
+  // LOOP 20: ADDITIONAL RELATION CASES
+  // =========================================================================
+
+  // More family relations
+  {
+    name: 'Daughter relation',
+    text: 'Lily Potter is the daughter of James and Lily.',
+    expectedRelations: [
+      { subject: 'Lily', predicate: 'child_of', object: 'James', shouldExist: true },
+    ],
+  },
+  {
+    name: 'Brother relation',
+    text: 'Fred Weasley is the brother of George Weasley.',
+    expectedRelations: [
+      { subject: 'Fred', predicate: 'sibling_of', object: 'George', shouldExist: true },
+    ],
+  },
+
+  // More work relations
+  {
+    name: 'Teaches at relation',
+    text: 'Minerva McGonagall teaches at Hogwarts School.',
+    expectedRelations: [
+      { subject: 'Minerva', predicate: 'works_at', object: 'Hogwarts', shouldExist: true },
+    ],
+  },
+
+  // Leadership relation
+  {
+    name: 'Leader of relation',
+    text: 'Albus Dumbledore is the headmaster of Hogwarts.',
+    expectedRelations: [
+      { subject: 'Albus', predicate: 'leader_of', object: 'Hogwarts', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
