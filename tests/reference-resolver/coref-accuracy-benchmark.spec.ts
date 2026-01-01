@@ -1992,6 +1992,46 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'he', position: 16, expected: 'Ron Weasley' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 166: PRONOUN WITH CONDITION
+  // =========================================================================
+
+  // Case 89: Pronoun with if clause
+  {
+    name: 'Pronoun with if clause',
+    text: 'If Harry wins, he will celebrate.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+    ],
+    spans: [
+      createSpan('harry', 3, 8),
+    ],
+    sentences: [
+      createSentence('If Harry wins, he will celebrate.', 0),
+    ],
+    pronounTests: [
+      { pronoun: 'he', position: 15, expected: 'Harry Potter' },
+    ],
+  },
+
+  // Case 90: Pronoun with unless clause
+  {
+    name: 'Pronoun with unless clause',
+    text: 'Unless Hermione helps, she cannot finish.',
+    entities: [
+      createEntity('hermione', 'Hermione Granger', 'PERSON'),
+    ],
+    spans: [
+      createSpan('hermione', 7, 15),
+    ],
+    sentences: [
+      createSentence('Unless Hermione helps, she cannot finish.', 0),
+    ],
+    pronounTests: [
+      { pronoun: 'she', position: 23, expected: 'Hermione Granger' },
+    ],
+  },
 ];
 
 // =============================================================================
