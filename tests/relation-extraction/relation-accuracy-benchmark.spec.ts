@@ -540,6 +540,28 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
       { subject: 'Dumbledore', predicate: 'defeated', object: 'Grindelwald', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 112: MORE OBVIOUS RELATIONS
+  // =========================================================================
+
+  // Taught relation
+  {
+    name: 'Taught relation',
+    text: 'Snape taught Potions at Hogwarts.',
+    expectedRelations: [
+      { subject: 'Snape', predicate: 'taught', object: 'Potions', shouldExist: true },
+    ],
+  },
+
+  // Studied relation
+  {
+    name: 'Studied relation',
+    text: 'Hermione studied Ancient Runes carefully.',
+    expectedRelations: [
+      { subject: 'Hermione', predicate: 'studied', object: 'Ancient Runes', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
