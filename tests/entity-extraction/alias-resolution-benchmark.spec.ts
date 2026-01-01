@@ -208,6 +208,46 @@ const ALIAS_CASES: AliasTestCase[] = [
       { aliases: ['Harry Potter', 'James Potter'], shouldMerge: false },
     ],
   },
+
+  // =========================================================================
+  // LOOP 39: MORE ALIAS CASES
+  // =========================================================================
+
+  // Location repeated
+  {
+    name: 'Location mentioned twice',
+    text: 'London is the capital. London has many museums.',
+    expectedMerges: [
+      { aliases: ['London', 'London'], shouldMerge: true },
+    ],
+  },
+
+  // Full name → first name (celebrity)
+  {
+    name: 'Full name then first name (Elon)',
+    text: 'Elon Musk founded SpaceX. Elon was ambitious.',
+    expectedMerges: [
+      { aliases: ['Elon Musk', 'Elon'], shouldMerge: true },
+    ],
+  },
+
+  // Organization with "the" variation
+  {
+    name: 'Organization with article',
+    text: 'The New York Times published the story. The Times was critical.',
+    expectedMerges: [
+      { aliases: ['The New York Times', 'The Times'], shouldMerge: true },
+    ],
+  },
+
+  // Different locations should NOT merge
+  {
+    name: 'Different cities no merge',
+    text: 'Paris is beautiful. London is historic.',
+    expectedMerges: [
+      { aliases: ['Paris', 'London'], shouldMerge: false },
+    ],
+  },
 ];
 
 // =============================================================================
