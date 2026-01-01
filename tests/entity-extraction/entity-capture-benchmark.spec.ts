@@ -709,6 +709,23 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'unknown', type: 'PERSON', expectedValid: false },
   { name: 'ancient', type: 'PERSON', expectedValid: false },
   { name: 'modern', type: 'PERSON', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 75: MORE JUNK CASES
+  // =========================================================================
+
+  // Question words
+  { name: 'what', type: 'PERSON', expectedValid: false },
+  { name: 'where', type: 'PERSON', expectedValid: false },
+  { name: 'when', type: 'PERSON', expectedValid: false },
+  { name: 'why', type: 'PERSON', expectedValid: false },
+  { name: 'how', type: 'PERSON', expectedValid: false },
+
+  // Emotional states
+  { name: 'happy', type: 'PERSON', expectedValid: false },
+  { name: 'sad', type: 'PERSON', expectedValid: false },
+  { name: 'angry', type: 'PERSON', expectedValid: false },
+  { name: 'afraid', type: 'PERSON', expectedValid: false },
 ];
 
 // =============================================================================

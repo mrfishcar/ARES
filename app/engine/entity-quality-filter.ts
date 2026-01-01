@@ -202,6 +202,7 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
   'left', 'right', 'forward', 'back', 'backward', 'behind', 'ahead',
   'able', 'ready', 'sure', 'certain', 'clear', 'full', 'free',
   'strange', 'unknown', 'ancient', 'modern', 'famous', 'powerful',
+  'happy', 'sad', 'angry', 'afraid', 'scared', 'worried', 'excited', 'tired',
   'better', 'best', 'worse', 'worst', 'more', 'most', 'less', 'least',
   'neither',
 
