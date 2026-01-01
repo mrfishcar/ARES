@@ -1505,6 +1505,30 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       // Note: "hers" doesn't resolve currently - excluded from test
     ],
   },
+
+  // =========================================================================
+  // LOOP 96: MORE COREF CASES
+  // =========================================================================
+
+  // Case 66: Long distance subject
+  {
+    name: 'Long distance subject',
+    text: 'Dumbledore stood at the window. The stars twinkled. He sighed.',
+    entities: [
+      createEntity('dumbledore', 'Albus Dumbledore', 'PERSON'),
+    ],
+    spans: [
+      createSpan('dumbledore', 0, 10),
+    ],
+    sentences: [
+      createSentence('Dumbledore stood at the window.', 0),
+      createSentence('The stars twinkled.', 32),
+      createSentence('He sighed.', 52),
+    ],
+    pronounTests: [
+      { pronoun: 'He', position: 52, context: 'SENTENCE_START', expected: 'Albus Dumbledore' },
+    ],
+  },
 ];
 
 // =============================================================================
