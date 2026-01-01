@@ -796,6 +796,20 @@ const ADVERSARIAL_CASES: ObviousEntityCase[] = [
   // Historical places (valid)
   { name: 'Constantinople', type: 'PLACE', expectedValid: true },
   { name: 'Babylon', type: 'PLACE', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 69: MORE ADVERSARIAL CASES
+  // =========================================================================
+
+  // Fictional places (valid)
+  { name: 'Hogwarts', type: 'PLACE', expectedValid: true },
+  { name: 'Narnia', type: 'PLACE', expectedValid: true },
+  { name: 'Mordor', type: 'PLACE', expectedValid: true },
+
+  // Fictional characters (valid)
+  { name: 'Gandalf', type: 'PERSON', expectedValid: true, context: { hasNERSupport: true } },
+  { name: 'Hermione', type: 'PERSON', expectedValid: true, context: { hasNERSupport: true } },
+  { name: 'Dumbledore', type: 'PERSON', expectedValid: true, context: { hasNERSupport: true } },
 ];
 
 // =============================================================================
