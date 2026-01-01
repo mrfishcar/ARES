@@ -96,7 +96,7 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
     name: 'Friend relation',
     text: 'Harry and Hermione became friends in first year.',
     expectedRelations: [
-      { subject: 'Harry', predicate: 'friend_of', object: 'Hermione', shouldExist: true },
+      { subject: 'Harry', predicate: 'friends_with', object: 'Hermione', shouldExist: true },
     ],
   },
   {
