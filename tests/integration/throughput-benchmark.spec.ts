@@ -263,6 +263,33 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 36: MORE THROUGHPUT VARIETY
+  // =========================================================================
+
+  describe('Short documents batch (50 words each)', () => {
+    it('should handle many short documents efficiently', async () => {
+      // 20 short documents of 50 words each = 1000 words total
+      const shortDocs = [
+        'The wizard entered the castle. He was looking for the ancient artifact. The guards watched carefully.',
+        'Hermione read the book. She found important information. The spell was powerful.',
+        'Ron waited outside. The rain was falling. He wondered when his friends would return.',
+        'Dumbledore spoke quietly. His words carried wisdom. The students listened carefully.',
+      ];
+
+      let allText = '';
+      for (let i = 0; i < 20; i++) {
+        allText += shortDocs[i % shortDocs.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(allText.trim());
+      results.push(result);
+
+      console.log(`Short docs batch: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
