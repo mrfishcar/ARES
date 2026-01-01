@@ -115,6 +115,8 @@
   --ios-bg-secondary: #1c1c1e;
   --ios-bg-tertiary: #2c2c2e;
   --ios-yellow: #ffd60a;
+  /* #9: Added accessible yellow for light mode (WCAG AA contrast) */
+  --ios-yellow-accessible: #ffd60a;
   --ios-blue: #0a84ff;
   --ios-separator: #38383a;
 }
@@ -129,6 +131,8 @@
     --ios-bg-secondary: #f2f2f7;
     --ios-bg-tertiary: #e5e5ea;
     --ios-separator: #c6c6c8;
+    /* #9: Darker accessible yellow for light mode (4.5:1 contrast ratio on white) */
+    --ios-yellow-accessible: #996500;
   }
 }
 
@@ -250,7 +254,8 @@
 .ios-tiptap-editor h1 {
   font-size: var(--ios-font-large-title);
   font-weight: 700;
-  color: var(--ios-yellow);
+  /* #9: Use accessible yellow that works in both light and dark modes */
+  color: var(--ios-yellow-accessible);
   margin: 0 0 var(--ios-spacing-sm) 0;
   line-height: var(--ios-line-height-tight);
   letter-spacing: -0.022em; /* Apple's Large Title tracking */
@@ -359,21 +364,25 @@
   margin: var(--ios-spacing-xs) 0;
 }
 
-/* Checkbox label - sized to checkbox, not oversized touch target
-   The oversized target was blocking text input */
+/* #4: Fixed touch target accessibility - 44px hit area without blocking text
+   Uses transparent padding for proper Apple HIG compliance */
 .ios-tiptap-editor li[data-type="taskItem"] > label {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: center;
-  /* Keep visual size compact to not block text */
-  width: 28px;
-  height: 28px;
-  margin-top: 0;
+  justify-content: flex-start;
+  /* 44px touch target per Apple HIG */
+  width: 44px;
+  height: 44px;
+  /* Negative margin compensates for larger hit area */
+  margin-left: -8px;
+  margin-top: -8px;
+  margin-bottom: -8px;
+  padding-left: 8px;
   cursor: pointer;
 }
 
-/* Checkbox visual - 22px circle */
+/* Checkbox visual - 22px circle (visual size stays compact) */
 .ios-tiptap-editor li[data-type="taskItem"] > label > input[type="checkbox"] {
   appearance: none;
   -webkit-appearance: none;
@@ -384,6 +393,8 @@
   background: transparent;
   cursor: pointer;
   position: relative;
+  /* Let label handle pointer events for larger hit area */
+  pointer-events: none;
 
   /* Spring transition for satisfying toggle feel */
   transition:
@@ -524,10 +535,7 @@
    ============================================================================ */
 
 @media (prefers-color-scheme: light) {
-  .ios-tiptap-editor h1 {
-    /* In light mode, use primary text color for h1 */
-    color: var(--ios-text-primary);
-  }
+  /* #9: h1 color now handled by --ios-yellow-accessible variable */
 
   .ios-tiptap-editor mark {
     background-color: #fff3b0;
@@ -538,12 +546,14 @@
 /* ============================================================================
    REDUCED MOTION
    Respect user preference for reduced motion
+   #16: Scoped to editor elements only (was using global * selector)
    ============================================================================ */
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  .ios-tiptap-wrapper,
+  .ios-tiptap-wrapper *,
+  .ios-tiptap-wrapper *::before,
+  .ios-tiptap-wrapper *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

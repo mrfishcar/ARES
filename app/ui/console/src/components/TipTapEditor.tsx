@@ -6,9 +6,14 @@
  * - Plugin architecture (for future entity highlighting)
  * - Custom marks and nodes
  * - Better mobile support
+ *
+ * Code Audit Fixes Applied:
+ * - #2: Fixed content sync race condition on note switch
+ * - #11: Fixed escapeDiv memory pattern with lazy initialization
+ * - #13: Added update source tracking to prevent infinite loops
  */
 
-import React, { useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
+import React, { useEffect, useCallback, forwardRef, useImperativeHandle, useRef } from 'react';
 import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -229,11 +234,19 @@ function htmlToText(html: string): string {
   return lines.join('\n');
 }
 
-// Reusable element for HTML escaping (created once)
-const escapeDiv = typeof document !== 'undefined' ? document.createElement('div') : null;
+// #11: Lazy initialization of escapeDiv to avoid module-level DOM node
+let escapeDiv: HTMLDivElement | null = null;
+
+function getEscapeDiv(): HTMLDivElement | null {
+  if (!escapeDiv && typeof document !== 'undefined') {
+    escapeDiv = document.createElement('div');
+  }
+  return escapeDiv;
+}
 
 function escapeHtml(text: string): string {
-  if (!escapeDiv) {
+  const div = getEscapeDiv();
+  if (!div) {
     // SSR fallback
     return text
       .replace(/&/g, '&amp;')
@@ -241,8 +254,8 @@ function escapeHtml(text: string): string {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
   }
-  escapeDiv.textContent = text;
-  return escapeDiv.innerHTML;
+  div.textContent = text;
+  return div.innerHTML;
 }
 
 // ============================================================================
@@ -258,6 +271,10 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(({
   className = '',
   editable = true,
 }, ref) => {
+  // #13: Track whether update is from external source to prevent infinite loops
+  const isExternalUpdateRef = useRef(false);
+  // Track the last content we set to avoid unnecessary updates
+  const lastContentRef = useRef(content);
 
   const editor = useEditor({
     extensions: [
@@ -299,8 +316,12 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(({
     content: textToHtml(content),
     editable,
     onUpdate: ({ editor }) => {
+      // #13: Skip callback if this update was triggered by external content change
+      if (isExternalUpdateRef.current) return;
+
       const html = editor.getHTML();
       const text = htmlToText(html);
+      lastContentRef.current = text;
       onContentChange(text);
     },
     onBlur: () => {
@@ -316,14 +337,24 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(({
     },
   });
 
-  // Update content when prop changes (e.g., switching notes)
+  // #2: Fixed content sync - always update when content prop changes (e.g., switching notes)
+  // This fixes the race condition where focused editor wouldn't update on note switch
   useEffect(() => {
-    if (editor && !editor.isFocused) {
-      const currentText = htmlToText(editor.getHTML());
-      if (currentText !== content) {
-        editor.commands.setContent(textToHtml(content));
-      }
-    }
+    if (!editor) return;
+
+    // Skip if content matches what we last set
+    if (content === lastContentRef.current) return;
+
+    // #13: Mark this as external update to prevent onUpdate callback
+    isExternalUpdateRef.current = true;
+    lastContentRef.current = content;
+
+    editor.commands.setContent(textToHtml(content));
+
+    // Reset flag after React's next tick
+    requestAnimationFrame(() => {
+      isExternalUpdateRef.current = false;
+    });
   }, [content, editor]);
 
   // Expose editor methods via ref

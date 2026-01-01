@@ -93,6 +93,16 @@
   --ne-radius-md: 10px;
   --ne-radius-lg: 12px;
   --ne-sidebar-width: 320px;
+
+  /* -------------------------------------------------------------------------
+     Z-INDEX SCALE (#10)
+     Explicit layering system to prevent stacking issues
+     ------------------------------------------------------------------------- */
+  --ne-z-base: 0;
+  --ne-z-toolbar: 10;
+  --ne-z-sidebar: 20;
+  --ne-z-modal: 30;
+  --ne-z-toast: 40;
 }
 
 /* Light mode overrides */
@@ -124,8 +134,10 @@
 
 .notes-editor {
   display: flex;
+  /* #7: iOS Safari fallback chain for viewport height */
   height: 100vh;
-  height: 100dvh; /* Dynamic viewport height for mobile */
+  height: -webkit-fill-available; /* Safari < 15.4 fallback */
+  height: 100dvh; /* Dynamic viewport height for modern browsers */
   background: var(--ne-bg-primary);
   color: var(--ne-text-primary);
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', system-ui, sans-serif;
@@ -432,7 +444,8 @@
   flex-shrink: 0;
   position: sticky;
   top: 0;
-  z-index: 5;
+  /* #10: Use z-index scale system */
+  z-index: var(--ne-z-toolbar);
 }
 
 .editor-toolbar__group {
@@ -551,7 +564,8 @@
     top: 0;
     bottom: 0;
     width: 100%;
-    z-index: 10;
+    /* #10: Use z-index scale system */
+    z-index: var(--ne-z-sidebar);
 
     /* Spring slide animation - feels like iOS navigation */
     transition: transform var(--ne-motion-slide);
@@ -645,15 +659,93 @@
 }
 
 /* ============================================================================
+   SAVE STATUS INDICATOR (#5)
+   ============================================================================ */
+
+.notes-editor__save-status,
+.editor-toolbar__save-status {
+  font-size: var(--ne-font-subhead);
+  color: var(--ne-text-tertiary);
+  padding: 0 var(--ne-spacing-sm);
+  transition: opacity var(--ne-motion-fade);
+}
+
+.notes-editor__save-status--saved,
+.editor-toolbar__save-status--saved {
+  color: var(--ne-text-tertiary);
+}
+
+.notes-editor__save-status--saving,
+.editor-toolbar__save-status--saving {
+  color: var(--ne-accent);
+}
+
+.notes-editor__save-status--unsaved,
+.editor-toolbar__save-status--unsaved {
+  color: var(--ne-danger);
+}
+
+/* Hide save status on mobile header (shown in toolbar instead) */
+@media (min-width: 768px) {
+  .notes-editor__save-status {
+    display: none;
+  }
+}
+
+/* Hide save status in toolbar on mobile (shown in header instead) */
+@media (max-width: 767px) {
+  .editor-toolbar__save-status {
+    display: none;
+  }
+}
+
+/* ============================================================================
+   ERROR BOUNDARY (#3)
+   ============================================================================ */
+
+.notes-editor__error {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ne-spacing-md);
+  padding: var(--ne-spacing-lg);
+  color: var(--ne-danger);
+  text-align: center;
+}
+
+.notes-editor__error p {
+  font-size: var(--ne-font-body);
+}
+
+.notes-editor__error button {
+  min-height: var(--ne-touch-target);
+  padding: var(--ne-spacing-sm) var(--ne-spacing-lg);
+  background: var(--ne-bg-tertiary);
+  color: var(--ne-text-primary);
+  border: 1px solid var(--ne-separator);
+  border-radius: var(--ne-radius-md);
+  font-size: var(--ne-font-body);
+  cursor: pointer;
+  transition: background-color var(--ne-motion-hover);
+}
+
+.notes-editor__error button:hover {
+  background: var(--ne-bg-secondary);
+}
+
+/* ============================================================================
    REDUCED MOTION
    Respect user preference for reduced motion
-   Removes all spring/bounce effects, keeps essential state changes
+   #16: Scoped to notes-editor elements only (was using global * selector)
    ============================================================================ */
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  .notes-editor,
+  .notes-editor *,
+  .notes-editor *::before,
+  .notes-editor *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

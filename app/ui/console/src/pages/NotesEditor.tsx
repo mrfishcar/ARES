@@ -3,12 +3,64 @@
  *
  * A stable, extensible notes editor built on TipTap/ProseMirror
  * Designed for future ARES integration (entity highlighting, annotations)
+ *
+ * Code Audit Fixes Applied:
+ * - #1: Fixed delete race condition (removed setTimeout inside state setter)
+ * - #5: Added save status indicator
+ * - #6: Removed unused useDebounce hook
+ * - #12: Added proper error handling to StorageService
+ * - #14: Added aria-labels to icon buttons
+ * - #15: Fixed focus timing with requestAnimationFrame
  */
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, Component, ReactNode } from 'react';
 import { TipTapEditor, TipTapEditorRef } from '../components/TipTapEditor';
 import '../components/TipTapEditor.css';
 import './NotesEditor.css';
+
+// ============================================================================
+// ERROR BOUNDARY (#3)
+// ============================================================================
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error?: Error;
+}
+
+class EditorErrorBoundary extends Component<{ children: ReactNode; onReset: () => void }, ErrorBoundaryState> {
+  state: ErrorBoundaryState = { hasError: false };
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('Editor error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="notes-editor__error">
+          <p>Something went wrong with the editor.</p>
+          <button onClick={() => {
+            this.setState({ hasError: false });
+            this.props.onReset();
+          }}>
+            Reset Editor
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+// ============================================================================
+// SAVE STATUS TYPE (#5)
+// ============================================================================
+
+type SaveStatus = 'saved' | 'saving' | 'unsaved';
 
 // ============================================================================
 // TYPES
@@ -44,38 +96,66 @@ const STORAGE_KEYS = {
 };
 
 class StorageService {
+  // #12: Added proper error handling with try-catch wrapping async operations
   static load<T>(key: string, defaultValue: T): T {
     try {
       const stored = localStorage.getItem(key);
-      return stored ? JSON.parse(stored) : defaultValue;
-    } catch {
+      if (!stored) return defaultValue;
+      const parsed = JSON.parse(stored);
+      // Validate the data structure exists
+      if (parsed === null || parsed === undefined) return defaultValue;
+      return parsed;
+    } catch (e) {
+      console.error(`Failed to load ${key}:`, e);
       return defaultValue;
     }
   }
 
-  static save<T>(key: string, value: T): void {
+  static save<T>(key: string, value: T): boolean {
     try {
       localStorage.setItem(key, JSON.stringify(value));
+      return true;
     } catch (e) {
-      console.error('Failed to save:', e);
+      console.error(`Failed to save ${key}:`, e);
+      return false;
     }
   }
 
   // Future: These methods can be swapped to use IndexedDB or ARES database
   static async loadNotes(): Promise<Note[]> {
-    return this.load(STORAGE_KEYS.NOTES, DEFAULT_NOTES);
+    try {
+      return this.load(STORAGE_KEYS.NOTES, DEFAULT_NOTES);
+    } catch (e) {
+      console.error('Failed to load notes:', e);
+      return DEFAULT_NOTES;
+    }
   }
 
-  static async saveNotes(notes: Note[]): Promise<void> {
-    this.save(STORAGE_KEYS.NOTES, notes);
+  static async saveNotes(notes: Note[]): Promise<boolean> {
+    try {
+      return this.save(STORAGE_KEYS.NOTES, notes);
+    } catch (e) {
+      console.error('Failed to save notes:', e);
+      return false;
+    }
   }
 
   static async loadFolders(): Promise<Folder[]> {
-    return this.load(STORAGE_KEYS.FOLDERS, DEFAULT_FOLDERS);
+    try {
+      return this.load(STORAGE_KEYS.FOLDERS, DEFAULT_FOLDERS);
+    } catch (e) {
+      console.error('Failed to load folders:', e);
+      return DEFAULT_FOLDERS;
+    }
   }
 
-  static async saveFolders(folders: Folder[]): Promise<void> {
-    this.save(STORAGE_KEYS.FOLDERS, folders);
+  static async saveFolders(folders: Folder[]): Promise<boolean> {
+    try {
+      return this.save(STORAGE_KEYS.FOLDERS, folders);
+    } catch (e) {
+      console.error('Failed to save folders:', e);
+      return false;
+    }
   }
 }
 
@@ -246,7 +326,12 @@ function NotesList({ notes, selectedId, onSelect, onCreateNote }: NotesListProps
     <div className="notes-list">
       <div className="notes-list__header">
         <h1>Notes</h1>
-        <button className="notes-list__new-btn" onClick={onCreateNote}>
+        {/* #14: Added aria-label for accessibility */}
+        <button
+          className="notes-list__new-btn"
+          onClick={onCreateNote}
+          aria-label="Create new note"
+        >
           {Icons.plus}
         </button>
       </div>
@@ -287,9 +372,10 @@ interface EditorToolbarProps {
   onDelete: () => void;
   onTogglePin: () => void;
   isPinned: boolean;
+  saveStatus: SaveStatus; // #5: Added save status
 }
 
-function EditorToolbar({ editorRef, onDelete, onTogglePin, isPinned }: EditorToolbarProps) {
+function EditorToolbar({ editorRef, onDelete, onTogglePin, isPinned, saveStatus }: EditorToolbarProps) {
   // Prevent focus stealing from editor on mobile
   const preventFocusLoss = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
@@ -368,6 +454,11 @@ function EditorToolbar({ editorRef, onDelete, onTogglePin, isPinned }: EditorToo
 
       <div className="editor-toolbar__spacer" />
 
+      {/* #5: Save status indicator (desktop) */}
+      <span className={`editor-toolbar__save-status editor-toolbar__save-status--${saveStatus}`}>
+        {saveStatus === 'saving' ? 'Saving...' : saveStatus === 'saved' ? 'Saved' : 'Unsaved'}
+      </span>
+
       <div className="editor-toolbar__group">
         <ToolbarButton onClick={onTogglePin} title={isPinned ? 'Unpin' : 'Pin'} active={isPinned}>
           {isPinned ? Icons.pinFilled : Icons.pin}
@@ -384,19 +475,7 @@ function EditorToolbar({ editorRef, onDelete, onTogglePin, isPinned }: EditorToo
 // MAIN COMPONENT
 // ============================================================================
 
-// Debounce helper for save operations
-function useDebounce<T extends (...args: any[]) => void>(fn: T, delay: number): T {
-  const timeoutRef = useRef<number | null>(null);
-
-  return useCallback((...args: Parameters<T>) => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    timeoutRef.current = window.setTimeout(() => {
-      fn(...args);
-    }, delay);
-  }, [fn, delay]) as T;
-}
+// #6: Removed unused useDebounce hook - was dead code
 
 export default function NotesEditor() {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -404,9 +483,12 @@ export default function NotesEditor() {
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showList, setShowList] = useState(true);
+  // #5: Added save status indicator
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
 
   const editorRef = useRef<TipTapEditorRef>(null);
   const saveTimeoutRef = useRef<number | null>(null);
+  const editorErrorKey = useRef(0); // For resetting error boundary
 
   // Load data on mount
   useEffect(() => {
@@ -428,9 +510,12 @@ export default function NotesEditor() {
     loadData();
   }, []);
 
-  // Debounced save - prevents saving on every keystroke
+  // #5: Debounced save with status indicator
   useEffect(() => {
     if (isLoading) return;
+
+    // Mark as unsaved when notes change
+    setSaveStatus('unsaved');
 
     // Clear existing timeout
     if (saveTimeoutRef.current) {
@@ -438,8 +523,10 @@ export default function NotesEditor() {
     }
 
     // Save after 500ms of inactivity
-    saveTimeoutRef.current = window.setTimeout(() => {
-      StorageService.saveNotes(notes);
+    saveTimeoutRef.current = window.setTimeout(async () => {
+      setSaveStatus('saving');
+      const success = await StorageService.saveNotes(notes);
+      setSaveStatus(success ? 'saved' : 'unsaved');
     }, 500);
 
     // Cleanup
@@ -464,6 +551,19 @@ export default function NotesEditor() {
     ));
   }, [selectedNoteId]);
 
+  // #15: Fixed focus timing with requestAnimationFrame
+  const focusEditor = useCallback(() => {
+    const tryFocus = () => {
+      const editor = editorRef.current?.getEditor();
+      if (editor && !editor.isDestroyed) {
+        editorRef.current?.focus();
+      } else {
+        requestAnimationFrame(tryFocus);
+      }
+    };
+    requestAnimationFrame(tryFocus);
+  }, []);
+
   // Create new note
   const handleCreateNote = useCallback(() => {
     const newNote: Note = {
@@ -479,27 +579,28 @@ export default function NotesEditor() {
     setSelectedNoteId(newNote.id);
     setShowList(false);
 
-    // Focus editor after a tick
-    setTimeout(() => editorRef.current?.focus(), 100);
-  }, []);
+    // #15: Use proper focus timing
+    focusEditor();
+  }, [focusEditor]);
 
-  // Delete note - uses functional update to avoid stale closure
+  // #1: Fixed delete race condition - removed setTimeout inside state setter
+  // Now uses a separate effect to handle selection after delete
   const handleDeleteNote = useCallback(() => {
     if (!selectedNoteId) return;
-
-    setNotes(prev => {
-      const remaining = prev.filter(n => n.id !== selectedNoteId);
-      // Select next note (use setTimeout to batch state updates)
-      setTimeout(() => {
-        setSelectedNoteId(remaining[0]?.id || null);
-        // Show list on mobile if no notes left
-        if (remaining.length === 0) {
-          setShowList(true);
-        }
-      }, 0);
-      return remaining;
-    });
+    setNotes(prev => prev.filter(n => n.id !== selectedNoteId));
   }, [selectedNoteId]);
+
+  // #1: Handle selection after note deletion (separate effect avoids race condition)
+  useEffect(() => {
+    if (selectedNoteId && !notes.find(n => n.id === selectedNoteId)) {
+      // Selected note was deleted, select next available
+      const nextNote = notes[0];
+      setSelectedNoteId(nextNote?.id || null);
+      if (!nextNote) {
+        setShowList(true);
+      }
+    }
+  }, [notes, selectedNoteId]);
 
   // Toggle pin
   const handleTogglePin = useCallback(() => {
@@ -521,6 +622,11 @@ export default function NotesEditor() {
   // Handle back navigation
   const handleBack = useCallback(() => {
     setShowList(true);
+  }, []);
+
+  // #3: Reset handler for error boundary
+  const handleEditorReset = useCallback(() => {
+    editorErrorKey.current += 1;
   }, []);
 
   if (isLoading) {
@@ -545,28 +651,40 @@ export default function NotesEditor() {
           <>
             {/* Mobile back button */}
             <div className="notes-editor__mobile-header">
-              <button className="notes-editor__back-btn" onClick={handleBack}>
+              {/* #14: Added aria-label */}
+              <button
+                className="notes-editor__back-btn"
+                onClick={handleBack}
+                aria-label="Go back to notes list"
+              >
                 {Icons.chevronLeft}
                 <span>Notes</span>
               </button>
+              {/* #5: Save status indicator */}
+              <span className={`notes-editor__save-status notes-editor__save-status--${saveStatus}`}>
+                {saveStatus === 'saving' ? 'Saving...' : saveStatus === 'saved' ? 'Saved' : 'Unsaved'}
+              </span>
             </div>
 
-            {/* Toolbar */}
+            {/* Toolbar with save status on desktop */}
             <EditorToolbar
               editorRef={editorRef}
               onDelete={handleDeleteNote}
               onTogglePin={handleTogglePin}
               isPinned={selectedNote.isPinned}
+              saveStatus={saveStatus}
             />
 
-            {/* TipTap Editor */}
+            {/* #3: TipTap Editor wrapped in error boundary */}
             <div className="notes-editor__content">
-              <TipTapEditor
-                ref={editorRef}
-                content={selectedNote.content}
-                onContentChange={handleContentChange}
-                placeholder="Start writing..."
-              />
+              <EditorErrorBoundary key={editorErrorKey.current} onReset={handleEditorReset}>
+                <TipTapEditor
+                  ref={editorRef}
+                  content={selectedNote.content}
+                  onContentChange={handleContentChange}
+                  placeholder="Start writing..."
+                />
+              </EditorErrorBoundary>
             </div>
           </>
         ) : (
