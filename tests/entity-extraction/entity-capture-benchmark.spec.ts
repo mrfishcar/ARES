@@ -1280,6 +1280,18 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'nothing', type: 'ITEM', expectedValid: false },
   { name: 'nobody', type: 'ITEM', expectedValid: false },
   { name: 'none', type: 'ITEM', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 175: TIME EXPRESSIONS
+  // =========================================================================
+
+  // Time words
+  { name: 'now', type: 'ITEM', expectedValid: false },
+  { name: 'then', type: 'ITEM', expectedValid: false },
+  { name: 'soon', type: 'ITEM', expectedValid: false },
+  { name: 'later', type: 'ITEM', expectedValid: false },
+  { name: 'always', type: 'ITEM', expectedValid: false },
+  { name: 'sometimes', type: 'ITEM', expectedValid: false },
 ];
 
 // =============================================================================
