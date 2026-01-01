@@ -1057,6 +1057,18 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'might', type: 'ITEM', expectedValid: false },
   { name: 'must', type: 'ITEM', expectedValid: false },
   { name: 'shall', type: 'ITEM', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 135: CONJUNCTIONS AND PREPOSITIONS
+  // =========================================================================
+
+  // Conjunctions
+  { name: 'and', type: 'ITEM', expectedValid: false },
+  { name: 'but', type: 'ITEM', expectedValid: false },
+  { name: 'or', type: 'ITEM', expectedValid: false },
+  { name: 'because', type: 'ITEM', expectedValid: false },
+  { name: 'while', type: 'ITEM', expectedValid: false },
+  { name: 'although', type: 'ITEM', expectedValid: false },
 ];
 
 // =============================================================================
