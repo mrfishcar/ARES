@@ -1554,6 +1554,29 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'He', position: 35, context: 'SENTENCE_START', expected: 'Harry Potter' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 106: PRONOUN WITH INTERVENING CLAUSE
+  // =========================================================================
+
+  // Case 68: Pronoun after parenthetical
+  {
+    name: 'Pronoun after parenthetical clause',
+    text: 'Hermione, who was reading, looked up. She nodded.',
+    entities: [
+      createEntity('hermione', 'Hermione Granger', 'PERSON'),
+    ],
+    spans: [
+      createSpan('hermione', 0, 8),
+    ],
+    sentences: [
+      createSentence('Hermione, who was reading, looked up.', 0),
+      createSentence('She nodded.', 38),
+    ],
+    pronounTests: [
+      { pronoun: 'She', position: 38, context: 'SENTENCE_START', expected: 'Hermione Granger' },
+    ],
+  },
 ];
 
 // =============================================================================
