@@ -197,6 +197,34 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   { name: 'World War II', type: 'EVENT', expectedValid: true },
   { name: 'The Renaissance', type: 'EVENT', expectedValid: true },
   { name: 'Olympic Games', type: 'EVENT', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 33: MORE OBVIOUS ENTITIES
+  // =========================================================================
+
+  // Modern tech personalities
+  { name: 'Elon Musk', type: 'PERSON', expectedValid: true },
+  { name: 'Jeff Bezos', type: 'PERSON', expectedValid: true },
+  { name: 'Mark Zuckerberg', type: 'PERSON', expectedValid: true },
+  { name: 'Tim Cook', type: 'PERSON', expectedValid: true },
+
+  // More fictional characters
+  { name: 'Frodo Baggins', type: 'PERSON', expectedValid: true },
+  { name: 'Samwise Gamgee', type: 'PERSON', expectedValid: true },
+  { name: 'Aragorn', type: 'PERSON', expectedValid: true },
+  { name: 'Legolas', type: 'PERSON', expectedValid: true },
+
+  // Countries
+  { name: 'United Kingdom', type: 'PLACE', expectedValid: true },
+  { name: 'United States', type: 'PLACE', expectedValid: true },
+  { name: 'Australia', type: 'PLACE', expectedValid: true },
+  { name: 'Japan', type: 'PLACE', expectedValid: true },
+
+  // More organizations
+  { name: 'United Nations', type: 'ORG', expectedValid: true },
+  { name: 'World Health Organization', type: 'ORG', expectedValid: true },
+  { name: 'European Union', type: 'ORG', expectedValid: true },
+  { name: 'NASA', type: 'ORG', expectedValid: true },
 ];
 
 // =============================================================================
