@@ -239,6 +239,46 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
       { subject: 'Hermione', predicate: 'works_at', object: 'Ministry', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 51: MORE OBVIOUS RELATIONS
+  // =========================================================================
+
+  // Successor relation
+  {
+    name: 'Successor relation',
+    text: 'Kingsley Shacklebolt succeeded Rufus Scrimgeour as Minister.',
+    expectedRelations: [
+      { subject: 'Kingsley', predicate: 'succeeds', object: 'Rufus', shouldExist: true },
+    ],
+  },
+
+  // Rival relation
+  {
+    name: 'Rival relation',
+    text: 'Draco Malfoy was the rival of Harry Potter.',
+    expectedRelations: [
+      { subject: 'Draco', predicate: 'rival_of', object: 'Harry', shouldExist: true },
+    ],
+  },
+
+  // Teaches relation
+  {
+    name: 'Teaches relation',
+    text: 'Remus Lupin taught Defense Against the Dark Arts.',
+    expectedRelations: [
+      { subject: 'Remus', predicate: 'teaches', object: 'Defense', shouldExist: true },
+    ],
+  },
+
+  // Owner relation
+  {
+    name: 'Owner relation',
+    text: 'Hagrid owned a dragon named Norbert.',
+    expectedRelations: [
+      { subject: 'Hagrid', predicate: 'owns', object: 'Norbert', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
