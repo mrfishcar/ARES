@@ -383,6 +383,20 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   { name: 'Einstein', type: 'PERSON', expectedValid: true },
   { name: 'Darwin', type: 'PERSON', expectedValid: true },
   { name: 'Newton', type: 'PERSON', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 109: AUTHORS AND WRITERS
+  // =========================================================================
+
+  // Classic authors
+  { name: 'Shakespeare', type: 'PERSON', expectedValid: true },
+  { name: 'Dickens', type: 'PERSON', expectedValid: true },
+  { name: 'Austen', type: 'PERSON', expectedValid: true },
+
+  // Modern authors
+  { name: 'Tolkien', type: 'PERSON', expectedValid: true },
+  { name: 'Hemingway', type: 'PERSON', expectedValid: true },
+  { name: 'Orwell', type: 'PERSON', expectedValid: true },
 ];
 
 // =============================================================================
