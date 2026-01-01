@@ -453,6 +453,20 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   { name: 'Kratos', type: 'PERSON', expectedValid: true },
   { name: 'Geralt', type: 'PERSON', expectedValid: true },
   { name: 'Lara', type: 'PERSON', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 134: FAIRY TALE CHARACTERS
+  // =========================================================================
+
+  // Classic fairy tales
+  { name: 'Cinderella', type: 'PERSON', expectedValid: true },
+  { name: 'Rapunzel', type: 'PERSON', expectedValid: true },
+  { name: 'Pinocchio', type: 'PERSON', expectedValid: true },
+
+  // Fantasy creatures
+  { name: 'Merlin', type: 'PERSON', expectedValid: true },
+  { name: 'Tinkerbell', type: 'PERSON', expectedValid: true },
+  { name: 'Rumpelstiltskin', type: 'PERSON', expectedValid: true },
 ];
 
 // =============================================================================
