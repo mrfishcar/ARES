@@ -968,6 +968,32 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 168: SCI-FI TEXT
+  // =========================================================================
+
+  describe('Scifi text', () => {
+    it('should handle science fiction narratives', async () => {
+      const templates = [
+        'The starship entered hyperspace smoothly.',
+        'Alien signals were detected nearby.',
+        'The android calculated the trajectory.',
+        'Quantum engines hummed with power.',
+      ];
+
+      let text = '';
+      for (let i = 0; i < 100; i++) {
+        text += templates[i % templates.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`Scifi: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
