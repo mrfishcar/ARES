@@ -708,6 +708,32 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 118: FLASHBACK NARRATIVE
+  // =========================================================================
+
+  describe('Flashback narrative text', () => {
+    it('should handle temporal shifts in narrative', async () => {
+      const templates = [
+        'Harry remembered the day he had arrived at Hogwarts.',
+        'Years ago, Dumbledore had found him at the orphanage.',
+        'She recalled when Voldemort had attacked their home.',
+        'He thought back to when he had first met Ron.',
+      ];
+
+      let text = '';
+      for (let i = 0; i < 100; i++) {
+        text += templates[i % templates.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`Flashback narrative: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
