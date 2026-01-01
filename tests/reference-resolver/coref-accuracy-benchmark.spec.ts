@@ -1833,6 +1833,65 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'he', position: 20, expected: 'Ron Weasley' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 151: PRONOUN WITH CONTRAST
+  // =========================================================================
+
+  // Case 81: Pronoun after but clause
+  {
+    name: 'Pronoun after but clause',
+    text: 'Harry tried hard, but he failed the test.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+    ],
+    spans: [
+      createSpan('harry', 0, 5),
+    ],
+    sentences: [
+      createSentence('Harry tried hard, but he failed the test.', 0),
+    ],
+    pronounTests: [
+      { pronoun: 'he', position: 22, expected: 'Harry Potter' },
+    ],
+  },
+
+  // Case 82: Pronoun with although
+  {
+    name: 'Pronoun with although clause',
+    text: 'Although Hermione was tired, she kept studying.',
+    entities: [
+      createEntity('hermione', 'Hermione Granger', 'PERSON'),
+    ],
+    spans: [
+      createSpan('hermione', 9, 17),
+    ],
+    sentences: [
+      createSentence('Although Hermione was tired, she kept studying.', 0),
+    ],
+    pronounTests: [
+      { pronoun: 'she', position: 29, expected: 'Hermione Granger' },
+    ],
+  },
+
+  // Case 83: Pronoun with however
+  {
+    name: 'Pronoun after however',
+    text: 'Ron was scared. However, he faced his fears.',
+    entities: [
+      createEntity('ron', 'Ron Weasley', 'PERSON'),
+    ],
+    spans: [
+      createSpan('ron', 0, 3),
+    ],
+    sentences: [
+      createSentence('Ron was scared.', 0),
+      createSentence('However, he faced his fears.', 16),
+    ],
+    pronounTests: [
+      { pronoun: 'he', position: 25, expected: 'Ron Weasley' },
+    ],
+  },
 ];
 
 // =============================================================================
