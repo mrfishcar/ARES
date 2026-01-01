@@ -96,6 +96,46 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   { name: 'Grace', type: 'PERSON', expectedValid: true, context: { hasNERSupport: true } },
   { name: 'Hunter', type: 'PERSON', expectedValid: true, context: { hasNERSupport: true } },
   { name: 'Chase', type: 'PERSON', expectedValid: true, context: { hasNERSupport: true } },
+
+  // =========================================================================
+  // LOOP 6: MORE CHALLENGING OBVIOUS ENTITIES
+  // =========================================================================
+
+  // Compound names
+  { name: 'Mary Jane Watson', type: 'PERSON', expectedValid: true },
+  { name: 'Jean-Luc Picard', type: 'PERSON', expectedValid: true },
+  { name: 'Mary-Jane', type: 'PERSON', expectedValid: true },
+
+  // Names with apostrophes
+  { name: "O'Brien", type: 'PERSON', expectedValid: true },
+  { name: "D'Angelo", type: 'PERSON', expectedValid: true },
+  { name: "McDonald's", type: 'ORG', expectedValid: true },
+
+  // Initials and abbreviations
+  { name: 'J.K. Rowling', type: 'PERSON', expectedValid: true },
+  { name: 'J.R.R. Tolkien', type: 'PERSON', expectedValid: true },
+  { name: 'F. Scott Fitzgerald', type: 'PERSON', expectedValid: true },
+
+  // Organizational acronyms
+  { name: 'FBI', type: 'ORG', expectedValid: true },
+  { name: 'NASA', type: 'ORG', expectedValid: true },
+  { name: 'WHO', type: 'ORG', expectedValid: true },
+  { name: 'BBC', type: 'ORG', expectedValid: true },
+
+  // Titles with names
+  { name: 'Queen Elizabeth II', type: 'PERSON', expectedValid: true },
+  { name: 'Pope Francis', type: 'PERSON', expectedValid: true },
+  { name: 'Senator Johnson', type: 'PERSON', expectedValid: true },
+
+  // Places with "The"
+  { name: 'The Bronx', type: 'PLACE', expectedValid: true },
+  { name: 'The Netherlands', type: 'PLACE', expectedValid: true },
+  { name: 'The Amazon', type: 'PLACE', expectedValid: true },
+
+  // Works with special characters
+  { name: "The Lord of the Rings", type: 'WORK', expectedValid: true },
+  { name: 'Star Wars: Episode IV', type: 'WORK', expectedValid: true },
+  { name: "Harry Potter and the Sorcerer's Stone", type: 'WORK', expectedValid: true },
 ];
 
 // =============================================================================

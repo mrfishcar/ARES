@@ -811,9 +811,14 @@ export function isLexicallyValidEntityName(
 
   // Normalize for stopword check
   const normalized = name.toLowerCase().trim();
+  const trimmed = name.trim();
 
-  // Reject if in global stopwords
-  if (GLOBAL_ENTITY_STOPWORDS.has(normalized)) {
+  // Check if it's an all-caps acronym (2-5 letters) - these are allowed even if lowercase is a stopword
+  // e.g., "WHO" (World Health Organization) should not be blocked by "who" stopword
+  const isAcronym = /^[A-Z]{2,5}$/.test(trimmed);
+
+  // Reject if in global stopwords (unless it's an acronym)
+  if (!isAcronym && GLOBAL_ENTITY_STOPWORDS.has(normalized)) {
     return false;
   }
 
