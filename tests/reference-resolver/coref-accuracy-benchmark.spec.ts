@@ -1714,6 +1714,67 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'he', position: 35, context: 'DIALOGUE_TAG', expected: 'Ron Weasley' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 141: PRONOUN AFTER ACTION VERB
+  // =========================================================================
+
+  // Case 75: Pronoun after action verb
+  {
+    name: 'Pronoun after action verb',
+    text: 'Harry ran. He escaped the danger.',
+    entities: [
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+    ],
+    spans: [
+      createSpan('harry', 0, 5),
+    ],
+    sentences: [
+      createSentence('Harry ran.', 0),
+      createSentence('He escaped the danger.', 11),
+    ],
+    pronounTests: [
+      { pronoun: 'He', position: 11, expected: 'Harry Potter' },
+    ],
+  },
+
+  // Case 76: Pronoun with possessive continuation
+  {
+    name: 'Pronoun with possessive continuation',
+    text: 'Hermione studied hard. Her grades improved.',
+    entities: [
+      createEntity('hermione', 'Hermione Granger', 'PERSON'),
+    ],
+    spans: [
+      createSpan('hermione', 0, 8),
+    ],
+    sentences: [
+      createSentence('Hermione studied hard.', 0),
+      createSentence('Her grades improved.', 23),
+    ],
+    pronounTests: [
+      { pronoun: 'Her', position: 23, expected: 'Hermione Granger' },
+    ],
+  },
+
+  // Case 77: Pronoun after emotion verb
+  {
+    name: 'Pronoun after emotion verb',
+    text: 'Neville worried constantly. He feared failure.',
+    entities: [
+      createEntity('neville', 'Neville Longbottom', 'PERSON'),
+    ],
+    spans: [
+      createSpan('neville', 0, 7),
+    ],
+    sentences: [
+      createSentence('Neville worried constantly.', 0),
+      createSentence('He feared failure.', 28),
+    ],
+    pronounTests: [
+      { pronoun: 'He', position: 28, expected: 'Neville Longbottom' },
+    ],
+  },
 ];
 
 // =============================================================================
