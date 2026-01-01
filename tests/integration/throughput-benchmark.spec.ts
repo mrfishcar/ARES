@@ -838,6 +838,32 @@ describe('Long-Text Throughput Benchmark', () => {
     });
   });
 
+  // =========================================================================
+  // LOOP 143: CHASE SCENE TEXT
+  // =========================================================================
+
+  describe('Chase scene text', () => {
+    it('should handle fast-paced chase sequences', async () => {
+      const templates = [
+        'Harry sprinted through the corridors desperately.',
+        'Footsteps echoed behind him loudly.',
+        'He ducked around a corner swiftly.',
+        'The pursuers were gaining on him.',
+      ];
+
+      let text = '';
+      for (let i = 0; i < 100; i++) {
+        text += templates[i % templates.length] + ' ';
+      }
+
+      const result = await benchmarkExtraction(text.trim());
+      results.push(result);
+
+      console.log(`Chase scene: ${result.wordsPerSecond.toFixed(1)} words/sec`);
+      expect(result.wordsPerSecond).toBeGreaterThanOrEqual(100);
+    });
+  });
+
   describe('BENCHMARK SUMMARY', () => {
     it('should meet throughput targets', async () => {
       // Wait for all tests to complete (results should be populated)
