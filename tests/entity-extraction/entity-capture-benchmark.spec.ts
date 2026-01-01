@@ -1254,6 +1254,18 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'to', type: 'ITEM', expectedValid: false },
   { name: 'for', type: 'ITEM', expectedValid: false },
   { name: 'with', type: 'ITEM', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 170: NEGATION WORDS
+  // =========================================================================
+
+  // Negatives
+  { name: 'not', type: 'ITEM', expectedValid: false },
+  { name: 'no', type: 'ITEM', expectedValid: false },
+  { name: 'never', type: 'ITEM', expectedValid: false },
+  { name: 'nothing', type: 'ITEM', expectedValid: false },
+  { name: 'nobody', type: 'ITEM', expectedValid: false },
+  { name: 'none', type: 'ITEM', expectedValid: false },
 ];
 
 // =============================================================================
