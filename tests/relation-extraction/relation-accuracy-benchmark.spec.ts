@@ -496,6 +496,28 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
       { subject: 'Harry', predicate: 'trusted', object: 'Dumbledore', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 102: MORE OBVIOUS RELATIONS
+  // =========================================================================
+
+  // Followed relation
+  {
+    name: 'Followed relation',
+    text: 'Ron followed Harry into the forest.',
+    expectedRelations: [
+      { subject: 'Ron', predicate: 'followed', object: 'Harry', shouldExist: true },
+    ],
+  },
+
+  // Betrayed relation
+  {
+    name: 'Betrayed relation',
+    text: 'Peter Pettigrew betrayed the Potters.',
+    expectedRelations: [
+      { subject: 'Peter Pettigrew', predicate: 'betrayed', object: 'Potters', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
