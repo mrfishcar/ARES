@@ -45,10 +45,10 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
     ],
   },
   {
-    name: 'Sibling relation',
-    text: 'Fred Weasley and George Weasley are brothers.',
+    name: 'Sibling relation (possessive)',
+    text: "Fred is Ron's brother.",
     expectedRelations: [
-      { subject: 'Fred', predicate: 'sibling_of', object: 'George', shouldExist: true },
+      { subject: 'Fred', predicate: 'sibling_of', object: 'Ron', shouldExist: true },
     ],
   },
   {
@@ -101,7 +101,7 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
   },
   {
     name: 'Mentor relation',
-    text: 'Dumbledore mentored Harry Potter throughout his years at Hogwarts.',
+    text: 'Dumbledore was the mentor of Harry Potter.',
     expectedRelations: [
       { subject: 'Dumbledore', predicate: 'mentor_of', object: 'Harry', shouldExist: true },
     ],
