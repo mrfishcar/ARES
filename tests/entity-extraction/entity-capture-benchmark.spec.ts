@@ -603,6 +603,28 @@ const JUNK_ENTITIES: ObviousEntityCase[] = [
   { name: 'why', type: 'PERSON', expectedValid: false },
   { name: 'how', type: 'PERSON', expectedValid: false },
   { name: 'who', type: 'PERSON', expectedValid: false },
+
+  // =========================================================================
+  // LOOP 47: MORE JUNK CASES
+  // =========================================================================
+
+  // Ordinal words
+  { name: 'first', type: 'PERSON', expectedValid: false },
+  { name: 'second', type: 'PERSON', expectedValid: false },
+  { name: 'last', type: 'PERSON', expectedValid: false },
+  { name: 'next', type: 'PLACE', expectedValid: false },
+
+  // Direction words without context
+  { name: 'left', type: 'PLACE', expectedValid: false },
+  { name: 'right', type: 'PLACE', expectedValid: false },
+  { name: 'forward', type: 'PLACE', expectedValid: false },
+  { name: 'back', type: 'PLACE', expectedValid: false },
+
+  // Quantity words
+  { name: 'more', type: 'PERSON', expectedValid: false },
+  { name: 'less', type: 'PERSON', expectedValid: false },
+  { name: 'most', type: 'PERSON', expectedValid: false },
+  { name: 'least', type: 'PERSON', expectedValid: false },
 ];
 
 // =============================================================================

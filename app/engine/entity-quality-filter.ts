@@ -197,6 +197,7 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
   'good', 'bad', 'new', 'old', 'first', 'second', 'third', 'fourth', 'fifth', 'last', 'long', 'short',
   'big', 'small', 'great', 'little', 'own', 'other', 'another', 'different', 'same', 'similar',
   'high', 'low', 'next', 'early', 'young', 'important', 'large', 'small',
+  'left', 'right', 'forward', 'back', 'backward', 'behind', 'ahead',
   'able', 'ready', 'sure', 'certain', 'clear', 'full', 'free',
   'better', 'best', 'worse', 'worst', 'more', 'most', 'less', 'least',
   'neither',
