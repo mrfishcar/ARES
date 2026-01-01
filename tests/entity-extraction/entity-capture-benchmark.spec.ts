@@ -355,6 +355,20 @@ const OBVIOUS_ENTITIES: ObviousEntityCase[] = [
   { name: 'Oxford', type: 'ORG', expectedValid: true },
   { name: 'Cambridge', type: 'ORG', expectedValid: true },
   { name: 'Stanford', type: 'ORG', expectedValid: true },
+
+  // =========================================================================
+  // LOOP 99: MUSIC ARTISTS AND BANDS
+  // =========================================================================
+
+  // Musicians (classic)
+  { name: 'Mozart', type: 'PERSON', expectedValid: true },
+  { name: 'Beethoven', type: 'PERSON', expectedValid: true },
+  { name: 'Bach', type: 'PERSON', expectedValid: true },
+
+  // Bands
+  { name: 'Beatles', type: 'ORG', expectedValid: true },
+  { name: 'Pink Floyd', type: 'ORG', expectedValid: true },
+  { name: 'Rolling Stones', type: 'ORG', expectedValid: true },
 ];
 
 // =============================================================================
