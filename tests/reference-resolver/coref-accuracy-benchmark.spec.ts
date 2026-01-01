@@ -1691,6 +1691,29 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'he', position: 17, context: 'CLAUSE', expected: 'Harry Potter' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 136: PRONOUN IN DIALOGUE TAG
+  // =========================================================================
+
+  // Case 74: Pronoun in dialogue attribution
+  {
+    name: 'Pronoun in dialogue tag',
+    text: 'Ron laughed. "That was brilliant," he said.',
+    entities: [
+      createEntity('ron', 'Ron Weasley', 'PERSON'),
+    ],
+    spans: [
+      createSpan('ron', 0, 3),
+    ],
+    sentences: [
+      createSentence('Ron laughed.', 0),
+      createSentence('"That was brilliant," he said.', 13),
+    ],
+    pronounTests: [
+      { pronoun: 'he', position: 35, context: 'DIALOGUE_TAG', expected: 'Ron Weasley' },
+    ],
+  },
 ];
 
 // =============================================================================
