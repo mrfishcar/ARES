@@ -1622,6 +1622,31 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'He', position: 39, context: 'SENTENCE_START', expected: 'Albus Dumbledore' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 121: OBJECT PRONOUN IN ACTION
+  // =========================================================================
+
+  // Case 71: Pronoun as direct object
+  {
+    name: 'Pronoun as direct object',
+    text: 'Voldemort cursed Harry. The spell hit him hard.',
+    entities: [
+      createEntity('voldemort', 'Lord Voldemort', 'PERSON'),
+      createEntity('harry', 'Harry Potter', 'PERSON'),
+    ],
+    spans: [
+      createSpan('voldemort', 0, 9),
+      createSpan('harry', 17, 22),
+    ],
+    sentences: [
+      createSentence('Voldemort cursed Harry.', 0),
+      createSentence('The spell hit him hard.', 24),
+    ],
+    pronounTests: [
+      { pronoun: 'him', position: 38, context: 'OBJECT', expected: 'Harry Potter' },
+    ],
+  },
 ];
 
 // =============================================================================
