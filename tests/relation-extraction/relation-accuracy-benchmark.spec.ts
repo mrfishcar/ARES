@@ -703,6 +703,37 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
       { subject: 'founders', predicate: 'built', object: 'Hogwarts', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 147: FOUND/LOST VERBS
+  // =========================================================================
+
+  // Found relation
+  {
+    name: 'Found relation',
+    text: 'Harry found the Marauders Map.',
+    expectedRelations: [
+      { subject: 'Harry', predicate: 'found', object: 'Marauders Map', shouldExist: true },
+    ],
+  },
+
+  // Lost relation
+  {
+    name: 'Lost relation',
+    text: 'Neville lost his toad Trevor.',
+    expectedRelations: [
+      { subject: 'Neville', predicate: 'lost', object: 'Trevor', shouldExist: true },
+    ],
+  },
+
+  // Discovered relation
+  {
+    name: 'Discovered relation',
+    text: 'Hermione discovered the secret passage.',
+    expectedRelations: [
+      { subject: 'Hermione', predicate: 'discovered', object: 'passage', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
