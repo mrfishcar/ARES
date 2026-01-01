@@ -452,6 +452,28 @@ const OBVIOUS_RELATION_CASES: RelationTestCase[] = [
       { subject: 'Dumbledore', predicate: 'led', object: 'Order', shouldExist: true },
     ],
   },
+
+  // =========================================================================
+  // LOOP 92: MORE OBVIOUS RELATIONS
+  // =========================================================================
+
+  // Captured relation
+  {
+    name: 'Captured relation',
+    text: 'The Death Eaters captured Ollivander.',
+    expectedRelations: [
+      { subject: 'Death Eaters', predicate: 'captured', object: 'Ollivander', shouldExist: true },
+    ],
+  },
+
+  // Escaped relation
+  {
+    name: 'Escaped relation',
+    text: 'Sirius escaped from Azkaban.',
+    expectedRelations: [
+      { subject: 'Sirius', predicate: 'escaped', object: 'Azkaban', shouldExist: true },
+    ],
+  },
 ];
 
 // =============================================================================
