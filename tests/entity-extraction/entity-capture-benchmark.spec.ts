@@ -724,6 +724,22 @@ const ADVERSARIAL_CASES: ObviousEntityCase[] = [
   { name: 'Fisher', type: 'PERSON', expectedValid: true, context: { fullText: 'Mrs. Fisher cooked.', spanStart: 5, spanEnd: 11 } },
   { name: 'Hunter', type: 'PERSON', expectedValid: true, context: { fullText: 'Captain Hunter sailed.', spanStart: 8, spanEnd: 14 } },
   { name: 'Farmer', type: 'PERSON', expectedValid: true, context: { fullText: 'Mr. Farmer plowed.', spanStart: 4, spanEnd: 10 } },
+
+  // =========================================================================
+  // LOOP 57: MORE ADVERSARIAL CASES
+  // =========================================================================
+
+  // City names that are also surnames (valid when NER-backed person)
+  { name: 'London', type: 'PERSON', expectedValid: true, context: { fullText: 'Jack London wrote.', hasNERSupport: true } },
+  { name: 'Austin', type: 'PERSON', expectedValid: true, context: { fullText: 'Austin Powers laughed.', hasNERSupport: true } },
+
+  // City names as places (valid)
+  { name: 'Sydney', type: 'PLACE', expectedValid: true },
+  { name: 'Berlin', type: 'PLACE', expectedValid: true },
+
+  // Brand names as organizations (valid)
+  { name: 'Apple', type: 'ORG', expectedValid: true },
+  { name: 'Amazon', type: 'ORG', expectedValid: true },
 ];
 
 // =============================================================================
