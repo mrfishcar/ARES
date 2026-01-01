@@ -1577,6 +1577,28 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'She', position: 38, context: 'SENTENCE_START', expected: 'Hermione Granger' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 111: POSSESSIVE WITH NOUN
+  // =========================================================================
+
+  // Case 69: Possessive pronoun with body part
+  {
+    name: 'Possessive with body part noun',
+    text: 'Ron raised his hand quickly.',
+    entities: [
+      createEntity('ron', 'Ron Weasley', 'PERSON'),
+    ],
+    spans: [
+      createSpan('ron', 0, 3),
+    ],
+    sentences: [
+      createSentence('Ron raised his hand quickly.', 0),
+    ],
+    pronounTests: [
+      { pronoun: 'his', position: 11, context: 'POSSESSIVE', expected: 'Ron Weasley' },
+    ],
+  },
 ];
 
 // =============================================================================
