@@ -1173,6 +1173,50 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'He', position: 24, context: 'SENTENCE_START', expected: 'Neville Longbottom' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 52: MORE COREF CASES
+  // =========================================================================
+
+  // Case 51: Multiple sentences with single entity
+  {
+    name: 'Three-sentence single entity',
+    text: 'Snape walked in. He glared. His robes billowed.',
+    entities: [
+      createEntity('snape', 'Severus Snape', 'PERSON'),
+    ],
+    spans: [
+      createSpan('snape', 0, 5),
+    ],
+    sentences: [
+      createSentence('Snape walked in.', 0),
+      createSentence('He glared.', 17),
+      createSentence('His robes billowed.', 28),
+    ],
+    pronounTests: [
+      { pronoun: 'He', position: 17, context: 'SENTENCE_START', expected: 'Severus Snape' },
+      { pronoun: 'His', position: 28, context: 'SENTENCE_START', expected: 'Severus Snape' },
+    ],
+  },
+
+  // Case 52: Item with neutral pronoun
+  {
+    name: 'Item with it pronoun',
+    text: 'The wand glowed. It was powerful.',
+    entities: [
+      createEntity('wand', 'Elder Wand', 'ITEM'),
+    ],
+    spans: [
+      createSpan('wand', 4, 8),
+    ],
+    sentences: [
+      createSentence('The wand glowed.', 0),
+      createSentence('It was powerful.', 17),
+    ],
+    pronounTests: [
+      { pronoun: 'It', position: 17, context: 'SENTENCE_START', expected: 'Elder Wand' },
+    ],
+  },
 ];
 
 // =============================================================================
