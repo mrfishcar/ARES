@@ -472,6 +472,50 @@ const Icons = {
       <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
     </svg>
   ),
+  // List type icons for format menu
+  listBullet: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="4" cy="7" r="1.5" fill="currentColor" stroke="none"/>
+      <circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+      <circle cx="4" cy="17" r="1.5" fill="currentColor" stroke="none"/>
+      <path d="M9 7h11M9 12h11M9 17h11"/>
+    </svg>
+  ),
+  listDashed: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M2 7h4M2 12h4M2 17h4M9 7h11M9 12h11M9 17h11"/>
+    </svg>
+  ),
+  listNumbered: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <text x="2" y="9" fontSize="7" fill="currentColor" stroke="none" fontFamily="system-ui">1</text>
+      <text x="2" y="14" fontSize="7" fill="currentColor" stroke="none" fontFamily="system-ui">2</text>
+      <text x="2" y="19" fontSize="7" fill="currentColor" stroke="none" fontFamily="system-ui">3</text>
+      <path d="M9 7h11M9 12h11M9 17h11"/>
+    </svg>
+  ),
+  listCheck: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <rect x="2" y="5" width="5" height="5" rx="1"/>
+      <rect x="2" y="14" width="5" height="5" rx="1"/>
+      <path d="M10 7h10M10 16h10"/>
+    </svg>
+  ),
+  indentDecrease: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M21 6H11M21 12H11M21 18H11M3 12l4-4M3 12l4 4"/>
+    </svg>
+  ),
+  indentIncrease: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M21 6H11M21 12H11M21 18H11M7 8l4 4-4 4"/>
+    </svg>
+  ),
+  highlighter: (
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M15.5 4l4.5 4.5-10 10H5.5v-4.5l10-10zm1.5-1.5l3 3-1.5 1.5-3-3 1.5-1.5zM3 20h18v2H3v-2z"/>
+    </svg>
+  ),
 };
 
 // ============================================================================
@@ -1183,6 +1227,88 @@ function EditorPanel({
     setShowFormatMenu(false);
   }, [execFormat]);
 
+  // Handle list types
+  const handleListType = useCallback((type: 'bullet' | 'dashed' | 'numbered' | 'checkbox') => {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    let container = range.startContainer;
+
+    // Find the parent div/block element
+    while (container && container.nodeType !== Node.ELEMENT_NODE) {
+      container = container.parentNode as Node;
+    }
+
+    let targetDiv = container as HTMLElement;
+    while (targetDiv && targetDiv.parentElement && !targetDiv.parentElement.classList.contains('ios-editor-body')) {
+      targetDiv = targetDiv.parentElement;
+    }
+
+    if (targetDiv && targetDiv.parentElement?.classList.contains('ios-editor-body')) {
+      const text = targetDiv.textContent || '';
+      const newItem = document.createElement('div');
+
+      switch (type) {
+        case 'bullet':
+          newItem.className = 'ios-list-item ios-list-item--bullet';
+          newItem.innerHTML = `<span class="ios-list-marker" contenteditable="false">•</span><span class="ios-list-text">${escapeHtml(text)}</span>`;
+          break;
+        case 'dashed':
+          newItem.className = 'ios-list-item ios-list-item--dashed';
+          newItem.innerHTML = `<span class="ios-list-marker" contenteditable="false">-</span><span class="ios-list-text">${escapeHtml(text)}</span>`;
+          break;
+        case 'numbered':
+          newItem.className = 'ios-list-item ios-list-item--numbered';
+          newItem.innerHTML = `<span class="ios-list-marker" contenteditable="false">1.</span><span class="ios-list-text">${escapeHtml(text)}</span>`;
+          break;
+        case 'checkbox':
+          newItem.className = 'ios-checklist-item';
+          newItem.innerHTML = `<span class="ios-checkbox" contenteditable="false">☐</span><span class="ios-checklist-text">${escapeHtml(text)}</span>`;
+          break;
+      }
+
+      targetDiv.replaceWith(newItem);
+      handleInput();
+    }
+
+    setShowFormatMenu(false);
+  }, [handleInput]);
+
+  // Handle indentation
+  const handleIndent = useCallback((direction: 'increase' | 'decrease') => {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    let container = range.startContainer;
+
+    // Find the parent div/block element
+    while (container && container.nodeType !== Node.ELEMENT_NODE) {
+      container = container.parentNode as Node;
+    }
+
+    let targetDiv = container as HTMLElement;
+    while (targetDiv && targetDiv.parentElement && !targetDiv.parentElement.classList.contains('ios-editor-body')) {
+      targetDiv = targetDiv.parentElement;
+    }
+
+    if (targetDiv) {
+      const currentMargin = parseInt(targetDiv.style.marginLeft || '0', 10);
+      const step = 24; // pixels per indent level
+
+      if (direction === 'increase') {
+        targetDiv.style.marginLeft = `${currentMargin + step}px`;
+      } else {
+        targetDiv.style.marginLeft = `${Math.max(0, currentMargin - step)}px`;
+      }
+
+      handleInput();
+    }
+
+    setShowFormatMenu(false);
+  }, [handleInput]);
+
   // Handle text style (heading levels)
   const handleTextStyle = useCallback((style: 'title' | 'heading' | 'subheading' | 'body') => {
     const selection = window.getSelection();
@@ -1612,6 +1738,68 @@ function EditorPanel({
                       aria-label="Strikethrough"
                     >
                       <s>S</s>
+                    </button>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="ios-format-menu__divider" />
+
+                  {/* List type buttons row */}
+                  <div className="ios-format-menu__buttons-row">
+                    <button
+                      className="ios-format-menu__format-btn ios-format-menu__format-btn--icon"
+                      onClick={() => handleListType('bullet')}
+                      role="menuitem"
+                      aria-label="Bullet list"
+                    >
+                      {Icons.listBullet}
+                    </button>
+                    <button
+                      className="ios-format-menu__format-btn ios-format-menu__format-btn--icon"
+                      onClick={() => handleListType('dashed')}
+                      role="menuitem"
+                      aria-label="Dashed list"
+                    >
+                      {Icons.listDashed}
+                    </button>
+                    <button
+                      className="ios-format-menu__format-btn ios-format-menu__format-btn--icon"
+                      onClick={() => handleListType('numbered')}
+                      role="menuitem"
+                      aria-label="Numbered list"
+                    >
+                      {Icons.listNumbered}
+                    </button>
+                    <button
+                      className="ios-format-menu__format-btn ios-format-menu__format-btn--icon"
+                      onClick={() => handleListType('checkbox')}
+                      role="menuitem"
+                      aria-label="Checkbox list"
+                    >
+                      {Icons.listCheck}
+                    </button>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="ios-format-menu__divider" />
+
+                  {/* Indentation controls */}
+                  <div className="ios-format-menu__buttons-row ios-format-menu__buttons-row--spaced">
+                    <button
+                      className="ios-format-menu__format-btn ios-format-menu__format-btn--icon"
+                      onClick={() => handleIndent('decrease')}
+                      role="menuitem"
+                      aria-label="Decrease indent"
+                    >
+                      {Icons.indentDecrease}
+                    </button>
+                    <button
+                      className="ios-format-menu__format-btn ios-format-menu__format-btn--icon"
+                      onClick={() => handleIndent('increase')}
+                      role="menuitem"
+                      aria-label="Increase indent"
+                    >
+                      {Icons.indentIncrease}
                     </button>
                   </div>
                 </div>
