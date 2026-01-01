@@ -1647,6 +1647,28 @@ const BENCHMARK_CASES: BenchmarkCase[] = [
       { pronoun: 'him', position: 38, context: 'OBJECT', expected: 'Harry Potter' },
     ],
   },
+
+  // =========================================================================
+  // LOOP 126: POSSESSIVE IN COMPOUND NOUN
+  // =========================================================================
+
+  // Case 72: Possessive in compound noun phrase
+  {
+    name: 'Possessive in compound noun',
+    text: 'Luna collected her strange plants carefully.',
+    entities: [
+      createEntity('luna', 'Luna Lovegood', 'PERSON'),
+    ],
+    spans: [
+      createSpan('luna', 0, 4),
+    ],
+    sentences: [
+      createSentence('Luna collected her strange plants carefully.', 0),
+    ],
+    pronounTests: [
+      { pronoun: 'her', position: 15, context: 'POSSESSIVE', expected: 'Luna Lovegood' },
+    ],
+  },
 ];
 
 // =============================================================================
