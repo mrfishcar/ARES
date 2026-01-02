@@ -19,11 +19,19 @@ import type { Token, ParsedSentence } from "./parse-types";
 import { findShortestPath, matchDependencyPath, extractRelationFromPath } from "./relations/dependency-paths";
 import { detectClauses } from "./clause-detector";
 import { detectVoice } from "./voice-detector";
+import {
+  TokenResolver,
+  createTokenResolver,
+  type EntitySpan,
+  type Sentence,
+  type ResolutionContext,
+} from "../reference-resolver";
 
 type Span = { entity_id: string; start: number; end: number };
 const TRACE_REL = process.env.L3_REL_TRACE === "1";
 const COORD_TRACE = process.env.L3_COORD_DEBUG === "1";
 const L3_DEBUG = process.env.L3_DEBUG === "1";
+
 function traceRelation(stage: "candidate" | "final", rel: {
   pred: Predicate;
   subj: Entity | null;
@@ -394,7 +402,10 @@ function resolveAppositiveSubject(tok: Token, tokens: Token[]): Token {
  * Handles cases like "Gandalf the Grey", "Professor McGonagall", "Minas Tirith"
  */
 function expandNP(tok: Token, tokens: Token[]): { start: number; end: number } {
-  const include = new Set(['compound', 'appos', 'flat', 'det', 'amod', 'nmod', 'nummod']);
+  // Note: 'appos' is intentionally excluded - appositives are separate entities/descriptions,
+  // not part of the noun phrase. Including 'appos' caused "Aragorn, son of Arathorn, married Arwen"
+  // to expand Aragorn's NP to include the entire sentence.
+  const include = new Set(['compound', 'flat', 'det', 'amod', 'nmod', 'nummod']);
   const stack = [tok];
   const members: Token[] = [tok];
   const seen = new Set([tok.i]);
@@ -711,7 +722,23 @@ function tryCreateRelation(
     if (ref.span) {
       const mention = text.slice(ref.span.start, ref.span.end).trim();
       const cleanedMention = cleanRelationSurface(mention);
-      if (cleanedMention) return cleanedMention;
+      if (cleanedMention) {
+        // IMPORTANT: Prefer entity's canonical if it's a multi-word name
+        // that contains the span-derived text as a substring.
+        // This ensures "Harry Potter" is used instead of just "Harry" or "Potter"
+        const canonical = ref.entity.canonical;
+        const canonicalWords = canonical.split(/\s+/);
+        const mentionWords = cleanedMention.split(/\s+/);
+        if (canonicalWords.length > mentionWords.length) {
+          // Canonical has more words - check if mention is a partial match
+          const mentionLower = cleanedMention.toLowerCase();
+          const canonicalLower = canonical.toLowerCase();
+          if (canonicalLower.includes(mentionLower)) {
+            return cleanRelationSurface(canonical);
+          }
+        }
+        return cleanedMention;
+      }
     }
     return cleanRelationSurface(fallback);
   };
@@ -779,7 +806,10 @@ function tryCreateRelation(
       console.log(`[COORD-EXTEND] Base tokens for span ${baseSpan.start}-${baseSpan.end}:`, baseTokens.map(t => `${t.text}/${t.dep}/head=${t.head}`));
     }
 
-    const coordDeps = new Set(['compound', 'conj', 'cc', 'appos', 'flat']);
+    // Note: 'appos' is intentionally excluded - appositives describe/clarify an entity,
+    // they are NOT coordinations. Including 'appos' caused "Aragorn, son of Arathorn, married Arwen"
+    // to create spurious married_to relations with Arathorn (the parent).
+    const coordDeps = new Set(['compound', 'conj', 'cc', 'flat']);
     const members: Token[] = [...baseTokens];
     const queue: Token[] = [...baseTokens];
     const seen = new Set(queue.map(t => t.i));
@@ -970,12 +1000,20 @@ function tryCreateRelation(
 
 /**
  * Extract relations using dependency patterns
+ *
+ * @param text - The source text
+ * @param entities - Extracted entities
+ * @param spans - Entity spans
+ * @param sentences - Parsed sentences with tokens
+ * @param tokenResolver - TokenResolver for unified pronoun resolution
+ *                        Uses the ReferenceResolver for pronoun resolution.
  */
 function extractDepRelations(
   text: string,
   entities: Entity[],
   spans: Span[],
-  sentences: ParsedSentence[]
+  sentences: ParsedSentence[],
+  tokenResolver?: TokenResolver
 ): Relation[] {
   const relations: Relation[] = [];
   const textLower = text.toLowerCase();
@@ -990,78 +1028,82 @@ function extractDepRelations(
     entityById.set(entity.id, entity);
   }
 
-  const schoolKeywords = ['school', 'academy', 'institute', 'university', 'college', 'hogwarts', 'beauxbatons', 'durmstrang'];
-
-  let lastNamedSubject: Token | null = null;
-  let lastNamedOrg: Token | null = null;
-  let lastSchoolOrg: Token | null = null;
-  const recentPersons: Token[] = [];
+  // State for tracking sentence/enumeration processing
   const handledChildrenSentences = new Set<number>();
   const handledMemberSentences = new Set<number>();
   const handledColonPositions = new Set<number>();
   const emittedEnumerationKeys = new Set<string>();
-
-  const pushRecentPerson = (tok?: Token | null) => {
-    if (!tok) return;
-    if (!isNameToken(tok)) return;
-    if (tok.pos !== 'PROPN') return;
-    if (tok.ent && tok.ent !== 'PERSON' && tok.ent !== 'NORP') return;
-    if (recentPersons.length === 0 || recentPersons[0].start !== tok.start) {
-      recentPersons.unshift(tok);
-      if (recentPersons.length > 6) {
-        recentPersons.pop();
-      }
-    }
-  };
-
-  const pushRecentOrg = (tok?: Token | null) => {
-    if (!tok) return;
-    if (tok.pos !== 'PROPN') return;
-    if (tok.ent && tok.ent !== 'ORG' && tok.ent !== 'FAC') return;
-    lastNamedOrg = tok;
-    const lower = tok.text.toLowerCase();
-    if (schoolKeywords.some(keyword => lower.includes(keyword))) {
-      lastSchoolOrg = tok;
-    }
-  };
-
-  const resolvePossessors = (possessor: Token): Token[] => {
-    if (possessor.pos !== 'PRON') {
-      return [possessor];
-    }
-    const lower = possessor.text.toLowerCase();
-    if (lower === 'their' && recentPersons.length >= 2) {
-      return recentPersons.slice(0, 2);
-    }
-    if ((lower === 'his' || lower === 'her') && lastNamedSubject) {
-      return [lastNamedSubject];
-    }
-    if (recentPersons.length) {
-      return [recentPersons[0]];
-    }
-    return lastNamedSubject ? [lastNamedSubject] : [];
-  };
-
-  const updateLastNamedSubject = (candidate?: Token) => {
-    if (!candidate) return;
-    if (candidate.pos === 'PRON') return;
-    if (isNameToken(candidate)) {
-      lastNamedSubject = candidate;
-      pushRecentPerson(candidate);
-    }
-  };
 
   const ACADEMIC_TITLE_TOKENS = new Set([
     'professor', 'teacher', 'instructor', 'head', 'headmaster', 'headmistress',
     'dean', 'chair', 'director', 'warden', 'master'
   ]);
 
-  const resolveAcademicSubject = (tok?: Token | null, tokensRef?: Token[]): Token | null => {
+  // =============================================================================
+  // UNIFIED RESOLUTION ADAPTERS (TokenResolver-only)
+  // All pronoun resolution now goes through TokenResolver
+  // =============================================================================
+
+  /**
+   * Resolve a pronoun token to its antecedent using TokenResolver.
+   *
+   * @param tok - Token to resolve (may be a pronoun)
+   * @param context - Resolution context (sentence position)
+   * @returns Resolved token (original token if not a pronoun or no resolution found)
+   */
+  const resolvePronounToken = (tok: Token, context: ResolutionContext = 'SENTENCE_MID'): Token => {
+    if (tok.pos !== 'PRON') return tok;
+    if (!tokenResolver) return tok;
+    return tokenResolver.resolveToken(tok, context);
+  };
+
+  /**
+   * Resolve possessive pronouns (his/her/their) to owner token(s) using TokenResolver.
+   *
+   * @param possessor - Token to resolve (may be a possessive pronoun)
+   * @returns Array of resolved tokens
+   */
+  const resolvePossessorsUnified = (possessor: Token): Token[] => {
+    if (possessor.pos !== 'PRON') return [possessor];
+    if (!tokenResolver) return [];
+    return tokenResolver.resolvePossessors(possessor);
+  };
+
+  /**
+   * Update entity tracking state via TokenResolver.
+   *
+   * @param tok - Token to track
+   * @param entityId - Entity ID for the token (required)
+   */
+  const trackEntityMention = (tok?: Token | null, entityId?: string) => {
+    if (!tok || !entityId || !tokenResolver) return;
+    tokenResolver.trackMention(tok, entityId);
+  };
+
+  /**
+   * Resolve academic title or pronoun to a proper subject.
+   * Uses TokenResolver for pronoun resolution.
+   *
+   * @param tok - Token to resolve (may be pronoun or academic title)
+   * @param tokensRef - Array of tokens in the sentence (for title resolution)
+   * @param context - Resolution context
+   * @returns Resolved token
+   */
+  const resolveAcademicSubjectUnified = (
+    tok?: Token | null,
+    tokensRef?: Token[],
+    context: ResolutionContext = 'SENTENCE_MID'
+  ): Token | null => {
     if (!tok) return null;
-    const lower = tok.text.toLowerCase();
-    if (tok.pos === 'PRON' && lastNamedSubject) {
-      return lastNamedSubject;
+
+    // Handle pronouns via unified resolution
+    if (tok.pos === 'PRON') {
+      const resolved = resolvePronounToken(tok, context);
+      return resolved !== tok ? resolved : null;
     }
+
+    // Handle academic titles - find proper noun child
+    const lower = tok.text.toLowerCase();
     if (ACADEMIC_TITLE_TOKENS.has(lower) && tokensRef) {
       const properChild = tokensRef.find(child =>
         child.head === tok.i &&
@@ -1071,6 +1113,7 @@ function extractDepRelations(
         return properChild;
       }
     }
+
     return tok;
   };
 
@@ -1173,18 +1216,6 @@ function extractDepRelations(
       }
     }
 
-    if (!candidateEntities.length && recentPersons.length) {
-      for (const token of recentPersons) {
-        if (token.start >= placeSpan.start && token.start <= placeSpan.end) continue;
-        const surface = text.slice(token.start, token.end);
-        const mapped = mapSurfaceToEntity(surface, entities, spans, { start: token.start, end: token.end });
-        const entity = mapped?.entity;
-        if (!entity || entity.type !== 'PERSON' || entity.id === subjEntity.id) continue;
-        if (!candidateEntities.includes(entity)) {
-          candidateEntities.push(entity);
-        }
-      }
-    }
 
     for (const candidate of candidateEntities) {
       const personSpan = spanLookup.get(candidate.id);
@@ -1597,11 +1628,6 @@ function extractDepRelations(
           }
         }
 
-        if (entityType === 'PERSON' || entityType === 'NORP') {
-          pushRecentPerson(tok);
-        } else if (entityType === 'ORG' || entityType === 'FAC') {
-          pushRecentOrg(tok);
-        }
       }
 
       // Pattern 1: parent_of via "begat"
@@ -1622,10 +1648,9 @@ function extractDepRelations(
         }
 
       if (subj && obj) {
-        if (subj.pos === 'PRON' && lastNamedSubject) {
-          subj = lastNamedSubject;
-        }
-        updateLastNamedSubject(subj);
+        // Use unified pronoun resolution
+        subj = resolvePronounToken(subj, 'SENTENCE_MID');
+        trackEntityMention(subj);
           const produced = tryCreateRelation(
             text, entities, spans, 'parent_of',
             subj.start, subj.end, obj.start, obj.end, 'DEP',
@@ -1645,14 +1670,19 @@ function extractDepRelations(
           ? tokens.filter(t => t.dep === 'nsubj' && t.head === copula.i)
           : [];
         let possTokens = tokens.filter(t => t.dep === 'poss' && t.head === tok.i);
-        if (!possTokens.length && lastNamedSubject) {
-          possTokens = [lastNamedSubject];
+        if (!possTokens.length) {
+          // Fallback to last named subject via unified resolution
+          const fallback = resolvePronounToken({ pos: 'PRON', text: 'his', start: tok.start } as Token, 'POSSESSIVE');
+          if (fallback.pos !== 'PRON') {
+            possTokens = [fallback];
+          }
         }
-        const parentTokens = possTokens.flatMap(resolvePossessors);
+        const parentTokens = possTokens.flatMap(resolvePossessorsUnified);
 
         const subjectRefs: EntityRef[] = [];
         for (const subjTok of subjects.flatMap(s => collectConjTokens(s, tokens))) {
-          const resolved = subjTok.pos === 'PRON' && lastNamedSubject ? lastNamedSubject : subjTok;
+          // Use unified pronoun resolution
+          const resolved = resolvePronounToken(subjTok, 'SENTENCE_MID');
           const subjSpan = expandNP(resolved, tokens);
           const mapped = mapSurfaceToEntity(
             text.slice(subjSpan.start, subjSpan.end),
@@ -1661,7 +1691,7 @@ function extractDepRelations(
             subjSpan
           );
           if (mapped) {
-            updateLastNamedSubject(resolved);
+            trackEntityMention(resolved, mapped.entity.id);
             subjectRefs.push(mapped);
           }
         }
@@ -1759,10 +1789,9 @@ function extractDepRelations(
           }
 
           if (parentCandidates.length && childToken) {
-            if (childToken.pos === 'PRON' && lastNamedSubject) {
-              childToken = lastNamedSubject;
-            }
-            updateLastNamedSubject(childToken);
+            // Use unified pronoun resolution
+            childToken = resolvePronounToken(childToken, 'SENTENCE_MID');
+            trackEntityMention(childToken);
             const childSpan = expandNP(childToken, tokens);
 
 
@@ -1788,7 +1817,7 @@ function extractDepRelations(
         // Allow "X's father" or pronoun possessor
         let childSpan = possessor ? expandNP(possessor, tokens) : null;
         if (possessor && possessor.pos !== 'PRON') {
-          updateLastNamedSubject(possessor);
+          trackEntityMention(possessor);
         }
 
         const apposParents = tokens.filter(t => t.head === tok.i && (t.dep === 'appos' || (t.dep === 'compound' && isNameToken(t))));
@@ -1820,7 +1849,7 @@ function extractDepRelations(
             const parentSpan = expandNP(parentCandidate, tokens);
             if (parentSpan.start === childSpan.start && parentSpan.end === childSpan.end) continue;
             if (parentCandidate.pos !== 'PRON') {
-              updateLastNamedSubject(parentCandidate);
+              trackEntityMention(parentCandidate);
             }
             const produced = tryCreateRelation(
               text, entities, spans, 'child_of',
@@ -1841,6 +1870,19 @@ function extractDepRelations(
         if (tok.pos === 'VERB' || tok.dep === 'ROOT') {
           // Look for subject (nsubj, nsubjpass for passive voice, or npadvmod)
           subj = tokens.find(t => (t.dep === 'nsubj' || t.dep === 'nsubjpass' || t.dep === 'npadvmod') && t.head === tok.i);
+
+          // If subject is a relational noun (son, daughter, etc.), look for the proper noun attached to it
+          // E.g., "Aragorn, son of Arathorn, married Arwen" -> son is nsubj, Aragorn is compound of son
+          if (subj) {
+            const RELATIONAL_NOUNS = new Set(['son', 'daughter', 'brother', 'sister', 'father', 'mother', 'wife', 'husband', 'child', 'heir', 'king', 'queen', 'prince', 'princess', 'lord', 'lady']);
+            if (RELATIONAL_NOUNS.has(subj.text.toLowerCase())) {
+              // Look for compound or appositive that points to this relational noun
+              const propernoun = tokens.find(t => (t.dep === 'compound' || t.dep === 'appos') && t.head === subj!.i && t.pos === 'PROPN');
+              if (propernoun) {
+                subj = propernoun;
+              }
+            }
+          }
 
           // Fallback: Check if subject points to an auxiliary verb that points to this verb
           // This handles "Meanwhile, Sarah and Marcus got married" where Sarah's head is "got" not "married"
@@ -1897,10 +1939,16 @@ function extractDepRelations(
         }
 
       if (subj && obj) {
-        if (subj.pos === 'PRON' && lastNamedSubject) {
-          subj = lastNamedSubject;
+        // Use unified pronoun resolution
+        subj = resolvePronounToken(subj, 'SENTENCE_MID');
+        trackEntityMention(subj);
+
+        // DEBUG: Trace married_to creation
+        if (process.env.DEBUG_MARRIED) {
+          console.log(`[MARRIED-DEBUG] Creating married_to: subj="${text.slice(subj.start, subj.end)}" obj="${text.slice(obj.start, obj.end)}"`);
+          console.log(`[MARRIED-DEBUG]   married.dep=${tok.dep}, married.head=${tok.head}`);
         }
-        updateLastNamedSubject(subj);
+
         const produced = tryCreateRelation(
           text, entities, spans, 'married_to',
           subj.start, subj.end, obj.start, obj.end, 'DEP',
@@ -1915,12 +1963,9 @@ function extractDepRelations(
         const headVerb = tokens.find(t => t.i === tok.head);
         const verbLemma = headVerb?.lemma.toLowerCase();
         if (headVerb && ['include', 'includes', 'included', 'be', 'were', 'was', 'are', 'list', 'lists', 'listed'].includes(verbLemma || '')) {
-          let parentTokens = tokens
+          const parentTokens = tokens
             .filter(t => t.dep === 'poss' && t.head === tok.i)
-            .flatMap(resolvePossessors);
-          if (!parentTokens.length && lastNamedSubject) {
-            parentTokens = [lastNamedSubject];
-          }
+            .flatMap(resolvePossessorsUnified);
           const parentRefs: EntityRef[] = [];
           for (const parentTok of parentTokens.flatMap(p => collectConjTokens(p, tokens))) {
             const parentSpan = expandNP(parentTok, tokens);
@@ -2239,10 +2284,10 @@ function extractDepRelations(
             const placeSpan = expandNP(placeTok, tokens);
             const subjCandidates = collectConjTokens(subjTok, tokens);
             for (const subjectCandidate of subjCandidates) {
-              const resolvedSubject = resolveAcademicSubject(subjectCandidate, tokens);
+              const resolvedSubject = resolveAcademicSubjectUnified(subjectCandidate, tokens, 'SENTENCE_MID');
               if (!resolvedSubject) continue;
               if (resolvedSubject.pos !== 'PRON') {
-                updateLastNamedSubject(resolvedSubject);
+                trackEntityMention(resolvedSubject);
               }
               const subjSpan = expandNP(resolvedSubject, tokens);
               const produced = tryCreateRelation(
@@ -2411,15 +2456,16 @@ function extractDepRelations(
           ['become', 'be', 'was', 'were', 'is', 'became'].includes(t.lemma.toLowerCase())
         );
         if (copula) {
-          const resolvedSubj = resolveAcademicSubject(
+          const resolvedSubj = resolveAcademicSubjectUnified(
             tokens.find(t => t.dep === 'nsubj' && t.head === copula.i),
-            tokens
+            tokens,
+            'SENTENCE_MID'
           );
           if (!resolvedSubj) {
             continue;
           }
           if (resolvedSubj.pos !== 'PRON') {
-            updateLastNamedSubject(resolvedSubj);
+            trackEntityMention(resolvedSubj);
           }
           if (resolvedSubj) {
             const ofPrep = tokens.find(t =>
@@ -2427,10 +2473,7 @@ function extractDepRelations(
               (t.head === tok.i || t.head === copula.i) &&
               t.text.toLowerCase() === 'of'
             );
-            let orgTok = ofPrep ? tokens.find(t => t.dep === 'pobj' && t.head === ofPrep.i) : undefined;
-            if (!orgTok) {
-              orgTok = lastSchoolOrg ?? lastNamedOrg ?? undefined;
-            }
+            const orgTok = ofPrep ? tokens.find(t => t.dep === 'pobj' && t.head === ofPrep.i) : undefined;
             if (orgTok) {
               const subjSpan = expandNP(resolvedSubj, tokens);
               const orgHead = chooseSemanticHead(orgTok, tokens);
@@ -2441,25 +2484,6 @@ function extractDepRelations(
                 tokens, tok.i
               );
               addProducedRelations(produced, tok);
-
-              const subjRef = mapSurfaceToEntity(
-                text.slice(subjSpan.start, subjSpan.end),
-                entities,
-                spans,
-                subjSpan
-              );
-              const isProfessor = !!subjRef && subjRef.entity.canonical.toLowerCase().includes('professor');
-              if (isProfessor && lastSchoolOrg) {
-                const schoolSpan = expandNP(lastSchoolOrg, tokens);
-                const teachingRelations = tryCreateRelation(
-                  text, entities, spans, 'teaches_at',
-                  subjSpan.start, subjSpan.end,
-                  schoolSpan.start, schoolSpan.end,
-                  'DEP',
-                  tokens, tok.i
-                );
-                addProducedRelations(teachingRelations, tok);
-              }
             }
           }
         }
@@ -2542,14 +2566,12 @@ function extractDepRelations(
         const resolveToken = (token: Token | undefined | null): Token | null => {
           if (!token) return null;
           if (token.pos === 'PRON') {
-            const lower = token.text.toLowerCase();
-            if (recentPersons.length) {
-              return recentPersons[0];
+            // Use TokenResolver when available
+            if (tokenResolver) {
+              const resolved = tokenResolver.resolveToken(token, 'SENTENCE_MID');
+              return resolved !== token ? resolved : null;
             }
-            if (lower === 'they' && lastNamedSubject) {
-              return lastNamedSubject;
-            }
-            return lastNamedSubject ?? null;
+            return null;
           }
           return token;
         };
@@ -2572,20 +2594,20 @@ function extractDepRelations(
         const expandGroupWithPronouns = (group: Token[]): Token[] => {
           const expanded: Token[] = [];
           for (const tok of group) {
-            if (tok.pos === 'PRON') {
+            if (tok.pos === 'PRON' && tokenResolver) {
               const lower = tok.text.toLowerCase();
-              if ((lower === 'they' || lower === 'them') && recentPersons.length) {
-                const limit = Math.min(3, recentPersons.length);
-                expanded.push(...recentPersons.slice(0, limit));
-                continue;
-              }
-              if ((lower === 'she' || lower === 'her' || lower === 'he' || lower === 'him') && recentPersons.length) {
-                expanded.push(recentPersons[0]);
-                continue;
-              }
-              if (lastNamedSubject) {
-                expanded.push(lastNamedSubject);
-                continue;
+              if (lower === 'they' || lower === 'them') {
+                const resolved = tokenResolver.resolvePossessors(tok);
+                if (resolved.length) {
+                  expanded.push(...resolved);
+                  continue;
+                }
+              } else {
+                const resolved = tokenResolver.resolveToken(tok, 'SENTENCE_MID');
+                if (resolved !== tok) {
+                  expanded.push(resolved);
+                  continue;
+                }
               }
             }
             expanded.push(tok);
@@ -2632,70 +2654,30 @@ function extractDepRelations(
           if (!descriptorPattern.test(surface)) return [];
           const lowerSurface = surface.toLowerCase();
           const desired = options.limit ?? descriptorLimitFromSurface(lowerSurface);
-          const available = Math.max(1, Math.min(desired, recentPersons.length || desired));
           const resolved: EntityRef[] = [];
           const seen = new Set<string>();
 
-
-          for (const recent of recentPersons) {
-            const ref = mapRecentTokenToEntity(recent);
-            if (
-              ref &&
-              ref.entity.type === 'PERSON' &&
-              !seen.has(ref.entity.id) &&
-              !options.avoidIds?.has(ref.entity.id)
-            ) {
-              const canonicalLower = ref.entity.canonical.toLowerCase();
-              if (descriptorEntityPattern.test(canonicalLower)) {
-                continue;
-              }
-              seen.add(ref.entity.id);
-              resolved.push(ref);
-              if (resolved.length >= available) {
-                break;
-              }
+          // Find nearby person entities for descriptor resolution
+          // Collect ALL nearby entities and sort by distance, then take top N
+          if (descriptorSpan) {
+            const candidates: Array<{ entity: Entity; span: any; distance: number }> = [];
+            for (const span of spans) {
+              if (span.end > descriptorSpan.start) continue;
+              const entity = entityById.get(span.entity_id);
+              if (!entity || entity.type !== 'PERSON') continue;
+              if (options.avoidIds?.has(entity.id)) continue;
+              const distance = descriptorSpan.start - span.end;
+              if (distance > 200) continue;
+              if (descriptorEntityPattern.test(entity.canonical.toLowerCase())) continue;
+              // Check if we already have this entity (avoid duplicates from multiple mentions)
+              if (candidates.some(c => c.entity.id === entity.id)) continue;
+              candidates.push({ entity, span, distance });
             }
-          }
-
-          if (!resolved.length && lastNamedSubject) {
-            const fallback = mapRecentTokenToEntity(lastNamedSubject);
-            if (
-              fallback &&
-              fallback.entity.type === 'PERSON' &&
-              !options.avoidIds?.has(fallback.entity.id)
-            ) {
-              const canonicalLower = fallback.entity.canonical.toLowerCase();
-              if (!descriptorEntityPattern.test(canonicalLower)) {
-                resolved.push(fallback);
-              }
-            }
-          }
-
-          if (!resolved.length && descriptorSpan) {
-            let closestDistance = Infinity;
-            const nearest: EntityRef[] = [];
-          for (const span of spans) {
-            if (span.end > descriptorSpan.start) continue;
-            const entity = entityById.get(span.entity_id);
-            if (!entity || entity.type !== 'PERSON') continue;
-            if (options.avoidIds?.has(entity.id)) continue;
-            const distance = descriptorSpan.start - span.end;
-            if (distance > 200) continue;
-            if (descriptorEntityPattern.test(entity.canonical.toLowerCase())) continue;
-            if (distance < closestDistance) {
-                closestDistance = distance;
-                nearest.length = 0;
-                nearest.push({ entity, span });
-              } else if (distance === closestDistance) {
-                nearest.push({ entity, span });
-              }
-            }
-            if (nearest.length) {
-              const limit = Math.max(1, options.limit ?? descriptorLimitFromSurface(lowerSurface));
-              for (const ref of nearest) {
-                resolved.push(ref);
-                if (resolved.length >= limit) break;
-              }
+            // Sort by distance (closest first) and take up to limit
+            candidates.sort((a, b) => a.distance - b.distance);
+            const limit = Math.max(1, options.limit ?? descriptorLimitFromSurface(lowerSurface));
+            for (let i = 0; i < Math.min(candidates.length, limit); i++) {
+              resolved.push({ entity: candidates[i].entity, span: candidates[i].span });
             }
           }
 
@@ -2720,20 +2702,24 @@ function extractDepRelations(
           const treatAsName = token.pos === 'PROPN' || isNameToken(token);
 
           if (treatAsName) {
-            updateLastNamedSubject(token);
+            trackEntityMention(token);
             pushRef(mapSurfaceToEntity(surface, entities, spans, span));
           }
 
-          if (!refs.length && treatAsName && lastNamedSubject) {
-            const fallbackSpan = expandNP(lastNamedSubject, tokens);
-            pushRef(
-              mapSurfaceToEntity(
-                text.slice(fallbackSpan.start, fallbackSpan.end),
-                entities,
-                spans,
-                fallbackSpan
-              )
-            );
+          // Fallback via unified resolution
+          if (!refs.length && treatAsName) {
+            const fallbackToken = resolvePronounToken({ pos: 'PRON', text: 'he', start: token.start } as Token, 'SENTENCE_MID');
+            if (fallbackToken.pos !== 'PRON') {
+              const fallbackSpan = expandNP(fallbackToken, tokens);
+              pushRef(
+                mapSurfaceToEntity(
+                  text.slice(fallbackSpan.start, fallbackSpan.end),
+                  entities,
+                  spans,
+                  fallbackSpan
+                )
+              );
+            }
           }
 
           if (!refs.length) {
@@ -2796,12 +2782,11 @@ function extractDepRelations(
           baseSubject = tokens.find(t => t.dep === 'nsubj' && t.head === tok.head) || tokens.find(t => t.i === tok.head);
         }
 
-        const subjectGroup = baseSubject
-          ? collectConjTokens(baseSubject, tokens)
-          : (lastNamedSubject ? [lastNamedSubject] : []);
-        if (baseSubject && baseSubject.pos === 'PRON' && lastNamedSubject) {
-          subjectGroup.unshift(lastNamedSubject);
-        }
+        // Use unified pronoun resolution for subject group
+        const resolvedBaseSubject = baseSubject ? resolvePronounToken(baseSubject, 'SENTENCE_MID') : null;
+        const subjectGroup = resolvedBaseSubject
+          ? collectConjTokens(resolvedBaseSubject, tokens)
+          : [];
 
         const findWithPrep = (): Token | undefined => {
           const direct = tokens.find(t => t.dep === 'prep' && t.head === tok.i && t.text.toLowerCase() === 'with');
@@ -2841,8 +2826,9 @@ function extractDepRelations(
           const subjects = tokens.filter(t => t.dep === 'nsubj' && t.head === copula.i);
           const placeSpan = expandNP(placeTok, tokens);
           for (const subj of subjects.flatMap(s => collectConjTokens(s, tokens))) {
-            const resolvedSubj = subj.pos === 'PRON' && lastNamedSubject ? lastNamedSubject : subj;
-            updateLastNamedSubject(resolvedSubj);
+            // Use unified pronoun resolution
+            const resolvedSubj = resolvePronounToken(subj, 'SENTENCE_MID');
+            trackEntityMention(resolvedSubj);
             const subjSpan = expandNP(resolvedSubj, tokens);
             const produced = tryCreateRelation(
               text, entities, spans, 'studies_at',
@@ -2861,8 +2847,9 @@ function extractDepRelations(
         if (placeTok && subjects.length) {
           const placeSpan = expandNP(placeTok, tokens);
           for (const subj of subjects.flatMap(s => collectConjTokens(s, tokens))) {
-            const resolvedSubj = subj.pos === 'PRON' && lastNamedSubject ? lastNamedSubject : subj;
-            updateLastNamedSubject(resolvedSubj);
+            // Use unified pronoun resolution
+            const resolvedSubj = resolvePronounToken(subj, 'SENTENCE_MID');
+            trackEntityMention(resolvedSubj);
             const subjSpan = expandNP(resolvedSubj, tokens);
             const produced = tryCreateRelation(
               text, entities, spans, 'studies_at',
@@ -2883,14 +2870,10 @@ function extractDepRelations(
         );
         let subjTok = resolveSubjectToken(tok, tokens);
         if (subjTok && subjTok.pos === 'PRON') {
-          if (lastNamedSubject) {
-            subjTok = lastNamedSubject;
-          } else if (sent.sentence_index > 0) {
-            const prevSentence = sentences[sent.sentence_index - 1];
-            const prevSubject = [...prevSentence.tokens].reverse().find(t => t.dep === 'nsubj' && isNameToken(t));
-            if (prevSubject) {
-              subjTok = prevSubject;
-            }
+          // Use unified pronoun resolution
+          const resolved = resolvePronounToken(subjTok, 'SENTENCE_MID');
+          if (resolved !== subjTok) {
+            subjTok = resolved;
           }
         }
         if (!subjTok && relativeMarker) {
@@ -2916,7 +2899,7 @@ function extractDepRelations(
         }
 
         if (subjTok && (placeTok || placeRefFromRelative)) {
-          updateLastNamedSubject(subjTok);
+          trackEntityMention(subjTok);
           const subjSpan = expandNP(subjTok, tokens);
           if (relativeMarker && subjSpan.start < subjTok.start && subjTok.start > relativeMarker.start) {
             subjSpan.start = subjTok.start;
@@ -2959,8 +2942,9 @@ function extractDepRelations(
           const targetEntity = entities.find(e => e.canonical.toLowerCase() === normalizedOrg.toLowerCase());
           const targetSpan = targetEntity && spanLookup.get(targetEntity.id) ? spanLookup.get(targetEntity.id)! : orgSpan;
           for (const subjTok of subj.flatMap(s => collectConjTokens(s, tokens))) {
-            const resolvedSubj = subjTok.pos === 'PRON' && lastNamedSubject ? lastNamedSubject : subjTok;
-            updateLastNamedSubject(resolvedSubj);
+            // Use unified pronoun resolution
+            const resolvedSubj = resolvePronounToken(subjTok, 'SENTENCE_MID');
+            trackEntityMention(resolvedSubj);
             const subjSpan = expandNP(resolvedSubj, tokens);
             const produced = tryCreateRelation(
               text, entities, spans, 'leads',
@@ -2999,17 +2983,6 @@ function extractDepRelations(
             }
           }
 
-          if (!parentEntityEntry && lastNamedOrg) {
-            const lastOrgToken = lastNamedOrg;
-            const orgEntity = entityFromSpan(lastOrgToken.start, lastOrgToken.end);
-            if (orgEntity && orgEntity.type === 'ORG') {
-              parentEntityEntry = {
-                entity: orgEntity,
-                span: ensureSpanForEntity(orgEntity, { start: lastOrgToken.start, end: lastOrgToken.end })
-              };
-            }
-          }
-
           if (parentEntityEntry) {
             const parentSpan = parentEntityEntry.span!;
             for (const childTok of enumerated) {
@@ -3038,8 +3011,9 @@ function extractDepRelations(
             const targetSpan = targetEntity && spanLookup.get(targetEntity.id) ? spanLookup.get(targetEntity.id)! : houseSpan;
 
             for (const subj of subjects.flatMap(s => collectConjTokens(s, tokens))) {
-              const resolvedSubj = subj.pos === 'PRON' && lastNamedSubject ? lastNamedSubject : subj;
-              updateLastNamedSubject(resolvedSubj);
+              // Use unified pronoun resolution
+              const resolvedSubj = resolvePronounToken(subj, 'SENTENCE_MID');
+              trackEntityMention(resolvedSubj);
               const subjSpan = expandNP(resolvedSubj, tokens);
               const produced = tryCreateRelation(
                 text, entities, spans, 'member_of',
@@ -3063,8 +3037,9 @@ function extractDepRelations(
           const targetEntity = entities.find(e => e.canonical.toLowerCase() === normalizedOrg.toLowerCase());
           const targetSpan = targetEntity && spanLookup.get(targetEntity.id) ? spanLookup.get(targetEntity.id)! : orgSpan;
           for (const subj of subjects.flatMap(s => collectConjTokens(s, tokens))) {
-            const resolvedSubj = subj.pos === 'PRON' && lastNamedSubject ? lastNamedSubject : subj;
-            updateLastNamedSubject(resolvedSubj);
+            // Use unified pronoun resolution
+            const resolvedSubj = resolvePronounToken(subj, 'SENTENCE_MID');
+            trackEntityMention(resolvedSubj);
             const subjSpan = expandNP(resolvedSubj, tokens);
             const produced = tryCreateRelation(
               text, entities, spans, 'member_of',
@@ -3087,8 +3062,9 @@ function extractDepRelations(
             const targetEntity = entities.find(e => e.canonical.toLowerCase() === normalizedOrg.toLowerCase());
             const targetSpan = targetEntity && spanLookup.get(targetEntity.id) ? spanLookup.get(targetEntity.id)! : orgSpan;
             for (const subj of subjects.flatMap(s => collectConjTokens(s, tokens))) {
-              const resolvedSubj = subj.pos === 'PRON' && lastNamedSubject ? lastNamedSubject : subj;
-              updateLastNamedSubject(resolvedSubj);
+              // Use unified pronoun resolution
+              const resolvedSubj = resolvePronounToken(subj, 'SENTENCE_MID');
+              trackEntityMention(resolvedSubj);
               const subjSpan = expandNP(resolvedSubj, tokens);
               const produced = tryCreateRelation(
                 text, entities, spans, 'member_of',
@@ -3130,14 +3106,24 @@ function extractDepRelations(
                 if (isNameToken(possTok)) {
                   parentTokenCandidates.push(possTok);
                 } else if (possTok.pos === 'PRON') {
-                  parentTokenCandidates.push(...recentPersons.slice(0, 2));
+                  // Use TokenResolver when available
+                  if (tokenResolver) {
+                    const resolved = tokenResolver.resolvePossessors(possTok);
+                    if (resolved.length) {
+                      parentTokenCandidates.push(...resolved);
+                    }
+                  }
                 }
               }
             }
 
-            if (!parentTokenCandidates.length) {
-              if (lastNamedSubject) parentTokenCandidates.push(lastNamedSubject);
-              if (!parentTokenCandidates.length) parentTokenCandidates.push(...recentPersons.slice(0, 2));
+            // Use TokenResolver fallback when no possessors found
+            if (!parentTokenCandidates.length && tokenResolver) {
+              const dummyPron = { pos: 'PRON', text: 'their', start: sent.start } as Token;
+              const resolved = tokenResolver.resolvePossessors(dummyPron);
+              if (resolved.length) {
+                parentTokenCandidates.push(...resolved.slice(0, 2));
+              }
             }
 
             const parentEntities: { entity: Entity; span: Span }[] = [];
@@ -3150,7 +3136,7 @@ function extractDepRelations(
               if (seenParentIds.has(entity.id)) continue;
               seenParentIds.add(entity.id);
               parentEntities.push({ entity, span: ensureSpanForEntity(entity, span) });
-              updateLastNamedSubject(parentTok);
+              trackEntityMention(parentTok, entity.id);
             }
 
             const childEntities: { entity: Entity; span: Span }[] = [];
@@ -3246,12 +3232,12 @@ function extractDepRelations(
             (t.dep === 'nsubj' && tokens.find(h => h.i === t.head && h.dep === 'attr' && h.head === verbIdx))
           );
 
-          // Resolve pronouns
-          if (subj && subj.pos === 'PRON' && lastNamedSubject) {
-            subj = lastNamedSubject;
-          }
-          if (subj && subj.pos !== 'PRON') {
-            updateLastNamedSubject(subj);
+          // Use unified pronoun resolution
+          if (subj) {
+            subj = resolvePronounToken(subj, 'SENTENCE_MID');
+            if (subj.pos !== 'PRON') {
+              trackEntityMention(subj);
+            }
           }
 
           // Look for "to" preposition attached to "rival"
@@ -3336,13 +3322,19 @@ function extractDepRelations(
         .filter(t => /^(their|his|her)$/i.test(t.text))
         .sort((a, b) => b.start - a.start)[0];
 
-      const parentCandidates = possToken ? resolvePossessors(possToken) : [];
-      if (!parentCandidates.length && lastNamedSubject) parentCandidates.push(lastNamedSubject);
-      if (!parentCandidates.length && recentPersons.length) parentCandidates.push(recentPersons[0]);
+      // Use unified possessor resolution
+      const parentCandidates = possToken ? resolvePossessorsUnified(possToken) : [];
+      // Fallback via unified resolution if no possessors found
+      if (!parentCandidates.length) {
+        const fallback = resolvePronounToken({ pos: 'PRON', text: 'his', start: sent.start } as Token, 'POSSESSIVE');
+        if (fallback.pos !== 'PRON') {
+          parentCandidates.push(fallback);
+        }
+      }
 
       const parentToken = parentCandidates.find(t => t.pos !== 'PRON') ?? parentCandidates[0];
       if (!parentToken) return;
-      updateLastNamedSubject(parentToken);
+      trackEntityMention(parentToken);
 
       const parentSpan = expandNP(parentToken, tokens);
       const parentEntity = entityFromSpan(parentSpan.start, parentSpan.end);
@@ -3383,16 +3375,6 @@ function extractDepRelations(
         ['ORG', 'HOUSE', 'TRIBE'],
         260
       );
-
-      if (!containerRef && lastNamedOrg) {
-        const entity = entityFromSpan(lastNamedOrg.start, lastNamedOrg.end);
-        if (entity && ['ORG', 'HOUSE', 'TRIBE'].includes(entity.type)) {
-          containerRef = {
-            entity,
-            span: selectEntitySpan(entity.id, spans, { start: lastNamedOrg.start, end: lastNamedOrg.end })
-          };
-        }
-      }
 
       if (!containerRef) return;
 
@@ -3884,7 +3866,32 @@ export async function extractRelations(
 
   // Extract using dependency patterns (primary)
   const depInputSentences = clauseAwareSentences.length ? clauseAwareSentences : parsed.sentences;
-  const depRelations = extractDepRelations(text, entities, spans, depInputSentences);
+
+  // Create TokenResolver for unified pronoun resolution
+  // Convert entity spans and sentences to TokenResolver format
+  const entitySpansForResolver: EntitySpan[] = spans.map(span => ({
+    entity_id: span.entity_id,
+    start: span.start,
+    end: span.end,
+  }));
+
+  const sentencesForResolver: Sentence[] = depInputSentences.map(sent => ({
+    text: text.slice(sent.start, sent.end),
+    start: sent.start,
+    end: sent.end,
+  }));
+
+  const sentenceTokensForResolver = depInputSentences.map(sent => sent.tokens);
+
+  const tokenResolver = createTokenResolver(
+    entities,
+    entitySpansForResolver,
+    sentencesForResolver,
+    text,
+    sentenceTokensForResolver
+  );
+
+  const depRelations = extractDepRelations(text, entities, spans, depInputSentences, tokenResolver);
 
   // Extract using regex fallback (secondary)
   const regexRelations = extractRegexRelations(text, entities, spans);

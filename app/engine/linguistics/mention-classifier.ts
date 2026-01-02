@@ -11,6 +11,7 @@
  */
 
 import type { MentionType } from '../mention-tracking';
+// Note: COMMON_VERBS_FOR_NAME_DETECTION removed - now using default-KEEP strategy
 
 export type MentionClass = 'DURABLE_NAME' | 'CONTEXT_ONLY' | 'NON_ENTITY';
 
@@ -29,8 +30,14 @@ const QUOTE_CHARS = new Set(['"', '\u201c', '\u201d', '\u2018', '\u2019', "'"]);
 // Imperative verbs that start commands
 const IMPERATIVE_START = new Set(['tell', 'listen', 'check', 'look', 'get', 'go', 'let', 'take', 'give', 'make', 'find', 'help', 'show']);
 
-// Theme/slogan context markers
-const THEME_LEX = new Set(['theme', 'poster', 'posters', 'called', 'titled', 'named', 'slogan', 'motto', 'banner', 'sign']);
+// Theme/slogan context markers (NOT including name-introducers)
+// 'named', 'called', 'titled' are EXCLUDED because they introduce proper names, not themes
+// e.g., "a dragon named Norbert" → Norbert is a PERSON, not a theme
+const THEME_LEX = new Set(['theme', 'poster', 'posters', 'slogan', 'motto', 'banner', 'sign']);
+
+// Name-introducer words that create entity aliases (NOT themes)
+// These are handled separately via dependency patterns, not as theme markers
+const NAME_INTRODUCERS = new Set(['named', 'called', 'titled', 'known', 'nicknamed', 'dubbed']);
 
 // Interjections that should never be entities
 const INTERJECTIONS = new Set(['yeah', 'yep', 'nope', 'uh', 'ugh', 'huh', 'whoa', 'wow', 'oops', 'oh', 'ah', 'aha', 'hmm', 'umm', 'er', 'um']);
@@ -88,13 +95,34 @@ const FRAGMENT_ENDINGS = new Set(['this', 'that', 'it', 'anything', 'something',
 // Single-token garbage
 const SINGLE_TOKEN_GARBAGE = new Set(['mr', 'mrs', 'ms', 'the', 'a', 'an', 'and', 'or', 'but', 'if', 'then', 'else']);
 
+// Well-known organization acronyms that should be allowed with determiners (e.g., "the FBI", "the WHO", "the UN")
+// These are commonly referenced with "the" and are NOT common nouns like "a PDF"
+const ORG_ACRONYMS = new Set([
+  'FBI', 'CIA', 'NSA', 'UN', 'EU', 'UK', 'US', 'USA', 'NATO', 'WHO', 'WTO', 'IMF', 'NHS',
+  'IRS', 'SEC', 'FCC', 'EPA', 'CDC', 'NIH', 'FEMA', 'DEA', 'ATF', 'DOJ', 'DOD', 'DOS',
+  'NYPD', 'LAPD', 'MIT', 'UCLA', 'NASA', 'ESA', 'CERN', 'OPEC', 'ASEAN', 'NAFTA',
+  'FIFA', 'UEFA', 'NBA', 'NFL', 'NHL', 'MLB', 'NCAA', 'IOC', 'USPS', 'UPS',
+  'BBC', 'CNN', 'CBS', 'NBC', 'ABC', 'PBS', 'NPR', 'AP', 'AFP', 'NYT', 'WSJ',
+  'IBM', 'HP', 'AT', 'GM', 'GE', 'BMW', 'VW', 'KFC', 'ING', 'UBS',
+  'YMCA', 'YWCA', 'NAACP', 'ACLU', 'NRA', 'WWF', 'PETA', 'UNESCO', 'UNICEF'
+]);
+
 // Sentence-initial capitalized words that are NOT names
 const SENTENCE_INITIAL_NON_NAMES = new Set([
   'when', 'whatever', 'wherever', 'however', 'therefore', 'meanwhile', 'dead', 'hearing',
   'visitors', 'detective', 'once', 'suddenly', 'originally', 'exactly', 'fortunately',
   'finally', 'afterward', 'afterwards', 'someday', 'eventually', 'perhaps', 'maybe',
   'certainly', 'probably', 'obviously', 'apparently', 'unfortunately', 'surprisingly',
-  'interestingly', 'importantly', 'naturally', 'clearly', 'surely', 'hopefully'
+  'interestingly', 'importantly', 'naturally', 'clearly', 'surely', 'hopefully',
+  // Time words
+  'yesterday', 'tomorrow', 'today', 'tonight', 'nowadays',
+  // Document structure words
+  'chapter', 'section', 'part', 'paragraph', 'page', 'figure', 'table', 'appendix',
+  // Common nouns often mistaken for names at sentence start
+  'song', 'music', 'dance', 'food', 'water', 'fire', 'earth', 'air', 'light', 'dark',
+  'silence', 'noise', 'rain', 'snow', 'wind', 'thunder', 'lightning', 'weather',
+  'morning', 'evening', 'night', 'afternoon', 'midnight', 'dawn', 'dusk',
+  'summer', 'winter', 'spring', 'autumn', 'fall'
 ]);
 
 // ============================
@@ -182,6 +210,12 @@ function isVerbObjectFragment(tokens: string[]): { isJunk: boolean; reason?: str
 
 /**
  * Detect sentence-initial capitalization traps (e.g., "Dead", "Hearing", "Whatever")
+ *
+ * STRATEGY: Default to KEEP for sentence-initial capitalized words.
+ * Only REJECT when there's strong counter-evidence:
+ * - Known discourse starters/adverbs
+ * - Determiners/articles (The, A, An, Some, etc.)
+ * - Month names followed by lowercase
  */
 function isSentenceInitialTrap(surface: string, text: string, start: number): { isTrap: boolean; reason?: string } {
   const tokens = surface.split(/\s+/).filter(Boolean);
@@ -193,33 +227,37 @@ function isSentenceInitialTrap(surface: string, text: string, start: number): { 
   // Only check if at sentence start
   if (!isSentenceStart(text, start)) return { isTrap: false };
 
-  // Check against known non-name words
+  // REJECT: Known non-name words (adverbs, discourse markers)
   if (SENTENCE_INITIAL_NON_NAMES.has(tokenLower)) {
     return { isTrap: true, reason: 'sentence-initial-non-name' };
   }
 
-  // Check against discourse starters
+  // REJECT: Discourse starters
   if (DISCOURSE_STARTERS.has(tokenLower)) {
     return { isTrap: true, reason: 'discourse-starter' };
   }
 
-  // Check if followed by lowercase (indicates it's not a name)
-  const following = nextWord(text, start + surface.length);
-  if (following && /^[a-z]/.test(following)) {
-    // Exception: if this looks like a name (ends with common name patterns)
-    if (!/(?:son|man|ton|ley|field|berg|ski|well|ford|wood|ston|worth|ham|burg|land|holm|wick|dale|shaw|cox|fox|beck|ney|ray|ey)$/i.test(token)) {
-      // Exception: if followed by comma, it's likely vocative ("Honey, if I...")
-      const hasComma = /^[\s]*,/.test(text.slice(start + surface.length));
-      if (!hasComma) {
-        // Exception: if followed by a verb, it's likely a name as subject ("Frederick could", "Barty smiled")
-        const COMMON_VERBS = new Set(['could', 'would', 'should', 'will', 'can', 'may', 'might', 'must', 'shall', 'was', 'is', 'are', 'were', 'has', 'had', 'have', 'did', 'does', 'do', 'walked', 'smiled', 'spoke', 'said', 'went', 'came', 'looked', 'turned', 'stood', 'sat', 'ran', 'fell', 'woke', 'slept', 'ate', 'drank', 'thought', 'felt', 'knew', 'saw', 'heard', 'asked', 'told', 'replied', 'nodded', 'shook', 'laughed', 'cried', 'screamed', 'whispered', 'shouted', 'arrived', 'left', 'entered', 'exited', 'began', 'started', 'finished', 'stopped', 'continued', 'tried', 'wanted', 'needed', 'loved', 'hated', 'liked']);
-        if (!COMMON_VERBS.has(following.toLowerCase())) {
-          return { isTrap: true, reason: 'sentence-initial-followed-by-lowercase' };
-        }
-      }
-    }
+  // REJECT: Determiners/articles at sentence start (they're never names)
+  const SENTENCE_DETERMINERS = new Set(['the', 'a', 'an', 'some', 'any', 'no', 'every', 'each', 'this', 'that', 'these', 'those', 'my', 'your', 'his', 'her', 'its', 'our', 'their']);
+  if (SENTENCE_DETERMINERS.has(tokenLower)) {
+    return { isTrap: true, reason: 'sentence-initial-determiner' };
   }
 
+  // REJECT: Prepositions at sentence start (typically not names)
+  const SENTENCE_PREPS = new Set(['in', 'on', 'at', 'to', 'from', 'with', 'by', 'for', 'of', 'into', 'onto', 'upon', 'through', 'across', 'between', 'among', 'within', 'without', 'before', 'after', 'during', 'since', 'until', 'unless', 'despite', 'although', 'though', 'because', 'while', 'if']);
+  if (SENTENCE_PREPS.has(tokenLower)) {
+    return { isTrap: true, reason: 'sentence-initial-preposition' };
+  }
+
+  // REJECT: Month names (commonly capitalized at sentence start but not entities)
+  const MONTHS = new Set(['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']);
+  const following = nextWord(text, start + surface.length);
+  if (MONTHS.has(tokenLower) && following && /^[a-z0-9]/.test(following)) {
+    return { isTrap: true, reason: 'sentence-initial-month' };
+  }
+
+  // DEFAULT: KEEP - sentence-initial capitalized words are likely names
+  // This includes names followed by any verb (trained, attacked, protected, etc.)
   return { isTrap: false };
 }
 
@@ -272,7 +310,8 @@ export function classifyMention(
   surface: string,
   fullText: string,
   start: number,
-  end: number
+  end: number,
+  options?: { hasNERBacking?: boolean }
 ): MentionClassification {
   const raw = surface.trim();
   if (!raw) {
@@ -399,7 +438,8 @@ export function classifyMention(
   }
 
   // Determiner + acronym/common noun ("a PDF", "the pdf")
-  if (precedingDeterminer && /^[A-Z0-9]{2,}$/.test(raw)) {
+  // Exception: Known organization acronyms that are commonly used with determiners ("the FBI", "the WHO")
+  if (precedingDeterminer && /^[A-Z0-9]{2,}$/.test(raw) && !ORG_ACRONYMS.has(raw)) {
     return { mentionClass: 'NON_ENTITY', reason: 'determiner-acronym' };
   }
 
@@ -415,27 +455,39 @@ export function classifyMention(
   }
 
   // Imperative/vocative at sentence/quote start with trailing comma ("Listen, Freddy.", "Honey, ...")
+  // Exception: If followed by appositive relationship markers ("Aragorn, son of Arathorn")
+  // Exception: If followed by capitalized word (coordination list: "Harry, Ron, and Hermione")
+  const APPOSITIVE_MARKERS_COMMA = new Set(['son', 'daughter', 'brother', 'sister', 'mother', 'father', 'wife', 'husband', 'king', 'queen', 'prince', 'princess', 'lord', 'lady', 'heir', 'child', 'nephew', 'niece', 'cousin', 'uncle', 'aunt', 'friend', 'servant', 'master', 'student', 'apprentice', 'leader', 'chief', 'captain', 'commander', 'head', 'ruler', 'founder', 'member', 'ally', 'enemy', 'rival']);
   if (sentenceStart && isSingleToken && followingComma && /^[A-Z]/.test(firstToken)) {
-    return { mentionClass: 'CONTEXT_ONLY', reason: 'sentence-initial-comma' };
-  }
-
-  // Sentence-start imperative single token with next lowercase word ("Check the door.")
-  // Exception: Names ending in common surname patterns (-son, -man, -ton, etc.) or followed by verbs
-  if (sentenceStart && isSingleToken && followingWord && /^[a-z]/.test(followingWord)) {
-    // Don't classify common surname patterns as CONTEXT_ONLY
-    if (!/(?:son|man|ton|ley|field|berg|ski|well|ford|wood|ston|worth|ham|burg|land|holm|wick|dale|shaw|cox|fox|beck)$/i.test(raw)) {
-      // Exception: if followed by a verb, it's likely a name as subject ("Frederick could", "Mary said")
-      const COMMON_VERBS = new Set(['could', 'would', 'should', 'will', 'can', 'may', 'might', 'must', 'shall', 'was', 'is', 'are', 'were', 'has', 'had', 'have', 'did', 'does', 'do', 'walked', 'smiled', 'spoke', 'said', 'went', 'came', 'looked', 'turned', 'stood', 'sat', 'ran', 'fell', 'woke', 'slept', 'ate', 'drank', 'thought', 'felt', 'knew', 'saw', 'heard', 'asked', 'told', 'replied', 'nodded', 'shook', 'laughed', 'cried', 'screamed', 'whispered', 'shouted', 'arrived', 'left', 'entered', 'exited', 'began', 'started', 'finished', 'stopped', 'continued', 'tried', 'wanted', 'needed', 'loved', 'hated', 'liked']);
-      if (!COMMON_VERBS.has(followingWord.toLowerCase())) {
-        return { mentionClass: 'CONTEXT_ONLY', reason: 'imperative-single' };
-      }
+    // Don't filter if followed by appositive marker (e.g., "Aragorn, son of Arathorn")
+    // Don't filter if followed by capitalized word (coordination: "Harry, Ron, and Hermione")
+    const isCoordinationList = followingWord && /^[A-Z]/.test(followingWord);
+    if (!APPOSITIVE_MARKERS_COMMA.has(followingWord?.toLowerCase() ?? '') && !isCoordinationList) {
+      return { mentionClass: 'CONTEXT_ONLY', reason: 'sentence-initial-comma' };
     }
   }
 
+  // Sentence-start imperative single token with next lowercase word ("Check the door.")
+  // STRATEGY: Default KEEP for sentence-initial capitalized tokens.
+  // Only REJECT if the token is a known imperative command verb.
+  if (sentenceStart && isSingleToken && followingWord && /^[a-z]/.test(followingWord)) {
+    // REJECT only if: token IS a known imperative verb (Check, Look, Tell, etc.)
+    // These are words that commonly start commands, not names
+    if (IMPERATIVE_START.has(raw.toLowerCase())) {
+      return { mentionClass: 'CONTEXT_ONLY', reason: 'imperative-single' };
+    }
+    // DEFAULT: KEEP - capitalized token at sentence start is likely a name
+    // Names like "Dumbledore trained Harry" should be kept regardless of following verb
+  }
+
   // Sentence/utterance start command with no following word ("Check.")
+  // Exception: If NER identifies it as an entity (e.g., "Microsoft."), keep it
   const trimmedAfter = fullText.slice(end).trimStart();
   if (sentenceStart && isSingleToken && !followingWord && /^[.!?]/.test(trimmedAfter)) {
-    return { mentionClass: 'CONTEXT_ONLY', reason: 'imperative-terminal' };
+    if (!options?.hasNERBacking) {
+      return { mentionClass: 'CONTEXT_ONLY', reason: 'imperative-terminal' };
+    }
+    // NER-backed single-word sentences are kept as DURABLE_NAME (fall through)
   }
 
   // Command verb followed by capitalized object ("Tell Laurie ...")
@@ -453,23 +505,23 @@ export function classifyMention(
     return { mentionClass: 'NON_ENTITY', reason: 'verb-object-fragment' };
   }
 
-  // Demonym/adjective before lowercase noun ("Jersey accent")
-  // Exception: if followed by comma, it's likely vocative ("Honey, if I...")
-  // Exception: if followed by verb, it's likely a name ("Frederick could", "Mary said")
+  // Demonym/adjective before lowercase noun ("Jersey accent", "French cuisine")
+  // STRATEGY: Default KEEP. Only reject when followed by known demonym-target nouns.
+  // This check is now very narrow - most sentence-initial capitalized tokens are names.
   if (sentenceStart && isSingleToken && followingWord && /^[a-z]/.test(followingWord) && !followingComma) {
-    // Also exclude names ending in common surname patterns
-    if (!/(?:son|man|ton|ley|field|berg|ski|well|ford|wood|ston|worth|ham|burg|land|holm|wick|dale|shaw|cox|fox|beck)$/i.test(raw)) {
-      // Exception: if followed by a verb, it's likely a name as subject
-      const COMMON_VERBS = new Set(['could', 'would', 'should', 'will', 'can', 'may', 'might', 'must', 'shall', 'was', 'is', 'are', 'were', 'has', 'had', 'have', 'did', 'does', 'do', 'walked', 'smiled', 'spoke', 'said', 'went', 'came', 'looked', 'turned', 'stood', 'sat', 'ran', 'fell', 'woke', 'slept', 'ate', 'drank', 'thought', 'felt', 'knew', 'saw', 'heard', 'asked', 'told', 'replied', 'nodded', 'shook', 'laughed', 'cried', 'screamed', 'whispered', 'shouted', 'arrived', 'left', 'entered', 'exited', 'began', 'started', 'finished', 'stopped', 'continued', 'tried', 'wanted', 'needed', 'loved', 'hated', 'liked']);
-      if (!COMMON_VERBS.has(followingWord.toLowerCase())) {
-        return { mentionClass: 'NON_ENTITY', reason: 'adjectival-demonym' };
-      }
+    // Only reject if followed by words that indicate demonym/adjective usage
+    const DEMONYM_TARGETS = new Set(['accent', 'style', 'cuisine', 'food', 'shore', 'coast', 'dialect', 'fashion', 'culture', 'tradition', 'music', 'art', 'architecture', 'language', 'weather', 'climate', 'landscape', 'countryside', 'hospitality', 'wine', 'cheese', 'cooking', 'recipe', 'heritage', 'influence', 'flavor', 'flavour']);
+    if (DEMONYM_TARGETS.has(followingWord.toLowerCase())) {
+      return { mentionClass: 'NON_ENTITY', reason: 'adjectival-demonym' };
     }
+    // DEFAULT: KEEP - capitalized token is likely a name
   }
 
   // Mid-sentence demonym/adjective after determiner ("a Jersey accent", "the French cuisine")
   // If preceded by determiner (a, an, the) and followed by lowercase noun, it's likely an adjective
-  if (!sentenceStart && isSingleToken && precedingDeterminer && followingWord && /^[a-z]+$/.test(followingWord)) {
+  // Exception: Plural family names like "the Dursleys", "the Potters" - capitalized ending in 's'
+  const isPluralFamilyName = /^[A-Z][a-z]+s$/.test(raw);
+  if (!sentenceStart && isSingleToken && precedingDeterminer && followingWord && /^[a-z]+$/.test(followingWord) && !isPluralFamilyName) {
     return { mentionClass: 'NON_ENTITY', reason: 'determiner-adjective-noun' };
   }
 
@@ -500,28 +552,32 @@ export function classifyMention(
   }
 
   // Slogan/theme/title after theme markers or inside quotes
+  // Exception: Spans ending with a capitalized family name (e.g., "the Potters", "About the Dursleys")
   const windowStart = Math.max(0, start - 30);
   const windowText = fullText.slice(windowStart, start).toLowerCase();
-  if (tokens.length >= 1 && tokens.length <= 3 && (/^['\u2018\u2019"\u201c\u201d]/.test(fullText[start - 1] || '') || Array.from(THEME_LEX).some(tok => windowText.includes(tok)))) {
+  const lastToken = tokens[tokens.length - 1];
+  const endsWithFamilyName = /^[A-Z][a-z]+s$/.test(lastToken);
+  if (tokens.length >= 1 && tokens.length <= 3 && !endsWithFamilyName && (/^['\u2018\u2019"\u201c\u201d]/.test(fullText[start - 1] || '') || Array.from(THEME_LEX).some(tok => windowText.includes(tok)))) {
     return { mentionClass: 'CONTEXT_ONLY', reason: 'theme-slogan' };
   }
 
   // Titlecased token(s) followed immediately by lowercase noun ("Monster Runner cards")
-  // Exception: Names ending in common surname patterns or followed by verbs
+  // STRATEGY: Default KEEP. Only reject for clear collectible/product patterns.
+  // Exception: If followed by comma, it's likely an appositive ("Kara Nightfall, a strategist")
   if (
     tokens.every(t => /^[A-Z]/.test(t)) &&
     followingWord &&
-    /^[a-z]+s?$/.test(followingWord)
+    /^[a-z]+s?$/.test(followingWord) &&
+    !followingComma  // Don't reject if comma separates name from description
   ) {
-    // Don't classify names ending in common surname patterns
-    const lastToken = tokens[tokens.length - 1];
-    if (!/(?:son|man|ton|ley|field|berg|ski|well|ford|wood|ston|worth|ham|burg|land|holm|wick|dale|shaw|cox|fox|beck|ney|ray|ey)$/i.test(lastToken)) {
-      // Exception: if followed by a verb, it's likely a name as subject ("Barty smiled")
-      const COMMON_VERBS = new Set(['could', 'would', 'should', 'will', 'can', 'may', 'might', 'must', 'shall', 'was', 'is', 'are', 'were', 'has', 'had', 'have', 'did', 'does', 'do', 'walked', 'smiled', 'spoke', 'said', 'went', 'came', 'looked', 'turned', 'stood', 'sat', 'ran', 'fell', 'woke', 'slept', 'ate', 'drank', 'thought', 'felt', 'knew', 'saw', 'heard', 'asked', 'told', 'replied', 'nodded', 'shook', 'laughed', 'cried', 'screamed', 'whispered', 'shouted', 'arrived', 'left', 'entered', 'exited', 'began', 'started', 'finished', 'stopped', 'continued', 'tried', 'wanted', 'needed', 'loved', 'hated', 'liked']);
-      if (!COMMON_VERBS.has(followingWord.toLowerCase())) {
-        return { mentionClass: 'NON_ENTITY', reason: 'titlecase-plus-lower-follow' };
-      }
+    // Only reject if followed by words indicating collectible/product context
+    // (cards, figures, toys, merchandise, etc.)
+    const COLLECTIBLE_NOUNS = new Set(['cards', 'card', 'figures', 'figure', 'toys', 'toy', 'merchandise', 'merch', 'posters', 'poster', 'stickers', 'sticker', 'decks', 'deck', 'packs', 'pack', 'sets', 'set', 'pieces', 'piece', 'models', 'model', 'miniatures', 'miniature', 'figurines', 'figurine', 'items', 'item', 'stuff', 'gear', 'accessories', 'accessory', 'products', 'product', 'collectibles', 'collectible']);
+    if (COLLECTIBLE_NOUNS.has(followingWord.toLowerCase())) {
+      return { mentionClass: 'NON_ENTITY', reason: 'titlecase-plus-lower-follow' };
     }
+    // DEFAULT: KEEP - titlecased tokens followed by any other lowercase word is fine
+    // "Dumbledore trained Harry" - "trained" is lowercase but Dumbledore is a name
   }
 
   // ============================

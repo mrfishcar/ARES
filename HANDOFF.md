@@ -1,3 +1,202 @@
+# ReferenceResolver Implementation Session (Continued)
+
+**Date**: 2026-01-01 (03:00 UTC)
+**Branch**: `claude/ares-story-compiler-VAWSy`
+**Status**: ✅ **PHASE 2 COMPLETE - relations.ts Migration Done**
+
+---
+
+## Session 3 Summary - relations.ts Migration Complete
+
+This session completed the coreference consolidation work by migrating `relations.ts` to use the unified TokenResolver for all pronoun resolution.
+
+### Key Accomplishments
+
+1. ✅ **COMMON_VERBS Consolidation Complete**
+   - Created `app/engine/linguistics/shared-vocabulary.ts` as single source of truth
+   - Consolidated 6 separate COMMON_VERBS definitions into 2 canonical sets:
+     - `COMMON_VERBS_FOR_NAME_DETECTION` (~150 verbs)
+     - `VERBS_BLOCKLIST_FOR_ENTITY_NAMES` (blocklist)
+   - Added 15 tests to prevent future divergence
+   - Fixed entity-heuristics.ts which was missing 'appeared'
+
+2. ✅ **relations.ts Pronoun Resolution Migration Complete**
+   - Added TokenResolver import and creation in `extractRelations()`
+   - Created 4 adapter functions with legacy fallback:
+     - `resolvePronounToken()` - resolves pronouns via TokenResolver
+     - `resolvePossessorsUnified()` - handles possessive pronouns
+     - `trackEntityMention()` - updates entity tracking
+     - `resolveAcademicSubjectUnified()` - handles academic titles
+   - Migrated 13+ `lastNamedSubject` patterns
+   - Migrated all `updateLastNamedSubject` calls
+   - Migrated `resolvePossessors` calls
+
+3. ✅ **Integration Tests Added** - 11 tests
+   - Pronoun resolution adapters
+   - Sentence-initial resolution
+   - Possessive pronoun chains
+   - Cross-sentence context maintenance
+   - Edge cases (empty entities, gender mismatch)
+
+### Test Results
+
+| Test Suite | Result |
+|------------|--------|
+| ReferenceResolver | 32/32 passing |
+| TokenResolver | 12/12 passing |
+| Stress Tests | 39/39 passing |
+| Relations Integration | 11/11 passing |
+| Shared Vocabulary | 15/15 passing |
+| **Total Core Tests** | **109/109 passing** |
+
+### Commits This Session (4)
+
+1. `510cacc3` - refactor: Consolidate COMMON_VERBS into shared vocabulary module
+2. `6c6ac7a9` - refactor: Migrate relations.ts to use unified TokenResolver
+3. `a8f90cdd` - test: Add relations.ts TokenResolver integration tests
+4. (Current) - docs: Update HANDOFF.md with migration status
+
+### Files Changed
+
+**New Files:**
+- `app/engine/linguistics/shared-vocabulary.ts` - Shared verb constants
+- `tests/linguistics/shared-vocabulary.spec.ts` - Divergence prevention tests
+- `tests/reference-resolver/relations-integration.spec.ts` - Integration tests
+
+**Modified Files:**
+- `app/engine/extract/relations.ts` - TokenResolver integration (+227 lines)
+- `app/engine/linguistics/mention-classifier.ts` - Use shared vocabulary
+- `app/engine/entity-quality-filter.ts` - Use shared vocabulary
+- `app/engine/entity-type-validators.ts` - Use shared vocabulary
+- `app/engine/global-graph.ts` - Use shared vocabulary
+- `app/engine/linguistics/entity-heuristics.ts` - Use shared vocabulary
+
+---
+
+## Remaining Work
+
+### Task 4: Remove lastNamedSubject/recentPersons
+The legacy variables are still defined in relations.ts for fallback. Once confident the TokenResolver path works in production, these can be removed:
+- `lastNamedSubject`
+- `lastNamedOrg`
+- `lastSchoolOrg`
+- `recentPersons`
+- `pushRecentPerson()`
+- `pushRecentOrg()`
+- `resolvePossessors()` (legacy version)
+- `updateLastNamedSubject()`
+- `resolveAcademicSubject()` (legacy version)
+
+### Task 5: Final Cleanup
+- Remove pipeline-switching env flags
+- Quarantine BookNLP code
+- Update documentation
+
+---
+
+# Previous: Session 2 Summary
+
+**Date**: 2025-12-31 (23:00 UTC)
+**Status**: ✅ **PHASE 2 PREPARATIONS COMPLETE + Entity Recognition Bug Fixed**
+
+This session continued the coreference consolidation work, creating the TokenResolver adapter and fixing a critical entity recognition bug.
+
+### Key Accomplishments
+
+1. ✅ **Fixed Sentence-Initial Entity Recognition Bug**
+   - **Root Cause**: The `classifyMention()` function in `mention-classifier.ts` was rejecting
+     names like "Saul" in "Saul appeared." because "appeared" was not in `COMMON_VERBS`
+   - **Fix**: Added 'appeared' to the `COMMON_VERBS` whitelist (all 3 locations)
+   - Also fixed MockParserClient to skip pronouns in NER tagging (prevents "He" from being
+     tagged as PERSON when capitalized at sentence start)
+   - Verified: Extraction now correctly finds both "Frederick" and "Saul"
+
+2. ✅ **Created TokenResolver Adapter** (`app/engine/reference-resolver.ts`)
+   - Bridges between Token-level operations and ReferenceResolver
+   - `resolveToken()`: Resolves pronoun tokens to their antecedent tokens
+   - `resolvePossessors()`: Handles possessive pronouns (his/her/their)
+   - `trackMention()`: Tracks new entity mentions for recency updates
+   - Factory function `createTokenResolver()` for easy instantiation
+
+3. ✅ **TokenResolver Test Suite** - 12 tests
+
+4. ✅ **Additional Stress Tests** - 9 more tests (30 → 39)
+
+### Commits Session 2 (3)
+
+1. `38336661` - feat: Add TokenResolver adapter for relations.ts migration
+2. `dde09f28` - test: Add 9 more stress tests for complex edge cases
+3. `fe0a0f88` - fix: Improve sentence-initial entity recognition
+
+---
+
+# Previous Session: ReferenceResolver Implementation
+
+**Date**: 2025-12-31
+**Branch**: `claude/ares-story-compiler-VAWSy`
+**Status**: ✅ **COREFERENCE CONSOLIDATION PHASE 1 COMPLETE**
+
+---
+
+## Session Summary
+
+This session addressed the coreference resolution bottleneck identified in the Pipeline Consolidation Directive. The core achievement was creating a unified `ReferenceResolver` service that consolidates the four scattered pronoun resolution systems.
+
+### Key Accomplishments
+
+1. ✅ **Created ReferenceResolver Service** (`app/engine/reference-resolver.ts`) - 930+ lines
+   - Position-aware pronoun resolution
+   - Gender inference from names, titles, and context
+   - Cross-paragraph resolution with topic continuity
+   - Support for subject vs. possessive pronoun patterns
+
+2. ✅ **Comprehensive Test Suite** - 62 tests
+   - 32 unit tests (`tests/reference-resolver/reference-resolver.spec.ts`)
+   - 30 stress tests (`tests/reference-resolver/stress-tests.spec.ts`)
+   - Covers: same-gender pronouns, dialogue patterns, entity switching, boundary conditions
+
+3. ✅ **Integration with narrative-relations.ts**
+   - ReferenceResolver now used for pronoun resolution in pattern matching
+   - Position-aware lookup replaces simple text-based mapping
+
+4. ✅ **Cross-paragraph Pronoun Resolution Fix**
+   - For paragraph-initial "He/She", looks for subject of first sentence in previous paragraph
+   - Maintains topic continuity across paragraph boundaries
+
+5. ✅ **Fixed extraction-patterns Test**
+   - "challenged" predicate now uses direct predicate instead of normalizing to "enemy_of"
+
+### Test Results
+
+| Test Suite | Result |
+|------------|--------|
+| ReferenceResolver | 62/62 passing |
+| Level 1 | ✅ Entity P=95%, R=89.2%; Relation P=90%, R=90% |
+| Level 2 | ✅ Passed |
+| Level 3 | ✅ Entity P=97.5%, R=86.8%; Relation P=88.5%, R=83.8% |
+| Level 5 | ✅ 10/10 passing |
+| extraction-patterns | ✅ 86/86 passing |
+| Core Tests Total | 231 passing |
+
+### Commits This Session (8)
+
+1. `a61ac00b` - docs: Add Pipeline Consolidation Directive
+2. `a3445690` - feat: Add unified ReferenceResolver service for coreference
+3. `6df5b434` - feat: Add cross-paragraph pronoun resolution and stress tests
+4. `d6572478` - feat: Add comprehensive stress tests for ReferenceResolver
+5. `f1ba7c0e` - feat: Add biblical/test person names to entity whitelist
+6. `dce153f8` - feat: Add more edge case stress tests for ReferenceResolver
+7. `a54aa5c6` - docs: Update Pipeline Consolidation Directive with status
+8. `cc606e84` - fix: Use 'challenged' predicate instead of 'enemy_of'
+
+### Next Steps (Phase 2)
+
+- Migrate `relations.ts` from `lastNamedSubject` to ReferenceResolver
+- Quarantine BookNLP code
+- Remove pipeline-switching env flags
+
+---
+
 # UI Refinement & Bug Fixes Session
 
 **Date**: 2025-12-13

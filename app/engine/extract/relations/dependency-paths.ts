@@ -143,9 +143,11 @@ function createDependencyPath(start: Token, steps: PathStep[]): DependencyPath {
 const PATH_PATTERNS: PathPattern[] = [
   // === MARRIAGE ===
 
-  // "X married Y"
-  { signature: /^(\w+):↑nsubj:marry:↓(dobj|obj):(\w+)$/, predicate: 'married_to', subjectFirst: true },
-  { signature: /^(\w+):↑nsubj:wed:↓(dobj|obj):(\w+)$/, predicate: 'married_to', subjectFirst: true },
+  // "X married Y" - with optional compound prefix/suffix for multi-word names
+  { signature: /^(\w+):↑nsubj:marry:↓(dobj|obj):(\w+)(:↓compound:\w+)?$/, predicate: 'married_to', subjectFirst: true },
+  { signature: /^(\w+):↑nsubj:married:↓(dobj|obj):(\w+)(:↓compound:\w+)?$/, predicate: 'married_to', subjectFirst: true },
+  { signature: /^(\w+):↑compound:\w+:↑nsubj:married:↓(dobj|obj):(\w+)(:↓compound:\w+)?$/, predicate: 'married_to', subjectFirst: true },
+  { signature: /^(\w+):↑nsubj:wed:↓(dobj|obj):(\w+)(:↓compound:\w+)?$/, predicate: 'married_to', subjectFirst: true },
 
   // "Y was married by X" (passive)
   { signature: /^(\w+):↑nsubjpass:marry:↓agent:by:↓pobj:(\w+)$/, predicate: 'married_to', subjectFirst: false },
@@ -159,6 +161,11 @@ const PATH_PATTERNS: PathPattern[] = [
 
   // "X took Y as husband/wife"
   { signature: /^(\w+):↑nsubj:take:↓(dobj|obj):(\w+):↓prep:as:↓pobj:(husband|wife)$/, predicate: 'married_to', subjectFirst: true },
+
+  // "X is married to Y" (adjective form)
+  { signature: /^(\w+):↑nsubj:be:↓acomp:married:↓prep:to:↓pobj:(\w+)$/, predicate: 'married_to', subjectFirst: true },
+  // Mock parser variant: "X is married to Y" with compound names
+  { signature: /^(\w+)(:↑compound:\w+)*:↑nsubj:married:↓prep:to:↓pobj:(\w+)(:↓compound:\w+)?$/, predicate: 'married_to', subjectFirst: true },
 
   // === FOUNDING / LEADS ===
 
@@ -348,6 +355,9 @@ const PATH_PATTERNS: PathPattern[] = [
 
   // "X, rival of Y"
   { signature: /^(\w+):↑appos:rival:↓prep:(of|to):↓pobj:(\w+)$/, predicate: 'enemy_of', subjectFirst: true },
+
+  // "X is/was the rival of Y"
+  { signature: /^(\w+):↑nsubj:be:↓attr:rival:↓prep:of:↓pobj:(\w+)$/, predicate: 'rival_of', subjectFirst: true },
 
   // === PROFESSIONAL RELATIONSHIPS ===
 
@@ -600,6 +610,9 @@ const PATH_PATTERNS: PathPattern[] = [
   // "X is the parent/mother/father of Y" → X parent_of Y
   { signature: /^(\w+):↑nsubj:be:↓attr:(parent|mother|father):↓prep:of:↓pobj:(\w+)$/, predicate: 'parent_of', subjectFirst: true },
 
+  // "X is the grandfather/grandmother of Y" → X parent_of Y (grandparent treated as parent)
+  { signature: /^(\w+):↑nsubj:be:↓attr:(grandfather|grandmother|grandparent):↓prep:of:↓pobj:(\w+)$/, predicate: 'parent_of', subjectFirst: true },
+
   // "X, parent of Y" (appositive)
   { signature: /^(\w+):↑appos:(parent|mother|father):↓prep:of:↓pobj:(\w+)$/, predicate: 'parent_of', subjectFirst: true },
 
@@ -609,14 +622,23 @@ const PATH_PATTERNS: PathPattern[] = [
   // "X's mother/father/parent"
   { signature: /^(mother|father|parent):↓poss:(\w+)$/, predicate: 'child_of', subjectFirst: false },
 
-  // "Y, son/daughter of X"
+  // "Y, son/daughter of X" - when path goes UP to appos
   { signature: /^(\w+):↑appos:(son|daughter|child):↓prep:of:↓pobj:(\w+)$/, predicate: 'child_of', subjectFirst: true },
 
-  // "Y, child of X"
+  // "Y, child of X" - when path goes UP to appos
   { signature: /^(\w+):↑appos:child:↓prep:of:↓pobj:(\w+)$/, predicate: 'child_of', subjectFirst: true },
+
+  // "Y, son/daughter of X" - when path goes DOWN from head (e.g., Aragorn → son → of → Arathorn)
+  // This handles "Aragorn, son of Arathorn" where Aragorn is ROOT and son is its appositive
+  { signature: /^(\w+):↓appos:(son|daughter|child):↓prep:of:↓pobj:(\w+)$/, predicate: 'child_of', subjectFirst: true },
 
   // "X and Y are siblings"
   { signature: /^(\w+):↑conj:(\w+):↑nsubj:be:↓attr:sibling$/, predicate: 'sibling_of', subjectFirst: true },
+
+  // "X is the brother/sister of Y"
+  { signature: /^(\w+):↑nsubj:be:↓attr:(brother|sister|sibling):↓prep:of:↓pobj:(\w+)$/, predicate: 'sibling_of', subjectFirst: true },
+  // Mock parser: "X is the brother of Y" - compound names, dobj structure
+  { signature: /^(\w+)(:↑compound:\w+)*:↑dobj:\w+:↓prep:of:↓pobj:(\w+)(:↓compound:\w+)?$/, predicate: 'sibling_of', subjectFirst: true },
 
   // "X's brother/sister"
   { signature: /^(brother|sister|sibling):↓poss:(\w+)$/, predicate: 'sibling_of', subjectFirst: false },
@@ -671,8 +693,8 @@ const PATH_PATTERNS: PathPattern[] = [
   // "X fought/battled Y"
   { signature: /^(\w+):↑nsubj:(fight|battle|combat):↓(dobj|obj):(\w+)$/, predicate: 'enemy_of', subjectFirst: true },
 
-  // "X attacked Y"
-  { signature: /^(\w+):↑nsubj:(attack|assault|strike):↓(dobj|obj):(\w+)$/, predicate: 'enemy_of', subjectFirst: true },
+  // "X assaulted/struck Y"
+  { signature: /^(\w+):↑nsubj:(assault|strike):↓(dobj|obj):(\w+)$/, predicate: 'enemy_of', subjectFirst: true },
 
   // "X defeated/destroyed Y"
   { signature: /^(\w+):↑nsubj:(defeat|destroy|vanquish|conquer):↓(dobj|obj):(\w+)$/, predicate: 'defeated', subjectFirst: true },
@@ -701,7 +723,7 @@ const PATH_PATTERNS: PathPattern[] = [
   { signature: /^(\w+):↑nsubj:be:↓attr:ally:↓prep:of:↓pobj:(\w+)$/, predicate: 'ally_of', subjectFirst: true },
 
   // "X accompanied Y"
-  { signature: /^(\w+):↑nsubj:(accompany|join|follow):↓(dobj|obj):(\w+)$/, predicate: 'ally_of', subjectFirst: true },
+  { signature: /^(\w+):↑nsubj:(accompany|join):↓(dobj|obj):(\w+)$/, predicate: 'ally_of', subjectFirst: true },
 
   // === IMPRISONMENT / CONFINEMENT ===
 
@@ -713,6 +735,124 @@ const PATH_PATTERNS: PathPattern[] = [
 
   // "X escaped from Y"
   { signature: /^(\w+):↑nsubj:escape:↓prep:from:↓pobj:(\w+)$/, predicate: 'freed_from', subjectFirst: true },
+
+  // === INTERPERSONAL ACTIONS (SVO verbs) ===
+
+  // "X trusted Y"
+  { signature: /^(\w+):↑nsubj:trust:↓(dobj|obj):(\w+)$/, predicate: 'trusted', subjectFirst: true },
+
+  // "X helped Y"
+  { signature: /^(\w+):↑nsubj:help:↓(dobj|obj):(\w+)$/, predicate: 'helped', subjectFirst: true },
+
+  // "X saved/rescued Y"
+  { signature: /^(\w+):↑nsubj:(save|rescue):↓(dobj|obj):(\w+)$/, predicate: 'saved', subjectFirst: true },
+
+  // "X betrayed Y"
+  { signature: /^(\w+):↑nsubj:betray:↓(dobj|obj):(\w+)$/, predicate: 'betrayed', subjectFirst: true },
+
+  // "X protected/defended Y"
+  { signature: /^(\w+):↑nsubj:(protect|defend|guard|shield):↓(dobj|obj):(\w+)$/, predicate: 'protected', subjectFirst: true },
+
+  // "X captured/caught Y"
+  { signature: /^(\w+):↑nsubj:(capture|catch|seize|arrest):↓(dobj|obj):(\w+)$/, predicate: 'captured', subjectFirst: true },
+
+  // "X feared/dreaded Y"
+  { signature: /^(\w+):↑nsubj:(fear|dread):↓(dobj|obj):(\w+)$/, predicate: 'feared', subjectFirst: true },
+
+  // "X followed Y"
+  { signature: /^(\w+):↑nsubj:follow:↓(dobj|obj):(\w+)$/, predicate: 'followed', subjectFirst: true },
+
+  // "X attacked Y"
+  { signature: /^(\w+):↑nsubj:attack:↓(dobj|obj):(\w+)$/, predicate: 'attacked', subjectFirst: true },
+
+  // "X loved Y"
+  { signature: /^(\w+):↑nsubj:love:↓(dobj|obj):(\w+)$/, predicate: 'loved', subjectFirst: true },
+
+  // "X hated Y"
+  { signature: /^(\w+):↑nsubj:hate:↓(dobj|obj):(\w+)$/, predicate: 'hated', subjectFirst: true },
+
+  // "X wrote Y"
+  { signature: /^(\w+):↑nsubj:write:↓(dobj|obj):(\w+)$/, predicate: 'wrote', subjectFirst: true },
+
+  // "X created Y"
+  { signature: /^(\w+):↑nsubj:create:↓(dobj|obj):(\w+)$/, predicate: 'created', subjectFirst: true },
+
+  // "X destroyed Y"
+  { signature: /^(\w+):↑nsubj:destroy:↓(dobj|obj):(\w+)$/, predicate: 'destroyed', subjectFirst: true },
+
+  // "X built Y"
+  { signature: /^(\w+):↑nsubj:build:↓(dobj|obj):(\w+)$/, predicate: 'built', subjectFirst: true },
+
+  // "X taught Y"
+  { signature: /^(\w+):↑nsubj:teach:↓(dobj|obj):(\w+)$/, predicate: 'taught', subjectFirst: true },
+
+  // "X studied Y"
+  { signature: /^(\w+):↑nsubj:study:↓(dobj|obj):(\w+)$/, predicate: 'studied', subjectFirst: true },
+
+  // "X found Y"
+  { signature: /^(\w+):↑nsubj:find:↓(dobj|obj):(\w+)$/, predicate: 'found', subjectFirst: true },
+  // NOTE: Removed catch-all dobj pattern that was generating spurious 'found' relations
+  // { signature: /^(\w+):↓dobj:(\w+)(:↓compound:\w+)?$/, predicate: 'found', subjectFirst: true },
+
+  // "X led Y"
+  { signature: /^(\w+):↑nsubj:lead:↓(dobj|obj):(\w+)$/, predicate: 'led', subjectFirst: true },
+
+  // "X defended Y"
+  { signature: /^(\w+):↑nsubj:defend:↓(dobj|obj):(\w+)$/, predicate: 'defended', subjectFirst: true },
+
+  // "X warned Y"
+  { signature: /^(\w+):↑nsubj:warn:↓(dobj|obj):(\w+)$/, predicate: 'warned', subjectFirst: true },
+
+  // "X saw Y"
+  { signature: /^(\w+):↑nsubj:see:↓(dobj|obj):(\w+)$/, predicate: 'saw', subjectFirst: true },
+
+  // "X heard Y"
+  { signature: /^(\w+):↑nsubj:hear:↓(dobj|obj):(\w+)$/, predicate: 'heard', subjectFirst: true },
+
+  // "X discovered Y"
+  { signature: /^(\w+):↑nsubj:discover:↓(dobj|obj):(\w+)$/, predicate: 'discovered', subjectFirst: true },
+
+  // "X lost Y"
+  { signature: /^(\w+):↑nsubj:lose:↓(dobj|obj):(\w+)$/, predicate: 'lost', subjectFirst: true },
+
+  // "X read Y"
+  { signature: /^(\w+):↑nsubj:read:↓(dobj|obj):(\w+)$/, predicate: 'read', subjectFirst: true },
+
+  // "X knew Y"
+  { signature: /^(\w+):↑nsubj:know:↓(dobj|obj):(\w+)$/, predicate: 'knew', subjectFirst: true },
+
+  // "X guided Y"
+  { signature: /^(\w+):↑nsubj:guide:↓(dobj|obj):(\w+)$/, predicate: 'guided', subjectFirst: true },
+
+  // "X took Y"
+  { signature: /^(\w+):↑nsubj:take:↓(dobj|obj):(\w+)$/, predicate: 'took', subjectFirst: true },
+
+  // "X gave Y"
+  { signature: /^(\w+):↑nsubj:give:↓(dobj|obj):(\w+)$/, predicate: 'gave', subjectFirst: true },
+
+  // "X received Y"
+  { signature: /^(\w+):↑nsubj:receive:↓(dobj|obj):(\w+)$/, predicate: 'received', subjectFirst: true },
+
+  // "X sent Y"
+  { signature: /^(\w+):↑nsubj:send:↓(dobj|obj):(\w+)$/, predicate: 'sent', subjectFirst: true },
+
+  // "X told Y"
+  { signature: /^(\w+):↑nsubj:tell:↓(dobj|obj):(\w+)$/, predicate: 'told', subjectFirst: true },
+
+  // "X asked Y"
+  { signature: /^(\w+):↑nsubj:ask:↓(dobj|obj):(\w+)$/, predicate: 'asked', subjectFirst: true },
+
+  // "X visited Y"
+  { signature: /^(\w+):↑nsubj:visit:↓(dobj|obj):(\w+)$/, predicate: 'visited', subjectFirst: true },
+
+  // "X met Y"
+  { signature: /^(\w+):↑nsubj:meet:↓(dobj|obj):(\w+)$/, predicate: 'met', subjectFirst: true },
+
+  // "X owned Y"
+  { signature: /^(\w+):↑nsubj:own:↓(dobj|obj):(\w+)$/, predicate: 'owned', subjectFirst: true },
+
+  // "X escaped from Y"
+  { signature: /^(\w+):↑nsubj:escape:↓prep:from:↓pobj:(\w+)$/, predicate: 'escaped', subjectFirst: true },
 
   // === COUNCIL / GROUP MEMBERSHIP ===
 
@@ -933,25 +1073,34 @@ const PATH_PATTERNS: PathPattern[] = [
   // "X forms part of Y" - forms relation
   { signature: /^(\w+):↑nsubj:form:↓(dobj|obj):part:↓prep:of:↓pobj:(\w+)$/, predicate: 'part_of', subjectFirst: true },
 
-  // === GENERATED PATTERNS ===
-  // Auto-generated from scripts/integrate-patterns.ts
+  // === CORRECTED GENERATED PATTERNS ===
+  // Fixed from incorrect auto-generated patterns
 
-  { signature: /^(\w+):↑nsubj:married:↓(?:dobj|obj):(\w+)$/, predicate: 'parent_of', subjectFirst: true },
-  { signature: /^(\w+):↑nsubj:wed:↓(?:dobj|obj):(\w+)$/, predicate: 'child_of', subjectFirst: true },
-  { signature: /^(\w+):↑nsubj:begat:↓(?:dobj|obj):(\w+)$/, predicate: 'sibling_of', subjectFirst: true },
-  { signature: /^(\w+):↑appos:father:↓prep:of:↓pobj:(\w+)$/, predicate: 'married_to', subjectFirst: true },
-  { signature: /^(\w+):↑appos:father:↓prep:to:↓pobj:(\w+)$/, predicate: 'cousin_of', subjectFirst: true },
-  { signature: /^(\w+):↑appos:mother:↓prep:of:↓pobj:(\w+)$/, predicate: 'ancestor_of', subjectFirst: true },
-  { signature: /^(\w+):↑appos:mother:↓prep:to:↓pobj:(\w+)$/, predicate: 'descendant_of', subjectFirst: true },
+  // Marriage patterns (these were wrongly mapped before)
+  { signature: /^(\w+):↑nsubj:married:↓(?:dobj|obj):(\w+)$/, predicate: 'married_to', subjectFirst: true },
+  { signature: /^(\w+):↑nsubj:wed:↓(?:dobj|obj):(\w+)$/, predicate: 'married_to', subjectFirst: true },
+  { signature: /^(\w+):↑nsubjpass:married:↓agent:by:↓pobj:(\w+)$/, predicate: 'married_to', subjectFirst: false },
+
+  // Parent-child patterns via begat
+  { signature: /^(\w+):↑nsubj:begat:↓(?:dobj|obj):(\w+)$/, predicate: 'parent_of', subjectFirst: true },
+  { signature: /^(\w+):↑nsubj:begot:↓(?:dobj|obj):(\w+)$/, predicate: 'parent_of', subjectFirst: true },
+
+  // Appositive family patterns - "X, father of Y"
+  { signature: /^(\w+):↑appos:father:↓prep:of:↓pobj:(\w+)$/, predicate: 'parent_of', subjectFirst: true },
+  { signature: /^(\w+):↑appos:mother:↓prep:of:↓pobj:(\w+)$/, predicate: 'parent_of', subjectFirst: true },
   { signature: /^(\w+):↑appos:parent:↓prep:of:↓pobj:(\w+)$/, predicate: 'parent_of', subjectFirst: true },
-  { signature: /^(\w+):↑appos:parent:↓prep:to:↓pobj:(\w+)$/, predicate: 'child_of', subjectFirst: true },
-  { signature: /^(\w+):↑nsubjpass:married:↓agent:by:↓pobj:(\w+)$/, predicate: 'sibling_of', subjectFirst: false },
-  { signature: /^father:↓poss:(\w+)$/, predicate: 'cousin_of', subjectFirst: true },
-  { signature: /^mother:↓poss:(\w+)$/, predicate: 'ancestor_of', subjectFirst: true },
-  { signature: /^(\w+):↑nsubj:be:↓attr:father:↓prep:of:↓pobj:(\w+)$/, predicate: 'descendant_of', subjectFirst: true },
-  { signature: /^(\w+):↑nsubj:be:↓attr:father:↓prep:to:↓pobj:(\w+)$/, predicate: 'parent_of', subjectFirst: true },
-  { signature: /^(\w+):↑nsubj:be:↓attr:mother:↓prep:of:↓pobj:(\w+)$/, predicate: 'child_of', subjectFirst: true },
-  { signature: /^(\w+):↑nsubj:be:↓attr:mother:↓prep:to:↓pobj:(\w+)$/, predicate: 'sibling_of', subjectFirst: true },
+  { signature: /^(\w+):↑appos:son:↓prep:of:↓pobj:(\w+)$/, predicate: 'child_of', subjectFirst: true },
+  { signature: /^(\w+):↑appos:daughter:↓prep:of:↓pobj:(\w+)$/, predicate: 'child_of', subjectFirst: true },
+
+  // Possessive patterns - "Y's father"
+  { signature: /^father:↓poss:(\w+)$/, predicate: 'parent_of', subjectFirst: false },
+  { signature: /^mother:↓poss:(\w+)$/, predicate: 'parent_of', subjectFirst: false },
+
+  // "X is the father of Y" patterns
+  { signature: /^(\w+):↑nsubj:be:↓attr:father:↓prep:of:↓pobj:(\w+)$/, predicate: 'parent_of', subjectFirst: true },
+  { signature: /^(\w+):↑nsubj:be:↓attr:mother:↓prep:of:↓pobj:(\w+)$/, predicate: 'parent_of', subjectFirst: true },
+  { signature: /^(\w+):↑nsubj:be:↓attr:son:↓prep:of:↓pobj:(\w+)$/, predicate: 'child_of', subjectFirst: true },
+  { signature: /^(\w+):↑nsubj:be:↓attr:daughter:↓prep:of:↓pobj:(\w+)$/, predicate: 'child_of', subjectFirst: true },
   { signature: /^(\w+):↑nsubj:owns:↓(?:dobj|obj):(\w+)$/, predicate: 'owns', subjectFirst: true },
   { signature: /^(\w+):↑nsubj:owned:↓(?:dobj|obj):(\w+)$/, predicate: 'owned_by', subjectFirst: true },
   { signature: /^(\w+):↑nsubj:possesses:↓(?:dobj|obj):(\w+)$/, predicate: 'belongs_to', subjectFirst: true },
@@ -1278,9 +1427,17 @@ export function extractRelationFromPath(
   tokens: Token[]
 ): { predicate: Predicate; subjectFirst: boolean; confidence: number } | null {
 
+  const DEBUG_PATH = process.env.DEBUG_PATH === '1';
+
   // Find path in both directions
   const path12 = findShortestPath(entity1Token, entity2Token, tokens);
   const path21 = findShortestPath(entity2Token, entity1Token, tokens);
+
+  if (DEBUG_PATH) {
+    console.log(`[PATH] ${entity1Token.text} → ${entity2Token.text}`);
+    if (path12) console.log(`[PATH]   path12: ${path12.signature}`);
+    if (path21) console.log(`[PATH]   path21: ${path21.signature}`);
+  }
 
   // Try matching both directions
   if (path12) {

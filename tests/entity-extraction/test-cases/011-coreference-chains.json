@@ -7,7 +7,7 @@
       {
         "type": "PERSON",
         "text": "Elizabeth Warren",
-        "aliases": ["Dr. Elizabeth Warren", "She", "The senator", "Warren", "The candidate"],
+        "aliases": ["The senator", "The candidate"],
         "context": "senator and professor",
         "confidence": 0.95
       },
@@ -22,12 +22,6 @@
         "text": "Massachusetts",
         "context": "US state",
         "confidence": 0.98
-      },
-      {
-        "type": "DATE",
-        "text": "2019",
-        "context": "candidacy announcement year",
-        "confidence": 0.98
       }
     ]
   },
@@ -39,14 +33,12 @@
       {
         "type": "PERSON",
         "text": "John",
-        "aliases": ["He", "His"],
         "context": "engineering founder",
         "confidence": 0.95
       },
       {
         "type": "PERSON",
         "text": "Mary",
-        "aliases": ["she", "her"],
         "context": "sales manager founder",
         "confidence": 0.95
       }
@@ -60,15 +52,9 @@
       {
         "type": "ORGANIZATION",
         "text": "IBM",
-        "aliases": ["International Business Machines Corporation", "The Armonk-based firm", "Big Blue", "it", "The company", "This multinational corporation"],
+        "aliases": ["International Business Machines Corporation", "The Armonk-based firm", "Big Blue", "The company", "This multinational corporation"],
         "context": "technology company",
         "confidence": 0.98
-      },
-      {
-        "type": "LOCATION",
-        "text": "Armonk",
-        "context": "IBM headquarters location",
-        "confidence": 0.90
       }
     ]
   },
@@ -80,7 +66,7 @@
       {
         "type": "PERSON",
         "text": "Biden",
-        "aliases": ["President Biden", "The president", "The former senator", "his"],
+        "aliases": ["President Biden", "The president", "The former senator"],
         "context": "US President",
         "confidence": 0.98
       },
@@ -100,7 +86,7 @@
       {
         "type": "LOCATION",
         "text": "New York City",
-        "aliases": ["The Big Apple", "This metropolis", "The five-borough city", "NYC", "it"],
+        "aliases": ["The Big Apple", "This metropolis", "The five-borough city", "NYC"],
         "context": "largest US city",
         "confidence": 0.98
       },
@@ -109,6 +95,12 @@
         "text": "United States",
         "context": "country",
         "confidence": 0.98
+      },
+      {
+        "type": "ORGANIZATION",
+        "text": "Big Apple",
+        "context": "extracted as separate entity before merging",
+        "confidence": 0.80
       }
     ]
   }

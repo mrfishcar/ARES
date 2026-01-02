@@ -642,13 +642,4 @@ export function stateToIRAssertion(state: StateAssertion): Assertion {
   };
 }
 
-// =============================================================================
-// EXPORTS
-// =============================================================================
-
-export {
-  StateAssertion,
-  StatePredicateType,
-  StateExtractionStats,
-  StateExtractionConfig,
-};
+// Types are exported where defined

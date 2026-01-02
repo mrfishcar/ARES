@@ -352,7 +352,8 @@ export async function extractFromSegments(
 
     const dedupedOutput = await runDeduplicationStage({
       relations: inverseOutput.relations,
-      config: config.deduplicationConfig
+      config: config.deduplicationConfig,
+      entities: filterOutput.entities  // Pass entities for canonical name lookup
     });
 
     // ========================================================================

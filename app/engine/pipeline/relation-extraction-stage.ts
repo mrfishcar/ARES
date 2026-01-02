@@ -21,13 +21,37 @@ import { extractRelations } from '../extract/relations';
 import { extractAllNarrativeRelations } from '../narrative-relations';
 import { splitIntoSentences } from '../segment';
 import type { Relation } from '../schema';
+import type { CorefLinks } from '../coref';
 import type {
   RelationExtractionInput,
   RelationExtractionOutput,
   Segment,
   Sentence,
-  EntityLookup
+  EntityLookup,
+  CorefLink as PipelineCorefLink
 } from './types';
+
+/**
+ * Convert pipeline CorefLink[] to CorefLinks interface expected by narrative-relations
+ * The pipeline has a simpler mention structure, so we adapt it
+ */
+function toPipelineCorefLinks(links: PipelineCorefLink[]): CorefLinks {
+  return {
+    links: links.map(link => ({
+      mention: {
+        text: link.mention.text,
+        start: link.mention.start,
+        end: link.mention.end,
+        sentence_index: 0, // Not tracked in pipeline
+        type: 'pronoun' as const // Default type
+      },
+      entity_id: link.entity_id,
+      confidence: link.confidence || 0.8,
+      method: (link.method || 'pronoun_stack') as 'pronoun_stack' | 'title_match' | 'nominal_match' | 'quote_attr' | 'coordination'
+    })),
+    quotes: []
+  };
+}
 
 const STAGE_NAME = 'RelationExtractionStage';
 
@@ -210,7 +234,7 @@ export async function runRelationExtractionStage(
       input.processedText,
       input.entityLookup,
       input.docId,
-      { links: input.corefLinks }
+      toPipelineCorefLinks(input.corefLinks)
     );
 
     const narrativeRelationsWithContext = narrativeRelations.map(rel =>

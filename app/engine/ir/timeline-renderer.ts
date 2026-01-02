@@ -72,7 +72,7 @@ const DEFAULT_OPTIONS: Required<TimelineOptions> = {
  * @param opts - Rendering options
  * @returns Markdown string
  */
-export function renderTimeline(
+export function renderTimelineFromIR(
   ir: ProjectIR,
   opts?: TimelineOptions
 ): string {

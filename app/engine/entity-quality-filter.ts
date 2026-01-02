@@ -13,6 +13,7 @@
 import type { Entity, EntityType, QualityDecision, FilterRuleCheck, EntityWithQuality } from './schema';
 import { splitSchoolName } from './linguistics/school-names';
 import { PERSON_HEAD_BLOCKLIST } from './linguistics/common-noun-filters';
+import { VERBS_BLOCKLIST_FOR_ENTITY_NAMES } from './linguistics/shared-vocabulary';
 import {
   TITLE_PREFIXES as CENTRALIZED_TITLE_PREFIXES,
   validateEntityForType,
@@ -55,7 +56,7 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
 
   // Determiners and particles
   'the', 'a', 'an', 'this', 'that', 'these', 'those',
-  'some', 'any', 'all', 'each', 'every', 'both', 'few', 'many', 'much',
+  'some', 'any', 'all', 'each', 'every', 'both', 'few', 'many', 'much', 'none',
 
   // High-frequency verbs that shouldn't be entities (even when capitalized at sentence start)
   'like', 'just', 'really', 'actually', 'maybe', 'must', 'should', 'could',
@@ -74,6 +75,7 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
   'say', 'says', 'said', 'saying',
   'tell', 'tells', 'told', 'telling',
   'ask', 'asks', 'asked', 'asking',
+  'reply', 'replied', 'replying', 'answer', 'answered', 'answering',
   'give', 'gives', 'gave', 'giving', 'given',
   'find', 'finds', 'found', 'finding',
   'want', 'wants', 'wanted', 'wanting',
@@ -82,6 +84,7 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
   'work', 'works', 'worked', 'working',
   'call', 'calls', 'called', 'calling',
   'feel', 'feels', 'felt', 'feeling',
+  'look', 'looks', 'looked', 'looking',
   'seem', 'seems', 'seemed', 'seeming',
   'leave', 'leaves', 'left', 'leaving',
   'keep', 'keeps', 'kept', 'keeping',
@@ -125,6 +128,7 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
   'win', 'wins', 'won', 'winning',
   'offer', 'offers', 'offered', 'offering',
   'remember', 'remembers', 'remembered', 'remembering',
+  'forget', 'forgets', 'forgot', 'forgetting', 'forgotten',
   'love', 'loves', 'loved', 'loving',
   'consider', 'considers', 'considered', 'considering',
   'appear', 'appears', 'appeared', 'appearing',
@@ -136,6 +140,7 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
   'expect', 'expects', 'expected', 'expecting',
   'build', 'builds', 'built', 'building',
   'stay', 'stays', 'stayed', 'staying',
+  'start', 'starts', 'started', 'starting',
   'fall', 'falls', 'fell', 'falling', 'fallen',
   'cut', 'cuts', 'cutting',
   'reach', 'reaches', 'reached', 'reaching',
@@ -178,24 +183,61 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
   'in', 'on', 'at', 'by', 'with', 'from', 'to', 'of', 'for', 'about',
   'through', 'during', 'before', 'after', 'above', 'below', 'between',
   'among', 'under', 'over', 'into', 'onto', 'upon', 'within', 'without',
+  'around', 'across', 'along', 'behind',
 
   // Adverbs
   'very', 'too', 'also', 'only', 'even', 'still', 'never', 'always',
   'often', 'sometimes', 'usually', 'rarely', 'seldom',
   'here', 'there', 'everywhere', 'nowhere', 'somewhere', 'anywhere',
-  'now', 'then', 'later', 'soon', 'today', 'yesterday', 'tomorrow',
+  'now', 'then', 'later', 'soon', 'today', 'yesterday', 'tomorrow', 'earlier',
+  'suddenly', 'quickly', 'slowly', 'quietly', 'loudly', 'finally', 'immediately',
+  'quite', 'rather', 'fairly', 'pretty', 'extremely', 'absolutely', 'not',
+  'inside', 'outside', 'ahead',
+  'already', 'almost', 'nearly', 'just',
 
   // Common adjectives that shouldn't be entities
-  'good', 'bad', 'new', 'old', 'first', 'last', 'long', 'short',
-  'big', 'small', 'great', 'little', 'own', 'other', 'different', 'same',
+  'good', 'bad', 'new', 'old', 'first', 'second', 'third', 'fourth', 'fifth', 'last', 'long', 'short',
+  'big', 'small', 'great', 'little', 'own', 'other', 'another', 'different', 'same', 'similar',
   'high', 'low', 'next', 'early', 'young', 'important', 'large', 'small',
+  'left', 'right', 'forward', 'back', 'backward', 'behind', 'ahead',
   'able', 'ready', 'sure', 'certain', 'clear', 'full', 'free',
+  'strange', 'unknown', 'ancient', 'modern', 'famous', 'powerful',
+  'happy', 'sad', 'angry', 'afraid', 'scared', 'worried', 'excited', 'tired',
+  'better', 'best', 'worse', 'worst', 'more', 'most', 'less', 'least',
+  'neither', 'tiny', 'huge',
+
+  // Weather terms
+  'rain', 'snow', 'wind', 'storm', 'sun', 'cloud', 'fog', 'thunder', 'lightning',
+
+  // Body parts
+  'hand', 'hands', 'head', 'heads', 'heart', 'hearts', 'eyes', 'eye', 'face', 'faces',
+  'arm', 'arms', 'leg', 'legs', 'foot', 'feet', 'finger', 'fingers',
+
+  // Direction words
+  'north', 'south', 'east', 'west', 'up', 'down',
+
+  // Common gerunds/present participles
+  'running', 'walking', 'talking', 'fighting', 'waiting', 'looking', 'thinking',
+
+  // Common adjectives
+  'beautiful', 'terrible', 'wonderful', 'horrible', 'amazing', 'awful',
+
+  // Temporal adverbs
+  'always', 'sometimes', 'often', 'rarely', 'usually', 'frequently',
+
+  // Reflexive pronouns
+  'myself', 'yourself', 'himself', 'herself', 'itself', 'ourselves', 'themselves',
+  'nobody', 'everybody',
 
   // Generic nouns that are too vague
-  'thing', 'things', 'stuff',
+  'thing', 'things', 'stuff', 'nothing', 'everything', 'something', 'anything',
   'person', 'people', 'somebody', 'someone', 'anybody', 'anyone', 'nobody', 'everyone',
+  'man', 'woman', 'boy', 'girl', 'child', 'children', 'friend', 'friends',
+  'king', 'queen', 'prince', 'princess', 'lord', 'lady',
+  'sleeping', 'eating', 'drinking',
   'place', 'places', 'somewhere', 'anywhere', 'nowhere', 'everywhere',
   'time', 'times', 'day', 'days', 'year', 'years', 'moment', 'moments',
+  'morning', 'evening', 'night', 'afternoon', 'noon', 'midnight', 'tonight',
   'way', 'ways', 'kind', 'sort', 'type',
   'case', 'cases', 'point', 'points', 'part', 'parts',
   'number', 'numbers', 'group', 'groups',
@@ -374,6 +416,25 @@ function looksLikeSurname(word: string): boolean {
     'aw', 'ew',                 // Ravenclaw, Crenshaw, etc.
     'om', 'um',                 // Longbottom, etc.
     'in', 'an', 'on',           // Lupin, Petunia->Pettigrew pattern (wider), etc.
+    // Fantasy/fictional name endings
+    'rne', 'ne',                // Thorne, Bourne, Wayne, etc.
+    'rk', 'ark', 'ork',         // Park, Clark, York, etc.
+    'en', 'ren', 'rren',        // Warren, Marren, Wren, etc.
+    'all', 'ell', 'ill',        // Nightfall, Crandall, Marshall, etc.
+    'ght', 'ight',              // Knight, Bright, Wright, etc.
+    'ock', 'uck',               // Hancock, Buck, etc.
+    'ald', 'old',               // Fitzgerald, Arnold, etc.
+    'ner', 'ter',               // Gardener, Carpenter, etc.
+    'ey', 'ay',                 // Finley, Murray, etc.
+    'tt', 'ott',                // Scott, Abbott, etc.
+    // Common vowel endings for non-Anglo surnames
+    'ama', 'ima', 'uma',        // Obama, Fujima, etc.
+    'aro', 'ero', 'iro', 'oro', 'uro', // Castro, Shapiro, etc.
+    'ez', 'az', 'iz', 'oz', 'uz',     // Hernandez, Diaz, Ortiz, Cruz, etc.
+    'ia', 'io',                 // Garcia, Ortega->via, Antonio, etc.
+    'elli', 'ini', 'oni', 'ani', // Morelli, Rossini, Belloni, etc.
+    'ov', 'ev', 'ova', 'eva',   // Petrov, Ivanov, Petrova, etc.
+    'uk', 'ko', 'ka',           // Kovalchuk, Shevchenko, etc.
   ];
 
   if (surnameEndings.some(end => lower.endsWith(end))) {
@@ -638,13 +699,8 @@ function isSpeciesName(tokens: string[], normalized: string): boolean {
     return true;
   }
 
-  // Reject common verbs that might be mislabeled
-  const COMMON_VERBS = new Set([
-    'break', 'breaks', 'run', 'runs', 'walk', 'walks',
-    'fight', 'fights', 'attack', 'attacks', 'defend', 'defends',
-  ]);
-
-  if (COMMON_VERBS.has(normalized)) {
+  // Reject common verbs that might be mislabeled (uses shared vocabulary)
+  if (VERBS_BLOCKLIST_FOR_ENTITY_NAMES.has(normalized)) {
     return false;
   }
 
@@ -801,9 +857,14 @@ export function isLexicallyValidEntityName(
 
   // Normalize for stopword check
   const normalized = name.toLowerCase().trim();
+  const trimmed = name.trim();
 
-  // Reject if in global stopwords
-  if (GLOBAL_ENTITY_STOPWORDS.has(normalized)) {
+  // Check if it's an all-caps acronym (2-5 letters) - these are allowed even if lowercase is a stopword
+  // e.g., "WHO" (World Health Organization) should not be blocked by "who" stopword
+  const isAcronym = /^[A-Z]{2,5}$/.test(trimmed);
+
+  // Reject if in global stopwords (unless it's an acronym)
+  if (!isAcronym && GLOBAL_ENTITY_STOPWORDS.has(normalized)) {
     return false;
   }
 

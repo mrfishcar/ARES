@@ -30,6 +30,14 @@ const PLACE_CANONICALS = new Set([
   "london"
 ]);
 
+// Pronouns should not be tagged as entities even when capitalized (sentence-initial)
+const PRONOUNS = new Set([
+  "he", "she", "it", "they", "we", "i", "you",
+  "him", "her", "them", "us", "me",
+  "his", "her", "hers", "its", "their", "theirs", "our", "ours", "my", "mine", "your", "yours",
+  "himself", "herself", "itself", "themselves", "ourselves", "myself", "yourself", "yourselves"
+]);
+
 function splitSentences(text: string): Array<{ text: string; start: number; end: number }> {
   const segments: Array<{ text: string; start: number; end: number }> = [];
   let lastIndex = 0;
@@ -97,10 +105,52 @@ function annotateNamedEntities(tokens: Token[], fullText: string): void {
       continue;
     }
 
+    // Skip pronouns - they should not be tagged as entities even when capitalized
+    if (PRONOUNS.has(text.toLowerCase())) {
+      i += 1;
+      continue;
+    }
+
+    // Skip determiners at the start of an entity span - they shouldn't start entities
+    const DETERMINERS = new Set(['the', 'a', 'an', 'this', 'that', 'these', 'those', 'my', 'your', 'his', 'her', 'its', 'our', 'their']);
+    if (DETERMINERS.has(text.toLowerCase())) {
+      i += 1;
+      continue;
+    }
+
     let j = i + 1;
     while (j < tokens.length) {
       const next = tokens[j];
       const nextCap = /^[A-Z]/.test(next.text) || /-[A-Z]/.test(next.text);
+
+      // "X of Y" PATTERN: Bridge lowercase connectors to form multi-word entities
+      // e.g., "Order of the Phoenix", "Ministry of Magic", "Department of Mysteries"
+      if (!nextCap && !next.ent) {
+        const BRIDGE_WORDS = new Set(['of', 'the', 'and', 'de', 'la', 'le', 'di', 'del', 'von', 'van']);
+        const isBridge = BRIDGE_WORDS.has(next.text.toLowerCase());
+        if (isBridge && j + 1 < tokens.length) {
+          // Look ahead for capitalized continuation
+          const afterBridge = tokens[j + 1];
+          const afterBridgeCap = /^[A-Z]/.test(afterBridge.text);
+          if (afterBridgeCap && !afterBridge.ent) {
+            // Include bridge word and continue
+            j += 1;
+            continue;
+          }
+          // Check two-word bridge: "of the"
+          if (j + 2 < tokens.length && next.text.toLowerCase() === 'of') {
+            const maybeThe = tokens[j + 1];
+            const afterThe = tokens[j + 2];
+            if (maybeThe.text.toLowerCase() === 'the' && /^[A-Z]/.test(afterThe.text) && !afterThe.ent) {
+              // Skip both "of" and "the"
+              j += 2;
+              continue;
+            }
+          }
+        }
+        break;
+      }
+
       if (!nextCap || next.ent === "DATE") break;
 
       // COORDINATION FIX: Don't group across commas (coordination lists)
@@ -172,7 +222,10 @@ function buildTokens(sentenceText: string, offset: number, fullText: string): To
     let pos: string;
     let tag: string;
 
-    if (DETERMINERS.has(lowerRaw)) {
+    if (PRONOUNS.has(lowerRaw)) {
+      pos = "PRON";
+      tag = "PRP";
+    } else if (DETERMINERS.has(lowerRaw)) {
       pos = "DET";
       tag = "DT";
     } else if (PREPOSITIONS.has(lowerRaw)) {

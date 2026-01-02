@@ -66,9 +66,33 @@ interface NERSpan {
   tokens: Token[];
 }
 
+// Title words that should not be considered part of a multi-token name span
+// These prefix names but should not cause the following name to be "attached-only"
+const TITLE_WORDS_LOWER = new Set([
+  // Royal/nobility titles
+  'king', 'queen', 'prince', 'princess', 'lord', 'lady', 'duke', 'duchess',
+  'earl', 'count', 'countess', 'baron', 'baroness', 'sir', 'dame', 'emperor',
+  'empress', 'tsar', 'tsarina', 'sultan', 'sultana', 'pharaoh', 'chief',
+  // Honorifics
+  'mr', 'mrs', 'ms', 'miss', 'dr', 'doctor', 'coach', 'detective', 'nurse',
+  'principal', 'prof', 'professor',
+  // Religious titles
+  'father', 'mother', 'brother', 'sister', 'pope', 'bishop', 'archbishop',
+  'cardinal', 'reverend', 'rabbi', 'imam', 'sheikh', 'saint', 'st',
+  // Military titles
+  'general', 'colonel', 'major', 'captain', 'lieutenant', 'sergeant',
+  'admiral', 'commander', 'marshal',
+  // Academic/professional titles
+  'judge', 'justice', 'senator', 'governor', 'president', 'chancellor',
+  'mayor', 'minister', 'ambassador', 'secretary'
+]);
+
 function extractNERSpans(sentence: { tokens: Token[] }): NERSpan[] {
   const spans: NERSpan[] = [];
   const tokens = sentence.tokens;
+
+  // Coordination conjunctions should not be part of NER spans
+  const COORD_CONJ = new Set(['and', 'or', '&']);
 
   let currentSpan: NERSpan | null = null;
 
@@ -76,6 +100,35 @@ function extractNERSpans(sentence: { tokens: Token[] }): NERSpan[] {
     // Check if token is part of NER (has entity label or is capitalized multi-word)
     const isNER = token.ent && token.ent !== '' && token.ent !== 'O';
     const isCapitalized = /^[A-Z]/.test(token.text);
+
+    // COORDINATION FIX: Treat coordination conjunctions as span boundaries
+    // Even if spaCy tags "and" as part of a PERSON entity (e.g., "Alice and Bob"),
+    // we should break the span at the conjunction
+    // NOTE: spaCy sometimes mis-tags "and" as NOUN, so we check text regardless of POS
+    const tokenLower = token.text.toLowerCase();
+    const isCoordConj = COORD_CONJ.has(tokenLower) && (token.pos === 'CCONJ' || tokenLower === 'and' || tokenLower === 'or');
+    if (isCoordConj) {
+      // Finalize current span if exists
+      if (currentSpan && currentSpan.tokens.length > 1) {
+        spans.push(currentSpan);
+      }
+      currentSpan = null;
+      continue;
+    }
+
+    // TITLE FIX: Treat title words as standalone (not part of multi-token spans)
+    // "King David" should treat "David" as standalone, not embedded
+    // This prevents names like "David" from being filtered by NF-1
+    const isTitle = TITLE_WORDS_LOWER.has(token.text.toLowerCase());
+    if (isTitle) {
+      // Finalize current span if exists
+      if (currentSpan && currentSpan.tokens.length > 1) {
+        spans.push(currentSpan);
+      }
+      currentSpan = null;
+      // Don't continue - the title token itself doesn't start a new span
+      continue;
+    }
 
     if (isNER || isCapitalized) {
       if (!currentSpan) {
@@ -85,15 +138,20 @@ function extractNERSpans(sentence: { tokens: Token[] }): NERSpan[] {
           tokens: [token],
         };
       } else {
-        // Extend current span if consecutive
+        // Extend current span if consecutive AND same entity type
         const prevToken = currentSpan.tokens[currentSpan.tokens.length - 1];
         const gap = token.start - prevToken.end;
 
-        if (gap <= 1) { // Allow single space between tokens
+        // ENTITY TYPE BOUNDARY FIX: Don't group different entity types together
+        // "Dumbledore may" should NOT be grouped just because "may" is tagged DATE
+        const sameEntityType = token.ent === prevToken.ent;
+        const bothCapitalized = isCapitalized && /^[A-Z]/.test(prevToken.text);
+
+        if (gap <= 1 && (sameEntityType || (bothCapitalized && !token.ent && !prevToken.ent))) {
           currentSpan.end = token.end;
           currentSpan.tokens.push(token);
         } else {
-          // Gap too large, finalize current span
+          // Gap too large or different entity types, finalize current span
           if (currentSpan.tokens.length > 1) {
             spans.push(currentSpan);
           }

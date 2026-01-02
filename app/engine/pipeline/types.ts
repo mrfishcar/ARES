@@ -176,6 +176,7 @@ export interface RelationFilterStats {
   removedByReason: {
     marriedToSuppression: number;
     siblingDetection: number;
+    familyFriendsSuppression: number;
     appositiveFiltering: number;
     confidenceThreshold: number;
   };
@@ -355,6 +356,7 @@ export interface InverseGenerationOutput {
 export interface DeduplicationInput {
   relations: Relation[];
   config: DeduplicationConfig;
+  entities?: Entity[];  // Added for canonical name lookup during dedup
 }
 
 export interface DeduplicationOutput {

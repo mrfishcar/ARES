@@ -106,6 +106,141 @@ const HOUSE_HEADWORDS = new Set([
 ]);
 
 // ============================================================================
+// FICTION-SPECIFIC HEADWORD PATTERNS
+// ============================================================================
+
+const SPELL_HEADWORDS = new Set([
+  // Harry Potter spells
+  'curse', 'hex', 'jinx', 'charm', 'spell', 'incantation',
+  'expelliarmus', 'stupefy', 'crucio', 'imperio', 'avadakedavra',
+  'lumos', 'nox', 'accio', 'expecto', 'patronum', 'riddikulus',
+  'petrificus', 'totalus', 'wingardium', 'leviosa', 'alohomora',
+  'obliviate', 'protego', 'sectumsempra', 'levicorpus', 'morsmordre',
+  // D&D/Fantasy spells
+  'fireball', 'lightning', 'bolt', 'teleport', 'resurrection',
+  'healing', 'shield', 'barrier', 'blast', 'nova', 'meteor',
+  // Generic magic terms
+  'enchantment', 'conjuration', 'transmutation', 'evocation',
+  'necromancy', 'divination', 'illusion', 'abjuration',
+]);
+
+const ARTIFACT_HEADWORDS = new Set([
+  // Weapons
+  'sword', 'blade', 'dagger', 'axe', 'bow', 'spear', 'staff',
+  'wand', 'scepter', 'sceptre', 'mace', 'hammer', 'lance',
+  // Jewelry/Wearables
+  'ring', 'amulet', 'necklace', 'crown', 'tiara', 'helm',
+  'helmet', 'gauntlet', 'glove', 'cloak', 'robe', 'armor',
+  'armour', 'shield', 'pendant', 'bracelet', 'circlet',
+  // Containers/Objects
+  'chalice', 'grail', 'goblet', 'cup', 'orb', 'crystal',
+  'stone', 'gem', 'jewel', 'mirror', 'lamp', 'lantern',
+  'horn', 'harp', 'lyre', 'tome', 'grimoire', 'scroll',
+  // Famous artifacts (headword)
+  'excalibur', 'mjolnir', 'sting', 'glamdring', 'anduril',
+  'narsil', 'elderberry', 'deathly', 'horcrux',
+]);
+
+const CREATURE_HEADWORDS = new Set([
+  // Classic fantasy
+  'dragon', 'drake', 'wyrm', 'wyvern', 'phoenix', 'griffin',
+  'griffon', 'gryphon', 'unicorn', 'pegasus', 'basilisk',
+  'hydra', 'chimera', 'manticore', 'sphinx', 'minotaur',
+  // Undead/Dark
+  'vampire', 'werewolf', 'zombie', 'skeleton', 'wraith',
+  'specter', 'spectre', 'ghost', 'phantom', 'lich', 'ghoul',
+  'banshee', 'dementor', 'inferi', 'revenant',
+  // Humanoid monsters
+  'troll', 'ogre', 'giant', 'golem', 'elemental', 'demon',
+  'devil', 'imp', 'goblin', 'orc', 'kobold', 'gnoll',
+  // Nature/Fey
+  'treant', 'ent', 'dryad', 'nymph', 'fairy', 'faerie',
+  'pixie', 'sprite', 'brownie', 'leprechaun', 'satyr',
+  // Sea creatures
+  'kraken', 'leviathan', 'mermaid', 'merman', 'selkie', 'siren',
+  // Named creatures (headword position)
+  'smaug', 'fawkes', 'buckbeak', 'aragog', 'fluffy', 'norbert',
+  'hedwig', 'nagini', 'scabbers', 'crookshanks',
+]);
+
+const RACE_HEADWORDS = new Set([
+  // Tolkien races
+  'elf', 'elves', 'elven', 'elvish', 'elfin',
+  'dwarf', 'dwarves', 'dwarven', 'dwarfish',
+  'hobbit', 'hobbits', 'halfling', 'halflings',
+  'orc', 'orcs', 'orcish', 'uruk', 'uruks',
+  'ent', 'ents', 'entish',
+  // D&D/Fantasy races
+  'human', 'humans', 'mankind',
+  'gnome', 'gnomes', 'gnomish',
+  'tiefling', 'tieflings',
+  'dragonborn',
+  'tabaxi', 'kenku', 'aarakocra',
+  'goliath', 'goliaths',
+  'firbolg', 'firbolgs',
+  'triton', 'tritons',
+  'genasi',
+  // Harry Potter
+  'muggle', 'muggles', 'squib', 'squibs',
+  'wizard', 'wizards', 'witch', 'witches',
+  'veela', 'giant', 'giants', 'centaur', 'centaurs',
+  'goblin', 'goblins', 'merpeople', 'werewolves',
+]);
+
+const DEITY_HEADWORDS = new Set([
+  // Generic
+  'god', 'gods', 'goddess', 'goddesses', 'deity', 'deities',
+  'titan', 'titans', 'divine', 'immortal', 'immortals',
+  'creator', 'allfather', 'skyfather',
+  // Greek
+  'zeus', 'hera', 'poseidon', 'hades', 'athena', 'apollo',
+  'artemis', 'ares', 'aphrodite', 'hermes', 'hephaestus',
+  'dionysus', 'demeter', 'persephone',
+  // Norse
+  'odin', 'thor', 'loki', 'freya', 'freyja', 'frigg', 'tyr',
+  'heimdall', 'baldur', 'balder',
+  // Egyptian
+  'ra', 'osiris', 'isis', 'anubis', 'horus', 'thoth', 'seth',
+  // Tolkien divine
+  'valar', 'maiar', 'eru', 'iluvatar', 'morgoth', 'melkor',
+  'manwe', 'varda', 'ulmo', 'aule', 'yavanna', 'mandos',
+  'sauron', 'gandalf', 'saruman', 'radagast',
+]);
+
+const ABILITY_HEADWORDS = new Set([
+  // Generic abilities
+  'ability', 'power', 'skill', 'talent', 'gift',
+  'technique', 'art', 'mastery', 'expertise',
+  // HP abilities
+  'parseltongue', 'legilimency', 'occlumency', 'animagus',
+  'metamorphmagus', 'apparition', 'disapparition',
+  // Generic powers
+  'telepathy', 'telekinesis', 'pyrokinesis', 'cryokinesis',
+  'invisibility', 'immortality', 'invulnerability',
+  'flight', 'shapeshifting', 'regeneration', 'precognition',
+]);
+
+const MATERIAL_HEADWORDS = new Set([
+  // Fantasy metals
+  'mithril', 'adamantine', 'adamantium', 'orichalcum',
+  'vibranium', 'unobtainium', 'carbonadium',
+  // Magic materials
+  'dragonscale', 'phoenix', 'unicorn', 'basilisk',
+  'moonstone', 'sunstone', 'bloodstone', 'soulstone',
+  // Tolkien materials
+  'galvorn', 'tilkal', 'eog',
+]);
+
+const POTION_HEADWORDS = new Set([
+  // Generic
+  'potion', 'elixir', 'philter', 'philtre', 'draught', 'brew',
+  'tonic', 'serum', 'antidote', 'poison', 'venom',
+  // HP potions
+  'veritaserum', 'polyjuice', 'amortentia', 'felix', 'felicis',
+  'wolfsbane', 'skele-gro', 'pepperup',
+]);
+
+// ============================================================================
 // TYPE INFERENCE
 // ============================================================================
 
@@ -131,7 +266,24 @@ function inferType(cluster: MentionCluster): TypeEvidence {
 
   let headwordSignal: EntityType | undefined;
 
-  if (PLACE_HEADWORDS.has(lastWord)) {
+  // Check all headword patterns - fiction-specific first (more specific)
+  if (SPELL_HEADWORDS.has(lastWord)) {
+    headwordSignal = 'SPELL';
+  } else if (POTION_HEADWORDS.has(lastWord)) {
+    headwordSignal = 'ITEM';  // Potions are items
+  } else if (ARTIFACT_HEADWORDS.has(lastWord)) {
+    headwordSignal = 'ARTIFACT';
+  } else if (CREATURE_HEADWORDS.has(lastWord)) {
+    headwordSignal = 'CREATURE';
+  } else if (RACE_HEADWORDS.has(lastWord)) {
+    headwordSignal = 'RACE';
+  } else if (DEITY_HEADWORDS.has(lastWord)) {
+    headwordSignal = 'DEITY';
+  } else if (ABILITY_HEADWORDS.has(lastWord)) {
+    headwordSignal = 'ABILITY';
+  } else if (MATERIAL_HEADWORDS.has(lastWord)) {
+    headwordSignal = 'MATERIAL';
+  } else if (PLACE_HEADWORDS.has(lastWord)) {
     headwordSignal = 'PLACE';
   } else if (ORG_HEADWORDS.has(lastWord)) {
     headwordSignal = 'ORG';
@@ -141,6 +293,24 @@ function inferType(cluster: MentionCluster): TypeEvidence {
     headwordSignal = 'WORK';
   } else if (HOUSE_HEADWORDS.has(lastWord)) {
     headwordSignal = 'HOUSE';
+  }
+
+  // Also check full canonical name against fiction headwords (for single-word entities)
+  if (!headwordSignal && words.length === 1) {
+    const singleWord = canonical;
+    if (SPELL_HEADWORDS.has(singleWord)) {
+      headwordSignal = 'SPELL';
+    } else if (ARTIFACT_HEADWORDS.has(singleWord)) {
+      headwordSignal = 'ARTIFACT';
+    } else if (CREATURE_HEADWORDS.has(singleWord)) {
+      headwordSignal = 'CREATURE';
+    } else if (DEITY_HEADWORDS.has(singleWord)) {
+      headwordSignal = 'DEITY';
+    } else if (ABILITY_HEADWORDS.has(singleWord)) {
+      headwordSignal = 'ABILITY';
+    } else if (POTION_HEADWORDS.has(singleWord)) {
+      headwordSignal = 'ITEM';
+    }
   }
 
   // Check grammatical signals from mentions
@@ -248,6 +418,7 @@ export function mintEntity(
     canonical: cluster.canonicalForm,
     aliases,
     confidence: typeEvidence.confidence,
+    created_at: new Date().toISOString(),
     attrs: {
       mentionCount: cluster.mentionCount(),
       nerEvidence: Object.fromEntries(typeEvidence.nerVotes),

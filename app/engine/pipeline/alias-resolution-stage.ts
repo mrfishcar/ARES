@@ -173,25 +173,36 @@ export async function runAliasResolutionStage(
       const aliasSet = new Set<string>();
 
       // Add existing aliases (shouldn't be empty, but just in case)
+      // Filter out "The X" title patterns - these are descriptors, not proper names
       for (const alias of entity.aliases) {
-        aliasSet.add(alias);
+        const aliasLower = alias.toLowerCase().trim();
+        const aliasTokens = aliasLower.split(/\s+/);
+        const isThePlusNoun = aliasTokens[0] === 'the' && aliasTokens.length === 2;
+        if (!isThePlusNoun) {
+          aliasSet.add(alias);
+        }
       }
 
       // 1. Add aliases from coreference links (descriptive mentions ONLY - filter pronouns and coordinations)
       // - Pronouns (he, she, it, etc.) are context-dependent and should NOT be permanent aliases
       // - Coordinations ("X and Y") should not be aliases for individual entities
+      // - Title back-links ("the king", "the wizard") are descriptive references, not proper name variants
       // - Garbage aliases (short tokens, generic descriptors, truncated artifacts) are filtered
       for (const link of input.corefLinks) {
         if (link.entity_id === entity.id) {
           const mentionText = link.mention.text.trim();
 
-          // CRITICAL: Filter out pronouns, coordinations, garbage aliases, and context-dependent terms
+          // CRITICAL: Filter out pronouns, coordinations, title back-links, garbage aliases, and context-dependent terms
+          // Title back-links (e.g., "the king" → Aragorn) should NOT become canonical names or aliases
+          // because they are descriptive references, not proper name variants
           if (
             mentionText &&
             mentionText !== entity.canonical &&
             !isContextDependent(mentionText) &&
             !isGarbageAlias(mentionText) &&
-            link.method !== 'coordination'
+            link.method !== 'coordination' &&
+            link.method !== 'title_match' &&
+            link.method !== 'nominal_match'
           ) {
             aliasSet.add(mentionText);
           }
@@ -217,17 +228,38 @@ export async function runAliasResolutionStage(
         }
       }
 
-      // 3. Final filter: Remove any garbage aliases that slipped through
+      // 3. Final filter: Remove garbage aliases and aliases with different honorifics
+      // CRITICAL: "Mr Dursley" and "Mrs Dursley" are different people - don't mix their aliases
+      const HONORIFICS = ['mr', 'mrs', 'ms', 'miss', 'dr', 'prof', 'sir', 'lady', 'lord'];
+      const canonicalLower = entity.canonical.toLowerCase();
+      const canonicalTokens = canonicalLower.split(/[.\s]+/).filter(Boolean);
+      const canonicalHonorific = HONORIFICS.find(h => canonicalTokens[0] === h);
+
+      const isHonorificCompatible = (alias: string): boolean => {
+        const aliasLower = alias.toLowerCase();
+        const aliasTokens = aliasLower.split(/[.\s]+/).filter(Boolean);
+        const aliasHonorific = HONORIFICS.find(h => aliasTokens[0] === h);
+
+        // If canonical has no honorific, any alias is fine
+        if (!canonicalHonorific) return true;
+        // If alias has no honorific, it's fine
+        if (!aliasHonorific) return true;
+        // If both have honorifics, they must match
+        return canonicalHonorific === aliasHonorific;
+      };
+
       const cleanAliases = Array.from(aliasSet).filter(alias =>
-        !isGarbageAlias(alias) && !isContextDependent(alias)
+        !isGarbageAlias(alias) &&
+        !isContextDependent(alias) &&
+        isHonorificCompatible(alias)
       );
       entity.aliases = cleanAliases;
 
-      // Choose best canonical name from all variants
-      if (aliasSet.size > 0) {
+      // Choose best canonical name from compatible variants only
+      if (cleanAliases.length > 0) {
         entity.canonical = chooseBestCanonical([
           entity.canonical,
-          ...aliasSet
+          ...cleanAliases
         ]);
       }
 

@@ -23,6 +23,8 @@ export interface ContextHints {
   governingVerbLemma?: string;   // Lemma of governing verb
   dependencyRole?: string;       // nsubj, dobj, pobj, etc.
   preposition?: string;          // Preposition before entity (for pobj)
+  mainTokenPOS?: string;         // POS tag of main token (PROPN, NOUN, etc.)
+  isCapitalized?: boolean;       // Whether main token starts with capital
 
   // Semantic constraints
   isSubjectOf?: string;          // If entity is subject of this verb
@@ -145,7 +147,9 @@ export function analyzeEntityContext(
   const hints: ContextHints = {
     nearbyVerbs: [],
     nearbyPreps: [],
-    dependencyRole: mainToken.dep
+    dependencyRole: mainToken.dep,
+    mainTokenPOS: mainToken.pos,
+    isCapitalized: /^[A-Z]/.test(mainToken.text)
   };
 
   // Find governing verb (head of dependency chain)
@@ -338,7 +342,7 @@ export function classifyWithContext(
   // Rule 5: Lexical Markers (intrinsic to entity name)
   // Geographic markers (includes plurals and fantasy/narrative suffixes)
   // Note: No \b at start to match compound words like "Shadowcliffs"
-  if (/(rivers?|creeks?|streams?|mountains?|mounts?|peaks?|hills?|hillside|valleys?|lakes?|seas?|oceans?|islands?|isles?|forests?|woods?|deserts?|plains?|prairies?|cities|city|towns?|villages?|kingdoms?|realms?|lands?|cliffs?|ridges?|canyons?|gorges?|fjords?|havens?|harbors?|bays?|coves?|groves?|glades?|dales?|moors?|heaths?|marshes?|swamps?|wastes?|wilds?|reaches?|highlands?|lowlands?|borderlands?)\b/i.test(entityText)) {
+  if (/(rivers?|creeks?|streams?|mountains?|mounts?|peaks?|hills?|hillside|valleys?|lakes?|seas?|oceans?|islands?|isles?|forests?|woods?|deserts?|plains?|prairies?|cities|city|towns?|villages?|kingdoms?|realms?|lands?|cliffs?|ridges?|canyons?|gorges?|fjords?|havens?|harbors?|bays?|coves?|groves?|glades?|dales?|moors?|heaths?|marshes?|swamps?|wastes?|wilds?|reaches?|highlands?|lowlands?|borderlands?|plazas?|squares?|parks?|gardens?|courts?|terraces?|promenades?|boulevards?|avenues?|streets?)\b/i.test(entityText)) {
     return 'PLACE';
   }
 
@@ -445,6 +449,25 @@ export function shouldExtractByContext(context: ContextHints): boolean {
           pattern.verbs.includes(verbLemma)) {
         return true;
       }
+    }
+  }
+
+  // PROPN FALLBACK: Extract capitalized proper nouns as potential entities
+  // This handles cases where spaCy dependency parsing fails (e.g., ROOT tokens
+  // in sentences with appositives like "Aragorn, son of Arathorn, married Arwen")
+  // Only extract if it's a proper noun (PROPN) and capitalized
+  if (context.mainTokenPOS === 'PROPN' && context.isCapitalized) {
+    // Accept ROOT tokens (sentence heads) that are PROPN
+    if (role === 'ROOT') {
+      return true;
+    }
+    // Accept appositive tokens that are PROPN (e.g., "son" in "son of Arathorn")
+    if (role === 'appos') {
+      return true;
+    }
+    // Accept compound tokens that are PROPN (e.g., multi-word names)
+    if (role === 'compound') {
+      return true;
     }
   }
 

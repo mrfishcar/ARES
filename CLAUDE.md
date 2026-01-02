@@ -240,6 +240,23 @@ Raw Text
 
 **Location:** `app/engine/hert/`
 
+### ⚠️ Pipeline Consolidation Directive (ACTIVE)
+
+**Full document:** `docs/architecture/PIPELINE_CONSOLIDATION_DIRECTIVE.md`
+
+**Key Points:**
+1. **ONE pipeline only** — the spaCy-based pipeline is the canonical runtime path
+2. **BookNLP is reference-only** — not a runtime option, used for fixtures/patterns
+3. **No env flags that switch pipelines** — `ARES_MODE` is for legacy tests only during transition
+4. **Single Reference Resolution Service** — all pronoun/mention resolution through one API
+
+**For AI Agents:**
+- Do NOT branch on "BookNLP vs legacy" — there is only one pipeline
+- Do NOT add new coref logic scattered in components — use the unified service
+- When you see scattered pronoun resolution, migrate it to the unified service
+
+**Priority Hammer:** Unify coreference resolution into a single `ReferenceResolver` service used by all stages. This is the multiplier that fixes all downstream issues.
+
 ---
 
 ## Development Workflows
@@ -1077,6 +1094,7 @@ git log -1 --format='%an %ae'
 
 ### Architecture Documentation
 
+- **docs/architecture/PIPELINE_CONSOLIDATION_DIRECTIVE.md** - ⚠️ ACTIVE: One pipeline, unified coref
 - **docs/architecture/HERT_IMPLEMENTATION.md** - HERT system technical details
 - **docs/architecture/HERT_INTEGRATION_GUIDE.md** - HERT integration guide
 - **docs/architecture/ENGINE_EVOLUTION_STRATEGY.md** - Architecture strategy

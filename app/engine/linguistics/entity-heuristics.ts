@@ -1,6 +1,7 @@
 import type { Entity, EntityType } from '../schema';
 import { hasLowercaseEcho, isAttachedOnlyFragment, type TokenStats } from './token-stats';
 import { isBlocklistedPersonHead } from './common-noun-filters';
+// Note: COMMON_VERBS_FOR_NAME_DETECTION removed - now using default-KEEP strategy
 
 type SpanLike = { start: number; end: number; type?: EntityType };
 
@@ -11,12 +12,27 @@ const SENTENCE_STARTERS = new Set([
 ]);
 
 const TITLE_WORDS = new Set([
+  // Honorifics
   'mr', 'mrs', 'ms', 'miss', 'dr', 'doctor', 'coach', 'detective', 'nurse',
-  'principal', 'prof', 'professor'
+  'principal', 'prof', 'professor',
+  // Royal/nobility titles
+  'king', 'queen', 'prince', 'princess', 'lord', 'lady', 'duke', 'duchess',
+  'earl', 'count', 'countess', 'baron', 'baroness', 'sir', 'dame', 'emperor',
+  'empress', 'tsar', 'tsarina', 'sultan', 'sultana', 'pharaoh', 'chief',
+  // Religious titles
+  'father', 'mother', 'brother', 'sister', 'pope', 'bishop', 'archbishop',
+  'cardinal', 'reverend', 'rabbi', 'imam', 'sheikh',
+  // Military titles
+  'general', 'colonel', 'major', 'captain', 'lieutenant', 'sergeant',
+  'admiral', 'commander', 'marshal',
+  // Academic/professional titles
+  'judge', 'justice', 'senator', 'governor', 'president', 'chancellor',
+  'mayor', 'minister', 'ambassador', 'secretary'
 ]);
 
 const COLOR_ADJECTIVES = new Set([
-  'black', 'white', 'blue', 'green', 'gold', 'silver', 'brown', 'gray', 'grey',
+  'black', 'white', 'blue', 'green', 'red', 'yellow', 'orange', 'purple', 'pink',
+  'gold', 'silver', 'brown', 'gray', 'grey', 'tan', 'beige',
   'scarlet', 'crimson', 'amber', 'blonde', 'blond', 'hot', 'cold', 'aged', 'stained'
 ]);
 
@@ -28,7 +44,10 @@ export const VERB_LEADS = new Set([
 
 const FRAGMENT_ENDINGS = new Set(['this', 'that', 'it', 'anything', 'something', 'someone']);
 
-const ORG_HEADWORDS = /\b(School|Department|Society|Office|Times|Bureau|Preservation|High School|Junior High)\b/i;
+// ORG_HEADWORDS: Institutional suffix words that indicate an organization
+// Linguistic pattern: [Name] + [Institution Type] = ORG
+// Examples: "Mercy Hospital", "Stanford University", "State Department"
+const ORG_HEADWORDS = /\b(School|Department|Society|Office|Times|Bureau|Preservation|High School|Junior High|Hospital|University|College|Institute|Center|Centre|Clinic|Foundation|Corporation|Company|Association|Council|Commission|Board|Agency|Ministry|Bank|Library|Museum|Academy|Laboratory|Lab)\b/i;
 const PLACE_HEADWORDS = /\b(Street|Parish|Lake|River|Trail|Town|County|Bayou)\b/;
 const ARTIFACT_HEADWORDS = /\b(Mirror|Ring|Cup|Blade|Book|Yearbook|Letter|Key|Crown)\b/;
 
@@ -99,6 +118,20 @@ export function shouldSuppressSentenceInitialPerson(
   const hasTitleNeighbor = (prev && TITLE_WORDS.has(prev.toLowerCase())) || (next && TITLE_WORDS.has(next.toLowerCase()));
   if (hasTitleNeighbor) return { suppress: false };
 
+  // Check if span starts with a title word (e.g., span is "King David" but canonical is "David")
+  // This handles cases where title was included in span but stripped from canonical
+  const spanText = text.slice(span.start, span.end);
+  const spanFirstToken = spanText.split(/\s+/)[0];
+  if (DEBUG_HEURISTICS) {
+    console.log(`[ENTITY-HEURISTICS] spanText="${spanText}" spanFirstToken="${spanFirstToken}" inTitleWords=${TITLE_WORDS.has(spanFirstToken?.toLowerCase() || '')}`);
+  }
+  if (spanFirstToken && TITLE_WORDS.has(spanFirstToken.toLowerCase())) {
+    if (DEBUG_HEURISTICS) {
+      console.log(`[ENTITY-HEURISTICS] TITLE PREFIX DETECTED - returning suppress: false`);
+    }
+    return { suppress: false };
+  }
+
   const hasNearbyProperContinuation = nextTwo?.some(tok => tok && /^[A-Z]/.test(tok)) ?? false;
   if (hasNearbyProperContinuation) return { suppress: false };
 
@@ -115,13 +148,18 @@ export function shouldSuppressSentenceInitialPerson(
   const followingCommaCapital = /^\s*,\s+[A-Z]/.test(text.slice(span.end, span.end + 20));
   if (followingCommaCapital) return { suppress: false };
 
+  // STRATEGY: Default KEEP for sentence-initial capitalized tokens.
+  // Only SUPPRESS if the token is a KNOWN non-name (discourse starter, adverb, etc.)
   const starter = SENTENCE_STARTERS.has(token.toLowerCase());
   if (starter) {
     logDebug(`Suppressing sentence-initial starter ${token}`);
     return { suppress: true, reason: 'sentence_initial_starter' };
   }
 
-  return { suppress: true, reason: 'sentence_initial_single_token' };
+  // DEFAULT: KEEP - sentence-initial capitalized tokens are likely names
+  // This avoids the "verb whitelist" problem where valid names are dropped
+  // because the following verb wasn't in the list.
+  return { suppress: false };
 }
 
 export function shouldSuppressAdjectiveColorPerson(
@@ -245,6 +283,13 @@ export function isFragmentaryItem(entity: Entity): boolean {
   return false;
 }
 
+// Location prepositions that indicate the following noun is a PLACE
+// This is a linguistic pattern: "in Providence", "at Boston", "from Paris"
+const LOCATION_PREPOSITIONS = new Set([
+  'in', 'at', 'from', 'to', 'toward', 'towards', 'near', 'through',
+  'within', 'around', 'across', 'beyond', 'outside', 'inside'
+]);
+
 export function applyTypeOverrides(
   entity: Entity,
   span: SpanLike,
@@ -257,11 +302,33 @@ export function applyTypeOverrides(
   }
 
   const canonical = entity.canonical;
+  const tokens = canonical.split(/\s+/).filter(Boolean);
 
+  // LINGUISTIC PATTERN: ORG headwords are strong institutional indicators
+  // These should be checked FIRST and override regardless of prepositional context
+  // "at Mercy Hospital", "in Stanford University", "from the Department" → all ORG
   if (ORG_HEADWORDS.test(canonical) && entity.type !== 'ORG') {
-    const preText = text.slice(Math.max(0, span.start - 10), span.start).toLowerCase();
-    if (!/\b(in|at|on|from)\s+$/.test(preText)) {
-      return { type: 'ORG', reason: 'org_headword' };
+    logDebug(`ORG headword in "${canonical}" → ORG`);
+    return { type: 'ORG', reason: 'org_headword' };
+  }
+
+  // LINGUISTIC PATTERN: Prepositional context indicates PLACE
+  // "in Providence", "at Boston", "from Paris" → single-token entities
+  // following location prepositions are likely places, not people.
+  // This handles ambiguous names like Providence, Florence, Georgia (state vs person).
+  // NOTE: Only applies to single-token entities that don't have ORG headwords
+  // EXCEPTION: Don't apply to NER-backed PERSON entities (spaCy recognized them as people)
+  // EXCEPTION: Don't apply after "next to" - this is a proximity phrase, not location
+  //            "next to Dumbledore" means "beside the person", not a place
+  const hasNERPersonBacking = entity.attrs?.nerLabel === 'PERSON';
+  const { prev: prev2 } = getSurroundingTokens(text, span.start - (prev?.length || 0) - 1, span.start);
+  const isNextTo = prev2?.toLowerCase() === 'next' && prevLower === 'to';
+
+  if (entity.type === 'PERSON' && tokens.length === 1 && prevLower && LOCATION_PREPOSITIONS.has(prevLower)) {
+    // Skip if NER says this is a person or if it's "next to X"
+    if (!hasNERPersonBacking && !isNextTo) {
+      logDebug(`Location preposition "${prevLower}" before "${canonical}" → PLACE`);
+      return { type: 'PLACE', reason: 'location_preposition_context' };
     }
   }
 
@@ -299,6 +366,22 @@ export function stitchTitlecaseSpans<T extends SpanLike & { text: string; type: 
     const connectorOk = tokens.slice(1, -1).every(tok => CONNECTOR_TOKENS.has(tok.toLowerCase()) || /^[A-Z]/.test(tok));
     const allTitlecase = tokens.filter(tok => !CONNECTOR_TOKENS.has(tok.toLowerCase())).every(tok => /^[A-Z]/.test(tok));
     if (!connectorOk || !allTitlecase) continue;
+
+    // COORDINATION FIX: Don't stitch PERSON spans separated by coordination conjunctions
+    // "Harry and Ron" should remain two separate entities, not be combined into one
+    // This prevents coordinated subjects from being merged incorrectly
+    const COORD_CONJUNCTIONS = new Set(['and', 'or', '&']);
+    const middleTokens = tokens.slice(1, -1).map(t => t.toLowerCase());
+    const hasCoordConjunction = middleTokens.some(t => COORD_CONJUNCTIONS.has(t));
+
+    // If both spans are the same type (PERSON, ORG, PLACE) and there's a coordination conjunction,
+    // skip stitching - they are likely separate coordinated entities
+    // Example: "Harry and Ron" → two PERSON entities, "Gryffindor and Slytherin" → two ORG entities
+    // Note: Legitimate compound names like "Johnson and Johnson" are typically recognized as
+    // a single NER span, not two separate spans being stitched, so this shouldn't break those
+    if (hasCoordConjunction && current.type === next.type) {
+      continue;
+    }
 
     const typeChoice = TYPE_PRIORITY.reduce((best, candidate) => {
       if (candidate === best) return best;

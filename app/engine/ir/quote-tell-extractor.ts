@@ -347,12 +347,4 @@ export function filterOverlappingVerbTells(
   return { kept, filtered, merged };
 }
 
-// =============================================================================
-// EXPORTS
-// =============================================================================
-
-export {
-  QuoteSignal,
-  QuoteIndex,
-  QuoteTellResult,
-};
+// Types are exported where defined

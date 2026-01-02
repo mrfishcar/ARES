@@ -616,14 +616,4 @@ export function extractQuotesWithSpeakers(
   return { quotes, stats };
 }
 
-// =============================================================================
-// EXPORTS (types re-exported for convenience)
-// =============================================================================
-
-export type {
-  QuoteMatch,
-  SpeakerCandidate,
-  AttributionResult,
-  SalienceEntry,
-  SalienceStack,
-};
+// Types are exported where defined

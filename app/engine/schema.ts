@@ -184,6 +184,43 @@ export type Predicate =
   | 'countered_by'  // Ability X countered by ability Y
   | 'enhances'  // Ability X enhances stat/attribute Y
   | 'cast_by'  // Spell X cast by person Y
+  // SVO action predicates (expanded for benchmark)
+  | 'trusted'  // X trusted Y
+  | 'helped'  // X helped Y
+  | 'saved'  // X saved Y
+  | 'betrayed'  // X betrayed Y
+  | 'protected'  // X protected Y
+  | 'captured'  // X captured Y
+  | 'followed'  // X followed Y
+  | 'attacked'  // X attacked Y
+  | 'wrote'  // X wrote Y
+  | 'created'  // X created Y
+  | 'destroyed'  // X destroyed Y
+  | 'built'  // X built Y
+  | 'taught'  // X taught Y
+  | 'trained'  // X trained Y
+  | 'found'  // X found Y
+  | 'defended'  // X defended Y
+  | 'warned'  // X warned Y
+  | 'saw'  // X saw Y
+  | 'heard'  // X heard Y
+  | 'discovered'  // X discovered Y
+  | 'lost'  // X lost Y
+  | 'read'  // X read Y
+  | 'knew'  // X knew Y
+  | 'guided'  // X guided Y
+  | 'took'  // X took Y
+  | 'gave'  // X gave Y
+  | 'received'  // X received Y
+  | 'sent'  // X sent Y
+  | 'visited'  // X visited Y
+  | 'escaped'  // X escaped from Y
+  | 'joined'  // X joined Y
+  | 'rival_of'  // X rival_of Y
+  | 'mentor_of'  // X mentor_of Y
+  | 'owned'  // X owned Y
+  | 'studied'  // X studied Y
+  | 'led'  // X led Y
 
 // Evidence Source
 export interface Evidence {
@@ -240,7 +277,7 @@ export interface Entity {
   booknlp_id?: string;
   mention_count?: number;
   gender?: string;
-  attrs?: Record<string, string | number | boolean>;
+  attrs?: Record<string, string | number | boolean | undefined | object | null>;
   created_at: string;
   centrality?: number;
   confidence?: number;   // Extraction confidence (0-1) from confidence-scoring.ts
@@ -267,7 +304,7 @@ export interface Relation {
 
   // Phase 3 additions
   qualifiers?: Qualifier[];  // Time/place/source metadata
-  extractor?: 'dep' | 'regex' | 'fiction-dialogue' | 'fiction-action' | 'fiction-family';  // Extraction method
+  extractor?: 'dep' | 'regex' | 'fiction-dialogue' | 'fiction-action' | 'fiction-family' | 'manual';  // Extraction method
 }
 
 // Event
@@ -338,7 +375,7 @@ export const GUARD: Record<Predicate, { subj: EntityType[]; obj: EntityType[] }>
   guards: { subj: ['PERSON'], obj: ['ITEM', 'PLACE', 'ORG'] },  // X guards Y
   seeks: { subj: ['PERSON', 'ORG'], obj: ['ITEM', 'PERSON', 'PLACE'] },  // X seeks Y
   possesses: { subj: ['PERSON', 'ORG'], obj: ['ITEM'] },  // X possesses Y
-  defeated: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG'] },  // X defeated Y
+  defeated: { subj: ['PERSON', 'ORG', 'CREATURE'], obj: ['PERSON', 'ORG', 'CREATURE', 'ARTIFACT', 'ITEM'] },  // X defeated Y (expanded for artifacts/creatures)
   killed: { subj: ['PERSON'], obj: ['PERSON'] },  // X killed Y
   imprisoned_in: { subj: ['PERSON'], obj: ['PLACE'] },  // X imprisoned in Y
   freed_from: { subj: ['PERSON'], obj: ['PLACE'] },  // X freed from Y
@@ -352,6 +389,41 @@ export const GUARD: Record<Predicate, { subj: EntityType[]; obj: EntityType[] }>
   hosted: { subj: ['PERSON', 'ORG'], obj: ['EVENT', 'PERSON'] },  // X hosted Y
   ruled_by: { subj: ['ORG', 'PLACE'], obj: ['PERSON', 'ORG'] },  // Y ruled_by X
   loved: { subj: ['PERSON'], obj: ['PERSON'] },  // X loved Y
+  // SVO action predicates (expanded for benchmark)
+  trusted: { subj: ['PERSON'], obj: ['PERSON'] },  // X trusted Y
+  helped: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG'] },  // X helped Y
+  saved: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'CREATURE', 'ORG', 'PLACE'] },  // X saved Y
+  betrayed: { subj: ['PERSON'], obj: ['PERSON', 'ORG'] },  // X betrayed Y
+  protected: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'PLACE', 'ORG', 'ITEM'] },  // X protected Y
+  captured: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'CREATURE'] },  // X captured Y
+  followed: { subj: ['PERSON'], obj: ['PERSON'] },  // X followed Y
+  attacked: { subj: ['PERSON', 'ORG', 'CREATURE'], obj: ['PERSON', 'ORG', 'CREATURE', 'PLACE'] },  // X attacked Y
+  wrote: { subj: ['PERSON'], obj: ['WORK', 'ITEM'] },  // X wrote Y
+  created: { subj: ['PERSON', 'ORG'], obj: ['WORK', 'ITEM', 'ARTIFACT', 'ORG'] },  // X created Y
+  destroyed: { subj: ['PERSON', 'ORG', 'CREATURE'], obj: ['ITEM', 'ARTIFACT', 'PLACE', 'ORG'] },  // X destroyed Y
+  built: { subj: ['PERSON', 'ORG'], obj: ['PLACE', 'ITEM', 'ORG'] },  // X built Y
+  taught: { subj: ['PERSON'], obj: ['PERSON'] },  // X taught Y
+  trained: { subj: ['PERSON'], obj: ['PERSON'] },  // X trained Y
+  found: { subj: ['PERSON', 'ORG'], obj: ['ITEM', 'PLACE', 'PERSON', 'ARTIFACT'] },  // X found Y
+  defended: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'PLACE', 'ORG'] },  // X defended Y
+  warned: { subj: ['PERSON'], obj: ['PERSON', 'ORG'] },  // X warned Y
+  saw: { subj: ['PERSON'], obj: ['PERSON', 'ITEM', 'PLACE', 'CREATURE'] },  // X saw Y
+  heard: { subj: ['PERSON'], obj: ['PERSON', 'ITEM', 'WORK'] },  // X heard Y
+  discovered: { subj: ['PERSON', 'ORG'], obj: ['ITEM', 'PLACE', 'PERSON', 'ARTIFACT'] },  // X discovered Y
+  lost: { subj: ['PERSON'], obj: ['ITEM', 'PERSON'] },  // X lost Y
+  read: { subj: ['PERSON'], obj: ['WORK', 'ITEM'] },  // X read Y
+  knew: { subj: ['PERSON'], obj: ['PERSON'] },  // X knew Y
+  guided: { subj: ['PERSON'], obj: ['PERSON'] },  // X guided Y
+  took: { subj: ['PERSON', 'ORG'], obj: ['ITEM', 'PERSON', 'PLACE'] },  // X took Y
+  gave: { subj: ['PERSON', 'ORG'], obj: ['ITEM', 'PERSON'] },  // X gave Y
+  received: { subj: ['PERSON', 'ORG'], obj: ['ITEM'] },  // X received Y
+  sent: { subj: ['PERSON', 'ORG'], obj: ['ITEM', 'PERSON'] },  // X sent Y
+  visited: { subj: ['PERSON'], obj: ['PERSON', 'PLACE'] },  // X visited Y
+  escaped: { subj: ['PERSON'], obj: ['PLACE', 'ORG', 'PERSON'] },  // X escaped Y
+  joined: { subj: ['PERSON'], obj: ['ORG', 'PERSON'] },  // X joined Y
+  rival_of: { subj: ['PERSON'], obj: ['PERSON'] },  // X rival_of Y
+  mentor_of: { subj: ['PERSON'], obj: ['PERSON'] },  // X mentor_of Y
+  owned: { subj: ['PERSON', 'ORG'], obj: ['ITEM', 'ARTIFACT', 'CREATURE'] },  // X owned Y
   is: { subj: ['PERSON', 'ORG', 'PLACE', 'ITEM'], obj: ['PERSON', 'ORG', 'PLACE', 'ITEM'] },  // X is Y
   greater_than: { subj: ['PERSON', 'ORG', 'PLACE', 'ITEM'], obj: ['PERSON', 'ORG', 'PLACE', 'ITEM'] },  // X > Y
   after: { subj: ['PERSON', 'ORG', 'EVENT', 'WORK'], obj: ['PERSON', 'ORG', 'EVENT', 'WORK'] },  // X after Y
@@ -448,6 +520,8 @@ export const GUARD: Record<Predicate, { subj: EntityType[]; obj: EntityType[] }>
   countered_by: { subj: ['ABILITY','SPELL','POWER','TECHNIQUE'], obj: ['ABILITY','SPELL','POWER','TECHNIQUE'] }, // X countered by Y
   enhances: { subj: ['ABILITY','SPELL','POWER','ARTIFACT','TECHNOLOGY'], obj: ['ABILITY','POWER','SKILL'] }, // X enhances Y
   cast_by: { subj: ['SPELL','MAGIC'], obj: ['PERSON','CREATURE','DEITY'] }, // X cast by Y
+  studied: { subj: ['PERSON'], obj: ['PERSON', 'ITEM', 'WORK', 'SKILL'] }, // X studied Y
+  led: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG', 'PLACE'] }, // X led Y
 };
 
 // Inverse predicates
@@ -589,16 +663,19 @@ export interface Correction {
  */
 export interface VersionSnapshot {
   id: string;
-  timestamp: string;
-  correctionId: string;  // Correction that triggered this snapshot
+  timestamp?: string;
+  createdAt?: string;     // Alias for timestamp
+  correctionId: string;   // Correction that triggered this snapshot
   description?: string;
+  entityCount?: number;   // For lightweight snapshots
+  relationCount?: number; // For lightweight snapshots
 
   // Changed IDs for efficient diffing
-  changedEntities: string[];
-  changedRelations: string[];
+  changedEntities?: string[];
+  changedRelations?: string[];
 
   // Full state snapshot (for complete rollback)
-  snapshot: {
+  snapshot?: {
     entities: Entity[];
     relations: Relation[];
   };

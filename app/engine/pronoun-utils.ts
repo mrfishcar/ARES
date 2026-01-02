@@ -91,18 +91,31 @@ export const CONTEXT_DEPENDENT_TERMS = new Set([
 /**
  * Check if a string is a pronoun
  * Case-insensitive, handles multi-word expressions like "no one"
+ * EXCEPTION: All-uppercase 2+ letter words are likely acronyms, not pronouns
+ * (e.g., "WHO" is World Health Organization, not the pronoun "who")
  */
 export function isPronoun(text: string): boolean {
-  const normalized = text.toLowerCase().trim();
+  const trimmed = text.trim();
+  // If all uppercase and 2+ letters, it's an acronym, not a pronoun
+  if (/^[A-Z]{2,}$/.test(trimmed)) {
+    return false;
+  }
+  const normalized = trimmed.toLowerCase();
   return ALL_PRONOUNS.has(normalized);
 }
 
 /**
  * Check if a string is context-dependent (pronoun or deictic)
  * These should be resolved to entities, not stored as permanent aliases
+ * EXCEPTION: All-uppercase 2+ letter words are likely acronyms
  */
 export function isContextDependent(text: string): boolean {
-  const normalized = text.toLowerCase().trim();
+  const trimmed = text.trim();
+  // If all uppercase and 2+ letters, it's an acronym, not context-dependent
+  if (/^[A-Z]{2,}$/.test(trimmed)) {
+    return false;
+  }
+  const normalized = trimmed.toLowerCase();
   return CONTEXT_DEPENDENT_TERMS.has(normalized);
 }
 
