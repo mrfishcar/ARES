@@ -4668,6 +4668,58 @@ const mergedEntries = Array.from(mergedMap.values());
     console.log(`[EXTRACT-ENTITIES] Found ${aliasLinksFound} explicit alias patterns`);
   }
 
+  // Step 1.5: Merge standalone nickname entities with their full-name equivalents
+  // Example: "Mike" standalone → merge with "Michael Smith" if Mike is a nickname for Michael
+  {
+    let nicknameMerges = 0;
+    const singleTokenPersons = entities.filter(
+      e => e.type === 'PERSON' && e.canonical.split(/\s+/).length === 1
+    );
+    const multiTokenPersons = entities.filter(
+      e => e.type === 'PERSON' && e.canonical.split(/\s+/).length >= 2
+    );
+
+    for (const singleEntity of singleTokenPersons) {
+      const singleName = singleEntity.canonical;
+
+      for (const fullEntity of multiTokenPersons) {
+        const fullParts = fullEntity.canonical.split(/\s+/);
+        const firstName = fullParts[0];
+
+        // Check if single name is nickname-equivalent to the first name
+        if (areFirstNamesEquivalent(singleName, firstName)) {
+          // Merge: add single entity's canonical as alias to full entity
+          if (!fullEntity.aliases.includes(singleName)) {
+            fullEntity.aliases.push(singleName);
+          }
+
+          // Merge: update spans to point to full entity
+          for (const span of spans) {
+            if (span.entity_id === singleEntity.id) {
+              span.entity_id = fullEntity.id;
+            }
+          }
+
+          // Remove single entity from entities array
+          const singleIdx = entities.indexOf(singleEntity);
+          if (singleIdx >= 0) {
+            entities.splice(singleIdx, 1);
+          }
+
+          entityByCanonical.delete(singleName.toLowerCase());
+          nicknameMerges++;
+
+          console.log(`[EXTRACT-ENTITIES] Merged standalone "${singleName}" into "${fullEntity.canonical}" (nickname)`);
+          break; // Only merge with first matching full entity
+        }
+      }
+    }
+
+    if (nicknameMerges > 0) {
+      console.log(`[EXTRACT-ENTITIES] Merged ${nicknameMerges} standalone nickname entities`);
+    }
+  }
+
   // Step 2: Run coreference resolution for pronouns and descriptive references
   // This enables pronoun resolution ("he" -> "John") and descriptive references ("the wizard" -> "Gandalf")
   try {
