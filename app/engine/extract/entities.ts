@@ -3829,8 +3829,9 @@ const mergedEntries = Array.from(mergedMap.values());
       const durableSpans: Array<{ start: number; end: number }> = [];
       let entryRejected = 0;
       let entryContext = 0;
-      // Check if entity has NER backing - if so, be more lenient with single-word sentences
-      const hasNERBacking = entry.sources.has('NER');
+      // Check if entity has high-quality source backing (NER, DEP, WHITELIST)
+      // If so, be more lenient with single-word sentences
+      const hasNERBacking = entry.sources.has('NER') || entry.sources.has('DEP') || entry.sources.has('WHITELIST');
       for (const span of entry.spanList) {
         // Skip mention classifier for social media handles - they use lowercase underscore
         // format (e.g., "tim_cook") which is intentional, not an error
