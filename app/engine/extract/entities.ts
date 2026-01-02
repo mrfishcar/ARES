@@ -1154,15 +1154,9 @@ function nerSpans(sent: ParsedSentence): Array<{ text: string; type: EntityType;
       }
     }
 
-    // Expand span backwards to include title words for PERSON entities
+    // Note: Title words (Dr., Mr., Prof., etc.) are NOT included in the span positions
+    // because normalizeName strips them. The title is tracked for aliasing in stitchPersonFullNames.
     let spanStart = i;
-    if (mapped === 'PERSON' && i > 0) {
-      const prevToken = sent.tokens[i - 1];
-      if (prevToken && prevToken.pos && prevToken.pos === 'PROPN' && !prevToken.ent &&
-          TITLE_WORDS.has(prevToken.text.toLowerCase())) {
-        spanStart = i - 1;
-      }
-    }
 
     let spanTokens = sent.tokens.slice(spanStart, j);
 
@@ -1374,6 +1368,12 @@ function depBasedEntities(sent: ParsedSentence): Array<{ text: string; type: Ent
       continue;
     }
 
+    // Skip title words (Dr., Mr., Prof., etc.) - they're not entities on their own
+    const tokNormalized = tokLower.replace(/\.$/, '');
+    if (TITLE_WORDS.has(tokNormalized)) {
+      continue;
+    }
+
     // Accept both capitalized and lowercase words (context check will filter later)
     // This allows detection of lowercase entity names like "harry potter"
     const isCapitalized = /^[A-Z]/.test(tok.text);
@@ -1389,8 +1389,14 @@ function depBasedEntities(sent: ParsedSentence): Array<{ text: string; type: Ent
     let endIdx = i;
 
     // Look backward for compounds and flat name parts
+    // Skip title words (Dr., Mr., etc.) - they will be stripped by normalizeName
     for (let j = i - 1; j >= 0; j--) {
       const dep = tokens[j].dep;
+      // Skip title words - normalizeName will strip them causing position mismatch
+      const prevTokenNormalized = tokens[j].text.toLowerCase().replace(/\.$/, '');
+      if (TITLE_WORDS.has(prevTokenNormalized)) {
+        break;
+      }
       // Include compound, flat (for multi-word names), and flat:name dependencies
       if ((dep === 'compound' || dep === 'flat' || dep === 'flat:name') && tokens[j].head === tok.i) {
         startIdx = j;
@@ -1742,13 +1748,29 @@ function extractAcronymPairs(text: string): Array<{
   // The pattern allows spaces between words but NOT period-space which indicates sentence end
   // Use: [A-Z][a-z]+ for each word, optionally followed by more words
   const expansionFirst = /\b([A-Z][A-Za-z0-9]+(?:\s+[A-Za-z]+)*)\s*\(([^)]+)\)/g;
+
+  // Credentials/degrees that should NOT be treated as organization acronyms
+  const CREDENTIAL_ABBREVS = new Set([
+    'MD', 'PHD', 'JD', 'DDS', 'MBA', 'MS', 'MA', 'BA', 'BS', 'DO', 'DVM',
+    'RN', 'LPN', 'CPA', 'ESQ', 'PE', 'PMP', 'LCSW', 'MPH', 'MFA', 'MPA',
+    'DBA', 'EDD', 'PSYD', 'DPT', 'OD', 'PHARMD', 'JR', 'SR', 'II', 'III'
+  ]);
+
   while ((match = expansionFirst.exec(text)) !== null) {
     const expansion = match[1].trim();
     const acronym = match[2].trim();
     if (!/^[A-Z]{2,5}$/.test(acronym)) continue;
 
+    // Skip credentials/degrees - they follow names, not expansions
+    if (CREDENTIAL_ABBREVS.has(acronym)) continue;
+
     // Skip if expansion contains sentence-ending punctuation (crossed sentence boundary)
     if (/[.!?]\s+[A-Z]/.test(expansion)) continue;
+
+    // Skip single-word "expansions" that are likely person names, not acronym expansions
+    // Real acronym expansions have multiple words (e.g., "Federal Bureau of Investigation")
+    const expansionWords = expansion.split(/\s+/);
+    if (expansionWords.length === 1) continue;
 
     const acronymOffset = match[0].lastIndexOf(acronym);
     pairs.push({
@@ -2937,7 +2959,9 @@ function applyLinguisticFilters(
       const isFragment = isAttachedOnlyFragment(tokenStats, tokens[0]);
       console.log(`[FILTER_DEBUG] NF-1 check: ${entity.canonical} isAttachedOnlyFragment=${isFragment}`);
     }
-    if (tokens.length === 1 && isAttachedOnlyFragment(tokenStats, tokens[0])) {
+    // Skip NF-1 for all-uppercase acronyms - they are standalone entities, not fragments
+    const isAcronymEntity = /^[A-Z]{2,}$/.test(entity.canonical);
+    if (tokens.length === 1 && !isAcronymEntity && isAttachedOnlyFragment(tokenStats, tokens[0])) {
       if (FILTER_DEBUG) console.log(`[FILTER_DEBUG] NF-1 FILTERED: ${entity.canonical}`);
       shouldKeep = false;
       logEntityDecision({
@@ -3868,7 +3892,7 @@ if (DEBUG_ENTITIES) {
 
 const mergedEntries = Array.from(mergedMap.values());
   if (DEBUG_ENTITIES) {
-    console.log(`[EXTRACT-ENTITIES][DEBUG] mergedEntries=${mergedEntries.length}`);
+    console.log(`[EXTRACT-ENTITIES][DEBUG] mergedEntries=${mergedEntries.length} (${mergedEntries.map(e => e.entity.canonical).join(', ')})`);
   }
 
   const classifyAndFilterEntries = (entries: EntityEntry[]): EntityEntry[] => {
@@ -4092,6 +4116,7 @@ const mergedEntries = Array.from(mergedMap.values());
   for (const entry of personEntries) {
     if (entry.entity.canonical.split(/\s+/).length !== 1) continue;
     if (personAliasSet.has(entry.entity.canonical.toLowerCase())) {
+      console.log(`[DEBUG-MERGE] Merging single-word PERSON "${entry.entity.canonical}" - already in alias set`);
       mergedPersonIds.add(entry.entity.id);
     }
   }
@@ -4239,6 +4264,8 @@ const mergedEntries = Array.from(mergedMap.values());
 
   if (DEBUG_ENTITIES) {
     console.log(`[EXTRACT-ENTITIES][DEBUG] finalEntries=${finalEntries.length}`);
+    const filtered = mergedEntriesFiltered.filter(e => !finalEntries.includes(e));
+    console.log(`[EXTRACT-ENTITIES][DEBUG] Filtered out: ${filtered.map(e => e.entity.canonical).join(', ')}`);
   }
 
   // Phase E1: Apply confidence-based filtering
@@ -4441,6 +4468,22 @@ const mergedEntries = Array.from(mergedMap.values());
           }
         }
       }
+
+      // Check for title BEFORE the span that wasn't included in the span
+      // e.g., "Dr. Smith" where span is just "Smith" - add "Dr. Smith" as alias
+      if (entry.entity.type === 'PERSON' && span.start >= 4) {
+        const textBefore = text.slice(Math.max(0, span.start - 15), span.start);
+        const titleMatch = textBefore.match(/\b([A-Z][a-z]+\.?)\s*$/);
+        if (titleMatch) {
+          const potentialTitle = titleMatch[1].replace(/\.$/, '').toLowerCase();
+          if (TITLE_WORDS.has(potentialTitle)) {
+            const titledName = titleMatch[1] + (titleMatch[1].endsWith('.') ? ' ' : '. ') + rawSurface;
+            if (classifyAliasStrength(titledName, entry.entity.canonical)) {
+              aliasRawSet.add(titledName.replace(/\.\s+/, '. ')); // Normalize spacing
+            }
+          }
+        }
+      }
     }
 
     if (entry.entity.type === 'PERSON') {
@@ -4558,7 +4601,19 @@ const mergedEntries = Array.from(mergedMap.values());
     }
 
     const canonicalLower = entry.entity.canonical.toLowerCase();
-    if (ENTITY_FILTER_DEFAULTS.blockedTokens.has(canonicalLower)) {
+    // Skip blocked token check for all-uppercase acronyms (e.g., "WHO" should not be blocked by "who")
+    const isAcronym = /^[A-Z]{2,}$/.test(entry.entity.canonical);
+    if (!isAcronym && ENTITY_FILTER_DEFAULTS.blockedTokens.has(canonicalLower)) {
+      continue;
+    }
+
+    // Filter out credential/degree abbreviations (MD, PhD, etc.) - these are not entities
+    const CREDENTIAL_ABBREVS_FILTER = new Set([
+      'MD', 'PHD', 'JD', 'DDS', 'MBA', 'MS', 'MA', 'BA', 'BS', 'DO', 'DVM',
+      'RN', 'LPN', 'CPA', 'ESQ', 'PE', 'PMP', 'LCSW', 'MPH', 'MFA', 'MPA',
+      'DBA', 'EDD', 'PSYD', 'DPT', 'OD', 'PHARMD'
+    ]);
+    if (CREDENTIAL_ABBREVS_FILTER.has(entry.entity.canonical)) {
       continue;
     }
     const leadingToken = canonicalLower.split(/\s+/)[0];
@@ -4622,6 +4677,7 @@ const mergedEntries = Array.from(mergedMap.values());
       });
     }
   }
+
 
   if (process.env.L3_DEBUG === "1") {
     try {
