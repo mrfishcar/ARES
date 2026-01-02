@@ -345,14 +345,31 @@ function generateId(): string {
   return `note-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
+// FIX #11: Cache date thresholds to avoid recalculating on every call
+let cachedDateThresholds: { today: Date; yesterday: Date; weekAgo: Date; monthAgo: Date } | null = null;
+let cacheTimestamp = 0;
+
+function getDateThresholds() {
+  const now = Date.now();
+  // Refresh cache every minute
+  if (!cachedDateThresholds || now - cacheTimestamp > 60000) {
+    const nowDate = new Date(now);
+    const today = new Date(nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate());
+    cachedDateThresholds = {
+      today,
+      yesterday: new Date(today.getTime() - 86400000),
+      weekAgo: new Date(today.getTime() - 7 * 86400000),
+      monthAgo: new Date(today.getTime() - 30 * 86400000),
+    };
+    cacheTimestamp = now;
+  }
+  return cachedDateThresholds;
+}
+
 // Get date section for note (iOS Notes style grouping)
 function getDateSection(timestamp: number): string {
   const date = new Date(timestamp);
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const yesterday = new Date(today.getTime() - 86400000);
-  const weekAgo = new Date(today.getTime() - 7 * 86400000);
-  const monthAgo = new Date(today.getTime() - 30 * 86400000);
+  const { today, yesterday, weekAgo, monthAgo } = getDateThresholds();
 
   if (date >= today) return 'Today';
   if (date >= yesterday) return 'Yesterday';
@@ -437,6 +454,24 @@ function NoteItem({ note, isSelected, onSelect, onDelete }: NoteItemProps) {
   const SWIPE_THRESHOLD = 80; // Pixels to reveal delete button
   const DELETE_THRESHOLD = 150; // Pixels to trigger delete
 
+  // FIX #3: Reset swipe when clicking outside this item
+  useEffect(() => {
+    if (swipeX === 0) return;
+
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+      if (itemRef.current && !itemRef.current.contains(e.target as Node)) {
+        setSwipeX(0);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [swipeX]);
+
   const handleTouchStart = (e: React.TouchEvent) => {
     startXRef.current = e.touches[0].clientX;
     currentXRef.current = swipeX;
@@ -464,6 +499,12 @@ function NoteItem({ note, isSelected, onSelect, onDelete }: NoteItemProps) {
       // Snap back
       setSwipeX(0);
     }
+  };
+
+  // FIX #10: Handle touch cancel (e.g., notification appears mid-swipe)
+  const handleTouchCancel = () => {
+    setIsDragging(false);
+    setSwipeX(0);
   };
 
   const handleDeleteClick = (e: React.MouseEvent) => {
@@ -494,6 +535,7 @@ function NoteItem({ note, isSelected, onSelect, onDelete }: NoteItemProps) {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchCancel}
         style={{
           transform: `translateX(${swipeX}px)`,
           transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.25, 1.25, 0.5, 1)',
@@ -514,23 +556,33 @@ function NoteItem({ note, isSelected, onSelect, onDelete }: NoteItemProps) {
 
 function NotesList({ notes, selectedId, onSelect, onCreateNote, onDelete }: NotesListProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  // FIX #8: Debounced search to prevent jank with large lists
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // Sort notes by update time (within each section)
   const sortedNotes = useMemo(() => {
     return [...notes].sort((a, b) => b.updatedAt - a.updatedAt);
   }, [notes]);
 
-  // Filter notes by search query
+  // Filter notes by debounced search query
   const filteredNotes = useMemo(() => {
-    if (!searchQuery.trim()) return sortedNotes;
-    const query = searchQuery.toLowerCase();
+    if (!debouncedSearchQuery.trim()) return sortedNotes;
+    const query = debouncedSearchQuery.toLowerCase();
     return sortedNotes.filter(note =>
       note.content.toLowerCase().includes(query) ||
       getTitle(note.content).toLowerCase().includes(query)
     );
-  }, [sortedNotes, searchQuery]);
+  }, [sortedNotes, debouncedSearchQuery]);
 
   // Group filtered notes by section
   const sections = useMemo(() => {
@@ -635,13 +687,38 @@ function SelectionPopup({ editorRef }: SelectionPopupProps) {
         return;
       }
 
+      // FIX #9: Only show popup if selection is within the editor
+      const editorElement = document.querySelector('.ios-tiptap-editor');
+      if (!editorElement) {
+        setIsVisible(false);
+        return;
+      }
+
+      const anchorNode = selection.anchorNode;
+      if (!anchorNode || !editorElement.contains(anchorNode)) {
+        setIsVisible(false);
+        return;
+      }
+
       // Get selection bounds
       const range = selection.getRangeAt(0);
       const rect = range.getBoundingClientRect();
 
-      // Position above the selection, centered
-      const x = rect.left + rect.width / 2;
-      const y = rect.top - 8;
+      // FIX #2: Viewport bounds checking - ensure popup stays on screen
+      const popupHeight = 48; // Approximate popup height
+      const popupWidth = 200; // Approximate popup width
+      const padding = 8;
+
+      let x = rect.left + rect.width / 2;
+      let y = rect.top - padding;
+
+      // Clamp X to keep popup within viewport
+      x = Math.max(popupWidth / 2 + padding, Math.min(window.innerWidth - popupWidth / 2 - padding, x));
+
+      // If selection is too close to top, show popup below instead
+      if (y < popupHeight + padding) {
+        y = rect.bottom + padding + popupHeight;
+      }
 
       setPosition({ x, y });
       setIsVisible(true);
@@ -736,6 +813,31 @@ interface ActionSheetProps {
 }
 
 function ActionSheet({ isOpen, title, message, actions, onCancel }: ActionSheetProps) {
+  // FIX #6: Body scroll lock when action sheet is open
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isOpen]);
+
+  // FIX #12: Close on Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onCancel();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onCancel]);
+
   if (!isOpen) return null;
 
   return createPortal(
@@ -774,66 +876,28 @@ function ActionSheet({ isOpen, title, message, actions, onCancel }: ActionSheetP
 // EDITOR TOOLBAR COMPONENT
 // ============================================================================
 
-interface EditorToolbarProps {
-  editorRef: React.RefObject<TipTapEditorRef>;
-  onDelete: () => void;
-  onTogglePin: () => void;
-  isPinned: boolean;
-  saveStatus: SaveStatus; // #5: Added save status
-  isKeyboardOpen?: boolean; // For keyboard accessory positioning
+// FIX #7: Extract ToolbarButton to prevent recreation on every render
+interface ToolbarButtonProps {
+  onClick: () => void;
+  title: string;
+  children: React.ReactNode;
+  active?: boolean;
+  danger?: boolean;
 }
 
-function EditorToolbar({ editorRef, onDelete, onTogglePin, isPinned, saveStatus, isKeyboardOpen }: EditorToolbarProps) {
+const ToolbarButton = React.memo(function ToolbarButton({
+  onClick,
+  title,
+  children,
+  active,
+  danger,
+}: ToolbarButtonProps) {
   // Prevent focus stealing from editor on mobile
   const preventFocusLoss = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
   };
 
-  const handleUndo = () => {
-    triggerHaptic('light');
-    editorRef.current?.undo();
-  };
-  const handleRedo = () => {
-    triggerHaptic('light');
-    editorRef.current?.redo();
-  };
-  const handleBold = () => {
-    triggerHaptic('light');
-    editorRef.current?.toggleBold();
-  };
-  const handleItalic = () => {
-    triggerHaptic('light');
-    editorRef.current?.toggleItalic();
-  };
-  const handleUnderline = () => {
-    triggerHaptic('light');
-    editorRef.current?.toggleUnderline();
-  };
-  const handleBulletList = () => {
-    triggerHaptic('light');
-    editorRef.current?.toggleBulletList();
-  };
-  const handleOrderedList = () => {
-    triggerHaptic('light');
-    editorRef.current?.toggleOrderedList();
-  };
-  const handleTaskList = () => {
-    triggerHaptic('light');
-    editorRef.current?.toggleTaskList();
-  };
-  const handleHeading = () => {
-    triggerHaptic('light');
-    editorRef.current?.setHeading(2);
-  };
-
-  // Toolbar button with focus protection
-  const ToolbarButton = ({ onClick, title, children, active, danger }: {
-    onClick: () => void;
-    title: string;
-    children: React.ReactNode;
-    active?: boolean;
-    danger?: boolean;
-  }) => (
+  return (
     <button
       className={`editor-toolbar__btn ${active ? 'editor-toolbar__btn--active' : ''} ${danger ? 'editor-toolbar__btn--danger' : ''}`}
       onClick={onClick}
@@ -845,6 +909,62 @@ function EditorToolbar({ editorRef, onDelete, onTogglePin, isPinned, saveStatus,
       {children}
     </button>
   );
+});
+
+interface EditorToolbarProps {
+  editorRef: React.RefObject<TipTapEditorRef>;
+  onDelete: () => void;
+  onTogglePin: () => void;
+  isPinned: boolean;
+  saveStatus: SaveStatus; // #5: Added save status
+  isKeyboardOpen?: boolean; // For keyboard accessory positioning
+}
+
+function EditorToolbar({ editorRef, onDelete, onTogglePin, isPinned, saveStatus, isKeyboardOpen }: EditorToolbarProps) {
+  const handleUndo = useCallback(() => {
+    triggerHaptic('light');
+    editorRef.current?.undo();
+  }, [editorRef]);
+
+  const handleRedo = useCallback(() => {
+    triggerHaptic('light');
+    editorRef.current?.redo();
+  }, [editorRef]);
+
+  const handleBold = useCallback(() => {
+    triggerHaptic('light');
+    editorRef.current?.toggleBold();
+  }, [editorRef]);
+
+  const handleItalic = useCallback(() => {
+    triggerHaptic('light');
+    editorRef.current?.toggleItalic();
+  }, [editorRef]);
+
+  const handleUnderline = useCallback(() => {
+    triggerHaptic('light');
+    editorRef.current?.toggleUnderline();
+  }, [editorRef]);
+
+  const handleBulletList = useCallback(() => {
+    triggerHaptic('light');
+    editorRef.current?.toggleBulletList();
+  }, [editorRef]);
+
+  const handleOrderedList = useCallback(() => {
+    triggerHaptic('light');
+    editorRef.current?.toggleOrderedList();
+  }, [editorRef]);
+
+  const handleTaskList = useCallback(() => {
+    triggerHaptic('light');
+    editorRef.current?.toggleTaskList();
+  }, [editorRef]);
+
+  const handleHeading = useCallback(() => {
+    triggerHaptic('light');
+    editorRef.current?.setHeading(2);
+  }, [editorRef]);
 
   const toolbarContent = (
     <>
@@ -937,19 +1057,22 @@ export default function NotesEditor() {
   const editorErrorKey = useRef(0); // For resetting error boundary
 
   // Detect keyboard open/close on mobile
+  // FIX #5: Check for both undefined AND null
   useEffect(() => {
-    if (typeof visualViewport === 'undefined') return;
+    if (typeof visualViewport === 'undefined' || visualViewport === null) return;
+
+    const vv = visualViewport; // Capture for closure
 
     const handleResize = () => {
       // If viewport height is significantly smaller than window height, keyboard is open
-      const viewportHeight = visualViewport?.height ?? window.innerHeight;
+      const viewportHeight = vv.height;
       const windowHeight = window.innerHeight;
       const isOpen = viewportHeight < windowHeight * 0.75;
       setIsKeyboardOpen(isOpen);
     };
 
-    visualViewport?.addEventListener('resize', handleResize);
-    return () => visualViewport?.removeEventListener('resize', handleResize);
+    vv.addEventListener('resize', handleResize);
+    return () => vv.removeEventListener('resize', handleResize);
   }, []);
 
   // Load data on mount
@@ -1014,14 +1137,20 @@ export default function NotesEditor() {
   }, [selectedNoteId]);
 
   // #15: Fixed focus timing with requestAnimationFrame
+  // FIX #4: Add max attempts to prevent infinite loop
   const focusEditor = useCallback(() => {
+    let attempts = 0;
+    const maxAttempts = 30; // ~500ms at 60fps
+
     const tryFocus = () => {
+      attempts++;
       const editor = editorRef.current?.getEditor();
       if (editor && !editor.isDestroyed) {
         editorRef.current?.focus();
-      } else {
+      } else if (attempts < maxAttempts) {
         requestAnimationFrame(tryFocus);
       }
+      // After max attempts, silently give up - editor may not be ready
     };
     requestAnimationFrame(tryFocus);
   }, []);
