@@ -48,6 +48,23 @@ const CAMELCASE_ALLOWED_PREFIXES = [
   'o',
   "o'",
   "d'",
+  // Tech company camelCase names (e.g., TechCrunch, OpenAI, MacBook)
+  'tech',   // TechCrunch
+  'open',   // OpenAI
+  'deep',   // DeepMind
+  'dev',    // DevOps, DevTools
+  'git',    // GitHub, GitLab
+  'you',    // YouTube
+  'linked', // LinkedIn
+  'face',   // Facebook
+  'drop',   // Dropbox
+  'pay',    // PayPal
+  'sales',  // Salesforce
+  'crowd',  // CrowdStrike
+  'cloud',  // CloudFlare
+  'swift',  // SwiftUI
+  'app',    // AppStore
+  'bit',    // Bitcoin
   'da',
   'de',
   'del',
@@ -2331,8 +2348,9 @@ function extractSocialMediaHandles(text: string): Array<{
   start: number;
   end: number;
   handle: string; // The full @-prefixed handle for alias tracking
+  displayName: string; // Proper name format (Tim Cook instead of tim_cook)
 }> {
-  const spans: { text: string; type: EntityType; start: number; end: number; handle: string }[] = [];
+  const spans: { text: string; type: EntityType; start: number; end: number; handle: string; displayName: string }[] = [];
 
   // Match Twitter-style handles: @username (alphanumeric and underscores)
   const handlePattern = /@([A-Za-z_][A-Za-z0-9_]{1,30})\b/g;
@@ -2356,22 +2374,18 @@ function extractSocialMediaHandles(text: string): Array<{
       entityType = 'PERSON';
     }
 
-    // Convert handle to proper name format
-    // tim_cook → Tim Cook
-    // TechCrunch → TechCrunch
-    let displayName = name;
-    if (name.includes('_')) {
-      displayName = name.split('_')
-        .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
-        .join(' ');
-    }
-
+    // Store the raw name for validation (must match text at position)
+    // The conversion to proper name format happens after validation
     spans.push({
-      text: displayName,
+      text: name, // Use original name (tim_cook, TechCrunch) for validation
       type: entityType,
       start: match.index + 1, // Skip the @ symbol in position
       end: match.index + match[0].length,
-      handle: handle
+      handle: handle,
+      // Store the display name for later conversion
+      displayName: name.includes('_')
+        ? name.split('_').map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()).join(' ')
+        : name
     });
   }
 
@@ -3098,6 +3112,11 @@ export async function extractEntities(text: string): Promise<{
   const whitelisted = extractWhitelistedNames(cleanedText);
   const titledNames = extractTitledNames(cleanedText);
   const socialHandles = extractSocialMediaHandles(cleanedText);
+  // Track social media handle positions - these should skip mention classifier
+  // (handles like "tim_cook" start with lowercase but are valid entities)
+  const socialHandlePositions = new Set<string>(
+    socialHandles.map(h => `${h.start}:${h.end}`)
+  );
   const acronymPairs = extractAcronymPairs(cleanedText);
 
   const fallbackSchoolSpans: TaggedSpan[] = [];
@@ -3159,7 +3178,8 @@ export async function extractEntities(text: string): Promise<{
     ...conjunctive.map(s => ({ ...s, source: 'PATTERN' as ExtractorSource })), // Treat conjunctive as PATTERN-quality
     ...whitelisted.map(s => ({ ...s, source: 'WHITELIST' as ExtractorSource })), // Whitelisted names
     ...titledNames.map(s => ({ ...s, source: 'PATTERN' as ExtractorSource })),
-    ...socialHandles.map(s => ({ text: s.text, type: s.type, start: s.start, end: s.end, source: 'PATTERN' as ExtractorSource })),
+    // Social media handles are high-confidence (explicit @-prefixed patterns like @TechCrunch, @tim_cook)
+    ...socialHandles.map(s => ({ text: s.text, type: s.type, start: s.start, end: s.end, source: 'WHITELIST' as ExtractorSource })),
     ...fallbackSchoolSpans,
     ...acronymPairs.flatMap(pair => {
       const spans: TaggedSpan[] = [];
@@ -3204,9 +3224,15 @@ export async function extractEntities(text: string): Promise<{
     const validation = validateSpan(text, span, "pre-entity-creation");
     if (!validation.valid) {
       // Skip corrupted spans to prevent bad data in registries
+      if (DEBUG_ENTITIES && (span.text.toLowerCase().includes('techcrunch') || span.text.toLowerCase().includes('tim'))) {
+        console.log(`[DEBUG] ${span.text} failed validation: expected="${span.text}" extracted="${validation.extracted}"`);
+      }
       return false;
     }
     if (shouldDropSpanAsNonEntity(span)) {
+      if (DEBUG_ENTITIES && span.text.toLowerCase().includes('techcrunch')) {
+        console.log(`[DEBUG] TechCrunch dropped as non-entity`);
+      }
       return false;
     }
     return true;
@@ -3407,6 +3433,9 @@ export async function extractEntities(text: string): Promise<{
 
     if (!surfaceTokens.length || !canonicalTokens.length) return null;
 
+    // Social media handles (starting with @) are always strong aliases
+    if (surface.trim().startsWith('@')) return 'strong';
+
     if (surfaceTokens.length >= 2) return 'strong';
 
     const canonicalFirst = canonicalTokens[0]?.toLowerCase();
@@ -3438,17 +3467,23 @@ export async function extractEntities(text: string): Promise<{
     const strength = classifyAliasStrength(rawAlias, entry.entity.canonical);
     if (!strength) return;
     const normalizedAlias = normalizeName(rawAlias);
-    if (!normalizedAlias || normalizedAlias.toLowerCase() === entry.entity.canonical.toLowerCase()) {
+    // For social media handles (@username), compare the raw alias not the normalized
+    // because normalizeName("@Apple") strips @ and becomes "Apple" = canonical
+    const compareValue = rawAlias.startsWith('@') ? rawAlias.toLowerCase() : normalizedAlias.toLowerCase();
+    if (!normalizedAlias || compareValue === entry.entity.canonical.toLowerCase()) {
       return;
     }
-    const hasTitleToken = rawAlias.split(/\s+/).some(token => TITLE_WORDS.has(token.replace(/[.'’]+$/g, '').toLowerCase()));
-    const hasAlias = [entry.entity.canonical, ...entry.entity.aliases].some(
-      existing => normalizeName(existing).toLowerCase() === normalizedAlias.toLowerCase()
-    );
+    const hasTitleToken = rawAlias.split(/\s+/).some(token => TITLE_WORDS.has(token.replace(/[.'']+$/g, '').toLowerCase()));
+    // For @ handles, check against the raw alias, not normalized (since @ is significant)
+    const hasAlias = rawAlias.startsWith('@')
+      ? entry.entity.aliases.some(existing => existing.toLowerCase() === rawAlias.toLowerCase())
+      : [entry.entity.canonical, ...entry.entity.aliases].some(
+          existing => normalizeName(existing).toLowerCase() === normalizedAlias.toLowerCase()
+        );
     if (hasAlias) {
       if (!hasTitleToken) return;
       const existingTitleAlias = entry.entity.aliases.find(alias =>
-        alias.split(/\s+/).some(token => TITLE_WORDS.has(token.replace(/[.'’]+$/g, '').toLowerCase()))
+        alias.split(/\s+/).some(token => TITLE_WORDS.has(token.replace(/[.'']+$/g, '').toLowerCase()))
       );
       if (existingTitleAlias && existingTitleAlias.toLowerCase() === rawAlias.toLowerCase()) return;
     }
@@ -3797,6 +3832,15 @@ const mergedEntries = Array.from(mergedMap.values());
       // Check if entity has NER backing - if so, be more lenient with single-word sentences
       const hasNERBacking = entry.sources.has('NER');
       for (const span of entry.spanList) {
+        // Skip mention classifier for social media handles - they use lowercase underscore
+        // format (e.g., "tim_cook") which is intentional, not an error
+        const spanKey = `${span.start}:${span.end}`;
+        if (socialHandlePositions.has(spanKey)) {
+          durableSpans.push(span);
+          durableMentions += 1;
+          continue;
+        }
+
         const rawSurface = text.slice(span.start, span.end);
         const classification: MentionClassification = classifyMention(rawSurface, text, span.start, span.end, { hasNERBacking });
         if (classification.mentionClass === 'DURABLE_NAME') {
@@ -3883,7 +3927,7 @@ const mergedEntries = Array.from(mergedMap.values());
     }
   }
 
-  // Add social media handle aliases (@-prefixed versions)
+  // Add social media handle aliases and convert underscore names to proper format
   if (socialHandles.length) {
     const entryByCanonical = new Map<string, EntityEntry>();
     for (const entry of mentionFilteredEntries) {
@@ -3891,9 +3935,15 @@ const mergedEntries = Array.from(mergedMap.values());
     }
 
     for (const handle of socialHandles) {
-      const entry = entryByCanonical.get(handle.text.toLowerCase());
+      const lookupKey = handle.text.toLowerCase();
+      const entry = entryByCanonical.get(lookupKey);
       if (entry) {
         addAlias(entry, handle.handle); // Add @TechCrunch as alias for TechCrunch
+        // Convert underscore names to proper format (tim_cook → Tim Cook)
+        if (handle.displayName && handle.displayName !== handle.text) {
+          addAlias(entry, entry.entity.canonical); // Add original as alias
+          entry.entity.canonical = handle.displayName; // Set proper name as canonical
+        }
       }
     }
   }
