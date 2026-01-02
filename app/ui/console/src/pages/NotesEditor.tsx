@@ -133,6 +133,7 @@ export interface SmartFilter {
 const STORAGE_KEYS = {
   NOTES: 'notes-editor-notes',
   FOLDERS: 'notes-editor-folders',
+  TAGS: 'notes-editor-tags',
   SELECTED_NOTE: 'notes-editor-selected',
   SELECTED_FOLDER: 'notes-editor-folder',
 };
@@ -199,12 +200,30 @@ class StorageService {
     }
   }
 
-  static async saveFolders(folders: Folder[]): Promise<boolean> {
+  static async saveFolders(folders: Folder[]): Promise<{ success: boolean; error?: 'quota' | 'unknown' }> {
     try {
       return this.save(STORAGE_KEYS.FOLDERS, folders);
     } catch (e) {
       console.error('Failed to save folders:', e);
-      return false;
+      return { success: false, error: 'unknown' };
+    }
+  }
+
+  static async loadTags(): Promise<Tag[]> {
+    try {
+      return this.load(STORAGE_KEYS.TAGS, DEFAULT_TAGS);
+    } catch (e) {
+      console.error('Failed to load tags:', e);
+      return DEFAULT_TAGS;
+    }
+  }
+
+  static async saveTags(tags: Tag[]): Promise<{ success: boolean; error?: 'quota' | 'unknown' }> {
+    try {
+      return this.save(STORAGE_KEYS.TAGS, tags);
+    } catch (e) {
+      console.error('Failed to save tags:', e);
+      return { success: false, error: 'unknown' };
     }
   }
 }
@@ -387,7 +406,22 @@ function formatDate(timestamp: number): string {
 
 function getPreview(content: string): string {
   const lines = content.split('\n').filter(l => l.trim());
-  const preview = lines.slice(1, 3).join(' ').trim();
+  let preview = lines.slice(1, 3).join(' ').trim();
+
+  // Strip markdown formatting markers for clean preview
+  preview = preview
+    .replace(/\*\*([^*]+)\*\*/g, '$1')     // **bold**
+    .replace(/__([^_]+)__/g, '$1')          // __underline__
+    .replace(/~~([^~]+)~~/g, '$1')          // ~~strikethrough~~
+    .replace(/==([^=]+)==/g, '$1')          // ==highlight==
+    .replace(/(?:^|[^\\])_([^_]+)_/g, (m, c) => m.startsWith('_') ? c : m[0] + c) // _italic_
+    .replace(/`([^`]+)`/g, '$1')            // `code`
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // [link](url) → link
+    .replace(/^#+\s+/gm, '')                 // # headings
+    .replace(/^- \[[ x]\] /gm, '')           // - [ ] tasks
+    .replace(/^[•\-]\s+/gm, '')              // bullet points
+    .replace(/^\d+\.\s+/gm, '');             // numbered lists
+
   return preview.slice(0, 100) || 'No additional text';
 }
 
@@ -514,13 +548,20 @@ function applySmartFilter(notes: Note[], filter: SmartFilter): Note[] {
     case 'hasTag':
       return notes.filter(n => n.tags?.includes(filter.value || ''));
     case 'hasChecklist':
+    case 'hasTasks':
+      // Both check for task list items (unchecked or checked)
       return notes.filter(n => n.content.includes('- [ ]') || n.content.includes('- [x]'));
     case 'recentlyEdited':
-      return notes.filter(n => now - n.updatedAt < 7 * dayMs);
+      // Notes edited in the last 24 hours (more intuitive for "recently")
+      return notes.filter(n => now - n.updatedAt < dayMs);
     case 'hasAttachments':
-      // Future feature
+      // Not implemented - return empty until attachments are supported
+      console.warn('hasAttachments filter is not yet implemented');
       return [];
     default:
+      // Exhaustive check - TypeScript will error if new filter types are added
+      const _exhaustive: never = filter.type;
+      console.warn(`Unknown smart filter type: ${_exhaustive}`);
       return notes;
   }
 }
@@ -600,6 +641,7 @@ function FoldersSidebar({ folders, notes, selectedFolderId, onSelectFolder, onBa
 
 interface NotesListProps {
   notes: Note[];
+  totalNotesCount: number; // Total notes across all folders (for empty state detection)
   selectedId: string | null;
   onSelect: (note: Note) => void;
   onCreateNote: () => void;
@@ -837,7 +879,7 @@ function NoteItem({ note, index, isSelected, onSelect, onDelete, isDragging, isD
   );
 }
 
-function NotesList({ notes, selectedId, onSelect, onCreateNote, onDelete, onReorder, selectedFolderId, folderName, onShowFolders, tags }: NotesListProps) {
+function NotesList({ notes, totalNotesCount, selectedId, onSelect, onCreateNote, onDelete, onReorder, selectedFolderId, folderName, onShowFolders, tags }: NotesListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   // FIX #8: Debounced search to prevent jank with large lists
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
@@ -880,20 +922,17 @@ function NotesList({ notes, selectedId, onSelect, onCreateNote, onDelete, onReor
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Sort notes by update time (within each section)
-  const sortedNotes = useMemo(() => {
-    return [...notes].sort((a, b) => b.updatedAt - a.updatedAt);
-  }, [notes]);
-
   // Filter notes by debounced search query
+  // Note: We don't sort by updatedAt here - the notes array order is preserved
+  // for drag-to-reorder functionality. Sections handle date grouping.
   const filteredNotes = useMemo(() => {
-    if (!debouncedSearchQuery.trim()) return sortedNotes;
+    if (!debouncedSearchQuery.trim()) return notes;
     const query = debouncedSearchQuery.toLowerCase();
-    return sortedNotes.filter(note =>
+    return notes.filter(note =>
       note.content.toLowerCase().includes(query) ||
       getTitle(note.content).toLowerCase().includes(query)
     );
-  }, [sortedNotes, debouncedSearchQuery]);
+  }, [notes, debouncedSearchQuery]);
 
   // Group filtered notes by section
   const sections = useMemo(() => {
@@ -992,14 +1031,14 @@ function NotesList({ notes, selectedId, onSelect, onCreateNote, onDelete, onReor
           </div>
         )}
         {/* Folder has no notes (but app has notes elsewhere) */}
-        {filteredNotes.length === 0 && !searchQuery && notes.length > 0 && (
+        {filteredNotes.length === 0 && !searchQuery && totalNotesCount > 0 && (
           <div className="notes-list__empty">
             <p>No notes in this folder</p>
             <button onClick={onCreateNote}>Create a note</button>
           </div>
         )}
         {/* App has no notes at all */}
-        {notes.length === 0 && (
+        {totalNotesCount === 0 && (
           <div className="notes-list__empty">
             <p>No notes yet</p>
             <button onClick={onCreateNote}>Create your first note</button>
@@ -1157,6 +1196,9 @@ interface ActionSheetProps {
 }
 
 function ActionSheet({ isOpen, title, message, actions, onCancel }: ActionSheetProps) {
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const previousActiveElement = useRef<Element | null>(null);
+
   // FIX #6: Body scroll lock when action sheet is open
   useEffect(() => {
     if (isOpen) {
@@ -1168,28 +1210,69 @@ function ActionSheet({ isOpen, title, message, actions, onCancel }: ActionSheetP
     }
   }, [isOpen]);
 
-  // FIX #12: Close on Escape key
+  // Focus trap and keyboard handling
   useEffect(() => {
     if (!isOpen) return;
+
+    // Store previously focused element
+    previousActiveElement.current = document.activeElement;
+
+    // Focus the sheet for keyboard navigation
+    requestAnimationFrame(() => {
+      const firstButton = sheetRef.current?.querySelector('button');
+      firstButton?.focus();
+    });
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onCancel();
+        return;
+      }
+
+      // Focus trap - Tab key
+      if (e.key === 'Tab') {
+        const focusableElements = sheetRef.current?.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (!focusableElements || focusableElements.length === 0) return;
+
+        const firstElement = focusableElements[0] as HTMLElement;
+        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+        if (e.shiftKey) {
+          // Shift+Tab: if on first element, wrap to last
+          if (document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          // Tab: if on last element, wrap to first
+          if (document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      // Restore focus when closing
+      if (previousActiveElement.current instanceof HTMLElement) {
+        previousActiveElement.current.focus();
+      }
+    };
   }, [isOpen, onCancel]);
 
   if (!isOpen) return null;
 
   return createPortal(
     <div className="action-sheet-overlay" onClick={onCancel}>
-      <div className="action-sheet" onClick={(e) => e.stopPropagation()}>
+      <div ref={sheetRef} className="action-sheet" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby={title ? 'action-sheet-title' : undefined}>
         {(title || message) && (
           <div className="action-sheet__header">
-            {title && <div className="action-sheet__title">{title}</div>}
+            {title && <div id="action-sheet-title" className="action-sheet__title">{title}</div>}
             {message && <div className="action-sheet__message">{message}</div>}
           </div>
         )}
@@ -1427,16 +1510,25 @@ export default function NotesEditor() {
   // Load data on mount
   useEffect(() => {
     async function loadData() {
-      const [loadedNotes, loadedFolders] = await Promise.all([
+      const [loadedNotes, loadedFolders, loadedTags] = await Promise.all([
         StorageService.loadNotes(),
         StorageService.loadFolders(),
+        StorageService.loadTags(),
       ]);
       setNotes(loadedNotes);
       setFolders(loadedFolders);
+      setTags(loadedTags);
 
-      // Select first note if none selected
+      // Select first note if none selected, or validate existing selection
       if (loadedNotes.length > 0) {
-        setSelectedNoteId(prev => prev ?? loadedNotes[0].id);
+        setSelectedNoteId(prev => {
+          // If previous selection exists and is valid, keep it
+          if (prev && loadedNotes.find(n => n.id === prev)) {
+            return prev;
+          }
+          // Otherwise select first note
+          return loadedNotes[0].id;
+        });
       }
 
       setIsLoading(false);
@@ -1477,6 +1569,18 @@ export default function NotesEditor() {
       }
     };
   }, [notes, isLoading]);
+
+  // Save folders when they change
+  useEffect(() => {
+    if (isLoading) return;
+    StorageService.saveFolders(folders);
+  }, [folders, isLoading]);
+
+  // Save tags when they change
+  useEffect(() => {
+    if (isLoading) return;
+    StorageService.saveTags(tags);
+  }, [tags, isLoading]);
 
   // Get selected note
   const selectedNote = notes.find(n => n.id === selectedNoteId) || null;
@@ -1710,6 +1814,7 @@ export default function NotesEditor() {
       <aside className={`notes-editor__sidebar ${!showList ? 'notes-editor__sidebar--hidden' : ''} ${showFolders ? 'notes-editor__sidebar--folders-open' : ''}`}>
         <NotesList
           notes={filteredNotes}
+          totalNotesCount={notes.length}
           selectedId={selectedNoteId}
           onSelect={handleSelectNote}
           onCreateNote={handleCreateNote}

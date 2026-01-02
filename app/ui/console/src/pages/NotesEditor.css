@@ -918,8 +918,11 @@
   background: rgba(255, 255, 255, 0.2);
   border: none;
   color: #fff;
-  width: 28px;
-  height: 28px;
+  /* Visual size 28px, but 44px touch target per Apple HIG */
+  width: var(--ne-touch-target);
+  height: var(--ne-touch-target);
+  /* Negative margin to maintain visual density */
+  margin: -8px;
   border-radius: 50%;
   font-size: 18px;
   font-weight: bold;
@@ -929,6 +932,7 @@
   justify-content: center;
   flex-shrink: 0;
   transition: background-color var(--ne-motion-hover);
+  -webkit-tap-highlight-color: transparent;
 }
 
 .notes-editor__storage-error button:hover {

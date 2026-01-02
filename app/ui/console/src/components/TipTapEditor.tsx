@@ -86,7 +86,12 @@ function getDomain(url: string): string {
 }
 
 // Simple link preview popup on hover
-function LinkPreviewPopup() {
+// Takes an optional container ref to scope event listeners (defaults to document)
+interface LinkPreviewPopupProps {
+  containerRef?: React.RefObject<HTMLElement>;
+}
+
+function LinkPreviewPopup({ containerRef }: LinkPreviewPopupProps) {
   const [preview, setPreview] = useState<LinkPreviewData | null>(null);
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const [copyFeedback, setCopyFeedback] = useState<'idle' | 'success' | 'error'>('idle');
@@ -94,13 +99,22 @@ function LinkPreviewPopup() {
   const feedbackTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
+    // Scope to container if provided, otherwise fall back to document
+    const container = containerRef?.current || document;
+
     const handleMouseOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       const link = target.closest('a.ios-link');
 
-      if (link) {
+      // Only handle links within our container
+      if (link && container.contains(link)) {
         const url = link.getAttribute('href');
         if (!url) return;
+
+        // Clear any existing timeout
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
 
         // Delay showing preview
         timeoutRef.current = window.setTimeout(() => {
@@ -160,14 +174,14 @@ function LinkPreviewPopup() {
       setPosition(null);
     };
 
-    document.addEventListener('mouseover', handleMouseOver);
-    document.addEventListener('mouseout', handleMouseOut);
-    document.addEventListener('click', handleClick);
+    container.addEventListener('mouseover', handleMouseOver as EventListener);
+    container.addEventListener('mouseout', handleMouseOut as EventListener);
+    container.addEventListener('click', handleClick as EventListener);
 
     return () => {
-      document.removeEventListener('mouseover', handleMouseOver);
-      document.removeEventListener('mouseout', handleMouseOut);
-      document.removeEventListener('click', handleClick);
+      container.removeEventListener('mouseover', handleMouseOver as EventListener);
+      container.removeEventListener('mouseout', handleMouseOut as EventListener);
+      container.removeEventListener('click', handleClick as EventListener);
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
@@ -175,7 +189,7 @@ function LinkPreviewPopup() {
         clearTimeout(feedbackTimeoutRef.current);
       }
     };
-  }, []);
+  }, [containerRef]);
 
   // Handle copy to clipboard with feedback
   const handleCopyLink = async () => {
@@ -281,8 +295,13 @@ function processInlineMarkdown(text: string): string {
   // Bold: **text**
   result = result.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 
-  // Italic: _text_
-  result = result.replace(/(?<![\\])_([^_]+)_/g, '<em>$1</em>');
+  // Italic: _text_ (avoiding escaped underscores and double underscores for underline)
+  // Note: Using a pattern that doesn't require lookbehind for Safari compatibility
+  result = result.replace(/(?:^|[^\\])_([^_]+)_/g, (match, content) => {
+    // Preserve any leading character that's not a backslash
+    const leadingChar = match.startsWith('_') ? '' : match[0];
+    return `${leadingChar}<em>${content}</em>`;
+  });
 
   // Inline code: `text`
   result = result.replace(/`([^`]+)`/g, '<code>$1</code>');
@@ -609,6 +628,8 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(({
   const isExternalUpdateRef = useRef(false);
   // Track the last content we set to avoid unnecessary updates
   const lastContentRef = useRef(content);
+  // Wrapper ref for scoping event listeners
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   const editor = useEditor({
     extensions: [
@@ -735,13 +756,10 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(({
   }
 
   return (
-    <>
-      <EditorContent
-        editor={editor}
-        className={`ios-tiptap-wrapper ${className}`}
-      />
-      <LinkPreviewPopup />
-    </>
+    <div ref={wrapperRef} className={`ios-tiptap-wrapper ${className}`}>
+      <EditorContent editor={editor} />
+      <LinkPreviewPopup containerRef={wrapperRef} />
+    </div>
   );
 });
 

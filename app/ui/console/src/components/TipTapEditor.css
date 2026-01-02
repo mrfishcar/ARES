@@ -546,8 +546,8 @@
 
 .link-preview-popup {
   position: fixed;
-  /* Use popup layer from z-index scale */
-  z-index: 40; /* Same as --ne-z-popup from NotesEditor */
+  /* Use popup layer from z-index scale (matches --ne-z-popup from NotesEditor) */
+  z-index: var(--ne-z-popup, 40);
   transform: translateX(-50%);
   width: 280px;
   max-width: calc(100vw - 32px);
