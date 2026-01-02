@@ -244,9 +244,19 @@ export async function runEntityExtractionStage(
         // Find all spans for this entity
         const entitySpans = spans.filter(s => s.entity_id === entity.id);
 
+        // Debug Mr Dursley
+        if (entity.canonical.toLowerCase().includes('mr dursley') || entity.canonical.toLowerCase().includes('mr. dursley')) {
+          console.log(`[PIPELINE-SPAN-CHECK] Entity "${entity.canonical}" has ${entitySpans.length} spans: ${JSON.stringify(entitySpans.slice(0, 3))}`);
+        }
+
         // Keep only spans that are COMPLETELY within the segment
         const segStart = segOffsetInWindow;
         const segEnd = segOffsetInWindow + seg.text.length;
+
+        // Debug Mr Dursley segment filtering
+        if (entity.canonical.toLowerCase().includes('mr dursley')) {
+          console.log(`[PIPELINE-SEGMENT] Entity "${entity.canonical}" segStart=${segStart}, segEnd=${segEnd}, spans in segment: ${entitySpans.filter(s => s.start < segEnd && s.end > segStart).length}`);
+        }
 
         const segmentSpans = entitySpans
           .filter(s => s.start < segEnd && s.end > segStart)
@@ -274,14 +284,35 @@ export async function runEntityExtractionStage(
         const canonicalRaw = input.fullText.slice(sortedSpans[0].start, sortedSpans[0].end);
         let canonicalText = normalizeName(canonicalRaw);
 
+        // Debug Dursley entities
+        if (entity.canonical.toLowerCase().includes('dursley')) {
+          console.log(`[PIPELINE-ENTITY] Processing: entity.canonical="${entity.canonical}", canonicalRaw="${canonicalRaw}", canonicalText="${canonicalText}", spans=${JSON.stringify(sortedSpans)}`);
+        }
+
         // IMPORTANT: Prefer entity's original canonical if it's a multi-word name
         // that contains our derived canonical as a substring (e.g., prefer "Harry Potter" over "Harry")
-        const entityOriginalCanonical = normalizeName(entity.canonical);
+        // For synthetic titled entities (Mr/Mrs X), preserve the title by using raw canonical
+        const titlePattern = /^(mr|mrs|ms|miss|dr|prof)\.?\s+/i;
+        const hasTitle = titlePattern.test(entity.canonical);
+        const entityOriginalCanonical = hasTitle ? entity.canonical : normalizeName(entity.canonical);
+
         if (entityOriginalCanonical && entityOriginalCanonical.split(/\s+/).length > canonicalText.split(/\s+/).length) {
           // Original canonical has more words - check if derived is a substring
           if (entityOriginalCanonical.toLowerCase().includes(canonicalText.toLowerCase())) {
             canonicalText = entityOriginalCanonical;
           }
+        }
+        // Also handle case where derived is just the title (e.g., "Mr") and original has title + surname
+        const bareTitle = /^(mr|mrs|ms|miss|dr|prof)\.?$/i;
+        if (hasTitle && bareTitle.test(canonicalText)) {
+          // Derived text is just a bare title like "Mr" - use the full original
+          canonicalText = entity.canonical;
+        }
+
+        // Debug: Final canonicalText for Dursley
+        if (entity.canonical.toLowerCase().includes('dursley')) {
+          const debugKey = `${entity.type}::${canonicalText.toLowerCase()}`;
+          console.log(`[PIPELINE-ENTITY-FINAL] entity.canonical="${entity.canonical}", final canonicalText="${canonicalText}", entityKey="${debugKey}"`);
         }
 
         // IMPORTANT: Prefer proper nouns over descriptors like "The king", "The wizard"
@@ -319,11 +350,22 @@ export async function runEntityExtractionStage(
           const canonicalLower = canonicalText.toLowerCase();
           const canonicalWords = canonicalLower.split(/\s+/);
 
+          // Honorific prefixes that distinguish different people
+          const HONORIFICS = ['mr', 'mrs', 'ms', 'miss', 'dr', 'prof', 'sir', 'lady', 'lord'];
+          const canonicalHonorific = HONORIFICS.find(h => canonicalWords[0] === h);
+
           for (const [key, ent] of entityMap.entries()) {
             if (!key.startsWith('PERSON::')) continue;
 
             const existingLower = ent.canonical.toLowerCase();
             const existingWords = existingLower.split(/\s+/);
+
+            // Don't merge if both have different honorifics (e.g., "Mr Dursley" vs "Mrs Dursley")
+            const existingHonorific = HONORIFICS.find(h => existingWords[0] === h);
+            if (canonicalHonorific && existingHonorific && canonicalHonorific !== existingHonorific) {
+              console.log(`[HONORIFIC-GUARD] Preventing merge: "${canonicalText}" != "${ent.canonical}"`);
+              continue; // Different honorifics = different people
+            }
 
             // Check if one is a subset of the other
             const isSubset =

@@ -440,6 +440,8 @@ interface RelationPattern {
   coordination?: boolean;
   listExtraction?: boolean;
   reversed?: boolean;
+  mrAndMrsPattern?: boolean;    // Special flag for "Mr and Mrs X" pattern
+  parentKilledPattern?: boolean; // Special flag for "His/Her parents killed by X" pattern
 }
 
 /**
@@ -470,6 +472,18 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     extractObj: 2
   },
   // === MARRIAGE PATTERNS ===
+  // "Mr and Mrs X, of [address], [Place]" → married_to(Mr X, Mrs X) + lives_in(Mr X, Place) + lives_in(Mrs X, Place)
+  // Special pattern with optional address capture
+  {
+    regex: /\bMr\.?\s+and\s+Mrs\.?\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)(?:,\s+of\s+(?:number\s+)?(?:\w+),\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*))?\b/g,
+    predicate: 'married_to',
+    symmetric: true,
+    // Custom handler to emit Mr/Mrs variants as subject/object
+    extractSubj: 1,  // Surname
+    extractObj: 2,   // Place (for lives_in) - may be undefined
+    mrAndMrsPattern: true,  // Flag for special handling
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
   // "X was Y's wife/husband" → married_to (possessive)
   {
     regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:was|is)\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)'s\s+(?:wife|husband|spouse|partner)\b/g,
@@ -523,6 +537,47 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     extractSubj: 1,
     extractObj: 1,  // Same person - indicates marriage to the named person
     typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X had a sister/brother named Y" → sibling_of (hp1.3)
+  {
+    regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+had\s+a\s+(?:sister|brother)\s+(?:named|called)\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
+    predicate: 'sibling_of',
+    symmetric: true,
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "The Xs had a small son called Y" → parent_of (hp1.4)
+  {
+    regex: /\b(?:The\s+)?([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+had\s+(?:a\s+)?(?:small\s+)?(?:son|daughter|child)\s+(?:named|called)\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
+    predicate: 'parent_of',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "X had been killed by Y" → killed (hp1.9 - inverted: Y killed X)
+  {
+    regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+had\s+been\s+killed\s+by\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
+    predicate: 'killed',
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] },
+    reversed: true  // Subject and object are swapped (killer is obj in pattern, subj in relation)
+  },
+  // "X's parents had been killed by Y" → killed (hp1.9)
+  // Note: Requires looking back for "son/daughter of X and Y" to identify parents
+  {
+    regex: /\b(?:His|Her|Their)\s+parents\s+had\s+been\s+killed\s+by\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
+    predicate: 'killed',
+    extractSubj: 1,  // killer (actually in group 1)
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] },
+    parentKilledPattern: true  // Flag for special parent resolution
+  },
+  // "X was in Y" → located_in (hp1.10)
+  {
+    regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:was|is)\s+in\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
+    predicate: 'located_in',
+    typeGuard: { subj: ['PLACE'], obj: ['PLACE'] }
+  },
+  // "The Xs lived at number X" → lives_in (hp1.10)
+  {
+    regex: /\b(?:The\s+)?([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:lived|live|lives)\s+at\s+(?:number\s+)?\w+\b/g,
+    predicate: 'lives_in',
+    typeGuard: { subj: ['PERSON'] }
   },
   // "X's son/daughter of Y" or "X's two sons" for genealogies
   {
@@ -650,6 +705,24 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
   {
     regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:was|is)\s+the\s+(?:headmaster|headmistress|director|dean|principal|chancellor)\s+of\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
     predicate: 'leads',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG'] }
+  },
+  // "X was a director of a firm called Y" → works_at (hp1.2)
+  {
+    regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:was|is)\s+a\s+(?:director|manager|employee)\s+of\s+(?:a\s+)?(?:firm|company|business)\s+called\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
+    predicate: 'works_at',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG'] }
+  },
+  // "X was a director of a firm called Y" → leads (also leads since director role)
+  {
+    regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:was|is)\s+a\s+director\s+of\s+(?:a\s+)?(?:firm|company|business)\s+called\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
+    predicate: 'leads',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG'] }
+  },
+  // "X worked nearby at Y" or "X worked at Y" → works_at (hp1.10)
+  {
+    regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:worked|works)\s+(?:nearby\s+)?at\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
+    predicate: 'works_at',
     typeGuard: { subj: ['PERSON'], obj: ['ORG'] }
   },
   // "X leads/directs Y"
@@ -2799,6 +2872,198 @@ export function extractNarrativeRelations(
           });
         }
         continue; // Skip normal processing for deictic patterns
+      }
+
+      // Handle "Mr and Mrs X" pattern - create married_to(Mr X, Mrs X)
+      if ((pattern as any).mrAndMrsPattern) {
+        const surname = match[1];  // Captured surname (e.g., "Dursley")
+        if (!surname) continue;
+
+        // Look for "Mr Surname" and "Mrs Surname" entities
+        const mrName = `Mr ${surname}`;
+        const mrsName = `Mrs ${surname}`;
+
+        // Debug: List all entities
+        console.log(`[MR-MRS-RELATION] Looking for "${mrName}" and "${mrsName}" in ${entities.length} entities: ${entities.map(e => `${e.type}:${e.canonical}`).join(', ')}`);
+
+        // Find matching entities - CRITICAL: match by canonical name primarily, not aliases
+        // This prevents cross-contamination when entities share surname-based aliases
+        const mrEntity = entities.find(e =>
+          e.type === 'PERSON' &&
+          e.canonical.toLowerCase() === mrName.toLowerCase()
+        );
+        // If not found by canonical, fallback to alias but be more strict
+        const mrEntityByAlias = !mrEntity ? entities.find(e =>
+          e.type === 'PERSON' &&
+          e.canonical.toLowerCase() !== mrsName.toLowerCase() && // Don't match Mrs X
+          e.aliases.some(a => a.toLowerCase() === mrName.toLowerCase())
+        ) : null;
+
+        const mrsEntity = entities.find(e =>
+          e.type === 'PERSON' &&
+          e.canonical.toLowerCase() === mrsName.toLowerCase()
+        );
+        // Fallback - but must not be the same entity we found for Mr
+        const mrsEntityByAlias = !mrsEntity ? entities.find(e =>
+          e.type === 'PERSON' &&
+          e.id !== (mrEntity?.id || mrEntityByAlias?.id) && // Don't match same entity
+          e.canonical.toLowerCase() !== mrName.toLowerCase() && // Don't match Mr X
+          e.aliases.some(a => a.toLowerCase() === mrsName.toLowerCase())
+        ) : null;
+
+        const finalMrEntity = mrEntity || mrEntityByAlias;
+        const finalMrsEntity = mrsEntity || mrsEntityByAlias;
+
+        if (finalMrEntity && finalMrsEntity && finalMrEntity.id !== finalMrsEntity.id) {
+          const matchStart = match.index;
+          const matchEnd = matchStart + match[0].length;
+
+          console.log(`[MR-MRS-RELATION] Creating married_to: "${finalMrEntity.canonical}" (id=${finalMrEntity.id}) <-> "${finalMrsEntity.canonical}" (id=${finalMrsEntity.id})`);
+
+          relations.push({
+            id: uuid(),
+            subj: finalMrEntity.id,
+            pred: 'married_to',
+            obj: finalMrsEntity.id,
+            evidence: [{
+              doc_id: docId,
+              span: { start: matchStart, end: matchEnd, text: match[0] },
+              sentence_index: 0,
+              source: 'RULE'
+            }],
+            confidence: 0.95,
+            extractor: 'regex'
+          });
+
+          // Check if address was captured (group 2) for lives_in relations
+          const placeName = match[2];
+          if (placeName) {
+            console.log(`[MR-MRS-RELATION] Captured place: "${placeName}" - creating lives_in relations`);
+
+            // Find place entity
+            const placeEntity = entities.find(e =>
+              (e.type === 'PLACE' || e.type === 'ORG' || e.type === 'PERSON') &&
+              (e.canonical.toLowerCase().includes(placeName.toLowerCase()) ||
+               placeName.toLowerCase().includes(e.canonical.toLowerCase()) ||
+               e.aliases.some(a => a.toLowerCase().includes(placeName.toLowerCase())))
+            );
+
+            if (placeEntity) {
+              // Mr lives_in Place
+              relations.push({
+                id: uuid(),
+                subj: finalMrEntity.id,
+                pred: 'lives_in',
+                obj: placeEntity.id,
+                evidence: [{
+                  doc_id: docId,
+                  span: { start: matchStart, end: matchEnd, text: match[0] },
+                  sentence_index: 0,
+                  source: 'RULE'
+                }],
+                confidence: 0.90,
+                extractor: 'regex'
+              });
+
+              // Mrs lives_in Place
+              relations.push({
+                id: uuid(),
+                subj: finalMrsEntity.id,
+                pred: 'lives_in',
+                obj: placeEntity.id,
+                evidence: [{
+                  doc_id: docId,
+                  span: { start: matchStart, end: matchEnd, text: match[0] },
+                  sentence_index: 0,
+                  source: 'RULE'
+                }],
+                confidence: 0.90,
+                extractor: 'regex'
+              });
+              console.log(`[MR-MRS-RELATION] Created lives_in: "${finalMrEntity.canonical}" and "${finalMrsEntity.canonical}" → "${placeEntity.canonical}"`);
+            } else {
+              console.log(`[MR-MRS-RELATION] Place entity not found for "${placeName}"`);
+            }
+          }
+        } else {
+          console.log(`[MR-MRS-RELATION] Missing or same entities: mr=${!!finalMrEntity} mrs=${!!finalMrsEntity} same=${finalMrEntity?.id === finalMrsEntity?.id} for surname="${surname}"`);
+        }
+        continue;
+      }
+
+      // Handle "His/Her parents had been killed by X" pattern
+      // Look back for "son/daughter of X and Y" to find parent entities
+      if ((pattern as any).parentKilledPattern) {
+        const killer = match[1];  // The killer (e.g., "Lord Voldemort")
+        if (!killer) continue;
+
+        const matchStart = match.index;
+        const matchEnd = matchStart + match[0].length;
+
+        // Find killer entity
+        const killerEntity = entities.find(e =>
+          e.type === 'PERSON' && (
+            e.canonical.toLowerCase() === killer.toLowerCase() ||
+            killer.toLowerCase().includes(e.canonical.toLowerCase()) ||
+            e.aliases.some(a => a.toLowerCase() === killer.toLowerCase())
+          )
+        );
+
+        if (!killerEntity) {
+          console.log(`[PARENT-KILLED] Killer entity not found: "${killer}"`);
+          continue;
+        }
+
+        // Look back in text for "son/daughter of X and Y" pattern to identify parents
+        const textBefore = text.slice(0, matchStart);
+        const parentPattern = /\bson\s+of\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+and\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/gi;
+        const parentMatches = [...textBefore.matchAll(parentPattern)];
+
+        if (parentMatches.length > 0) {
+          const lastMatch = parentMatches[parentMatches.length - 1];
+          const parent1Name = lastMatch[1];  // "James"
+          const parent2Name = lastMatch[2];  // "Lily Potter"
+
+          console.log(`[PARENT-KILLED] Found parents: "${parent1Name}" and "${parent2Name}"`);
+
+          // Find parent entities
+          for (const parentName of [parent1Name, parent2Name]) {
+            const parentEntity = entities.find(e =>
+              e.type === 'PERSON' && (
+                e.canonical.toLowerCase() === parentName.toLowerCase() ||
+                parentName.toLowerCase().includes(e.canonical.toLowerCase()) ||
+                e.canonical.toLowerCase().includes(parentName.toLowerCase()) ||
+                e.aliases.some(a =>
+                  a.toLowerCase() === parentName.toLowerCase() ||
+                  a.toLowerCase().includes(parentName.toLowerCase())
+                )
+              )
+            );
+
+            if (parentEntity) {
+              console.log(`[PARENT-KILLED] Creating killed: "${killerEntity.canonical}" → "${parentEntity.canonical}"`);
+              relations.push({
+                id: uuid(),
+                subj: killerEntity.id,
+                pred: 'killed',
+                obj: parentEntity.id,
+                evidence: [{
+                  doc_id: docId,
+                  span: { start: matchStart, end: matchEnd, text: match[0] },
+                  sentence_index: 0,
+                  source: 'RULE'
+                }],
+                confidence: 0.90,
+                extractor: 'regex'
+              });
+            } else {
+              console.log(`[PARENT-KILLED] Parent entity not found: "${parentName}"`);
+            }
+          }
+        } else {
+          console.log(`[PARENT-KILLED] No "son of X and Y" pattern found before the match`);
+        }
+        continue;
       }
 
       const subjGroup = pattern.extractSubj ?? 1;

@@ -228,17 +228,38 @@ export async function runAliasResolutionStage(
         }
       }
 
-      // 3. Final filter: Remove any garbage aliases that slipped through
+      // 3. Final filter: Remove garbage aliases and aliases with different honorifics
+      // CRITICAL: "Mr Dursley" and "Mrs Dursley" are different people - don't mix their aliases
+      const HONORIFICS = ['mr', 'mrs', 'ms', 'miss', 'dr', 'prof', 'sir', 'lady', 'lord'];
+      const canonicalLower = entity.canonical.toLowerCase();
+      const canonicalTokens = canonicalLower.split(/[.\s]+/).filter(Boolean);
+      const canonicalHonorific = HONORIFICS.find(h => canonicalTokens[0] === h);
+
+      const isHonorificCompatible = (alias: string): boolean => {
+        const aliasLower = alias.toLowerCase();
+        const aliasTokens = aliasLower.split(/[.\s]+/).filter(Boolean);
+        const aliasHonorific = HONORIFICS.find(h => aliasTokens[0] === h);
+
+        // If canonical has no honorific, any alias is fine
+        if (!canonicalHonorific) return true;
+        // If alias has no honorific, it's fine
+        if (!aliasHonorific) return true;
+        // If both have honorifics, they must match
+        return canonicalHonorific === aliasHonorific;
+      };
+
       const cleanAliases = Array.from(aliasSet).filter(alias =>
-        !isGarbageAlias(alias) && !isContextDependent(alias)
+        !isGarbageAlias(alias) &&
+        !isContextDependent(alias) &&
+        isHonorificCompatible(alias)
       );
       entity.aliases = cleanAliases;
 
-      // Choose best canonical name from all variants
-      if (aliasSet.size > 0) {
+      // Choose best canonical name from compatible variants only
+      if (cleanAliases.length > 0) {
         entity.canonical = chooseBestCanonical([
           entity.canonical,
-          ...aliasSet
+          ...cleanAliases
         ]);
       }
 

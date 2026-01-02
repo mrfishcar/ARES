@@ -519,7 +519,9 @@ export function classifyMention(
 
   // Mid-sentence demonym/adjective after determiner ("a Jersey accent", "the French cuisine")
   // If preceded by determiner (a, an, the) and followed by lowercase noun, it's likely an adjective
-  if (!sentenceStart && isSingleToken && precedingDeterminer && followingWord && /^[a-z]+$/.test(followingWord)) {
+  // Exception: Plural family names like "the Dursleys", "the Potters" - capitalized ending in 's'
+  const isPluralFamilyName = /^[A-Z][a-z]+s$/.test(raw);
+  if (!sentenceStart && isSingleToken && precedingDeterminer && followingWord && /^[a-z]+$/.test(followingWord) && !isPluralFamilyName) {
     return { mentionClass: 'NON_ENTITY', reason: 'determiner-adjective-noun' };
   }
 
@@ -550,9 +552,12 @@ export function classifyMention(
   }
 
   // Slogan/theme/title after theme markers or inside quotes
+  // Exception: Spans ending with a capitalized family name (e.g., "the Potters", "About the Dursleys")
   const windowStart = Math.max(0, start - 30);
   const windowText = fullText.slice(windowStart, start).toLowerCase();
-  if (tokens.length >= 1 && tokens.length <= 3 && (/^['\u2018\u2019"\u201c\u201d]/.test(fullText[start - 1] || '') || Array.from(THEME_LEX).some(tok => windowText.includes(tok)))) {
+  const lastToken = tokens[tokens.length - 1];
+  const endsWithFamilyName = /^[A-Z][a-z]+s$/.test(lastToken);
+  if (tokens.length >= 1 && tokens.length <= 3 && !endsWithFamilyName && (/^['\u2018\u2019"\u201c\u201d]/.test(fullText[start - 1] || '') || Array.from(THEME_LEX).some(tok => windowText.includes(tok)))) {
     return { mentionClass: 'CONTEXT_ONLY', reason: 'theme-slogan' };
   }
 

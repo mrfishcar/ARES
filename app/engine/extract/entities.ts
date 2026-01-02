@@ -3286,6 +3286,8 @@ export async function extractEntities(text: string): Promise<{
   });
   // Detect "Mr. and Mrs. X" pattern and create both entities
   // This pattern occurs before stitching because "Mr." can't stitch with distant "Dursley"
+  // We create synthetic spans where the text is the combined "Title Surname" but positions
+  // reference just the title portion to avoid position conflicts
   const mrAndMrsPattern = /\b(Mr\.?)\s+and\s+(Mrs\.?)\s+([A-Z][a-z]+)\b/g;
   let mrMrsMatch: RegExpExecArray | null;
   const mrMrsSpans: typeof validated = [];
@@ -3294,25 +3296,36 @@ export async function extractEntities(text: string): Promise<{
     const mrsTitle = mrMrsMatch[2];
     const surname = mrMrsMatch[3];
     const surnameStart = mrMrsMatch.index + mrMrsMatch[0].lastIndexOf(surname);
+    const surnameEnd = surnameStart + surname.length;
 
-    // Create "Mr. Surname" span
-    mrMrsSpans.push({
+    // Create "Mr. Surname" span - use the Mr position as start
+    // Note: "Mr Dursley" doesn't exist contiguously in "Mr and Mrs Dursley",
+    // so we use a synthetic span. Position must NOT overlap with Mrs Dursley to avoid conflict resolution.
+    const mrStart = mrMrsMatch.index;  // Position of "Mr" in the text
+    const mrEnd = mrStart + mrTitle.length;  // End of "Mr" (not the surname)
+    const mrSpan = {
       text: `${mrTitle} ${surname}`,
       type: 'PERSON',
-      start: mrMrsMatch.index,
-      end: mrMrsMatch.index + mrTitle.length,
-      source: 'PATTERN' as ExtractorSource
-    } as typeof validated[0]);
+      start: mrStart,  // Start at "Mr"
+      end: mrEnd,      // End of "Mr" (so it doesn't overlap with Mrs span)
+      source: 'PATTERN' as ExtractorSource,
+      attrs: { syntheticFromMrAndMrs: true }  // Mark as synthetic
+    } as typeof validated[0];
+    console.log(`[MR-MRS-PATTERN] Created span: "${mrSpan.text}" [${mrSpan.start}-${mrSpan.end}]`);
+    mrMrsSpans.push(mrSpan);
 
-    // Create "Mrs. Surname" span
+    // Create "Mrs. Surname" span - use Mrs position
     const mrsStart = mrMrsMatch.index + mrMrsMatch[0].indexOf(mrsTitle);
-    mrMrsSpans.push({
+    const mrsSpan = {
       text: `${mrsTitle} ${surname}`,
       type: 'PERSON',
-      start: mrsStart,
-      end: surnameStart + surname.length,
-      source: 'PATTERN' as ExtractorSource
-    } as typeof validated[0]);
+      start: mrsStart,  // Start of "Mrs"
+      end: surnameEnd,  // End of surname
+      source: 'PATTERN' as ExtractorSource,
+      attrs: { syntheticFromMrAndMrs: true }
+    } as typeof validated[0];
+    console.log(`[MR-MRS-PATTERN] Created span: "${mrsSpan.text}" [${mrsSpan.start}-${mrsSpan.end}]`);
+    mrMrsSpans.push(mrsSpan);
   }
 
   // Add Mr/Mrs spans and remove standalone title spans that will be merged
@@ -3324,6 +3337,54 @@ export async function extractEntities(text: string): Promise<{
       return !isStandaloneTitle;
     });
     validated.push(...mrMrsSpans);
+    validated.sort((a, b) => a.start - b.start);
+  }
+
+  // Detect "had/have a son/daughter/sister/brother called/named X" pattern and mark X as PERSON
+  // Also handles: "was named X", "was called X", "son called X", etc.
+  const relativeNamedPattern = /\b(?:had|have|has)\s+a\s+(?:small\s+)?(?:son|daughter|sister|brother|child|baby|boy|girl)\s+(?:called|named)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/g;
+  let relMatch: RegExpExecArray | null;
+  const relativeSpans: typeof validated = [];
+  console.log(`[RELATIVE-PATTERN] Testing on: "${cleanedText.slice(0, 100)}..."`);
+  while ((relMatch = relativeNamedPattern.exec(cleanedText)) !== null) {
+    console.log(`[RELATIVE-PATTERN] Matched: "${relMatch[0]}", person: "${relMatch[1]}"`);
+    const personName = relMatch[1];
+    const personStart = relMatch.index + relMatch[0].lastIndexOf(personName);
+    const personEnd = personStart + personName.length;
+
+    // Don't add if already exists in validated
+    if (!validated.some(s => s.start === personStart && s.end === personEnd)) {
+      relativeSpans.push({
+        text: personName,
+        type: 'PERSON',
+        start: personStart,
+        end: personEnd,
+        source: 'PATTERN' as ExtractorSource
+      } as typeof validated[0]);
+    }
+  }
+
+  // Also detect "was named X" pattern for people (e.g., "The baby boy was named Harry Potter")
+  const wasNamedPattern = /\bwas\s+(?:named|called)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/g;
+  while ((relMatch = wasNamedPattern.exec(cleanedText)) !== null) {
+    const personName = relMatch[1];
+    const personStart = relMatch.index + relMatch[0].lastIndexOf(personName);
+    const personEnd = personStart + personName.length;
+
+    if (!validated.some(s => s.start === personStart && s.end === personEnd) &&
+        !relativeSpans.some(s => s.start === personStart && s.end === personEnd)) {
+      relativeSpans.push({
+        text: personName,
+        type: 'PERSON',
+        start: personStart,
+        end: personEnd,
+        source: 'PATTERN' as ExtractorSource
+      } as typeof validated[0]);
+    }
+  }
+
+  if (relativeSpans.length > 0) {
+    validated.push(...relativeSpans);
     validated.sort((a, b) => a.start - b.start);
   }
 
@@ -3375,9 +3436,11 @@ export async function extractEntities(text: string): Promise<{
     validated.sort((a, b) => a.start - b.start);
   }
 
+  console.log(`[DEBUG-BEFORE-STITCH] validated=${validated.map(span => `${span.type}:${span.text}@${span.start}-${span.end}`).join(', ')}`);
   const stitchedPersons = stitchPersonFullNames(validated, cleanedText);
   validated = stitchedPersons.spans;
   const aliasHintsBySpanKey = stitchedPersons.aliasHints;
+  console.log(`[DEBUG-AFTER-STITCH] validated=${validated.map(span => `${span.type}:${span.text}@${span.start}-${span.end}`).join(', ')}`);
 
   if (DEBUG_ENTITIES) {
     console.log(
@@ -3394,6 +3457,7 @@ export async function extractEntities(text: string): Promise<{
     }
     return keep;
   });
+  console.log(`[DEBUG-AFTER-VIABILITY] validated=${validated.map(span => `${span.type}:${span.text}@${span.start}-${span.end}`).join(', ')}`);
   const dropped = beforeViability - validated.length;
   if (DEBUG_ENTITIES && dropped > 0) {
     console.log(
@@ -3464,6 +3528,10 @@ export async function extractEntities(text: string): Promise<{
     hasOnlySentenceInitialPersonEvidence: boolean;
     hasDeterminerInAnyOccurrence: boolean;
     hasNERSupportInAnyOccurrence: boolean;
+    /** Entity is followed by speech verbs: "X said", "X asked", "X replied" */
+    hasSaidVerbEvidence: boolean;
+    /** Entity is preceded by physical description adjectives: "tall X", "young X" */
+    hasPhysicalDescriptionEvidence: boolean;
   };
 
   const personSurfaceEvidence = new Map<string, PersonSurfaceEvidence>();
@@ -3498,7 +3566,9 @@ export async function extractEntities(text: string): Promise<{
       hasStrongPersonEvidence: false,
       hasOnlySentenceInitialPersonEvidence: true,
       hasDeterminerInAnyOccurrence: false,
-      hasNERSupportInAnyOccurrence: false
+      hasNERSupportInAnyOccurrence: false,
+      hasSaidVerbEvidence: false,
+      hasPhysicalDescriptionEvidence: false
     };
 
     if (!isSentenceInitialOnly) {
@@ -3532,6 +3602,34 @@ export async function extractEntities(text: string): Promise<{
 
     const allowedPerson = looksLikePersonName(npContext, tokenStats);
     if (allowedPerson && !hasDeterminer && !isSentenceInitialOnly) {
+      existing.hasStrongPersonEvidence = true;
+    }
+
+    // Check for said-verb evidence: "X said", "X asked", "X replied"
+    // This is strong evidence that X is a PERSON (only people speak)
+    const afterTextForSaidVerb = text.slice(span.end, span.end + 30).toLowerCase();
+    const saidVerbPattern = /^\s*(?:,|—|-|:)?\s*(said|says|say|asked|asks|ask|replied|replies|reply|answered|answers|answer|whispered|whispers|whisper|shouted|shouts|shout|exclaimed|exclaims|exclaim|muttered|mutters|mutter|announced|announces|announce|declared|declares|declare|yelled|yells|yell|cried|cries|cry|screamed|screams|scream|murmured|murmurs|murmur)\b/;
+    if (saidVerbPattern.test(afterTextForSaidVerb)) {
+      existing.hasSaidVerbEvidence = true;
+      existing.hasStrongPersonEvidence = true;
+    }
+
+    // Check for physical description evidence: "tall X", "young X", "old X"
+    // These adjectives typically describe people
+    const beforeTextForPhysDesc = text.slice(Math.max(0, span.start - 25), span.start).toLowerCase();
+    const physicalDescAdjectives = [
+      'tall', 'short', 'young', 'old', 'elderly', 'ancient',
+      'beautiful', 'handsome', 'pretty', 'ugly', 'plain',
+      'thin', 'fat', 'slender', 'stout', 'plump', 'slim',
+      'strong', 'weak', 'frail', 'sturdy',
+      'bald', 'bearded', 'scarred',
+      'pale', 'dark', 'fair',
+      'wise', 'clever', 'foolish', 'brave', 'cowardly',
+      'kind', 'cruel', 'gentle', 'fierce', 'stern'
+    ];
+    const physDescPattern = new RegExp(`\\b(${physicalDescAdjectives.join('|')})\\s+$`);
+    if (physDescPattern.test(beforeTextForPhysDesc)) {
+      existing.hasPhysicalDescriptionEvidence = true;
       existing.hasStrongPersonEvidence = true;
     }
 
@@ -3769,6 +3867,9 @@ const PERSON_NICKNAME_NORMALIZERS = new Map<string, string>([
     const positionsForSpan = positionsByKey.get(originalKey) ?? [{ start: span.start, end: span.end }];
     const posFeatures = positionFeaturesByKey.get(originalKey);
     const originalSpanType = span.type;
+    if (span.text.toLowerCase().includes('dursley') || span.text === 'Mr' || span.text === 'Mrs') {
+      console.log(`[ENTITY-BUILD] Processing span: "${span.text}" type=${span.type} pos=[${span.start}-${span.end}]`);
+    }
     let spanType = span.type;
 
     if (spanType === 'PERSON') {
@@ -3840,6 +3941,17 @@ const PERSON_NICKNAME_NORMALIZERS = new Map<string, string>([
 
       // For DATE entities, convert spelled-out years to numeric form
       let canonicalName = capitalizedText;
+
+      // Strip leading preposition phrases from PERSON entities (e.g., "About the Potters" -> "Potters")
+      if (spanType === 'PERSON') {
+        const prepPhraseMatch = canonicalName.match(/^(?:about|regarding|concerning)\s+(?:the\s+)?([A-Z][a-z]+s?)$/i);
+        if (prepPhraseMatch) {
+          console.log(`[PREP-PHRASE-FIX] Stripping preposition phrase: "${canonicalName}" -> "${prepPhraseMatch[1]}"`);
+          canonicalName = prepPhraseMatch[1];
+          // Capitalize the result
+          canonicalName = canonicalName.charAt(0).toUpperCase() + canonicalName.slice(1);
+        }
+      }
       if (spanType === 'DATE') {
         const numericYear = convertSpelledYearToNumeric(span.text);
         if (numericYear !== null) {
@@ -3871,6 +3983,9 @@ const PERSON_NICKNAME_NORMALIZERS = new Map<string, string>([
         variants: new Map([[textLower, span.text]]),
         sources: new Set([span.source]) // Track extraction source
       };
+      if (canonicalName.toLowerCase().includes('dursley') || canonicalName === 'Mr' || canonicalName === 'Mrs') {
+        console.log(`[ENTITY-BUILD] Created entity: "${canonicalName}" type=${spanType} from span="${span.text}"`);
+      }
 
       const aliasKey = `${span.start}-${span.end}-${span.text.toLowerCase()}`;
       const aliasParts = aliasHintsBySpanKey.get(aliasKey);
@@ -3901,6 +4016,8 @@ const PERSON_NICKNAME_NORMALIZERS = new Map<string, string>([
       entries.push(entry);
     }
   }
+
+  console.log(`[DEBUG-ENTRIES-BUILT] Created ${entries.length} entries: ${entries.map(e => `${e.entity.type}:${e.entity.canonical}`).join(', ')}`);
 
   // Merge entries with identical canonical names preferring PEOPLE over other types
   const typePriority = (type: EntityType, text: string): number => {
@@ -4036,6 +4153,9 @@ const mergedEntries = Array.from(mergedMap.values());
 
   const classifyAndFilterEntries = (entries: EntityEntry[]): EntityEntry[] => {
     const kept: EntityEntry[] = [];
+    if (entries.some(e => e.entity.canonical.toLowerCase().includes('dursley'))) {
+      console.log(`[CLASSIFY-ENTRIES] Input: ${entries.filter(e => e.entity.canonical.toLowerCase().includes('dursley')).map(e => e.entity.canonical).join(', ')}`);
+    }
     for (const entry of entries) {
       const durableSpans: Array<{ start: number; end: number }> = [];
       let entryRejected = 0;
@@ -4055,6 +4175,9 @@ const mergedEntries = Array.from(mergedMap.values());
 
         const rawSurface = text.slice(span.start, span.end);
         const classification: MentionClassification = classifyMention(rawSurface, text, span.start, span.end, { hasNERBacking });
+        if (rawSurface.toLowerCase().includes('dursley') || rawSurface.toLowerCase().includes('dudley') || rawSurface.toLowerCase().includes('potter')) {
+          console.log(`[DEBUG-CLASSIFY] "${rawSurface}" => ${classification.mentionClass} (NER=${hasNERBacking}, reason=${classification.reason || 'none'})`);
+        }
         if (classification.mentionClass === 'DURABLE_NAME') {
           durableSpans.push(span);
           durableMentions += 1;
@@ -4076,6 +4199,9 @@ const mergedEntries = Array.from(mergedMap.values());
 
       entry.spanList = durableSpans;
       kept.push(entry);
+    }
+    if (kept.some(e => e.entity.canonical.toLowerCase().includes('dursley'))) {
+      console.log(`[CLASSIFY-ENTRIES] Output: ${kept.filter(e => e.entity.canonical.toLowerCase().includes('dursley')).map(e => e.entity.canonical).join(', ')}`);
     }
     return kept;
   };
@@ -4299,7 +4425,15 @@ const mergedEntries = Array.from(mergedMap.values());
     }
   }
 
+  if (mentionFilteredEntries.some(e => e.entity.canonical.toLowerCase().includes('dursley') || e.entity.canonical.toLowerCase().includes('mr '))) {
+    const dursleys = mentionFilteredEntries.filter(e => e.entity.canonical.toLowerCase().includes('dursley') || e.entity.canonical.toLowerCase().startsWith('mr '));
+    console.log(`[MERGE-FILTER] Before filter: ${dursleys.map(e => `${e.entity.canonical}(merged=${mergedPersonIds.has(e.entity.id)})`).join(', ')}`);
+  }
   const mergedEntriesFiltered = mentionFilteredEntries.filter(entry => !mergedPersonIds.has(entry.entity.id));
+  if (mentionFilteredEntries.some(e => e.entity.canonical.toLowerCase().includes('dursley') || e.entity.canonical.toLowerCase().includes('mr '))) {
+    const dursleys = mergedEntriesFiltered.filter(e => e.entity.canonical.toLowerCase().includes('dursley') || e.entity.canonical.toLowerCase().startsWith('mr '));
+    console.log(`[MERGE-FILTER] After filter: ${dursleys.map(e => e.entity.canonical).join(', ')}`);
+  }
 
   // Debug Chilion in merged entries
   if (process.env.L4_DEBUG === '1') {
@@ -4408,8 +4542,11 @@ const mergedEntries = Array.from(mergedMap.values());
       const otherScore = nameScore(other.entity.canonical);
       return otherScore.informative >= score.informative;
     });
-    if (filteredOutByPrefix && canonicalLower.includes('mcgonagall')) {
-      console.log('[DEBUG-MCG] dropped by prefix rule', entry.entity.canonical);
+    if (filteredOutByPrefix && (canonicalLower.includes('mcgonagall') || canonicalLower.includes('dursley'))) {
+      console.log(`[DEBUG-PREFIX] dropped by prefix rule: "${entry.entity.canonical}"`);
+    }
+    if (canonicalLower.includes('dursley') || canonicalLower.includes('mr ') || canonicalLower.includes('mrs ')) {
+      console.log(`[DEBUG-FINAL-FILTER] "${entry.entity.canonical}" filteredOutByPrefix=${filteredOutByPrefix}`);
     }
     return !filteredOutByPrefix;
   });
@@ -4460,6 +4597,14 @@ const mergedEntries = Array.from(mergedMap.values());
   // Lower threshold allows even low-confidence FALLBACK entities to pass
   // Note: FALLBACK base is 0.40, but can be penalized to ~0.30-0.35
   const filteredClusters = filterEntitiesByConfidence(clusters, 0.30);
+
+  // Debug: Log filtered out entities
+  for (const cluster of clusters) {
+    const kept = filteredClusters.some(c => c.id === cluster.id);
+    if (!kept && cluster.canonical.toLowerCase().includes('potter')) {
+      console.log(`[CONFIDENCE-FILTER-DEBUG] "${cluster.canonical}" filtered out with confidence ${cluster.confidence ?? 'N/A'}`);
+    }
+  }
   if (DEBUG_ENTITIES) {
     console.log(
       `[EXTRACT-ENTITIES][DEBUG] confidence clusters=${clusters.length} kept=${filteredClusters.length}`
@@ -4484,6 +4629,18 @@ const mergedEntries = Array.from(mergedMap.values());
   const confidenceFilteredEntries = finalEntries.filter(entry =>
     filteredIds.has(entry.entity.id)
   );
+
+  // Debug: Check what happened to Mr Dursley
+  const mrDursleyInFinal = finalEntries.find(e => e.entity.canonical.toLowerCase() === 'mr dursley');
+  const mrDursleyInConfidence = confidenceFilteredEntries.find(e => e.entity.canonical.toLowerCase() === 'mr dursley');
+  if (mrDursleyInFinal && !mrDursleyInConfidence) {
+    console.log(`[MR-DURSLEY-LOST] Was in finalEntries but filtered by confidence: ${mrDursleyInFinal.entity.id}, has ${mrDursleyInFinal.spanList.length} spans`);
+  } else if (!mrDursleyInFinal) {
+    console.log(`[MR-DURSLEY-LOST] Not in finalEntries (filtered earlier)`);
+  } else if (mrDursleyInConfidence) {
+    console.log(`[MR-DURSLEY-OK] In confidenceFilteredEntries with ${mrDursleyInConfidence.spanList.length} spans`);
+  }
+
   if (DEBUG_ENTITIES) {
     console.log(`[EXTRACT-ENTITIES][DEBUG] confidenceFilteredEntries=${confidenceFilteredEntries.length}`);
   }
@@ -4532,8 +4689,15 @@ const mergedEntries = Array.from(mergedMap.values());
     // With case-insensitive extraction, lowercase entity names are now valid and intentional
 
     const normalizedMap = new Map<string, string>();
+    // Check if the current canonical has a gendered title (from married couple handling)
+    // If so, preserve it and don't strip the title during normalization
+    const titlePattern = /^(mr|mrs|miss|ms|dr)\.?\s+/i;
+    const canonicalHasTitle = entry.entity.type === 'PERSON' && titlePattern.test(entry.entity.canonical);
+
     for (const name of Array.from(nameSet)) {
-      const normalized = normalizeName(name);
+      // For titled names that should be preserved, use the name directly as the canonical key
+      const nameHasTitle = entry.entity.type === 'PERSON' && titlePattern.test(name);
+      const normalized = (nameHasTitle && canonicalHasTitle) ? name : normalizeName(name);
       if (!normalized) {
         if (DEBUG_ENTITIES) {
           console.warn(
@@ -4546,7 +4710,8 @@ const mergedEntries = Array.from(mergedMap.values());
         candidateRawByNormalized.get(normalized.toLowerCase()) ??
         entry.variants.get(normalized.toLowerCase()) ??
         name;
-      const cleanedRawCandidate = normalizeName(rawCandidate) || normalized;
+      // For titled names, use the titled form as the cleaned raw candidate
+      const cleanedRawCandidate = (nameHasTitle && canonicalHasTitle) ? name : (normalizeName(rawCandidate) || normalized);
       const cleanedRaw = cleanedRawCandidate.replace(/\s+/g, ' ').trim();
       // NOTE: Removed lowercase check - with case-insensitive extraction, lowercase names are valid
       if (!normalizedMap.has(normalized)) {
@@ -4854,6 +5019,11 @@ const mergedEntries = Array.from(mergedMap.values());
 
     let candidateSpans = Array.from(spanByStart.values()).sort((a, b) => a.start - b.start);
 
+    // Debug: Check Mr Dursley spans at this stage
+    if (entry.entity.canonical.toLowerCase() === 'mr dursley') {
+      console.log(`[MR-DURSLEY-SPAN-BUILD] Entry "${entry.entity.canonical}" id=${entry.entity.id} has ${entry.spanList.length} in spanList, ${candidateSpans.length} candidate spans: ${JSON.stringify(candidateSpans)}`);
+    }
+
     // Filter out subsumed spans (spans completely contained within others)
     const uniqueSpans = candidateSpans.filter((span, i) => {
       // Check if this span is subsumed by any other span
@@ -4869,15 +5039,28 @@ const mergedEntries = Array.from(mergedMap.values());
       return true; // Not subsumed, keep it
     });
 
+    // Debug: Check Mr Dursley after uniqueSpans filter
+    if (entry.entity.canonical.toLowerCase() === 'mr dursley') {
+      console.log(`[MR-DURSLEY-UNIQUE] After uniqueSpans filter: ${uniqueSpans.length} spans: ${JSON.stringify(uniqueSpans)}`);
+    }
+
     for (const span of uniqueSpans) {
       const key = `${entry.entity.id}:${span.start}:${span.end}`;
-      if (seenSpanKeys.has(key)) continue;
+      if (seenSpanKeys.has(key)) {
+        if (entry.entity.canonical.toLowerCase() === 'mr dursley') {
+          console.log(`[MR-DURSLEY-DUPE] Skipping duplicate span key: ${key}`);
+        }
+        continue;
+      }
       seenSpanKeys.add(key);
       spans.push({
         entity_id: entry.entity.id,
         start: span.start,
         end: span.end
       });
+      if (entry.entity.canonical.toLowerCase() === 'mr dursley') {
+        console.log(`[MR-DURSLEY-ADDED] Added span to final spans: ${JSON.stringify({ entity_id: entry.entity.id, start: span.start, end: span.end })}`);
+      }
     }
   }
 
@@ -5158,6 +5341,20 @@ const mergedEntries = Array.from(mergedMap.values());
   const filteredEntityIds = new Set(nicknameFilteredEntities.map(e => e.id));
   const filteredSpans = spans.filter(span => filteredEntityIds.has(span.entity_id));
 
+  // Debug: Check Mr Dursley through the filtering
+  const mrDursleyInNickname = nicknameFilteredEntities.find(e => e.canonical.toLowerCase() === 'mr dursley');
+  const mrDursleySpansInSpans = spans.filter(s => {
+    const ent = entities.find(e => e.id === s.entity_id);
+    return ent?.canonical.toLowerCase() === 'mr dursley';
+  });
+  const mrDursleySpansFiltered = filteredSpans.filter(s => {
+    const ent = nicknameFilteredEntities.find(e => e.id === s.entity_id);
+    return ent?.canonical.toLowerCase() === 'mr dursley';
+  });
+  if (mrDursleyInNickname || mrDursleySpansInSpans.length > 0) {
+    console.log(`[MR-DURSLEY-FILTER] In nicknameFilteredEntities: ${mrDursleyInNickname ? 'YES' : 'NO'}, spans in spans: ${mrDursleySpansInSpans.length}, spans in filteredSpans: ${mrDursleySpansFiltered.length}`);
+  }
+
   // Resolve exact-span conflicts and overlapping spans deterministically
   const conflictResolved = resolveSpanConflicts(nicknameFilteredEntities, filteredSpans);
   const finalEntities = conflictResolved.entities;
@@ -5168,6 +5365,14 @@ const mergedEntries = Array.from(mergedMap.values());
     const removedCount = entities.length - finalEntities.length;
     console.log(`[EXTRACT-ENTITIES][DEBUG] returning ${finalEntities.length} entities (${dateCount} DATEs, ${removedCount} filtered): ${finalEntities.map(e => `${e.type}:${e.canonical}`).slice(0, 20).join(', ')}`);
   }
+
+  // Debug: Check Mr Dursley spans
+  const mrDursleyEntity = finalEntities.find(e => e.canonical.toLowerCase() === 'mr dursley');
+  if (mrDursleyEntity) {
+    const mrDursleySpans = finalSpans.filter(s => s.entity_id === mrDursleyEntity.id);
+    console.log(`[MR-DURSLEY-SPANS] Entity "${mrDursleyEntity.canonical}" (${mrDursleyEntity.id}) has ${mrDursleySpans.length} spans: ${JSON.stringify(mrDursleySpans.slice(0, 3))}`);
+  }
+
   return {
     entities: finalEntities,
     spans: finalSpans,

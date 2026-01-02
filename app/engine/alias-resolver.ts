@@ -315,10 +315,14 @@ export class AliasResolver {
   /**
    * Check if two forms are title variations of each other
    *
-   * GUARD: Don't match pure surnames to compound names
+   * GUARD 1: Don't match pure surnames to compound names
    * e.g., "Potter" should NOT match "Harry Potter"
    * This prevents premature canonicalization that blocks GlobalKnowledgeGraph
    * surname-based merging with 0.90 confidence thresholds
+   *
+   * GUARD 2: Don't match entities with different honorific prefixes
+   * e.g., "Mr Dursley" should NOT match "Mrs Dursley"
+   * These are different people who share a surname
    */
   private isTitleVariation(form1: string, form2: string): boolean {
     if (form1 === form2) return true;
@@ -336,6 +340,21 @@ export class AliasResolver {
     if ((isPureSurname1 && tokens2.length > 1) ||
         (isPureSurname2 && tokens1.length > 1)) {
       return false;
+    }
+
+    // GUARD 2: Different honorific prefixes = different people
+    // "Mr Dursley" vs "Mrs Dursley" → NEVER merge (husband vs wife)
+    const honorificPattern = /^(mr|mrs|ms|miss|dr|prof|sir|lady|lord)\.?\s+/i;
+    const honor1 = form1.match(honorificPattern);
+    const honor2 = form2.match(honorificPattern);
+
+    if (honor1 && honor2) {
+      const h1 = honor1[1].toLowerCase().replace(/\.$/, '');
+      const h2 = honor2[1].toLowerCase().replace(/\.$/, '');
+      // If both have honorifics but they're different, these are different people
+      if (h1 !== h2) {
+        return false;
+      }
     }
 
     // Try removing titles/epithets from both
