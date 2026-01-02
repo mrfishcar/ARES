@@ -2322,6 +2322,63 @@ function extractTitledNames(text: string): Array<{ text: string; type: EntityTyp
 }
 
 /**
+ * Extract social media handles (Twitter/X handles like @TechCrunch, @tim_cook)
+ * Returns the entity name without the @ symbol, and the handle as an alias candidate
+ */
+function extractSocialMediaHandles(text: string): Array<{
+  text: string;
+  type: EntityType;
+  start: number;
+  end: number;
+  handle: string; // The full @-prefixed handle for alias tracking
+}> {
+  const spans: { text: string; type: EntityType; start: number; end: number; handle: string }[] = [];
+
+  // Match Twitter-style handles: @username (alphanumeric and underscores)
+  const handlePattern = /@([A-Za-z_][A-Za-z0-9_]{1,30})\b/g;
+  let match: RegExpExecArray | null;
+
+  while ((match = handlePattern.exec(text)) !== null) {
+    const handle = match[0]; // @TechCrunch
+    const name = match[1];   // TechCrunch
+
+    // Skip common non-entity handles
+    if (/^(mention|reply|rt|dm|via|by|from|to|cc)$/i.test(name)) continue;
+
+    // Determine type heuristically:
+    // - lowercase with underscores = likely PERSON (e.g., tim_cook)
+    // - TitleCase or all caps = likely ORG (e.g., TechCrunch, OpenAI)
+    let entityType: EntityType = 'ORG';
+    if (name.includes('_') && name === name.toLowerCase()) {
+      entityType = 'PERSON';
+    } else if (/^[a-z]+$/.test(name)) {
+      // All lowercase single word could be person or org, default to PERSON
+      entityType = 'PERSON';
+    }
+
+    // Convert handle to proper name format
+    // tim_cook → Tim Cook
+    // TechCrunch → TechCrunch
+    let displayName = name;
+    if (name.includes('_')) {
+      displayName = name.split('_')
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join(' ');
+    }
+
+    spans.push({
+      text: displayName,
+      type: entityType,
+      start: match.index + 1, // Skip the @ symbol in position
+      end: match.index + match[0].length,
+      handle: handle
+    });
+  }
+
+  return spans;
+}
+
+/**
  * Merge "X of Y" patterns into single entities
  * E.g., "Battle" + "of" + "Pelennor Fields" → "Battle of Pelennor Fields" (EVENT)
  */
@@ -3040,6 +3097,7 @@ export async function extractEntities(text: string): Promise<{
   const families = isMockBackend ? [] : extractFamilySpans(cleanedText);
   const whitelisted = extractWhitelistedNames(cleanedText);
   const titledNames = extractTitledNames(cleanedText);
+  const socialHandles = extractSocialMediaHandles(cleanedText);
   const acronymPairs = extractAcronymPairs(cleanedText);
 
   const fallbackSchoolSpans: TaggedSpan[] = [];
@@ -3101,6 +3159,7 @@ export async function extractEntities(text: string): Promise<{
     ...conjunctive.map(s => ({ ...s, source: 'PATTERN' as ExtractorSource })), // Treat conjunctive as PATTERN-quality
     ...whitelisted.map(s => ({ ...s, source: 'WHITELIST' as ExtractorSource })), // Whitelisted names
     ...titledNames.map(s => ({ ...s, source: 'PATTERN' as ExtractorSource })),
+    ...socialHandles.map(s => ({ text: s.text, type: s.type, start: s.start, end: s.end, source: 'PATTERN' as ExtractorSource })),
     ...fallbackSchoolSpans,
     ...acronymPairs.flatMap(pair => {
       const spans: TaggedSpan[] = [];
@@ -3820,6 +3879,21 @@ const mergedEntries = Array.from(mergedMap.values());
         if (idx >= 0) {
           mentionFilteredEntries.splice(idx, 1);
         }
+      }
+    }
+  }
+
+  // Add social media handle aliases (@-prefixed versions)
+  if (socialHandles.length) {
+    const entryByCanonical = new Map<string, EntityEntry>();
+    for (const entry of mentionFilteredEntries) {
+      entryByCanonical.set(entry.entity.canonical.toLowerCase(), entry);
+    }
+
+    for (const handle of socialHandles) {
+      const entry = entryByCanonical.get(handle.text.toLowerCase());
+      if (entry) {
+        addAlias(entry, handle.handle); // Add @TechCrunch as alias for TechCrunch
       }
     }
   }
