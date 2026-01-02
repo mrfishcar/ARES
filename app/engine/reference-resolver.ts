@@ -194,6 +194,152 @@ const MALE_PATTERNS = /\b(mr\.?|mister|sir|king|prince|lord|duke|earl|baron|fath
 const FEMALE_PATTERNS = /\b(mrs\.?|ms\.?|miss|madam|lady|queen|princess|duchess|countess|baroness|mother|mom|mum|mommy|mummy|daughter|sister|aunt|niece|grandmother|granddaughter|wife|girlfriend|woman|girl|witch|sorceress|enchantress)\b/i;
 
 // =============================================================================
+// ROLE NOUN WHITELIST FOR DEFINITE DESCRIPTION RESOLUTION
+// =============================================================================
+
+/**
+ * Maps role nouns to their expected entity types.
+ * Used for resolving "the senator" → most salient PERSON in context.
+ */
+const ROLE_NOUNS: Map<string, EntityType> = new Map([
+  // PERSON roles - political
+  ['senator', 'PERSON'],
+  ['candidate', 'PERSON'],
+  ['president', 'PERSON'],
+  ['vice president', 'PERSON'],
+  ['governor', 'PERSON'],
+  ['mayor', 'PERSON'],
+  ['congressman', 'PERSON'],
+  ['congresswoman', 'PERSON'],
+  ['representative', 'PERSON'],
+  ['minister', 'PERSON'],
+  ['ambassador', 'PERSON'],
+  ['diplomat', 'PERSON'],
+  ['politician', 'PERSON'],
+  ['leader', 'PERSON'],
+  ['official', 'PERSON'],
+
+  // PERSON roles - professional
+  ['director', 'PERSON'],
+  ['manager', 'PERSON'],
+  ['executive', 'PERSON'],
+  ['ceo', 'PERSON'],
+  ['cfo', 'PERSON'],
+  ['cto', 'PERSON'],
+  ['chairman', 'PERSON'],
+  ['chairwoman', 'PERSON'],
+  ['founder', 'PERSON'],
+  ['entrepreneur', 'PERSON'],
+  ['lawyer', 'PERSON'],
+  ['attorney', 'PERSON'],
+  ['doctor', 'PERSON'],
+  ['physician', 'PERSON'],
+  ['professor', 'PERSON'],
+  ['teacher', 'PERSON'],
+  ['scientist', 'PERSON'],
+  ['researcher', 'PERSON'],
+  ['engineer', 'PERSON'],
+  ['journalist', 'PERSON'],
+  ['reporter', 'PERSON'],
+  ['author', 'PERSON'],
+  ['writer', 'PERSON'],
+  ['artist', 'PERSON'],
+  ['actor', 'PERSON'],
+  ['actress', 'PERSON'],
+  ['singer', 'PERSON'],
+  ['musician', 'PERSON'],
+  ['athlete', 'PERSON'],
+  ['player', 'PERSON'],
+  ['coach', 'PERSON'],
+
+  // PERSON roles - family/social
+  ['man', 'PERSON'],
+  ['woman', 'PERSON'],
+  ['boy', 'PERSON'],
+  ['girl', 'PERSON'],
+  ['child', 'PERSON'],
+  ['father', 'PERSON'],
+  ['mother', 'PERSON'],
+  ['son', 'PERSON'],
+  ['daughter', 'PERSON'],
+  ['husband', 'PERSON'],
+  ['wife', 'PERSON'],
+  ['brother', 'PERSON'],
+  ['sister', 'PERSON'],
+  ['uncle', 'PERSON'],
+  ['aunt', 'PERSON'],
+  ['grandfather', 'PERSON'],
+  ['grandmother', 'PERSON'],
+
+  // PERSON roles - fantasy/titles
+  ['king', 'PERSON'],
+  ['queen', 'PERSON'],
+  ['prince', 'PERSON'],
+  ['princess', 'PERSON'],
+  ['lord', 'PERSON'],
+  ['lady', 'PERSON'],
+  ['wizard', 'PERSON'],
+  ['witch', 'PERSON'],
+  ['knight', 'PERSON'],
+  ['warrior', 'PERSON'],
+  ['hero', 'PERSON'],
+  ['villain', 'PERSON'],
+
+  // ORG roles
+  ['company', 'ORG'],
+  ['corporation', 'ORG'],
+  ['firm', 'ORG'],
+  ['organization', 'ORG'],
+  ['agency', 'ORG'],
+  ['institution', 'ORG'],
+  ['university', 'ORG'],
+  ['college', 'ORG'],
+  ['school', 'ORG'],
+  ['hospital', 'ORG'],
+  ['bank', 'ORG'],
+  ['startup', 'ORG'],
+  ['business', 'ORG'],
+  ['enterprise', 'ORG'],
+  ['team', 'ORG'],
+  ['group', 'ORG'],
+  ['party', 'ORG'],
+  ['government', 'ORG'],
+  ['administration', 'ORG'],
+  ['department', 'ORG'],
+  ['ministry', 'ORG'],
+  ['commission', 'ORG'],
+  ['committee', 'ORG'],
+  ['board', 'ORG'],
+  ['council', 'ORG'],
+  ['association', 'ORG'],
+  ['foundation', 'ORG'],
+  ['charity', 'ORG'],
+  ['network', 'ORG'],
+
+  // PLACE roles
+  ['city', 'PLACE'],
+  ['town', 'PLACE'],
+  ['village', 'PLACE'],
+  ['country', 'PLACE'],
+  ['nation', 'PLACE'],
+  ['state', 'PLACE'],
+  ['province', 'PLACE'],
+  ['region', 'PLACE'],
+  ['district', 'PLACE'],
+  ['county', 'PLACE'],
+  ['capital', 'PLACE'],
+  ['island', 'PLACE'],
+  ['continent', 'PLACE'],
+  ['location', 'PLACE'],
+  ['place', 'PLACE'],
+  ['area', 'PLACE'],
+  ['territory', 'PLACE'],
+  ['kingdom', 'PLACE'],
+  ['empire', 'PLACE'],
+  ['realm', 'PLACE'],
+]);
+
+// =============================================================================
 // REFERENCE RESOLVER CLASS
 // =============================================================================
 
@@ -731,6 +877,173 @@ export class ReferenceResolver {
   }
 
   // =============================================================================
+  // DEFINITE DESCRIPTION RESOLUTION
+  // =============================================================================
+
+  /**
+   * Check if a phrase is a definite description (the + role noun)
+   * Returns the role noun if found, null otherwise
+   */
+  isDefiniteDescription(phrase: string): string | null {
+    const lower = phrase.toLowerCase().trim();
+
+    // Must start with "the "
+    if (!lower.startsWith('the ')) return null;
+
+    const rest = lower.slice(4).trim();
+
+    // Check against role noun whitelist
+    if (ROLE_NOUNS.has(rest)) return rest;
+
+    // Check for multi-word role nouns
+    for (const roleNoun of Array.from(ROLE_NOUNS.keys())) {
+      if (rest === roleNoun || rest.startsWith(roleNoun + ' ')) {
+        return roleNoun;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Get the expected entity type for a role noun
+   */
+  getRoleNounType(roleNoun: string): EntityType | null {
+    return ROLE_NOUNS.get(roleNoun.toLowerCase()) ?? null;
+  }
+
+  /**
+   * Resolve a definite description to an entity
+   *
+   * Pattern: "the + role noun" → resolve to most salient entity of compatible type
+   *
+   * Constraints:
+   * - Same entity type (PERSON, ORG, PLACE)
+   * - Highest salience score (most recent in discourse)
+   * - Appears within last N sentences
+   * - If multiple candidates exist with same salience → return UNRESOLVED (do not guess)
+   *
+   * @param phrase The definite description (e.g., "the senator", "the company")
+   * @param position The position in text where the description appears
+   * @param maxSentenceDistance Maximum number of sentences to look back (default: 5)
+   * @returns Resolved entity or null if unresolvable
+   */
+  resolveDefiniteDescription(
+    phrase: string,
+    position: number,
+    maxSentenceDistance: number = 5
+  ): ResolvedEntity | null {
+    const roleNoun = this.isDefiniteDescription(phrase);
+    if (!roleNoun) return null;
+
+    const expectedType = this.getRoleNounType(roleNoun);
+    if (!expectedType) return null;
+
+    // Get current sentence index
+    const currentSentenceIndex = this.getSentenceIndex(position);
+    if (currentSentenceIndex < 0) return null;
+
+    // Calculate the earliest sentence to consider
+    const earliestSentenceIndex = Math.max(0, currentSentenceIndex - maxSentenceDistance);
+    const earliestPosition = this.sentences[earliestSentenceIndex]?.start ?? 0;
+
+    // Find candidate entities within the window
+    const candidates: Array<{
+      entity: Entity;
+      span: EntitySpan;
+      salience: number;
+    }> = [];
+
+    for (const span of this.entitySpans) {
+      // Must be before the definite description
+      if (span.start >= position) continue;
+
+      // Must be within the sentence window
+      if (span.start < earliestPosition) continue;
+
+      const entity = this.entitiesById.get(span.entity_id);
+      if (!entity) continue;
+
+      // Type must match
+      if (entity.type !== expectedType) continue;
+
+      // Calculate salience based on recency (more recent = higher salience)
+      const distance = position - span.end;
+      const salience = 1.0 / (1.0 + distance / 100);
+
+      // Check if we already have this entity
+      const existingIdx = candidates.findIndex(c => c.entity.id === entity.id);
+      if (existingIdx >= 0) {
+        // Update if this mention is more recent
+        if (salience > candidates[existingIdx].salience) {
+          candidates[existingIdx] = { entity, span, salience };
+        }
+      } else {
+        candidates.push({ entity, span, salience });
+      }
+    }
+
+    if (candidates.length === 0) {
+      if (this.debug) {
+        console.log(`[ReferenceResolver] resolveDefiniteDescription: no candidates for "${phrase}" (type=${expectedType})`);
+      }
+      return null;
+    }
+
+    // Sort by salience (highest first)
+    candidates.sort((a, b) => b.salience - a.salience);
+
+    // If multiple candidates have very similar salience, return UNRESOLVED
+    if (candidates.length > 1) {
+      const topSalience = candidates[0].salience;
+      const secondSalience = candidates[1].salience;
+
+      // If salience difference is < 10%, consider them ambiguous
+      if (secondSalience / topSalience > 0.9) {
+        if (this.debug) {
+          console.log(`[ReferenceResolver] resolveDefiniteDescription: ambiguous candidates for "${phrase}"`);
+          console.log(`  Top: ${candidates[0].entity.canonical} (salience=${topSalience.toFixed(3)})`);
+          console.log(`  Second: ${candidates[1].entity.canonical} (salience=${secondSalience.toFixed(3)})`);
+        }
+        return null;
+      }
+    }
+
+    // Return the most salient candidate
+    const winner = candidates[0];
+
+    if (this.debug) {
+      console.log(`[ReferenceResolver] resolveDefiniteDescription: "${phrase}" → ${winner.entity.canonical}`);
+    }
+
+    return {
+      id: winner.entity.id,
+      canonical: winner.entity.canonical,
+      type: winner.entity.type,
+      confidence: Math.min(0.85, 0.6 + winner.salience * 0.3),
+      method: 'nominal',
+    };
+  }
+
+  /**
+   * Resolve a generic reference ("the" + role noun or title)
+   * This is the main entry point for nominal reference resolution.
+   */
+  resolveNominalReference(
+    phrase: string,
+    position: number
+  ): ResolvedEntity | null {
+    // Try definite description resolution first
+    const resolved = this.resolveDefiniteDescription(phrase, position);
+    if (resolved) return resolved;
+
+    // Future: Add title resolution (e.g., "President Biden" → the president)
+    // Future: Add appositive bridging
+
+    return null;
+  }
+
+  // =============================================================================
   // CONTEXT TRACKING
   // =============================================================================
 
@@ -845,7 +1158,7 @@ export class ReferenceResolver {
 
     if (this.debug) {
       let total = 0;
-      for (const entries of this.pronounResolutionMap.values()) {
+      for (const entries of Array.from(this.pronounResolutionMap.values())) {
         total += entries.length;
       }
       console.log(`[ReferenceResolver] Built pronoun map: ${total} resolutions across ${this.pronounResolutionMap.size} pronouns`);
