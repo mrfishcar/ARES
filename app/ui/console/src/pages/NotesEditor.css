@@ -1169,3 +1169,249 @@
     border-top-color: var(--ne-bg-primary);
   }
 }
+
+/* ============================================================================
+   FOLDERS SIDEBAR (iOS Notes Style)
+   ============================================================================ */
+
+.notes-editor__folders {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--ne-sidebar-width);
+  background: var(--ne-bg-primary);
+  z-index: calc(var(--ne-z-sidebar) + 1);
+  transform: translateX(-100%);
+  transition: transform var(--ne-motion-slide);
+  will-change: transform;
+  /* Border on right edge */
+  box-shadow: 1px 0 0 var(--ne-separator);
+}
+
+.notes-editor__folders--visible {
+  transform: translateX(0);
+}
+
+/* Notes list slides right when folders open */
+.notes-editor__sidebar--folders-open {
+  transform: translateX(100%);
+}
+
+/* Folders sidebar content */
+.folders-sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.folders-sidebar__header {
+  display: flex;
+  align-items: center;
+  padding: var(--ne-spacing-md);
+  border-bottom: 1px solid var(--ne-separator);
+  gap: var(--ne-spacing-sm);
+}
+
+.folders-sidebar__header h1 {
+  font-size: var(--ne-font-large-title);
+  font-weight: 700;
+  margin: 0;
+  flex: 1;
+  letter-spacing: -0.022em;
+}
+
+/* Back button - 44px touch target */
+.folders-sidebar__back-btn {
+  width: var(--ne-touch-target);
+  height: var(--ne-touch-target);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--ne-accent);
+  cursor: pointer;
+  border-radius: var(--ne-radius-sm);
+  margin-left: calc(var(--ne-spacing-sm) * -1);
+  transition:
+    background-color var(--ne-motion-hover),
+    transform var(--ne-motion-button);
+}
+
+.folders-sidebar__back-btn:hover {
+  background: var(--ne-bg-tertiary);
+}
+
+.folders-sidebar__back-btn:active {
+  transform: scale(0.92);
+}
+
+.folders-sidebar__back-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Folders list */
+.folders-sidebar__list {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--ne-spacing-sm) 0;
+}
+
+/* Individual folder item - 44px minimum touch target */
+.folders-sidebar__item {
+  display: flex;
+  align-items: center;
+  gap: var(--ne-spacing-sm);
+  width: 100%;
+  min-height: var(--ne-touch-target);
+  padding: var(--ne-spacing-sm) var(--ne-spacing-md);
+  background: none;
+  border: none;
+  text-align: left;
+  color: var(--ne-text-primary);
+  font-size: var(--ne-font-body);
+  cursor: pointer;
+  transition: background-color var(--ne-motion-hover);
+}
+
+.folders-sidebar__item:hover {
+  background: var(--ne-bg-tertiary);
+}
+
+.folders-sidebar__item:active {
+  background: var(--ne-bg-secondary);
+}
+
+.folders-sidebar__item--selected {
+  background: var(--ne-accent);
+  color: #000;
+}
+
+.folders-sidebar__item--selected:hover {
+  background: var(--ne-accent);
+}
+
+.folders-sidebar__item-icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ne-accent);
+}
+
+.folders-sidebar__item--selected .folders-sidebar__item-icon {
+  color: #000;
+}
+
+.folders-sidebar__item-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.folders-sidebar__item-name {
+  flex: 1;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.folders-sidebar__item-count {
+  flex-shrink: 0;
+  font-size: var(--ne-font-subhead);
+  color: var(--ne-text-secondary);
+  padding: 2px 8px;
+  background: var(--ne-bg-tertiary);
+  border-radius: 10px;
+}
+
+.folders-sidebar__item--selected .folders-sidebar__item-count {
+  background: rgba(0, 0, 0, 0.15);
+  color: #000;
+}
+
+.folders-sidebar__item-chevron {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: var(--ne-text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.folders-sidebar__item-chevron svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Notes list folders button (back to folders) */
+.notes-list__folders-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--ne-spacing-xs);
+  min-height: var(--ne-touch-target);
+  padding: var(--ne-spacing-sm);
+  background: none;
+  border: none;
+  color: var(--ne-accent);
+  font-size: var(--ne-font-body);
+  cursor: pointer;
+  margin-left: calc(var(--ne-spacing-sm) * -1);
+  transition:
+    transform var(--ne-motion-button),
+    opacity var(--ne-motion-fade);
+}
+
+.notes-list__folders-btn:active {
+  transform: scale(0.95);
+  opacity: 0.7;
+}
+
+.notes-list__folders-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Adjust header layout for folders button */
+.notes-list__header {
+  flex-wrap: nowrap;
+}
+
+.notes-list__header h1 {
+  flex: 1;
+  text-align: center;
+  font-size: var(--ne-font-title1);
+}
+
+/* Mobile: folders sidebar takes full width */
+@media (max-width: 767px) {
+  .notes-editor__folders {
+    width: 100%;
+  }
+}
+
+/* Desktop: folders sidebar visible alongside notes list */
+@media (min-width: 1024px) {
+  .notes-editor__folders {
+    position: relative;
+    transform: translateX(0);
+    width: 280px;
+    display: none; /* Hidden by default on desktop */
+    flex-shrink: 0;
+  }
+
+  .notes-editor__folders--visible {
+    display: flex;
+  }
+
+  /* Don't slide notes list on desktop */
+  .notes-editor__sidebar--folders-open {
+    transform: none;
+  }
+}

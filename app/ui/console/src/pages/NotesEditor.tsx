@@ -224,6 +224,16 @@ const Icons = {
       <path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
     </svg>
   ),
+  folderFilled: (
+    <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+      <path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
+    </svg>
+  ),
+  chevronRight: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M9 18l6-6-6-6" />
+    </svg>
+  ),
   note: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
       <path d="M9 12h6M9 16h6M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -425,6 +435,84 @@ function groupNotesBySection(notes: Note[]): NoteSection[] {
 }
 
 // ============================================================================
+// FOLDERS SIDEBAR COMPONENT (iOS Notes Style)
+// ============================================================================
+
+interface FoldersSidebarProps {
+  folders: Folder[];
+  notes: Note[];
+  selectedFolderId: string;
+  onSelectFolder: (folderId: string) => void;
+  onBack: () => void;
+}
+
+function FoldersSidebar({ folders, notes, selectedFolderId, onSelectFolder, onBack }: FoldersSidebarProps) {
+  // Count notes per folder
+  const noteCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const folder of folders) {
+      if (folder.id === 'all') {
+        counts[folder.id] = notes.length;
+      } else {
+        counts[folder.id] = notes.filter(n => n.folderId === folder.id).length;
+      }
+    }
+    return counts;
+  }, [folders, notes]);
+
+  // Get root folders (parentId === null or 'all')
+  const rootFolders = folders.filter(f => f.parentId === null);
+  const childFolders = (parentId: string) => folders.filter(f => f.parentId === parentId);
+
+  const renderFolder = (folder: Folder, depth: number = 0) => {
+    const children = childFolders(folder.id);
+    const isSelected = selectedFolderId === folder.id;
+    const count = noteCounts[folder.id] || 0;
+
+    return (
+      <div key={folder.id}>
+        <button
+          className={`folders-sidebar__item ${isSelected ? 'folders-sidebar__item--selected' : ''}`}
+          style={{ paddingLeft: `${16 + depth * 16}px` }}
+          onClick={() => {
+            triggerHaptic('selection');
+            onSelectFolder(folder.id);
+          }}
+        >
+          <span className="folders-sidebar__item-icon">
+            {isSelected ? Icons.folderFilled : Icons.folder}
+          </span>
+          <span className="folders-sidebar__item-name">{folder.name}</span>
+          <span className="folders-sidebar__item-count">{count}</span>
+          {children.length > 0 && (
+            <span className="folders-sidebar__item-chevron">{Icons.chevronRight}</span>
+          )}
+        </button>
+        {children.map(child => renderFolder(child, depth + 1))}
+      </div>
+    );
+  };
+
+  return (
+    <div className="folders-sidebar">
+      <div className="folders-sidebar__header">
+        <button
+          className="folders-sidebar__back-btn"
+          onClick={onBack}
+          aria-label="Close folders"
+        >
+          {Icons.chevronLeft}
+        </button>
+        <h1>Folders</h1>
+      </div>
+      <div className="folders-sidebar__list">
+        {rootFolders.map(folder => renderFolder(folder))}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
 // NOTES LIST COMPONENT
 // ============================================================================
 
@@ -434,6 +522,9 @@ interface NotesListProps {
   onSelect: (note: Note) => void;
   onCreateNote: () => void;
   onDelete: (noteId: string) => void;
+  selectedFolderId: string;
+  folderName: string;
+  onShowFolders: () => void;
 }
 
 // Individual note item with swipe-to-delete
@@ -554,7 +645,7 @@ function NoteItem({ note, isSelected, onSelect, onDelete }: NoteItemProps) {
   );
 }
 
-function NotesList({ notes, selectedId, onSelect, onCreateNote, onDelete }: NotesListProps) {
+function NotesList({ notes, selectedId, onSelect, onCreateNote, onDelete, selectedFolderId, folderName, onShowFolders }: NotesListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   // FIX #8: Debounced search to prevent jank with large lists
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
@@ -597,7 +688,18 @@ function NotesList({ notes, selectedId, onSelect, onCreateNote, onDelete }: Note
   return (
     <div className="notes-list">
       <div className="notes-list__header">
-        <h1>Notes</h1>
+        <button
+          className="notes-list__folders-btn"
+          onClick={() => {
+            triggerHaptic('selection');
+            onShowFolders();
+          }}
+          aria-label="Show folders"
+        >
+          {Icons.chevronLeft}
+          <span>Folders</span>
+        </button>
+        <h1>{folderName}</h1>
         {/* #14: Added aria-label for accessibility */}
         <button
           className="notes-list__new-btn"
@@ -1043,8 +1145,10 @@ export default function NotesEditor() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
+  const [selectedFolderId, setSelectedFolderId] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [showList, setShowList] = useState(true);
+  const [showFolders, setShowFolders] = useState(false);
   // #5: Added save status indicator
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
   // Keyboard state for toolbar positioning
@@ -1124,6 +1228,34 @@ export default function NotesEditor() {
 
   // Get selected note
   const selectedNote = notes.find(n => n.id === selectedNoteId) || null;
+
+  // Get selected folder
+  const selectedFolder = folders.find(f => f.id === selectedFolderId) || folders[0];
+  const folderName = selectedFolder?.name || 'Notes';
+
+  // Filter notes by selected folder
+  const filteredNotes = useMemo(() => {
+    if (selectedFolderId === 'all') {
+      return notes;
+    }
+    return notes.filter(n => n.folderId === selectedFolderId);
+  }, [notes, selectedFolderId]);
+
+  // Handle folder selection
+  const handleSelectFolder = useCallback((folderId: string) => {
+    setSelectedFolderId(folderId);
+    setShowFolders(false);
+  }, []);
+
+  // Show folders sidebar
+  const handleShowFolders = useCallback(() => {
+    setShowFolders(true);
+  }, []);
+
+  // Hide folders sidebar
+  const handleHideFolders = useCallback(() => {
+    setShowFolders(false);
+  }, []);
 
   // Handle content change
   const handleContentChange = useCallback((content: string) => {
@@ -1246,14 +1378,28 @@ export default function NotesEditor() {
 
   return (
     <div className="notes-editor">
-      {/* Notes List Sidebar */}
-      <aside className={`notes-editor__sidebar ${!showList ? 'notes-editor__sidebar--hidden' : ''}`}>
-        <NotesList
+      {/* Folders Sidebar */}
+      <aside className={`notes-editor__folders ${showFolders ? 'notes-editor__folders--visible' : ''}`}>
+        <FoldersSidebar
+          folders={folders}
           notes={notes}
+          selectedFolderId={selectedFolderId}
+          onSelectFolder={handleSelectFolder}
+          onBack={handleHideFolders}
+        />
+      </aside>
+
+      {/* Notes List Sidebar */}
+      <aside className={`notes-editor__sidebar ${!showList ? 'notes-editor__sidebar--hidden' : ''} ${showFolders ? 'notes-editor__sidebar--folders-open' : ''}`}>
+        <NotesList
+          notes={filteredNotes}
           selectedId={selectedNoteId}
           onSelect={handleSelectNote}
           onCreateNote={handleCreateNote}
           onDelete={handleRequestDelete}
+          selectedFolderId={selectedFolderId}
+          folderName={folderName}
+          onShowFolders={handleShowFolders}
         />
       </aside>
 
