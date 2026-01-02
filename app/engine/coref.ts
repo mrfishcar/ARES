@@ -352,8 +352,9 @@ function matchesGenderNumber(entity: Entity, gender: Gender, number: Number): bo
     return false; // Pronoun not compatible with entity (e.g., "he" → school)
   }
 
-  // Number check: only PERSON entities can be singular, ORGs are often plural
-  if (number === 'singular' && entity.type === 'ORG') {
+  // Number check: personal pronouns (he/she) should not refer to ORGs
+  // But neutral "it" CAN refer to a singular ORG: "TechCorp is great. It employs thousands."
+  if (number === 'singular' && entity.type === 'ORG' && gender !== 'neutral') {
     return false;
   }
 
