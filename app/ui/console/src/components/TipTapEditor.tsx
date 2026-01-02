@@ -89,7 +89,9 @@ function getDomain(url: string): string {
 function LinkPreviewPopup() {
   const [preview, setPreview] = useState<LinkPreviewData | null>(null);
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
+  const [copyFeedback, setCopyFeedback] = useState<'idle' | 'success' | 'error'>('idle');
   const timeoutRef = useRef<number | null>(null);
+  const feedbackTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     const handleMouseOver = (e: MouseEvent) => {
@@ -103,10 +105,28 @@ function LinkPreviewPopup() {
         // Delay showing preview
         timeoutRef.current = window.setTimeout(() => {
           const rect = link.getBoundingClientRect();
-          setPosition({
-            x: rect.left + rect.width / 2,
-            y: rect.bottom + 8,
-          });
+          const popupWidth = 280;
+          const popupHeight = 150; // Approximate height
+          const padding = 16;
+
+          // Calculate position with viewport bounds checking
+          let x = rect.left + rect.width / 2;
+          let y = rect.bottom + 8;
+
+          // Clamp X to keep popup within viewport
+          const minX = popupWidth / 2 + padding;
+          const maxX = window.innerWidth - popupWidth / 2 - padding;
+          x = Math.max(minX, Math.min(maxX, x));
+
+          // If popup would go below viewport, show it above the link instead
+          if (y + popupHeight > window.innerHeight - padding) {
+            y = rect.top - popupHeight - 8;
+          }
+
+          // If still off-screen at top, just clamp it
+          y = Math.max(padding, y);
+
+          setPosition({ x, y });
           setPreview({
             url,
             domain: getDomain(url),
@@ -151,8 +171,31 @@ function LinkPreviewPopup() {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
+      if (feedbackTimeoutRef.current) {
+        clearTimeout(feedbackTimeoutRef.current);
+      }
     };
   }, []);
+
+  // Handle copy to clipboard with feedback
+  const handleCopyLink = async () => {
+    if (!preview) return;
+
+    try {
+      await navigator.clipboard.writeText(preview.url);
+      setCopyFeedback('success');
+    } catch (err) {
+      console.error('Failed to copy link:', err);
+      setCopyFeedback('error');
+    }
+
+    // Reset feedback after 1.5 seconds
+    feedbackTimeoutRef.current = window.setTimeout(() => {
+      setCopyFeedback('idle');
+      setPreview(null);
+      setPosition(null);
+    }, 1500);
+  };
 
   if (!preview || !position) return null;
 
@@ -196,13 +239,12 @@ function LinkPreviewPopup() {
         </a>
         <button
           className="link-preview-popup__action"
-          onClick={() => {
-            navigator.clipboard.writeText(preview.url);
-            setPreview(null);
-            setPosition(null);
-          }}
+          onClick={handleCopyLink}
+          disabled={copyFeedback !== 'idle'}
         >
-          Copy Link
+          {copyFeedback === 'success' ? '✓ Copied!' :
+           copyFeedback === 'error' ? '✗ Failed' :
+           'Copy Link'}
         </button>
       </div>
     </div>,
@@ -215,6 +257,40 @@ function LinkPreviewPopup() {
 // ============================================================================
 
 /**
+ * Convert inline markdown formatting to HTML
+ * Handles: **bold**, _italic_, __underline__, ~~strikethrough~~, ==highlight==, `code`, [text](url)
+ */
+function processInlineMarkdown(text: string): string {
+  if (!text) return '';
+
+  let result = escapeHtml(text);
+
+  // Process in order of specificity (longer patterns first)
+  // Links: [text](url)
+  result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="ios-link" rel="noopener noreferrer" target="_blank">$1</a>');
+
+  // Highlight: ==text==
+  result = result.replace(/==([^=]+)==/g, '<mark>$1</mark>');
+
+  // Strikethrough: ~~text~~
+  result = result.replace(/~~([^~]+)~~/g, '<s>$1</s>');
+
+  // Underline: __text__ (must be before bold to avoid conflict)
+  result = result.replace(/__([^_]+)__/g, '<u>$1</u>');
+
+  // Bold: **text**
+  result = result.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+  // Italic: _text_
+  result = result.replace(/(?<![\\])_([^_]+)_/g, '<em>$1</em>');
+
+  // Inline code: `text`
+  result = result.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+  return result;
+}
+
+/**
  * Convert plain text (with markdown-like syntax) to HTML for TipTap
  */
 function textToHtml(text: string): string {
@@ -225,6 +301,8 @@ function textToHtml(text: string): string {
   let inTaskList = false;
   let inBulletList = false;
   let inOrderedList = false;
+  let inCodeBlock = false;
+  let codeBlockLines: string[] = [];
 
   const closeOpenLists = () => {
     if (inTaskList) {
@@ -242,6 +320,40 @@ function textToHtml(text: string): string {
   };
 
   for (const line of lines) {
+    // Handle code blocks
+    if (line.trim() === '```') {
+      if (inCodeBlock) {
+        // Close code block
+        htmlLines.push(`<pre><code>${escapeHtml(codeBlockLines.join('\n'))}</code></pre>`);
+        codeBlockLines = [];
+        inCodeBlock = false;
+      } else {
+        // Start code block
+        closeOpenLists();
+        inCodeBlock = true;
+      }
+      continue;
+    }
+
+    if (inCodeBlock) {
+      codeBlockLines.push(line);
+      continue;
+    }
+
+    // Check for horizontal rule
+    if (line.trim() === '---' || line.trim() === '***') {
+      closeOpenLists();
+      htmlLines.push('<hr>');
+      continue;
+    }
+
+    // Check for blockquote
+    if (line.startsWith('> ')) {
+      closeOpenLists();
+      htmlLines.push(`<blockquote><p>${processInlineMarkdown(line.slice(2))}</p></blockquote>`);
+      continue;
+    }
+
     // Check for task list items
     if (line.match(/^- \[[ x]\] /)) {
       // Close other list types if open
@@ -254,7 +366,7 @@ function textToHtml(text: string): string {
       }
       const isChecked = line.match(/^- \[x\] /i);
       const itemText = line.replace(/^- \[[ x]\] /, '');
-      htmlLines.push(`<li data-type="taskItem" data-checked="${isChecked ? 'true' : 'false'}"><p>${escapeHtml(itemText)}</p></li>`);
+      htmlLines.push(`<li data-type="taskItem" data-checked="${isChecked ? 'true' : 'false'}"><p>${processInlineMarkdown(itemText)}</p></li>`);
       continue;
     }
 
@@ -269,7 +381,7 @@ function textToHtml(text: string): string {
         inBulletList = true;
       }
       const itemText = line.slice(2);
-      htmlLines.push(`<li><p>${escapeHtml(itemText)}</p></li>`);
+      htmlLines.push(`<li><p>${processInlineMarkdown(itemText)}</p></li>`);
       continue;
     }
 
@@ -284,7 +396,7 @@ function textToHtml(text: string): string {
         inOrderedList = true;
       }
       const itemText = line.replace(/^\d+\. /, '');
-      htmlLines.push(`<li><p>${escapeHtml(itemText)}</p></li>`);
+      htmlLines.push(`<li><p>${processInlineMarkdown(itemText)}</p></li>`);
       continue;
     }
 
@@ -293,20 +405,26 @@ function textToHtml(text: string): string {
 
     // Check for headings
     if (line.startsWith('### ')) {
-      htmlLines.push(`<h3>${escapeHtml(line.slice(4))}</h3>`);
+      htmlLines.push(`<h3>${processInlineMarkdown(line.slice(4))}</h3>`);
       continue;
     }
     if (line.startsWith('## ')) {
-      htmlLines.push(`<h2>${escapeHtml(line.slice(3))}</h2>`);
+      htmlLines.push(`<h2>${processInlineMarkdown(line.slice(3))}</h2>`);
       continue;
     }
     if (line.startsWith('# ')) {
-      htmlLines.push(`<h1>${escapeHtml(line.slice(2))}</h1>`);
+      htmlLines.push(`<h1>${processInlineMarkdown(line.slice(2))}</h1>`);
       continue;
     }
 
     // Regular paragraph
-    htmlLines.push(`<p>${escapeHtml(line) || '<br>'}</p>`);
+    const processed = processInlineMarkdown(line);
+    htmlLines.push(`<p>${processed || '<br>'}</p>`);
+  }
+
+  // Close any remaining open code block
+  if (inCodeBlock && codeBlockLines.length > 0) {
+    htmlLines.push(`<pre><code>${escapeHtml(codeBlockLines.join('\n'))}</code></pre>`);
   }
 
   // Close any remaining open lists
@@ -317,12 +435,65 @@ function textToHtml(text: string): string {
 
 /**
  * Convert TipTap HTML back to plain text with markdown-like syntax
+ * NOTE: This conversion preserves inline formatting using HTML tags
  */
 function htmlToText(html: string): string {
   const temp = document.createElement('div');
   temp.innerHTML = html;
 
   const lines: string[] = [];
+
+  // Process inline formatting within text content
+  function processInlineFormatting(el: HTMLElement): string {
+    let result = '';
+
+    el.childNodes.forEach(node => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        result += node.textContent || '';
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        const childEl = node as HTMLElement;
+        const tag = childEl.tagName.toLowerCase();
+        const innerContent = processInlineFormatting(childEl);
+
+        // Preserve inline formatting with markers we can restore
+        switch (tag) {
+          case 'strong':
+          case 'b':
+            result += `**${innerContent}**`;
+            break;
+          case 'em':
+          case 'i':
+            result += `_${innerContent}_`;
+            break;
+          case 'u':
+            result += `__${innerContent}__`;
+            break;
+          case 's':
+          case 'strike':
+          case 'del':
+            result += `~~${innerContent}~~`;
+            break;
+          case 'mark':
+            result += `==${innerContent}==`;
+            break;
+          case 'a':
+            const href = childEl.getAttribute('href') || '';
+            result += `[${innerContent}](${href})`;
+            break;
+          case 'code':
+            result += `\`${innerContent}\``;
+            break;
+          case 'br':
+            result += '\n';
+            break;
+          default:
+            result += innerContent;
+        }
+      }
+    });
+
+    return result;
+  }
 
   function processNode(node: Node): void {
     if (node.nodeType === Node.TEXT_NODE) {
@@ -336,44 +507,55 @@ function htmlToText(html: string): string {
 
     switch (tagName) {
       case 'h1':
-        lines.push(`# ${el.textContent || ''}`);
+        lines.push(`# ${processInlineFormatting(el)}`);
         break;
       case 'h2':
-        lines.push(`## ${el.textContent || ''}`);
+        lines.push(`## ${processInlineFormatting(el)}`);
         break;
       case 'h3':
-        lines.push(`### ${el.textContent || ''}`);
+        lines.push(`### ${processInlineFormatting(el)}`);
         break;
       case 'p':
         // Check if inside a list item
         if (el.parentElement?.tagName.toLowerCase() === 'li') {
           return; // Will be handled by li
         }
-        lines.push(el.textContent || '');
+        lines.push(processInlineFormatting(el));
         break;
       case 'ul':
         if (el.getAttribute('data-type') === 'taskList') {
           // Task list
           el.querySelectorAll('li[data-type="taskItem"]').forEach(li => {
             const isChecked = li.getAttribute('data-checked') === 'true';
-            const text = li.textContent || '';
+            const text = processInlineFormatting(li as HTMLElement);
             lines.push(`- [${isChecked ? 'x' : ' '}] ${text}`);
           });
         } else {
           // Bullet list
           el.querySelectorAll(':scope > li').forEach(li => {
-            lines.push(`• ${li.textContent || ''}`);
+            lines.push(`• ${processInlineFormatting(li as HTMLElement)}`);
           });
         }
         break;
       case 'ol':
         let num = 1;
         el.querySelectorAll(':scope > li').forEach(li => {
-          lines.push(`${num++}. ${li.textContent || ''}`);
+          lines.push(`${num++}. ${processInlineFormatting(li as HTMLElement)}`);
         });
         break;
       case 'li':
         // Handled by parent ul/ol
+        break;
+      case 'blockquote':
+        lines.push(`> ${processInlineFormatting(el)}`);
+        break;
+      case 'pre':
+        lines.push('```');
+        lines.push(el.textContent || '');
+        lines.push('```');
+        break;
+      case 'hr':
+        lines.push('---');
         break;
       default:
         // Process children

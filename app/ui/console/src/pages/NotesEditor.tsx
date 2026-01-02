@@ -153,13 +153,21 @@ class StorageService {
     }
   }
 
-  static save<T>(key: string, value: T): boolean {
+  static save<T>(key: string, value: T): { success: boolean; error?: 'quota' | 'unknown' } {
     try {
       localStorage.setItem(key, JSON.stringify(value));
-      return true;
+      return { success: true };
     } catch (e) {
       console.error(`Failed to save ${key}:`, e);
-      return false;
+      // Check if it's a quota exceeded error
+      if (e instanceof DOMException && (
+        e.code === 22 || // Chrome/Safari quota exceeded
+        e.name === 'QuotaExceededError' ||
+        e.name === 'NS_ERROR_DOM_QUOTA_REACHED' // Firefox
+      )) {
+        return { success: false, error: 'quota' };
+      }
+      return { success: false, error: 'unknown' };
     }
   }
 
@@ -173,12 +181,12 @@ class StorageService {
     }
   }
 
-  static async saveNotes(notes: Note[]): Promise<boolean> {
+  static async saveNotes(notes: Note[]): Promise<{ success: boolean; error?: 'quota' | 'unknown' }> {
     try {
       return this.save(STORAGE_KEYS.NOTES, notes);
     } catch (e) {
       console.error('Failed to save notes:', e);
-      return false;
+      return { success: false, error: 'unknown' };
     }
   }
 
@@ -600,6 +608,7 @@ interface NotesListProps {
   selectedFolderId: string;
   folderName: string;
   onShowFolders: () => void;
+  tags: Tag[];
 }
 
 // Individual note item with swipe-to-delete and drag-to-reorder
@@ -614,9 +623,10 @@ interface NoteItemProps {
   onDragStart: (noteId: string, index: number) => void;
   onDragOver: (index: number) => void;
   onDragEnd: () => void;
+  tags: Tag[];
 }
 
-function NoteItem({ note, index, isSelected, onSelect, onDelete, isDragging, isDropTarget, onDragStart, onDragOver, onDragEnd }: NoteItemProps) {
+function NoteItem({ note, index, isSelected, onSelect, onDelete, isDragging, isDropTarget, onDragStart, onDragOver, onDragEnd, tags }: NoteItemProps) {
   const itemRef = useRef<HTMLDivElement>(null);
   const [swipeX, setSwipeX] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
@@ -803,11 +813,18 @@ function NoteItem({ note, index, isSelected, onSelect, onDelete, isDragging, isD
         </div>
         {note.tags && note.tags.length > 0 && (
           <div className="notes-list__item-tags">
-            {note.tags.slice(0, 3).map(tagId => (
-              <span key={tagId} className="notes-list__item-tag">
-                {tagId}
-              </span>
-            ))}
+            {note.tags.slice(0, 3).map(tagId => {
+              const tag = tags.find(t => t.id === tagId);
+              return (
+                <span
+                  key={tagId}
+                  className="notes-list__item-tag"
+                  style={tag?.color ? { backgroundColor: `${tag.color}20`, color: tag.color } : undefined}
+                >
+                  {tag?.name || tagId}
+                </span>
+              );
+            })}
             {note.tags.length > 3 && (
               <span className="notes-list__item-tag notes-list__item-tag--more">
                 +{note.tags.length - 3}
@@ -820,7 +837,7 @@ function NoteItem({ note, index, isSelected, onSelect, onDelete, isDragging, isD
   );
 }
 
-function NotesList({ notes, selectedId, onSelect, onCreateNote, onDelete, onReorder, selectedFolderId, folderName, onShowFolders }: NotesListProps) {
+function NotesList({ notes, selectedId, onSelect, onCreateNote, onDelete, onReorder, selectedFolderId, folderName, onShowFolders, tags }: NotesListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   // FIX #8: Debounced search to prevent jank with large lists
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
@@ -961,17 +978,27 @@ function NotesList({ notes, selectedId, onSelect, onCreateNote, onDelete, onReor
                     onDragStart={handleDragStart}
                     onDragOver={handleDragOver}
                     onDragEnd={handleDragEnd}
+                    tags={tags}
                   />
                 );
               })}
             </div>
           ));
         })()}
+        {/* Search with no results */}
         {filteredNotes.length === 0 && searchQuery && (
           <div className="notes-list__empty">
             <p>No results for "{searchQuery}"</p>
           </div>
         )}
+        {/* Folder has no notes (but app has notes elsewhere) */}
+        {filteredNotes.length === 0 && !searchQuery && notes.length > 0 && (
+          <div className="notes-list__empty">
+            <p>No notes in this folder</p>
+            <button onClick={onCreateNote}>Create a note</button>
+          </div>
+        )}
+        {/* App has no notes at all */}
         {notes.length === 0 && (
           <div className="notes-list__empty">
             <p>No notes yet</p>
@@ -1367,6 +1394,8 @@ export default function NotesEditor() {
   const [showFolders, setShowFolders] = useState(false);
   // #5: Added save status indicator
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
+  // Storage error state for user feedback
+  const [storageError, setStorageError] = useState<'quota' | 'unknown' | null>(null);
   // Keyboard state for toolbar positioning
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   // Delete confirmation action sheet
@@ -1421,6 +1450,7 @@ export default function NotesEditor() {
 
     // Mark as unsaved when notes change
     setSaveStatus('unsaved');
+    setStorageError(null); // Clear previous errors
 
     // Clear existing timeout
     if (saveTimeoutRef.current) {
@@ -1430,8 +1460,14 @@ export default function NotesEditor() {
     // Save after 500ms of inactivity
     saveTimeoutRef.current = window.setTimeout(async () => {
       setSaveStatus('saving');
-      const success = await StorageService.saveNotes(notes);
-      setSaveStatus(success ? 'saved' : 'unsaved');
+      const result = await StorageService.saveNotes(notes);
+      if (result.success) {
+        setSaveStatus('saved');
+        setStorageError(null);
+      } else {
+        setSaveStatus('unsaved');
+        setStorageError(result.error || 'unknown');
+      }
     }, 500);
 
     // Cleanup
@@ -1511,9 +1547,17 @@ export default function NotesEditor() {
 
   // Create new note
   const handleCreateNote = useCallback(() => {
+    // Determine folder for new note:
+    // - If viewing a smart folder (has smartFilter), use default 'notes' folder
+    // - If viewing 'all' folder, use default 'notes' folder
+    // - Otherwise, use current folder
+    const targetFolderId = (selectedFolder?.smartFilter || selectedFolderId === 'all')
+      ? 'notes'
+      : selectedFolderId;
+
     const newNote: Note = {
       id: generateId(),
-      folderId: 'notes',
+      folderId: targetFolderId,
       title: 'New Note',
       content: 'New Note\n\n',
       createdAt: Date.now(),
@@ -1528,7 +1572,7 @@ export default function NotesEditor() {
 
     // #15: Use proper focus timing
     focusEditor();
-  }, [focusEditor]);
+  }, [focusEditor, selectedFolderId, selectedFolder]);
 
   // #1: Fixed delete race condition - removed setTimeout inside state setter
   // Now uses a separate effect to handle selection after delete
@@ -1577,15 +1621,40 @@ export default function NotesEditor() {
   }, [selectedNoteId]);
 
   // Reorder notes (drag-to-reorder)
+  // Note: Reordering is only meaningful within unpinned notes since pinned notes
+  // are always shown first. This function preserves the pinned/unpinned grouping.
   const handleReorderNote = useCallback((noteId: string, newIndex: number) => {
     setNotes(prev => {
-      const noteIndex = prev.findIndex(n => n.id === noteId);
-      if (noteIndex === -1 || noteIndex === newIndex) return prev;
+      const note = prev.find(n => n.id === noteId);
+      if (!note) return prev;
 
-      const newNotes = [...prev];
-      const [removed] = newNotes.splice(noteIndex, 1);
-      newNotes.splice(newIndex, 0, removed);
-      return newNotes;
+      // Get pinned and unpinned groups
+      const pinned = prev.filter(n => n.isPinned);
+      const unpinned = prev.filter(n => !n.isPinned);
+
+      if (note.isPinned) {
+        // Reorder within pinned notes only
+        const pinnedIndex = pinned.findIndex(n => n.id === noteId);
+        const targetIndex = Math.min(Math.max(0, newIndex), pinned.length - 1);
+        if (pinnedIndex === -1 || pinnedIndex === targetIndex) return prev;
+
+        const newPinned = [...pinned];
+        const [removed] = newPinned.splice(pinnedIndex, 1);
+        newPinned.splice(targetIndex, 0, removed);
+        return [...newPinned, ...unpinned];
+      } else {
+        // Reorder within unpinned notes only
+        const unpinnedIndex = unpinned.findIndex(n => n.id === noteId);
+        // Adjust target index to be relative to unpinned array
+        const adjustedIndex = Math.max(0, newIndex - pinned.length);
+        const targetIndex = Math.min(Math.max(0, adjustedIndex), unpinned.length - 1);
+        if (unpinnedIndex === -1 || unpinnedIndex === targetIndex) return prev;
+
+        const newUnpinned = [...unpinned];
+        const [removed] = newUnpinned.splice(unpinnedIndex, 1);
+        newUnpinned.splice(targetIndex, 0, removed);
+        return [...pinned, ...newUnpinned];
+      }
     });
   }, []);
 
@@ -1614,6 +1683,18 @@ export default function NotesEditor() {
 
   return (
     <div className="notes-editor">
+      {/* Storage Error Banner */}
+      {storageError && (
+        <div className="notes-editor__storage-error" role="alert">
+          <span>
+            {storageError === 'quota'
+              ? '⚠️ Storage full. Delete some notes to save changes.'
+              : '⚠️ Could not save. Check your browser settings.'}
+          </span>
+          <button onClick={() => setStorageError(null)} aria-label="Dismiss">×</button>
+        </div>
+      )}
+
       {/* Folders Sidebar */}
       <aside className={`notes-editor__folders ${showFolders ? 'notes-editor__folders--visible' : ''}`}>
         <FoldersSidebar
@@ -1637,6 +1718,7 @@ export default function NotesEditor() {
           selectedFolderId={selectedFolderId}
           folderName={folderName}
           onShowFolders={handleShowFolders}
+          tags={tags}
         />
       </aside>
 
