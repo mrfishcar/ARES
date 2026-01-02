@@ -78,12 +78,19 @@
   /* -------------------------------------------------------------------------
      SPACING - 8-point grid system
      ------------------------------------------------------------------------- */
+  --ne-spacing-2xs: 2px;
   --ne-spacing-xs: 4px;
   --ne-spacing-sm: 8px;
   --ne-spacing-md: 16px;
   --ne-spacing-lg: 24px;
   --ne-spacing-xl: 32px;
   --ne-spacing-2xl: 40px;
+
+  /* -------------------------------------------------------------------------
+     TYPOGRAPHY - Additional sizes
+     ------------------------------------------------------------------------- */
+  --ne-font-caption: 11px;
+  --ne-font-footnote: 12px;
 
   /* -------------------------------------------------------------------------
      TOUCH & LAYOUT
@@ -102,7 +109,9 @@
   --ne-z-toolbar: 10;
   --ne-z-sidebar: 20;
   --ne-z-modal: 30;
-  --ne-z-toast: 40;
+  --ne-z-popup: 40;
+  --ne-z-action-sheet: 50;
+  --ne-z-toast: 60;
 }
 
 /* Light mode overrides */
@@ -153,6 +162,16 @@
   /* Text rendering */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Remove default tap highlight on all interactive elements */
+.notes-editor button,
+.notes-editor a,
+.notes-editor [role="button"],
+.notes-editor input,
+.notes-editor textarea,
+.notes-editor select {
+  -webkit-tap-highlight-color: transparent;
 }
 
 .notes-editor--loading {
@@ -352,6 +371,17 @@
   background: var(--ne-accent);
 }
 
+/* Keyboard focus indicator */
+.notes-list__item:focus-visible {
+  outline: 2px solid var(--ne-accent);
+  outline-offset: -2px;
+  background: var(--ne-bg-tertiary);
+}
+
+.notes-list__item--selected:focus-visible {
+  outline-color: #000;
+}
+
 .notes-list__item-header {
   display: flex;
   align-items: center;
@@ -477,25 +507,38 @@
 
 .notes-list__search-clear {
   flex-shrink: 0;
-  width: 20px;
-  height: 20px;
-  padding: 0;
-  background: var(--ne-text-tertiary);
+  /* Visual size 20px, touch target 44px */
+  width: var(--ne-touch-target);
+  height: var(--ne-touch-target);
+  margin: calc((var(--ne-touch-target) - 20px) / -2);
+  padding: calc((var(--ne-touch-target) - 20px) / 2);
+  background: transparent;
   border: none;
-  border-radius: 50%;
-  color: var(--ne-bg-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: transform var(--ne-motion-button);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.notes-list__search-clear-icon {
+  width: 20px;
+  height: 20px;
+  background: var(--ne-text-tertiary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ne-bg-secondary);
 }
 
 .notes-list__search-clear:active {
   transform: scale(0.9);
 }
 
-.notes-list__search-clear svg {
+.notes-list__search-clear svg,
+.notes-list__search-clear-icon svg {
   width: 12px;
   height: 12px;
 }
@@ -553,7 +596,7 @@
 }
 
 .notes-list__item-delete span {
-  font-size: 12px;
+  font-size: var(--ne-font-footnote);
   font-weight: 500;
 }
 
@@ -587,7 +630,7 @@
 .editor-toolbar__group {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--ne-spacing-2xs);
 }
 
 .editor-toolbar__divider {
@@ -917,17 +960,24 @@
     left: 0;
     right: 0;
     bottom: env(keyboard-inset-bottom, 0);
-    z-index: 100;
-    /* Frosted glass effect */
-    background: rgba(28, 28, 30, 0.85);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    z-index: var(--ne-z-popup);
+    /* Solid fallback for browsers without backdrop-filter */
+    background: rgb(28, 28, 30);
     border-top: 1px solid var(--ne-separator);
     border-bottom: none;
     /* Safe area padding */
     padding-bottom: env(safe-area-inset-bottom, 0);
     /* Spring animation for appearing */
     animation: slideUp var(--ne-duration-normal) var(--ne-spring-slide);
+  }
+
+  /* Frosted glass effect when supported */
+  @supports (backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px)) {
+    .editor-toolbar--keyboard-accessory {
+      background: rgba(28, 28, 30, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
   }
 
   @keyframes slideUp {
@@ -941,10 +991,16 @@
     }
   }
 
-  /* Light mode frosted glass */
+  /* Light mode keyboard accessory */
   @media (prefers-color-scheme: light) {
     .editor-toolbar--keyboard-accessory {
-      background: rgba(242, 242, 247, 0.85);
+      background: rgb(242, 242, 247);
+    }
+
+    @supports (backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px)) {
+      .editor-toolbar--keyboard-accessory {
+        background: rgba(242, 242, 247, 0.85);
+      }
     }
   }
 }
@@ -957,7 +1013,7 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.4);
-  z-index: 1000;
+  z-index: var(--ne-z-action-sheet);
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -1027,6 +1083,11 @@
   background: var(--ne-bg-tertiary);
 }
 
+.action-sheet__action:focus-visible {
+  outline: 2px solid var(--ne-accent-secondary);
+  outline-offset: -2px;
+}
+
 .action-sheet__action--destructive {
   color: var(--ne-danger);
 }
@@ -1063,11 +1124,11 @@
 
 .selection-popup {
   position: fixed;
-  z-index: 1000;
+  z-index: var(--ne-z-popup);
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding: 6px 8px;
+  gap: var(--ne-spacing-2xs);
+  padding: 6px var(--ne-spacing-sm);
   background: var(--ne-bg-tertiary);
   border-radius: var(--ne-radius-md);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
@@ -1103,8 +1164,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  /* 44px touch target per Apple HIG */
+  width: var(--ne-touch-target);
+  height: var(--ne-touch-target);
+  /* Negative margin to maintain visual density */
+  margin: -4px -2px;
   background: none;
   border: none;
   border-radius: var(--ne-radius-sm);
@@ -1112,6 +1176,7 @@
   font-size: 16px;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   transition:
     background-color var(--ne-motion-hover),
     transform var(--ne-motion-button);
@@ -1124,6 +1189,11 @@
 .selection-popup__btn:active {
   transform: scale(0.9);
   background: var(--ne-bg-secondary);
+}
+
+.selection-popup__btn:focus-visible {
+  outline: 2px solid var(--ne-accent);
+  outline-offset: 1px;
 }
 
 .selection-popup__btn strong {
@@ -1294,6 +1364,16 @@
   background: var(--ne-accent);
 }
 
+/* Keyboard focus indicator */
+.folders-sidebar__item:focus-visible {
+  outline: 2px solid var(--ne-accent);
+  outline-offset: -2px;
+}
+
+.folders-sidebar__item--selected:focus-visible {
+  outline-color: #000;
+}
+
 .folders-sidebar__item-icon {
   flex-shrink: 0;
   width: 24px;
@@ -1400,14 +1480,22 @@
 @media (min-width: 1024px) {
   .notes-editor__folders {
     position: relative;
-    transform: translateX(0);
     width: 280px;
-    display: none; /* Hidden by default on desktop */
     flex-shrink: 0;
+    /* Use opacity/visibility instead of display for smooth transitions */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-20px);
+    transition:
+      opacity var(--ne-motion-fade),
+      visibility var(--ne-motion-fade),
+      transform var(--ne-motion-slide);
   }
 
   .notes-editor__folders--visible {
-    display: flex;
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
   }
 
   /* Don't slide notes list on desktop */
@@ -1464,8 +1552,19 @@
 
 /* Drop target item styling */
 .notes-list__item--drop-target {
-  background: rgba(255, 214, 10, 0.1);
+  background: rgba(255, 214, 10, 0.15);
   border-top: 2px solid var(--ne-accent);
+}
+
+/* Light mode adjustments for drag states */
+@media (prefers-color-scheme: light) {
+  .notes-list__item--dragging {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .notes-list__item--drop-target {
+    background: rgba(255, 214, 10, 0.25);
+  }
 }
 
 /* Reduced motion */
@@ -1491,12 +1590,12 @@
 }
 
 .notes-list__item-tag {
-  font-size: 11px;
+  font-size: var(--ne-font-caption);
   font-weight: 500;
-  padding: 2px 8px;
+  padding: var(--ne-spacing-2xs) var(--ne-spacing-sm);
   background: var(--ne-bg-tertiary);
   color: var(--ne-text-secondary);
-  border-radius: 10px;
+  border-radius: var(--ne-radius-md);
   text-transform: capitalize;
 }
 
