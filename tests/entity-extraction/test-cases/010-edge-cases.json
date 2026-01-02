@@ -53,7 +53,7 @@
         "type": "PERSON",
         "text": "Alice",
         "context": "person",
-        "confidence": 0.90
+        "confidence": 0.85
       },
       {
         "type": "PERSON",

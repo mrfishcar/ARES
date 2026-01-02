@@ -95,6 +95,18 @@ const FRAGMENT_ENDINGS = new Set(['this', 'that', 'it', 'anything', 'something',
 // Single-token garbage
 const SINGLE_TOKEN_GARBAGE = new Set(['mr', 'mrs', 'ms', 'the', 'a', 'an', 'and', 'or', 'but', 'if', 'then', 'else']);
 
+// Well-known organization acronyms that should be allowed with determiners (e.g., "the FBI", "the WHO", "the UN")
+// These are commonly referenced with "the" and are NOT common nouns like "a PDF"
+const ORG_ACRONYMS = new Set([
+  'FBI', 'CIA', 'NSA', 'UN', 'EU', 'UK', 'US', 'USA', 'NATO', 'WHO', 'WTO', 'IMF', 'NHS',
+  'IRS', 'SEC', 'FCC', 'EPA', 'CDC', 'NIH', 'FEMA', 'DEA', 'ATF', 'DOJ', 'DOD', 'DOS',
+  'NYPD', 'LAPD', 'MIT', 'UCLA', 'NASA', 'ESA', 'CERN', 'OPEC', 'ASEAN', 'NAFTA',
+  'FIFA', 'UEFA', 'NBA', 'NFL', 'NHL', 'MLB', 'NCAA', 'IOC', 'USPS', 'UPS',
+  'BBC', 'CNN', 'CBS', 'NBC', 'ABC', 'PBS', 'NPR', 'AP', 'AFP', 'NYT', 'WSJ',
+  'IBM', 'HP', 'AT', 'GM', 'GE', 'BMW', 'VW', 'KFC', 'ING', 'UBS',
+  'YMCA', 'YWCA', 'NAACP', 'ACLU', 'NRA', 'WWF', 'PETA', 'UNESCO', 'UNICEF'
+]);
+
 // Sentence-initial capitalized words that are NOT names
 const SENTENCE_INITIAL_NON_NAMES = new Set([
   'when', 'whatever', 'wherever', 'however', 'therefore', 'meanwhile', 'dead', 'hearing',
@@ -426,7 +438,8 @@ export function classifyMention(
   }
 
   // Determiner + acronym/common noun ("a PDF", "the pdf")
-  if (precedingDeterminer && /^[A-Z0-9]{2,}$/.test(raw)) {
+  // Exception: Known organization acronyms that are commonly used with determiners ("the FBI", "the WHO")
+  if (precedingDeterminer && /^[A-Z0-9]{2,}$/.test(raw) && !ORG_ACRONYMS.has(raw)) {
     return { mentionClass: 'NON_ENTITY', reason: 'determiner-acronym' };
   }
 

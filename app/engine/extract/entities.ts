@@ -587,7 +587,24 @@ const FANTASY_WHITELIST = new Map<string, EntityType>([
   ['Rebecca', 'PERSON'],
 
   // Publications and works
-  ['Quibbler', 'WORK']
+  ['Quibbler', 'WORK'],
+
+  // Real-world organizations (often misclassified as GPE/PLACE)
+  ['CERN', 'ORG'],
+  ['NASA', 'ORG'],
+  ['ESA', 'ORG'],
+  ['WHO', 'ORG'],
+  ['UN', 'ORG'],
+  ['EU', 'ORG'],
+  ['NATO', 'ORG'],
+  ['FBI', 'ORG'],
+  ['CIA', 'ORG'],
+  ['NSA', 'ORG'],
+  ['MIT', 'ORG'],
+  ['Stanford', 'ORG'],
+  ['Harvard', 'ORG'],
+  ['UCLA', 'ORG'],
+  ['USPS', 'ORG']
 ]);
 
 /**
@@ -1350,8 +1367,10 @@ function depBasedEntities(sent: ParsedSentence): Array<{ text: string; type: Ent
     const tok = tokens[i];
 
     // Skip stopwords, pronouns, months (case-insensitive)
+    // Exception: Uppercase acronyms like "WHO" should not be skipped even if "Who" is in STOP
     const tokLower = tok.text.toLowerCase();
-    if (STOP.has(tok.text) || PRON.has(tok.text) || MONTH.has(tok.text)) {
+    const isUppercaseAcronym = /^[A-Z]{2,}$/.test(tok.text);
+    if (!isUppercaseAcronym && (STOP.has(tok.text) || PRON.has(tok.text) || MONTH.has(tok.text))) {
       continue;
     }
 
@@ -2072,8 +2091,11 @@ function fallbackNames(text: string): Array<{ text: string; type: EntityType; st
     const tokens = value.split(/\s+/).filter(Boolean);
     const significantTokens = tokens.filter(tok => /^[A-Z]|^[IVXLCDM]+$/.test(tok));
 
-    const isForbidden = (token: string) =>
-      STOP.has(token) || PRON.has(token) || MONTH.has(token);
+    const isForbidden = (token: string) => {
+      // Uppercase acronyms like "WHO" should not be considered forbidden even if in STOP
+      if (/^[A-Z]{2,}$/.test(token)) return false;
+      return STOP.has(token) || PRON.has(token) || MONTH.has(token);
+    };
     const hasForbidden = significantTokens.some(isForbidden);
     const allForbidden = significantTokens.length > 0 && significantTokens.every(isForbidden);
 
@@ -3572,11 +3594,30 @@ const containsDescriptor = (value: string) => {
   const parts = value.toLowerCase().split(/\s+/).filter(Boolean);
   return parts.some(part => descriptorTokens.has(part));
 };
-const cleanlinessScore = (value: string) => (/^[A-Za-z][A-Za-z\s'’.-]*$/.test(value) ? 1 : 0);
+const cleanlinessScore = (value: string) => (/^[A-Za-z][A-Za-z\s''.-]*$/.test(value) ? 1 : 0);
+
+/**
+ * Check if a string looks like a well-known acronym (2-5 uppercase letters, possibly with numbers)
+ * Examples: FBI, CIA, WHO, UN, NATO, MIT, UCLA
+ */
+const isRecognizedAcronym = (value: string): boolean => {
+  // Must be 2-5 characters, all uppercase letters (or uppercase + digits like M16)
+  return /^[A-Z][A-Z0-9]{1,4}$/.test(value);
+};
 
 const chooseCanonical = (names: Set<string>): string => {
   const candidates = Array.from(names);
   return candidates.sort((a, b) => {
+    // First: prefer recognized acronyms over expansions (for orgs like FBI, WHO, UN)
+    // If one candidate is an acronym and another is a multi-word expansion, prefer acronym
+    const aIsAcronym = isRecognizedAcronym(a);
+    const bIsAcronym = isRecognizedAcronym(b);
+    if (aIsAcronym !== bIsAcronym) {
+      // If one is acronym and the other is much longer (likely expansion), prefer acronym
+      if (aIsAcronym && b.length > a.length * 3) return -1;  // a wins (acronym)
+      if (bIsAcronym && a.length > b.length * 3) return 1;   // b wins (acronym)
+    }
+
     const aClean = cleanlinessScore(a);
     const bClean = cleanlinessScore(b);
     if (aClean !== bClean) return bClean - aClean;
@@ -4100,7 +4141,10 @@ const mergedEntries = Array.from(mergedMap.values());
     if (entry.entity.type === 'DATE' && process.env.L4_DEBUG === "1") {
       console.log(`[FINAL-FILTER] Checking DATE: "${entry.entity.canonical}"`);
     }
-    if (STOP.has(entry.entity.canonical)) {
+    // Check STOP list, but preserve uppercase acronyms that are org names
+    // e.g., "Who" should be filtered but "WHO" (World Health Organization) should not
+    const isUppercaseAcronym = /^[A-Z]{2,}$/.test(entry.entity.canonical);
+    if (STOP.has(entry.entity.canonical) && !isUppercaseAcronym) {
       if (entry.entity.type === 'DATE' && process.env.L4_DEBUG === "1") {
         console.log(`[FINAL-FILTER] DATE "${entry.entity.canonical}" rejected by STOP list`);
       }
