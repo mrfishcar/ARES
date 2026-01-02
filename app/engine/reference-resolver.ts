@@ -431,6 +431,212 @@ const TITLE_PREFIXES: Map<string, string> = new Map([
 ]);
 
 // =============================================================================
+// NICKNAME DICTIONARY FOR ALIAS RESOLUTION
+// =============================================================================
+
+/**
+ * Maps common nicknames to their formal names.
+ * Used for resolving "Jim" to "James", "Bill" to "William", etc.
+ * Format: nickname → [formal names] (some nicknames can map to multiple formals)
+ */
+const NICKNAME_TO_FORMAL: Map<string, string[]> = new Map([
+  // Male nicknames
+  ['jim', ['james']],
+  ['jimmy', ['james']],
+  ['jamie', ['james']],
+  ['bill', ['william']],
+  ['billy', ['william']],
+  ['will', ['william']],
+  ['willie', ['william']],
+  ['liam', ['william']],
+  ['bob', ['robert']],
+  ['bobby', ['robert']],
+  ['rob', ['robert']],
+  ['robby', ['robert']],
+  ['mike', ['michael']],
+  ['mikey', ['michael']],
+  ['mick', ['michael']],
+  ['mickey', ['michael']],
+  ['dave', ['david']],
+  ['davey', ['david']],
+  ['dan', ['daniel']],
+  ['danny', ['daniel']],
+  ['joe', ['joseph']],
+  ['joey', ['joseph']],
+  ['jack', ['john', 'jackson']],
+  ['johnny', ['john', 'jonathan']],
+  ['jon', ['jonathan', 'john']],
+  ['tom', ['thomas']],
+  ['tommy', ['thomas']],
+  ['chris', ['christopher', 'christian']],
+  ['topher', ['christopher']],
+  ['matt', ['matthew']],
+  ['matty', ['matthew']],
+  ['nick', ['nicholas']],
+  ['nicky', ['nicholas']],
+  ['dick', ['richard']],
+  ['rick', ['richard', 'frederick', 'eric']],
+  ['ricky', ['richard']],
+  ['rich', ['richard']],
+  ['richie', ['richard']],
+  ['tony', ['anthony']],
+  ['andy', ['andrew', 'anderson']],
+  ['drew', ['andrew']],
+  ['ed', ['edward', 'edgar', 'edmund', 'edwin']],
+  ['eddie', ['edward', 'edgar']],
+  ['ted', ['theodore', 'edward']],
+  ['teddy', ['theodore', 'edward']],
+  ['theo', ['theodore']],
+  ['al', ['alan', 'albert', 'alexander', 'alfred']],
+  ['alex', ['alexander', 'alexandra', 'alexis']],
+  ['xander', ['alexander']],
+  ['lex', ['alexander', 'alexis']],
+  ['ben', ['benjamin']],
+  ['benny', ['benjamin']],
+  ['chuck', ['charles']],
+  ['charlie', ['charles', 'charlotte']],
+  ['chas', ['charles']],
+  ['hank', ['henry']],
+  ['harry', ['henry', 'harrison', 'harold']],
+  ['hal', ['henry', 'harold']],
+  ['gene', ['eugene']],
+  ['gus', ['august', 'augustine', 'angus', 'gustav']],
+  ['pete', ['peter']],
+  ['sam', ['samuel', 'samantha']],
+  ['sammy', ['samuel', 'samantha']],
+  ['steve', ['steven', 'stephen']],
+  ['stevie', ['steven', 'stephen']],
+  ['frank', ['francis', 'franklin']],
+  ['frankie', ['francis', 'franklin']],
+  ['fran', ['francis', 'frances', 'francesca']],
+  ['greg', ['gregory']],
+  ['jeff', ['jeffrey', 'geoffrey']],
+  ['geoff', ['geoffrey', 'jeffrey']],
+  ['jerry', ['gerald', 'jeremy', 'jerome']],
+  ['larry', ['lawrence', 'laurence']],
+  ['len', ['leonard']],
+  ['lenny', ['leonard']],
+  ['leo', ['leonard', 'leon', 'leopold']],
+  ['max', ['maxwell', 'maximilian']],
+  ['nate', ['nathan', 'nathaniel']],
+  ['nat', ['nathan', 'nathaniel', 'natalie']],
+  ['pat', ['patrick', 'patricia']],
+  ['paddy', ['patrick']],
+  ['phil', ['philip', 'phillip']],
+  ['ray', ['raymond']],
+  ['ron', ['ronald']],
+  ['ronnie', ['ronald', 'veronica']],
+  ['stu', ['stuart', 'stewart']],
+  ['tim', ['timothy']],
+  ['timmy', ['timothy']],
+  ['vince', ['vincent']],
+  ['vinny', ['vincent']],
+  ['wally', ['walter', 'wallace']],
+  ['walt', ['walter']],
+  ['zach', ['zachary', 'zachariah']],
+  ['zack', ['zachary', 'zachariah']],
+
+  // Female nicknames
+  ['kate', ['katherine', 'catherine', 'kathryn']],
+  ['katie', ['katherine', 'catherine', 'kathryn']],
+  ['kathy', ['katherine', 'catherine', 'kathryn']],
+  ['cathy', ['catherine', 'katherine']],
+  ['beth', ['elizabeth', 'bethany']],
+  ['betty', ['elizabeth']],
+  ['liz', ['elizabeth']],
+  ['lizzy', ['elizabeth']],
+  ['eliza', ['elizabeth']],
+  ['libby', ['elizabeth']],
+  ['sue', ['susan', 'suzanne']],
+  ['suzy', ['susan', 'suzanne']],
+  ['susie', ['susan', 'suzanne']],
+  ['meg', ['margaret', 'megan']],
+  ['maggie', ['margaret']],
+  ['peggy', ['margaret']],
+  ['madge', ['margaret']],
+  ['peg', ['margaret']],
+  ['jen', ['jennifer', 'jenny']],
+  ['jenny', ['jennifer']],
+  ['jenn', ['jennifer']],
+  ['abby', ['abigail']],
+  ['debbie', ['deborah', 'debra']],
+  ['deb', ['deborah', 'debra']],
+  ['becky', ['rebecca']],
+  ['becca', ['rebecca']],
+  ['vicky', ['victoria']],
+  ['vickie', ['victoria']],
+  ['vic', ['victoria', 'victor']],
+  ['pam', ['pamela']],
+  ['barb', ['barbara']],
+  ['barbie', ['barbara']],
+  ['nancy', ['ann', 'anne']],
+  ['annie', ['ann', 'anne', 'anna']],
+  ['mary', ['marian', 'marie', 'maria']],
+  ['sally', ['sarah', 'sara']],
+  ['sadie', ['sarah', 'sara']],
+  ['sandy', ['sandra', 'alexandra', 'alexander']],
+  ['mandy', ['amanda']],
+  ['candy', ['candace', 'candice']],
+  ['chris', ['christine', 'christina', 'christopher']],
+  ['tina', ['christina', 'christine', 'valentina', 'martina']],
+  ['nina', ['antonina']],
+  ['nicky', ['nicole', 'nicola', 'nicholas']],
+  ['vero', ['veronica']],
+  ['nell', ['eleanor', 'helen', 'ellen']],
+  ['nelly', ['eleanor', 'helen', 'ellen']],
+  ['ellie', ['eleanor', 'ellen', 'elizabeth']],
+  ['ella', ['eleanor', 'gabriella', 'isabella']],
+  ['bella', ['isabella', 'arabella', 'annabella']],
+  ['izzy', ['isabel', 'isabella', 'isadora']],
+  ['gabby', ['gabriella', 'gabrielle']],
+  ['gabi', ['gabriella', 'gabrielle']],
+  ['maddy', ['madison', 'madeline', 'madeleine']],
+  ['madi', ['madison']],
+  ['jess', ['jessica', 'jessie']],
+  ['jessie', ['jessica', 'jesse']],
+  ['jo', ['josephine', 'joanna', 'jolene']],
+  ['josie', ['josephine']],
+  ['joanie', ['joan', 'joanna']],
+  ['val', ['valerie', 'valentine']],
+  ['gwen', ['gwendolyn', 'gwyneth']],
+  ['wendy', ['gwendolyn']],
+  ['trish', ['patricia', 'tricia']],
+  ['tricia', ['patricia']],
+  ['patty', ['patricia', 'patience']],
+
+  // Gender-neutral / unisex
+  ['alex', ['alexander', 'alexandra', 'alexis']],
+  ['sam', ['samuel', 'samantha']],
+  ['chris', ['christopher', 'christine', 'christina', 'christian']],
+  ['pat', ['patrick', 'patricia']],
+  ['jo', ['joseph', 'josephine', 'joanna']],
+  ['terry', ['terence', 'teresa', 'theresa']],
+  ['lee', ['lee', 'leah', 'leigh']],
+  ['robin', ['robert', 'robin']],
+  ['jackie', ['jack', 'jacqueline']],
+  ['freddie', ['frederick', 'fredericka', 'winifred']],
+  ['gerry', ['gerald', 'geraldine']],
+  ['nicky', ['nicholas', 'nicole']],
+]);
+
+/**
+ * Reverse mapping: formal name → [nicknames]
+ * Built from NICKNAME_TO_FORMAL
+ */
+const FORMAL_TO_NICKNAMES: Map<string, string[]> = new Map();
+
+// Build the reverse mapping
+for (const [nickname, formals] of Array.from(NICKNAME_TO_FORMAL.entries())) {
+  for (const formal of formals) {
+    const existing = FORMAL_TO_NICKNAMES.get(formal) || [];
+    if (!existing.includes(nickname)) {
+      existing.push(nickname);
+    }
+    FORMAL_TO_NICKNAMES.set(formal, existing);
+  }
+}
+
+// =============================================================================
 // REFERENCE RESOLVER CLASS
 // =============================================================================
 
@@ -1157,6 +1363,163 @@ export class ReferenceResolver {
       confidence: 0.90, // High confidence for explicit title bridging
       method: 'title',
     };
+  }
+
+  // =============================================================================
+  // NICKNAME & ALIAS RESOLUTION
+  // =============================================================================
+
+  /**
+   * Get possible formal names for a nickname.
+   * Example: "Jim" → ["James"]
+   */
+  getFormalNames(nickname: string): string[] {
+    return NICKNAME_TO_FORMAL.get(nickname.toLowerCase()) || [];
+  }
+
+  /**
+   * Get possible nicknames for a formal name.
+   * Example: "James" → ["jim", "jimmy", "jamie"]
+   */
+  getNicknames(formalName: string): string[] {
+    return FORMAL_TO_NICKNAMES.get(formalName.toLowerCase()) || [];
+  }
+
+  /**
+   * Check if two first names could refer to the same person based on nickname matching.
+   * Returns true if the names are the same, or one is a nickname of the other.
+   *
+   * Examples:
+   * - "James" and "Jim" → true (Jim is nickname of James)
+   * - "Jim" and "Jimmy" → true (both nicknames of James)
+   * - "James" and "John" → false (unrelated)
+   */
+  areNamesEquivalent(name1: string, name2: string): boolean {
+    const n1 = name1.toLowerCase();
+    const n2 = name2.toLowerCase();
+
+    // Exact match
+    if (n1 === n2) return true;
+
+    // Check if n1 is a nickname of n2's formal form
+    const n1Formals = this.getFormalNames(n1);
+    if (n1Formals.includes(n2)) return true;
+
+    // Check if n2 is a nickname of n1's formal form
+    const n2Formals = this.getFormalNames(n2);
+    if (n2Formals.includes(n1)) return true;
+
+    // Check if both are nicknames of the same formal name
+    for (const formal1 of n1Formals) {
+      for (const formal2 of n2Formals) {
+        if (formal1 === formal2) return true;
+      }
+    }
+
+    // Check if n1 is a formal name and n2 is one of its nicknames
+    const n1Nicknames = this.getNicknames(n1);
+    if (n1Nicknames.includes(n2)) return true;
+
+    // Check if n2 is a formal name and n1 is one of its nicknames
+    const n2Nicknames = this.getNicknames(n2);
+    if (n2Nicknames.includes(n1)) return true;
+
+    return false;
+  }
+
+  /**
+   * Check if two full names could refer to the same person.
+   * Compares first names using nickname matching, and last names using exact match.
+   *
+   * Examples:
+   * - "James Smith" and "Jim Smith" → true
+   * - "James Smith" and "James Jones" → false (different last name)
+   * - "James Smith" and "John Smith" → false (different first name)
+   */
+  areFullNamesEquivalent(fullName1: string, fullName2: string): boolean {
+    const parts1 = fullName1.trim().split(/\s+/);
+    const parts2 = fullName2.trim().split(/\s+/);
+
+    // Must have at least first and last name
+    if (parts1.length < 2 || parts2.length < 2) {
+      // Single name - just check if they're equivalent
+      return this.areNamesEquivalent(parts1[0], parts2[0]);
+    }
+
+    // Compare last names (must match exactly)
+    const lastName1 = parts1[parts1.length - 1].toLowerCase();
+    const lastName2 = parts2[parts2.length - 1].toLowerCase();
+    if (lastName1 !== lastName2) return false;
+
+    // Compare first names (allow nickname equivalence)
+    const firstName1 = parts1[0];
+    const firstName2 = parts2[0];
+    return this.areNamesEquivalent(firstName1, firstName2);
+  }
+
+  /**
+   * Find an entity that could match a name based on nickname resolution.
+   * Returns the matching entity or null if no match is found.
+   *
+   * Example: If entities contains "James Smith" and we search for "Jim Smith",
+   * this will return the "James Smith" entity.
+   */
+  findEntityByNameWithNickname(name: string): Entity | null {
+    for (const entity of this.entities) {
+      if (entity.type !== 'PERSON') continue;
+
+      // Check canonical name
+      if (this.areFullNamesEquivalent(entity.canonical, name)) {
+        return entity;
+      }
+
+      // Check aliases
+      if (entity.aliases) {
+        for (const alias of entity.aliases) {
+          if (this.areFullNamesEquivalent(alias, name)) {
+            return entity;
+          }
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Generate possible alias variants for a name using nicknames.
+   * Returns an array of name variants.
+   *
+   * Example: "James Smith" → ["Jim Smith", "Jimmy Smith", "Jamie Smith"]
+   */
+  generateNicknameVariants(fullName: string): string[] {
+    const parts = fullName.trim().split(/\s+/);
+    if (parts.length < 2) return [];
+
+    const firstName = parts[0];
+    const restOfName = parts.slice(1).join(' ');
+
+    const variants: string[] = [];
+
+    // Get nicknames for the first name
+    const nicknames = this.getNicknames(firstName.toLowerCase());
+    for (const nickname of nicknames) {
+      // Capitalize the nickname
+      const capitalizedNickname = nickname.charAt(0).toUpperCase() + nickname.slice(1);
+      variants.push(`${capitalizedNickname} ${restOfName}`);
+    }
+
+    // Also get formal names if the first name is a nickname
+    const formals = this.getFormalNames(firstName.toLowerCase());
+    for (const formal of formals) {
+      // Capitalize the formal name
+      const capitalizedFormal = formal.charAt(0).toUpperCase() + formal.slice(1);
+      if (capitalizedFormal.toLowerCase() !== firstName.toLowerCase()) {
+        variants.push(`${capitalizedFormal} ${restOfName}`);
+      }
+    }
+
+    return variants;
   }
 
   /**
