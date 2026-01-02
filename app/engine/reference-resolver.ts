@@ -340,6 +340,97 @@ const ROLE_NOUNS: Map<string, EntityType> = new Map([
 ]);
 
 // =============================================================================
+// TITLE PREFIXES FOR TITLE-APPOSITIVE BRIDGING
+// =============================================================================
+
+/**
+ * Maps title prefixes to their normalized role nouns.
+ * Used for detecting "President Biden" and bridging to "the president".
+ */
+const TITLE_PREFIXES: Map<string, string> = new Map([
+  // Political titles
+  ['president', 'president'],
+  ['vice president', 'vice president'],
+  ['senator', 'senator'],
+  ['sen.', 'senator'],
+  ['representative', 'representative'],
+  ['rep.', 'representative'],
+  ['congressman', 'congressman'],
+  ['congresswoman', 'congresswoman'],
+  ['governor', 'governor'],
+  ['gov.', 'governor'],
+  ['mayor', 'mayor'],
+  ['ambassador', 'ambassador'],
+  ['minister', 'minister'],
+  ['prime minister', 'prime minister'],
+  ['secretary', 'secretary'],
+  ['chancellor', 'chancellor'],
+
+  // Business titles
+  ['ceo', 'ceo'],
+  ['cfo', 'cfo'],
+  ['cto', 'cto'],
+  ['coo', 'coo'],
+  ['chairman', 'chairman'],
+  ['chairwoman', 'chairwoman'],
+  ['director', 'director'],
+  ['manager', 'manager'],
+  ['founder', 'founder'],
+  ['co-founder', 'founder'],
+
+  // Academic/Professional titles
+  ['professor', 'professor'],
+  ['prof.', 'professor'],
+  ['doctor', 'doctor'],
+  ['dr.', 'doctor'],
+  ['judge', 'judge'],
+  ['attorney', 'attorney'],
+  ['general', 'general'],
+  ['gen.', 'general'],
+  ['colonel', 'colonel'],
+  ['col.', 'colonel'],
+  ['captain', 'captain'],
+  ['capt.', 'captain'],
+  ['lieutenant', 'lieutenant'],
+  ['lt.', 'lieutenant'],
+  ['admiral', 'admiral'],
+  ['adm.', 'admiral'],
+  ['chief', 'chief'],
+  ['coach', 'coach'],
+  ['detective', 'detective'],
+  ['officer', 'officer'],
+
+  // Religious titles
+  ['pope', 'pope'],
+  ['cardinal', 'cardinal'],
+  ['bishop', 'bishop'],
+  ['pastor', 'pastor'],
+  ['reverend', 'reverend'],
+  ['rev.', 'reverend'],
+  ['father', 'father'],
+  ['fr.', 'father'],
+  ['sister', 'sister'],
+  ['rabbi', 'rabbi'],
+  ['imam', 'imam'],
+
+  // Nobility/Royalty titles
+  ['king', 'king'],
+  ['queen', 'queen'],
+  ['prince', 'prince'],
+  ['princess', 'princess'],
+  ['duke', 'duke'],
+  ['duchess', 'duchess'],
+  ['lord', 'lord'],
+  ['lady', 'lady'],
+  ['sir', 'knight'],
+  ['dame', 'dame'],
+  ['count', 'count'],
+  ['countess', 'countess'],
+  ['baron', 'baron'],
+  ['baroness', 'baroness'],
+]);
+
+// =============================================================================
 // REFERENCE RESOLVER CLASS
 // =============================================================================
 
@@ -382,6 +473,9 @@ export class ReferenceResolver {
   private lastNamedPlace: Entity | null = null;
   private recentPersons: Entity[] = [];
   private readonly MAX_RECENT_PERSONS = 6;
+
+  // Title-to-entity bridging (e.g., "President Biden" → entity for later "the president" resolution)
+  private titleToEntity: Map<string, { entityId: string; position: number }> = new Map();
 
   // Paragraph tracking
   private paragraphBoundaries: number[] = [];
@@ -436,6 +530,7 @@ export class ReferenceResolver {
     this.lastNamedOrg = null;
     this.lastNamedPlace = null;
     this.recentPersons = [];
+    this.titleToEntity.clear();
   }
 
   // =============================================================================
@@ -912,6 +1007,122 @@ export class ReferenceResolver {
     return ROLE_NOUNS.get(roleNoun.toLowerCase()) ?? null;
   }
 
+  // =============================================================================
+  // TITLE-APPOSITIVE BRIDGING
+  // =============================================================================
+
+  /**
+   * Detect if a phrase starts with a title prefix.
+   * Returns the normalized title if found, null otherwise.
+   *
+   * Examples:
+   * - "President Biden" → "president"
+   * - "Sen. Warren" → "senator"
+   * - "Dr. Smith" → "doctor"
+   * - "CEO Musk" → "ceo"
+   */
+  detectTitlePrefix(phrase: string): string | null {
+    const lower = phrase.toLowerCase().trim();
+
+    // Check each title prefix
+    for (const [prefix, normalizedTitle] of Array.from(TITLE_PREFIXES.entries())) {
+      // Match "Title Name" pattern (title followed by space)
+      if (lower.startsWith(prefix + ' ')) {
+        return normalizedTitle;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Register a title-entity association.
+   * Called when we encounter "President Biden" to register that
+   * "the president" should resolve to Biden.
+   *
+   * @param title The title (e.g., "president", "senator")
+   * @param entityId The entity ID to associate
+   * @param position The position where this association was made
+   */
+  registerTitleAssociation(title: string, entityId: string, position: number): void {
+    const normalizedTitle = title.toLowerCase();
+
+    // Check if this title already has an association
+    const existing = this.titleToEntity.get(normalizedTitle);
+
+    // Only update if new position is after existing (recency wins)
+    if (!existing || position > existing.position) {
+      this.titleToEntity.set(normalizedTitle, { entityId, position });
+
+      if (this.debug) {
+        const entity = this.entitiesById.get(entityId);
+        console.log(`[ReferenceResolver] Registered title: "${normalizedTitle}" → ${entity?.canonical || entityId}`);
+      }
+    }
+  }
+
+  /**
+   * Process an entity span to detect and register title associations.
+   * Call this when processing entities to build the title-entity map.
+   *
+   * @param entityId The entity ID
+   * @param spanText The text of the entity span (e.g., "President Biden")
+   * @param position The position in the text
+   */
+  processEntityForTitleBridging(entityId: string, spanText: string, position: number): void {
+    const title = this.detectTitlePrefix(spanText);
+    if (title) {
+      this.registerTitleAssociation(title, entityId, position);
+    }
+  }
+
+  /**
+   * Build title associations from entity spans.
+   * Call this after initialization to scan for title-prefixed entities.
+   */
+  buildTitleAssociations(): void {
+    for (const span of this.entitySpans) {
+      // Get the text for this span
+      const spanText = span.text || this.text.slice(span.start, span.end);
+      this.processEntityForTitleBridging(span.entity_id, spanText, span.start);
+    }
+
+    if (this.debug && this.titleToEntity.size > 0) {
+      console.log(`[ReferenceResolver] Built ${this.titleToEntity.size} title associations`);
+    }
+  }
+
+  /**
+   * Resolve a title-based definite description using bridging.
+   * Checks if we have a registered title → entity association.
+   *
+   * @param roleNoun The role noun from the definite description (e.g., "president")
+   * @param position The position where the description appears
+   * @returns Resolved entity or null
+   */
+  resolveViaTitle(roleNoun: string, position: number): ResolvedEntity | null {
+    const association = this.titleToEntity.get(roleNoun.toLowerCase());
+    if (!association) return null;
+
+    // Only resolve if the title was registered BEFORE this position
+    if (association.position >= position) return null;
+
+    const entity = this.entitiesById.get(association.entityId);
+    if (!entity) return null;
+
+    if (this.debug) {
+      console.log(`[ReferenceResolver] Title bridging: "the ${roleNoun}" → ${entity.canonical}`);
+    }
+
+    return {
+      id: entity.id,
+      canonical: entity.canonical,
+      type: entity.type,
+      confidence: 0.90, // High confidence for explicit title bridging
+      method: 'title',
+    };
+  }
+
   /**
    * Resolve a definite description to an entity
    *
@@ -935,6 +1146,10 @@ export class ReferenceResolver {
   ): ResolvedEntity | null {
     const roleNoun = this.isDefiniteDescription(phrase);
     if (!roleNoun) return null;
+
+    // First, try title bridging (e.g., "President Biden" → "the president")
+    const titleResolution = this.resolveViaTitle(roleNoun, position);
+    if (titleResolution) return titleResolution;
 
     const expectedType = this.getRoleNounType(roleNoun);
     if (!expectedType) return null;
@@ -1240,6 +1455,7 @@ export function createReferenceResolver(
   const resolver = new ReferenceResolver();
   resolver.initialize(entities, entitySpans, sentences, text);
   resolver.learnGenderFromContext();
+  resolver.buildTitleAssociations();
   return resolver;
 }
 
