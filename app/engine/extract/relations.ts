@@ -1691,7 +1691,7 @@ function extractDepRelations(
             subjSpan
           );
           if (mapped) {
-            trackEntityMention(resolved, mapped.id);
+            trackEntityMention(resolved, mapped.entity.id);
             subjectRefs.push(mapped);
           }
         }

@@ -830,12 +830,23 @@ export function chooseBestCanonical(names: string[]): string {
     // Check for verbs anywhere in the name (names shouldn't contain verbs)
     const hasVerb = lowerTokens.some(t => VERBS_BLOCKLIST_FOR_ENTITY_NAMES.has(t));
 
+    // Check for "The X" pattern (titles/descriptors, not proper names)
+    // e.g., "The king", "The wizard", "The Heir" - these should NOT be canonical names
+    const isThePlusNoun = lowerTokens[0] === 'the' && tokens.length === 2;
+
+    // Check for proper noun (single or multi-word capitalized name without "The")
+    const isProperNoun = tokens.length >= 1 &&
+      lowerTokens[0] !== 'the' &&
+      tokens.every(t => /^[A-Z][a-z]*$/.test(t));
+
     let score = 0;
-    if (hasSpace) score += 2;
+    if (hasSpace && !isThePlusNoun) score += 2; // Multi-word bonus only if not "The X"
     if (hasUpper) score += 1;
     if (hasGenericHead) score -= 3;
     if (hasCollectiveNoun) score -= 10; // Strong penalty for collective nouns
     if (hasVerb) score -= 10; // Strong penalty for verbs
+    if (isThePlusNoun) score -= 5; // Strong penalty for "The king" patterns
+    if (isProperNoun) score += 3; // Bonus for proper nouns like "Aragorn", "Harry Potter"
     score += Math.min(tokens.length, 4) * 0.1; // slight preference for longer names
     return score;
   };

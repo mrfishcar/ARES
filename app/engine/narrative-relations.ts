@@ -2440,6 +2440,7 @@ export function extractNarrativeRelations(
               link.method === 'nominal_match' ? 'nominal' as const :
               link.method === 'quote_attr' ? 'quote' as const :
               link.method === 'coordination' ? 'coordination' as const :
+              link.method === 'nickname' ? 'nickname' as const :
               'pronoun' as const,
     })));
   }

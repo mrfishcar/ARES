@@ -46,7 +46,7 @@ export interface Mention {
   start: number;
   end: number;
   sentence_index: number;
-  type: 'pronoun' | 'title' | 'nominal' | 'name' | 'quote';
+  type: 'pronoun' | 'title' | 'nominal' | 'name' | 'quote' | 'nickname';
 }
 
 export interface EntitySpan {
@@ -60,7 +60,7 @@ export interface CorefLink {
   mention: Mention;
   entity_id: string;
   confidence: number;
-  method: 'pronoun' | 'title' | 'nominal' | 'quote' | 'coordination' | 'appositive';
+  method: 'pronoun' | 'title' | 'nominal' | 'quote' | 'coordination' | 'appositive' | 'nickname';
 }
 
 export interface CorefLinks {

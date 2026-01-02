@@ -219,6 +219,8 @@ export type Predicate =
   | 'rival_of'  // X rival_of Y
   | 'mentor_of'  // X mentor_of Y
   | 'owned'  // X owned Y
+  | 'studied'  // X studied Y
+  | 'led'  // X led Y
 
 // Evidence Source
 export interface Evidence {
@@ -518,6 +520,8 @@ export const GUARD: Record<Predicate, { subj: EntityType[]; obj: EntityType[] }>
   countered_by: { subj: ['ABILITY','SPELL','POWER','TECHNIQUE'], obj: ['ABILITY','SPELL','POWER','TECHNIQUE'] }, // X countered by Y
   enhances: { subj: ['ABILITY','SPELL','POWER','ARTIFACT','TECHNOLOGY'], obj: ['ABILITY','POWER','SKILL'] }, // X enhances Y
   cast_by: { subj: ['SPELL','MAGIC'], obj: ['PERSON','CREATURE','DEITY'] }, // X cast by Y
+  studied: { subj: ['PERSON'], obj: ['PERSON', 'ITEM', 'WORK', 'SKILL'] }, // X studied Y
+  led: { subj: ['PERSON', 'ORG'], obj: ['PERSON', 'ORG', 'PLACE'] }, // X led Y
 };
 
 // Inverse predicates

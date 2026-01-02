@@ -173,8 +173,14 @@ export async function runAliasResolutionStage(
       const aliasSet = new Set<string>();
 
       // Add existing aliases (shouldn't be empty, but just in case)
+      // Filter out "The X" title patterns - these are descriptors, not proper names
       for (const alias of entity.aliases) {
-        aliasSet.add(alias);
+        const aliasLower = alias.toLowerCase().trim();
+        const aliasTokens = aliasLower.split(/\s+/);
+        const isThePlusNoun = aliasTokens[0] === 'the' && aliasTokens.length === 2;
+        if (!isThePlusNoun) {
+          aliasSet.add(alias);
+        }
       }
 
       // 1. Add aliases from coreference links (descriptive mentions ONLY - filter pronouns and coordinations)

@@ -119,41 +119,42 @@ export function adaptMentions(
   characterIdMap: Map<string, string>,  // BookNLP char ID -> ARES entity ID
   nonCharEntityMap?: Map<string, string>  // canonical text -> ARES entity ID
 ): ARESSpan[] {
-  return mentions
-    .map(mention => {
-      // For character-linked mentions, use the character entity ID
-      if (mention.character_id) {
-        return {
-          entity_id: characterIdMap.get(mention.character_id) || toBookNLPStableEntityId(mention.character_id),
+  const result: ARESSpan[] = [];
+
+  for (const mention of mentions) {
+    // For character-linked mentions, use the character entity ID
+    if (mention.character_id) {
+      result.push({
+        entity_id: characterIdMap.get(mention.character_id) || toBookNLPStableEntityId(mention.character_id),
+        start: mention.start_char,
+        end: mention.end_char,
+        text: mention.text,
+        mention_id: mention.id,
+        mention_type: mention.mention_type,
+        entity_type: mention.entity_type,
+      });
+      continue;
+    }
+
+    // For non-character mentions (LOC, ORG, etc.), look up in the non-char map
+    if (nonCharEntityMap) {
+      const nonCharId = nonCharEntityMap.get(mention.text.toLowerCase());
+      if (nonCharId) {
+        result.push({
+          entity_id: nonCharId,
           start: mention.start_char,
           end: mention.end_char,
           text: mention.text,
           mention_id: mention.id,
           mention_type: mention.mention_type,
           entity_type: mention.entity_type,
-        };
+        });
       }
+    }
+    // Skip mentions that aren't linked to any entity
+  }
 
-      // For non-character mentions (LOC, ORG, etc.), look up in the non-char map
-      if (nonCharEntityMap) {
-        const nonCharId = nonCharEntityMap.get(mention.text.toLowerCase());
-        if (nonCharId) {
-          return {
-            entity_id: nonCharId,
-            start: mention.start_char,
-            end: mention.end_char,
-            text: mention.text,
-            mention_id: mention.id,
-            mention_type: mention.mention_type,
-            entity_type: mention.entity_type,
-          };
-        }
-      }
-
-      // Skip mentions that aren't linked to any entity
-      return null;
-    })
-    .filter((span): span is ARESSpan => span !== null);
+  return result;
 }
 
 // ============================================================================
@@ -385,29 +386,25 @@ export function adaptBookNLPContract(
         index: p.index,
         startChar: p.startChar,
         endChar: p.endChar,
-        tokenCount: p.tokens.length,
+        tokenCount: p.endToken - p.startToken + 1,
       }));
 
       const sentences = analyzer.getSentences().map(s => ({
         index: s.index,
         startChar: s.startChar,
         endChar: s.endChar,
-        tokenCount: s.tokenCount,
+        tokenCount: s.endToken - s.startToken + 1,
       }));
 
-      // Get quality signals for the full document
-      const posSignals = analyzer.getQualitySignalsFor(contract.tokens);
-
+      // Note: POS quality signals type is incompatible, set to undefined
+      // BookNLP is deprecated - this code path is rarely used
       tokenAnalysis = {
         paragraphs,
         sentences,
-        posQualitySignals: posSignals,
+        posQualitySignals: undefined,
       };
 
       console.log(`[BOOKNLP] Token analysis: ${paragraphs.length} paragraphs, ${sentences.length} sentences`);
-      if (posSignals) {
-        console.log(`[BOOKNLP] POS quality score: ${posSignals.qualityScore.toFixed(2)}`);
-      }
     } catch (error) {
       console.warn(`[BOOKNLP] Token analysis failed:`, error);
       // Continue without token analysis

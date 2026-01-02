@@ -284,6 +284,32 @@ export async function runEntityExtractionStage(
           }
         }
 
+        // IMPORTANT: Prefer proper nouns over descriptors like "The king", "The wizard"
+        // If original canonical is a proper noun and derived is a "The X" descriptor, keep original
+        const isOriginalProperNoun = entityOriginalCanonical &&
+          /^[A-Z][a-z]/.test(entityOriginalCanonical) &&
+          !entityOriginalCanonical.toLowerCase().startsWith('the ');
+        const isDerivedDescriptor = canonicalText.toLowerCase().startsWith('the ') &&
+          canonicalText.split(/\s+/).length === 2;
+
+        // DEBUG: Log when we're considering proper noun vs descriptor
+        if (canonicalText.toLowerCase().includes('king') || canonicalText.toLowerCase().includes('wizard') ||
+            entityOriginalCanonical?.toLowerCase().includes('aragorn') || entityOriginalCanonical?.toLowerCase().includes('dumbledore')) {
+          console.log(`[DEBUG] Entity canonical check:
+            entity.canonical: "${entity.canonical}"
+            entityOriginalCanonical: "${entityOriginalCanonical}"
+            canonicalRaw: "${canonicalRaw}"
+            canonicalText: "${canonicalText}"
+            isOriginalProperNoun: ${isOriginalProperNoun}
+            isDerivedDescriptor: ${isDerivedDescriptor}`);
+        }
+
+        if (isOriginalProperNoun && isDerivedDescriptor) {
+          // Keep the proper noun as canonical, add descriptor as alias
+          console.log(`[DEBUG] Keeping proper noun "${entityOriginalCanonical}" over descriptor "${canonicalText}"`);
+          canonicalText = entityOriginalCanonical;
+        }
+
         // Check if we've seen this entity before (by type + canonical)
         const entityKey = `${entity.type}::${canonicalText.toLowerCase()}`;
         let existingEntity = entityMap.get(entityKey);
