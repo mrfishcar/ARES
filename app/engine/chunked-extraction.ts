@@ -638,12 +638,13 @@ export async function extractWithOptimalStrategy(
   const config = { ...DEFAULT_CHUNKED_CONFIG, ...chunkedConfig };
   const debugEnabled = options?.debugIdentity === true;
   const debugRunId = debugEnabled ? options?.debugRunId : undefined;
-  const extractionMode = (process.env.ARES_MODE || '').toLowerCase();
-  const isLegacyMode = extractionMode === 'legacy';
+  // BookNLP is obsolete - use spaCy-based pipeline by default
+  // Only enable BookNLP if ARES_MODE is explicitly set to 'booknlp'
+  const extractionMode = (process.env.ARES_MODE || 'legacy').toLowerCase();
+  const isLegacyMode = extractionMode !== 'booknlp';
   const baselineRequired = !isLegacyMode;
 
-  // Run BookNLP first when baseline is required (default) so cluster IDs exist
-  // before the rest of the pipeline executes.
+  // Run BookNLP only if explicitly requested via ARES_MODE=booknlp
   let booknlpResult: BookNLPResult | undefined;
   if (baselineRequired) {
     booknlpResult = await runBookNLPAndAdapt(fullText, docId);

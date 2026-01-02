@@ -3284,6 +3284,97 @@ export async function extractEntities(text: string): Promise<{
     }
     return true;
   });
+  // Detect "Mr. and Mrs. X" pattern and create both entities
+  // This pattern occurs before stitching because "Mr." can't stitch with distant "Dursley"
+  const mrAndMrsPattern = /\b(Mr\.?)\s+and\s+(Mrs\.?)\s+([A-Z][a-z]+)\b/g;
+  let mrMrsMatch: RegExpExecArray | null;
+  const mrMrsSpans: typeof validated = [];
+  while ((mrMrsMatch = mrAndMrsPattern.exec(cleanedText)) !== null) {
+    const mrTitle = mrMrsMatch[1];
+    const mrsTitle = mrMrsMatch[2];
+    const surname = mrMrsMatch[3];
+    const surnameStart = mrMrsMatch.index + mrMrsMatch[0].lastIndexOf(surname);
+
+    // Create "Mr. Surname" span
+    mrMrsSpans.push({
+      text: `${mrTitle} ${surname}`,
+      type: 'PERSON',
+      start: mrMrsMatch.index,
+      end: mrMrsMatch.index + mrTitle.length,
+      source: 'PATTERN' as ExtractorSource
+    } as typeof validated[0]);
+
+    // Create "Mrs. Surname" span
+    const mrsStart = mrMrsMatch.index + mrMrsMatch[0].indexOf(mrsTitle);
+    mrMrsSpans.push({
+      text: `${mrsTitle} ${surname}`,
+      type: 'PERSON',
+      start: mrsStart,
+      end: surnameStart + surname.length,
+      source: 'PATTERN' as ExtractorSource
+    } as typeof validated[0]);
+  }
+
+  // Add Mr/Mrs spans and remove standalone title spans that will be merged
+  if (mrMrsSpans.length > 0) {
+    validated = validated.filter(span => {
+      // Remove standalone "Mr" or "Mrs" that are part of "Mr. and Mrs. X"
+      const isStandaloneTitle = (span.text === 'Mr' || span.text === 'Mrs') &&
+        mrMrsSpans.some(ms => span.start >= ms.start - 5 && span.end <= ms.end + 5);
+      return !isStandaloneTitle;
+    });
+    validated.push(...mrMrsSpans);
+    validated.sort((a, b) => a.start - b.start);
+  }
+
+  // Detect "a firm/company called X" pattern and mark X as ORG
+  // This is evidence-based: the phrase explicitly names an organization
+  const orgCalledPattern = /\ba\s+(firm|company|business|corporation|organization|organisation|enterprise|startup|agency|bank|shop|store)\s+called\s+([A-Z][A-Za-z0-9]+(?:\s+[A-Z][A-Za-z0-9]+)*)/g;
+  let orgMatch: RegExpExecArray | null;
+  const orgPatternSpans: typeof validated = [];
+  while ((orgMatch = orgCalledPattern.exec(cleanedText)) !== null) {
+    const orgName = orgMatch[2];
+    const orgStart = orgMatch.index + orgMatch[0].lastIndexOf(orgName);
+    const orgEnd = orgStart + orgName.length;
+
+    // Create an ORG span for the organization name
+    orgPatternSpans.push({
+      text: orgName,
+      type: 'ORG',
+      start: orgStart,
+      end: orgEnd,
+      source: 'PATTERN' as ExtractorSource
+    } as typeof validated[0]);
+  }
+
+  // Also detect "work(s/ed) for/at X" pattern for organizations
+  const workAtPattern = /\bwork(?:s|ed|ing)?\s+(?:for|at)\s+([A-Z][A-Za-z0-9]+(?:\s+[A-Z][A-Za-z0-9]+)*)/g;
+  while ((orgMatch = workAtPattern.exec(cleanedText)) !== null) {
+    const orgName = orgMatch[1];
+    const orgStart = orgMatch.index + orgMatch[0].lastIndexOf(orgName);
+    const orgEnd = orgStart + orgName.length;
+
+    // Don't add if already exists
+    if (!orgPatternSpans.some(s => s.start === orgStart && s.end === orgEnd)) {
+      orgPatternSpans.push({
+        text: orgName,
+        type: 'ORG',
+        start: orgStart,
+        end: orgEnd,
+        source: 'PATTERN' as ExtractorSource
+      } as typeof validated[0]);
+    }
+  }
+
+  if (orgPatternSpans.length > 0) {
+    // Remove any existing spans at the same positions that might have wrong type (e.g., PERSON)
+    validated = validated.filter(span => {
+      return !orgPatternSpans.some(os => os.start === span.start && os.end === span.end);
+    });
+    validated.push(...orgPatternSpans);
+    validated.sort((a, b) => a.start - b.start);
+  }
+
   const stitchedPersons = stitchPersonFullNames(validated, cleanedText);
   validated = stitchedPersons.spans;
   const aliasHintsBySpanKey = stitchedPersons.aliasHints;
@@ -3832,12 +3923,60 @@ const PERSON_NICKNAME_NORMALIZERS = new Map<string, string>([
     }
   };
 
+  // Helper to extract title from entity variants
+  const getTitleFromEntry = (entry: EntityEntry): string | null => {
+    const titlePattern = /^(mr|mrs|miss|ms|dr)\.?\s+/i;
+    for (const [_, surface] of entry.variants.entries()) {
+      const match = surface.match(titlePattern);
+      if (match) return match[1].toLowerCase().replace('.', '');
+    }
+    // Also check aliases
+    for (const alias of entry.entity.aliases) {
+      const match = alias.match(titlePattern);
+      if (match) return match[1].toLowerCase().replace('.', '');
+    }
+    return null;
+  };
+
+  // Detect married couple pattern: if we have both "Mr. X" and "Mrs. X", don't merge them
+  const isMarriedCoupleConflict = (entry1: EntityEntry, entry2: EntityEntry): boolean => {
+    if (entry1.entity.type !== 'PERSON' || entry2.entity.type !== 'PERSON') return false;
+    const title1 = getTitleFromEntry(entry1);
+    const title2 = getTitleFromEntry(entry2);
+    if (!title1 || !title2) return false;
+    // "mr" and "mrs" are different people
+    const genderedTitles = new Set(['mr', 'mrs', 'miss', 'ms']);
+    if (genderedTitles.has(title1) && genderedTitles.has(title2) && title1 !== title2) {
+      return true;
+    }
+    return false;
+  };
+
   const mergedMap = new Map<string, EntityEntry>();
   for (const entry of entries) {
     const key = entry.entity.canonical.toLowerCase();
     const existing = mergedMap.get(key);
+
     if (!existing) {
       mergedMap.set(key, entry);
+      continue;
+    }
+
+    // Check for married couple pattern - keep them separate
+    if (isMarriedCoupleConflict(existing, entry)) {
+      // Use a distinct key to keep them separate
+      const title = getTitleFromEntry(entry);
+      const distinctKey = `${title}:${key}`;
+      // Update canonical to include title (e.g., "Dursley" → "Mrs. Dursley")
+      const titleCapitalized = title ? title.charAt(0).toUpperCase() + title.slice(1) + '.' : '';
+      entry.entity.canonical = `${titleCapitalized} ${entry.entity.canonical}`;
+      // Also update the existing entry's canonical if it doesn't have title
+      const existingTitle = getTitleFromEntry(existing);
+      if (existingTitle && !existing.entity.canonical.toLowerCase().startsWith(existingTitle)) {
+        const existingTitleCap = existingTitle.charAt(0).toUpperCase() + existingTitle.slice(1) + '.';
+        existing.entity.canonical = `${existingTitleCap} ${existing.entity.canonical}`;
+      }
+      mergedMap.set(distinctKey, entry);
       continue;
     }
 
@@ -4116,21 +4255,34 @@ const mergedEntries = Array.from(mergedMap.values());
   for (const entry of personEntries) {
     if (entry.entity.canonical.split(/\s+/).length !== 1) continue;
     if (personAliasSet.has(entry.entity.canonical.toLowerCase())) {
-      console.log(`[DEBUG-MERGE] Merging single-word PERSON "${entry.entity.canonical}" - already in alias set`);
       mergedPersonIds.add(entry.entity.id);
     }
   }
 
   // Capture titled aliases present in the text (e.g., "Dr. Wilson")
+  // But DON'T add titled aliases to bare surnames if separate titled entities exist
+  const canonicalLowers = new Set(personEntries.map(e => e.entity.canonical.toLowerCase()));
+
   for (const entry of personEntries) {
     const parts = entry.entity.canonical.split(/\s+/).filter(Boolean);
     if (parts.length === 0) continue;
     const surname = parts[parts.length - 1];
+
+    // Skip if this is a bare surname and titled versions exist as separate entities
+    const isBare = parts.length === 1;
+
     for (const title of TITLE_WORDS) {
       const titlePattern = new RegExp(`\\b${title}\\.?\\s+${surname}(?:'s)?\\b`, 'i');
       const match = text.match(titlePattern);
       if (match) {
         const rawTitle = match[0];
+        const titledCanonical = rawTitle.replace(/'s$/i, '').toLowerCase();
+
+        // Don't add as alias if a separate entity with this titled name exists
+        if (isBare && canonicalLowers.has(titledCanonical)) {
+          continue;
+        }
+
         addAlias(entry, rawTitle);
         const strippedTitle = rawTitle.replace(/'s$/i, '');
         if (strippedTitle !== rawTitle) {
@@ -4507,8 +4659,59 @@ const mergedEntries = Array.from(mergedMap.values());
       }
     }
 
-    const dedupeKey = `${entry.entity.type}:${chosen.toLowerCase()}`;
-    const existing = emittedEntryByKey.get(dedupeKey);
+    let dedupeKey = `${entry.entity.type}:${chosen.toLowerCase()}`;
+    let existing = emittedEntryByKey.get(dedupeKey);
+
+    // Check for married couple conflict - if so, use title-prefixed key to keep them separate
+    if (existing && isMarriedCoupleConflict(existing.entry, entry)) {
+      const title = getTitleFromEntry(entry);
+      const existingTitle = getTitleFromEntry(existing.entry);
+      if (title) {
+        // Also update the existing entry to use a title-prefixed key
+        if (existingTitle) {
+          const existingBaseKey = dedupeKey;
+          const existingNewKey = `${existing.entry.entity.type}:${existingTitle}:${chosen.toLowerCase()}`;
+          // Move existing to title-prefixed key
+          emittedEntryByKey.delete(existingBaseKey);
+          // Update existing canonical to include title
+          const existingTitleCap = existingTitle.charAt(0).toUpperCase() + existingTitle.slice(1) + '.';
+          if (!existing.entry.entity.canonical.toLowerCase().startsWith(existingTitle)) {
+            existing.entry.entity.canonical = `${existingTitleCap} ${chosen}`;
+          }
+          // Clear cross-contaminated aliases - keep only the title-appropriate one
+          existing.entry.entity.aliases = existing.entry.entity.aliases.filter(a => {
+            const aliasLower = a.toLowerCase();
+            // Keep if it matches this entity's title, remove if it matches a different gendered title
+            const aliasTitleMatch = aliasLower.match(/^(mr|mrs|miss|ms)\.?\s+/i);
+            if (aliasTitleMatch) {
+              const aliasTitle = aliasTitleMatch[1].toLowerCase();
+              return aliasTitle === existingTitle;
+            }
+            return true; // Keep non-titled aliases
+          });
+          emittedEntryByKey.set(existingNewKey, existing);
+        }
+
+        // Use a distinct key that includes the title for new entry
+        dedupeKey = `${entry.entity.type}:${title}:${chosen.toLowerCase()}`;
+        existing = emittedEntryByKey.get(dedupeKey);
+        // Also restore the titled canonical since they're separate people
+        const titleCapitalized = title.charAt(0).toUpperCase() + title.slice(1) + '.';
+        entry.entity.canonical = `${titleCapitalized} ${chosen}`;
+        // Clear cross-contaminated aliases - keep only the title-appropriate one
+        entry.entity.aliases = entry.entity.aliases.filter(a => {
+          const aliasLower = a.toLowerCase();
+          // Keep if it matches this entity's title, remove if it matches a different gendered title
+          const aliasTitleMatch = aliasLower.match(/^(mr|mrs|miss|ms)\.?\s+/i);
+          if (aliasTitleMatch) {
+            const aliasTitle = aliasTitleMatch[1].toLowerCase();
+            return aliasTitle === title;
+          }
+          return true; // Keep non-titled aliases
+        });
+      }
+    }
+
     if (existing) {
       // Compare ORIGINAL surface texts (before normalization) to prefer the more informative one
       // Prefer titled versions like "Professor McGonagall" over bare "McGonagall"
