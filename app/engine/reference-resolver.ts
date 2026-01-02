@@ -711,16 +711,52 @@ export class ReferenceResolver {
     }
 
     // Dispatch based on context
+    let resolved: ResolvedEntity | null = null;
     switch (context) {
       case 'SENTENCE_START':
-        return this.resolveSentenceStartPronoun(pronoun, position, info, allowedTypes);
+        resolved = this.resolveSentenceStartPronoun(pronoun, position, info, allowedTypes);
+        break;
       case 'POSSESSIVE':
-        return this.resolvePossessivePronoun(pronoun, position, info, allowedTypes);
+        resolved = this.resolvePossessivePronoun(pronoun, position, info, allowedTypes);
+        break;
       case 'PATTERN_MATCH':
-        return this.resolvePatternMatchPronoun(pronoun, position, info, allowedTypes);
+        resolved = this.resolvePatternMatchPronoun(pronoun, position, info, allowedTypes);
+        break;
       case 'SENTENCE_MID':
       default:
-        return this.resolveMidSentencePronoun(pronoun, position, info, allowedTypes);
+        resolved = this.resolveMidSentencePronoun(pronoun, position, info, allowedTypes);
+        break;
+    }
+
+    // Role reinforcement: if we resolved a pronoun to an entity that has titles,
+    // update those title associations with the current position
+    if (resolved) {
+      this.reinforceTitleAssociations(resolved.id, position);
+    }
+
+    return resolved;
+  }
+
+  /**
+   * Reinforce title associations for an entity at a new position.
+   * Called after successful pronoun resolution to maintain title → entity bridging.
+   *
+   * Example: "Senator Warren spoke. She said..."
+   * When "She" resolves to Warren at position X, we update the "senator" → Warren
+   * association to position X, so later "the senator" still resolves correctly.
+   */
+  private reinforceTitleAssociations(entityId: string, position: number): void {
+    // Find all titles currently associated with this entity
+    for (const [title, association] of Array.from(this.titleToEntity.entries())) {
+      if (association.entityId === entityId) {
+        // Update the position to reinforce the association
+        this.titleToEntity.set(title, { entityId, position });
+
+        if (this.debug) {
+          const entity = this.entitiesById.get(entityId);
+          console.log(`[ReferenceResolver] Reinforced title: "${title}" → ${entity?.canonical} at position ${position}`);
+        }
+      }
     }
   }
 
