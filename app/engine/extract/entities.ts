@@ -40,6 +40,7 @@ import {
   VERB_LEADS
 } from "../linguistics/entity-heuristics";
 import { classifyMention, type MentionClassification } from "../linguistics/mention-classifier";
+import { areFirstNamesEquivalent } from "../reference-resolver";
 
 const TRACE_SPANS = process.env.L3_TRACE === "1";
 const CAMELCASE_ALLOWED_PREFIXES = [
@@ -3447,6 +3448,12 @@ export async function extractEntities(text: string): Promise<{
 
     if (isFirstNameOnly) return 'strong';
     if (isSurnameOnly) return 'ambiguous';
+
+    // Check if token is a nickname equivalent of the first name
+    // e.g., "Jim" is a nickname for "James"
+    if (canonicalFirst && areFirstNamesEquivalent(token, canonicalFirst)) {
+      return 'strong';
+    }
 
     return null;
   };

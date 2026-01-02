@@ -2093,3 +2093,60 @@ export function createTokenResolver(
   resolver.initialize(entities, entitySpans, sentences, text, sentenceTokens);
   return resolver;
 }
+
+// =============================================================================
+// STANDALONE NICKNAME FUNCTIONS
+// =============================================================================
+
+/**
+ * Standalone function to get formal names for a nickname.
+ * Can be called without instantiating a ReferenceResolver.
+ */
+export function getFormalNamesForNickname(nickname: string): string[] {
+  return NICKNAME_TO_FORMAL.get(nickname.toLowerCase()) || [];
+}
+
+/**
+ * Standalone function to get nicknames for a formal name.
+ * Can be called without instantiating a ReferenceResolver.
+ */
+export function getNicknamesForFormal(formalName: string): string[] {
+  return FORMAL_TO_NICKNAMES.get(formalName.toLowerCase()) || [];
+}
+
+/**
+ * Standalone function to check if two first names are nickname-equivalent.
+ * Example: "Jim" and "James" → true
+ */
+export function areFirstNamesEquivalent(name1: string, name2: string): boolean {
+  const n1 = name1.toLowerCase();
+  const n2 = name2.toLowerCase();
+
+  // Exact match
+  if (n1 === n2) return true;
+
+  // Check if n1 is a nickname of n2
+  const n1Formals = getFormalNamesForNickname(n1);
+  if (n1Formals.includes(n2)) return true;
+
+  // Check if n2 is a nickname of n1
+  const n2Formals = getFormalNamesForNickname(n2);
+  if (n2Formals.includes(n1)) return true;
+
+  // Check if both are nicknames of the same formal name
+  for (const formal1 of n1Formals) {
+    for (const formal2 of n2Formals) {
+      if (formal1 === formal2) return true;
+    }
+  }
+
+  // Check if n1 is a formal name and n2 is one of its nicknames
+  const n1Nicknames = getNicknamesForFormal(n1);
+  if (n1Nicknames.includes(n2)) return true;
+
+  // Check if n2 is a formal name and n1 is one of its nicknames
+  const n2Nicknames = getNicknamesForFormal(n2);
+  if (n2Nicknames.includes(n1)) return true;
+
+  return false;
+}
