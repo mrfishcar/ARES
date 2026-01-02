@@ -4733,31 +4733,35 @@ const mergedEntries = Array.from(mergedMap.values());
     for (const entity of entities) {
       const aliasSet = new Set<string>(entity.aliases);
 
-      // Add mentions from coreference links (FILTER PRONOUNS, COORDINATIONS, TITLE/NOMINAL BACK-LINKS)
-      // - Pronouns (he, she, it) are context-dependent and should NOT be permanent aliases
-      // - Coordinations ("X and Y") should not be aliases for individual entities
-      // - Title back-links ("the king" → Aragorn) are descriptive references, not proper name variants
-      // - Nominal back-links ("the wizard" → Gandalf) are also descriptive references
+      // Add mentions from coreference links as aliases
+      // INCLUDE: pronouns (he, she), title matches (the senator), nominal matches (the wizard)
+      // EXCLUDE: coordinations ("X and Y") - should not be aliases for individual entities
       for (const link of corefLinks.links) {
         if (link.entity_id === entity.id) {
           const mentionText = link.mention.text.trim();
-          // Add if different from canonical, not empty, NOT a pronoun, AND NOT a descriptive reference
+          // Add if different from canonical, not empty, and NOT a coordination
           if (mentionText &&
               mentionText !== entity.canonical &&
               mentionText.toLowerCase() !== entity.canonical.toLowerCase() &&
-              !isContextDependent(mentionText) &&
-              link.method !== 'coordination' &&
-              link.method !== 'title_match' &&
-              link.method !== 'nominal_match') {
-            const strength = classifyAliasStrength(mentionText, entity.canonical);
-            if (strength) {
+              link.method !== 'coordination') {
+            // For context-dependent terms (pronouns, definite descriptions, nicknames), add directly
+            // For proper name variants, check alias strength
+            if (isContextDependent(mentionText) ||
+                link.method === 'title_match' ||
+                link.method === 'nominal_match' ||
+                link.method === 'nickname') {
               aliasSet.add(mentionText);
-              registerAliasStrength({
-                entity: entity as Entity,
-                spanList: [],
-                variants: new Map(),
-                sources: new Set()
-              }, mentionText, strength);
+            } else {
+              const strength = classifyAliasStrength(mentionText, entity.canonical);
+              if (strength) {
+                aliasSet.add(mentionText);
+                registerAliasStrength({
+                  entity: entity as Entity,
+                  spanList: [],
+                  variants: new Map(),
+                  sources: new Set()
+                }, mentionText, strength);
+              }
             }
           }
         }
