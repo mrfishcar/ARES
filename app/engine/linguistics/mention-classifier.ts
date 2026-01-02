@@ -298,7 +298,8 @@ export function classifyMention(
   surface: string,
   fullText: string,
   start: number,
-  end: number
+  end: number,
+  options?: { hasNERBacking?: boolean }
 ): MentionClassification {
   const raw = surface.trim();
   if (!raw) {
@@ -467,9 +468,13 @@ export function classifyMention(
   }
 
   // Sentence/utterance start command with no following word ("Check.")
+  // Exception: If NER identifies it as an entity (e.g., "Microsoft."), keep it
   const trimmedAfter = fullText.slice(end).trimStart();
   if (sentenceStart && isSingleToken && !followingWord && /^[.!?]/.test(trimmedAfter)) {
-    return { mentionClass: 'CONTEXT_ONLY', reason: 'imperative-terminal' };
+    if (!options?.hasNERBacking) {
+      return { mentionClass: 'CONTEXT_ONLY', reason: 'imperative-terminal' };
+    }
+    // NER-backed single-word sentences are kept as DURABLE_NAME (fall through)
   }
 
   // Command verb followed by capitalized object ("Tell Laurie ...")

@@ -3735,9 +3735,11 @@ const mergedEntries = Array.from(mergedMap.values());
       const durableSpans: Array<{ start: number; end: number }> = [];
       let entryRejected = 0;
       let entryContext = 0;
+      // Check if entity has NER backing - if so, be more lenient with single-word sentences
+      const hasNERBacking = entry.sources.has('NER');
       for (const span of entry.spanList) {
         const rawSurface = text.slice(span.start, span.end);
-        const classification: MentionClassification = classifyMention(rawSurface, text, span.start, span.end);
+        const classification: MentionClassification = classifyMention(rawSurface, text, span.start, span.end, { hasNERBacking });
         if (classification.mentionClass === 'DURABLE_NAME') {
           durableSpans.push(span);
           durableMentions += 1;
