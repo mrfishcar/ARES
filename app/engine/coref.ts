@@ -371,7 +371,16 @@ function matchesGenderNumber(entity: Entity, gender: Gender, number: Number): bo
   }
 
   if (gender === 'neutral' && number === 'plural') {
-    // "they" can refer to persons or groups
+    // "they/their/them" should prefer PERSON entities, then ORG, but not single PLACEs
+    // A single PLACE like "Silicon Valley" shouldn't match "their"
+    // Exception: collective places or groups of places could match
+    if (entity.type === 'PLACE') {
+      // Allow only if the place name suggests a group or collective
+      const nameLower = entity.canonical.toLowerCase();
+      const isCollective = /\b(states|nations|countries|cities|regions)\b/i.test(nameLower);
+      return isCollective;
+    }
+    // PERSON and ORG can match plural pronouns
     return true;
   }
 
