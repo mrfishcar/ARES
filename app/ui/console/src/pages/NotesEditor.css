@@ -1478,3 +1478,48 @@
     transform: none !important;
   }
 }
+
+/* ============================================================================
+   TAGS
+   ============================================================================ */
+
+.notes-list__item-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.notes-list__item-tag {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  background: var(--ne-bg-tertiary);
+  color: var(--ne-text-secondary);
+  border-radius: 10px;
+  text-transform: capitalize;
+}
+
+.notes-list__item--selected .notes-list__item-tag {
+  background: rgba(0, 0, 0, 0.15);
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.notes-list__item-tag--more {
+  background: transparent;
+  color: var(--ne-text-tertiary);
+  padding: 2px 4px;
+}
+
+/* Smart folder styling in sidebar */
+.folders-sidebar__item--smart {
+  opacity: 0.9;
+}
+
+.folders-sidebar__item--smart .folders-sidebar__item-icon {
+  color: var(--ne-accent-secondary);
+}
+
+.folders-sidebar__item--smart.folders-sidebar__item--selected .folders-sidebar__item-icon {
+  color: #000;
+}

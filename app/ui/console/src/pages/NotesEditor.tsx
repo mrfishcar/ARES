@@ -103,6 +103,13 @@ export interface Note {
   createdAt: number;
   updatedAt: number;
   isPinned: boolean;
+  tags: string[];
+}
+
+export interface Tag {
+  id: string;
+  name: string;
+  color: string;
 }
 
 export interface Folder {
@@ -111,6 +118,12 @@ export interface Folder {
   icon: string;
   isSystem: boolean;
   parentId: string | null;
+  smartFilter?: SmartFilter;
+}
+
+export interface SmartFilter {
+  type: 'hasTag' | 'hasTasks' | 'hasChecklist' | 'recentlyEdited' | 'hasAttachments';
+  value?: string;
 }
 
 // ============================================================================
@@ -195,6 +208,17 @@ class StorageService {
 const DEFAULT_FOLDERS: Folder[] = [
   { id: 'all', name: 'All Notes', icon: 'folder', isSystem: true, parentId: null },
   { id: 'notes', name: 'Notes', icon: 'folder', isSystem: true, parentId: 'all' },
+  // Smart folders
+  { id: 'smart-tasks', name: 'With Checklists', icon: 'checkbox', isSystem: true, parentId: null, smartFilter: { type: 'hasChecklist' } },
+  { id: 'smart-recent', name: 'Recently Edited', icon: 'clock', isSystem: true, parentId: null, smartFilter: { type: 'recentlyEdited' } },
+];
+
+const DEFAULT_TAGS: Tag[] = [
+  { id: 'work', name: 'Work', color: '#FF9500' },
+  { id: 'personal', name: 'Personal', color: '#007AFF' },
+  { id: 'ideas', name: 'Ideas', color: '#34C759' },
+  { id: 'todo', name: 'To Do', color: '#FF3B30' },
+  { id: 'archive', name: 'Archive', color: '#8E8E93' },
 ];
 
 const DEFAULT_NOTES: Note[] = [
@@ -206,6 +230,7 @@ const DEFAULT_NOTES: Note[] = [
     createdAt: Date.now(),
     updatedAt: Date.now(),
     isPinned: false,
+    tags: ['ideas'],
   },
 ];
 
@@ -315,6 +340,18 @@ const Icons = {
   close: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M18 6L6 18M6 6l12 12" />
+    </svg>
+  ),
+  clock: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 6v6l4 2" />
+    </svg>
+  ),
+  tag: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" />
+      <circle cx="7" cy="7" r="1" fill="currentColor" />
     </svg>
   ),
 };
@@ -446,13 +483,49 @@ interface FoldersSidebarProps {
   onBack: () => void;
 }
 
+// Get icon for folder based on icon name
+function getFolderIcon(iconName: string, isSelected: boolean): React.ReactNode {
+  switch (iconName) {
+    case 'checkbox':
+      return Icons.checkbox;
+    case 'clock':
+      return Icons.clock;
+    case 'tag':
+      return Icons.tag;
+    default:
+      return isSelected ? Icons.folderFilled : Icons.folder;
+  }
+}
+
+// Apply smart filter to notes
+function applySmartFilter(notes: Note[], filter: SmartFilter): Note[] {
+  const now = Date.now();
+  const dayMs = 24 * 60 * 60 * 1000;
+
+  switch (filter.type) {
+    case 'hasTag':
+      return notes.filter(n => n.tags?.includes(filter.value || ''));
+    case 'hasChecklist':
+      return notes.filter(n => n.content.includes('- [ ]') || n.content.includes('- [x]'));
+    case 'recentlyEdited':
+      return notes.filter(n => now - n.updatedAt < 7 * dayMs);
+    case 'hasAttachments':
+      // Future feature
+      return [];
+    default:
+      return notes;
+  }
+}
+
 function FoldersSidebar({ folders, notes, selectedFolderId, onSelectFolder, onBack }: FoldersSidebarProps) {
-  // Count notes per folder
+  // Count notes per folder (including smart folder filtering)
   const noteCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const folder of folders) {
       if (folder.id === 'all') {
         counts[folder.id] = notes.length;
+      } else if (folder.smartFilter) {
+        counts[folder.id] = applySmartFilter(notes, folder.smartFilter).length;
       } else {
         counts[folder.id] = notes.filter(n => n.folderId === folder.id).length;
       }
@@ -468,11 +541,12 @@ function FoldersSidebar({ folders, notes, selectedFolderId, onSelectFolder, onBa
     const children = childFolders(folder.id);
     const isSelected = selectedFolderId === folder.id;
     const count = noteCounts[folder.id] || 0;
+    const isSmart = !!folder.smartFilter;
 
     return (
       <div key={folder.id}>
         <button
-          className={`folders-sidebar__item ${isSelected ? 'folders-sidebar__item--selected' : ''}`}
+          className={`folders-sidebar__item ${isSelected ? 'folders-sidebar__item--selected' : ''} ${isSmart ? 'folders-sidebar__item--smart' : ''}`}
           style={{ paddingLeft: `${16 + depth * 16}px` }}
           onClick={() => {
             triggerHaptic('selection');
@@ -480,7 +554,7 @@ function FoldersSidebar({ folders, notes, selectedFolderId, onSelectFolder, onBa
           }}
         >
           <span className="folders-sidebar__item-icon">
-            {isSelected ? Icons.folderFilled : Icons.folder}
+            {getFolderIcon(folder.icon, isSelected)}
           </span>
           <span className="folders-sidebar__item-name">{folder.name}</span>
           <span className="folders-sidebar__item-count">{count}</span>
@@ -727,6 +801,20 @@ function NoteItem({ note, index, isSelected, onSelect, onDelete, isDragging, isD
           <span className="notes-list__item-date">{formatDate(note.updatedAt)}</span>
           <span className="notes-list__item-preview">{getPreview(note.content)}</span>
         </div>
+        {note.tags && note.tags.length > 0 && (
+          <div className="notes-list__item-tags">
+            {note.tags.slice(0, 3).map(tagId => (
+              <span key={tagId} className="notes-list__item-tag">
+                {tagId}
+              </span>
+            ))}
+            {note.tags.length > 3 && (
+              <span className="notes-list__item-tag notes-list__item-tag--more">
+                +{note.tags.length - 3}
+              </span>
+            )}
+          </div>
+        )}
       </button>
     </div>
   );
@@ -1271,6 +1359,7 @@ function EditorToolbar({ editorRef, onDelete, onTogglePin, isPinned, saveStatus,
 export default function NotesEditor() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
+  const [tags, setTags] = useState<Tag[]>(DEFAULT_TAGS);
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
   const [selectedFolderId, setSelectedFolderId] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
@@ -1360,13 +1449,19 @@ export default function NotesEditor() {
   const selectedFolder = folders.find(f => f.id === selectedFolderId) || folders[0];
   const folderName = selectedFolder?.name || 'Notes';
 
-  // Filter notes by selected folder
+  // Filter notes by selected folder (including smart folder filters)
   const filteredNotes = useMemo(() => {
     if (selectedFolderId === 'all') {
       return notes;
     }
+
+    // Check if this is a smart folder
+    if (selectedFolder?.smartFilter) {
+      return applySmartFilter(notes, selectedFolder.smartFilter);
+    }
+
     return notes.filter(n => n.folderId === selectedFolderId);
-  }, [notes, selectedFolderId]);
+  }, [notes, selectedFolderId, selectedFolder]);
 
   // Handle folder selection
   const handleSelectFolder = useCallback((folderId: string) => {
@@ -1424,6 +1519,7 @@ export default function NotesEditor() {
       createdAt: Date.now(),
       updatedAt: Date.now(),
       isPinned: false,
+      tags: [],
     };
     triggerHaptic('light');
     setNotes(prev => [newNote, ...prev]);
