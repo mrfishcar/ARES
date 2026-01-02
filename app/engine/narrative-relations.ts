@@ -2476,6 +2476,19 @@ export function extractNarrativeRelations(
       }
     }
 
+    // If normal matching fails and surface could be a bare surname, use surname resolution
+    // Pattern: single capitalized word like "Potter", "Weasley", "Dursley"
+    if (position !== undefined && resolver.isBareSurname(surface)) {
+      const resolved = resolver.resolveSurname(surface, position);
+      if (resolved) {
+        const lookupEntity = entitiesById.get(resolved.id);
+        if (lookupEntity) {
+          console.log(`[NarrativeRelations:surname] Resolved "${surface}" @ ${position} → ${resolved.canonical} (recency-based)`);
+          return lookupEntity;
+        }
+      }
+    }
+
     return null;
   };
 

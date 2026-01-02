@@ -1836,6 +1836,150 @@ export class ReferenceResolver {
   getEntityById(entityId: string): Entity | undefined {
     return this.entitiesById.get(entityId);
   }
+
+  // =============================================================================
+  // SURNAME RESOLUTION
+  // =============================================================================
+
+  /**
+   * Resolve a bare surname to the most recently mentioned entity with that surname.
+   *
+   * Example: "Harry Potter arrived. Lily Potter followed. Potter spoke."
+   * → "Potter" resolves to "Lily Potter" (most recent)
+   *
+   * Rules (from LINGUISTIC_REFERENCE.md §6 NM-2):
+   * - If only one entity has that surname → strong alias
+   * - If multiple entities share surname → use salience + recency
+   * - NEVER merge distinct entities solely by surname
+   *
+   * @param surname The bare surname to resolve (e.g., "Potter", "Weasley")
+   * @param position The character position in text where the surname appears
+   * @returns The most recently mentioned entity with that surname, or null if ambiguous/none
+   */
+  resolveSurname(surname: string, position: number): ResolvedEntity | null {
+    const surnameLower = surname.toLowerCase();
+
+    // Find all entities that have this surname (last word of canonical name)
+    const candidateEntities = this.entities.filter(e => {
+      if (e.type !== 'PERSON') return false;
+      const canonical = e.canonical;
+      const tokens = canonical.split(/\s+/);
+      const entitySurname = tokens[tokens.length - 1];
+      return entitySurname.toLowerCase() === surnameLower;
+    });
+
+    if (this.debug) {
+      console.log(`[ReferenceResolver:surname] Resolving "${surname}" at position ${position}`);
+      console.log(`[ReferenceResolver:surname] Candidates: ${candidateEntities.map(e => e.canonical).join(', ')}`);
+    }
+
+    // No candidates found
+    if (candidateEntities.length === 0) {
+      return null;
+    }
+
+    // Only one candidate - return it with high confidence
+    if (candidateEntities.length === 1) {
+      const entity = candidateEntities[0];
+      if (this.debug) {
+        console.log(`[ReferenceResolver:surname] Single candidate: "${entity.canonical}"`);
+      }
+      return {
+        id: entity.id,
+        canonical: entity.canonical,
+        type: entity.type,
+        confidence: 0.95,  // High confidence for unique surname
+        method: 'nominal' as const
+      };
+    }
+
+    // Multiple candidates - use recency to disambiguate
+    // Find the most recent mention of each candidate BEFORE the current position
+    interface CandidateWithRecency {
+      entity: Entity;
+      lastMentionPosition: number;
+    }
+
+    const candidatesWithRecency: CandidateWithRecency[] = [];
+
+    for (const entity of candidateEntities) {
+      // Find all spans for this entity
+      const entitySpans = this.entitySpans.filter(s =>
+        s.entity_id === entity.id && s.end <= position
+      );
+
+      if (entitySpans.length === 0) {
+        // Entity was not mentioned before this position
+        continue;
+      }
+
+      // Find the most recent mention
+      const lastSpan = entitySpans.reduce((latest, span) =>
+        span.end > latest.end ? span : latest
+      );
+
+      candidatesWithRecency.push({
+        entity,
+        lastMentionPosition: lastSpan.end
+      });
+    }
+
+    if (candidatesWithRecency.length === 0) {
+      // None of the candidates were mentioned before this position
+      if (this.debug) {
+        console.log(`[ReferenceResolver:surname] No candidates mentioned before position ${position}`);
+      }
+      return null;
+    }
+
+    // Sort by recency (most recent first)
+    candidatesWithRecency.sort((a, b) => b.lastMentionPosition - a.lastMentionPosition);
+
+    const mostRecent = candidatesWithRecency[0];
+
+    if (this.debug) {
+      console.log(`[ReferenceResolver:surname] Most recent: "${mostRecent.entity.canonical}" at position ${mostRecent.lastMentionPosition}`);
+    }
+
+    // Calculate confidence based on how much more recent the winner is
+    let confidence = 0.85;  // Base confidence for recency-based resolution
+    if (candidatesWithRecency.length > 1) {
+      const secondMostRecent = candidatesWithRecency[1];
+      const gap = mostRecent.lastMentionPosition - secondMostRecent.lastMentionPosition;
+      // Increase confidence if the gap is large
+      if (gap > 100) confidence = 0.90;
+      if (gap > 300) confidence = 0.92;
+    }
+
+    return {
+      id: mostRecent.entity.id,
+      canonical: mostRecent.entity.canonical,
+      type: mostRecent.entity.type,
+      confidence,
+      method: 'nominal' as const
+    };
+  }
+
+  /**
+   * Check if a surface form is a bare surname (single capitalized word that could be a surname)
+   */
+  isBareSurname(surface: string): boolean {
+    const trimmed = surface.trim();
+    // Single capitalized word
+    if (!/^[A-Z][a-z]+$/.test(trimmed)) return false;
+    // Not a pronoun
+    if (PRONOUNS.has(trimmed.toLowerCase())) return false;
+    // Not a common first name only (heuristic - if it matches any entity's surname, it's valid)
+    const surfaceLower = trimmed.toLowerCase();
+    for (const entity of this.entities) {
+      if (entity.type !== 'PERSON') continue;
+      const tokens = entity.canonical.split(/\s+/);
+      if (tokens.length >= 2 && tokens[tokens.length - 1].toLowerCase() === surfaceLower) {
+        return true;
+      }
+    }
+    return false;
+  }
 }
 
 // =============================================================================
