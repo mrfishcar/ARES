@@ -522,28 +522,39 @@ interface NotesListProps {
   onSelect: (note: Note) => void;
   onCreateNote: () => void;
   onDelete: (noteId: string) => void;
+  onReorder: (noteId: string, newIndex: number) => void;
   selectedFolderId: string;
   folderName: string;
   onShowFolders: () => void;
 }
 
-// Individual note item with swipe-to-delete
+// Individual note item with swipe-to-delete and drag-to-reorder
 interface NoteItemProps {
   note: Note;
+  index: number;
   isSelected: boolean;
   onSelect: () => void;
   onDelete: () => void;
+  isDragging: boolean;
+  isDropTarget: boolean;
+  onDragStart: (noteId: string, index: number) => void;
+  onDragOver: (index: number) => void;
+  onDragEnd: () => void;
 }
 
-function NoteItem({ note, isSelected, onSelect, onDelete }: NoteItemProps) {
+function NoteItem({ note, index, isSelected, onSelect, onDelete, isDragging, isDropTarget, onDragStart, onDragOver, onDragEnd }: NoteItemProps) {
   const itemRef = useRef<HTMLDivElement>(null);
   const [swipeX, setSwipeX] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
+  const [isSwiping, setIsSwiping] = useState(false);
   const startXRef = useRef(0);
+  const startYRef = useRef(0);
   const currentXRef = useRef(0);
+  const longPressTimerRef = useRef<number | null>(null);
+  const [isLongPressing, setIsLongPressing] = useState(false);
 
   const SWIPE_THRESHOLD = 80; // Pixels to reveal delete button
   const DELETE_THRESHOLD = 150; // Pixels to trigger delete
+  const LONG_PRESS_DURATION = 500; // ms to start drag
 
   // FIX #3: Reset swipe when clicking outside this item
   useEffect(() => {
@@ -563,21 +574,78 @@ function NoteItem({ note, isSelected, onSelect, onDelete }: NoteItemProps) {
     };
   }, [swipeX]);
 
+  // Clear long press timer
+  const clearLongPressTimer = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  }, []);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => clearLongPressTimer();
+  }, [clearLongPressTimer]);
+
   const handleTouchStart = (e: React.TouchEvent) => {
     startXRef.current = e.touches[0].clientX;
+    startYRef.current = e.touches[0].clientY;
     currentXRef.current = swipeX;
-    setIsDragging(true);
+
+    // Start long press timer for drag
+    longPressTimerRef.current = window.setTimeout(() => {
+      setIsLongPressing(true);
+      triggerHaptic('medium');
+      onDragStart(note.id, index);
+    }, LONG_PRESS_DURATION);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging) return;
     const deltaX = e.touches[0].clientX - startXRef.current;
-    const newX = Math.min(0, Math.max(-DELETE_THRESHOLD, currentXRef.current + deltaX));
-    setSwipeX(newX);
+    const deltaY = e.touches[0].clientY - startYRef.current;
+
+    // If we're in drag mode, handle drag over
+    if (isDragging) {
+      // Trigger drag over on items we pass
+      const touch = e.touches[0];
+      const element = document.elementFromPoint(touch.clientX, touch.clientY);
+      if (element) {
+        const noteItem = element.closest('.notes-list__item-container');
+        if (noteItem) {
+          const noteIndex = parseInt(noteItem.getAttribute('data-index') || '-1', 10);
+          if (noteIndex >= 0 && noteIndex !== index) {
+            onDragOver(noteIndex);
+          }
+        }
+      }
+      return;
+    }
+
+    // Cancel long press if we moved too much (starting a swipe instead)
+    if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) {
+      clearLongPressTimer();
+      setIsLongPressing(false);
+    }
+
+    // Only swipe if we're not long pressing
+    if (!isLongPressing && Math.abs(deltaX) > Math.abs(deltaY)) {
+      setIsSwiping(true);
+      const newX = Math.min(0, Math.max(-DELETE_THRESHOLD, currentXRef.current + deltaX));
+      setSwipeX(newX);
+    }
   };
 
   const handleTouchEnd = () => {
-    setIsDragging(false);
+    clearLongPressTimer();
+    setIsLongPressing(false);
+
+    // If we were dragging, end the drag
+    if (isDragging) {
+      onDragEnd();
+      return;
+    }
+
+    setIsSwiping(false);
     if (swipeX < -DELETE_THRESHOLD + 20) {
       // Trigger delete with haptic
       triggerHaptic('warning');
@@ -594,8 +662,13 @@ function NoteItem({ note, isSelected, onSelect, onDelete }: NoteItemProps) {
 
   // FIX #10: Handle touch cancel (e.g., notification appears mid-swipe)
   const handleTouchCancel = () => {
-    setIsDragging(false);
+    clearLongPressTimer();
+    setIsLongPressing(false);
+    setIsSwiping(false);
     setSwipeX(0);
+    if (isDragging) {
+      onDragEnd();
+    }
   };
 
   const handleDeleteClick = (e: React.MouseEvent) => {
@@ -604,8 +677,22 @@ function NoteItem({ note, isSelected, onSelect, onDelete }: NoteItemProps) {
     onDelete();
   };
 
+  const itemClasses = [
+    'notes-list__item',
+    isSelected && 'notes-list__item--selected',
+    isDragging && 'notes-list__item--dragging',
+    isDropTarget && 'notes-list__item--drop-target',
+  ].filter(Boolean).join(' ');
+
   return (
-    <div className="notes-list__item-container" ref={itemRef}>
+    <div
+      className={`notes-list__item-container ${isDragging ? 'notes-list__item-container--dragging' : ''}`}
+      ref={itemRef}
+      data-index={index}
+    >
+      {/* Drop indicator above */}
+      {isDropTarget && <div className="notes-list__drop-indicator" />}
+
       {/* Delete action revealed by swipe */}
       <div className="notes-list__item-delete" onClick={handleDeleteClick}>
         {Icons.trash}
@@ -614,9 +701,9 @@ function NoteItem({ note, isSelected, onSelect, onDelete }: NoteItemProps) {
 
       {/* Swipeable note item */}
       <button
-        className={`notes-list__item ${isSelected ? 'notes-list__item--selected' : ''}`}
+        className={itemClasses}
         onClick={() => {
-          if (swipeX === 0) {
+          if (swipeX === 0 && !isDragging) {
             triggerHaptic('selection');
             onSelect();
           } else {
@@ -629,7 +716,7 @@ function NoteItem({ note, isSelected, onSelect, onDelete }: NoteItemProps) {
         onTouchCancel={handleTouchCancel}
         style={{
           transform: `translateX(${swipeX}px)`,
-          transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.25, 1.25, 0.5, 1)',
+          transition: isSwiping ? 'none' : 'transform 0.3s cubic-bezier(0.25, 1.25, 0.5, 1)',
         }}
       >
         <div className="notes-list__item-header">
@@ -645,12 +732,40 @@ function NoteItem({ note, isSelected, onSelect, onDelete }: NoteItemProps) {
   );
 }
 
-function NotesList({ notes, selectedId, onSelect, onCreateNote, onDelete, selectedFolderId, folderName, onShowFolders }: NotesListProps) {
+function NotesList({ notes, selectedId, onSelect, onCreateNote, onDelete, onReorder, selectedFolderId, folderName, onShowFolders }: NotesListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   // FIX #8: Debounced search to prevent jank with large lists
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Drag-to-reorder state
+  const [draggedNoteId, setDraggedNoteId] = useState<string | null>(null);
+  const [draggedFromIndex, setDraggedFromIndex] = useState<number>(-1);
+  const [dropTargetIndex, setDropTargetIndex] = useState<number>(-1);
+
+  // Drag handlers
+  const handleDragStart = useCallback((noteId: string, index: number) => {
+    setDraggedNoteId(noteId);
+    setDraggedFromIndex(index);
+  }, []);
+
+  const handleDragOver = useCallback((index: number) => {
+    if (index !== dropTargetIndex) {
+      setDropTargetIndex(index);
+      triggerHaptic('selection');
+    }
+  }, [dropTargetIndex]);
+
+  const handleDragEnd = useCallback(() => {
+    if (draggedNoteId && dropTargetIndex >= 0 && dropTargetIndex !== draggedFromIndex) {
+      onReorder(draggedNoteId, dropTargetIndex);
+      triggerHaptic('success');
+    }
+    setDraggedNoteId(null);
+    setDraggedFromIndex(-1);
+    setDropTargetIndex(-1);
+  }, [draggedNoteId, dropTargetIndex, draggedFromIndex, onReorder]);
 
   // Debounce search query
   useEffect(() => {
@@ -737,21 +852,33 @@ function NotesList({ notes, selectedId, onSelect, onCreateNote, onDelete, select
         )}
       </div>
 
-      <div className="notes-list__items">
-        {sections.map(section => (
-          <div key={section.title} className="notes-list__section">
-            <div className="notes-list__section-header">{section.title}</div>
-            {section.notes.map(note => (
-              <NoteItem
-                key={note.id}
-                note={note}
-                isSelected={selectedId === note.id}
-                onSelect={() => onSelect(note)}
-                onDelete={() => onDelete(note.id)}
-              />
-            ))}
-          </div>
-        ))}
+      <div className={`notes-list__items ${draggedNoteId ? 'notes-list__items--dragging' : ''}`}>
+        {(() => {
+          let noteIndex = 0;
+          return sections.map(section => (
+            <div key={section.title} className="notes-list__section">
+              <div className="notes-list__section-header">{section.title}</div>
+              {section.notes.map(note => {
+                const currentIndex = noteIndex++;
+                return (
+                  <NoteItem
+                    key={note.id}
+                    note={note}
+                    index={currentIndex}
+                    isSelected={selectedId === note.id}
+                    onSelect={() => onSelect(note)}
+                    onDelete={() => onDelete(note.id)}
+                    isDragging={draggedNoteId === note.id}
+                    isDropTarget={dropTargetIndex === currentIndex && draggedNoteId !== note.id}
+                    onDragStart={handleDragStart}
+                    onDragOver={handleDragOver}
+                    onDragEnd={handleDragEnd}
+                  />
+                );
+              })}
+            </div>
+          ));
+        })()}
         {filteredNotes.length === 0 && searchQuery && (
           <div className="notes-list__empty">
             <p>No results for "{searchQuery}"</p>
@@ -1353,6 +1480,19 @@ export default function NotesEditor() {
     ));
   }, [selectedNoteId]);
 
+  // Reorder notes (drag-to-reorder)
+  const handleReorderNote = useCallback((noteId: string, newIndex: number) => {
+    setNotes(prev => {
+      const noteIndex = prev.findIndex(n => n.id === noteId);
+      if (noteIndex === -1 || noteIndex === newIndex) return prev;
+
+      const newNotes = [...prev];
+      const [removed] = newNotes.splice(noteIndex, 1);
+      newNotes.splice(newIndex, 0, removed);
+      return newNotes;
+    });
+  }, []);
+
   // Select note
   const handleSelectNote = useCallback((note: Note) => {
     setSelectedNoteId(note.id);
@@ -1397,6 +1537,7 @@ export default function NotesEditor() {
           onSelect={handleSelectNote}
           onCreateNote={handleCreateNote}
           onDelete={handleRequestDelete}
+          onReorder={handleReorderNote}
           selectedFolderId={selectedFolderId}
           folderName={folderName}
           onShowFolders={handleShowFolders}

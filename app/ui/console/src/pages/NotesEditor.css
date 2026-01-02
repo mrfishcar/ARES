@@ -1415,3 +1415,66 @@
     transform: none;
   }
 }
+
+/* ============================================================================
+   DRAG TO REORDER
+   ============================================================================ */
+
+/* Dragging state on the items container */
+.notes-list__items--dragging {
+  /* Prevent text selection during drag */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Dragging item */
+.notes-list__item-container--dragging {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.notes-list__item--dragging {
+  background: var(--ne-accent) !important;
+  color: #000 !important;
+  transform: scale(1.02) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  border-radius: var(--ne-radius-md);
+  z-index: 10;
+}
+
+/* Drop target indicator */
+.notes-list__drop-indicator {
+  height: 3px;
+  background: var(--ne-accent);
+  border-radius: 2px;
+  margin: 2px var(--ne-spacing-md);
+  animation: dropIndicatorPulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes dropIndicatorPulse {
+  from {
+    opacity: 0.6;
+    transform: scaleX(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+/* Drop target item styling */
+.notes-list__item--drop-target {
+  background: rgba(255, 214, 10, 0.1);
+  border-top: 2px solid var(--ne-accent);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .notes-list__drop-indicator {
+    animation: none;
+  }
+
+  .notes-list__item--dragging {
+    transform: none !important;
+  }
+}
