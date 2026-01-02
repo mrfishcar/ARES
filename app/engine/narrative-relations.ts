@@ -614,6 +614,15 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     symmetric: true,
     typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
   },
+  // "X, Y, and Z formed a trio/group/team" - special 3-way coordination pattern
+  // This pattern is handled specially in extractFromPatterns to create all pairwise relations
+  {
+    regex: /\b([A-Z][\w'-]+)\s*,\s*([A-Z][\w'-]+)\s*,?\s+and\s+([A-Z][\w'-]+)\s+(?:formed|made|were|became|constituted)\s+(?:a\s+)?(?:powerful\s+|close\s+|inseparable\s+)?(?:trio|group|team|unit|trio\b)/g,
+    predicate: 'friends_with',
+    symmetric: true,
+    coordination: true,
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
 
   // === EDUCATION/STUDIES PATTERNS ===
   // "X started at Y", "X studies at Y", "X was a student at Y"
@@ -2583,6 +2592,64 @@ export function extractNarrativeRelations(
               confidence: 0.85,
               extractor: 'regex'
             });
+          }
+        }
+        // Case 3: 3-way symmetric coordination (e.g., "Harry, Ron, and Hermione formed a trio")
+        // Create pairwise relations between all three subjects
+        else if (match[3] && pattern.symmetric) {
+          const thirdSubj = match[3];
+          const matchStart = match.index;
+          const firstOffset = match[0].indexOf(firstSubj);
+          const secondOffset = match[0].indexOf(secondSubj);
+          const thirdOffset = match[0].indexOf(thirdSubj, secondOffset + secondSubj.length);
+          const firstPosition = firstOffset >= 0 ? matchStart + firstOffset : matchStart;
+          const secondPosition = secondOffset >= 0 ? matchStart + secondOffset : matchStart;
+          const thirdPosition = thirdOffset >= 0 ? matchStart + thirdOffset : matchStart;
+          const entity1 = matchEntityWithCoref(firstSubj, firstPosition);
+          const entity2 = matchEntityWithCoref(secondSubj, secondPosition);
+          const entity3 = matchEntityWithCoref(thirdSubj, thirdPosition);
+
+          const allEntities = [entity1, entity2, entity3].filter(Boolean) as EntityLookup[];
+
+          // Create pairwise relations between all entities
+          for (let i = 0; i < allEntities.length; i++) {
+            for (let j = i + 1; j < allEntities.length; j++) {
+              const e1 = allEntities[i];
+              const e2 = allEntities[j];
+              if (passesTypeGuard(pattern, e1, e2)) {
+                const matchEnd = matchStart + match[0].length;
+                // Forward relation
+                relations.push({
+                  id: uuid(),
+                  subj: e1.id,
+                  pred: pattern.predicate as any,
+                  obj: e2.id,
+                  evidence: [{
+                    doc_id: docId,
+                    span: { start: matchStart, end: matchEnd, text: match[0] },
+                    sentence_index: 0,
+                    source: 'RULE'
+                  }],
+                  confidence: 0.85,
+                  extractor: 'regex'
+                });
+                // Reverse relation (symmetric)
+                relations.push({
+                  id: uuid(),
+                  subj: e2.id,
+                  pred: pattern.predicate as any,
+                  obj: e1.id,
+                  evidence: [{
+                    doc_id: docId,
+                    span: { start: matchStart, end: matchEnd, text: match[0] },
+                    sentence_index: 0,
+                    source: 'RULE'
+                  }],
+                  confidence: 0.85,
+                  extractor: 'regex'
+                });
+              }
+            }
           }
         }
         continue; // Skip normal processing for coordination patterns

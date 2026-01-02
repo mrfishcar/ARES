@@ -2658,31 +2658,26 @@ function extractDepRelations(
           const seen = new Set<string>();
 
           // Find nearby person entities for descriptor resolution
+          // Collect ALL nearby entities and sort by distance, then take top N
           if (descriptorSpan) {
-            let closestDistance = Infinity;
-            const nearest: EntityRef[] = [];
-          for (const span of spans) {
-            if (span.end > descriptorSpan.start) continue;
-            const entity = entityById.get(span.entity_id);
-            if (!entity || entity.type !== 'PERSON') continue;
-            if (options.avoidIds?.has(entity.id)) continue;
-            const distance = descriptorSpan.start - span.end;
-            if (distance > 200) continue;
-            if (descriptorEntityPattern.test(entity.canonical.toLowerCase())) continue;
-            if (distance < closestDistance) {
-                closestDistance = distance;
-                nearest.length = 0;
-                nearest.push({ entity, span });
-              } else if (distance === closestDistance) {
-                nearest.push({ entity, span });
-              }
+            const candidates: Array<{ entity: Entity; span: any; distance: number }> = [];
+            for (const span of spans) {
+              if (span.end > descriptorSpan.start) continue;
+              const entity = entityById.get(span.entity_id);
+              if (!entity || entity.type !== 'PERSON') continue;
+              if (options.avoidIds?.has(entity.id)) continue;
+              const distance = descriptorSpan.start - span.end;
+              if (distance > 200) continue;
+              if (descriptorEntityPattern.test(entity.canonical.toLowerCase())) continue;
+              // Check if we already have this entity (avoid duplicates from multiple mentions)
+              if (candidates.some(c => c.entity.id === entity.id)) continue;
+              candidates.push({ entity, span, distance });
             }
-            if (nearest.length) {
-              const limit = Math.max(1, options.limit ?? descriptorLimitFromSurface(lowerSurface));
-              for (const ref of nearest) {
-                resolved.push(ref);
-                if (resolved.length >= limit) break;
-              }
+            // Sort by distance (closest first) and take up to limit
+            candidates.sort((a, b) => a.distance - b.distance);
+            const limit = Math.max(1, options.limit ?? descriptorLimitFromSurface(lowerSurface));
+            for (let i = 0; i < Math.min(candidates.length, limit); i++) {
+              resolved.push({ entity: candidates[i].entity, span: candidates[i].span });
             }
           }
 
