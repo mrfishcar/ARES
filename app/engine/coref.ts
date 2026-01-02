@@ -423,21 +423,38 @@ function extractMentions(sentences: Sentence[], text: string): Mention[] {
     // Extract nominals ("the wizard", "the king", "this metropolis", "the five-borough city", etc.)
     // Includes both definite article "the" and demonstrative "this/that/these/those"
     // Handles hyphenated words like "five-borough" and optional modifiers
-    // Pattern: determiner + optional modifier(s) + nominal word
-    const nominalPattern = /\b((?:the|this|that|these|those)\s+(?:[a-z]+(?:-[a-z]+)?\s+)*?)([a-z]+(?:-[a-z]+)?)\b/gi;
+    // Pattern: determiner + optional modifier(s) + nominal word(s)
+    // Note: We try to capture the LONGEST phrase ending in a NOMINAL
+    const nominalPattern = /\b((?:the|this|that|these|those)\s+(?:[a-z]+(?:-[a-z]+)?\s+)*?)([a-z]+(?:-[a-z]+)?(?:\s+[a-z]+(?:-[a-z]+)?)*)\b/gi;
     let match: RegExpExecArray | null;
 
     while ((match = nominalPattern.exec(sentText))) {
-      const fullMatch = match[0];
-      const lastWord = match[2].toLowerCase();
+      const prefix = match[1]; // "This " or "The "
+      const wordSequence = match[2]; // "multinational corporation" or just "multinational"
+      const words = wordSequence.split(/\s+/);
 
-      // Only create mention if the last word is a recognized nominal
-      if (NOMINALS.has(lastWord)) {
+      // Find the longest phrase where the LAST word is a NOMINAL
+      // For "This multinational corporation", both "multinational" and "corporation" are in NOMINALS
+      // We want to match "This multinational corporation" not just "This multinational"
+      let longestNominalEnd = -1;
+      let longestMatch = '';
+
+      for (let i = 0; i < words.length; i++) {
+        const word = words[i].toLowerCase();
+        if (NOMINALS.has(word)) {
+          // This word is a NOMINAL - mark it as a potential ending
+          longestNominalEnd = i;
+          longestMatch = prefix + words.slice(0, i + 1).join(' ');
+        }
+      }
+
+      // Only create mention if we found a NOMINAL word
+      if (longestNominalEnd >= 0) {
         const start = sentence.start + match.index;
-        const end = start + fullMatch.length;
+        const end = start + longestMatch.length;
 
         mentions.push({
-          text: fullMatch,
+          text: longestMatch,
           start,
           end,
           sentence_index: si,

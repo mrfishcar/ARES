@@ -4385,12 +4385,13 @@ const mergedEntries = Array.from(mergedMap.values());
         }
       }
 
-      // Preserve titled variants (e.g., "Dr. Wilson") as aliases when the canonical strips the title
+      // Preserve titled variants (e.g., "Dr. Wilson", "President Biden") as aliases when the canonical strips the title
       const surfaceTokens = rawSurface.split(/\s+/);
-      const firstToken = surfaceTokens[0]?.replace(/[.'’]+$/g, '').toLowerCase();
+      const firstToken = surfaceTokens[0]?.replace(/[.'']+$/g, '').toLowerCase();
       if (firstToken && TITLE_WORDS.has(firstToken)) {
-        const stripped = surfaceTokens.slice(1).join(' ').trim();
-        if (stripped && stripped.toLowerCase() !== chosen.toLowerCase()) {
+        // Check if the FULL titled name differs from chosen canonical
+        // e.g., "President Biden" vs "Biden" - we want to add "President Biden" as alias
+        if (rawSurface.toLowerCase() !== chosen.toLowerCase()) {
           if (classifyAliasStrength(rawSurface, entry.entity.canonical)) {
             aliasRawSet.add(rawSurface);
           }
@@ -4593,8 +4594,11 @@ const mergedEntries = Array.from(mergedMap.values());
   // Step 1: Pattern-based alias extraction for explicit patterns
   // Handles: "X called Y", "X nicknamed Y", "X also known as Y", etc.
   const aliasPatterns = [
-    /([A-Z][A-Za-z\s\.]+?),?\s+(?:also known as|known as)\s+([A-Z][A-Za-z]+)/gi,
+    // "X, commonly/also/popularly known as Y"
+    /([A-Z][A-Za-z\s\.]+?),?\s+(?:commonly |popularly |also |better )?known as\s+([A-Z][A-Za-z]+)/gi,
+    // "X (also known as Y)" or "X (aka Y)"
     /([A-Z][A-Za-z\s\.]+?)\s+\((?:also known as|nicknamed|aka|a\.k\.a\.)\s+([A-Z][A-Za-z]+)\)/gi,
+    // "X called/referred to as Y"
     /([A-Z][A-Za-z\s\.]+?),?\s+(?:often )?(?:called|referred to as)\s+([A-Z][A-Za-z]+)/gi,
   ];
 
@@ -4612,53 +4616,91 @@ const mergedEntries = Array.from(mergedMap.values());
       const fullName = match[1].trim();
       const nickname = match[2].trim();
 
+      // Check if this is a "commonly known as" pattern - the nickname is the common name
+      // and should be canonical. For other patterns (called, nicknamed), the full name stays canonical.
+      const matchedText = match[0].toLowerCase();
+      const isCommonlyKnownAs = /\bcommonly\s+known\s+as\b/.test(matchedText);
+
       // Find entities matching these names
       const fullEntity = entityByCanonical.get(fullName.toLowerCase());
       const nickEntity = entityByCanonical.get(nickname.toLowerCase());
 
       if (fullEntity && nickEntity && fullEntity.id !== nickEntity.id) {
-        // Merge: add nickname's canonical to fullEntity's aliases
-        const nickStrength = classifyAliasStrength(nickEntity.canonical, fullEntity.canonical);
-        if (!fullEntity.aliases.includes(nickEntity.canonical) && nickStrength) {
-          fullEntity.aliases.push(nickEntity.canonical);
+        // Determine which entity should be canonical based on pattern type
+        let primaryEntity: Entity;
+        let secondaryEntity: Entity;
+        let primaryName: string;
+        let secondaryName: string;
+
+        if (isCommonlyKnownAs) {
+          // "commonly known as X" - X is the common name, should be canonical
+          primaryEntity = nickEntity;
+          secondaryEntity = fullEntity;
+          primaryName = nickname;
+          secondaryName = fullName;
+        } else {
+          // Regular pattern - full name stays canonical
+          primaryEntity = fullEntity;
+          secondaryEntity = nickEntity;
+          primaryName = fullName;
+          secondaryName = nickname;
+        }
+
+        // Merge: add secondary's canonical to primary's aliases
+        const aliasStrength = classifyAliasStrength(secondaryEntity.canonical, primaryEntity.canonical);
+        if (!primaryEntity.aliases.includes(secondaryEntity.canonical) && aliasStrength) {
+          primaryEntity.aliases.push(secondaryEntity.canonical);
           registerAliasStrength({
-            entity: fullEntity as unknown as Entity,
+            entity: primaryEntity as unknown as Entity,
             spanList: [],
             variants: new Map(),
             sources: new Set()
-          }, nickEntity.canonical, nickStrength);
+          }, secondaryEntity.canonical, aliasStrength);
         }
 
-        // Merge: add nickname entity's spans to full entity
+        // Merge: add secondary entity's spans to primary entity
         for (const span of spans) {
-          if (span.entity_id === nickEntity.id) {
-            span.entity_id = fullEntity.id;
+          if (span.entity_id === secondaryEntity.id) {
+            span.entity_id = primaryEntity.id;
           }
         }
 
-        // Remove nickname entity from entities array
-        const nickIdx = entities.indexOf(nickEntity);
-        if (nickIdx >= 0) {
-          entities.splice(nickIdx, 1);
+        // Remove secondary entity from entities array
+        const secondaryIdx = entities.indexOf(secondaryEntity);
+        if (secondaryIdx >= 0) {
+          entities.splice(secondaryIdx, 1);
         }
 
-        entityByCanonical.delete(nickname.toLowerCase());
+        entityByCanonical.delete(secondaryName.toLowerCase());
         aliasLinksFound++;
 
-        console.log(`[EXTRACT-ENTITIES] Merged "${nickname}" into "${fullName}" as alias`);
+        console.log(`[EXTRACT-ENTITIES] Merged "${secondaryName}" into "${primaryName}" as alias (isCommonlyKnownAs=${isCommonlyKnownAs})`);
       } else if (fullEntity && !nickEntity) {
-        // Nickname not extracted as separate entity, just add as alias
-        const nickStrength = classifyAliasStrength(nickname, fullEntity.canonical);
-        if (!fullEntity.aliases.includes(nickname) && nickStrength) {
-          fullEntity.aliases.push(nickname);
-          registerAliasStrength({
-            entity: fullEntity as unknown as Entity,
-            spanList: [],
-            variants: new Map(),
-            sources: new Set()
-          }, nickname, nickStrength);
+        // Nickname not extracted as separate entity
+        if (isCommonlyKnownAs) {
+          // For "commonly known as", swap canonical to the common name
+          if (!fullEntity.aliases.includes(fullEntity.canonical)) {
+            fullEntity.aliases.push(fullEntity.canonical);
+          }
+          fullEntity.canonical = nickname;
+          entityByCanonical.delete(fullName.toLowerCase());
+          entityByCanonical.set(nickname.toLowerCase(), fullEntity);
           aliasLinksFound++;
-          console.log(`[EXTRACT-ENTITIES] Added "${nickname}" as alias to "${fullName}"`);
+          console.log(`[EXTRACT-ENTITIES] Changed canonical from "${fullName}" to "${nickname}" (commonly known as)`);
+        } else {
+          // Regular pattern - just add nickname as alias
+          const nickStrength = classifyAliasStrength(nickname, fullEntity.canonical);
+          if (!fullEntity.aliases.includes(nickname) && nickStrength) {
+            fullEntity.aliases.push(nickname);
+            registerAliasStrength({
+              entity: fullEntity as unknown as Entity,
+              spanList: [],
+              variants: new Map(),
+              sources: new Set()
+            }, nickname, nickStrength);
+            aliasLinksFound++;
+            console.log(`[EXTRACT-ENTITIES] Added "${nickname}" as alias to "${fullName}"`);
+          }
         }
       }
     }
@@ -4734,8 +4776,8 @@ const mergedEntries = Array.from(mergedMap.values());
       const aliasSet = new Set<string>(entity.aliases);
 
       // Add mentions from coreference links as aliases
-      // INCLUDE: pronouns (he, she), title matches (the senator), nominal matches (the wizard)
-      // EXCLUDE: coordinations ("X and Y") - should not be aliases for individual entities
+      // INCLUDE: title matches (the senator), nominal matches (the wizard), nicknames
+      // EXCLUDE: pronouns (context-dependent), coordinations ("X and Y")
       for (const link of corefLinks.links) {
         if (link.entity_id === entity.id) {
           const mentionText = link.mention.text.trim();
@@ -4744,10 +4786,12 @@ const mergedEntries = Array.from(mergedMap.values());
               mentionText !== entity.canonical &&
               mentionText.toLowerCase() !== entity.canonical.toLowerCase() &&
               link.method !== 'coordination') {
-            // For context-dependent terms (pronouns, definite descriptions, nicknames), add directly
-            // For proper name variants, check alias strength
-            if (isContextDependent(mentionText) ||
-                link.method === 'title_match' ||
+            // Skip pronouns - they're context-dependent and shouldn't be permanent aliases
+            if (isContextDependent(mentionText)) {
+              continue;
+            }
+            // For title/nominal/nickname matches, add directly
+            if (link.method === 'title_match' ||
                 link.method === 'nominal_match' ||
                 link.method === 'nickname') {
               aliasSet.add(mentionText);
@@ -4767,7 +4811,8 @@ const mergedEntries = Array.from(mergedMap.values());
         }
       }
 
-      entity.aliases = Array.from(aliasSet);
+      // Filter any remaining context-dependent terms (pronouns) from aliases
+      entity.aliases = filterPronouns(Array.from(aliasSet));
     }
 
     if (corefLinks.links.length > 0) {
@@ -4781,12 +4826,37 @@ const mergedEntries = Array.from(mergedMap.values());
   // Apply linguistic filters to remove problematic entities
   const filteredEntities = applyLinguisticFilters(entities, spans, text, tokenStats, parsed, sentenceStarts);
 
+  // Remove entities that are well-known nicknames and have been resolved to another entity
+  // e.g., "Big Blue" should not be a separate entity if it's an alias for "IBM"
+  const wellKnownNicknames = new Set([
+    'big blue', 'the big apple', 'the windy city', 'the city of angels',
+    'the eternal city', 'the city of lights', 'sin city', 'the mile high city',
+    'the fruit company', 'the search giant', 'the social network',
+  ]);
+
+  const nicknameFilteredEntities = filteredEntities.filter(entity => {
+    const nameLower = entity.canonical.toLowerCase();
+    // Check if this entity is a well-known nickname
+    if (wellKnownNicknames.has(nameLower)) {
+      // Check if another entity already has this as an alias
+      const isAliasOfAnother = filteredEntities.some(other =>
+        other.id !== entity.id &&
+        other.aliases.some(alias => alias.toLowerCase() === nameLower)
+      );
+      if (isAliasOfAnother) {
+        console.log(`[EXTRACT-ENTITIES] Removed "${entity.canonical}" - already an alias of another entity`);
+        return false;
+      }
+    }
+    return true;
+  });
+
   // Update spans to remove references to filtered entities
-  const filteredEntityIds = new Set(filteredEntities.map(e => e.id));
+  const filteredEntityIds = new Set(nicknameFilteredEntities.map(e => e.id));
   const filteredSpans = spans.filter(span => filteredEntityIds.has(span.entity_id));
 
   // Resolve exact-span conflicts and overlapping spans deterministically
-  const conflictResolved = resolveSpanConflicts(filteredEntities, filteredSpans);
+  const conflictResolved = resolveSpanConflicts(nicknameFilteredEntities, filteredSpans);
   const finalEntities = conflictResolved.entities;
   const finalSpans = conflictResolved.spans;
 
