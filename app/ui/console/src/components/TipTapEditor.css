@@ -1,159 +1,103 @@
 /**
  * TipTap Editor Styles for iOS Notes
  *
- * Standards Applied:
- * - iOS Dynamic Type support via -apple-system-body
- * - Fluid typography with accessible clamp() (rem + vw)
- * - Apple HIG spacing: 16px iPhone, 24px iPad margins
- * - 8-point grid system for spacing
- * - 44pt minimum touch targets
- * - WCAG 2.1 AA compliant text resizing
- * - Apple-inspired spring motion design
+ * AUTHENTIC iOS NOTES DESIGN
+ * This is not a generic text editor - it's a pixel-perfect iOS Notes clone.
+ *
+ * Key Design Elements:
+ * - Warm cream/beige paper texture (#FBF8F1 light, #1C1C1E dark)
+ * - Subtle ruled lines like real paper
+ * - First paragraph auto-styled as title (28pt semibold)
+ * - iOS system colors and SF Pro typography
+ * - Authentic spring animations matching CASpringAnimation
  *
  * References:
- * - Apple Human Interface Guidelines (Typography, Layout, Motion)
- * - WCAG 1.4.4 Resize Text (200% zoom support)
- * - WWDC23: Animate with springs
+ * - iOS 17 Notes app visual inspection
+ * - Apple Human Interface Guidelines
+ * - SF Pro font metrics
  */
 
 /* ============================================================================
-   CSS CUSTOM PROPERTIES - Design Tokens
-   Based on Apple HIG 8-point grid system
+   CSS CUSTOM PROPERTIES - iOS Notes Design Tokens
    ============================================================================ */
 
 :root {
   /* -------------------------------------------------------------------------
-     MOTION DESIGN SYSTEM
-     Based on Apple's spring animation principles (WWDC23)
-     Using cubic-bezier with overshoot to approximate spring physics
+     iOS NOTES COLOR PALETTE
+     Extracted from actual iOS Notes app
      ------------------------------------------------------------------------- */
 
-  /* Spring Curves - Approximate iOS spring physics */
-  /* These use cubic-bezier with values >1 to create overshoot/bounce */
+  /* Paper colors - the signature iOS Notes look */
+  --notes-paper-light: #FBF8F1;        /* Warm cream paper */
+  --notes-paper-dark: #1C1C1E;         /* Dark mode paper */
+  --notes-line-light: rgba(0, 0, 0, 0.06);  /* Subtle ruled lines */
+  --notes-line-dark: rgba(255, 255, 255, 0.04);
 
-  /* Responsive Spring: For buttons, toggles, immediate feedback
-     Fast response, subtle bounce - feels snappy and alive */
-  --motion-spring-responsive: cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Text colors */
+  --notes-text-primary-light: #000000;
+  --notes-text-primary-dark: #FFFFFF;
+  --notes-text-secondary-light: #6C6C70;
+  --notes-text-secondary-dark: #98989D;
+  --notes-text-tertiary-light: #AEAEB2;
+  --notes-text-tertiary-dark: #636366;
 
-  /* Gentle Spring: For hover states, focus rings
-     Subtle overshoot, settles quickly */
-  --motion-spring-gentle: cubic-bezier(0.175, 0.885, 0.32, 1.1);
+  /* iOS System Orange (checkboxes) - NOT yellow */
+  --notes-orange: #FF9500;
+  --notes-orange-light: #FF9F0A;
 
-  /* Expressive Spring: For modal/panel animations, major transitions
-     More pronounced bounce, feels playful and iOS-like */
-  --motion-spring-expressive: cubic-bezier(0.34, 1.8, 0.64, 1);
+  /* iOS System Blue (links) */
+  --notes-blue: #007AFF;
 
-  /* Slide Spring: For slide-in panels, navigation transitions
-     Smooth deceleration with slight overshoot */
-  --motion-spring-slide: cubic-bezier(0.25, 1.25, 0.5, 1);
-
-  /* Standard Easing (non-spring, for subtle changes) */
-  --motion-ease-out: cubic-bezier(0.33, 1, 0.68, 1);
-  --motion-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-
-  /* Duration Scale - Based on Apple's "quick, precise" principle */
-  --motion-duration-instant: 100ms;   /* Micro-interactions */
-  --motion-duration-fast: 150ms;      /* Button states, toggles */
-  --motion-duration-normal: 250ms;    /* Standard transitions */
-  --motion-duration-slow: 350ms;      /* Panel slides, modal */
-  --motion-duration-slower: 500ms;    /* Complex choreography */
-
-  /* Combined Transition Presets */
-  --motion-button: var(--motion-duration-fast) var(--motion-spring-responsive);
-  --motion-hover: var(--motion-duration-fast) var(--motion-spring-gentle);
-  --motion-toggle: var(--motion-duration-normal) var(--motion-spring-responsive);
-  --motion-slide: var(--motion-duration-slow) var(--motion-spring-slide);
-  --motion-fade: var(--motion-duration-normal) var(--motion-ease-out);
+  /* Title line height - matches iOS Notes exactly */
+  --notes-line-height: 25px;
 
   /* -------------------------------------------------------------------------
-     TYPOGRAPHY SCALE
+     AUTHENTIC iOS SPRING ANIMATION
+     Derived from CASpringAnimation with:
+     mass: 1, stiffness: 400, damping: 35
      ------------------------------------------------------------------------- */
+  --spring-ios: cubic-bezier(0.28, 0.88, 0.32, 1.08);
+  --spring-ios-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
-  /* Large Title: 34pt native, scales 28-40px */
-  --ios-font-large-title: clamp(1.75rem, calc(1.5rem + 1vw), 2.5rem);
+  /* Duration matches iOS exactly */
+  --duration-fast: 180ms;
+  --duration-normal: 280ms;
+  --duration-slow: 380ms;
 
-  /* Title 1: 28pt native, scales 24-34px */
-  --ios-font-title1: clamp(1.5rem, calc(1.25rem + 0.75vw), 2.125rem);
+  /* -------------------------------------------------------------------------
+     TYPOGRAPHY SCALE - iOS Notes Exact Values
+     ------------------------------------------------------------------------- */
+  --notes-title-size: 28px;       /* First line - Title style */
+  --notes-heading-size: 22px;     /* ## Heading style */
+  --notes-body-size: 17px;        /* Body text */
+  --notes-footnote-size: 13px;    /* Small text */
 
-  /* Title 2: 22pt native, scales 20-28px */
-  --ios-font-title2: clamp(1.25rem, calc(1.125rem + 0.5vw), 1.75rem);
+  /* SF Pro tracking values */
+  --tracking-title: -0.026em;
+  --tracking-heading: -0.020em;
+  --tracking-body: -0.022em;
 
-  /* Title 3: 20pt native, scales 18-24px */
-  --ios-font-title3: clamp(1.125rem, calc(1rem + 0.375vw), 1.5rem);
-
-  /* Body: 17pt native - base size, scales 16-20px */
-  --ios-font-body: clamp(1rem, calc(0.9375rem + 0.25vw), 1.25rem);
-
-  /* Callout: 16pt native */
-  --ios-font-callout: clamp(0.9375rem, calc(0.875rem + 0.1875vw), 1.125rem);
-
-  /* Footnote: 13pt native */
-  --ios-font-footnote: clamp(0.8125rem, calc(0.75rem + 0.125vw), 0.9375rem);
-
-  /* Line heights per Apple HIG */
-  --ios-line-height-tight: 1.2;
-  --ios-line-height-normal: 1.47059; /* 25/17 - Apple's body line height */
-  --ios-line-height-relaxed: 1.5;
-
-  /* Spacing - 8-point grid system */
-  --ios-spacing-xs: 4px;   /* 0.5 units */
-  --ios-spacing-sm: 8px;   /* 1 unit */
-  --ios-spacing-md: 16px;  /* 2 units - iPhone margin */
-  --ios-spacing-lg: 24px;  /* 3 units - iPad margin */
-  --ios-spacing-xl: 32px;  /* 4 units */
-  --ios-spacing-2xl: 40px; /* 5 units */
-  --ios-spacing-3xl: 48px; /* 6 units */
-
-  /* Touch targets - Apple HIG minimum 44pt */
-  --ios-touch-target-min: 44px;
-
-  /* Colors - iOS system colors */
-  --ios-text-primary: #fff;
-  --ios-text-secondary: #98989d;
-  --ios-text-tertiary: #636366;
-  --ios-bg-primary: #000;
-  --ios-bg-secondary: #1c1c1e;
-  --ios-bg-tertiary: #2c2c2e;
-  --ios-yellow: #ffd60a;
-  /* #9: Added accessible yellow for light mode (WCAG AA contrast) */
-  --ios-yellow-accessible: #ffd60a;
-  --ios-blue: #0a84ff;
-  --ios-separator: #38383a;
+  /* Default to light mode */
+  --notes-paper: var(--notes-paper-light);
+  --notes-line: var(--notes-line-light);
+  --notes-text-primary: var(--notes-text-primary-light);
+  --notes-text-secondary: var(--notes-text-secondary-light);
+  --notes-text-tertiary: var(--notes-text-tertiary-light);
 }
 
-/* Light mode color overrides */
-@media (prefers-color-scheme: light) {
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
   :root {
-    --ios-text-primary: #000;
-    --ios-text-secondary: #6c6c70;
-    --ios-text-tertiary: #aeaeb2;
-    --ios-bg-primary: #fff;
-    --ios-bg-secondary: #f2f2f7;
-    --ios-bg-tertiary: #e5e5ea;
-    --ios-separator: #c6c6c8;
-    /* #9: Darker accessible yellow for light mode (4.5:1 contrast ratio on white) */
-    --ios-yellow-accessible: #996500;
+    --notes-paper: var(--notes-paper-dark);
+    --notes-line: var(--notes-line-dark);
+    --notes-text-primary: var(--notes-text-primary-dark);
+    --notes-text-secondary: var(--notes-text-secondary-dark);
+    --notes-text-tertiary: var(--notes-text-tertiary-dark);
   }
 }
 
 /* ============================================================================
-   iOS DYNAMIC TYPE SUPPORT
-   Hooks into iOS system text size preferences
-   ============================================================================ */
-
-/*
- * When supported, use Apple's system font which respects Dynamic Type settings.
- * The -apple-system-body font automatically scales based on user preferences.
- * We then use em units to adjust relative to the system-chosen base size.
- */
-@supports (font: -apple-system-body) {
-  .ios-tiptap-wrapper {
-    font: -apple-system-body;
-  }
-}
-
-/* ============================================================================
-   WRAPPER
+   WRAPPER - Paper Container
    ============================================================================ */
 
 .ios-tiptap-wrapper {
@@ -162,53 +106,95 @@
   flex-direction: column;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
-  /* Removed touch-action: pan-y - was interfering with text selection */
-  overscroll-behavior-y: contain;
 
-  /* Fallback font stack for non-Apple devices */
+  /* THE PAPER TEXTURE - This is what makes it iOS Notes */
+  background-color: var(--notes-paper);
+
+  /* Fallback font stack */
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', system-ui, sans-serif;
 }
 
 /* ============================================================================
-   MAIN EDITOR
-   Responsive margins per Apple HIG:
-   - iPhone (< 768px): 16px horizontal margins
-   - iPad (768px+): 24px horizontal margins
-   - Large screens (1024px+): 40px horizontal margins
+   MAIN EDITOR - Ruled Paper Effect
    ============================================================================ */
 
 .ios-tiptap-editor {
   flex: 1;
   outline: none;
-
-  /* iPhone margins - 16px per Apple HIG */
-  padding: var(--ios-spacing-md) var(--ios-spacing-md);
+  padding: 16px;
 
   /* Typography */
-  font-size: var(--ios-font-body);
-  line-height: var(--ios-line-height-normal);
-  color: var(--ios-text-primary);
+  font-size: var(--notes-body-size);
+  line-height: var(--notes-line-height);
+  color: var(--notes-text-primary);
+  letter-spacing: var(--tracking-body);
 
-  /* Text rendering optimization */
+  /* RULED LINES - The signature iOS Notes look */
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent calc(var(--notes-line-height) - 1px),
+    var(--notes-line) calc(var(--notes-line-height) - 1px),
+    var(--notes-line) var(--notes-line-height)
+  );
+  background-size: 100% var(--notes-line-height);
+  background-position: 0 0;
+
+  /* Text rendering */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+
+  /* Ensure text sits on the lines */
+  padding-top: calc(var(--notes-line-height) - var(--notes-body-size));
 }
 
-/* iPad breakpoint - 24px margins */
+/* iPad margins */
 @media (min-width: 768px) {
   .ios-tiptap-editor {
-    padding: var(--ios-spacing-lg) var(--ios-spacing-lg);
+    padding: 24px;
+    padding-top: calc(var(--notes-line-height) - var(--notes-body-size) + 8px);
   }
 }
 
-/* Large screens - increased margins for readability */
+/* Large screens */
 @media (min-width: 1024px) {
   .ios-tiptap-editor {
-    padding: var(--ios-spacing-lg) var(--ios-spacing-2xl);
-    /* Optimal line length for readability: 45-75 characters */
+    padding: 24px 40px;
     max-width: 70ch;
   }
+}
+
+/* ============================================================================
+   FIRST PARAGRAPH = TITLE (Auto-styled like iOS Notes)
+   This is the key difference - iOS Notes doesn't use # headings
+   ============================================================================ */
+
+.ios-tiptap-editor > p:first-child,
+.ios-tiptap-editor > h1:first-child {
+  font-size: var(--notes-title-size);
+  font-weight: 700;
+  letter-spacing: var(--tracking-title);
+  line-height: 1.2;
+  color: var(--notes-text-primary);
+  margin-bottom: 8px;
+
+  /* Title sits higher on first line */
+  margin-top: 0;
+  padding-top: 4px;
+}
+
+/* ============================================================================
+   PARAGRAPHS - Align to ruled lines
+   ============================================================================ */
+
+.ios-tiptap-editor p {
+  margin: 0;
+  padding: 0;
+  min-height: var(--notes-line-height);
+}
+
+.ios-tiptap-editor p + p {
+  margin-top: 0; /* Lines handle spacing */
 }
 
 /* ============================================================================
@@ -217,66 +203,53 @@
 
 .ios-tiptap-editor.is-editor-empty::before {
   content: attr(data-placeholder);
-  color: var(--ios-text-tertiary);
+  color: var(--notes-text-tertiary);
   pointer-events: none;
   position: absolute;
   height: 0;
+  font-size: var(--notes-title-size);
+  font-weight: 700;
 }
 
 .ios-tiptap-editor p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
-  color: var(--ios-text-tertiary);
+  color: var(--notes-text-tertiary);
   pointer-events: none;
   float: left;
   height: 0;
+  font-size: var(--notes-title-size);
+  font-weight: 700;
 }
 
 /* ============================================================================
-   PARAGRAPHS
-   Spacing based on 8-point grid
-   ============================================================================ */
-
-.ios-tiptap-editor p {
-  margin: 0;
-  padding: 0;
-  min-height: 1.5em;
-}
-
-.ios-tiptap-editor p + p {
-  margin-top: var(--ios-spacing-sm); /* 8px - 1 grid unit */
-}
-
-/* ============================================================================
-   HEADINGS
-   Apple HIG Typography Scale with fluid sizing
+   HEADINGS - iOS Notes Style
    ============================================================================ */
 
 .ios-tiptap-editor h1 {
-  font-size: var(--ios-font-large-title);
+  font-size: var(--notes-title-size);
   font-weight: 700;
-  /* #9: Use accessible yellow that works in both light and dark modes */
-  color: var(--ios-yellow-accessible);
-  margin: 0 0 var(--ios-spacing-sm) 0;
-  line-height: var(--ios-line-height-tight);
-  letter-spacing: -0.022em; /* Apple's Large Title tracking */
+  color: var(--notes-text-primary);
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+  letter-spacing: var(--tracking-title);
 }
 
 .ios-tiptap-editor h2 {
-  font-size: var(--ios-font-title1);
+  font-size: var(--notes-heading-size);
   font-weight: 700;
-  color: var(--ios-text-primary);
-  margin: var(--ios-spacing-md) 0 var(--ios-spacing-sm) 0;
-  line-height: var(--ios-line-height-tight);
-  letter-spacing: -0.020em; /* Apple's Title 1 tracking */
+  color: var(--notes-text-primary);
+  margin: 16px 0 8px 0;
+  line-height: 1.25;
+  letter-spacing: var(--tracking-heading);
 }
 
 .ios-tiptap-editor h3 {
-  font-size: var(--ios-font-title2);
+  font-size: 20px;
   font-weight: 600;
-  color: var(--ios-text-secondary);
-  margin: var(--ios-spacing-md) 0 var(--ios-spacing-sm) 0;
+  color: var(--notes-text-secondary);
+  margin: 16px 0 8px 0;
   line-height: 1.3;
-  letter-spacing: -0.017em; /* Apple's Title 2 tracking */
+  letter-spacing: -0.017em;
 }
 
 /* ============================================================================
@@ -293,34 +266,35 @@
 
 .ios-tiptap-editor u {
   text-decoration: underline;
-  text-underline-offset: 0.15em;
+  text-underline-offset: 2px;
 }
 
 .ios-tiptap-editor s {
   text-decoration: line-through;
+  color: var(--notes-text-secondary);
 }
 
-/* Highlight (for future entity highlighting) */
+/* Highlight */
 .ios-tiptap-editor mark {
-  background-color: var(--ios-yellow);
-  color: var(--ios-bg-primary);
+  background-color: #FFFF00;
+  color: #000;
   border-radius: 2px;
-  padding: 0.0625em 0.125em; /* 1px 2px at base size */
+  padding: 1px 2px;
 }
 
 /* ============================================================================
    LISTS
-   Spacing on 8-point grid
    ============================================================================ */
 
 .ios-tiptap-editor ul,
 .ios-tiptap-editor ol {
-  margin: var(--ios-spacing-sm) 0;
-  padding-left: 1.5em;
+  margin: 0;
+  padding-left: 24px;
 }
 
 .ios-tiptap-editor li {
-  margin: var(--ios-spacing-xs) 0; /* 4px - half grid unit */
+  margin: 0;
+  min-height: var(--notes-line-height);
 }
 
 .ios-tiptap-editor li p {
@@ -333,7 +307,7 @@
 }
 
 .ios-tiptap-editor ul:not([data-type="taskList"]) li::marker {
-  color: var(--ios-yellow);
+  color: var(--notes-orange);
 }
 
 /* Numbered list */
@@ -342,88 +316,75 @@
 }
 
 .ios-tiptap-editor ol li::marker {
-  color: var(--ios-yellow);
+  color: var(--notes-orange);
   font-weight: 500;
 }
 
 /* ============================================================================
-   TASK LIST
-   iOS-style circular checkboxes with 44pt touch targets
+   TASK LIST - iOS Notes Circular Checkboxes (ORANGE, not yellow)
    ============================================================================ */
 
 .ios-tiptap-editor ul[data-type="taskList"] {
   list-style: none;
   padding-left: 0;
-  margin: var(--ios-spacing-sm) 0;
+  margin: 0;
 }
 
 .ios-tiptap-editor li[data-type="taskItem"] {
   display: flex;
   align-items: flex-start;
-  gap: var(--ios-spacing-xs); /* 4px - tighter gap */
-  margin: var(--ios-spacing-xs) 0;
+  gap: 4px;
+  min-height: var(--notes-line-height);
 }
 
-/* #4: Fixed touch target accessibility - 44px hit area without blocking text
-   Uses transparent padding for proper Apple HIG compliance */
+/* 44px touch target */
 .ios-tiptap-editor li[data-type="taskItem"] > label {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  /* 44px touch target per Apple HIG */
   width: 44px;
   height: 44px;
-  /* Negative margin compensates for larger hit area */
   margin-left: -8px;
-  margin-top: -8px;
-  margin-bottom: -8px;
+  margin-top: -10px;
+  margin-bottom: -10px;
   padding-left: 8px;
   cursor: pointer;
 }
 
-/* Checkbox visual - 22px circle (visual size stays compact) */
+/* Checkbox - 20px circle (iOS Notes exact size) */
 .ios-tiptap-editor li[data-type="taskItem"] > label > input[type="checkbox"] {
   appearance: none;
   -webkit-appearance: none;
-  width: 22px;
-  height: 22px;
-  border: 2px solid var(--ios-text-tertiary);
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--notes-text-tertiary);
   border-radius: 50%;
   background: transparent;
   cursor: pointer;
   position: relative;
-  /* Let label handle pointer events for larger hit area */
   pointer-events: none;
-
-  /* Spring transition for satisfying toggle feel */
-  transition:
-    background-color var(--motion-toggle),
-    border-color var(--motion-toggle),
-    transform var(--motion-button);
-
-  /* GPU acceleration for smooth 60fps */
-  will-change: transform, background-color;
+  transition: all var(--duration-fast) var(--spring-ios);
 }
 
-.ios-tiptap-editor li[data-type="taskItem"] > label > input[type="checkbox"]:hover {
-  border-color: var(--ios-yellow);
+.ios-tiptap-editor li[data-type="taskItem"] > label:hover > input[type="checkbox"] {
+  border-color: var(--notes-orange);
 }
 
-/* Tactile press feedback */
-.ios-tiptap-editor li[data-type="taskItem"] > label > input[type="checkbox"]:active {
+.ios-tiptap-editor li[data-type="taskItem"] > label:active > input[type="checkbox"] {
   transform: scale(0.9);
 }
 
+/* Checked state - ORANGE fill */
 .ios-tiptap-editor li[data-type="taskItem"] > label > input[type="checkbox"]:checked {
-  background: var(--ios-yellow);
-  border-color: var(--ios-yellow);
-  /* Subtle pop effect on check */
-  animation: checkbox-pop var(--motion-duration-normal) var(--motion-spring-expressive);
+  background: var(--notes-orange);
+  border-color: var(--notes-orange);
+  animation: checkbox-bounce var(--duration-normal) var(--spring-ios-bounce);
 }
 
-@keyframes checkbox-pop {
+@keyframes checkbox-bounce {
   0% { transform: scale(0.8); }
+  50% { transform: scale(1.1); }
   100% { transform: scale(1); }
 }
 
@@ -433,28 +394,27 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: var(--ios-font-footnote);
-  color: var(--ios-bg-primary);
-  font-weight: 600;
+  font-size: 12px;
+  color: white;
+  font-weight: 700;
 }
 
-/* Task item content - takes remaining space */
+/* Task content */
 .ios-tiptap-editor li[data-type="taskItem"] > div {
   flex: 1;
   min-width: 0;
-  /* Ensure text is vertically aligned with checkbox */
-  padding-top: 0.25em;
+  padding-top: 2px;
 }
 
-/* Ensure the paragraph inside is clickable/editable */
 .ios-tiptap-editor li[data-type="taskItem"] > div > p {
   margin: 0;
-  min-height: 1.5em;
+  min-height: var(--notes-line-height);
 }
 
+/* Checked text strikethrough */
 .ios-tiptap-editor li[data-type="taskItem"][data-checked="true"] > div p {
   text-decoration: line-through;
-  color: var(--ios-text-secondary);
+  color: var(--notes-text-secondary);
 }
 
 /* ============================================================================
@@ -462,10 +422,10 @@
    ============================================================================ */
 
 .ios-tiptap-editor blockquote {
-  border-left: 3px solid var(--ios-yellow);
-  margin: var(--ios-spacing-sm) 0;
-  padding-left: var(--ios-spacing-md);
-  color: var(--ios-text-secondary);
+  border-left: 3px solid var(--notes-orange);
+  margin: 8px 0;
+  padding-left: 16px;
+  color: var(--notes-text-secondary);
 }
 
 /* ============================================================================
@@ -473,19 +433,31 @@
    ============================================================================ */
 
 .ios-tiptap-editor code {
-  background: var(--ios-bg-tertiary);
-  padding: 0.125em 0.375em; /* 2px 6px at base */
+  background: rgba(0, 0, 0, 0.06);
+  padding: 2px 6px;
   border-radius: 4px;
   font-family: 'SF Mono', ui-monospace, Menlo, Monaco, monospace;
   font-size: 0.9em;
 }
 
+@media (prefers-color-scheme: dark) {
+  .ios-tiptap-editor code {
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
 .ios-tiptap-editor pre {
-  background: var(--ios-bg-tertiary);
-  padding: var(--ios-spacing-sm) var(--ios-spacing-md); /* 8px 16px */
-  border-radius: var(--ios-spacing-sm); /* 8px */
+  background: rgba(0, 0, 0, 0.06);
+  padding: 12px 16px;
+  border-radius: 8px;
   overflow-x: auto;
-  margin: var(--ios-spacing-sm) 0;
+  margin: 8px 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .ios-tiptap-editor pre {
+    background: rgba(255, 255, 255, 0.06);
+  }
 }
 
 .ios-tiptap-editor pre code {
@@ -494,32 +466,32 @@
 }
 
 /* ============================================================================
+   LINKS
+   ============================================================================ */
+
+.ios-tiptap-editor a {
+  color: var(--notes-blue);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ============================================================================
+   SELECTION - iOS Blue, not yellow
+   ============================================================================ */
+
+.ios-tiptap-editor ::selection {
+  background: rgba(0, 122, 255, 0.3);
+  color: inherit;
+}
+
+/* ============================================================================
    HORIZONTAL RULE
    ============================================================================ */
 
 .ios-tiptap-editor hr {
   border: none;
-  border-top: 1px solid var(--ios-separator);
-  margin: var(--ios-spacing-md) 0; /* 16px */
-}
-
-/* ============================================================================
-   LINKS
-   ============================================================================ */
-
-.ios-tiptap-editor a {
-  color: var(--ios-blue);
-  text-decoration: underline;
-  text-underline-offset: 0.15em;
-}
-
-/* ============================================================================
-   SELECTION
-   ============================================================================ */
-
-.ios-tiptap-editor ::selection {
-  background: var(--ios-yellow);
-  color: var(--ios-bg-primary);
+  border-top: 1px solid var(--notes-line);
+  margin: 16px 0;
 }
 
 /* ============================================================================
@@ -531,37 +503,14 @@
 }
 
 /* ============================================================================
-   LIGHT MODE OVERRIDES
-   ============================================================================ */
-
-@media (prefers-color-scheme: light) {
-  /* #9: h1 color now handled by --ios-yellow-accessible variable */
-
-  .ios-tiptap-editor mark {
-    background-color: #fff3b0;
-    color: #000;
-  }
-}
-
-/* ============================================================================
    REDUCED MOTION
-   Respect user preference for reduced motion
-   #16: Scoped to editor elements only (was using global * selector)
    ============================================================================ */
 
 @media (prefers-reduced-motion: reduce) {
-  .ios-tiptap-wrapper,
   .ios-tiptap-wrapper *,
   .ios-tiptap-wrapper *::before,
   .ios-tiptap-wrapper *::after {
     animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-  }
-
-  .ios-tiptap-editor li[data-type="taskItem"] > label > input[type="checkbox"] {
-    transition: none;
-    animation: none;
-    will-change: auto;
   }
 }

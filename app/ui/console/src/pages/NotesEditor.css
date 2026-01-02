@@ -429,6 +429,142 @@
 }
 
 /* ============================================================================
+   SEARCH BAR (iOS Notes Style)
+   ============================================================================ */
+
+.notes-list__search {
+  display: flex;
+  align-items: center;
+  gap: var(--ne-spacing-sm);
+  margin: var(--ne-spacing-sm) var(--ne-spacing-md);
+  padding: var(--ne-spacing-sm) 12px;
+  background: var(--ne-bg-tertiary);
+  border-radius: var(--ne-radius-md);
+  transition: background-color var(--ne-motion-hover);
+}
+
+.notes-list__search--focused {
+  background: var(--ne-bg-secondary);
+  box-shadow: 0 0 0 2px var(--ne-accent);
+}
+
+.notes-list__search-icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: var(--ne-text-tertiary);
+}
+
+.notes-list__search-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.notes-list__search-input {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: var(--ne-font-body);
+  color: var(--ne-text-primary);
+  font-family: inherit;
+}
+
+.notes-list__search-input::placeholder {
+  color: var(--ne-text-tertiary);
+}
+
+.notes-list__search-clear {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background: var(--ne-text-tertiary);
+  border: none;
+  border-radius: 50%;
+  color: var(--ne-bg-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--ne-motion-button);
+}
+
+.notes-list__search-clear:active {
+  transform: scale(0.9);
+}
+
+.notes-list__search-clear svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* ============================================================================
+   SECTION HEADERS (iOS Notes Style)
+   ============================================================================ */
+
+.notes-list__section {
+  margin-bottom: var(--ne-spacing-sm);
+}
+
+.notes-list__section-header {
+  padding: var(--ne-spacing-lg) var(--ne-spacing-md) var(--ne-spacing-sm);
+  font-size: var(--ne-font-title1);
+  font-weight: 700;
+  color: var(--ne-text-primary);
+  letter-spacing: -0.026em; /* Apple Large Title tracking */
+}
+
+/* First section doesn't need top padding */
+.notes-list__section:first-child .notes-list__section-header {
+  padding-top: var(--ne-spacing-sm);
+}
+
+/* ============================================================================
+   SWIPE-TO-DELETE
+   ============================================================================ */
+
+.notes-list__item-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.notes-list__item-delete {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: var(--ne-danger);
+  color: #fff;
+  cursor: pointer;
+  transition: opacity var(--ne-motion-fade);
+}
+
+.notes-list__item-delete svg {
+  width: 22px;
+  height: 22px;
+}
+
+.notes-list__item-delete span {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Swipeable item needs relative positioning */
+.notes-list__item-container .notes-list__item {
+  position: relative;
+  z-index: 1;
+  background: var(--ne-bg-secondary);
+}
+
+/* ============================================================================
    EDITOR TOOLBAR
    ============================================================================ */
 
@@ -767,5 +903,269 @@
     transition: none;
     transform: none !important;
     will-change: auto;
+  }
+}
+
+/* ============================================================================
+   KEYBOARD ACCESSORY TOOLBAR (Mobile)
+   Positioned above the keyboard when open
+   ============================================================================ */
+
+@media (max-width: 767px) {
+  .editor-toolbar--keyboard-accessory {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: env(keyboard-inset-bottom, 0);
+    z-index: 100;
+    /* Frosted glass effect */
+    background: rgba(28, 28, 30, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--ne-separator);
+    border-bottom: none;
+    /* Safe area padding */
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    /* Spring animation for appearing */
+    animation: slideUp var(--ne-duration-normal) var(--ne-spring-slide);
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  /* Light mode frosted glass */
+  @media (prefers-color-scheme: light) {
+    .editor-toolbar--keyboard-accessory {
+      background: rgba(242, 242, 247, 0.85);
+    }
+  }
+}
+
+/* ============================================================================
+   ACTION SHEET (iOS Style)
+   ============================================================================ */
+
+.action-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: var(--ne-spacing-sm);
+  padding-bottom: calc(var(--ne-spacing-sm) + env(safe-area-inset-bottom, 0));
+  animation: fadeIn var(--ne-duration-fast) ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.action-sheet {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ne-spacing-sm);
+  animation: slideUp var(--ne-duration-normal) var(--ne-spring-slide);
+}
+
+.action-sheet__header {
+  background: var(--ne-bg-secondary);
+  border-radius: var(--ne-radius-lg);
+  padding: var(--ne-spacing-md);
+  text-align: center;
+}
+
+.action-sheet__title {
+  font-size: var(--ne-font-subhead);
+  font-weight: 600;
+  color: var(--ne-text-secondary);
+  margin-bottom: var(--ne-spacing-xs);
+}
+
+.action-sheet__message {
+  font-size: var(--ne-font-subhead);
+  color: var(--ne-text-tertiary);
+}
+
+.action-sheet__actions {
+  background: var(--ne-bg-secondary);
+  border-radius: var(--ne-radius-lg);
+  overflow: hidden;
+}
+
+.action-sheet__action {
+  display: block;
+  width: 100%;
+  padding: var(--ne-spacing-md);
+  background: none;
+  border: none;
+  font-size: var(--ne-font-title1);
+  font-weight: 400;
+  color: var(--ne-accent-secondary);
+  text-align: center;
+  cursor: pointer;
+  transition: background-color var(--ne-motion-hover);
+}
+
+.action-sheet__action:not(:last-child) {
+  border-bottom: 1px solid var(--ne-separator);
+}
+
+.action-sheet__action:active {
+  background: var(--ne-bg-tertiary);
+}
+
+.action-sheet__action--destructive {
+  color: var(--ne-danger);
+}
+
+.action-sheet__cancel {
+  display: block;
+  width: 100%;
+  padding: var(--ne-spacing-md);
+  background: var(--ne-bg-secondary);
+  border: none;
+  border-radius: var(--ne-radius-lg);
+  font-size: var(--ne-font-title1);
+  font-weight: 600;
+  color: var(--ne-accent-secondary);
+  text-align: center;
+  cursor: pointer;
+  transition: background-color var(--ne-motion-hover);
+}
+
+.action-sheet__cancel:active {
+  background: var(--ne-bg-tertiary);
+}
+
+/* Light mode adjustments */
+@media (prefers-color-scheme: light) {
+  .action-sheet-overlay {
+    background: rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* ============================================================================
+   TEXT SELECTION POPUP (iOS-style formatting bubble)
+   ============================================================================ */
+
+.selection-popup {
+  position: fixed;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 8px;
+  background: var(--ne-bg-tertiary);
+  border-radius: var(--ne-radius-md);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transform: translateX(-50%) translateY(-100%);
+  /* Spring animation */
+  animation: popupAppear var(--ne-duration-fast) var(--ne-spring-expressive);
+}
+
+@keyframes popupAppear {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-100%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-100%) scale(1);
+  }
+}
+
+/* Arrow pointing down */
+.selection-popup::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid var(--ne-bg-tertiary);
+}
+
+.selection-popup__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  border-radius: var(--ne-radius-sm);
+  color: var(--ne-text-primary);
+  font-size: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+  cursor: pointer;
+  transition:
+    background-color var(--ne-motion-hover),
+    transform var(--ne-motion-button);
+}
+
+.selection-popup__btn:hover {
+  background: var(--ne-bg-secondary);
+}
+
+.selection-popup__btn:active {
+  transform: scale(0.9);
+  background: var(--ne-bg-secondary);
+}
+
+.selection-popup__btn strong {
+  font-weight: 700;
+}
+
+.selection-popup__btn em {
+  font-style: italic;
+}
+
+.selection-popup__btn u {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.selection-popup__btn s {
+  text-decoration: line-through;
+}
+
+.selection-popup__highlight {
+  background: #FFFF00;
+  color: #000;
+  padding: 2px 4px;
+  border-radius: 2px;
+  font-weight: 600;
+}
+
+.selection-popup__divider {
+  width: 1px;
+  height: 20px;
+  background: var(--ne-separator);
+  margin: 0 4px;
+}
+
+/* Light mode */
+@media (prefers-color-scheme: light) {
+  .selection-popup {
+    background: var(--ne-bg-primary);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .selection-popup::after {
+    border-top-color: var(--ne-bg-primary);
   }
 }

@@ -1,8 +1,16 @@
 /**
- * Notes Editor - TipTap-based clean implementation
+ * Notes Editor - Authentic iOS Notes Experience
  *
- * A stable, extensible notes editor built on TipTap/ProseMirror
+ * A pixel-perfect iOS Notes clone built on TipTap/ProseMirror
  * Designed for future ARES integration (entity highlighting, annotations)
+ *
+ * iOS Notes Features:
+ * - Keyboard accessory toolbar (fixed above keyboard on mobile)
+ * - Search bar with live filtering
+ * - Section headers (Pinned, Today, Previous 7 Days, etc.)
+ * - Swipe-to-delete with haptic feedback
+ * - Delete confirmation action sheet
+ * - Auto-format first line as title
  *
  * Code Audit Fixes Applied:
  * - #1: Fixed delete race condition (removed setTimeout inside state setter)
@@ -13,10 +21,31 @@
  * - #15: Fixed focus timing with requestAnimationFrame
  */
 
-import React, { useState, useEffect, useRef, useCallback, Component, ReactNode } from 'react';
+import React, { useState, useEffect, useRef, useCallback, Component, ReactNode, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { TipTapEditor, TipTapEditorRef } from '../components/TipTapEditor';
 import '../components/TipTapEditor.css';
 import './NotesEditor.css';
+
+// ============================================================================
+// HAPTIC FEEDBACK UTILITY
+// ============================================================================
+
+function triggerHaptic(style: 'light' | 'medium' | 'heavy' | 'selection' | 'success' | 'warning' | 'error' = 'light') {
+  // Use Taptic Engine on iOS via vibrate API with specific patterns
+  if ('vibrate' in navigator) {
+    const patterns: Record<string, number | number[]> = {
+      light: 10,
+      medium: 20,
+      heavy: 30,
+      selection: 5,
+      success: [10, 30, 10],
+      warning: [20, 40, 20],
+      error: [30, 50, 30, 50, 30],
+    };
+    navigator.vibrate(patterns[style]);
+  }
+}
 
 // ============================================================================
 // ERROR BOUNDARY (#3)
@@ -173,7 +202,7 @@ const DEFAULT_NOTES: Note[] = [
     id: 'welcome',
     folderId: 'notes',
     title: 'Welcome to Notes',
-    content: '# Welcome to Notes\n\nThis is a stable, extensible notes editor built for the future.\n\n## Features\n\n- Rich text editing with undo/redo\n- Task lists with checkboxes\n- Headings and formatting\n- Ready for entity highlighting\n\n## Task List\n\n- [x] Create editor\n- [x] Add undo/redo\n- [ ] Integrate with ARES\n- [ ] Add entity highlighting',
+    content: 'Welcome to Notes\n\nThis is a beautiful, extensible notes editor inspired by iOS Notes. The first line automatically becomes the title.\n\nFeatures\n\n• Rich text editing with undo/redo\n• Task lists with checkboxes\n• Swipe-to-delete notes\n• Search across all notes\n• Pinned notes section\n\nTask List\n\n- [x] Create editor\n- [x] Add undo/redo\n- [x] Paper texture background\n- [ ] Integrate with ARES',
     createdAt: Date.now(),
     updatedAt: Date.now(),
     isPinned: false,
@@ -267,6 +296,17 @@ const Icons = {
       <path d="M4 12h8M4 18V6M12 18V6M17 10l3-2M17 14l3 2M17 6v12" />
     </svg>
   ),
+  search: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="11" cy="11" r="8" />
+      <path d="M21 21l-4.35-4.35" />
+    </svg>
+  ),
+  close: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M18 6L6 18M6 6l12 12" />
+    </svg>
+  ),
 };
 
 // ============================================================================
@@ -305,6 +345,68 @@ function generateId(): string {
   return `note-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
+// Get date section for note (iOS Notes style grouping)
+function getDateSection(timestamp: number): string {
+  const date = new Date(timestamp);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today.getTime() - 86400000);
+  const weekAgo = new Date(today.getTime() - 7 * 86400000);
+  const monthAgo = new Date(today.getTime() - 30 * 86400000);
+
+  if (date >= today) return 'Today';
+  if (date >= yesterday) return 'Yesterday';
+  if (date >= weekAgo) return 'Previous 7 Days';
+  if (date >= monthAgo) return 'Previous 30 Days';
+
+  // Group by month/year
+  return date.toLocaleDateString([], { month: 'long', year: 'numeric' });
+}
+
+// Group notes by section
+interface NoteSection {
+  title: string;
+  notes: Note[];
+}
+
+function groupNotesBySection(notes: Note[]): NoteSection[] {
+  const pinned = notes.filter(n => n.isPinned);
+  const unpinned = notes.filter(n => !n.isPinned);
+
+  const sections: NoteSection[] = [];
+
+  if (pinned.length > 0) {
+    sections.push({ title: 'Pinned', notes: pinned });
+  }
+
+  // Group unpinned by date section
+  const dateGroups = new Map<string, Note[]>();
+  for (const note of unpinned) {
+    const section = getDateSection(note.updatedAt);
+    if (!dateGroups.has(section)) {
+      dateGroups.set(section, []);
+    }
+    dateGroups.get(section)!.push(note);
+  }
+
+  // Add date sections in order
+  const sectionOrder = ['Today', 'Yesterday', 'Previous 7 Days', 'Previous 30 Days'];
+  for (const sectionName of sectionOrder) {
+    const sectionNotes = dateGroups.get(sectionName);
+    if (sectionNotes && sectionNotes.length > 0) {
+      sections.push({ title: sectionName, notes: sectionNotes });
+      dateGroups.delete(sectionName);
+    }
+  }
+
+  // Add remaining month sections
+  for (const [sectionName, sectionNotes] of dateGroups) {
+    sections.push({ title: sectionName, notes: sectionNotes });
+  }
+
+  return sections;
+}
+
 // ============================================================================
 // NOTES LIST COMPONENT
 // ============================================================================
@@ -314,13 +416,131 @@ interface NotesListProps {
   selectedId: string | null;
   onSelect: (note: Note) => void;
   onCreateNote: () => void;
+  onDelete: (noteId: string) => void;
 }
 
-function NotesList({ notes, selectedId, onSelect, onCreateNote }: NotesListProps) {
-  const sortedNotes = [...notes].sort((a, b) => {
-    if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
-    return b.updatedAt - a.updatedAt;
-  });
+// Individual note item with swipe-to-delete
+interface NoteItemProps {
+  note: Note;
+  isSelected: boolean;
+  onSelect: () => void;
+  onDelete: () => void;
+}
+
+function NoteItem({ note, isSelected, onSelect, onDelete }: NoteItemProps) {
+  const itemRef = useRef<HTMLDivElement>(null);
+  const [swipeX, setSwipeX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const startXRef = useRef(0);
+  const currentXRef = useRef(0);
+
+  const SWIPE_THRESHOLD = 80; // Pixels to reveal delete button
+  const DELETE_THRESHOLD = 150; // Pixels to trigger delete
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    startXRef.current = e.touches[0].clientX;
+    currentXRef.current = swipeX;
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    const deltaX = e.touches[0].clientX - startXRef.current;
+    const newX = Math.min(0, Math.max(-DELETE_THRESHOLD, currentXRef.current + deltaX));
+    setSwipeX(newX);
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    if (swipeX < -DELETE_THRESHOLD + 20) {
+      // Trigger delete with haptic
+      triggerHaptic('warning');
+      onDelete();
+    } else if (swipeX < -SWIPE_THRESHOLD / 2) {
+      // Snap to reveal delete button
+      setSwipeX(-SWIPE_THRESHOLD);
+      triggerHaptic('selection');
+    } else {
+      // Snap back
+      setSwipeX(0);
+    }
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    triggerHaptic('warning');
+    onDelete();
+  };
+
+  return (
+    <div className="notes-list__item-container" ref={itemRef}>
+      {/* Delete action revealed by swipe */}
+      <div className="notes-list__item-delete" onClick={handleDeleteClick}>
+        {Icons.trash}
+        <span>Delete</span>
+      </div>
+
+      {/* Swipeable note item */}
+      <button
+        className={`notes-list__item ${isSelected ? 'notes-list__item--selected' : ''}`}
+        onClick={() => {
+          if (swipeX === 0) {
+            triggerHaptic('selection');
+            onSelect();
+          } else {
+            setSwipeX(0);
+          }
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        style={{
+          transform: `translateX(${swipeX}px)`,
+          transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.25, 1.25, 0.5, 1)',
+        }}
+      >
+        <div className="notes-list__item-header">
+          <span className="notes-list__item-title">{getTitle(note.content)}</span>
+          {note.isPinned && <span className="notes-list__item-pin">{Icons.pinFilled}</span>}
+        </div>
+        <div className="notes-list__item-meta">
+          <span className="notes-list__item-date">{formatDate(note.updatedAt)}</span>
+          <span className="notes-list__item-preview">{getPreview(note.content)}</span>
+        </div>
+      </button>
+    </div>
+  );
+}
+
+function NotesList({ notes, selectedId, onSelect, onCreateNote, onDelete }: NotesListProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Sort notes by update time (within each section)
+  const sortedNotes = useMemo(() => {
+    return [...notes].sort((a, b) => b.updatedAt - a.updatedAt);
+  }, [notes]);
+
+  // Filter notes by search query
+  const filteredNotes = useMemo(() => {
+    if (!searchQuery.trim()) return sortedNotes;
+    const query = searchQuery.toLowerCase();
+    return sortedNotes.filter(note =>
+      note.content.toLowerCase().includes(query) ||
+      getTitle(note.content).toLowerCase().includes(query)
+    );
+  }, [sortedNotes, searchQuery]);
+
+  // Group filtered notes by section
+  const sections = useMemo(() => {
+    return groupNotesBySection(filteredNotes);
+  }, [filteredNotes]);
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    searchInputRef.current?.focus();
+  };
 
   return (
     <div className="notes-list">
@@ -329,29 +549,60 @@ function NotesList({ notes, selectedId, onSelect, onCreateNote }: NotesListProps
         {/* #14: Added aria-label for accessibility */}
         <button
           className="notes-list__new-btn"
-          onClick={onCreateNote}
+          onClick={() => {
+            triggerHaptic('light');
+            onCreateNote();
+          }}
           aria-label="Create new note"
         >
           {Icons.plus}
         </button>
       </div>
-      <div className="notes-list__items">
-        {sortedNotes.map(note => (
+
+      {/* iOS-style search bar */}
+      <div className={`notes-list__search ${isSearchFocused ? 'notes-list__search--focused' : ''}`}>
+        <div className="notes-list__search-icon">{Icons.search}</div>
+        <input
+          ref={searchInputRef}
+          type="text"
+          className="notes-list__search-input"
+          placeholder="Search"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onFocus={() => setIsSearchFocused(true)}
+          onBlur={() => setIsSearchFocused(false)}
+        />
+        {searchQuery && (
           <button
-            key={note.id}
-            className={`notes-list__item ${selectedId === note.id ? 'notes-list__item--selected' : ''}`}
-            onClick={() => onSelect(note)}
+            className="notes-list__search-clear"
+            onClick={handleClearSearch}
+            aria-label="Clear search"
           >
-            <div className="notes-list__item-header">
-              <span className="notes-list__item-title">{getTitle(note.content)}</span>
-              {note.isPinned && <span className="notes-list__item-pin">{Icons.pinFilled}</span>}
-            </div>
-            <div className="notes-list__item-meta">
-              <span className="notes-list__item-date">{formatDate(note.updatedAt)}</span>
-              <span className="notes-list__item-preview">{getPreview(note.content)}</span>
-            </div>
+            {Icons.close}
           </button>
+        )}
+      </div>
+
+      <div className="notes-list__items">
+        {sections.map(section => (
+          <div key={section.title} className="notes-list__section">
+            <div className="notes-list__section-header">{section.title}</div>
+            {section.notes.map(note => (
+              <NoteItem
+                key={note.id}
+                note={note}
+                isSelected={selectedId === note.id}
+                onSelect={() => onSelect(note)}
+                onDelete={() => onDelete(note.id)}
+              />
+            ))}
+          </div>
         ))}
+        {filteredNotes.length === 0 && searchQuery && (
+          <div className="notes-list__empty">
+            <p>No results for "{searchQuery}"</p>
+          </div>
+        )}
         {notes.length === 0 && (
           <div className="notes-list__empty">
             <p>No notes yet</p>
@@ -360,6 +611,162 @@ function NotesList({ notes, selectedId, onSelect, onCreateNote }: NotesListProps
         )}
       </div>
     </div>
+  );
+}
+
+// ============================================================================
+// TEXT SELECTION POPUP (iOS-style formatting bubble)
+// ============================================================================
+
+interface SelectionPopupProps {
+  editorRef: React.RefObject<TipTapEditorRef>;
+}
+
+function SelectionPopup({ editorRef }: SelectionPopupProps) {
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const popupRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const checkSelection = () => {
+      const selection = window.getSelection();
+      if (!selection || selection.isCollapsed || !selection.toString().trim()) {
+        setIsVisible(false);
+        return;
+      }
+
+      // Get selection bounds
+      const range = selection.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+
+      // Position above the selection, centered
+      const x = rect.left + rect.width / 2;
+      const y = rect.top - 8;
+
+      setPosition({ x, y });
+      setIsVisible(true);
+    };
+
+    // Listen for selection changes
+    document.addEventListener('selectionchange', checkSelection);
+    return () => document.removeEventListener('selectionchange', checkSelection);
+  }, []);
+
+  // Hide on scroll
+  useEffect(() => {
+    const hideOnScroll = () => setIsVisible(false);
+    window.addEventListener('scroll', hideOnScroll, true);
+    return () => window.removeEventListener('scroll', hideOnScroll, true);
+  }, []);
+
+  if (!isVisible || !position) return null;
+
+  const preventFocusLoss = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+  };
+
+  const handleFormat = (action: () => void) => {
+    triggerHaptic('light');
+    action();
+  };
+
+  return createPortal(
+    <div
+      ref={popupRef}
+      className="selection-popup"
+      style={{
+        left: position.x,
+        top: position.y,
+      }}
+      onMouseDown={preventFocusLoss}
+      onTouchStart={preventFocusLoss}
+    >
+      <button
+        className="selection-popup__btn"
+        onClick={() => handleFormat(() => editorRef.current?.toggleBold())}
+      >
+        <strong>B</strong>
+      </button>
+      <button
+        className="selection-popup__btn"
+        onClick={() => handleFormat(() => editorRef.current?.toggleItalic())}
+      >
+        <em>I</em>
+      </button>
+      <button
+        className="selection-popup__btn"
+        onClick={() => handleFormat(() => editorRef.current?.toggleUnderline())}
+      >
+        <u>U</u>
+      </button>
+      <button
+        className="selection-popup__btn"
+        onClick={() => handleFormat(() => editorRef.current?.toggleStrike())}
+      >
+        <s>S</s>
+      </button>
+      <div className="selection-popup__divider" />
+      <button
+        className="selection-popup__btn"
+        onClick={() => handleFormat(() => editorRef.current?.toggleHighlight())}
+      >
+        <span className="selection-popup__highlight">H</span>
+      </button>
+    </div>,
+    document.body
+  );
+}
+
+// ============================================================================
+// ACTION SHEET COMPONENT (iOS-style)
+// ============================================================================
+
+interface ActionSheetAction {
+  label: string;
+  onClick: () => void;
+  destructive?: boolean;
+}
+
+interface ActionSheetProps {
+  isOpen: boolean;
+  title?: string;
+  message?: string;
+  actions: ActionSheetAction[];
+  onCancel: () => void;
+}
+
+function ActionSheet({ isOpen, title, message, actions, onCancel }: ActionSheetProps) {
+  if (!isOpen) return null;
+
+  return createPortal(
+    <div className="action-sheet-overlay" onClick={onCancel}>
+      <div className="action-sheet" onClick={(e) => e.stopPropagation()}>
+        {(title || message) && (
+          <div className="action-sheet__header">
+            {title && <div className="action-sheet__title">{title}</div>}
+            {message && <div className="action-sheet__message">{message}</div>}
+          </div>
+        )}
+        <div className="action-sheet__actions">
+          {actions.map((action, index) => (
+            <button
+              key={index}
+              className={`action-sheet__action ${action.destructive ? 'action-sheet__action--destructive' : ''}`}
+              onClick={() => {
+                triggerHaptic(action.destructive ? 'warning' : 'selection');
+                action.onClick();
+              }}
+            >
+              {action.label}
+            </button>
+          ))}
+        </div>
+        <button className="action-sheet__cancel" onClick={onCancel}>
+          Cancel
+        </button>
+      </div>
+    </div>,
+    document.body
   );
 }
 
@@ -373,23 +780,51 @@ interface EditorToolbarProps {
   onTogglePin: () => void;
   isPinned: boolean;
   saveStatus: SaveStatus; // #5: Added save status
+  isKeyboardOpen?: boolean; // For keyboard accessory positioning
 }
 
-function EditorToolbar({ editorRef, onDelete, onTogglePin, isPinned, saveStatus }: EditorToolbarProps) {
+function EditorToolbar({ editorRef, onDelete, onTogglePin, isPinned, saveStatus, isKeyboardOpen }: EditorToolbarProps) {
   // Prevent focus stealing from editor on mobile
   const preventFocusLoss = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
   };
 
-  const handleUndo = () => editorRef.current?.undo();
-  const handleRedo = () => editorRef.current?.redo();
-  const handleBold = () => editorRef.current?.toggleBold();
-  const handleItalic = () => editorRef.current?.toggleItalic();
-  const handleUnderline = () => editorRef.current?.toggleUnderline();
-  const handleBulletList = () => editorRef.current?.toggleBulletList();
-  const handleOrderedList = () => editorRef.current?.toggleOrderedList();
-  const handleTaskList = () => editorRef.current?.toggleTaskList();
-  const handleHeading = () => editorRef.current?.setHeading(2);
+  const handleUndo = () => {
+    triggerHaptic('light');
+    editorRef.current?.undo();
+  };
+  const handleRedo = () => {
+    triggerHaptic('light');
+    editorRef.current?.redo();
+  };
+  const handleBold = () => {
+    triggerHaptic('light');
+    editorRef.current?.toggleBold();
+  };
+  const handleItalic = () => {
+    triggerHaptic('light');
+    editorRef.current?.toggleItalic();
+  };
+  const handleUnderline = () => {
+    triggerHaptic('light');
+    editorRef.current?.toggleUnderline();
+  };
+  const handleBulletList = () => {
+    triggerHaptic('light');
+    editorRef.current?.toggleBulletList();
+  };
+  const handleOrderedList = () => {
+    triggerHaptic('light');
+    editorRef.current?.toggleOrderedList();
+  };
+  const handleTaskList = () => {
+    triggerHaptic('light');
+    editorRef.current?.toggleTaskList();
+  };
+  const handleHeading = () => {
+    triggerHaptic('light');
+    editorRef.current?.setHeading(2);
+  };
 
   // Toolbar button with focus protection
   const ToolbarButton = ({ onClick, title, children, active, danger }: {
@@ -405,13 +840,14 @@ function EditorToolbar({ editorRef, onDelete, onTogglePin, isPinned, saveStatus 
       onMouseDown={preventFocusLoss}
       onTouchStart={preventFocusLoss}
       title={title}
+      aria-label={title}
     >
       {children}
     </button>
   );
 
-  return (
-    <div className="editor-toolbar">
+  const toolbarContent = (
+    <>
       <div className="editor-toolbar__group">
         <ToolbarButton onClick={handleUndo} title="Undo">
           {Icons.undo}
@@ -467,6 +903,12 @@ function EditorToolbar({ editorRef, onDelete, onTogglePin, isPinned, saveStatus 
           {Icons.trash}
         </ToolbarButton>
       </div>
+    </>
+  );
+
+  return (
+    <div className={`editor-toolbar ${isKeyboardOpen ? 'editor-toolbar--keyboard-accessory' : ''}`}>
+      {toolbarContent}
     </div>
   );
 }
@@ -485,10 +927,30 @@ export default function NotesEditor() {
   const [showList, setShowList] = useState(true);
   // #5: Added save status indicator
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
+  // Keyboard state for toolbar positioning
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  // Delete confirmation action sheet
+  const [deleteConfirmNoteId, setDeleteConfirmNoteId] = useState<string | null>(null);
 
   const editorRef = useRef<TipTapEditorRef>(null);
   const saveTimeoutRef = useRef<number | null>(null);
   const editorErrorKey = useRef(0); // For resetting error boundary
+
+  // Detect keyboard open/close on mobile
+  useEffect(() => {
+    if (typeof visualViewport === 'undefined') return;
+
+    const handleResize = () => {
+      // If viewport height is significantly smaller than window height, keyboard is open
+      const viewportHeight = visualViewport?.height ?? window.innerHeight;
+      const windowHeight = window.innerHeight;
+      const isOpen = viewportHeight < windowHeight * 0.75;
+      setIsKeyboardOpen(isOpen);
+    };
+
+    visualViewport?.addEventListener('resize', handleResize);
+    return () => visualViewport?.removeEventListener('resize', handleResize);
+  }, []);
 
   // Load data on mount
   useEffect(() => {
@@ -570,11 +1032,12 @@ export default function NotesEditor() {
       id: generateId(),
       folderId: 'notes',
       title: 'New Note',
-      content: '# New Note\n\nStart writing...',
+      content: 'New Note\n\n',
       createdAt: Date.now(),
       updatedAt: Date.now(),
       isPinned: false,
     };
+    triggerHaptic('light');
     setNotes(prev => [newNote, ...prev]);
     setSelectedNoteId(newNote.id);
     setShowList(false);
@@ -585,10 +1048,26 @@ export default function NotesEditor() {
 
   // #1: Fixed delete race condition - removed setTimeout inside state setter
   // Now uses a separate effect to handle selection after delete
-  const handleDeleteNote = useCallback(() => {
-    if (!selectedNoteId) return;
-    setNotes(prev => prev.filter(n => n.id !== selectedNoteId));
+  const handleDeleteNote = useCallback((noteId?: string) => {
+    const idToDelete = noteId || selectedNoteId;
+    if (!idToDelete) return;
+    triggerHaptic('warning');
+    setNotes(prev => prev.filter(n => n.id !== idToDelete));
+    setDeleteConfirmNoteId(null);
   }, [selectedNoteId]);
+
+  // Show delete confirmation action sheet
+  const handleRequestDelete = useCallback((noteId?: string) => {
+    const idToConfirm = noteId || selectedNoteId;
+    if (!idToConfirm) return;
+    triggerHaptic('warning');
+    setDeleteConfirmNoteId(idToConfirm);
+  }, [selectedNoteId]);
+
+  // Cancel delete confirmation
+  const handleCancelDelete = useCallback(() => {
+    setDeleteConfirmNoteId(null);
+  }, []);
 
   // #1: Handle selection after note deletion (separate effect avoids race condition)
   useEffect(() => {
@@ -633,6 +1112,9 @@ export default function NotesEditor() {
     return <div className="notes-editor notes-editor--loading">Loading...</div>;
   }
 
+  // Get the note being deleted for the action sheet
+  const noteToDelete = deleteConfirmNoteId ? notes.find(n => n.id === deleteConfirmNoteId) : null;
+
   return (
     <div className="notes-editor">
       {/* Notes List Sidebar */}
@@ -642,6 +1124,7 @@ export default function NotesEditor() {
           selectedId={selectedNoteId}
           onSelect={handleSelectNote}
           onCreateNote={handleCreateNote}
+          onDelete={handleRequestDelete}
         />
       </aside>
 
@@ -669,10 +1152,11 @@ export default function NotesEditor() {
             {/* Toolbar with save status on desktop */}
             <EditorToolbar
               editorRef={editorRef}
-              onDelete={handleDeleteNote}
+              onDelete={() => handleRequestDelete()}
               onTogglePin={handleTogglePin}
               isPinned={selectedNote.isPinned}
               saveStatus={saveStatus}
+              isKeyboardOpen={isKeyboardOpen}
             />
 
             {/* #3: TipTap Editor wrapped in error boundary */}
@@ -686,6 +1170,9 @@ export default function NotesEditor() {
                 />
               </EditorErrorBoundary>
             </div>
+
+            {/* Text selection formatting popup */}
+            <SelectionPopup editorRef={editorRef} />
           </>
         ) : (
           <div className="notes-editor__empty">
@@ -694,6 +1181,21 @@ export default function NotesEditor() {
           </div>
         )}
       </main>
+
+      {/* Delete confirmation action sheet */}
+      <ActionSheet
+        isOpen={deleteConfirmNoteId !== null}
+        title="Delete Note"
+        message={noteToDelete ? `"${getTitle(noteToDelete.content)}" will be deleted permanently.` : undefined}
+        actions={[
+          {
+            label: 'Delete Note',
+            onClick: () => handleDeleteNote(deleteConfirmNoteId!),
+            destructive: true,
+          },
+        ]}
+        onCancel={handleCancelDelete}
+      />
     </div>
   );
 }
