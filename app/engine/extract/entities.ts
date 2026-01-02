@@ -2063,13 +2063,22 @@ function fallbackNames(text: string): Array<{ text: string; type: EntityType; st
     // Skip single-word matches that follow articles (e.g., "the Grey")
     // BUT: Keep names after "of" (e.g., "son of Jesse", "House of Stark")
     // AND: Keep names in lists (e.g., "X, Y, and Z")
+    // AND: Keep coordinated names (e.g., "Harry and Ron" → both are entities)
     if (tokens.length === 1) {
-      const preceding = text.slice(Math.max(0, m.index - 20), m.index).toLowerCase();
+      const preceding = text.slice(Math.max(0, m.index - 20), m.index);
+      const precedingLower = preceding.toLowerCase();
+
+      // COORDINATION FIX: Detect "[Name] and [Name]" pattern
+      // If "and" is preceded by a capitalized name, keep the second name
+      // Pattern: "Harry and" → keep "Ron"
+      const isCoordinatedWithName = /[A-Z][a-z]+\s+and\s+$/i.test(preceding);
+
       // Only filter after "the" or "and", NOT after "of" or list commas
       // Check for comma before "and" to detect list items
-      if (/\b(the|and)\s+$/.test(preceding) &&
+      if (/\b(the|and)\s+$/.test(precedingLower) &&
           !/^[A-Z][a-z]+s$/.test(value) &&
-          !/,\s*(?:and|or)\s+$/.test(preceding)) {
+          !/,\s*(?:and|or)\s+$/.test(precedingLower) &&
+          !isCoordinatedWithName) {
         continue;
       }
     }
@@ -2373,14 +2382,52 @@ function mergeOfPatterns<T extends { text: string; type: EntityType; start: numb
  * Deduplicate entity spans
  * Priority: Keep the first occurrence per canonical form (dep > ner > fb)
  * Also removes spans that are subsumed by longer spans (e.g., "Kara" inside "Kara Nightfall")
+ *
+ * IMPORTANT: When the same text at the same position has different types,
+ * prefer NER/DEP types over FALLBACK types (since NER is more reliable).
  */
-function dedupe<T extends { text: string; type: EntityType; start: number; end: number }>(spans: T[]): T[] {
+function dedupe<T extends { text: string; type: EntityType; start: number; end: number; source?: ExtractorSource }>(spans: T[]): T[] {
+  // First pass: Group spans by text+position, pick best type for each
+  // This handles cases like NER:PLACE vs FALLBACK:PERSON for "New York City"
+  const byTextAndPosition = new Map<string, T[]>();
+
+  for (const s of spans) {
+    const posKey = `${s.text.toLowerCase()}@${s.start}-${s.end}`;
+    if (!byTextAndPosition.has(posKey)) {
+      byTextAndPosition.set(posKey, []);
+    }
+    byTextAndPosition.get(posKey)!.push(s);
+  }
+
+  // Source priority: DEP > WHITELIST > NER > PATTERN > FALLBACK
+  const sourcePriority = (source?: ExtractorSource): number => {
+    switch (source) {
+      case 'DEP': return 0;
+      case 'WHITELIST': return 1;
+      case 'NER': return 2;
+      case 'PATTERN': return 3;
+      case 'FALLBACK': return 4;
+      default: return 5;
+    }
+  };
+
+  // Pick best span from each position group
+  const bestByPosition: T[] = [];
+  for (const [, group] of byTextAndPosition.entries()) {
+    if (group.length === 1) {
+      bestByPosition.push(group[0]);
+    } else {
+      // Sort by source priority (lower is better), then by original order
+      group.sort((a, b) => sourcePriority(a.source) - sourcePriority(b.source));
+      bestByPosition.push(group[0]);
+    }
+  }
+
+  // Second pass: Dedupe by canonical form (type + normalized text)
   const seenCanonical = new Set<string>();
   let out: T[] = [];
 
-  for (const s of spans) {
-    // Dedupe by canonical form (type + normalized text)
-    // Since spans are ordered as [...dep, ...ner, ...fb], the first occurrence (most reliable) wins
+  for (const s of bestByPosition) {
     const canonicalKey = `${s.type}:${s.text.toLowerCase()}`;
     if (seenCanonical.has(canonicalKey)) continue;
 
@@ -2388,7 +2435,7 @@ function dedupe<T extends { text: string; type: EntityType; start: number; end: 
     out.push(s);
   }
 
-  // Second pass: remove spans that are subsumed by longer spans of the same type
+  // Third pass: remove spans that are subsumed by longer spans of the same type
   // E.g., "Kara" at 26-30 is subsumed by "Kara Nightfall" at 26-40
   const subsumed = new Set<number>();
   for (let i = 0; i < out.length; i++) {
@@ -2816,10 +2863,11 @@ function applyLinguisticFilters(
       let followedByComma = false;
 
       // Check first occurrence for context
+      let followingWord: string | undefined;
       if (entitySpans.length > 0) {
         const firstSpan = entitySpans[0];
         const beforeText = text.slice(Math.max(0, firstSpan.start - 10), firstSpan.start);
-        const afterText = text.slice(firstSpan.end, Math.min(text.length, firstSpan.end + 5));
+        const afterText = text.slice(firstSpan.end, Math.min(text.length, firstSpan.end + 30));
 
         // Check for determiner
         const determiners = ['the ', 'a ', 'an ', 'my ', 'your ', 'his ', 'her ', 'their ', 'our '];
@@ -2830,6 +2878,12 @@ function applyLinguisticFilters(
 
         // Check if followed by comma
         followedByComma = afterText.trimStart().startsWith(',');
+
+        // Extract following word (for person-verb detection)
+        const followingWordMatch = afterText.match(/^\s*([a-zA-Z]+)/);
+        if (followingWordMatch) {
+          followingWord = followingWordMatch[1];
+        }
       }
 
       const npContext: NounPhraseContext = {
@@ -2838,6 +2892,7 @@ function applyLinguisticFilters(
         hasDeterminer,
         isSentenceInitial,
         followedByComma,
+        followingWord,
       };
 
       const allowedPerson = looksLikePersonName(npContext, tokenStats);

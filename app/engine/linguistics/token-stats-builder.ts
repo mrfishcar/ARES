@@ -104,7 +104,9 @@ function extractNERSpans(sentence: { tokens: Token[] }): NERSpan[] {
     // COORDINATION FIX: Treat coordination conjunctions as span boundaries
     // Even if spaCy tags "and" as part of a PERSON entity (e.g., "Alice and Bob"),
     // we should break the span at the conjunction
-    const isCoordConj = COORD_CONJ.has(token.text.toLowerCase()) && token.pos === 'CCONJ';
+    // NOTE: spaCy sometimes mis-tags "and" as NOUN, so we check text regardless of POS
+    const tokenLower = token.text.toLowerCase();
+    const isCoordConj = COORD_CONJ.has(tokenLower) && (token.pos === 'CCONJ' || tokenLower === 'and' || tokenLower === 'or');
     if (isCoordConj) {
       // Finalize current span if exists
       if (currentSpan && currentSpan.tokens.length > 1) {

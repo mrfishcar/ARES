@@ -44,7 +44,10 @@ export const VERB_LEADS = new Set([
 
 const FRAGMENT_ENDINGS = new Set(['this', 'that', 'it', 'anything', 'something', 'someone']);
 
-const ORG_HEADWORDS = /\b(School|Department|Society|Office|Times|Bureau|Preservation|High School|Junior High)\b/i;
+// ORG_HEADWORDS: Institutional suffix words that indicate an organization
+// Linguistic pattern: [Name] + [Institution Type] = ORG
+// Examples: "Mercy Hospital", "Stanford University", "State Department"
+const ORG_HEADWORDS = /\b(School|Department|Society|Office|Times|Bureau|Preservation|High School|Junior High|Hospital|University|College|Institute|Center|Centre|Clinic|Foundation|Corporation|Company|Association|Council|Commission|Board|Agency|Ministry|Bank|Library|Museum|Academy|Laboratory|Lab)\b/i;
 const PLACE_HEADWORDS = /\b(Street|Parish|Lake|River|Trail|Town|County|Bayou)\b/;
 const ARTIFACT_HEADWORDS = /\b(Mirror|Ring|Cup|Blade|Book|Yearbook|Letter|Key|Crown)\b/;
 
@@ -280,6 +283,13 @@ export function isFragmentaryItem(entity: Entity): boolean {
   return false;
 }
 
+// Location prepositions that indicate the following noun is a PLACE
+// This is a linguistic pattern: "in Providence", "at Boston", "from Paris"
+const LOCATION_PREPOSITIONS = new Set([
+  'in', 'at', 'from', 'to', 'toward', 'towards', 'near', 'through',
+  'within', 'around', 'across', 'beyond', 'outside', 'inside'
+]);
+
 export function applyTypeOverrides(
   entity: Entity,
   span: SpanLike,
@@ -292,12 +302,24 @@ export function applyTypeOverrides(
   }
 
   const canonical = entity.canonical;
+  const tokens = canonical.split(/\s+/).filter(Boolean);
 
+  // LINGUISTIC PATTERN: ORG headwords are strong institutional indicators
+  // These should be checked FIRST and override regardless of prepositional context
+  // "at Mercy Hospital", "in Stanford University", "from the Department" → all ORG
   if (ORG_HEADWORDS.test(canonical) && entity.type !== 'ORG') {
-    const preText = text.slice(Math.max(0, span.start - 10), span.start).toLowerCase();
-    if (!/\b(in|at|on|from)\s+$/.test(preText)) {
-      return { type: 'ORG', reason: 'org_headword' };
-    }
+    logDebug(`ORG headword in "${canonical}" → ORG`);
+    return { type: 'ORG', reason: 'org_headword' };
+  }
+
+  // LINGUISTIC PATTERN: Prepositional context indicates PLACE
+  // "in Providence", "at Boston", "from Paris" → single-token entities
+  // following location prepositions are likely places, not people.
+  // This handles ambiguous names like Providence, Florence, Georgia (state vs person).
+  // NOTE: Only applies to single-token entities that don't have ORG headwords
+  if (entity.type === 'PERSON' && tokens.length === 1 && prevLower && LOCATION_PREPOSITIONS.has(prevLower)) {
+    logDebug(`Location preposition "${prevLower}" before "${canonical}" → PLACE`);
+    return { type: 'PLACE', reason: 'location_preposition_context' };
   }
 
   if (PLACE_HEADWORDS.test(canonical) && entity.type !== 'PLACE') {
