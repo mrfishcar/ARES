@@ -1701,11 +1701,17 @@ function extractAcronymPairs(text: string): Array<{
     });
   }
 
-  const expansionFirst = /\b([A-Z][A-Za-z0-9\.\s]+?)\s*\(([^)]+)\)/g;
+  // Match "Expansion (ACRONYM)" patterns but don't cross sentence boundaries
+  // The pattern allows spaces between words but NOT period-space which indicates sentence end
+  // Use: [A-Z][a-z]+ for each word, optionally followed by more words
+  const expansionFirst = /\b([A-Z][A-Za-z0-9]+(?:\s+[A-Za-z]+)*)\s*\(([^)]+)\)/g;
   while ((match = expansionFirst.exec(text)) !== null) {
     const expansion = match[1].trim();
     const acronym = match[2].trim();
     if (!/^[A-Z]{2,5}$/.test(acronym)) continue;
+
+    // Skip if expansion contains sentence-ending punctuation (crossed sentence boundary)
+    if (/[.!?]\s+[A-Z]/.test(expansion)) continue;
 
     const acronymOffset = match[0].lastIndexOf(acronym);
     pairs.push({
