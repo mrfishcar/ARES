@@ -13,7 +13,8 @@
  * - #13: Added update source tracking to prevent infinite loops
  */
 
-import React, { useEffect, useCallback, forwardRef, useImperativeHandle, useRef } from 'react';
+import React, { useEffect, useCallback, forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -21,6 +22,7 @@ import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import Underline from '@tiptap/extension-underline';
 import Highlight from '@tiptap/extension-highlight';
+import Link from '@tiptap/extension-link';
 
 // ============================================================================
 // TYPES
@@ -51,11 +53,161 @@ export interface TipTapEditorRef {
   toggleOrderedList: () => void;
   setHeading: (level: 1 | 2 | 3) => void;
   setParagraph: () => void;
+  // Links
+  setLink: (url: string) => void;
+  unsetLink: () => void;
   // Undo/redo
   undo: () => void;
   redo: () => void;
   canUndo: () => boolean;
   canRedo: () => boolean;
+}
+
+// ============================================================================
+// LINK PREVIEW POPUP
+// ============================================================================
+
+interface LinkPreviewData {
+  url: string;
+  domain: string;
+  title?: string;
+  description?: string;
+  image?: string;
+}
+
+// Extract domain from URL
+function getDomain(url: string): string {
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname.replace(/^www\./, '');
+  } catch {
+    return url;
+  }
+}
+
+// Simple link preview popup on hover
+function LinkPreviewPopup() {
+  const [preview, setPreview] = useState<LinkPreviewData | null>(null);
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
+  const timeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const handleMouseOver = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const link = target.closest('a.ios-link');
+
+      if (link) {
+        const url = link.getAttribute('href');
+        if (!url) return;
+
+        // Delay showing preview
+        timeoutRef.current = window.setTimeout(() => {
+          const rect = link.getBoundingClientRect();
+          setPosition({
+            x: rect.left + rect.width / 2,
+            y: rect.bottom + 8,
+          });
+          setPreview({
+            url,
+            domain: getDomain(url),
+            // In a real app, fetch metadata from a backend
+            title: undefined,
+            description: undefined,
+            image: undefined,
+          });
+        }, 500);
+      }
+    };
+
+    const handleMouseOut = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.closest('a.ios-link')) {
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
+        setPreview(null);
+        setPosition(null);
+      }
+    };
+
+    const handleClick = () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      setPreview(null);
+      setPosition(null);
+    };
+
+    document.addEventListener('mouseover', handleMouseOver);
+    document.addEventListener('mouseout', handleMouseOut);
+    document.addEventListener('click', handleClick);
+
+    return () => {
+      document.removeEventListener('mouseover', handleMouseOver);
+      document.removeEventListener('mouseout', handleMouseOut);
+      document.removeEventListener('click', handleClick);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  if (!preview || !position) return null;
+
+  return createPortal(
+    <div
+      className="link-preview-popup"
+      style={{
+        left: position.x,
+        top: position.y,
+      }}
+    >
+      <div className="link-preview-popup__content">
+        {preview.image && (
+          <img
+            className="link-preview-popup__image"
+            src={preview.image}
+            alt=""
+          />
+        )}
+        <div className="link-preview-popup__text">
+          <div className="link-preview-popup__domain">{preview.domain}</div>
+          {preview.title && (
+            <div className="link-preview-popup__title">{preview.title}</div>
+          )}
+          {preview.description && (
+            <div className="link-preview-popup__description">
+              {preview.description}
+            </div>
+          )}
+          <div className="link-preview-popup__url">{preview.url}</div>
+        </div>
+      </div>
+      <div className="link-preview-popup__actions">
+        <a
+          href={preview.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="link-preview-popup__action"
+        >
+          Open Link
+        </a>
+        <button
+          className="link-preview-popup__action"
+          onClick={() => {
+            navigator.clipboard.writeText(preview.url);
+            setPreview(null);
+            setPosition(null);
+          }}
+        >
+          Copy Link
+        </button>
+      </div>
+    </div>,
+    document.body
+  );
 }
 
 // ============================================================================
@@ -312,6 +464,16 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(({
       Highlight.configure({
         multicolor: true,
       }),
+      Link.configure({
+        openOnClick: false,
+        autolink: true,
+        linkOnPaste: true,
+        HTMLAttributes: {
+          class: 'ios-link',
+          rel: 'noopener noreferrer',
+          target: '_blank',
+        },
+      }),
     ],
     content: textToHtml(content),
     editable,
@@ -375,6 +537,10 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(({
     setHeading: (level: 1 | 2 | 3) => editor?.chain().focus().toggleHeading({ level }).run(),
     setParagraph: () => editor?.chain().focus().setParagraph().run(),
 
+    // Links
+    setLink: (url: string) => editor?.chain().focus().setLink({ href: url }).run(),
+    unsetLink: () => editor?.chain().focus().unsetLink().run(),
+
     // Undo/redo
     undo: () => editor?.chain().focus().undo().run(),
     redo: () => editor?.chain().focus().redo().run(),
@@ -387,10 +553,13 @@ export const TipTapEditor = forwardRef<TipTapEditorRef, TipTapEditorProps>(({
   }
 
   return (
-    <EditorContent
-      editor={editor}
-      className={`ios-tiptap-wrapper ${className}`}
-    />
+    <>
+      <EditorContent
+        editor={editor}
+        className={`ios-tiptap-wrapper ${className}`}
+      />
+      <LinkPreviewPopup />
+    </>
   );
 });
 
