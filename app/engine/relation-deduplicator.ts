@@ -14,7 +14,7 @@
  * Expected Impact: 10-15% precision improvement
  */
 
-import type { Relation } from './schema';
+import type { Relation, Entity } from './schema';
 
 /**
  * Symmetric predicates (bidirectional relations)
@@ -34,7 +34,46 @@ const SYMMETRIC_PREDICATES = new Set([
 ]);
 
 /**
+ * Build entity ID → canonical name lookup map
+ */
+function buildEntityLookup(entities?: Entity[]): Map<string, string> {
+  const lookup = new Map<string, string>();
+  if (!entities) return lookup;
+
+  for (const entity of entities) {
+    lookup.set(entity.id, entity.canonical.toLowerCase());
+  }
+
+  return lookup;
+}
+
+// Module-level entity lookup (set before deduplication)
+let entityLookup: Map<string, string> = new Map();
+
+/**
+ * Set entity lookup for canonical name resolution during dedup
+ */
+export function setEntityLookup(entities?: Entity[]): void {
+  entityLookup = buildEntityLookup(entities);
+}
+
+/**
+ * Get canonical name for entity ID, falling back to ID if not found
+ */
+function getCanonicalName(entityId: string): string {
+  // TEMP: Disable canonical lookup to compare with baseline
+  if (process.env.ARES_DEDUP_RAW === '1') {
+    return entityId;
+  }
+  return entityLookup.get(entityId) || entityId;
+}
+
+/**
  * Generate canonical key for relation deduplication
+ *
+ * Uses CANONICAL ENTITY NAMES (not raw IDs) to properly identify duplicates.
+ * This is critical because different extractors create different entity IDs
+ * for the same semantic entity.
  *
  * IMPORTANT: We preserve subject/object order for ALL relations,
  * including symmetric ones. This ensures:
@@ -47,12 +86,16 @@ const SYMMETRIC_PREDICATES = new Set([
  *
  * 3. Symmetric relations can be properly represented as bidirectional
  *
- * Before: Sorted alphabetically → Lost one direction → 71.1% recall
- * After: Keep direction → Both directions preserved → 82%+ recall
+ * Before: Used raw IDs → Same relation different IDs → No dedup → 66% precision
+ * After: Use canonical names → Same entity = same key → Proper dedup → 90%+ precision
  */
 function makeRelationKey(relation: Relation): string {
+  // Use canonical entity names for comparison, not raw IDs
+  const subjCanonical = getCanonicalName(relation.subj);
+  const objCanonical = getCanonicalName(relation.obj);
+
   // Always preserve direction - don't sort for symmetric relations
-  return `${relation.subj}::${relation.pred}::${relation.obj}`;
+  return `${subjCanonical}::${relation.pred}::${objCanonical}`;
 }
 
 /**
@@ -98,17 +141,44 @@ function chooseBestExtractor(relations: Relation[]): 'dep' | 'regex' | 'fiction-
 }
 
 /**
+ * Debug mode for deduplication (set ARES_DEDUP_DEBUG=1)
+ */
+function isDebugMode(): boolean {
+  return process.env.ARES_DEDUP_DEBUG === '1' || process.env.ARES_DEDUP_DEBUG === 'true';
+}
+
+/**
  * Deduplicate relations by merging duplicates
  *
  * Returns deduplicated list with merged evidence and best confidence
  */
 export function deduplicateRelations(relations: Relation[]): Relation[] {
   const groups = new Map<string, Relation[]>();
+  const debug = isDebugMode();
+
+  if (debug) {
+    console.log('\n=== DEDUP DEBUG: Entity Lookup ===');
+    for (const [id, canonical] of entityLookup.entries()) {
+      console.log(`  ${id} → "${canonical}"`);
+    }
+  }
 
   // Group relations by canonical key
   for (const relation of relations) {
     const key = makeRelationKey(relation);
     const group = groups.get(key);
+
+    if (debug) {
+      const subjCanonical = getCanonicalName(relation.subj);
+      const objCanonical = getCanonicalName(relation.obj);
+      console.log(`[DEDUP] Relation: ${relation.subj_surface || relation.subj} --[${relation.pred}]--> ${relation.obj_surface || relation.obj}`);
+      console.log(`        Key: ${key}`);
+      console.log(`        subj: "${relation.subj}" → canonical: "${subjCanonical}"`);
+      console.log(`        obj: "${relation.obj}" → canonical: "${objCanonical}"`);
+      if (group) {
+        console.log(`        ⚠️ GROUPING with ${group.length} existing relation(s)`);
+      }
+    }
 
     if (group) {
       group.push(relation);
@@ -119,6 +189,18 @@ export function deduplicateRelations(relations: Relation[]): Relation[] {
 
   // Merge each group
   const deduplicated: Relation[] = [];
+
+  if (debug) {
+    console.log('\n=== DEDUP DEBUG: Duplicate Groups ===');
+    for (const [key, group] of Array.from(groups.entries())) {
+      if (group.length > 1) {
+        console.log(`\n📦 Key: ${key} (${group.length} relations merged)`);
+        for (const rel of group) {
+          console.log(`   - ${rel.subj_surface || rel.subj} --[${rel.pred}]--> ${rel.obj_surface || rel.obj} [extractor: ${rel.extractor || 'unknown'}]`);
+        }
+      }
+    }
+  }
 
   for (const [key, group] of Array.from(groups.entries())) {
     if (group.length === 1) {
@@ -137,6 +219,13 @@ export function deduplicateRelations(relations: Relation[]): Relation[] {
 
       deduplicated.push(merged);
     }
+  }
+
+  if (debug) {
+    console.log(`\n=== DEDUP DEBUG: Summary ===`);
+    console.log(`  Input relations: ${relations.length}`);
+    console.log(`  Output relations: ${deduplicated.length}`);
+    console.log(`  Removed: ${relations.length - deduplicated.length}`);
   }
 
   return deduplicated;

@@ -15,7 +15,8 @@
 import {
   deduplicateRelations,
   getDeduplicationStats,
-  isDeduplicationEnabled
+  isDeduplicationEnabled,
+  setEntityLookup
 } from '../relation-deduplicator';
 import type {
   DeduplicationInput,
@@ -44,6 +45,9 @@ export async function runDeduplicationStage(
     let stats: DeduplicationStats;
 
     if (input.config.enabled || isDeduplicationEnabled()) {
+      // Set entity lookup for canonical name resolution during dedup
+      setEntityLookup(input.entities);
+
       // Use full deduplication with statistics
       const preDedupeCount = input.relations.length;
       deduplicated = deduplicateRelations(input.relations);

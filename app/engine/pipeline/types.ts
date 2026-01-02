@@ -356,6 +356,7 @@ export interface InverseGenerationOutput {
 export interface DeduplicationInput {
   relations: Relation[];
   config: DeduplicationConfig;
+  entities?: Entity[];  // Added for canonical name lookup during dedup
 }
 
 export interface DeduplicationOutput {

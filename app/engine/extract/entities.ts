@@ -545,12 +545,16 @@ const FANTASY_WHITELIST = new Map<string, EntityType>([
 
   // Harry Potter locations
   ['Hogwarts', 'ORG'],  // School = ORG
+  ['Hogwarts School of Witchcraft and Wizardry', 'ORG'],
   ['Hogsmeade', 'PLACE'],
   ['Diagon Alley', 'PLACE'],
   ['Azkaban', 'PLACE'],
   ['Privet Drive', 'PLACE'],
+  ['Little Whinging', 'PLACE'],  // Town in Surrey where Dursleys live
+  ['Surrey', 'PLACE'],  // County in England
   ['Burrow', 'PLACE'],
   ['London', 'PLACE'],
+  ['Grunnings', 'ORG'],  // Drill company where Vernon Dursley works
   ['Gryffindor', 'ORG'],  // House = ORG
   ['Slytherin', 'ORG'],
   ['Hufflepuff', 'ORG'],
@@ -2271,15 +2275,56 @@ function convertSpelledYearToNumeric(spelledYear: string): number | null {
 
 function extractFamilySpans(text: string): Array<{ text: string; type: EntityType; start: number; end: number }> {
   const spans: { text: string; type: EntityType; start: number; end: number }[] = [];
-  const pattern = /\b(?:the|that|this)\s+([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)*)\s+family\b/g;
+
+  // Pattern 1: "the X family" explicit family pattern
+  const familyPattern = /\b(?:the|that|this)\s+([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)*)\s+family\b/g;
   let match: RegExpExecArray | null;
 
-  while ((match = pattern.exec(text))) {
+  while ((match = familyPattern.exec(text))) {
     spans.push({
       text: match[0],
       type: 'PERSON',
       start: match.index,
       end: match.index + match[0].length
+    });
+  }
+
+  // Pattern 2: Plural family surnames referenced in dialogue like "About the Potters"
+  // This pattern specifically handles references to families in dialogue or indirect mentions
+  // where spaCy won't recognize them as entities (e.g., inside quotes).
+  // IMPORTANT: Only match with preceding context word to avoid duplicate extractions
+  // of entities that are already caught by spaCy NER (e.g., "The Dursleys lived").
+  const DEMONYMS_AND_COMMON = new Set([
+    'americans', 'british', 'french', 'germans', 'russians', 'chinese', 'japanese',
+    'italians', 'spanish', 'canadians', 'australians', 'africans', 'europeans', 'asians',
+    'books', 'cars', 'houses', 'trees', 'dogs', 'cats', 'birds', 'others', 'things',
+    'times', 'ways', 'days', 'years', 'rights', 'arts', 'eyes', 'hands', 'words',
+    'facts', 'alps', 'andes', 'philippines', 'netherlands', 'bahamas', 'seychelles',
+    'maldives', 'himalayas', 'rockies', 'olympics', 'finals', 'playoffs', 'series'
+  ]);
+
+  // Only match with preceding preposition to avoid duplicating NER extractions
+  const pluralSurnamePattern = /\b(?:about|regarding|concerning|of)\s+the\s+([A-Z][a-z]+s)\b/gi;
+
+  while ((match = pluralSurnamePattern.exec(text))) {
+    const surname = match[1];
+    // Skip demonyms and common nouns
+    if (DEMONYMS_AND_COMMON.has(surname.toLowerCase())) {
+      continue;
+    }
+    // Skip words ending in 'ss' (not plural surnames)
+    if (/ss$/i.test(surname)) {
+      continue;
+    }
+    // Extract just the surname, not the "the" or preposition
+    const surnameStart = match.index + match[0].lastIndexOf(surname);
+    const surnameEnd = surnameStart + surname.length;
+
+    spans.push({
+      text: surname,
+      type: 'PERSON',
+      start: surnameStart,
+      end: surnameEnd
     });
   }
 
@@ -3436,11 +3481,9 @@ export async function extractEntities(text: string): Promise<{
     validated.sort((a, b) => a.start - b.start);
   }
 
-  console.log(`[DEBUG-BEFORE-STITCH] validated=${validated.map(span => `${span.type}:${span.text}@${span.start}-${span.end}`).join(', ')}`);
   const stitchedPersons = stitchPersonFullNames(validated, cleanedText);
   validated = stitchedPersons.spans;
   const aliasHintsBySpanKey = stitchedPersons.aliasHints;
-  console.log(`[DEBUG-AFTER-STITCH] validated=${validated.map(span => `${span.type}:${span.text}@${span.start}-${span.end}`).join(', ')}`);
 
   if (DEBUG_ENTITIES) {
     console.log(
@@ -3457,7 +3500,6 @@ export async function extractEntities(text: string): Promise<{
     }
     return keep;
   });
-  console.log(`[DEBUG-AFTER-VIABILITY] validated=${validated.map(span => `${span.type}:${span.text}@${span.start}-${span.end}`).join(', ')}`);
   const dropped = beforeViability - validated.length;
   if (DEBUG_ENTITIES && dropped > 0) {
     console.log(
@@ -4017,8 +4059,6 @@ const PERSON_NICKNAME_NORMALIZERS = new Map<string, string>([
     }
   }
 
-  console.log(`[DEBUG-ENTRIES-BUILT] Created ${entries.length} entries: ${entries.map(e => `${e.entity.type}:${e.entity.canonical}`).join(', ')}`);
-
   // Merge entries with identical canonical names preferring PEOPLE over other types
   const typePriority = (type: EntityType, text: string): number => {
     // Override: if text is in KNOWN_ORGS, ORG should have highest priority
@@ -4430,6 +4470,7 @@ const mergedEntries = Array.from(mergedMap.values());
     console.log(`[MERGE-FILTER] Before filter: ${dursleys.map(e => `${e.entity.canonical}(merged=${mergedPersonIds.has(e.entity.id)})`).join(', ')}`);
   }
   const mergedEntriesFiltered = mentionFilteredEntries.filter(entry => !mergedPersonIds.has(entry.entity.id));
+
   if (mentionFilteredEntries.some(e => e.entity.canonical.toLowerCase().includes('dursley') || e.entity.canonical.toLowerCase().includes('mr '))) {
     const dursleys = mergedEntriesFiltered.filter(e => e.entity.canonical.toLowerCase().includes('dursley') || e.entity.canonical.toLowerCase().startsWith('mr '));
     console.log(`[MERGE-FILTER] After filter: ${dursleys.map(e => e.entity.canonical).join(', ')}`);
@@ -4529,7 +4570,13 @@ const mergedEntries = Array.from(mergedMap.values());
     }
 
     if (entry.entity.type === 'ORG') {
-      if (/\b[A-Z][A-Za-z]+\s+and\s+[A-Z]/.test(entry.entity.canonical)) {
+      // Filter out coordinated entities like "Apple and Google" but not legitimate org names
+      // with "and" in them like "School of Witchcraft and Wizardry"
+      // If "and" is preceded by "of" or other prepositions, it's likely a legitimate name
+      const canonical = entry.entity.canonical;
+      const hasCoordination = /\b[A-Z][A-Za-z]+\s+and\s+[A-Z]/.test(canonical);
+      const isPartOfLegitName = /\bof\s+[A-Za-z]+\s+and\s+/i.test(canonical);
+      if (hasCoordination && !isPartOfLegitName) {
         return false;
       }
     }
@@ -4542,12 +4589,6 @@ const mergedEntries = Array.from(mergedMap.values());
       const otherScore = nameScore(other.entity.canonical);
       return otherScore.informative >= score.informative;
     });
-    if (filteredOutByPrefix && (canonicalLower.includes('mcgonagall') || canonicalLower.includes('dursley'))) {
-      console.log(`[DEBUG-PREFIX] dropped by prefix rule: "${entry.entity.canonical}"`);
-    }
-    if (canonicalLower.includes('dursley') || canonicalLower.includes('mr ') || canonicalLower.includes('mrs ')) {
-      console.log(`[DEBUG-FINAL-FILTER] "${entry.entity.canonical}" filteredOutByPrefix=${filteredOutByPrefix}`);
-    }
     return !filteredOutByPrefix;
   });
 
@@ -4598,13 +4639,6 @@ const mergedEntries = Array.from(mergedMap.values());
   // Note: FALLBACK base is 0.40, but can be penalized to ~0.30-0.35
   const filteredClusters = filterEntitiesByConfidence(clusters, 0.30);
 
-  // Debug: Log filtered out entities
-  for (const cluster of clusters) {
-    const kept = filteredClusters.some(c => c.id === cluster.id);
-    if (!kept && cluster.canonical.toLowerCase().includes('potter')) {
-      console.log(`[CONFIDENCE-FILTER-DEBUG] "${cluster.canonical}" filtered out with confidence ${cluster.confidence ?? 'N/A'}`);
-    }
-  }
   if (DEBUG_ENTITIES) {
     console.log(
       `[EXTRACT-ENTITIES][DEBUG] confidence clusters=${clusters.length} kept=${filteredClusters.length}`

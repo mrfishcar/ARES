@@ -317,9 +317,19 @@ export function applyTypeOverrides(
   // following location prepositions are likely places, not people.
   // This handles ambiguous names like Providence, Florence, Georgia (state vs person).
   // NOTE: Only applies to single-token entities that don't have ORG headwords
+  // EXCEPTION: Don't apply to NER-backed PERSON entities (spaCy recognized them as people)
+  // EXCEPTION: Don't apply after "next to" - this is a proximity phrase, not location
+  //            "next to Dumbledore" means "beside the person", not a place
+  const hasNERPersonBacking = entity.attrs?.nerLabel === 'PERSON';
+  const { prev: prev2 } = getSurroundingTokens(text, span.start - (prev?.length || 0) - 1, span.start);
+  const isNextTo = prev2?.toLowerCase() === 'next' && prevLower === 'to';
+
   if (entity.type === 'PERSON' && tokens.length === 1 && prevLower && LOCATION_PREPOSITIONS.has(prevLower)) {
-    logDebug(`Location preposition "${prevLower}" before "${canonical}" → PLACE`);
-    return { type: 'PLACE', reason: 'location_preposition_context' };
+    // Skip if NER says this is a person or if it's "next to X"
+    if (!hasNERPersonBacking && !isNextTo) {
+      logDebug(`Location preposition "${prevLower}" before "${canonical}" → PLACE`);
+      return { type: 'PLACE', reason: 'location_preposition_context' };
+    }
   }
 
   if (PLACE_HEADWORDS.test(canonical) && entity.type !== 'PLACE') {

@@ -231,6 +231,10 @@ export async function runKnowledgeGraphStage(
     console.log(
       `  Fiction entities: ${fictionEntities.length}`
     );
+    // DEBUG: Print entity types
+    for (const e of filteredEntities) {
+      console.log(`  [KG-DEBUG] Entity "${e.canonical}" type=${e.type}`);
+    }
 
     return {
       entities: filteredEntities,

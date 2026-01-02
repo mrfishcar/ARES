@@ -725,12 +725,22 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     predicate: 'works_at',
     typeGuard: { subj: ['PERSON'], obj: ['ORG'] }
   },
-  // "X leads/directs Y"
+  // "X leads/led/directs Y"
   {
-    regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:leads|lead|directs|directed|heads|headed)\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
+    regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:leads|lead|led|directs|directed|heads|headed)\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
     predicate: 'leads',
     typeGuard: { subj: ['PERSON'], obj: ['ORG', 'HOUSE'] }
   },
+  // "He/She leads/led Y" - PRONOUN VERSION
+  // NOTE: Disabled temporarily - coreference resolution handles pronoun subjects
+  // via dependency extraction, so this pattern creates duplicates
+  // {
+  //   regex: /\b((?:He|She|They|he|she|they))\s+(?:leads|lead|led|directs|directed|heads|headed)\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
+  //   predicate: 'leads',
+  //   typeGuard: { subj: ['PERSON'], obj: ['ORG', 'HOUSE'] },
+  //   extractSubj: 1,
+  //   extractObj: 2
+  // },
   // "X was/is the head of Y"
   {
     regex: /\b([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+(?:was|is)\s+(?:also\s+)?the\s+head\s+of\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)/g,
@@ -782,6 +792,15 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     typeGuard: { subj: ['PERSON'], obj: ['PLACE'] },
     extractSubj: 1,
     extractObj: 2
+  },
+  // "X lived at number Y" - resolve to nearby PLACE (e.g., "Dursleys lived at number four" → "Privet Drive")
+  // NOTE: Pattern doesn't require "The" because normalizeTextForPatterns strips leading articles
+  {
+    regex: /\b([A-Z][a-z]+s?)\s+(?:lived|dwelt|dwelled|resides|resided|lives)\s+at\s+(?:number\s+)?(?:one|two|three|four|five|six|seven|eight|nine|ten|\d+)/gi,
+    predicate: 'lives_in',
+    typeGuard: { subj: ['PERSON'], obj: ['PLACE'] },
+    numberAddressPattern: true,  // Special handling: resolve to nearest PLACE
+    extractSubj: 1  // Family name in group 1
   },
   // Simple "X lived in Y"
   {
@@ -3062,6 +3081,66 @@ export function extractNarrativeRelations(
           }
         } else {
           console.log(`[PARENT-KILLED] No "son of X and Y" pattern found before the match`);
+        }
+        continue;
+      }
+
+      // Handle "X lived at number Y" pattern - resolve to nearest PLACE
+      // e.g., "Privet Drive was in Surrey. Dursleys lived at number four." → lives_in(Dursleys, Privet Drive)
+      if ((pattern as any).numberAddressPattern) {
+        const familyName = match[1];  // e.g., "Dursleys"
+        if (!familyName) continue;
+
+        const matchStart = match.index;
+        const matchEnd = matchStart + match[0].length;
+
+        // Find the family/person entity
+        const familyEntity = entities.find(e =>
+          e.type === 'PERSON' && (
+            e.canonical.toLowerCase() === familyName.toLowerCase() ||
+            e.canonical.toLowerCase().includes(familyName.toLowerCase()) ||
+            familyName.toLowerCase().includes(e.canonical.toLowerCase())
+          )
+        );
+
+        if (!familyEntity) {
+          continue;
+        }
+
+        // Find the FIRST PLACE entity mentioned in the same paragraph/sentence
+        // Street addresses are typically mentioned before city/county, so prefer the first PLACE
+        // e.g., "Privet Drive was in Little Whinging, Surrey." - Privet Drive is the specific address
+        let firstPlace: EntityLookup | null = null;
+        let firstPlacePos = Infinity;
+        const textBefore = normalizedText.slice(0, matchStart);
+
+        // Look for PLACE entities and find the FIRST one mentioned (lowest position)
+        for (const e of entities) {
+          if (e.type === 'PLACE') {
+            // Check if this place appears in the text before the match
+            const placePos = textBefore.toLowerCase().indexOf(e.canonical.toLowerCase());
+            if (placePos >= 0 && placePos < firstPlacePos) {
+              firstPlace = e;
+              firstPlacePos = placePos;
+            }
+          }
+        }
+
+        if (firstPlace) {
+          relations.push({
+            id: uuid(),
+            subj: familyEntity.id,
+            pred: 'lives_in',
+            obj: firstPlace.id,
+            evidence: [{
+              doc_id: docId,
+              span: { start: matchStart, end: matchEnd, text: match[0] },
+              sentence_index: 0,
+              source: 'RULE'
+            }],
+            confidence: 0.85,
+            extractor: 'regex'
+          });
         }
         continue;
       }

@@ -276,7 +276,13 @@ export async function runEntityExtractionStage(
             return { entity_id: entity.id, start, end };
           });
 
-        if (segmentSpans.length === 0) continue;
+        if (segmentSpans.length === 0) {
+          // Debug: log when Hogwarts is filtered by spans
+          if (entity.canonical.toLowerCase().includes('hogwarts')) {
+            console.log(`[HOGWARTS-DEBUG] Entity "${entity.canonical}" has 0 segmentSpans, skipping`);
+          }
+          continue;
+        }
 
         // Derive canonical name from the LONGEST span (most complete name form)
         // Sort spans by length descending to prioritize "Harry Potter" over "Harry"
@@ -402,7 +408,9 @@ export async function runEntityExtractionStage(
           if (!canonicalText || canonicalText.trim() === '') continue;
 
           // Skip low-quality entities
-          if (!isValidEntity(canonicalText, entity.type)) continue;
+          if (!isValidEntity(canonicalText, entity.type)) {
+            continue;
+          }
 
           // Force-correct entity type
           const correctedType = correctEntityType(canonicalText, entity.type);
@@ -503,6 +511,10 @@ export async function runEntityExtractionStage(
     console.log(
       `[${STAGE_NAME}] Complete in ${duration}ms: ${allEntities.length} entities, ${allSpans.length} spans`
     );
+    // DEBUG: Print entity types at end of extraction
+    for (const e of allEntities) {
+      console.log(`  [EXTRACT-DEBUG] Entity "${e.canonical}" type=${e.type}`);
+    }
 
     return {
       entities: allEntities,
