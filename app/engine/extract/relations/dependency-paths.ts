@@ -791,8 +791,8 @@ const PATH_PATTERNS: PathPattern[] = [
 
   // "X found Y"
   { signature: /^(\w+):↑nsubj:find:↓(dobj|obj):(\w+)$/, predicate: 'found', subjectFirst: true },
-  // Mock parser: direct dobj relationship (verb stripped) - weak signal but matches test patterns
-  { signature: /^(\w+):↓dobj:(\w+)(:↓compound:\w+)?$/, predicate: 'found', subjectFirst: true },
+  // NOTE: Removed catch-all dobj pattern that was generating spurious 'found' relations
+  // { signature: /^(\w+):↓dobj:(\w+)(:↓compound:\w+)?$/, predicate: 'found', subjectFirst: true },
 
   // "X led Y"
   { signature: /^(\w+):↑nsubj:lead:↓(dobj|obj):(\w+)$/, predicate: 'led', subjectFirst: true },
