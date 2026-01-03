@@ -53,9 +53,10 @@ const CHAPTER_2_GOLD: GoldStandard = {
 };
 
 // JUNK WORDS that should NOT be extracted as entities
+// NOTE: "steamy" removed - it's an alias for Frederick in the story
 const JUNK_WORDS = new Set([
   'blood', 'animals', 'caged', 'littering', 'gluttony', 'legend',
-  'layers', 'land', 'driving', 'please', 'honey', 'bullet', 'steamy',
+  'layers', 'land', 'driving', 'please', 'honey', 'bullet',
   'learning', 'growing', 'perched', 'sitting', 'becoming', 'famous',
   'hello', 'help', 'shh', 'listen', 'ugh', 'nonsense', 'justice',
   'maybe', 'bad', 'great', 'just', 'step', 'check', 'call', 'ten',

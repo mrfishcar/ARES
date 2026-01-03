@@ -36,15 +36,19 @@ const STAGE_NAME = 'EntityFilteringStage';
 /**
  * Evidence-based filtering: Filter single-mention entities that are very likely junk
  *
- * CONSERVATIVE APPROACH: Only filter entities that match clear junk patterns.
- * Single-word proper names like "Gandalf" are valid entities even with one mention.
+ * RESURRECTION LOGIC: Words can be identified as potential junk, but "resurrected"
+ * if there's evidence they're being used as proper names:
+ * - Appears capitalized mid-sentence
+ * - Multiple mentions in the document
+ * - Used as noun of direct address (vocative)
  *
- * Rationale: In long documents, NER picks up capitalized words at sentence start
- * that are gerunds, participles, or common nouns. These appear once and should be filtered.
+ * This is more robust than static stopword lists because context determines whether
+ * a word like "Honey" or "Steamy" is a common noun or a proper name/nickname.
  */
 function filterByEvidence(
   entities: Entity[],
-  spans: Span[]
+  spans: Span[],
+  fullText?: string
 ): { filtered: Entity[]; removed: number } {
   // Only apply evidence filtering in documents with many entities
   // (short test cases shouldn't be filtered this way)
@@ -60,19 +64,52 @@ function filterByEvidence(
   }
 
   // VERY SPECIFIC junk patterns - only filter clear false positives
-  // These are words that look like names but are actually common words
   const CLEAR_JUNK_PATTERNS = [
     /^[A-Z][a-z]+(ing)$/, // Capitalized gerunds like "Learning", "Growing"
     /^[A-Z][a-z]+(ed)$/, // Capitalized participles like "Caged", "Perched"
     /^(The|A|An)\s+[a-z]/i, // Articles followed by lowercase
   ];
 
-  // Common words that NER incorrectly tags as PERSON when capitalized at sentence start
-  const KNOWN_JUNK_WORDS = new Set([
+  // Potential junk words - but can be RESURRECTED if evidence exists
+  // These are words that are often common nouns but CAN be names/nicknames
+  const POTENTIAL_JUNK_WORDS = new Set([
     'learning', 'growing', 'caged', 'perched', 'littering', 'driving', 'sitting', 'becoming',
-    'famous', 'animals', 'legend', 'blood', 'bullet', 'steamy', 'layers',
-    'gluttony', 'land', 'please', 'honey', 'hello', 'help', 'shh', 'listen', 'ugh', 'nonsense'
+    'famous', 'animals', 'legend', 'blood', 'bullet', 'layers',
+    'gluttony', 'land', 'please', 'hello', 'help', 'shh', 'listen', 'ugh', 'nonsense'
   ]);
+
+  /**
+   * Check if a word has resurrection signals - evidence it's a proper name
+   */
+  function hasResurrectionSignals(word: string, entityId: string): boolean {
+    // SIGNAL 1: Multiple mentions
+    const mentions = mentionCounts.get(entityId) || 0;
+    if (mentions >= 2) {
+      console.log(`[RESURRECTION] "${word}" has ${mentions} mentions - resurrecting`);
+      return true;
+    }
+
+    // SIGNAL 2: Used as noun of direct address (vocative)
+    // Pattern: "Word," at start of speech or ", Word" or ", Word."
+    if (fullText) {
+      const wordCap = word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      // Check for vocative patterns: "Honey," or ", Honey" or ", Honey."
+      const vocativePatterns = [
+        new RegExp(`"${wordCap},`, 'i'),           // "Honey,
+        new RegExp(`, ${wordCap}[,.]?["']`, 'i'),  // , Honey." or , Honey,"
+        new RegExp(`, ${wordCap}[!?]`, 'i'),       // , Honey! or , Honey?
+      ];
+
+      for (const pattern of vocativePatterns) {
+        if (pattern.test(fullText)) {
+          console.log(`[RESURRECTION] "${word}" appears in vocative/direct address - resurrecting`);
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
 
   const filtered: Entity[] = [];
   let removed = 0;
@@ -94,9 +131,14 @@ function filterByEvidence(
       continue;
     }
 
-    // Check if it's a known junk word
-    if (KNOWN_JUNK_WORDS.has(canonicalLower)) {
-      console.log(`[EVIDENCE-FILTER] Removing known junk word: "${canonical}"`);
+    // Check if it's a potential junk word - but check for resurrection first
+    if (POTENTIAL_JUNK_WORDS.has(canonicalLower)) {
+      if (hasResurrectionSignals(canonicalLower, entity.id)) {
+        console.log(`[EVIDENCE-FILTER] Keeping resurrected name: "${canonical}"`);
+        filtered.push(entity);
+        continue;
+      }
+      console.log(`[EVIDENCE-FILTER] Removing potential junk word: "${canonical}"`);
       removed++;
       continue;
     }
@@ -116,15 +158,140 @@ function filterByEvidence(
 }
 
 /**
+ * Filter dialogue contractions that look like sentence fragments, not names.
+ *
+ * Words like "I'll", "You're", "Don't", "Can't" are contractions from dialogue
+ * that may be incorrectly extracted as entities if they appear at the start
+ * of quoted speech.
+ *
+ * Examples that should be FILTERED:
+ * - "I'll" (contraction of "I will")
+ * - "You're" (contraction of "You are")
+ * - "Don't" (contraction of "Do not")
+ * - "That's" (contraction of "That is")
+ *
+ * Note: Some contractions CAN be names (e.g., "O'Brien") so we filter
+ * specific patterns rather than all apostrophe words.
+ */
+function filterDialogueContractions(
+  entities: Entity[]
+): { filtered: Entity[]; removed: number; removedNames: string[] } {
+  // Dialogue contractions that are NEVER names
+  // These are common sentence-start contractions from dialogue
+  const CONTRACTION_PATTERNS = [
+    /^(I|You|We|They|He|She|It|That|What|There|Here)'(ll|re|ve|d|m|s)$/i,
+    /^(Don|Won|Can|Couldn|Wouldn|Shouldn|Didn|Isn|Aren|Wasn|Weren|Hasn|Haven|Hadn)'t$/i,
+    /^(Let)'s$/i,
+  ];
+
+  const filtered: Entity[] = [];
+  let removed = 0;
+  const removedNames: string[] = [];
+
+  for (const entity of entities) {
+    const canonical = entity.canonical;
+
+    // Only check PERSON entities
+    if (entity.type !== 'PERSON') {
+      filtered.push(entity);
+      continue;
+    }
+
+    // Check if it matches a contraction pattern
+    if (CONTRACTION_PATTERNS.some(p => p.test(canonical))) {
+      console.log(`[CONTRACTION-FILTER] Removing dialogue contraction: "${canonical}"`);
+      removed++;
+      removedNames.push(canonical);
+      continue;
+    }
+
+    filtered.push(entity);
+  }
+
+  return { filtered, removed, removedNames };
+}
+
+/**
+ * Check if a word appears capitalized in the middle of a sentence (not at sentence start).
+ * This indicates the word is being used as a proper name.
+ *
+ * Mid-sentence positions are detected by checking if the capitalized word is NOT preceded by:
+ * - Start of text
+ * - Sentence-ending punctuation (. ! ?) followed by whitespace
+ * - Newline or paragraph break
+ *
+ * Examples:
+ * - "Honey, please come here." → "Honey" at sentence start (not mid-sentence)
+ * - "Please come here, Honey." → "Honey" mid-sentence (IS a name)
+ * - "I love honey." → "honey" lowercase (common word)
+ */
+function hasMidSentenceCapitalization(word: string, fullText: string): boolean {
+  // Build regex to find the capitalized word
+  // Looking for the word NOT at sentence start
+  // Mid-sentence = preceded by comma, colon, or other words (not sentence-ending punctuation)
+  const capitalizedWord = word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+
+  // Pattern: word boundary + capitalized word + word boundary
+  // We'll find all occurrences and check their context
+  const wordPattern = new RegExp(`\\b${escapeRegex(capitalizedWord)}\\b`, 'g');
+
+  let match;
+  while ((match = wordPattern.exec(fullText)) !== null) {
+    const position = match.index;
+
+    // Check context before this occurrence
+    if (position === 0) {
+      // At very start of document - sentence start, skip
+      continue;
+    }
+
+    // Look at the preceding characters (up to 5 chars back for context)
+    const precedingText = fullText.slice(Math.max(0, position - 5), position);
+
+    // Check if this is a sentence start position:
+    // - After sentence-ending punctuation (. ! ?) + optional space
+    // - After newline
+    // - After opening quote at sentence start
+    const sentenceStartPattern = /[.!?]["']?\s*$/;
+    const afterNewlinePattern = /[\n\r]\s*$/;
+    const afterOpenQuoteAtStart = /^["']\s*$/;
+
+    const isSentenceStart =
+      sentenceStartPattern.test(precedingText) ||
+      afterNewlinePattern.test(precedingText) ||
+      (position <= 3 && afterOpenQuoteAtStart.test(precedingText));
+
+    if (!isSentenceStart) {
+      // Found mid-sentence capitalization! This is a name.
+      console.log(`[LOWERCASE-ECHO] Found mid-sentence capitalization of "${capitalizedWord}" → keeping as name`);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Escape special regex characters in a string
+ */
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
  * Lowercase Echo Filter: Remove single-word PERSON entities that appear lowercase in the document
  *
  * RATIONALE: Proper names are ALWAYS capitalized in English text. If a word appears
  * in lowercase anywhere in the document, it's almost certainly a common word that
  * got capitalized at sentence start, not a name.
  *
+ * EXCEPTION: If the word also appears CAPITALIZED in the middle of a sentence (not at
+ * sentence start), then it IS being used as a name and should be kept.
+ *
  * Examples:
- * - "Throughout" at sentence start is NOT a name if "throughout" appears lowercase elsewhere
- * - "Frederick" IS a name because "frederick" never appears lowercase (except typos)
+ * - "Throughout" at sentence start → filtered (appears as "throughout" elsewhere)
+ * - "Honey" at sentence start → KEPT if "Honey" also appears mid-sentence as a name
+ * - "Frederick" IS a name because "frederick" never appears lowercase
  *
  * This approach is more robust than stopword lists because:
  * 1. Self-adapting: Works for any word, not just ones we've listed
@@ -175,7 +342,14 @@ function filterByLowercaseEcho(
 
       // Check if this word appears lowercase in the document
       if (lowercaseWordsInDoc.has(lowercaseVersion)) {
-        console.log(`[LOWERCASE-ECHO] Removing "${canonical}" (appears lowercase in document)`);
+        // EXCEPTION: If the word appears CAPITALIZED mid-sentence, it's a name
+        if (hasMidSentenceCapitalization(lowercaseVersion, fullText)) {
+          console.log(`[LOWERCASE-ECHO] Keeping "${canonical}" (appears capitalized mid-sentence)`);
+          filtered.push(entity);
+          continue;
+        }
+
+        console.log(`[LOWERCASE-ECHO] Removing "${canonical}" (appears lowercase in document, never mid-sentence capitalized)`);
         removed++;
         removedNames.push(canonical);
         continue;
@@ -288,7 +462,7 @@ export async function runEntityFilteringStage(
     // ========================================================================
     // EVIDENCE-BASED FILTERING: Remove single-mention junk entities
     // ========================================================================
-    const evidenceResult = filterByEvidence(filteredEntities, input.spans);
+    const evidenceResult = filterByEvidence(filteredEntities, input.spans, input.fullText);
     if (evidenceResult.removed > 0) {
       console.log(`[${STAGE_NAME}] 🛡️ Evidence filter removed ${evidenceResult.removed} single-mention junk entities`);
       filteredEntities = evidenceResult.filtered;
@@ -310,6 +484,19 @@ export async function runEntityFilteringStage(
         stats.filtered = filteredEntities.length;
         stats.removalRate = stats.removed / stats.original;
       }
+    }
+
+    // ========================================================================
+    // DIALOGUE CONTRACTION FILTERING: Remove contractions from dialogue
+    // (e.g., "I'll", "You're", "Don't") which are not proper names
+    // ========================================================================
+    const contractionResult = filterDialogueContractions(filteredEntities);
+    if (contractionResult.removed > 0) {
+      console.log(`[${STAGE_NAME}] 🛡️ Contraction filter removed ${contractionResult.removed} dialogue fragments: ${contractionResult.removedNames.join(', ')}`);
+      filteredEntities = contractionResult.filtered;
+      stats.removed += contractionResult.removed;
+      stats.filtered = filteredEntities.length;
+      stats.removalRate = stats.removed / stats.original;
     }
 
     // Update entityMap to only include filtered entities
