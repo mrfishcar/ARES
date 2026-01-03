@@ -417,15 +417,19 @@ export async function runEntityExtractionStage(
 
     let builtInPatternCount = 0;
 
+    // Log first 200 chars of fullText for debugging
+    console.log(`[${STAGE_NAME}] PATTERN-DEBUG: fullText first 200 chars: "${input.fullText.slice(0, 200)}"`);
+
     // Pattern 1: Appositive family patterns - "his father, FirstName LastName"
     // This extracts PERSON entities from appositive constructions
     const appositivePattern = /\b(?:his|her|their)\s+(?:father|mother|brother|sister|son|daughter|uncle|aunt|cousin|grandfather|grandmother|husband|wife),?\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b/g;
     let appMatch: RegExpExecArray | null;
+    console.log(`[${STAGE_NAME}] PATTERN-DEBUG: Testing appositive pattern on ${input.fullText.length} chars`);
     while ((appMatch = appositivePattern.exec(input.fullText)) !== null) {
       const nameCandidate = appMatch[1].trim();
       // Skip if it's a common word
       const lowerName = nameCandidate.toLowerCase();
-      console.log(`[${STAGE_NAME}] APPOSITIVE-DEBUG: Matched "${appMatch[0]}", captured="${nameCandidate}"`);
+      console.log(`[${STAGE_NAME}] APPOSITIVE-MATCH: "${appMatch[0]}" -> captured="${nameCandidate}"`);
       if (['the', 'a', 'an', 'this', 'that'].includes(lowerName)) continue;
 
       const entityKey = `PERSON::${lowerName}`;
