@@ -222,7 +222,7 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
 
   // Common gerunds/present participles
   'running', 'walking', 'talking', 'fighting', 'waiting', 'looking', 'thinking',
-  'littering', 'driving', 'caged',  // More common gerunds/participles
+  'littering', 'driving', 'caged', 'growing', 'perched', 'sitting', 'becoming',  // More common gerunds/participles
 
   // Common adjectives
   'beautiful', 'terrible', 'wonderful', 'horrible', 'amazing', 'awful',

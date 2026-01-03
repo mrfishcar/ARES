@@ -69,9 +69,9 @@ function filterByEvidence(
 
   // Common words that NER incorrectly tags as PERSON when capitalized at sentence start
   const KNOWN_JUNK_WORDS = new Set([
-    'learning', 'growing', 'caged', 'perched', 'littering', 'driving',
+    'learning', 'growing', 'caged', 'perched', 'littering', 'driving', 'sitting', 'becoming',
     'famous', 'animals', 'legend', 'blood', 'bullet', 'steamy', 'layers',
-    'gluttony', 'land', 'please', 'honey', 'hello', 'help'
+    'gluttony', 'land', 'please', 'honey', 'hello', 'help', 'shh', 'listen', 'ugh', 'nonsense'
   ]);
 
   const filtered: Entity[] = [];
