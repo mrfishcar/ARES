@@ -1,5 +1,5 @@
 import './styles.css';
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import type { SerializedEditorState } from 'lexical';
 import { $getRoot, $createParagraphNode, $createTextNode, FORMAT_TEXT_COMMAND, FORMAT_ELEMENT_COMMAND } from 'lexical';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
@@ -55,6 +55,45 @@ function InitialContentPlugin({ content }: { content: string }) {
   return null;
 }
 
+// Plugin to sync external content changes (e.g., loading a saved document)
+function ExternalContentSyncPlugin({ content, lastLoadedRef }: { content: string; lastLoadedRef: React.MutableRefObject<string> }) {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    // Skip if content hasn't changed or is empty
+    if (!content || content === lastLoadedRef.current) return;
+
+    // Get current editor content
+    const currentContent = editor.getEditorState().read(() => {
+      return $getRoot().getTextContent();
+    });
+
+    // Only sync if external content is significantly different from current
+    // This prevents clobbering user edits from OnChange events
+    if (currentContent === content) return;
+
+    console.log('[ExternalContentSync] Syncing new document content', {
+      contentLength: content.length,
+      prevLength: lastLoadedRef.current.length,
+    });
+
+    // Update the ref to track what we've loaded
+    lastLoadedRef.current = content;
+
+    editor.update(() => {
+      const root = $getRoot();
+      root.clear();
+
+      const paragraph = $createParagraphNode();
+      const textNode = $createTextNode(content);
+      paragraph.append(textNode);
+      root.append(paragraph);
+    });
+  }, [content, editor, lastLoadedRef]);
+
+  return null;
+}
+
 // Plugin to sync changes back to parent
 function OnChangeAdapter({ onChange }: { onChange: (snapshot: RichDocSnapshot) => void }) {
   return (
@@ -91,6 +130,9 @@ export function RichTextEditor({
   if (initialContentRef.current === null) {
     initialContentRef.current = initialPlainText;
   }
+
+  // Track externally loaded content to detect when a new document is loaded
+  const lastLoadedContentRef = useRef<string>(initialPlainText);
 
   console.log('[RichTextEditor] Rendering with:', {
     hasInitialDoc: !!initialDocJSON,
@@ -157,6 +199,9 @@ export function RichTextEditor({
 
           {/* Load initial content ONLY if there was content on first mount */}
           {initialContentRef.current && <InitialContentPlugin content={initialContentRef.current} />}
+
+          {/* Sync external content changes (e.g., loading a saved document) */}
+          <ExternalContentSyncPlugin content={initialPlainText} lastLoadedRef={lastLoadedContentRef} />
 
           {/* Format actions plugin */}
           {onFormatActionsReady && (
