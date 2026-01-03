@@ -54,3 +54,7 @@ barty.txt
 
 # Temp session files
 tmp/mega-regression-summary.json
+
+# Scale test output data
+data/scale-test.json
+data/beauregard-scale-test.json

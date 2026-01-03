@@ -3,6 +3,12 @@
  * Apollo Server for querying and updating knowledge graph
  */
 
+// Declare global types for worker status tracking
+declare global {
+  var workerRunning: boolean | undefined;
+  var getStartupLogs: (() => string[]) | undefined;
+}
+
 import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer } from '@apollo/server/standalone';
 import * as fs from 'fs';
