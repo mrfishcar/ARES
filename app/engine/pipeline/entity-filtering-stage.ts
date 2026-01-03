@@ -169,6 +169,159 @@ function filterByEvidence(
 }
 
 /**
+ * Merge descriptor prefix entities with adjacent name entities.
+ *
+ * When NER extracts "Mad" and "Addy" as separate entities, this function
+ * detects they are adjacent in the text and merges them into "Mad Addy".
+ *
+ * DESCRIPTOR PREFIXES include: Mad, Big, Little, Old, Young, Fat, Slim,
+ * Tall, Short, Tiny, Red, Black, Wild, Crazy, Sweet, Dear, Poor, Good, Bad
+ *
+ * Examples:
+ * - "Mad" + "Addy" → "Mad Addy"
+ * - "Big" + "Jim" → "Big Jim"
+ * - "Old" + "Tom" → "Old Tom"
+ */
+function mergeDescriptorNamePairs(
+  entities: Entity[],
+  spans: Span[]
+): { entities: Entity[]; spans: Span[]; mergedCount: number } {
+  // Descriptor prefixes that can combine with names
+  const DESCRIPTOR_PREFIXES = new Set([
+    'mad', 'big', 'little', 'old', 'young', 'fat', 'slim', 'tall', 'short',
+    'tiny', 'red', 'black', 'wild', 'crazy', 'sweet', 'dear', 'poor', 'good', 'bad'
+  ]);
+
+  // Log descriptor entities for debugging
+  const descriptorEntities = entities.filter(e => {
+    const words = e.canonical.split(/\s+/);
+    return words.length === 1 && DESCRIPTOR_PREFIXES.has(words[0].toLowerCase());
+  });
+  if (descriptorEntities.length > 0) {
+    console.log(`[DESCRIPTOR-MERGE] Found ${descriptorEntities.length} descriptor entities: ${descriptorEntities.map(e => e.canonical).join(', ')}`);
+  }
+
+  // Sort spans by start position
+  const sortedSpans = [...spans].sort((a, b) => a.start - b.start);
+
+  // Find merge candidates: descriptor entity immediately followed by name entity
+  const mergePairs: Array<{
+    descriptor: Entity;
+    name: Entity;
+    descriptorSpan: Span;
+    nameSpan: Span;
+  }> = [];
+  const entitiesToRemove = new Set<string>();
+
+  // Debug: Log spans for descriptor entities
+  for (const descEnt of descriptorEntities) {
+    const descSpans = sortedSpans.filter(s => s.entity_id === descEnt.id);
+    for (const descSpan of descSpans) {
+      // Find the next span after this one
+      const idx = sortedSpans.findIndex(s => s === descSpan);
+      if (idx < sortedSpans.length - 1) {
+        const nextSpan = sortedSpans[idx + 1];
+        const gap = nextSpan.start - descSpan.end;
+        const nextEntity = entities.find(e => e.id === nextSpan.entity_id);
+        console.log(`[DESCRIPTOR-MERGE] Checking "${descEnt.canonical}" at [${descSpan.start},${descSpan.end}] -> next span at [${nextSpan.start},${nextSpan.end}] (gap=${gap}) entity="${nextEntity?.canonical}"`);
+      }
+    }
+  }
+
+  for (let i = 0; i < sortedSpans.length - 1; i++) {
+    const currentSpan = sortedSpans[i];
+    const nextSpan = sortedSpans[i + 1];
+
+    // Check if they're adjacent (separated by 0-2 characters, usually a space)
+    const gap = nextSpan.start - currentSpan.end;
+    if (gap < 0 || gap > 2) continue;
+
+    // Find the entities for these spans
+    const currentEntity = entities.find(e => e.id === currentSpan.entity_id);
+    const nextEntity = entities.find(e => e.id === nextSpan.entity_id);
+
+    if (!currentEntity || !nextEntity) continue;
+
+    // Skip if already marked for removal (avoid double merging)
+    if (entitiesToRemove.has(currentEntity.id) || entitiesToRemove.has(nextEntity.id)) continue;
+
+    // Check if first entity is a single-word descriptor prefix
+    const currentWords = currentEntity.canonical.split(/\s+/);
+    if (currentWords.length !== 1) continue;
+    if (!DESCRIPTOR_PREFIXES.has(currentWords[0].toLowerCase())) continue;
+
+    // Check if second entity is a single-word name (not another descriptor)
+    const nextWords = nextEntity.canonical.split(/\s+/);
+    if (nextWords.length !== 1) continue;
+    if (DESCRIPTOR_PREFIXES.has(nextWords[0].toLowerCase())) continue;
+
+    // Both must be PERSON type
+    if (currentEntity.type !== 'PERSON' || nextEntity.type !== 'PERSON') continue;
+
+    // Found a merge candidate
+    mergePairs.push({
+      descriptor: currentEntity,
+      name: nextEntity,
+      descriptorSpan: currentSpan,
+      nameSpan: nextSpan
+    });
+
+    // Mark original entities for removal
+    entitiesToRemove.add(currentEntity.id);
+    entitiesToRemove.add(nextEntity.id);
+  }
+
+  if (mergePairs.length === 0) {
+    return { entities, spans, mergedCount: 0 };
+  }
+
+  // Create merged entities
+  const newEntities: Entity[] = [];
+  const newSpans: Span[] = [];
+
+  for (const pair of mergePairs) {
+    const mergedCanonical = `${pair.descriptor.canonical} ${pair.name.canonical}`;
+    const mergedId = `merged_${pair.descriptor.id}_${pair.name.id}`;
+
+    console.log(`[DESCRIPTOR-MERGE] Merging "${pair.descriptor.canonical}" + "${pair.name.canonical}" → "${mergedCanonical}"`);
+
+    // Create merged entity
+    const mergedEntity: Entity = {
+      id: mergedId,
+      canonical: mergedCanonical,
+      type: 'PERSON',
+      aliases: [pair.descriptor.canonical, pair.name.canonical],
+      created_at: pair.descriptor.created_at || new Date().toISOString(),
+      confidence: Math.max(pair.descriptor.confidence ?? 0.99, pair.name.confidence ?? 0.99)
+    };
+    newEntities.push(mergedEntity);
+
+    // Create merged span
+    const mergedSpan: Span = {
+      entity_id: mergedId,
+      start: pair.descriptorSpan.start,
+      end: pair.nameSpan.end,
+      text: `${pair.descriptorSpan.text || pair.descriptor.canonical} ${pair.nameSpan.text || pair.name.canonical}`
+    };
+    newSpans.push(mergedSpan);
+  }
+
+  // Filter out merged entities and add new ones
+  const filteredEntities = entities.filter(e => !entitiesToRemove.has(e.id));
+  const finalEntities = [...filteredEntities, ...newEntities];
+
+  // Filter out merged spans and add new ones
+  const filteredSpans = spans.filter(s => !entitiesToRemove.has(s.entity_id));
+  const finalSpans = [...filteredSpans, ...newSpans];
+
+  return {
+    entities: finalEntities,
+    spans: finalSpans,
+    mergedCount: mergePairs.length
+  };
+}
+
+/**
  * Clean dialogue artifacts from entity names
  *
  * Patterns like "That's Beau Adams" or "Here's John" should become just the name.
@@ -665,6 +818,21 @@ export async function runEntityFilteringStage(
       };
     }
 
+    // Keep track of spans (may be modified by merge functions)
+    let currentSpans = input.spans;
+
+    // ========================================================================
+    // DESCRIPTOR-NAME MERGING: Merge adjacent descriptor+name pairs
+    // e.g., "Mad" + "Addy" → "Mad Addy"
+    // Must run BEFORE fragment filtering so new compounds are recognized
+    // ========================================================================
+    const mergeResult = mergeDescriptorNamePairs(filteredEntities, currentSpans);
+    if (mergeResult.mergedCount > 0) {
+      console.log(`[${STAGE_NAME}] 🛡️ Descriptor merge combined ${mergeResult.mergedCount} entity pairs`);
+      filteredEntities = mergeResult.entities;
+      currentSpans = mergeResult.spans;
+    }
+
     // ========================================================================
     // DIALOGUE ARTIFACT CLEANING: Remove dialogue prefixes from entity names
     // ========================================================================
@@ -698,7 +866,7 @@ export async function runEntityFilteringStage(
     // ========================================================================
     // EVIDENCE-BASED FILTERING: Remove single-mention junk entities
     // ========================================================================
-    const evidenceResult = filterByEvidence(filteredEntities, input.spans, input.fullText);
+    const evidenceResult = filterByEvidence(filteredEntities, currentSpans, input.fullText);
     if (evidenceResult.removed > 0) {
       console.log(`[${STAGE_NAME}] 🛡️ Evidence filter removed ${evidenceResult.removed} single-mention junk entities`);
       filteredEntities = evidenceResult.filtered;
@@ -712,7 +880,7 @@ export async function runEntityFilteringStage(
     // This is a principled approach that doesn't require stopword maintenance
     // ========================================================================
     if (input.fullText) {
-      const echoResult = filterByLowercaseEcho(filteredEntities, input.fullText, input.spans);
+      const echoResult = filterByLowercaseEcho(filteredEntities, input.fullText, currentSpans);
       if (echoResult.removed > 0) {
         console.log(`[${STAGE_NAME}] 🛡️ Lowercase echo filter removed ${echoResult.removed} common words: ${echoResult.removedNames.join(', ')}`);
         filteredEntities = echoResult.filtered;
@@ -746,7 +914,7 @@ export async function runEntityFilteringStage(
     }
 
     // Update spans to only include spans for filtered entities
-    const validSpans = input.spans.filter(s => filteredIds.has(s.entity_id));
+    const validSpans = currentSpans.filter(s => filteredIds.has(s.entity_id));
 
     const duration = Date.now() - startTime;
     console.log(
