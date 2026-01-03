@@ -243,6 +243,7 @@ export interface EntityFilteringInput {
   spans: Span[];
   entityMap: Map<string, Entity>;
   config: EntityFilterConfig;
+  fullText?: string;  // For lowercase echo filtering
 }
 
 export interface EntityFilteringOutput {

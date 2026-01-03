@@ -116,6 +116,79 @@ function filterByEvidence(
 }
 
 /**
+ * Lowercase Echo Filter: Remove single-word PERSON entities that appear lowercase in the document
+ *
+ * RATIONALE: Proper names are ALWAYS capitalized in English text. If a word appears
+ * in lowercase anywhere in the document, it's almost certainly a common word that
+ * got capitalized at sentence start, not a name.
+ *
+ * Examples:
+ * - "Throughout" at sentence start is NOT a name if "throughout" appears lowercase elsewhere
+ * - "Frederick" IS a name because "frederick" never appears lowercase (except typos)
+ *
+ * This approach is more robust than stopword lists because:
+ * 1. Self-adapting: Works for any word, not just ones we've listed
+ * 2. Domain-agnostic: Works for technical docs, fiction, any genre
+ * 3. Linguistically principled: Based on fundamental English capitalization rules
+ */
+function filterByLowercaseEcho(
+  entities: Entity[],
+  fullText: string,
+  spans: Span[]
+): { filtered: Entity[]; removed: number; removedNames: string[] } {
+  if (!fullText || fullText.length === 0) {
+    return { filtered: entities, removed: 0, removedNames: [] };
+  }
+
+  // Build lowercase word set from document (for fast lookup)
+  // Match whole words only using word boundary regex
+  const lowercaseWordsInDoc = new Set<string>();
+  const wordRegex = /\b[a-z]{2,}\b/g;
+  let match;
+  while ((match = wordRegex.exec(fullText)) !== null) {
+    lowercaseWordsInDoc.add(match[0]);
+  }
+
+  // Count mentions per entity for multi-mention check
+  const mentionCounts = new Map<string, number>();
+  for (const span of spans) {
+    const count = mentionCounts.get(span.entity_id) || 0;
+    mentionCounts.set(span.entity_id, count + 1);
+  }
+
+  const filtered: Entity[] = [];
+  let removed = 0;
+  const removedNames: string[] = [];
+
+  for (const entity of entities) {
+    const canonical = entity.canonical;
+    const words = canonical.split(/\s+/);
+
+    // Only apply to single-word PERSON entities (multi-word names are less likely to be junk)
+    // and only if entity has few mentions (well-established entities should be kept)
+    if (
+      entity.type === 'PERSON' &&
+      words.length === 1 &&
+      (mentionCounts.get(entity.id) || 0) <= 1
+    ) {
+      const lowercaseVersion = canonical.toLowerCase();
+
+      // Check if this word appears lowercase in the document
+      if (lowercaseWordsInDoc.has(lowercaseVersion)) {
+        console.log(`[LOWERCASE-ECHO] Removing "${canonical}" (appears lowercase in document)`);
+        removed++;
+        removedNames.push(canonical);
+        continue;
+      }
+    }
+
+    filtered.push(entity);
+  }
+
+  return { filtered, removed, removedNames };
+}
+
+/**
  * Convert EntityFilterConfig (pipeline type) to EntityQualityConfig (filter type)
  */
 function toQualityConfig(config: EntityFilterConfig): EntityQualityConfig {
@@ -157,6 +230,19 @@ export async function runEntityFilteringStage(
 
     // Check if filtering is enabled (either via config or global flag)
     if (input.config.enabled || isEntityFilterEnabled()) {
+      // DEBUG: Log entities before filtering
+      if (process.env.DEBUG_ENTITY_FILTER === '1') {
+        console.log(`[${STAGE_NAME}] DEBUG: Entities BEFORE filter:`);
+        for (const e of input.entities.slice(0, 50)) {
+          const firstChar = e.canonical?.[0] || '?';
+          const isUpper = firstChar === firstChar.toUpperCase() && /[A-Z]/.test(firstChar);
+          console.log(`  ${e.type}: "${e.canonical}" firstChar="${firstChar}" isUpper=${isUpper}`);
+        }
+        if (input.entities.length > 50) {
+          console.log(`  ... and ${input.entities.length - 50} more`);
+        }
+      }
+
       // Convert pipeline config to quality filter config
       const config: EntityQualityConfig = input.config.enabled
         ? toQualityConfig(input.config)
@@ -209,6 +295,21 @@ export async function runEntityFilteringStage(
       stats.removed += evidenceResult.removed;
       stats.filtered = filteredEntities.length;
       stats.removalRate = stats.removed / stats.original;
+    }
+
+    // ========================================================================
+    // LOWERCASE ECHO FILTERING: Remove words that appear lowercase elsewhere
+    // This is a principled approach that doesn't require stopword maintenance
+    // ========================================================================
+    if (input.fullText) {
+      const echoResult = filterByLowercaseEcho(filteredEntities, input.fullText, input.spans);
+      if (echoResult.removed > 0) {
+        console.log(`[${STAGE_NAME}] 🛡️ Lowercase echo filter removed ${echoResult.removed} common words: ${echoResult.removedNames.join(', ')}`);
+        filteredEntities = echoResult.filtered;
+        stats.removed += echoResult.removed;
+        stats.filtered = filteredEntities.length;
+        stats.removalRate = stats.removed / stats.original;
+      }
     }
 
     // Update entityMap to only include filtered entities

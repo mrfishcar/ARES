@@ -211,7 +211,8 @@ export async function extractFromSegments(
       entities: entityOutput.entities,
       spans: entityOutput.spans,
       entityMap: entityOutput.entityMap,
-      config: config.entityFilterConfig
+      config: config.entityFilterConfig,
+      fullText: parseOutput.fullText  // For lowercase echo filtering
     });
 
     // ========================================================================
