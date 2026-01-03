@@ -433,6 +433,7 @@ function looksLikeSurname(word: string): boolean {
     'ner', 'ter',               // Gardener, Carpenter, etc.
     'ey', 'ay',                 // Finley, Murray, etc.
     'tt', 'ott',                // Scott, Abbott, etc.
+    'ard', 'gard',              // Beauregard, Bernard, Gerard, Blanchard, Richard, etc.
     // Common vowel endings for non-Anglo surnames
     'ama', 'ima', 'uma',        // Obama, Fujima, etc.
     'aro', 'ero', 'iro', 'oro', 'uro', // Castro, Shapiro, etc.
