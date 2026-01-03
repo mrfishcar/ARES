@@ -241,6 +241,12 @@ export async function runEntityExtractionStage(
 
       // Filter and remap entities/spans that fall within the actual segment bounds
       for (const entity of entities) {
+        // Debug: Track Andrew Beauregard
+        const isAndrew = entity.canonical.toLowerCase().includes('andrew');
+        if (isAndrew) {
+          console.log(`[TRACE-ANDREW] Processing entity: "${entity.canonical}" (${entity.type})`);
+        }
+
         // Find all spans for this entity
         const entitySpans = spans.filter(s => s.entity_id === entity.id);
 
@@ -267,7 +273,14 @@ export async function runEntityExtractionStage(
           });
 
         if (segmentSpans.length === 0) {
+          if (isAndrew) {
+            console.log(`[TRACE-ANDREW] ❌ No spans within segment bounds - SKIPPED`);
+          }
           continue;
+        }
+
+        if (isAndrew) {
+          console.log(`[TRACE-ANDREW] ✅ Has ${segmentSpans.length} spans within segment`);
         }
 
         // Derive canonical name from the LONGEST span (most complete name form)
@@ -307,6 +320,10 @@ export async function runEntityExtractionStage(
         if (isOriginalProperNoun && isDerivedDescriptor) {
           // Keep the proper noun as canonical, add descriptor as alias
           canonicalText = entityOriginalCanonical;
+        }
+
+        if (isAndrew) {
+          console.log(`[TRACE-ANDREW] Derived canonicalText: "${canonicalText}" from raw: "${canonicalRaw}"`);
         }
 
         // Check if we've seen this entity before (by type + canonical)
