@@ -32,18 +32,25 @@ import './NotesEditor.css';
 // ============================================================================
 
 function triggerHaptic(style: 'light' | 'medium' | 'heavy' | 'selection' | 'success' | 'warning' | 'error' = 'light') {
-  // Use Taptic Engine on iOS via vibrate API with specific patterns
-  if ('vibrate' in navigator) {
-    const patterns: Record<string, number | number[]> = {
-      light: 10,
-      medium: 20,
-      heavy: 30,
-      selection: 5,
-      success: [10, 30, 10],
-      warning: [20, 40, 20],
-      error: [30, 50, 30, 50, 30],
-    };
-    navigator.vibrate(patterns[style]);
+  // Note: navigator.vibrate is NOT supported on iOS Safari.
+  // True haptic feedback on iOS requires native app integration (UIImpactFeedbackGenerator).
+  // This only works on Android Chrome and some desktop browsers.
+  // For a web app targeting iOS, consider visual feedback as primary indicator.
+  if ('vibrate' in navigator && typeof navigator.vibrate === 'function') {
+    try {
+      const patterns: Record<string, number | number[]> = {
+        light: 10,
+        medium: 20,
+        heavy: 30,
+        selection: 5,
+        success: [10, 30, 10],
+        warning: [20, 40, 20],
+        error: [30, 50, 30, 50, 30],
+      };
+      navigator.vibrate(patterns[style]);
+    } catch {
+      // Silently fail if vibrate is not supported
+    }
   }
 }
 
@@ -505,9 +512,19 @@ function groupNotesBySection(notes: Note[]): NoteSection[] {
     }
   }
 
-  // Add remaining month sections
-  for (const [sectionName, sectionNotes] of dateGroups) {
-    sections.push({ title: sectionName, notes: sectionNotes });
+  // Add remaining month sections sorted chronologically (newest first)
+  // Parse "Month Year" format and sort by date
+  const monthSections = Array.from(dateGroups.entries()).map(([title, notes]) => {
+    // Parse the title to get a sortable date
+    // Format is "Month Year" e.g., "December 2024"
+    const date = new Date(title + ' 1'); // Add day to make it parseable
+    return { title, notes, sortDate: date.getTime() };
+  });
+
+  // Sort by date descending (newest first)
+  monthSections.sort((a, b) => b.sortDate - a.sortDate);
+  for (const { title, notes: sectionNotes } of monthSections) {
+    sections.push({ title, notes: sectionNotes });
   }
 
   return sections;
@@ -931,10 +948,19 @@ function NotesList({ notes, totalNotesCount, selectedId, onSelect, onCreateNote,
     setDraggedFromIndex(index);
   }, []);
 
+  // Throttle haptic feedback during drag to avoid excessive vibrations
+  const lastHapticTimeRef = useRef(0);
+  const HAPTIC_THROTTLE_MS = 100;
+
   const handleDragOver = useCallback((index: number) => {
     if (index !== dropTargetIndex) {
       setDropTargetIndex(index);
-      triggerHaptic('selection');
+      // Throttle haptic feedback
+      const now = Date.now();
+      if (now - lastHapticTimeRef.current > HAPTIC_THROTTLE_MS) {
+        triggerHaptic('selection');
+        lastHapticTimeRef.current = now;
+      }
     }
   }, [dropTargetIndex]);
 

@@ -772,7 +772,9 @@
   }
 
   .notes-editor__mobile-header {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     padding: var(--ne-spacing-sm);
     background: var(--ne-bg-secondary);
     border-bottom: 1px solid var(--ne-separator);
@@ -1120,6 +1122,10 @@
   background: var(--ne-bg-secondary);
   border-radius: var(--ne-radius-lg);
   overflow: hidden;
+  /* Scroll if too many actions */
+  max-height: 50vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .action-sheet__action {
