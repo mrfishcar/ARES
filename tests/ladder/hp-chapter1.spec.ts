@@ -316,6 +316,37 @@ describe('HP Chapter 1 Test Suite', () => {
           failures.push(`[${testCase.id}] Missing relation: ${goldRel.subj} --[${goldRel.pred}]--> ${goldRel.obj}`);
         }
       }
+
+      // Check for spurious relations (not matching any gold)
+      for (const rel of foundRelations) {
+        const subjEntity = foundEntities.find(e => e.id === rel.subj);
+        const objEntity = foundEntities.find(e => e.id === rel.obj);
+        if (!subjEntity || !objEntity) continue;
+
+        const matchesGold = testCase.gold.relations.some(g => {
+          const subjMatch =
+            subjEntity.canonical.toLowerCase().includes(g.subj.toLowerCase()) ||
+            g.subj.toLowerCase().includes(subjEntity.canonical.toLowerCase()) ||
+            subjEntity.aliases.some(a =>
+              a.toLowerCase().includes(g.subj.toLowerCase()) ||
+              g.subj.toLowerCase().includes(a.toLowerCase())
+            );
+
+          const objMatch =
+            objEntity.canonical.toLowerCase().includes(g.obj.toLowerCase()) ||
+            g.obj.toLowerCase().includes(objEntity.canonical.toLowerCase()) ||
+            objEntity.aliases.some(a =>
+              a.toLowerCase().includes(g.obj.toLowerCase()) ||
+              g.obj.toLowerCase().includes(a.toLowerCase())
+            );
+
+          return subjMatch && rel.pred === g.pred && objMatch;
+        });
+
+        if (!matchesGold) {
+          failures.push(`[${testCase.id}] SPURIOUS: ${subjEntity.canonical} --[${rel.pred}]--> ${objEntity.canonical}`);
+        }
+      }
     }
 
     // Calculate metrics

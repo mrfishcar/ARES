@@ -538,8 +538,9 @@ export const INVERSE: Partial<Record<Predicate, Predicate>> = {
   met: 'met',  // Symmetric: if A met B, B met A
   mentored: 'mentored_by',
   mentored_by: 'mentored',
-  defeated: 'defeated',  // Asymmetric but can be symmetric in conflict
-  killed: 'killed',  // No inverse - death is one-way
+  // NOTE: defeated and killed are NOT in INVERSE map - they are one-directional
+  // If A killed B, it does NOT mean B killed A
+  // If A defeated B, it does NOT mean B defeated A
 
   ancestor_of: 'descendant_of',
   descendant_of: 'ancestor_of',

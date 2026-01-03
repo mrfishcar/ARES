@@ -442,6 +442,7 @@ interface RelationPattern {
   reversed?: boolean;
   mrAndMrsPattern?: boolean;    // Special flag for "Mr and Mrs X" pattern
   parentKilledPattern?: boolean; // Special flag for "His/Her parents killed by X" pattern
+  numberAddressPattern?: boolean; // Special flag for "number four, Privet Drive" style addresses
 }
 
 /**
@@ -3274,11 +3275,15 @@ export function extractNarrativeRelations(
             const matchStart = match.index;
             const matchEnd = matchStart + match[0].length;
 
+            // For reversed patterns (passive voice), swap subject and object
+            const finalSubj = pattern.reversed ? objEntity : subjEntity;
+            const finalObj = pattern.reversed ? subjEntity : objEntity;
+
             const relation: Relation = {
               id: uuid(),
-              subj: subjEntity.id,
+              subj: finalSubj.id,
               pred: pattern.predicate as any,
-              obj: objEntity.id,
+              obj: finalObj.id,
               evidence: [{
                 doc_id: docId,
                 span: {
@@ -3300,8 +3305,8 @@ export function extractNarrativeRelations(
               relations.push({
                 ...relation,
                 id: uuid(),
-                subj: objEntity.id,
-                obj: subjEntity.id
+                subj: finalObj.id,
+                obj: finalSubj.id
               });
             }
           }
@@ -3320,11 +3325,15 @@ export function extractNarrativeRelations(
             const matchStart = match.index;
             const matchEnd = matchStart + match[0].length;
 
+            // For reversed patterns (passive voice), swap subject and object
+            const finalSubj = pattern.reversed ? objEntity : subjEntity;
+            const finalObj = pattern.reversed ? subjEntity : objEntity;
+
             const relation: Relation = {
               id: uuid(),
-              subj: subjEntity.id,
+              subj: finalSubj.id,
               pred: pattern.predicate as any, // Type assertion for custom predicates
-              obj: objEntity.id,
+              obj: finalObj.id,
               evidence: [{
                 doc_id: docId,
                 span: {
@@ -3346,8 +3355,8 @@ export function extractNarrativeRelations(
               relations.push({
                 ...relation,
                 id: uuid(),
-                subj: objEntity.id,
-                obj: subjEntity.id
+                subj: finalObj.id,
+                obj: finalSubj.id
               });
             }
           }
