@@ -2320,6 +2320,11 @@ function extractFamilySpans(text: string): Array<{ text: string; type: EntityTyp
     const surnameStart = match.index + match[0].lastIndexOf(surname);
     const surnameEnd = surnameStart + surname.length;
 
+    if (surname.toLowerCase().includes('potter')) {
+      console.log(`[PLURAL-SURNAME-PATTERN] Matched: "${match[0]}" -> surname="${surname}" at [${surnameStart}, ${surnameEnd}]`);
+      console.log(`[PLURAL-SURNAME-PATTERN] Verify text slice: "${text.slice(surnameStart, surnameEnd)}"`);
+    }
+
     spans.push({
       text: surname,
       type: 'PERSON',
@@ -2831,7 +2836,6 @@ function applyLinguisticFilters(
   sentenceStarts: Set<number>
 ): Entity[] {
   const DEBUG = process.env.DEBUG_ENTITY_DECISIONS === 'true';
-  const FILTER_DEBUG = process.env.FILTER_DEBUG === '1';
   const filtered: Entity[] = [];
   const isSentenceInitialPosition = (charPos: number): boolean => {
     for (const start of sentenceStarts) {
@@ -2846,7 +2850,6 @@ function applyLinguisticFilters(
     const headToken = tokens[tokens.length - 1]; // Last token is usually the head
     const entitySpans = spans.filter(s => s.entity_id === entity.id);
     const primarySpan = entitySpans[0];
-
     if (primarySpan) {
       const override = applyTypeOverrides(entity, primarySpan, text);
       if (override.reason && DEBUG) {
@@ -3000,14 +3003,12 @@ function applyLinguisticFilters(
 
     // Rule NF-1: Filter attached-only fragments
     // If this is a single-token entity that only appears embedded in longer proper names
-    if (FILTER_DEBUG && tokens.length === 1) {
-      const isFragment = isAttachedOnlyFragment(tokenStats, tokens[0]);
-      console.log(`[FILTER_DEBUG] NF-1 check: ${entity.canonical} isAttachedOnlyFragment=${isFragment}`);
-    }
     // Skip NF-1 for all-uppercase acronyms - they are standalone entities, not fragments
     const isAcronymEntity = /^[A-Z]{2,}$/.test(entity.canonical);
-    if (tokens.length === 1 && !isAcronymEntity && isAttachedOnlyFragment(tokenStats, tokens[0])) {
-      if (FILTER_DEBUG) console.log(`[FILTER_DEBUG] NF-1 FILTERED: ${entity.canonical}`);
+    // Skip NF-1 for plural family surnames (e.g., "Potters", "Dursleys") - these are not fragments
+    // but rather references to a family group, distinct from the singular surname
+    const isPluralFamilySurname = entity.type === 'PERSON' && tokens.length === 1 && /^[A-Z][a-z]+s$/.test(tokens[0]) && !tokens[0].endsWith('ss');
+    if (tokens.length === 1 && !isAcronymEntity && !isPluralFamilySurname && isAttachedOnlyFragment(tokenStats, tokens[0])) {
       shouldKeep = false;
       logEntityDecision({
         entityId: entity.id,
@@ -3066,12 +3067,7 @@ function applyLinguisticFilters(
 
       const allowedPerson = looksLikePersonName(npContext, tokenStats);
 
-      if (FILTER_DEBUG) {
-        console.log(`[FILTER_DEBUG] CN check: ${entity.canonical} allowedPerson=${allowedPerson} hasDeterminer=${hasDeterminer} isSentenceInitial=${isSentenceInitial} followedByComma=${followedByComma}`);
-      }
-
       if (!allowedPerson) {
-        if (FILTER_DEBUG) console.log(`[FILTER_DEBUG] CN-1/2/3/4 FILTERED: ${entity.canonical}`);
         shouldKeep = false;
         logEntityDecision({
           entityId: entity.id,
@@ -4346,18 +4342,28 @@ const mergedEntries = Array.from(mergedMap.values());
 
   const mergeAliasMentions = (entry: EntityEntry) => {
     const aliasKey = normalizeName(entry.entity.canonical)?.toLowerCase();
-    if (!aliasKey) return;
+    if (!aliasKey) {
+      return;
+    }
     const candidates = aliasRegistry.get(aliasKey) ?? [];
-    if (!candidates.length) return;
+    if (!candidates.length) {
+      return;
+    }
 
     const mentionIndex = firstMentionIndexByEid.get(entry.entity.id);
-    if (mentionIndex === undefined) return;
+    if (mentionIndex === undefined) {
+      return;
+    }
 
     const resolvedEid = resolveAliasWithContext(aliasKey, candidates, mentionIndex, lastMentionIndexByEid);
-    if (!resolvedEid || resolvedEid === entry.entity.id) return;
+    if (!resolvedEid || resolvedEid === entry.entity.id) {
+      return;
+    }
 
     const target = mentionFilteredEntries.find(candidate => candidate.entity.id === resolvedEid);
-    if (!target) return;
+    if (!target) {
+      return;
+    }
 
     const seenSpanKeys = new Set(target.spanList.map(span => `${span.start}:${span.end}`));
     for (const span of entry.spanList) {
@@ -4465,29 +4471,7 @@ const mergedEntries = Array.from(mergedMap.values());
     }
   }
 
-  if (mentionFilteredEntries.some(e => e.entity.canonical.toLowerCase().includes('dursley') || e.entity.canonical.toLowerCase().includes('mr '))) {
-    const dursleys = mentionFilteredEntries.filter(e => e.entity.canonical.toLowerCase().includes('dursley') || e.entity.canonical.toLowerCase().startsWith('mr '));
-    console.log(`[MERGE-FILTER] Before filter: ${dursleys.map(e => `${e.entity.canonical}(merged=${mergedPersonIds.has(e.entity.id)})`).join(', ')}`);
-  }
   const mergedEntriesFiltered = mentionFilteredEntries.filter(entry => !mergedPersonIds.has(entry.entity.id));
-
-  if (mentionFilteredEntries.some(e => e.entity.canonical.toLowerCase().includes('dursley') || e.entity.canonical.toLowerCase().includes('mr '))) {
-    const dursleys = mergedEntriesFiltered.filter(e => e.entity.canonical.toLowerCase().includes('dursley') || e.entity.canonical.toLowerCase().startsWith('mr '));
-    console.log(`[MERGE-FILTER] After filter: ${dursleys.map(e => e.entity.canonical).join(', ')}`);
-  }
-
-  // Debug Chilion in merged entries
-  if (process.env.L4_DEBUG === '1') {
-    const chilionInMerged = mentionFilteredEntries.filter(e => e.entity.canonical === 'Chilion');
-    if (chilionInMerged.length > 0) {
-      console.log(`[EXTRACT-ENTITIES] Chilion in mergedEntries: ${chilionInMerged.length}`);
-    } else if (mentionFilteredEntries.some(e => e.entity.canonical.toLowerCase() === 'chilion')) {
-      const chilionVariant = mentionFilteredEntries.find(e => e.entity.canonical.toLowerCase() === 'chilion');
-      console.log(`[EXTRACT-ENTITIES] Found variant: "${chilionVariant?.entity.canonical}"`);
-    } else {
-      console.log(`[EXTRACT-ENTITIES] NO Chilion in mergedEntries (${mentionFilteredEntries.length} total): ${mentionFilteredEntries.map(e => e.entity.canonical).slice(0, 10).join(', ')}`);
-    }
-  }
 
   const finalEntries = mergedEntriesFiltered.filter(entry => {
     if (entry.entity.type === 'DATE' && process.env.L4_DEBUG === "1") {
@@ -4504,15 +4488,11 @@ const mergedEntries = Array.from(mergedMap.values());
     }
 
     const canonicalLower = entry.entity.canonical.toLowerCase();
-    const isMcG = canonicalLower.includes('mcgonagall');
 
     // Check PERSON_BLOCKLIST - both exact match and individual word match
     if (entry.entity.type === 'PERSON') {
       // Exact match
       if (PERSON_BLOCKLIST.has(canonicalLower)) {
-        if (isMcG) {
-          console.log('[DEBUG-MCG] filtered out by PERSON_BLOCKLIST (exact)', entry.entity.canonical);
-        }
         return false;
       }
       // Also check if any word in the canonical is a blocked collective noun
@@ -4663,17 +4643,6 @@ const mergedEntries = Array.from(mergedMap.values());
   const confidenceFilteredEntries = finalEntries.filter(entry =>
     filteredIds.has(entry.entity.id)
   );
-
-  // Debug: Check what happened to Mr Dursley
-  const mrDursleyInFinal = finalEntries.find(e => e.entity.canonical.toLowerCase() === 'mr dursley');
-  const mrDursleyInConfidence = confidenceFilteredEntries.find(e => e.entity.canonical.toLowerCase() === 'mr dursley');
-  if (mrDursleyInFinal && !mrDursleyInConfidence) {
-    console.log(`[MR-DURSLEY-LOST] Was in finalEntries but filtered by confidence: ${mrDursleyInFinal.entity.id}, has ${mrDursleyInFinal.spanList.length} spans`);
-  } else if (!mrDursleyInFinal) {
-    console.log(`[MR-DURSLEY-LOST] Not in finalEntries (filtered earlier)`);
-  } else if (mrDursleyInConfidence) {
-    console.log(`[MR-DURSLEY-OK] In confidenceFilteredEntries with ${mrDursleyInConfidence.spanList.length} spans`);
-  }
 
   if (DEBUG_ENTITIES) {
     console.log(`[EXTRACT-ENTITIES][DEBUG] confidenceFilteredEntries=${confidenceFilteredEntries.length}`);
@@ -5053,11 +5022,6 @@ const mergedEntries = Array.from(mergedMap.values());
 
     let candidateSpans = Array.from(spanByStart.values()).sort((a, b) => a.start - b.start);
 
-    // Debug: Check Mr Dursley spans at this stage
-    if (entry.entity.canonical.toLowerCase() === 'mr dursley') {
-      console.log(`[MR-DURSLEY-SPAN-BUILD] Entry "${entry.entity.canonical}" id=${entry.entity.id} has ${entry.spanList.length} in spanList, ${candidateSpans.length} candidate spans: ${JSON.stringify(candidateSpans)}`);
-    }
-
     // Filter out subsumed spans (spans completely contained within others)
     const uniqueSpans = candidateSpans.filter((span, i) => {
       // Check if this span is subsumed by any other span
@@ -5073,17 +5037,9 @@ const mergedEntries = Array.from(mergedMap.values());
       return true; // Not subsumed, keep it
     });
 
-    // Debug: Check Mr Dursley after uniqueSpans filter
-    if (entry.entity.canonical.toLowerCase() === 'mr dursley') {
-      console.log(`[MR-DURSLEY-UNIQUE] After uniqueSpans filter: ${uniqueSpans.length} spans: ${JSON.stringify(uniqueSpans)}`);
-    }
-
     for (const span of uniqueSpans) {
       const key = `${entry.entity.id}:${span.start}:${span.end}`;
       if (seenSpanKeys.has(key)) {
-        if (entry.entity.canonical.toLowerCase() === 'mr dursley') {
-          console.log(`[MR-DURSLEY-DUPE] Skipping duplicate span key: ${key}`);
-        }
         continue;
       }
       seenSpanKeys.add(key);
@@ -5092,9 +5048,6 @@ const mergedEntries = Array.from(mergedMap.values());
         start: span.start,
         end: span.end
       });
-      if (entry.entity.canonical.toLowerCase() === 'mr dursley') {
-        console.log(`[MR-DURSLEY-ADDED] Added span to final spans: ${JSON.stringify({ entity_id: entry.entity.id, start: span.start, end: span.end })}`);
-      }
     }
   }
 
@@ -5375,20 +5328,6 @@ const mergedEntries = Array.from(mergedMap.values());
   const filteredEntityIds = new Set(nicknameFilteredEntities.map(e => e.id));
   const filteredSpans = spans.filter(span => filteredEntityIds.has(span.entity_id));
 
-  // Debug: Check Mr Dursley through the filtering
-  const mrDursleyInNickname = nicknameFilteredEntities.find(e => e.canonical.toLowerCase() === 'mr dursley');
-  const mrDursleySpansInSpans = spans.filter(s => {
-    const ent = entities.find(e => e.id === s.entity_id);
-    return ent?.canonical.toLowerCase() === 'mr dursley';
-  });
-  const mrDursleySpansFiltered = filteredSpans.filter(s => {
-    const ent = nicknameFilteredEntities.find(e => e.id === s.entity_id);
-    return ent?.canonical.toLowerCase() === 'mr dursley';
-  });
-  if (mrDursleyInNickname || mrDursleySpansInSpans.length > 0) {
-    console.log(`[MR-DURSLEY-FILTER] In nicknameFilteredEntities: ${mrDursleyInNickname ? 'YES' : 'NO'}, spans in spans: ${mrDursleySpansInSpans.length}, spans in filteredSpans: ${mrDursleySpansFiltered.length}`);
-  }
-
   // Resolve exact-span conflicts and overlapping spans deterministically
   const conflictResolved = resolveSpanConflicts(nicknameFilteredEntities, filteredSpans);
   const finalEntities = conflictResolved.entities;
@@ -5398,13 +5337,6 @@ const mergedEntries = Array.from(mergedMap.values());
     const dateCount = finalEntities.filter(e => e.type === 'DATE').length;
     const removedCount = entities.length - finalEntities.length;
     console.log(`[EXTRACT-ENTITIES][DEBUG] returning ${finalEntities.length} entities (${dateCount} DATEs, ${removedCount} filtered): ${finalEntities.map(e => `${e.type}:${e.canonical}`).slice(0, 20).join(', ')}`);
-  }
-
-  // Debug: Check Mr Dursley spans
-  const mrDursleyEntity = finalEntities.find(e => e.canonical.toLowerCase() === 'mr dursley');
-  if (mrDursleyEntity) {
-    const mrDursleySpans = finalSpans.filter(s => s.entity_id === mrDursleyEntity.id);
-    console.log(`[MR-DURSLEY-SPANS] Entity "${mrDursleyEntity.canonical}" (${mrDursleyEntity.id}) has ${mrDursleySpans.length} spans: ${JSON.stringify(mrDursleySpans.slice(0, 3))}`);
   }
 
   return {

@@ -27,6 +27,7 @@ export interface RelationPattern {
   symmetric?: boolean;
   extractSubj?: number;
   extractObj?: number;
+  reversed?: boolean;
   typeGuard?: {
     subj?: EntityType[];
     obj?: EntityType[];

@@ -244,19 +244,9 @@ export async function runEntityExtractionStage(
         // Find all spans for this entity
         const entitySpans = spans.filter(s => s.entity_id === entity.id);
 
-        // Debug Mr Dursley
-        if (entity.canonical.toLowerCase().includes('mr dursley') || entity.canonical.toLowerCase().includes('mr. dursley')) {
-          console.log(`[PIPELINE-SPAN-CHECK] Entity "${entity.canonical}" has ${entitySpans.length} spans: ${JSON.stringify(entitySpans.slice(0, 3))}`);
-        }
-
         // Keep only spans that are COMPLETELY within the segment
         const segStart = segOffsetInWindow;
         const segEnd = segOffsetInWindow + seg.text.length;
-
-        // Debug Mr Dursley segment filtering
-        if (entity.canonical.toLowerCase().includes('mr dursley')) {
-          console.log(`[PIPELINE-SEGMENT] Entity "${entity.canonical}" segStart=${segStart}, segEnd=${segEnd}, spans in segment: ${entitySpans.filter(s => s.start < segEnd && s.end > segStart).length}`);
-        }
 
         const segmentSpans = entitySpans
           .filter(s => s.start < segEnd && s.end > segStart)
@@ -277,10 +267,6 @@ export async function runEntityExtractionStage(
           });
 
         if (segmentSpans.length === 0) {
-          // Debug: log when Hogwarts is filtered by spans
-          if (entity.canonical.toLowerCase().includes('hogwarts')) {
-            console.log(`[HOGWARTS-DEBUG] Entity "${entity.canonical}" has 0 segmentSpans, skipping`);
-          }
           continue;
         }
 
@@ -289,11 +275,6 @@ export async function runEntityExtractionStage(
         const sortedSpans = [...segmentSpans].sort((a, b) => (b.end - b.start) - (a.end - a.start));
         const canonicalRaw = input.fullText.slice(sortedSpans[0].start, sortedSpans[0].end);
         let canonicalText = normalizeName(canonicalRaw);
-
-        // Debug Dursley entities
-        if (entity.canonical.toLowerCase().includes('dursley')) {
-          console.log(`[PIPELINE-ENTITY] Processing: entity.canonical="${entity.canonical}", canonicalRaw="${canonicalRaw}", canonicalText="${canonicalText}", spans=${JSON.stringify(sortedSpans)}`);
-        }
 
         // IMPORTANT: Prefer entity's original canonical if it's a multi-word name
         // that contains our derived canonical as a substring (e.g., prefer "Harry Potter" over "Harry")
@@ -315,12 +296,6 @@ export async function runEntityExtractionStage(
           canonicalText = entity.canonical;
         }
 
-        // Debug: Final canonicalText for Dursley
-        if (entity.canonical.toLowerCase().includes('dursley')) {
-          const debugKey = `${entity.type}::${canonicalText.toLowerCase()}`;
-          console.log(`[PIPELINE-ENTITY-FINAL] entity.canonical="${entity.canonical}", final canonicalText="${canonicalText}", entityKey="${debugKey}"`);
-        }
-
         // IMPORTANT: Prefer proper nouns over descriptors like "The king", "The wizard"
         // If original canonical is a proper noun and derived is a "The X" descriptor, keep original
         const isOriginalProperNoun = entityOriginalCanonical &&
@@ -329,21 +304,8 @@ export async function runEntityExtractionStage(
         const isDerivedDescriptor = canonicalText.toLowerCase().startsWith('the ') &&
           canonicalText.split(/\s+/).length === 2;
 
-        // DEBUG: Log when we're considering proper noun vs descriptor
-        if (canonicalText.toLowerCase().includes('king') || canonicalText.toLowerCase().includes('wizard') ||
-            entityOriginalCanonical?.toLowerCase().includes('aragorn') || entityOriginalCanonical?.toLowerCase().includes('dumbledore')) {
-          console.log(`[DEBUG] Entity canonical check:
-            entity.canonical: "${entity.canonical}"
-            entityOriginalCanonical: "${entityOriginalCanonical}"
-            canonicalRaw: "${canonicalRaw}"
-            canonicalText: "${canonicalText}"
-            isOriginalProperNoun: ${isOriginalProperNoun}
-            isDerivedDescriptor: ${isDerivedDescriptor}`);
-        }
-
         if (isOriginalProperNoun && isDerivedDescriptor) {
           // Keep the proper noun as canonical, add descriptor as alias
-          console.log(`[DEBUG] Keeping proper noun "${entityOriginalCanonical}" over descriptor "${canonicalText}"`);
           canonicalText = entityOriginalCanonical;
         }
 
@@ -511,10 +473,6 @@ export async function runEntityExtractionStage(
     console.log(
       `[${STAGE_NAME}] Complete in ${duration}ms: ${allEntities.length} entities, ${allSpans.length} spans`
     );
-    // DEBUG: Print entity types at end of extraction
-    for (const e of allEntities) {
-      console.log(`  [EXTRACT-DEBUG] Entity "${e.canonical}" type=${e.type}`);
-    }
 
     return {
       entities: allEntities,
