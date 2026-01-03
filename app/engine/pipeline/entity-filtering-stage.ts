@@ -50,9 +50,9 @@ function filterByEvidence(
   spans: Span[],
   fullText?: string
 ): { filtered: Entity[]; removed: number } {
-  // Only apply evidence filtering in documents with many entities
-  // (short test cases shouldn't be filtered this way)
-  if (entities.length < 10) {
+  // Only apply evidence filtering in documents with a reasonable number of entities
+  // (very short test cases with < 5 entities shouldn't be filtered this way)
+  if (entities.length < 5) {
     return { filtered: entities, removed: 0 };
   }
 
@@ -68,6 +68,9 @@ function filterByEvidence(
     /^[A-Z][a-z]+(ing)$/, // Capitalized gerunds like "Learning", "Growing"
     /^[A-Z][a-z]+(ed)$/, // Capitalized participles like "Caged", "Perched"
     /^(The|A|An)\s+[a-z]/i, // Articles followed by lowercase
+    /^[A-Z][a-z]*-$/, // Words ending with hyphen like "Ugh-", "Preston-"
+    /^[A-Z][a-z]+-ly$/i, // Adverb-like forms like "Preston-ly"
+    /^That's\s/i, // Dialogue artifacts like "That's Beau Adams"
   ];
 
   // Potential junk words - but can be RESURRECTED if evidence exists
@@ -79,7 +82,11 @@ function filterByEvidence(
     // Exclamatory words that may be incorrectly extracted
     'god', 'lord', 'jesus', 'christ', 'heavens', 'gosh',
     // Chapter title fragments
-    'song', 'chapter', 'part', 'book', 'section', 'prologue', 'epilogue'
+    'song', 'chapter', 'part', 'book', 'section', 'prologue', 'epilogue',
+    // Fragment words that are part of compound proper names
+    'souls', 'steamy',
+    // Interjections and common words often mistaken for names
+    'maybe', 'sounds', 'officers', 'cries', 'teachers'
   ]);
 
   /**
@@ -159,6 +166,148 @@ function filterByEvidence(
   }
 
   return { filtered, removed };
+}
+
+/**
+ * Clean entities that have chapter title/header contamination.
+ *
+ * When NER runs on text with chapter headings, it may combine the heading
+ * with the first entity mentioned, creating contaminated names like:
+ * - "Purple Sneakers Barty Beauregard" (from "The Boy with Purple Sneakers" + "Barty Beauregard")
+ * - "Song City Frederick" (from "Song for the City" + "Frederick")
+ *
+ * This filter detects entities with 4+ words where the last 2-3 words look
+ * like a proper name (FirstName LastName pattern) and the prefix contains
+ * common adjectives, nouns, or article-like words.
+ *
+ * IMPORTANT: This CLEANS the entity rather than removing it, preserving the
+ * actual person name while stripping the title prefix.
+ */
+function cleanTitleContamination(
+  entities: Entity[]
+): { cleaned: Entity[]; cleanedCount: number } {
+  // Common words found in chapter titles/headers that shouldn't be part of names
+  const TITLE_PREFIX_WORDS = new Set([
+    'purple', 'red', 'blue', 'green', 'yellow', 'orange', 'pink', 'black', 'white', 'golden', 'silver',
+    'sneakers', 'boy', 'girl', 'man', 'woman', 'child', 'kid', 'song', 'tale', 'story',
+    'with', 'of', 'the', 'a', 'an', 'for', 'in', 'on', 'at', 'by', 'to'
+  ]);
+
+  // Pattern for recognizing proper names (capitalized words)
+  const properNamePattern = /^[A-Z][a-z]+$/;
+
+  const cleaned: Entity[] = [];
+  let cleanedCount = 0;
+
+  for (const entity of entities) {
+    const canonical = entity.canonical;
+    const words = canonical.split(/\s+/);
+
+    // Only check PERSON entities with 4+ words
+    if (entity.type !== 'PERSON' || words.length < 4) {
+      cleaned.push(entity);
+      continue;
+    }
+
+    // Find where the actual name starts by looking for consecutive proper name words at the end
+    // Look for patterns like "FirstName LastName" or "Title FirstName LastName"
+    let nameStartIndex = -1;
+
+    for (let i = words.length - 2; i >= 0; i--) {
+      const word = words[i];
+      const nextWord = words[i + 1];
+
+      // Check if this word and the next form a proper name pattern
+      if (properNamePattern.test(word) && properNamePattern.test(nextWord)) {
+        // Check if prefix contains title words
+        const prefixWords = words.slice(0, i);
+        const hasTitlePrefix = prefixWords.some(w => TITLE_PREFIX_WORDS.has(w.toLowerCase()));
+
+        if (hasTitlePrefix) {
+          nameStartIndex = i;
+          break;
+        }
+      }
+    }
+
+    if (nameStartIndex > 0) {
+      // Found title contamination - clean it
+      const cleanedName = words.slice(nameStartIndex).join(' ');
+      console.log(`[TITLE-CONTAMINATION] Cleaned "${canonical}" → "${cleanedName}"`);
+
+      cleaned.push({
+        ...entity,
+        canonical: cleanedName
+      });
+      cleanedCount++;
+    } else {
+      cleaned.push(entity);
+    }
+  }
+
+  return { cleaned, cleanedCount };
+}
+
+/**
+ * Filter fragment entities that are substrings of longer compound entities.
+ *
+ * When NER extracts both "Pool of Souls" and "Souls" separately, the shorter
+ * version is often just a fragment that should be merged with the longer form.
+ *
+ * This filter removes single-word entities when a longer multi-word entity
+ * contains that word as a token.
+ *
+ * Examples:
+ * - "Souls" removed if "Pool of Souls" exists
+ * - "Steamy" removed if "Bullet and Steamy" exists
+ * - "Wilson" removed if "Dr. Wilson" exists
+ * - "Adams" removed if "Beau Adams" exists
+ */
+function filterFragmentEntities(
+  entities: Entity[]
+): { filtered: Entity[]; removed: number; removedNames: string[] } {
+  // Build set of all tokens from multi-word entity names
+  const tokensFromCompounds = new Map<string, string[]>();  // lowercase token -> list of compound names containing it
+
+  for (const entity of entities) {
+    const words = entity.canonical.split(/\s+/);
+    if (words.length >= 2) {
+      for (const word of words) {
+        const wordLower = word.toLowerCase();
+        if (!tokensFromCompounds.has(wordLower)) {
+          tokensFromCompounds.set(wordLower, []);
+        }
+        tokensFromCompounds.get(wordLower)!.push(entity.canonical);
+      }
+    }
+  }
+
+  const filtered: Entity[] = [];
+  let removed = 0;
+  const removedNames: string[] = [];
+
+  for (const entity of entities) {
+    const canonical = entity.canonical;
+    const words = canonical.split(/\s+/);
+
+    // Only filter single-word entities
+    if (words.length === 1) {
+      const wordLower = canonical.toLowerCase();
+      const containingCompounds = tokensFromCompounds.get(wordLower);
+
+      if (containingCompounds && containingCompounds.length > 0) {
+        // This single-word entity is a fragment of a longer compound
+        console.log(`[FRAGMENT-FILTER] Removing "${canonical}" (fragment of: ${containingCompounds.join(', ')})`);
+        removed++;
+        removedNames.push(canonical);
+        continue;
+      }
+    }
+
+    filtered.push(entity);
+  }
+
+  return { filtered, removed, removedNames };
 }
 
 /**
@@ -461,6 +610,27 @@ export async function runEntityFilteringStage(
           strictMode: 0
         }
       };
+    }
+
+    // ========================================================================
+    // TITLE CONTAMINATION CLEANING: Clean entities with chapter title prefixes
+    // ========================================================================
+    const titleResult = cleanTitleContamination(filteredEntities);
+    if (titleResult.cleanedCount > 0) {
+      console.log(`[${STAGE_NAME}] 🛡️ Title contamination filter cleaned ${titleResult.cleanedCount} entities`);
+      filteredEntities = titleResult.cleaned;
+    }
+
+    // ========================================================================
+    // FRAGMENT ENTITY FILTERING: Remove single-word fragments of compounds
+    // ========================================================================
+    const fragmentResult = filterFragmentEntities(filteredEntities);
+    if (fragmentResult.removed > 0) {
+      console.log(`[${STAGE_NAME}] 🛡️ Fragment filter removed ${fragmentResult.removed} entity fragments: ${fragmentResult.removedNames.join(', ')}`);
+      filteredEntities = fragmentResult.filtered;
+      stats.removed += fragmentResult.removed;
+      stats.filtered = filteredEntities.length;
+      stats.removalRate = stats.removed / stats.original;
     }
 
     // ========================================================================
