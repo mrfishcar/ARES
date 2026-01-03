@@ -46,6 +46,83 @@ const TITLE_PATTERNS = [
 ];
 
 /**
+ * Honorific prefixes that indicate a more complete form
+ */
+const HONORIFIC_PREFIXES = /^(sir|lord|lady|king|queen|prince|princess|professor|dr|mr|mrs|ms|miss|coach|principal|captain|general|senator|president|reverend|father|mother|brother|sister|aunt|uncle)\.?\s+/i;
+
+/**
+ * Descriptor prefixes (nicknames, adjectives) that indicate a more complete form
+ * Examples: "Mad Addy", "Big Jim", "Old Tom", "Little Sarah"
+ */
+const DESCRIPTOR_PREFIXES = /^(mad|big|little|old|young|fat|slim|tall|short|tiny|red|black|wild|crazy|sweet|dear|poor|good|bad)\.?\s+/i;
+
+/**
+ * Check if a form is more complete than another
+ * "More complete" means:
+ * - Has an honorific prefix when the other is a bare surname (Dr. Wilson > Wilson)
+ * - Has more name tokens (first + last > just last) (Beau Adams > Adams)
+ * - Full name is preferred over title+surname (Charles Garrison > Mr. Garrison)
+ *
+ * @param newForm - The new surface form being registered
+ * @param existingCanonical - The current canonical name
+ * @returns true if newForm is more complete and should replace existingCanonical
+ */
+function isMoreCompleteForm(newForm: string, existingCanonical: string): boolean {
+  const newNorm = newForm.trim().toLowerCase();
+  const existNorm = existingCanonical.trim().toLowerCase();
+
+  // If they're the same, not more complete
+  if (newNorm === existNorm) return false;
+
+  // Check for any prefix (honorific or descriptor)
+  const newHasPrefix = HONORIFIC_PREFIXES.test(newForm) || DESCRIPTOR_PREFIXES.test(newForm);
+  const existHasPrefix = HONORIFIC_PREFIXES.test(existingCanonical) || DESCRIPTOR_PREFIXES.test(existingCanonical);
+
+  const newTokens = newForm.trim().split(/\s+/);
+  const existTokens = existingCanonical.trim().split(/\s+/);
+
+  // Get the "core name" (last token, usually surname or primary name)
+  const newCore = newTokens[newTokens.length - 1].toLowerCase();
+  const existCore = existTokens[existTokens.length - 1].toLowerCase();
+
+  // Core names must match for comparison (both are referring to same person)
+  if (newCore !== existCore) return false;
+
+  // Case 1: Existing is bare name (single token, no prefix)
+  // Prefer anything with more information: prefix or additional name
+  const existIsBare = existTokens.length === 1 && !existHasPrefix;
+  if (existIsBare && newTokens.length > 1) {
+    // New has either prefix+name or firstname+surname - prefer it
+    return true;
+  }
+
+  // Case 2: Both have prefixes or neither has
+  // Prefer the one with more non-prefix tokens (actual name parts)
+  if (newHasPrefix === existHasPrefix) {
+    // Count non-prefix tokens
+    const newNameTokens = newHasPrefix ? newTokens.length - 1 : newTokens.length;
+    const existNameTokens = existHasPrefix ? existTokens.length - 1 : existTokens.length;
+
+    // Prefer more name tokens (Charles Garrison > Garrison)
+    if (newNameTokens > existNameTokens) {
+      return true;
+    }
+  }
+
+  // Case 3: Existing has prefix, new doesn't
+  // Only prefer new if it has more actual name parts
+  // e.g., "Charles Garrison" (2 name tokens) > "Mr. Garrison" (1 name token)
+  if (existHasPrefix && !newHasPrefix) {
+    const existNameTokens = existTokens.length - 1; // Subtract prefix
+    if (newTokens.length > existNameTokens) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * Alias Resolver
  */
 export class AliasResolver {
@@ -109,6 +186,17 @@ export class AliasResolver {
     // Strategy 3: Try title variations
     const titleMatch = this.findTitleVariation(surfaceForm, entityType);
     if (titleMatch) {
+      const existingCanonical = eidRegistry.getCanonical(titleMatch.eid);
+
+      // Check if the new surface form is more complete than the existing canonical
+      // If so, update the canonical to the more complete form
+      // e.g., "Dr. Wilson" should become canonical instead of "Wilson"
+      // e.g., "Beau Adams" should become canonical instead of "Adams"
+      if (existingCanonical && isMoreCompleteForm(surfaceForm, existingCanonical)) {
+        eidRegistry.updateCanonical(titleMatch.eid, surfaceForm);
+        console.log(`[ALIAS-RESOLVER] Upgraded canonical: "${existingCanonical}" → "${surfaceForm}" (EID ${titleMatch.eid})`);
+      }
+
       const aid = aliasRegistry.register(surfaceForm, titleMatch.eid, titleMatch.confidence, entityType);
       return {
         eid: titleMatch.eid,
@@ -123,6 +211,14 @@ export class AliasResolver {
     if (profile && existingProfiles && existingProfiles.size > 0) {
       const profileMatch = this.findBestProfileMatch(surfaceForm, profile, entityType, existingProfiles);
       if (profileMatch && profileMatch.confidence > 0.8) {
+        const existingCanonical = eidRegistry.getCanonical(profileMatch.eid);
+
+        // Check if the new surface form is more complete than the existing canonical
+        if (existingCanonical && isMoreCompleteForm(surfaceForm, existingCanonical)) {
+          eidRegistry.updateCanonical(profileMatch.eid, surfaceForm);
+          console.log(`[ALIAS-RESOLVER] Profile match upgraded canonical: "${existingCanonical}" → "${surfaceForm}" (EID ${profileMatch.eid})`);
+        }
+
         const aid = aliasRegistry.register(surfaceForm, profileMatch.eid, profileMatch.confidence, entityType);
         return {
           eid: profileMatch.eid,

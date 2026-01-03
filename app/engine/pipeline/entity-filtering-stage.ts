@@ -169,6 +169,59 @@ function filterByEvidence(
 }
 
 /**
+ * Clean dialogue artifacts from entity names
+ *
+ * Patterns like "That's Beau Adams" or "Here's John" should become just the name.
+ * These occur when dialogue speech is incorrectly captured as part of the entity.
+ */
+function cleanDialogueArtifacts(
+  entities: Entity[]
+): { cleaned: Entity[]; cleanedCount: number } {
+  // Common dialogue artifacts that appear before names
+  const DIALOGUE_PREFIXES = [
+    /^that['']s\s+/i,    // "That's Beau Adams" → "Beau Adams"
+    /^this\s+is\s+/i,    // "This is John" → "John"
+    /^here['']s\s+/i,    // "Here's Mike" → "Mike"
+    /^there['']s\s+/i,   // "There's Sarah" → "Sarah"
+    /^it['']s\s+/i,      // "It's Mary" → "Mary"
+    /^meet\s+/i,         // "Meet John" → "John"
+    /^call\s+me\s+/i,    // "Call me Bob" → "Bob"
+    /^i['']m\s+/i,       // "I'm Bob" → "Bob"
+  ];
+
+  const cleaned: Entity[] = [];
+  let cleanedCount = 0;
+
+  for (const entity of entities) {
+    let canonical = entity.canonical;
+    let wasCleaned = false;
+
+    // Try each prefix pattern
+    for (const prefix of DIALOGUE_PREFIXES) {
+      if (prefix.test(canonical)) {
+        const newCanonical = canonical.replace(prefix, '').trim();
+        // Only accept if result still looks like a name (capitalized)
+        if (newCanonical && /^[A-Z]/.test(newCanonical)) {
+          console.log(`[DIALOGUE-ARTIFACT] Cleaned "${canonical}" → "${newCanonical}"`);
+          canonical = newCanonical;
+          wasCleaned = true;
+          break;
+        }
+      }
+    }
+
+    if (wasCleaned) {
+      cleanedCount++;
+      cleaned.push({ ...entity, canonical });
+    } else {
+      cleaned.push(entity);
+    }
+  }
+
+  return { cleaned, cleanedCount };
+}
+
+/**
  * Clean entities that have chapter title/header contamination.
  *
  * When NER runs on text with chapter headings, it may combine the heading
@@ -610,6 +663,15 @@ export async function runEntityFilteringStage(
           strictMode: 0
         }
       };
+    }
+
+    // ========================================================================
+    // DIALOGUE ARTIFACT CLEANING: Remove dialogue prefixes from entity names
+    // ========================================================================
+    const dialogueResult = cleanDialogueArtifacts(filteredEntities);
+    if (dialogueResult.cleanedCount > 0) {
+      console.log(`[${STAGE_NAME}] 🛡️ Dialogue artifact filter cleaned ${dialogueResult.cleanedCount} entities`);
+      filteredEntities = dialogueResult.cleaned;
     }
 
     // ========================================================================
