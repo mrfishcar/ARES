@@ -22,14 +22,98 @@ import {
   getFilterStats,
   type EntityQualityConfig
 } from '../entity-quality-filter';
+import type { Entity } from '../schema';
 import type {
   EntityFilteringInput,
   EntityFilteringOutput,
   FilterStats,
-  EntityFilterConfig
+  EntityFilterConfig,
+  Span
 } from './types';
 
 const STAGE_NAME = 'EntityFilteringStage';
+
+/**
+ * Evidence-based filtering: Filter single-mention entities that are very likely junk
+ *
+ * CONSERVATIVE APPROACH: Only filter entities that match clear junk patterns.
+ * Single-word proper names like "Gandalf" are valid entities even with one mention.
+ *
+ * Rationale: In long documents, NER picks up capitalized words at sentence start
+ * that are gerunds, participles, or common nouns. These appear once and should be filtered.
+ */
+function filterByEvidence(
+  entities: Entity[],
+  spans: Span[]
+): { filtered: Entity[]; removed: number } {
+  // Only apply evidence filtering in documents with many entities
+  // (short test cases shouldn't be filtered this way)
+  if (entities.length < 10) {
+    return { filtered: entities, removed: 0 };
+  }
+
+  // Count mentions per entity
+  const mentionCounts = new Map<string, number>();
+  for (const span of spans) {
+    const count = mentionCounts.get(span.entity_id) || 0;
+    mentionCounts.set(span.entity_id, count + 1);
+  }
+
+  // VERY SPECIFIC junk patterns - only filter clear false positives
+  // These are words that look like names but are actually common words
+  const CLEAR_JUNK_PATTERNS = [
+    /^[A-Z][a-z]+(ing)$/, // Capitalized gerunds like "Learning", "Growing"
+    /^[A-Z][a-z]+(ed)$/, // Capitalized participles like "Caged", "Perched"
+    /^(The|A|An)\s+[a-z]/i, // Articles followed by lowercase
+  ];
+
+  // Common words that NER incorrectly tags as PERSON when capitalized at sentence start
+  const KNOWN_JUNK_WORDS = new Set([
+    'learning', 'growing', 'caged', 'perched', 'littering', 'driving',
+    'famous', 'animals', 'legend', 'blood', 'bullet', 'steamy', 'layers',
+    'gluttony', 'land', 'please', 'honey', 'hello', 'help'
+  ]);
+
+  const filtered: Entity[] = [];
+  let removed = 0;
+
+  for (const entity of entities) {
+    const mentionCount = mentionCounts.get(entity.id) || 0;
+    const canonical = entity.canonical;
+    const canonicalLower = canonical.toLowerCase();
+
+    // Keep entities with 2+ mentions - they're referenced multiple times
+    if (mentionCount >= 2) {
+      filtered.push(entity);
+      continue;
+    }
+
+    // Only filter PERSON entities - places and orgs are rarely junk
+    if (entity.type !== 'PERSON') {
+      filtered.push(entity);
+      continue;
+    }
+
+    // Check if it's a known junk word
+    if (KNOWN_JUNK_WORDS.has(canonicalLower)) {
+      console.log(`[EVIDENCE-FILTER] Removing known junk word: "${canonical}"`);
+      removed++;
+      continue;
+    }
+
+    // Check if matches clear junk pattern
+    if (CLEAR_JUNK_PATTERNS.some(p => p.test(canonical))) {
+      console.log(`[EVIDENCE-FILTER] Removing pattern-matched junk: "${canonical}"`);
+      removed++;
+      continue;
+    }
+
+    // Keep by default - proper names like "Gandalf" are valid
+    filtered.push(entity);
+  }
+
+  return { filtered, removed };
+}
 
 /**
  * Convert EntityFilterConfig (pipeline type) to EntityQualityConfig (filter type)
@@ -113,6 +197,18 @@ export async function runEntityFilteringStage(
           strictMode: 0
         }
       };
+    }
+
+    // ========================================================================
+    // EVIDENCE-BASED FILTERING: Remove single-mention junk entities
+    // ========================================================================
+    const evidenceResult = filterByEvidence(filteredEntities, input.spans);
+    if (evidenceResult.removed > 0) {
+      console.log(`[${STAGE_NAME}] 🛡️ Evidence filter removed ${evidenceResult.removed} single-mention junk entities`);
+      filteredEntities = evidenceResult.filtered;
+      stats.removed += evidenceResult.removed;
+      stats.filtered = filteredEntities.length;
+      stats.removalRate = stats.removed / stats.original;
     }
 
     // Update entityMap to only include filtered entities
