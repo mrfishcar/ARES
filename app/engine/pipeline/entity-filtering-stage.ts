@@ -75,7 +75,11 @@ function filterByEvidence(
   const POTENTIAL_JUNK_WORDS = new Set([
     'learning', 'growing', 'caged', 'perched', 'littering', 'driving', 'sitting', 'becoming',
     'famous', 'animals', 'legend', 'blood', 'bullet', 'layers',
-    'gluttony', 'land', 'please', 'hello', 'help', 'shh', 'listen', 'ugh', 'nonsense'
+    'gluttony', 'land', 'please', 'hello', 'help', 'shh', 'listen', 'ugh', 'nonsense',
+    // Exclamatory words that may be incorrectly extracted
+    'god', 'lord', 'jesus', 'christ', 'heavens', 'gosh',
+    // Chapter title fragments
+    'song', 'chapter', 'part', 'book', 'section', 'prologue', 'epilogue'
   ]);
 
   /**

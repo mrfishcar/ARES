@@ -37,8 +37,8 @@ export interface AliasResolution {
 const TITLE_PATTERNS = [
   // Remove articles
   /^(the|a|an)\s+/i,
-  // Remove titles/honorifics
-  /^(sir|lord|lady|king|queen|prince|princess|professor|dr|mr|mrs|ms)\s+/i,
+  // Remove titles/honorifics (with optional dot after: "Mr." or "Mr ")
+  /^(sir|lord|lady|king|queen|prince|princess|professor|dr|mr|mrs|ms|miss)\.?\s+/i,
   // Remove epithets (words after "the")
   /\s+the\s+\w+$/i,
   // Remove descriptors in parentheses
@@ -259,6 +259,12 @@ export class AliasResolver {
     // Get all existing aliases
     const allMappings = Array.from(aliasRegistry['mappings'].values());
 
+    // Debug: Log what we're looking for
+    if (process.env.DEBUG_ALIAS_RESOLVER === '1') {
+      console.log(`[ALIAS-RESOLVER] findTitleVariation: looking for "${surfaceForm}" (normalized: "${normalized}"), type: ${entityType}`);
+      console.log(`[ALIAS-RESOLVER]   Checking against ${allMappings.length} existing aliases`);
+    }
+
     for (const mapping of allMappings) {
       const canonical = eidRegistry.getCanonical(mapping.eid);
       if (!canonical) continue;
@@ -266,11 +272,19 @@ export class AliasResolver {
       // CRITICAL: Check type compatibility before allowing merge
       // Don't merge entities of fundamentally different types
       if (mapping.entityType && !this.areTypesCompatible(entityType, mapping.entityType as EntityType)) {
+        if (process.env.DEBUG_ALIAS_RESOLVER === '1') {
+          console.log(`[ALIAS-RESOLVER]   Skipping "${mapping.normalizedKey}" - incompatible type ${mapping.entityType}`);
+        }
         continue;
       }
 
       // Check if it's a title variation
-      if (this.isTitleVariation(normalized, mapping.normalizedKey)) {
+      const isMatch = this.isTitleVariation(normalized, mapping.normalizedKey);
+      if (process.env.DEBUG_ALIAS_RESOLVER === '1') {
+        console.log(`[ALIAS-RESOLVER]   Comparing "${normalized}" vs "${mapping.normalizedKey}" → ${isMatch ? 'MATCH' : 'no match'}`);
+      }
+      if (isMatch) {
+        console.log(`[ALIAS-RESOLVER] Title variation match: "${surfaceForm}" → "${canonical}" (EID ${mapping.eid})`);
         return {
           eid: mapping.eid,
           confidence: 0.9 // High confidence for title variations
@@ -315,31 +329,43 @@ export class AliasResolver {
   /**
    * Check if two forms are title variations of each other
    *
-   * GUARD 1: Don't match pure surnames to compound names
-   * e.g., "Potter" should NOT match "Harry Potter"
-   * This prevents premature canonicalization that blocks GlobalKnowledgeGraph
-   * surname-based merging with 0.90 confidence thresholds
+   * SURNAME MATCHING: Allow surname-only to match compound names when:
+   * - The surname matches the LAST token of the compound name
+   * - This handles "Garrison" → "Charles Garrison" and "Garrison" → "Mr. Garrison"
    *
-   * GUARD 2: Don't match entities with different honorific prefixes
+   * GUARD: Don't match entities with different honorific prefixes
    * e.g., "Mr Dursley" should NOT match "Mrs Dursley"
    * These are different people who share a surname
    */
   private isTitleVariation(form1: string, form2: string): boolean {
     if (form1 === form2) return true;
 
-    // Guard: Check if one is a pure surname (single token)
+    // Tokenize both forms
     const tokens1 = form1.split(/\s+/).filter(Boolean);
     const tokens2 = form2.split(/\s+/).filter(Boolean);
 
     const isPureSurname1 = tokens1.length === 1;
     const isPureSurname2 = tokens2.length === 1;
 
-    // If one is pure surname and other is compound name, reject
-    // Example: "Potter" (1 token) + "Harry Potter" (2 tokens) → reject
-    // This allows GlobalKnowledgeGraph to do proper surname merging later
-    if ((isPureSurname1 && tokens2.length > 1) ||
-        (isPureSurname2 && tokens1.length > 1)) {
-      return false;
+    // SURNAME MATCHING: If one is a pure surname and it matches the last token
+    // of the compound name, allow the match
+    // Example: "garrison" (1 token) + "charles garrison" (2 tokens) → match
+    // Example: "garrison" (1 token) + "mr garrison" (2 tokens) → match
+    if (isPureSurname1 && tokens2.length > 1) {
+      const surname1 = tokens1[0].toLowerCase();
+      const lastToken2 = tokens2[tokens2.length - 1].toLowerCase();
+      if (surname1 === lastToken2) {
+        console.log(`[ALIAS-RESOLVER] Surname match: "${form1}" matches last token of "${form2}"`);
+        return true;
+      }
+    }
+    if (isPureSurname2 && tokens1.length > 1) {
+      const surname2 = tokens2[0].toLowerCase();
+      const lastToken1 = tokens1[tokens1.length - 1].toLowerCase();
+      if (surname2 === lastToken1) {
+        console.log(`[ALIAS-RESOLVER] Surname match: "${form2}" matches last token of "${form1}"`);
+        return true;
+      }
     }
 
     // GUARD 2: Different honorific prefixes = different people
