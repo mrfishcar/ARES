@@ -622,6 +622,37 @@ export function inferEntityType(
     return 'RACE';
   }
 
+  // ORG → PERSON correction for multi-word names that look like person names
+  // This fixes spaCy misclassifications like "Barty Beauregard" being tagged as ORG
+  if (currentType === 'ORG' && tokens.length >= 2 && tokens.length <= 4) {
+    // Check if all words are title-cased (capitalized first letter)
+    const allTitleCase = name.split(/\s+/).every(word => {
+      if (!word) return true;
+      const firstChar = word.charAt(0);
+      return firstChar === firstChar.toUpperCase() && firstChar !== firstChar.toLowerCase();
+    });
+
+    // Check for person name patterns:
+    // 1. No org markers present
+    // 2. All words are title case
+    // 3. Looks like "FirstName LastName" (no articles, prepositions as first word)
+    const hasOrgMarker = tokens.some(t => ORGANIZATION_MARKERS.has(t));
+    const hasHouseMarker = tokens.some(t => HOUSE_MARKERS.has(t));
+    const hasGeoMarker = tokens.some(t => GEOGRAPHIC_MARKERS.has(t));
+
+    // Common first name patterns - starts with capital letter, reasonable length
+    const firstWord = name.split(/\s+/)[0];
+    const looksLikeFirstName = firstWord &&
+      firstWord.length >= 3 &&
+      firstWord.length <= 15 &&
+      /^[A-Z][a-z]+$/.test(firstWord) &&
+      !['The', 'And', 'For', 'New', 'Old'].includes(firstWord);
+
+    if (allTitleCase && !hasOrgMarker && !hasHouseMarker && !hasGeoMarker && looksLikeFirstName) {
+      return 'PERSON';
+    }
+  }
+
   return currentType;
 }
 
