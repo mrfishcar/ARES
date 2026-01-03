@@ -1,0 +1,1691 @@
+/**
+ * Notes Editor Styles
+ *
+ * Standards Applied:
+ * - iOS Dynamic Type support via -apple-system-body
+ * - Apple HIG 8-point grid system
+ * - 44pt minimum touch targets
+ * - Responsive margins: 16px iPhone, 24px iPad
+ * - WCAG 2.1 AA compliant
+ * - Apple-inspired spring motion design (WWDC23)
+ *
+ * References:
+ * - Apple Human Interface Guidelines (Typography, Layout, Motion)
+ * - WCAG 1.4.4 Resize Text
+ * - WWDC23: Animate with springs
+ */
+
+/* ============================================================================
+   CSS CUSTOM PROPERTIES - Design Tokens
+   ============================================================================ */
+
+:root {
+  /* -------------------------------------------------------------------------
+     MOTION DESIGN SYSTEM
+     Based on Apple's spring animation principles
+     Cubic-bezier with overshoot values approximates spring physics
+     ------------------------------------------------------------------------- */
+
+  /* Spring Curves */
+  --ne-spring-responsive: cubic-bezier(0.34, 1.56, 0.64, 1);   /* Buttons, toggles */
+  --ne-spring-gentle: cubic-bezier(0.175, 0.885, 0.32, 1.1);   /* Hover states */
+  --ne-spring-expressive: cubic-bezier(0.34, 1.8, 0.64, 1);    /* Modals, emphasis */
+  --ne-spring-slide: cubic-bezier(0.25, 1.25, 0.5, 1);         /* Panel slides */
+  --ne-spring-bounce: cubic-bezier(0.68, -0.6, 0.32, 1.6);     /* Playful bounce */
+
+  /* Standard Easing */
+  --ne-ease-out: cubic-bezier(0.33, 1, 0.68, 1);
+  --ne-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* Durations - Apple's "quick, precise" principle */
+  --ne-duration-instant: 100ms;
+  --ne-duration-fast: 150ms;
+  --ne-duration-normal: 250ms;
+  --ne-duration-slow: 350ms;
+  --ne-duration-slower: 450ms;
+
+  /* Transition Presets */
+  --ne-motion-button: var(--ne-duration-fast) var(--ne-spring-responsive);
+  --ne-motion-hover: var(--ne-duration-fast) var(--ne-spring-gentle);
+  --ne-motion-toggle: var(--ne-duration-normal) var(--ne-spring-responsive);
+  --ne-motion-slide: var(--ne-duration-slow) var(--ne-spring-slide);
+  --ne-motion-fade: var(--ne-duration-normal) var(--ne-ease-out);
+  --ne-motion-scale: var(--ne-duration-fast) var(--ne-spring-expressive);
+
+  /* -------------------------------------------------------------------------
+     COLORS - iOS System Colors
+     ------------------------------------------------------------------------- */
+  --ne-bg-primary: #000;
+  --ne-bg-secondary: #1c1c1e;
+  --ne-bg-tertiary: #2c2c2e;
+  --ne-text-primary: #fff;
+  --ne-text-secondary: #98989d;
+  --ne-text-tertiary: #636366;
+  --ne-accent: #ffd60a;
+  --ne-accent-secondary: #0a84ff;
+  --ne-danger: #ff453a;
+  --ne-separator: #38383a;
+
+  /* -------------------------------------------------------------------------
+     TYPOGRAPHY - Fluid sizing with clamp()
+     ------------------------------------------------------------------------- */
+  --ne-font-large-title: clamp(1.75rem, calc(1.5rem + 1vw), 2.5rem);
+  --ne-font-title1: clamp(1.5rem, calc(1.25rem + 0.75vw), 2.125rem);
+  --ne-font-body: clamp(1rem, calc(0.9375rem + 0.25vw), 1.25rem);
+  --ne-font-callout: clamp(0.9375rem, calc(0.875rem + 0.1875vw), 1.125rem);
+  --ne-font-subhead: clamp(0.875rem, calc(0.8125rem + 0.125vw), 1rem);
+
+  /* -------------------------------------------------------------------------
+     SPACING - 8-point grid system
+     ------------------------------------------------------------------------- */
+  --ne-spacing-2xs: 2px;
+  --ne-spacing-xs: 4px;
+  --ne-spacing-sm: 8px;
+  --ne-spacing-md: 16px;
+  --ne-spacing-lg: 24px;
+  --ne-spacing-xl: 32px;
+  --ne-spacing-2xl: 40px;
+
+  /* -------------------------------------------------------------------------
+     TYPOGRAPHY - Additional sizes
+     ------------------------------------------------------------------------- */
+  --ne-font-caption: 11px;
+  --ne-font-footnote: 12px;
+
+  /* -------------------------------------------------------------------------
+     TOUCH & LAYOUT
+     ------------------------------------------------------------------------- */
+  --ne-touch-target: 44px;
+  --ne-radius-sm: 6px;
+  --ne-radius-md: 10px;
+  --ne-radius-lg: 12px;
+  --ne-sidebar-width: 320px;
+
+  /* -------------------------------------------------------------------------
+     Z-INDEX SCALE (#10)
+     Explicit layering system to prevent stacking issues
+     ------------------------------------------------------------------------- */
+  --ne-z-base: 0;
+  --ne-z-toolbar: 10;
+  --ne-z-sidebar: 20;
+  --ne-z-modal: 30;
+  --ne-z-popup: 40;
+  --ne-z-action-sheet: 50;
+  --ne-z-toast: 60;
+}
+
+/* Light mode overrides */
+@media (prefers-color-scheme: light) {
+  :root {
+    --ne-bg-primary: #fff;
+    --ne-bg-secondary: #f2f2f7;
+    --ne-bg-tertiary: #e5e5ea;
+    --ne-text-primary: #000;
+    --ne-text-secondary: #6c6c70;
+    --ne-text-tertiary: #aeaeb2;
+    --ne-separator: #c6c6c8;
+  }
+}
+
+/* ============================================================================
+   iOS DYNAMIC TYPE SUPPORT
+   ============================================================================ */
+
+@supports (font: -apple-system-body) {
+  .notes-editor {
+    font: -apple-system-body;
+  }
+}
+
+/* ============================================================================
+   MAIN CONTAINER
+   ============================================================================ */
+
+.notes-editor {
+  display: flex;
+  /* #7: iOS Safari fallback chain for viewport height */
+  height: 100vh;
+  height: -webkit-fill-available; /* Safari < 15.4 fallback */
+  height: 100dvh; /* Dynamic viewport height for modern browsers */
+  background: var(--ne-bg-primary);
+  color: var(--ne-text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', system-ui, sans-serif;
+  font-size: var(--ne-font-body);
+  overflow: hidden;
+
+  /* Safe area insets for notched devices */
+  padding-top: env(safe-area-inset-top, 0);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-left: env(safe-area-inset-left, 0);
+  padding-right: env(safe-area-inset-right, 0);
+
+  /* Text rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Remove default tap highlight on all interactive elements */
+.notes-editor button,
+.notes-editor a,
+.notes-editor [role="button"],
+.notes-editor input,
+.notes-editor textarea,
+.notes-editor select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.notes-editor--loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--ne-font-body);
+  color: var(--ne-text-secondary);
+}
+
+/* ============================================================================
+   SIDEBAR
+   ============================================================================ */
+
+.notes-editor__sidebar {
+  width: var(--ne-sidebar-width);
+  flex-shrink: 0;
+  background: var(--ne-bg-secondary);
+  border-right: 1px solid var(--ne-separator);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ============================================================================
+   MAIN CONTENT AREA
+   ============================================================================ */
+
+.notes-editor__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+  /* Ensures flex children respect overflow properly */
+  min-height: 0;
+}
+
+.notes-editor__mobile-header {
+  display: none;
+  flex-shrink: 0; /* Don't shrink the mobile header */
+}
+
+.notes-editor__content {
+  flex: 1;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  /* Critical: min-height: 0 allows this to shrink and scroll properly */
+  min-height: 0;
+}
+
+.notes-editor__empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ne-spacing-md);
+  color: var(--ne-text-secondary);
+  padding: var(--ne-spacing-md);
+}
+
+.notes-editor__empty p {
+  font-size: var(--ne-font-body);
+}
+
+/* Empty state button - 44px minimum height */
+.notes-editor__empty button {
+  min-height: var(--ne-touch-target);
+  padding: var(--ne-spacing-sm) var(--ne-spacing-lg);
+  background: var(--ne-accent);
+  color: #000;
+  border: none;
+  border-radius: var(--ne-radius-md);
+  font-size: var(--ne-font-body);
+  font-weight: 600;
+  cursor: pointer;
+
+  /* Spring animation */
+  transition: transform var(--ne-motion-button);
+  will-change: transform;
+}
+
+.notes-editor__empty button:hover {
+  transform: scale(1.03);
+}
+
+.notes-editor__empty button:active {
+  transform: scale(0.97);
+  transition-duration: var(--ne-duration-instant);
+}
+
+/* ============================================================================
+   NOTES LIST
+   ============================================================================ */
+
+.notes-list {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Header with proper padding per Apple HIG */
+.notes-list__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* iPhone: 16px padding, adjusts via media queries for iPad */
+  padding: var(--ne-spacing-md);
+  border-bottom: 1px solid var(--ne-separator);
+}
+
+.notes-list__header h1 {
+  font-size: var(--ne-font-large-title);
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.022em; /* Apple Large Title tracking */
+}
+
+/* New note button - 44px minimum touch target */
+.notes-list__new-btn {
+  width: var(--ne-touch-target);
+  height: var(--ne-touch-target);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ne-accent);
+  color: #000;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+
+  /* Spring scale animation */
+  transition: transform var(--ne-motion-button);
+  will-change: transform;
+}
+
+.notes-list__new-btn:hover {
+  transform: scale(1.05);
+}
+
+.notes-list__new-btn:active {
+  transform: scale(0.92);
+  transition-duration: var(--ne-duration-instant);
+}
+
+.notes-list__new-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Notes list items container */
+.notes-list__items {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+/* Individual note item - minimum 44px height for touch */
+.notes-list__item {
+  display: block;
+  width: 100%;
+  min-height: var(--ne-touch-target);
+  padding: var(--ne-spacing-sm) var(--ne-spacing-md);
+  text-align: left;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--ne-separator);
+  color: var(--ne-text-primary);
+  cursor: pointer;
+
+  /* Spring hover animation */
+  transition:
+    background-color var(--ne-motion-hover),
+    transform var(--ne-motion-button);
+  will-change: background-color, transform;
+}
+
+.notes-list__item:hover {
+  background: var(--ne-bg-tertiary);
+}
+
+/* Subtle press feedback */
+.notes-list__item:active {
+  transform: scale(0.98);
+  transition-duration: var(--ne-duration-instant);
+}
+
+.notes-list__item--selected {
+  background: var(--ne-accent);
+  color: #000;
+}
+
+.notes-list__item--selected:hover {
+  background: var(--ne-accent);
+}
+
+/* Keyboard focus indicator */
+.notes-list__item:focus-visible {
+  outline: 2px solid var(--ne-accent);
+  outline-offset: -2px;
+  background: var(--ne-bg-tertiary);
+}
+
+.notes-list__item--selected:focus-visible {
+  outline-color: #000;
+}
+
+.notes-list__item-header {
+  display: flex;
+  align-items: center;
+  gap: var(--ne-spacing-sm);
+  margin-bottom: var(--ne-spacing-xs);
+}
+
+.notes-list__item-title {
+  font-size: var(--ne-font-body);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notes-list__item-pin svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.notes-list__item-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--ne-spacing-sm);
+  font-size: var(--ne-font-subhead);
+}
+
+.notes-list__item-date {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.notes-list__item-preview {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.6;
+}
+
+.notes-list__empty {
+  padding: var(--ne-spacing-2xl) var(--ne-spacing-md);
+  text-align: center;
+  color: var(--ne-text-secondary);
+}
+
+.notes-list__empty p {
+  font-size: var(--ne-font-body);
+}
+
+.notes-list__empty button {
+  margin-top: var(--ne-spacing-md);
+  min-height: var(--ne-touch-target);
+  padding: var(--ne-spacing-sm) var(--ne-spacing-lg);
+  background: var(--ne-accent);
+  color: #000;
+  border: none;
+  border-radius: var(--ne-radius-md);
+  font-size: var(--ne-font-callout);
+  font-weight: 600;
+  cursor: pointer;
+
+  /* Spring animation */
+  transition: transform var(--ne-motion-button);
+  will-change: transform;
+}
+
+.notes-list__empty button:hover {
+  transform: scale(1.03);
+}
+
+.notes-list__empty button:active {
+  transform: scale(0.97);
+  transition-duration: var(--ne-duration-instant);
+}
+
+/* ============================================================================
+   SEARCH BAR (iOS Notes Style)
+   ============================================================================ */
+
+.notes-list__search {
+  display: flex;
+  align-items: center;
+  gap: var(--ne-spacing-sm);
+  margin: var(--ne-spacing-sm) var(--ne-spacing-md);
+  padding: var(--ne-spacing-sm) 12px;
+  background: var(--ne-bg-tertiary);
+  border-radius: var(--ne-radius-md);
+  transition: background-color var(--ne-motion-hover);
+}
+
+.notes-list__search--focused {
+  background: var(--ne-bg-secondary);
+  box-shadow: 0 0 0 2px var(--ne-accent);
+}
+
+.notes-list__search-icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: var(--ne-text-tertiary);
+}
+
+.notes-list__search-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.notes-list__search-input {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: var(--ne-font-body);
+  color: var(--ne-text-primary);
+  font-family: inherit;
+}
+
+.notes-list__search-input::placeholder {
+  color: var(--ne-text-tertiary);
+}
+
+.notes-list__search-clear {
+  flex-shrink: 0;
+  /* Visual size 20px, touch target 44px */
+  width: var(--ne-touch-target);
+  height: var(--ne-touch-target);
+  margin: calc((var(--ne-touch-target) - 20px) / -2);
+  padding: calc((var(--ne-touch-target) - 20px) / 2);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--ne-motion-button);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.notes-list__search-clear-icon {
+  width: 20px;
+  height: 20px;
+  background: var(--ne-text-tertiary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ne-bg-secondary);
+}
+
+.notes-list__search-clear:active {
+  transform: scale(0.9);
+}
+
+.notes-list__search-clear svg,
+.notes-list__search-clear-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* ============================================================================
+   SECTION HEADERS (iOS Notes Style)
+   ============================================================================ */
+
+.notes-list__section {
+  margin-bottom: var(--ne-spacing-sm);
+}
+
+.notes-list__section-header {
+  padding: var(--ne-spacing-lg) var(--ne-spacing-md) var(--ne-spacing-sm);
+  font-size: var(--ne-font-title1);
+  font-weight: 700;
+  color: var(--ne-text-primary);
+  letter-spacing: -0.026em; /* Apple Large Title tracking */
+}
+
+/* First section doesn't need top padding */
+.notes-list__section:first-child .notes-list__section-header {
+  padding-top: var(--ne-spacing-sm);
+}
+
+/* ============================================================================
+   SWIPE-TO-DELETE
+   ============================================================================ */
+
+.notes-list__item-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.notes-list__item-delete {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: var(--ne-danger);
+  color: #fff;
+  cursor: pointer;
+  transition: opacity var(--ne-motion-fade);
+}
+
+.notes-list__item-delete svg {
+  width: 22px;
+  height: 22px;
+}
+
+.notes-list__item-delete span {
+  font-size: var(--ne-font-footnote);
+  font-weight: 500;
+}
+
+/* Swipeable item needs relative positioning */
+.notes-list__item-container .notes-list__item {
+  position: relative;
+  z-index: 1;
+  background: var(--ne-bg-secondary);
+}
+
+/* ============================================================================
+   EDITOR TOOLBAR
+   ============================================================================ */
+
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--ne-spacing-xs);
+  padding: var(--ne-spacing-sm) var(--ne-spacing-md);
+  background: var(--ne-bg-secondary);
+  border-bottom: 1px solid var(--ne-separator);
+
+  /* Ensure toolbar stays at top, doesn't shrink or scroll away */
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  /* #10: Use z-index scale system */
+  z-index: var(--ne-z-toolbar);
+}
+
+.editor-toolbar__group {
+  display: flex;
+  align-items: center;
+  gap: var(--ne-spacing-2xs);
+}
+
+.editor-toolbar__divider {
+  width: 1px;
+  height: var(--ne-spacing-lg);
+  background: var(--ne-separator);
+  margin: 0 var(--ne-spacing-sm);
+}
+
+.editor-toolbar__spacer {
+  flex: 1;
+}
+
+/* Toolbar buttons - 44px minimum touch target */
+.editor-toolbar__btn {
+  width: var(--ne-touch-target);
+  height: var(--ne-touch-target);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--ne-accent);
+  border-radius: var(--ne-radius-sm);
+  cursor: pointer;
+
+  /* Spring animation for button interactions */
+  transition:
+    background-color var(--ne-motion-hover),
+    transform var(--ne-motion-button),
+    color var(--ne-motion-fade);
+  will-change: transform, background-color;
+}
+
+.editor-toolbar__btn:hover {
+  background: var(--ne-bg-tertiary);
+  transform: scale(1.08);
+}
+
+.editor-toolbar__btn:active {
+  transform: scale(0.92);
+  transition-duration: var(--ne-duration-instant);
+}
+
+.editor-toolbar__btn--active {
+  background: var(--ne-accent);
+  color: #000;
+}
+
+.editor-toolbar__btn--danger {
+  color: var(--ne-danger);
+}
+
+.editor-toolbar__btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* ============================================================================
+   BACK BUTTON (Mobile)
+   44px minimum touch target
+   ============================================================================ */
+
+.notes-editor__back-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--ne-spacing-xs);
+  min-height: var(--ne-touch-target);
+  padding: var(--ne-spacing-sm) var(--ne-spacing-sm);
+  background: none;
+  border: none;
+  color: var(--ne-accent);
+  font-size: var(--ne-font-body);
+  cursor: pointer;
+
+  /* Spring animation */
+  transition:
+    transform var(--ne-motion-button),
+    opacity var(--ne-motion-fade);
+  will-change: transform;
+}
+
+.notes-editor__back-btn:active {
+  transform: scale(0.95);
+  opacity: 0.7;
+  transition-duration: var(--ne-duration-instant);
+}
+
+.notes-editor__back-btn svg {
+  width: 22px;
+  height: 22px;
+
+  /* Chevron slides slightly on press */
+  transition: transform var(--ne-motion-button);
+}
+
+.notes-editor__back-btn:active svg {
+  transform: translateX(-2px);
+}
+
+/* ============================================================================
+   MOBILE RESPONSIVE (<768px)
+   iPhone layout with 16px margins
+   ============================================================================ */
+
+@media (max-width: 767px) {
+  .notes-editor__sidebar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    /* #10: Use z-index scale system */
+    z-index: var(--ne-z-sidebar);
+
+    /* Spring slide animation - feels like iOS navigation */
+    transition: transform var(--ne-motion-slide);
+    will-change: transform;
+  }
+
+  .notes-editor__sidebar--hidden {
+    transform: translateX(-100%);
+  }
+
+  .notes-editor__main {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+
+    /* Spring slide animation - matches sidebar */
+    transition: transform var(--ne-motion-slide);
+    will-change: transform;
+  }
+
+  .notes-editor__main--hidden {
+    transform: translateX(100%);
+  }
+
+  .notes-editor__mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--ne-spacing-sm);
+    background: var(--ne-bg-secondary);
+    border-bottom: 1px solid var(--ne-separator);
+  }
+
+  /* iPhone margins - 16px */
+  .notes-list__header {
+    padding: var(--ne-spacing-md);
+  }
+}
+
+/* ============================================================================
+   TABLET RESPONSIVE (768px - 1023px)
+   iPad layout with 24px margins
+   ============================================================================ */
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* iPad margins - 24px */
+  .notes-list__header {
+    padding: var(--ne-spacing-lg);
+  }
+
+  .notes-list__item {
+    padding: var(--ne-spacing-sm) var(--ne-spacing-lg);
+  }
+
+  .editor-toolbar {
+    padding: var(--ne-spacing-sm) var(--ne-spacing-lg);
+  }
+}
+
+/* ============================================================================
+   LARGE SCREENS (1024px+)
+   Show both panels, expanded sidebar
+   ============================================================================ */
+
+@media (min-width: 1024px) {
+  .notes-editor__sidebar {
+    width: 350px;
+  }
+
+  .notes-editor__mobile-header {
+    display: none;
+  }
+
+  .notes-editor__sidebar--hidden,
+  .notes-editor__main--hidden {
+    transform: none;
+  }
+
+  /* Larger margins on desktop */
+  .notes-list__header {
+    padding: var(--ne-spacing-lg);
+  }
+
+  .notes-list__item {
+    padding: var(--ne-spacing-sm) var(--ne-spacing-lg);
+  }
+
+  .editor-toolbar {
+    padding: var(--ne-spacing-sm) var(--ne-spacing-lg);
+  }
+}
+
+/* ============================================================================
+   SAVE STATUS INDICATOR (#5)
+   ============================================================================ */
+
+.notes-editor__save-status,
+.editor-toolbar__save-status {
+  font-size: var(--ne-font-subhead);
+  color: var(--ne-text-tertiary);
+  padding: 0 var(--ne-spacing-sm);
+  transition: opacity var(--ne-motion-fade);
+}
+
+.notes-editor__save-status--saved,
+.editor-toolbar__save-status--saved {
+  color: var(--ne-text-tertiary);
+}
+
+.notes-editor__save-status--saving,
+.editor-toolbar__save-status--saving {
+  color: var(--ne-accent);
+}
+
+.notes-editor__save-status--unsaved,
+.editor-toolbar__save-status--unsaved {
+  color: var(--ne-danger);
+}
+
+/* Hide save status on mobile header (shown in toolbar instead) */
+@media (min-width: 768px) {
+  .notes-editor__save-status {
+    display: none;
+  }
+}
+
+/* Hide save status in toolbar on mobile (shown in header instead) */
+@media (max-width: 767px) {
+  .editor-toolbar__save-status {
+    display: none;
+  }
+}
+
+/* ============================================================================
+   STORAGE ERROR BANNER
+   ============================================================================ */
+
+.notes-editor__storage-error {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--ne-z-toast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ne-spacing-md);
+  padding: var(--ne-spacing-sm) var(--ne-spacing-md);
+  background: var(--ne-danger);
+  color: #fff;
+  font-size: var(--ne-font-callout);
+  font-weight: 500;
+  text-align: center;
+  /* Safe area inset for notched devices */
+  padding-top: calc(var(--ne-spacing-sm) + env(safe-area-inset-top, 0));
+  animation: slideDown var(--ne-duration-normal) var(--ne-spring-slide);
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.notes-editor__storage-error button {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: #fff;
+  /* Visual size 28px, but 44px touch target per Apple HIG */
+  width: var(--ne-touch-target);
+  height: var(--ne-touch-target);
+  /* Negative margin to maintain visual density */
+  margin: -8px;
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background-color var(--ne-motion-hover);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.notes-editor__storage-error button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================================================
+   ERROR BOUNDARY (#3)
+   ============================================================================ */
+
+.notes-editor__error {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ne-spacing-md);
+  padding: var(--ne-spacing-lg);
+  color: var(--ne-danger);
+  text-align: center;
+}
+
+.notes-editor__error p {
+  font-size: var(--ne-font-body);
+}
+
+.notes-editor__error button {
+  min-height: var(--ne-touch-target);
+  padding: var(--ne-spacing-sm) var(--ne-spacing-lg);
+  background: var(--ne-bg-tertiary);
+  color: var(--ne-text-primary);
+  border: 1px solid var(--ne-separator);
+  border-radius: var(--ne-radius-md);
+  font-size: var(--ne-font-body);
+  cursor: pointer;
+  transition: background-color var(--ne-motion-hover);
+}
+
+.notes-editor__error button:hover {
+  background: var(--ne-bg-secondary);
+}
+
+/* ============================================================================
+   REDUCED MOTION
+   Respect user preference for reduced motion
+   #16: Scoped to notes-editor elements only (was using global * selector)
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .notes-editor,
+  .notes-editor *,
+  .notes-editor *::before,
+  .notes-editor *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  /* Allow essential visual feedback without motion */
+  .notes-editor__sidebar,
+  .notes-editor__main {
+    transition: none;
+  }
+
+  .notes-list__new-btn,
+  .notes-list__item,
+  .notes-list__empty button,
+  .notes-editor__empty button,
+  .editor-toolbar__btn,
+  .notes-editor__back-btn,
+  .notes-editor__back-btn svg {
+    transition: none;
+    transform: none !important;
+    will-change: auto;
+  }
+}
+
+/* ============================================================================
+   KEYBOARD ACCESSORY TOOLBAR (Mobile)
+   Positioned above the keyboard when open
+   ============================================================================ */
+
+@media (max-width: 767px) {
+  .editor-toolbar--keyboard-accessory {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: env(keyboard-inset-bottom, 0);
+    z-index: var(--ne-z-popup);
+    /* Solid fallback for browsers without backdrop-filter */
+    background: rgb(28, 28, 30);
+    border-top: 1px solid var(--ne-separator);
+    border-bottom: none;
+    /* Safe area padding */
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    /* Spring animation for appearing */
+    animation: slideUp var(--ne-duration-normal) var(--ne-spring-slide);
+  }
+
+  /* Frosted glass effect when supported */
+  @supports (backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px)) {
+    .editor-toolbar--keyboard-accessory {
+      background: rgba(28, 28, 30, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  /* Light mode keyboard accessory */
+  @media (prefers-color-scheme: light) {
+    .editor-toolbar--keyboard-accessory {
+      background: rgb(242, 242, 247);
+    }
+
+    @supports (backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px)) {
+      .editor-toolbar--keyboard-accessory {
+        background: rgba(242, 242, 247, 0.85);
+      }
+    }
+  }
+}
+
+/* ============================================================================
+   ACTION SHEET (iOS Style)
+   ============================================================================ */
+
+.action-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: var(--ne-z-action-sheet);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: var(--ne-spacing-sm);
+  padding-bottom: calc(var(--ne-spacing-sm) + env(safe-area-inset-bottom, 0));
+  animation: fadeIn var(--ne-duration-fast) ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.action-sheet {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ne-spacing-sm);
+  animation: slideUp var(--ne-duration-normal) var(--ne-spring-slide);
+}
+
+.action-sheet__header {
+  background: var(--ne-bg-secondary);
+  border-radius: var(--ne-radius-lg);
+  padding: var(--ne-spacing-md);
+  text-align: center;
+}
+
+.action-sheet__title {
+  font-size: var(--ne-font-subhead);
+  font-weight: 600;
+  color: var(--ne-text-secondary);
+  margin-bottom: var(--ne-spacing-xs);
+}
+
+.action-sheet__message {
+  font-size: var(--ne-font-subhead);
+  color: var(--ne-text-tertiary);
+}
+
+.action-sheet__actions {
+  background: var(--ne-bg-secondary);
+  border-radius: var(--ne-radius-lg);
+  overflow: hidden;
+  /* Scroll if too many actions */
+  max-height: 50vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.action-sheet__action {
+  display: block;
+  width: 100%;
+  padding: var(--ne-spacing-md);
+  background: none;
+  border: none;
+  font-size: var(--ne-font-title1);
+  font-weight: 400;
+  color: var(--ne-accent-secondary);
+  text-align: center;
+  cursor: pointer;
+  transition: background-color var(--ne-motion-hover);
+}
+
+.action-sheet__action:not(:last-child) {
+  border-bottom: 1px solid var(--ne-separator);
+}
+
+.action-sheet__action:active {
+  background: var(--ne-bg-tertiary);
+}
+
+.action-sheet__action:focus-visible {
+  outline: 2px solid var(--ne-accent-secondary);
+  outline-offset: -2px;
+}
+
+.action-sheet__action--destructive {
+  color: var(--ne-danger);
+}
+
+.action-sheet__cancel {
+  display: block;
+  width: 100%;
+  padding: var(--ne-spacing-md);
+  background: var(--ne-bg-secondary);
+  border: none;
+  border-radius: var(--ne-radius-lg);
+  font-size: var(--ne-font-title1);
+  font-weight: 600;
+  color: var(--ne-accent-secondary);
+  text-align: center;
+  cursor: pointer;
+  transition: background-color var(--ne-motion-hover);
+}
+
+.action-sheet__cancel:active {
+  background: var(--ne-bg-tertiary);
+}
+
+/* Light mode adjustments */
+@media (prefers-color-scheme: light) {
+  .action-sheet-overlay {
+    background: rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* ============================================================================
+   TEXT SELECTION POPUP (iOS-style formatting bubble)
+   ============================================================================ */
+
+.selection-popup {
+  position: fixed;
+  z-index: var(--ne-z-popup);
+  display: flex;
+  align-items: center;
+  gap: var(--ne-spacing-2xs);
+  padding: 6px var(--ne-spacing-sm);
+  background: var(--ne-bg-tertiary);
+  border-radius: var(--ne-radius-md);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transform: translateX(-50%) translateY(-100%);
+  /* Spring animation */
+  animation: popupAppear var(--ne-duration-fast) var(--ne-spring-expressive);
+}
+
+@keyframes popupAppear {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-100%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-100%) scale(1);
+  }
+}
+
+/* Arrow pointing down */
+.selection-popup::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid var(--ne-bg-tertiary);
+}
+
+.selection-popup__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 44px touch target per Apple HIG */
+  width: var(--ne-touch-target);
+  height: var(--ne-touch-target);
+  /* Negative margin to maintain visual density */
+  margin: -4px -2px;
+  background: none;
+  border: none;
+  border-radius: var(--ne-radius-sm);
+  color: var(--ne-text-primary);
+  font-size: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--ne-motion-hover),
+    transform var(--ne-motion-button);
+}
+
+.selection-popup__btn:hover {
+  background: var(--ne-bg-secondary);
+}
+
+.selection-popup__btn:active {
+  transform: scale(0.9);
+  background: var(--ne-bg-secondary);
+}
+
+.selection-popup__btn:focus-visible {
+  outline: 2px solid var(--ne-accent);
+  outline-offset: 1px;
+}
+
+.selection-popup__btn strong {
+  font-weight: 700;
+}
+
+.selection-popup__btn em {
+  font-style: italic;
+}
+
+.selection-popup__btn u {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.selection-popup__btn s {
+  text-decoration: line-through;
+}
+
+.selection-popup__highlight {
+  background: #FFFF00;
+  color: #000;
+  padding: 2px 4px;
+  border-radius: 2px;
+  font-weight: 600;
+}
+
+.selection-popup__divider {
+  width: 1px;
+  height: 20px;
+  background: var(--ne-separator);
+  margin: 0 4px;
+}
+
+/* Light mode */
+@media (prefers-color-scheme: light) {
+  .selection-popup {
+    background: var(--ne-bg-primary);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .selection-popup::after {
+    border-top-color: var(--ne-bg-primary);
+  }
+}
+
+/* ============================================================================
+   FOLDERS SIDEBAR (iOS Notes Style)
+   ============================================================================ */
+
+.notes-editor__folders {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--ne-sidebar-width);
+  background: var(--ne-bg-primary);
+  z-index: calc(var(--ne-z-sidebar) + 1);
+  transform: translateX(-100%);
+  transition: transform var(--ne-motion-slide);
+  will-change: transform;
+  /* Border on right edge */
+  box-shadow: 1px 0 0 var(--ne-separator);
+}
+
+.notes-editor__folders--visible {
+  transform: translateX(0);
+}
+
+/* Notes list slides right when folders open */
+.notes-editor__sidebar--folders-open {
+  transform: translateX(100%);
+}
+
+/* Folders sidebar content */
+.folders-sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.folders-sidebar__header {
+  display: flex;
+  align-items: center;
+  padding: var(--ne-spacing-md);
+  border-bottom: 1px solid var(--ne-separator);
+  gap: var(--ne-spacing-sm);
+}
+
+.folders-sidebar__header h1 {
+  font-size: var(--ne-font-large-title);
+  font-weight: 700;
+  margin: 0;
+  flex: 1;
+  letter-spacing: -0.022em;
+}
+
+/* Back button - 44px touch target */
+.folders-sidebar__back-btn {
+  width: var(--ne-touch-target);
+  height: var(--ne-touch-target);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--ne-accent);
+  cursor: pointer;
+  border-radius: var(--ne-radius-sm);
+  margin-left: calc(var(--ne-spacing-sm) * -1);
+  transition:
+    background-color var(--ne-motion-hover),
+    transform var(--ne-motion-button);
+}
+
+.folders-sidebar__back-btn:hover {
+  background: var(--ne-bg-tertiary);
+}
+
+.folders-sidebar__back-btn:active {
+  transform: scale(0.92);
+}
+
+.folders-sidebar__back-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Folders list */
+.folders-sidebar__list {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--ne-spacing-sm) 0;
+}
+
+/* Individual folder item - 44px minimum touch target */
+.folders-sidebar__item {
+  display: flex;
+  align-items: center;
+  gap: var(--ne-spacing-sm);
+  width: 100%;
+  min-height: var(--ne-touch-target);
+  padding: var(--ne-spacing-sm) var(--ne-spacing-md);
+  background: none;
+  border: none;
+  text-align: left;
+  color: var(--ne-text-primary);
+  font-size: var(--ne-font-body);
+  cursor: pointer;
+  transition: background-color var(--ne-motion-hover);
+}
+
+.folders-sidebar__item:hover {
+  background: var(--ne-bg-tertiary);
+}
+
+.folders-sidebar__item:active {
+  background: var(--ne-bg-secondary);
+}
+
+.folders-sidebar__item--selected {
+  background: var(--ne-accent);
+  color: #000;
+}
+
+.folders-sidebar__item--selected:hover {
+  background: var(--ne-accent);
+}
+
+/* Keyboard focus indicator */
+.folders-sidebar__item:focus-visible {
+  outline: 2px solid var(--ne-accent);
+  outline-offset: -2px;
+}
+
+.folders-sidebar__item--selected:focus-visible {
+  outline-color: #000;
+}
+
+.folders-sidebar__item-icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ne-accent);
+}
+
+.folders-sidebar__item--selected .folders-sidebar__item-icon {
+  color: #000;
+}
+
+.folders-sidebar__item-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.folders-sidebar__item-name {
+  flex: 1;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.folders-sidebar__item-count {
+  flex-shrink: 0;
+  font-size: var(--ne-font-subhead);
+  color: var(--ne-text-secondary);
+  padding: 2px 8px;
+  background: var(--ne-bg-tertiary);
+  border-radius: 10px;
+}
+
+.folders-sidebar__item--selected .folders-sidebar__item-count {
+  background: rgba(0, 0, 0, 0.15);
+  color: #000;
+}
+
+.folders-sidebar__item-chevron {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: var(--ne-text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.folders-sidebar__item-chevron svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Notes list folders button (back to folders) */
+.notes-list__folders-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--ne-spacing-xs);
+  min-height: var(--ne-touch-target);
+  padding: var(--ne-spacing-sm);
+  background: none;
+  border: none;
+  color: var(--ne-accent);
+  font-size: var(--ne-font-body);
+  cursor: pointer;
+  margin-left: calc(var(--ne-spacing-sm) * -1);
+  transition:
+    transform var(--ne-motion-button),
+    opacity var(--ne-motion-fade);
+}
+
+.notes-list__folders-btn:active {
+  transform: scale(0.95);
+  opacity: 0.7;
+}
+
+.notes-list__folders-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Adjust header layout for folders button */
+.notes-list__header {
+  flex-wrap: nowrap;
+}
+
+.notes-list__header h1 {
+  flex: 1;
+  text-align: center;
+  font-size: var(--ne-font-title1);
+}
+
+/* Mobile: folders sidebar takes full width */
+@media (max-width: 767px) {
+  .notes-editor__folders {
+    width: 100%;
+  }
+}
+
+/* Desktop: folders sidebar visible alongside notes list */
+@media (min-width: 1024px) {
+  .notes-editor__folders {
+    position: relative;
+    width: 280px;
+    flex-shrink: 0;
+    /* Use opacity/visibility instead of display for smooth transitions */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-20px);
+    transition:
+      opacity var(--ne-motion-fade),
+      visibility var(--ne-motion-fade),
+      transform var(--ne-motion-slide);
+  }
+
+  .notes-editor__folders--visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+  }
+
+  /* Don't slide notes list on desktop */
+  .notes-editor__sidebar--folders-open {
+    transform: none;
+  }
+}
+
+/* ============================================================================
+   DRAG TO REORDER
+   ============================================================================ */
+
+/* Dragging state on the items container */
+.notes-list__items--dragging {
+  /* Prevent text selection during drag */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Dragging item */
+.notes-list__item-container--dragging {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.notes-list__item--dragging {
+  background: var(--ne-accent) !important;
+  color: #000 !important;
+  transform: scale(1.02) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  border-radius: var(--ne-radius-md);
+  z-index: 10;
+}
+
+/* Drop target indicator */
+.notes-list__drop-indicator {
+  height: 3px;
+  background: var(--ne-accent);
+  border-radius: 2px;
+  margin: 2px var(--ne-spacing-md);
+  animation: dropIndicatorPulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes dropIndicatorPulse {
+  from {
+    opacity: 0.6;
+    transform: scaleX(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+/* Drop target item styling */
+.notes-list__item--drop-target {
+  background: rgba(255, 214, 10, 0.15);
+  border-top: 2px solid var(--ne-accent);
+}
+
+/* Light mode adjustments for drag states */
+@media (prefers-color-scheme: light) {
+  .notes-list__item--dragging {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .notes-list__item--drop-target {
+    background: rgba(255, 214, 10, 0.25);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .notes-list__drop-indicator {
+    animation: none;
+  }
+
+  .notes-list__item--dragging {
+    transform: none !important;
+  }
+}
+
+/* ============================================================================
+   TAGS
+   ============================================================================ */
+
+.notes-list__item-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.notes-list__item-tag {
+  font-size: var(--ne-font-caption);
+  font-weight: 500;
+  padding: var(--ne-spacing-2xs) var(--ne-spacing-sm);
+  background: var(--ne-bg-tertiary);
+  color: var(--ne-text-secondary);
+  border-radius: var(--ne-radius-md);
+  text-transform: capitalize;
+}
+
+.notes-list__item--selected .notes-list__item-tag {
+  background: rgba(0, 0, 0, 0.15);
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.notes-list__item-tag--more {
+  background: transparent;
+  color: var(--ne-text-tertiary);
+  padding: 2px 4px;
+}
+
+/* Smart folder styling in sidebar */
+.folders-sidebar__item--smart {
+  opacity: 0.9;
+}
+
+.folders-sidebar__item--smart .folders-sidebar__item-icon {
+  color: var(--ne-accent-secondary);
+}
+
+.folders-sidebar__item--smart.folders-sidebar__item--selected .folders-sidebar__item-icon {
+  color: #000;
+}

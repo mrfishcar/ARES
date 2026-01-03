@@ -15,6 +15,8 @@ import { EditorTest } from './pages/EditorTest';
 import { UltraMinimalTest } from './pages/UltraMinimalTest';
 import { WorkingCommitTest } from './pages/WorkingCommitTest';
 import { ExactWorkingReplica } from './pages/ExactWorkingReplica';
+import { IOSNotesApp } from './pages/IOSNotesApp';
+import NotesEditor from './pages/NotesEditor';
 import { loadState, saveState } from './lib/storage';
 import { initializeClientErrorLogger } from './lib/errorLogger';
 
@@ -153,6 +155,8 @@ function AppShell() {
         <Route path="/editor" element={<EditorTest />} />
         <Route path="/summarize" element={<SummarizationPage />} />
         <Route path="/learning" element={<LearningPage project={project} toast={toast} />} />
+        <Route path="/notes-app" element={<IOSNotesApp />} />
+        <Route path="/notes" element={<NotesEditor />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <ToastContainer messages={toast.messages} onClose={toast.closeToast} />

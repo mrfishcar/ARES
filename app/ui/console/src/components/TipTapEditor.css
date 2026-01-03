@@ -1,0 +1,700 @@
+/**
+ * TipTap Editor Styles for iOS Notes
+ *
+ * AUTHENTIC iOS NOTES DESIGN
+ * This is not a generic text editor - it's a pixel-perfect iOS Notes clone.
+ *
+ * Key Design Elements:
+ * - Warm cream/beige paper texture (#FBF8F1 light, #1C1C1E dark)
+ * - Subtle ruled lines like real paper
+ * - First paragraph auto-styled as title (28pt semibold)
+ * - iOS system colors and SF Pro typography
+ * - Authentic spring animations matching CASpringAnimation
+ *
+ * References:
+ * - iOS 17 Notes app visual inspection
+ * - Apple Human Interface Guidelines
+ * - SF Pro font metrics
+ */
+
+/* ============================================================================
+   CSS CUSTOM PROPERTIES - iOS Notes Design Tokens
+   ============================================================================ */
+
+:root {
+  /* -------------------------------------------------------------------------
+     iOS NOTES COLOR PALETTE
+     Extracted from actual iOS Notes app
+     ------------------------------------------------------------------------- */
+
+  /* Paper colors - the signature iOS Notes look */
+  --notes-paper-light: #FBF8F1;        /* Warm cream paper */
+  --notes-paper-dark: #1C1C1E;         /* Dark mode paper */
+  --notes-line-light: rgba(0, 0, 0, 0.06);  /* Subtle ruled lines */
+  --notes-line-dark: rgba(255, 255, 255, 0.04);
+
+  /* Text colors */
+  --notes-text-primary-light: #000000;
+  --notes-text-primary-dark: #FFFFFF;
+  --notes-text-secondary-light: #6C6C70;
+  --notes-text-secondary-dark: #98989D;
+  --notes-text-tertiary-light: #AEAEB2;
+  --notes-text-tertiary-dark: #636366;
+
+  /* iOS System Orange (checkboxes) - NOT yellow */
+  --notes-orange: #FF9500;
+  --notes-orange-light: #FF9F0A;
+
+  /* iOS System Blue (links) */
+  --notes-blue: #007AFF;
+
+  /* Title line height - matches iOS Notes exactly */
+  --notes-line-height: 25px;
+
+  /* -------------------------------------------------------------------------
+     AUTHENTIC iOS SPRING ANIMATION
+     Derived from CASpringAnimation with:
+     mass: 1, stiffness: 400, damping: 35
+     ------------------------------------------------------------------------- */
+  --spring-ios: cubic-bezier(0.28, 0.88, 0.32, 1.08);
+  --spring-ios-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  /* Duration matches iOS exactly */
+  --duration-fast: 180ms;
+  --duration-normal: 280ms;
+  --duration-slow: 380ms;
+
+  /* -------------------------------------------------------------------------
+     TYPOGRAPHY SCALE - iOS Notes Exact Values
+     ------------------------------------------------------------------------- */
+  --notes-title-size: 28px;       /* First line - Title style */
+  --notes-heading-size: 22px;     /* ## Heading style */
+  --notes-body-size: 17px;        /* Body text */
+  --notes-footnote-size: 13px;    /* Small text */
+
+  /* SF Pro tracking values */
+  --tracking-title: -0.026em;
+  --tracking-heading: -0.020em;
+  --tracking-body: -0.022em;
+
+  /* Default to light mode */
+  --notes-paper: var(--notes-paper-light);
+  --notes-line: var(--notes-line-light);
+  --notes-text-primary: var(--notes-text-primary-light);
+  --notes-text-secondary: var(--notes-text-secondary-light);
+  --notes-text-tertiary: var(--notes-text-tertiary-light);
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --notes-paper: var(--notes-paper-dark);
+    --notes-line: var(--notes-line-dark);
+    --notes-text-primary: var(--notes-text-primary-dark);
+    --notes-text-secondary: var(--notes-text-secondary-dark);
+    --notes-text-tertiary: var(--notes-text-tertiary-dark);
+  }
+}
+
+/* ============================================================================
+   WRAPPER - Paper Container
+   ============================================================================ */
+
+.ios-tiptap-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+
+  /* THE PAPER TEXTURE - This is what makes it iOS Notes */
+  background-color: var(--notes-paper);
+
+  /* Fallback font stack */
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', system-ui, sans-serif;
+}
+
+/* ============================================================================
+   MAIN EDITOR - Ruled Paper Effect
+   ============================================================================ */
+
+.ios-tiptap-editor {
+  flex: 1;
+  outline: none;
+  padding: 16px;
+
+  /* Typography */
+  font-size: var(--notes-body-size);
+  line-height: var(--notes-line-height);
+  color: var(--notes-text-primary);
+  letter-spacing: var(--tracking-body);
+
+  /* RULED LINES - The signature iOS Notes look */
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent calc(var(--notes-line-height) - 1px),
+    var(--notes-line) calc(var(--notes-line-height) - 1px),
+    var(--notes-line) var(--notes-line-height)
+  );
+  background-size: 100% var(--notes-line-height);
+  background-position: 0 0;
+
+  /* Text rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+
+  /* Ensure text sits on the lines */
+  padding-top: calc(var(--notes-line-height) - var(--notes-body-size));
+}
+
+/* iPad margins */
+@media (min-width: 768px) {
+  .ios-tiptap-editor {
+    padding: 24px;
+    padding-top: calc(var(--notes-line-height) - var(--notes-body-size) + 8px);
+  }
+}
+
+/* Large screens */
+@media (min-width: 1024px) {
+  .ios-tiptap-editor {
+    padding: 24px 40px;
+    max-width: 70ch;
+  }
+}
+
+/* ============================================================================
+   FIRST PARAGRAPH = TITLE (Auto-styled like iOS Notes)
+   This is the key difference - iOS Notes doesn't use # headings
+   ============================================================================ */
+
+.ios-tiptap-editor > p:first-child,
+.ios-tiptap-editor > h1:first-child {
+  font-size: var(--notes-title-size);
+  font-weight: 700;
+  letter-spacing: var(--tracking-title);
+  line-height: 1.2;
+  color: var(--notes-text-primary);
+  margin-bottom: 8px;
+
+  /* Title sits higher on first line */
+  margin-top: 0;
+  padding-top: 4px;
+}
+
+/* ============================================================================
+   PARAGRAPHS - Align to ruled lines
+   ============================================================================ */
+
+.ios-tiptap-editor p {
+  margin: 0;
+  padding: 0;
+  min-height: var(--notes-line-height);
+}
+
+.ios-tiptap-editor p + p {
+  margin-top: 0; /* Lines handle spacing */
+}
+
+/* ============================================================================
+   PLACEHOLDER
+   ============================================================================ */
+
+.ios-tiptap-editor.is-editor-empty::before {
+  content: attr(data-placeholder);
+  color: var(--notes-text-tertiary);
+  pointer-events: none;
+  position: absolute;
+  height: 0;
+  font-size: var(--notes-title-size);
+  font-weight: 700;
+}
+
+.ios-tiptap-editor p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--notes-text-tertiary);
+  pointer-events: none;
+  float: left;
+  height: 0;
+  font-size: var(--notes-title-size);
+  font-weight: 700;
+}
+
+/* ============================================================================
+   HEADINGS - iOS Notes Style
+   ============================================================================ */
+
+.ios-tiptap-editor h1 {
+  font-size: var(--notes-title-size);
+  font-weight: 700;
+  color: var(--notes-text-primary);
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+  letter-spacing: var(--tracking-title);
+}
+
+.ios-tiptap-editor h2 {
+  font-size: var(--notes-heading-size);
+  font-weight: 700;
+  color: var(--notes-text-primary);
+  margin: 16px 0 8px 0;
+  line-height: 1.25;
+  letter-spacing: var(--tracking-heading);
+}
+
+.ios-tiptap-editor h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--notes-text-secondary);
+  margin: 16px 0 8px 0;
+  line-height: 1.3;
+  letter-spacing: -0.017em;
+}
+
+/* ============================================================================
+   TEXT FORMATTING
+   ============================================================================ */
+
+.ios-tiptap-editor strong {
+  font-weight: 600;
+}
+
+.ios-tiptap-editor em {
+  font-style: italic;
+}
+
+.ios-tiptap-editor u {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.ios-tiptap-editor s {
+  text-decoration: line-through;
+  color: var(--notes-text-secondary);
+}
+
+/* Highlight */
+.ios-tiptap-editor mark {
+  background-color: #FFFF00;
+  color: #000;
+  border-radius: 2px;
+  padding: 1px 2px;
+}
+
+/* ============================================================================
+   LISTS
+   ============================================================================ */
+
+.ios-tiptap-editor ul,
+.ios-tiptap-editor ol {
+  margin: 0;
+  padding-left: 24px;
+}
+
+.ios-tiptap-editor li {
+  margin: 0;
+  min-height: var(--notes-line-height);
+}
+
+.ios-tiptap-editor li p {
+  margin: 0;
+}
+
+/* Bullet list */
+.ios-tiptap-editor ul:not([data-type="taskList"]) {
+  list-style-type: disc;
+}
+
+.ios-tiptap-editor ul:not([data-type="taskList"]) li::marker {
+  color: var(--notes-orange);
+}
+
+/* Numbered list */
+.ios-tiptap-editor ol {
+  list-style-type: decimal;
+}
+
+.ios-tiptap-editor ol li::marker {
+  color: var(--notes-orange);
+  font-weight: 500;
+}
+
+/* ============================================================================
+   TASK LIST - iOS Notes Circular Checkboxes (ORANGE, not yellow)
+   ============================================================================ */
+
+.ios-tiptap-editor ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.ios-tiptap-editor li[data-type="taskItem"] {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  min-height: var(--notes-line-height);
+}
+
+/* 44px touch target */
+.ios-tiptap-editor li[data-type="taskItem"] > label {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 44px;
+  height: 44px;
+  margin-left: -8px;
+  margin-top: -10px;
+  margin-bottom: -10px;
+  padding-left: 8px;
+  cursor: pointer;
+  /* Prevent zoom on double-tap */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Checkbox - 20px circle (iOS Notes exact size) */
+.ios-tiptap-editor li[data-type="taskItem"] > label > input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--notes-text-tertiary);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  pointer-events: none;
+  transition: all var(--duration-fast) var(--spring-ios);
+}
+
+.ios-tiptap-editor li[data-type="taskItem"] > label:hover > input[type="checkbox"] {
+  border-color: var(--notes-orange);
+}
+
+.ios-tiptap-editor li[data-type="taskItem"] > label:active > input[type="checkbox"] {
+  transform: scale(0.9);
+}
+
+/* Keyboard focus indicator */
+.ios-tiptap-editor li[data-type="taskItem"] > label:focus-visible > input[type="checkbox"] {
+  outline: 2px solid var(--notes-blue);
+  outline-offset: 2px;
+}
+
+/* Checked state - ORANGE fill */
+.ios-tiptap-editor li[data-type="taskItem"] > label > input[type="checkbox"]:checked {
+  background: var(--notes-orange);
+  border-color: var(--notes-orange);
+  animation: checkbox-bounce var(--duration-normal) var(--spring-ios-bounce);
+}
+
+@keyframes checkbox-bounce {
+  0% { transform: scale(0.8); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.ios-tiptap-editor li[data-type="taskItem"] > label > input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 12px;
+  color: white;
+  font-weight: 700;
+}
+
+/* Task content */
+.ios-tiptap-editor li[data-type="taskItem"] > div {
+  flex: 1;
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.ios-tiptap-editor li[data-type="taskItem"] > div > p {
+  margin: 0;
+  min-height: var(--notes-line-height);
+}
+
+/* Checked text strikethrough */
+.ios-tiptap-editor li[data-type="taskItem"][data-checked="true"] > div p {
+  text-decoration: line-through;
+  color: var(--notes-text-secondary);
+}
+
+/* ============================================================================
+   BLOCKQUOTE
+   ============================================================================ */
+
+.ios-tiptap-editor blockquote {
+  border-left: 3px solid var(--notes-orange);
+  margin: 8px 0;
+  padding-left: 16px;
+  color: var(--notes-text-secondary);
+}
+
+/* ============================================================================
+   CODE
+   ============================================================================ */
+
+.ios-tiptap-editor code {
+  background: rgba(0, 0, 0, 0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'SF Mono', ui-monospace, Menlo, Monaco, monospace;
+  font-size: 0.9em;
+}
+
+@media (prefers-color-scheme: dark) {
+  .ios-tiptap-editor code {
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.ios-tiptap-editor pre {
+  background: rgba(0, 0, 0, 0.06);
+  padding: 12px 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .ios-tiptap-editor pre {
+    background: rgba(255, 255, 255, 0.06);
+  }
+}
+
+.ios-tiptap-editor pre code {
+  background: none;
+  padding: 0;
+}
+
+/* ============================================================================
+   LINKS
+   ============================================================================ */
+
+.ios-tiptap-editor a {
+  color: var(--notes-blue);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ============================================================================
+   SELECTION - iOS Blue, not yellow
+   ============================================================================ */
+
+.ios-tiptap-editor ::selection {
+  background: rgba(0, 122, 255, 0.3);
+  color: inherit;
+}
+
+/* ============================================================================
+   HORIZONTAL RULE
+   ============================================================================ */
+
+.ios-tiptap-editor hr {
+  border: none;
+  border-top: 1px solid var(--notes-line);
+  margin: 16px 0;
+}
+
+/* ============================================================================
+   FOCUS
+   ============================================================================ */
+
+.ios-tiptap-wrapper:focus-within {
+  outline: none;
+}
+
+/* ============================================================================
+   REDUCED MOTION
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .ios-tiptap-wrapper *,
+  .ios-tiptap-wrapper *::before,
+  .ios-tiptap-wrapper *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================================
+   LINKS - iOS Style with hover effect
+   ============================================================================ */
+
+.ios-tiptap-editor a.ios-link {
+  color: var(--notes-blue);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--duration-fast) var(--spring-ios);
+  cursor: pointer;
+}
+
+.ios-tiptap-editor a.ios-link:hover {
+  border-bottom-color: var(--notes-blue);
+}
+
+/* ============================================================================
+   LINK PREVIEW POPUP
+   ============================================================================ */
+
+.link-preview-popup {
+  position: fixed;
+  /* Use popup layer from z-index scale (matches --ne-z-popup from NotesEditor) */
+  z-index: var(--ne-z-popup, 40);
+  transform: translateX(-50%);
+  width: 280px;
+  max-width: calc(100vw - 32px);
+  background: var(--notes-paper-dark);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  animation: linkPreviewAppear var(--duration-normal) var(--spring-ios-bounce);
+}
+
+@media (prefers-color-scheme: light) {
+  .link-preview-popup {
+    background: #fff;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  }
+}
+
+@keyframes linkPreviewAppear {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+.link-preview-popup__content {
+  display: flex;
+  flex-direction: column;
+}
+
+.link-preview-popup__image {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  background: var(--notes-line-dark);
+}
+
+.link-preview-popup__text {
+  padding: 12px;
+}
+
+.link-preview-popup__domain {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--notes-blue);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.link-preview-popup__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--notes-text-primary-dark);
+  line-height: 1.3;
+  margin-bottom: 4px;
+  /* Fallback for browsers without line-clamp */
+  max-height: calc(15px * 1.3 * 2); /* 2 lines */
+  overflow: hidden;
+  /* Modern line-clamp */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+@media (prefers-color-scheme: light) {
+  .link-preview-popup__title {
+    color: var(--notes-text-primary-light);
+  }
+}
+
+.link-preview-popup__description {
+  font-size: 13px;
+  color: var(--notes-text-secondary-dark);
+  line-height: 1.4;
+  margin-bottom: 4px;
+  /* Fallback for browsers without line-clamp */
+  max-height: calc(13px * 1.4 * 2); /* 2 lines */
+  overflow: hidden;
+  /* Modern line-clamp */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+@media (prefers-color-scheme: light) {
+  .link-preview-popup__description {
+    color: var(--notes-text-secondary-light);
+  }
+}
+
+.link-preview-popup__url {
+  font-size: 12px;
+  color: var(--notes-text-tertiary-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (prefers-color-scheme: light) {
+  .link-preview-popup__url {
+    color: var(--notes-text-tertiary-light);
+  }
+}
+
+.link-preview-popup__actions {
+  display: flex;
+  border-top: 1px solid var(--notes-line-dark);
+}
+
+@media (prefers-color-scheme: light) {
+  .link-preview-popup__actions {
+    border-top-color: var(--notes-line-light);
+  }
+}
+
+.link-preview-popup__action {
+  flex: 1;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--notes-blue);
+  background: none;
+  border: none;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--spring-ios);
+}
+
+.link-preview-popup__action:first-child {
+  border-right: 1px solid var(--notes-line-dark);
+}
+
+@media (prefers-color-scheme: light) {
+  .link-preview-popup__action:first-child {
+    border-right-color: var(--notes-line-light);
+  }
+}
+
+.link-preview-popup__action:hover {
+  background: rgba(0, 122, 255, 0.1);
+}
+
+.link-preview-popup__action:active {
+  background: rgba(0, 122, 255, 0.2);
+}
