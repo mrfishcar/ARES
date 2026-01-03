@@ -964,9 +964,9 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     extractObj: 2,   // This is the child name
     typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
   },
-  // Possessive parent: "His/Her father/mother NAME"
+  // Possessive parent: "His/Her father/mother NAME" (with optional comma for appositive)
   {
-    regex: /\b(His|Her|his|her)\s+(father|mother)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
+    regex: /\b(His|Her|his|her)\s+(father|mother),?\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
     predicate: 'parent_of',
     extractSubj: 3,  // Parent name
     extractObj: 1,   // Pronoun - needs coreference resolution

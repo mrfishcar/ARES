@@ -163,6 +163,10 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
   'goodbye',
   'thanks',
   'yes', 'no',
+  'please', 'honey',  // Common interjections that appear sentence-initial
+
+  // Abstract concepts / sins / states that shouldn't be entities
+  'gluttony', 'legend', 'blood', 'bullet', 'steamy',
 
   // Discourse markers
   'however', 'therefore', 'moreover', 'furthermore', 'nevertheless',
@@ -218,6 +222,7 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
 
   // Common gerunds/present participles
   'running', 'walking', 'talking', 'fighting', 'waiting', 'looking', 'thinking',
+  'littering', 'driving', 'caged',  // More common gerunds/participles
 
   // Common adjectives
   'beautiful', 'terrible', 'wonderful', 'horrible', 'amazing', 'awful',
@@ -235,6 +240,7 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
   'man', 'woman', 'boy', 'girl', 'child', 'children', 'friend', 'friends',
   'king', 'queen', 'prince', 'princess', 'lord', 'lady',
   'sleeping', 'eating', 'drinking',
+  'animals', 'animal', 'layers', 'layer', 'land', 'lands',  // Generic nouns from real-world text
   'place', 'places', 'somewhere', 'anywhere', 'nowhere', 'everywhere',
   'time', 'times', 'day', 'days', 'year', 'years', 'moment', 'moments',
   'morning', 'evening', 'night', 'afternoon', 'noon', 'midnight', 'tonight',

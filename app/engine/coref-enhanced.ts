@@ -237,9 +237,10 @@ export function detectAppositivePossessives(
   // Build entity name lookup for fast matching
   const entityNames = new Set(entities.map(e => e.canonical));
 
-  // Pattern 1: PRON NOUN NAME (e.g., "His father Arthur")
+  // Pattern 1: PRON NOUN NAME (e.g., "His father Arthur" or "his father, Andrew")
   // Pronouns: his, her, their, its, Ron's, Harry's, etc.
-  const pattern1 = /\b(His|Her|Their|Its|[A-Z][a-z]+'s)\s+(father|mother|brother|sister|son|daughter|uncle|aunt|cousin|grandfather|grandmother|parent|child|sibling|wife|husband|spouse)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b/g;
+  // Added optional comma for appositive constructions like "his father, Andrew Beauregard"
+  const pattern1 = /\b(His|Her|Their|Its|[A-Z][a-z]+'s)\s+(father|mother|brother|sister|son|daughter|uncle|aunt|cousin|grandfather|grandmother|parent|child|sibling|wife|husband|spouse),?\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b/g;
 
   let match: RegExpExecArray | null;
   while ((match = pattern1.exec(text)) !== null) {
