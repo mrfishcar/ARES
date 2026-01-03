@@ -184,7 +184,8 @@ function filterByEvidence(
  */
 function mergeDescriptorNamePairs(
   entities: Entity[],
-  spans: Span[]
+  spans: Span[],
+  fullText?: string
 ): { entities: Entity[]; spans: Span[]; mergedCount: number } {
   // Descriptor prefixes that can combine with names
   const DESCRIPTOR_PREFIXES = new Set([
@@ -208,14 +209,18 @@ function mergeDescriptorNamePairs(
   const mergePairs: Array<{
     descriptor: Entity;
     name: Entity;
-    descriptorSpan: Span;
-    nameSpan: Span;
+    descriptorSpan?: Span;
+    nameSpan?: Span;
   }> = [];
   const entitiesToRemove = new Set<string>();
 
+  // APPROACH 1: Span-based merging (original approach)
   // Debug: Log spans for descriptor entities
   for (const descEnt of descriptorEntities) {
     const descSpans = sortedSpans.filter(s => s.entity_id === descEnt.id);
+    if (descSpans.length === 0) {
+      console.log(`[DESCRIPTOR-MERGE] No spans found for descriptor "${descEnt.canonical}"`);
+    }
     for (const descSpan of descSpans) {
       // Find the next span after this one
       const idx = sortedSpans.findIndex(s => s === descSpan);
@@ -271,6 +276,57 @@ function mergeDescriptorNamePairs(
     entitiesToRemove.add(nextEntity.id);
   }
 
+  // APPROACH 2: Text-based merging (fallback when spans aren't adjacent)
+  // For each descriptor entity, check if fullText contains "Descriptor Name" pattern
+  // and we have a separate "Name" entity that should be merged
+  if (fullText && descriptorEntities.length > 0) {
+    // Find single-word PERSON entities that are NOT descriptors (potential merge targets)
+    const nameEntities = entities.filter(e => {
+      if (e.type !== 'PERSON') return false;
+      const words = e.canonical.split(/\s+/);
+      if (words.length !== 1) return false;
+      if (DESCRIPTOR_PREFIXES.has(words[0].toLowerCase())) return false;
+      // Not already merged
+      if (entitiesToRemove.has(e.id)) return false;
+      return true;
+    });
+
+    for (const descEnt of descriptorEntities) {
+      // Skip if already merged
+      if (entitiesToRemove.has(descEnt.id)) continue;
+
+      const descWord = descEnt.canonical;
+
+      for (const nameEnt of nameEntities) {
+        // Skip if already merged
+        if (entitiesToRemove.has(nameEnt.id)) continue;
+
+        const nameWord = nameEnt.canonical;
+        const compoundPattern = `${descWord} ${nameWord}`;
+
+        // Check if this exact compound appears in the text (case-insensitive)
+        const pattern = new RegExp(`\\b${escapeRegex(descWord)}\\s+${escapeRegex(nameWord)}\\b`, 'i');
+        if (pattern.test(fullText)) {
+          console.log(`[DESCRIPTOR-MERGE] Text-based match: found "${compoundPattern}" in document`);
+
+          // Found a merge candidate via text matching
+          mergePairs.push({
+            descriptor: descEnt,
+            name: nameEnt
+            // No spans for text-based merge
+          });
+
+          // Mark original entities for removal
+          entitiesToRemove.add(descEnt.id);
+          entitiesToRemove.add(nameEnt.id);
+
+          // Break to avoid double merging this descriptor
+          break;
+        }
+      }
+    }
+  }
+
   if (mergePairs.length === 0) {
     return { entities, spans, mergedCount: 0 };
   }
@@ -296,14 +352,16 @@ function mergeDescriptorNamePairs(
     };
     newEntities.push(mergedEntity);
 
-    // Create merged span
-    const mergedSpan: Span = {
-      entity_id: mergedId,
-      start: pair.descriptorSpan.start,
-      end: pair.nameSpan.end,
-      text: `${pair.descriptorSpan.text || pair.descriptor.canonical} ${pair.nameSpan.text || pair.name.canonical}`
-    };
-    newSpans.push(mergedSpan);
+    // Create merged span (only if we have both spans from span-based matching)
+    if (pair.descriptorSpan && pair.nameSpan) {
+      const mergedSpan: Span = {
+        entity_id: mergedId,
+        start: pair.descriptorSpan.start,
+        end: pair.nameSpan.end,
+        text: `${pair.descriptorSpan.text || pair.descriptor.canonical} ${pair.nameSpan.text || pair.name.canonical}`
+      };
+      newSpans.push(mergedSpan);
+    }
   }
 
   // Filter out merged entities and add new ones
@@ -826,7 +884,7 @@ export async function runEntityFilteringStage(
     // e.g., "Mad" + "Addy" → "Mad Addy"
     // Must run BEFORE fragment filtering so new compounds are recognized
     // ========================================================================
-    const mergeResult = mergeDescriptorNamePairs(filteredEntities, currentSpans);
+    const mergeResult = mergeDescriptorNamePairs(filteredEntities, currentSpans, input.fullText);
     if (mergeResult.mergedCount > 0) {
       console.log(`[${STAGE_NAME}] 🛡️ Descriptor merge combined ${mergeResult.mergedCount} entity pairs`);
       filteredEntities = mergeResult.entities;
