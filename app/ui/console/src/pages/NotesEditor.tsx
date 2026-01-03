@@ -677,10 +677,13 @@ function NoteItem({ note, index, isSelected, onSelect, onDelete, isDragging, isD
   const currentXRef = useRef(0);
   const longPressTimerRef = useRef<number | null>(null);
   const [isLongPressing, setIsLongPressing] = useState(false);
+  // FIX: Lock gesture direction to prevent scroll/swipe conflicts
+  const gestureLockRef = useRef<'horizontal' | 'vertical' | null>(null);
 
   const SWIPE_THRESHOLD = 80; // Pixels to reveal delete button
   const DELETE_THRESHOLD = 150; // Pixels to trigger delete
   const LONG_PRESS_DURATION = 500; // ms to start drag
+  const GESTURE_LOCK_THRESHOLD = 12; // Pixels before deciding swipe vs scroll
 
   // FIX #3: Reset swipe when clicking outside this item
   useEffect(() => {
@@ -717,6 +720,8 @@ function NoteItem({ note, index, isSelected, onSelect, onDelete, isDragging, isD
     startXRef.current = e.touches[0].clientX;
     startYRef.current = e.touches[0].clientY;
     currentXRef.current = swipeX;
+    // Reset gesture lock at start of new touch
+    gestureLockRef.current = null;
 
     // Start long press timer for drag
     longPressTimerRef.current = window.setTimeout(() => {
@@ -729,6 +734,8 @@ function NoteItem({ note, index, isSelected, onSelect, onDelete, isDragging, isD
   const handleTouchMove = (e: React.TouchEvent) => {
     const deltaX = e.touches[0].clientX - startXRef.current;
     const deltaY = e.touches[0].clientY - startYRef.current;
+    const absDeltaX = Math.abs(deltaX);
+    const absDeltaY = Math.abs(deltaY);
 
     // If we're in drag mode, handle drag over
     if (isDragging) {
@@ -748,22 +755,33 @@ function NoteItem({ note, index, isSelected, onSelect, onDelete, isDragging, isD
     }
 
     // Cancel long press if we moved too much (starting a swipe instead)
-    if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) {
+    if (absDeltaX > 10 || absDeltaY > 10) {
       clearLongPressTimer();
       setIsLongPressing(false);
     }
 
-    // Only swipe if we're not long pressing
-    if (!isLongPressing && Math.abs(deltaX) > Math.abs(deltaY)) {
+    // FIX: Lock gesture direction once we exceed threshold
+    // This prevents accidental swipe when user is trying to scroll
+    if (!gestureLockRef.current && (absDeltaX > GESTURE_LOCK_THRESHOLD || absDeltaY > GESTURE_LOCK_THRESHOLD)) {
+      // Lock to whichever direction had more movement
+      gestureLockRef.current = absDeltaX > absDeltaY ? 'horizontal' : 'vertical';
+    }
+
+    // Only allow swipe if gesture is locked to horizontal (or not locked yet but clearly horizontal)
+    if (!isLongPressing && gestureLockRef.current === 'horizontal') {
       setIsSwiping(true);
       const newX = Math.min(0, Math.max(-DELETE_THRESHOLD, currentXRef.current + deltaX));
       setSwipeX(newX);
+      // Prevent scroll when swiping
+      e.preventDefault();
     }
+    // If locked to vertical, let the scroll happen naturally (don't call preventDefault)
   };
 
   const handleTouchEnd = () => {
     clearLongPressTimer();
     setIsLongPressing(false);
+    gestureLockRef.current = null;
 
     // If we were dragging, end the drag
     if (isDragging) {
@@ -772,6 +790,8 @@ function NoteItem({ note, index, isSelected, onSelect, onDelete, isDragging, isD
     }
 
     setIsSwiping(false);
+
+    // Only process swipe result if we were actually swiping
     if (swipeX < -DELETE_THRESHOLD + 20) {
       // Trigger delete with haptic
       triggerHaptic('warning');
@@ -780,10 +800,19 @@ function NoteItem({ note, index, isSelected, onSelect, onDelete, isDragging, isD
       // Snap to reveal delete button
       setSwipeX(-SWIPE_THRESHOLD);
       triggerHaptic('selection');
-    } else {
-      // Snap back
+    } else if (swipeX !== 0) {
+      // Snap back only if we had some swipe
       setSwipeX(0);
     }
+  };
+
+  // Get animation transition based on state
+  const getSwipeTransition = () => {
+    if (isSwiping) return 'none';
+    // Snap to threshold: crisp, quick
+    if (swipeX === -SWIPE_THRESHOLD) return 'transform 0.25s cubic-bezier(0.33, 1, 0.68, 1)';
+    // Snap back: bouncier spring for satisfying feel
+    return 'transform 0.35s cubic-bezier(0.25, 1.25, 0.5, 1)';
   };
 
   // FIX #10: Handle touch cancel (e.g., notification appears mid-swipe)
@@ -792,6 +821,7 @@ function NoteItem({ note, index, isSelected, onSelect, onDelete, isDragging, isD
     setIsLongPressing(false);
     setIsSwiping(false);
     setSwipeX(0);
+    gestureLockRef.current = null;
     if (isDragging) {
       onDragEnd();
     }
@@ -842,7 +872,7 @@ function NoteItem({ note, index, isSelected, onSelect, onDelete, isDragging, isD
         onTouchCancel={handleTouchCancel}
         style={{
           transform: `translateX(${swipeX}px)`,
-          transition: isSwiping ? 'none' : 'transform 0.3s cubic-bezier(0.25, 1.25, 0.5, 1)',
+          transition: getSwipeTransition(),
         }}
       >
         <div className="notes-list__item-header">
@@ -861,7 +891,11 @@ function NoteItem({ note, index, isSelected, onSelect, onDelete, isDragging, isD
                 <span
                   key={tagId}
                   className="notes-list__item-tag"
-                  style={tag?.color ? { backgroundColor: `${tag.color}20`, color: tag.color } : undefined}
+                  style={tag?.color ? {
+                    // Use color-mix for proper alpha support with any color format
+                    backgroundColor: `color-mix(in srgb, ${tag.color} 15%, transparent)`,
+                    color: tag.color
+                  } : undefined}
                 >
                   {tag?.name || tagId}
                 </span>
@@ -1107,14 +1141,31 @@ function SelectionPopup({ editorRef }: SelectionPopupProps) {
       setIsVisible(true);
     };
 
-    // Listen for selection changes
-    document.addEventListener('selectionchange', checkSelection);
-    return () => document.removeEventListener('selectionchange', checkSelection);
+    // Listen for selection changes with debounce to avoid excessive updates
+    let debounceTimer: number | null = null;
+    const debouncedCheckSelection = () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = window.setTimeout(checkSelection, 50);
+    };
+
+    document.addEventListener('selectionchange', debouncedCheckSelection);
+    return () => {
+      document.removeEventListener('selectionchange', debouncedCheckSelection);
+      if (debounceTimer) clearTimeout(debounceTimer);
+    };
   }, []);
 
-  // Hide on scroll
+  // Hide on scroll (but not when scrolling inside the editor)
   useEffect(() => {
-    const hideOnScroll = () => setIsVisible(false);
+    const hideOnScroll = (e: Event) => {
+      // Don't hide if scrolling inside the editor content area
+      // This allows scrolling the document without losing the selection popup
+      const target = e.target as Element;
+      if (target?.closest?.('.ios-tiptap-editor, .ios-tiptap-wrapper, .notes-editor__content')) {
+        return;
+      }
+      setIsVisible(false);
+    };
     window.addEventListener('scroll', hideOnScroll, true);
     return () => window.removeEventListener('scroll', hideOnScroll, true);
   }, []);
@@ -1536,9 +1587,30 @@ export default function NotesEditor() {
     loadData();
   }, []);
 
+  // Track if we've loaded initial data (to avoid flash of "unsaved" on mount)
+  const hasLoadedRef = useRef(false);
+  const previousNotesRef = useRef<Note[] | null>(null);
+
   // #5: Debounced save with status indicator
   useEffect(() => {
     if (isLoading) return;
+
+    // Skip the first run after loading - notes haven't actually changed
+    if (!hasLoadedRef.current) {
+      hasLoadedRef.current = true;
+      previousNotesRef.current = notes;
+      return;
+    }
+
+    // Check if notes actually changed (deep compare would be expensive, so compare length + ids)
+    const prevNotes = previousNotesRef.current;
+    const notesChanged = !prevNotes ||
+      prevNotes.length !== notes.length ||
+      prevNotes.some((pn, i) => pn.id !== notes[i]?.id || pn.content !== notes[i]?.content || pn.updatedAt !== notes[i]?.updatedAt);
+
+    if (!notesChanged) return;
+
+    previousNotesRef.current = notes;
 
     // Mark as unsaved when notes change
     setSaveStatus('unsaved');
@@ -1632,11 +1704,24 @@ export default function NotesEditor() {
 
   // #15: Fixed focus timing with requestAnimationFrame
   // FIX #4: Add max attempts to prevent infinite loop
+  // FIX: Use ref to track mounted state and prevent post-unmount updates
+  const focusEditorMountedRef = useRef(true);
+
+  useEffect(() => {
+    focusEditorMountedRef.current = true;
+    return () => {
+      focusEditorMountedRef.current = false;
+    };
+  }, []);
+
   const focusEditor = useCallback(() => {
     let attempts = 0;
     const maxAttempts = 30; // ~500ms at 60fps
 
     const tryFocus = () => {
+      // Bail out if component unmounted
+      if (!focusEditorMountedRef.current) return;
+
       attempts++;
       const editor = editorRef.current?.getEditor();
       if (editor && !editor.isDestroyed) {

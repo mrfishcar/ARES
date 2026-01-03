@@ -98,9 +98,22 @@ function LinkPreviewPopup({ containerRef }: LinkPreviewPopupProps) {
   const timeoutRef = useRef<number | null>(null);
   const feedbackTimeoutRef = useRef<number | null>(null);
 
+  // Track container element for re-attaching listeners when ref becomes available
+  const [containerElement, setContainerElement] = useState<HTMLElement | Document | null>(null);
+
+  // Update container element when ref changes
   useEffect(() => {
-    // Scope to container if provided, otherwise fall back to document
-    const container = containerRef?.current || document;
+    // Use container from ref, or document as fallback
+    const newContainer = containerRef?.current || document;
+    if (newContainer !== containerElement) {
+      setContainerElement(newContainer);
+    }
+  }, [containerRef?.current]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    // Wait for container to be set
+    const container = containerElement;
+    if (!container) return;
 
     const handleMouseOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
@@ -189,7 +202,7 @@ function LinkPreviewPopup({ containerRef }: LinkPreviewPopupProps) {
         clearTimeout(feedbackTimeoutRef.current);
       }
     };
-  }, [containerRef]);
+  }, [containerElement]);
 
   // Handle copy to clipboard with feedback
   const handleCopyLink = async () => {
