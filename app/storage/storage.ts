@@ -315,7 +315,10 @@ export async function appendDoc(
   let booknlp: any;
   try {
     // Load or create pattern library for new entity types
-    const patternLibrary = await loadFantasyEntityPatterns();
+    // Skip if SKIP_PATTERN_LIBRARY is set (for debugging)
+    const patternLibrary = process.env.SKIP_PATTERN_LIBRARY === '1'
+      ? undefined
+      : await loadFantasyEntityPatterns();
 
     // Use smart extraction strategy that chooses between chunked and legacy modes
     // For large documents, this provides better progress tracking and responsiveness

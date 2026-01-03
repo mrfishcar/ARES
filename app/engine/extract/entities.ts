@@ -3039,9 +3039,18 @@ function applyLinguisticFilters(
         const beforeText = text.slice(Math.max(0, firstSpan.start - 10), firstSpan.start);
         const afterText = text.slice(firstSpan.end, Math.min(text.length, firstSpan.end + 30));
 
-        // Check for determiner
+        // Check for determiner - must be preceded by whitespace/punctuation to be a real determiner
+        // This prevents false matches like "father " ending with "her "
         const determiners = ['the ', 'a ', 'an ', 'my ', 'your ', 'his ', 'her ', 'their ', 'our '];
-        hasDeterminer = determiners.some(det => beforeText.toLowerCase().endsWith(det));
+        hasDeterminer = determiners.some(det => {
+          const beforeLower = beforeText.toLowerCase();
+          if (!beforeLower.endsWith(det)) return false;
+          // Check that the determiner is a whole word (preceded by space/punctuation/start)
+          const detStartIdx = beforeLower.length - det.length;
+          if (detStartIdx === 0) return true; // determiner at start
+          const charBeforeDet = beforeLower.charAt(detStartIdx - 1);
+          return /[\s.!?,;:'"\-(]/.test(charBeforeDet);
+        });
 
         // Check if sentence-initial via parser-derived starts
         isSentenceInitial = isSentenceInitialPosition(firstSpan.start);
