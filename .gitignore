@@ -58,3 +58,7 @@ tmp/mega-regression-summary.json
 # Scale test output data
 data/scale-test.json
 data/beauregard-scale-test.json
+data/beauregard-quality-test.json
+data/minimal-test.json
+data/minimal-test2.json
+Barty Beauregard CLEANED.txt
