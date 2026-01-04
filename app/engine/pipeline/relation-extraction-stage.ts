@@ -237,16 +237,75 @@ export async function runRelationExtractionStage(
       toPipelineCorefLinks(input.corefLinks)
     );
 
-    const narrativeRelationsWithContext = narrativeRelations.map(rel =>
-      remapEvidence(rel, 0)
-    );
+    // Remap narrative relations to use merged entity IDs
+    // (similar to dependency extraction remapping)
+    const remappedNarrativeRelations: Relation[] = [];
+
+    // Build a map from any name variant to the merged entity
+    // This handles cases where entityLookup has "Snape" but the real entity is "Professor Snape"
+    // Use input.entities which has the correct final entities (not entityMap which might be stale)
+    const nameVariantToMerged = new Map<string, { id: string; canonical: string }>();
+
+    if (process.env.L3_DEBUG === '1') {
+      console.log(`[REMAP] input.entities: ${input.entities.map(e => `${e.type}::${e.canonical} (aliases: ${e.aliases?.join(', ') || 'none'})`).join('; ')}`);
+    }
+
+    for (const entity of input.entities) {
+      // Add canonical name
+      const canonicalKey = `${entity.type}::${entity.canonical.toLowerCase()}`;
+      nameVariantToMerged.set(canonicalKey, { id: entity.id, canonical: entity.canonical });
+
+      // Add all aliases
+      if (entity.aliases) {
+        for (const alias of entity.aliases) {
+          const aliasKey = `${entity.type}::${alias.toLowerCase()}`;
+          // Only add if not already mapped to a longer canonical (prefer "Professor Snape" over "Snape")
+          const existing = nameVariantToMerged.get(aliasKey);
+          if (!existing || entity.canonical.length > existing.canonical.length) {
+            nameVariantToMerged.set(aliasKey, { id: entity.id, canonical: entity.canonical });
+          }
+        }
+      }
+    }
+
+    for (const rel of narrativeRelations) {
+      const subjEntity = input.entityLookup.find(e => e.id === rel.subj);
+      const objEntity = input.entityLookup.find(e => e.id === rel.obj);
+
+      if (subjEntity && objEntity) {
+        const subjKey = `${subjEntity.type}::${subjEntity.canonical.toLowerCase()}`;
+        const objKey = `${objEntity.type}::${objEntity.canonical.toLowerCase()}`;
+
+        const mergedSubj = nameVariantToMerged.get(subjKey);
+        const mergedObj = nameVariantToMerged.get(objKey);
+
+        if (process.env.L3_DEBUG === '1' && rel.pred === 'teaches_at') {
+          console.log(`[REMAP] teaches_at relation: ${subjEntity.canonical} -> lookup key ${subjKey}`);
+          console.log(`[REMAP]   Merged entity: ${mergedSubj?.canonical || 'NOT FOUND'} (id: ${mergedSubj?.id || 'N/A'})`);
+        }
+
+        remappedNarrativeRelations.push(
+          remapEvidence(
+            {
+              ...rel,
+              subj: mergedSubj?.id || rel.subj,
+              obj: mergedObj?.id || rel.obj
+            },
+            0
+          )
+        );
+      } else {
+        // No entity lookup match - keep original (with evidence remapped)
+        remappedNarrativeRelations.push(remapEvidence(rel, 0));
+      }
+    }
 
     console.log(
-      `[${STAGE_NAME}] Narrative extraction: ${narrativeRelationsWithContext.length} relations`
+      `[${STAGE_NAME}] Narrative extraction: ${remappedNarrativeRelations.length} relations`
     );
 
     // Combine all relation sources
-    const combinedRelations = [...allRelations, ...narrativeRelationsWithContext];
+    const combinedRelations = [...allRelations, ...remappedNarrativeRelations];
 
     const duration = Date.now() - startTime;
     console.log(
@@ -256,7 +315,7 @@ export async function runRelationExtractionStage(
       `  - Dependency patterns: ${allRelations.length}`
     );
     console.log(
-      `  - Narrative patterns: ${narrativeRelationsWithContext.length}`
+      `  - Narrative patterns: ${remappedNarrativeRelations.length}`
     );
 
     return {

@@ -385,11 +385,15 @@ export async function runRelationFilteringStage(
           }
 
           // Determine if coordination or appositive
-          // For family relations (parent_of, child_of), use larger threshold since
+          // For family/organizational relations, use larger threshold since
           // "their children" could refer to a couple mentioned sentences apart
+          // Similarly, multiple teachers can teach at the same school
           const pred = group[0].rel.pred;
-          const isFamilyRelation = ['parent_of', 'child_of', 'lives_in'].includes(pred);
-          const distanceThreshold = isFamilyRelation ? 250 : 100;
+          const isMultiSubjectRelation = [
+            'parent_of', 'child_of', 'lives_in',
+            'teaches_at', 'works_at', 'member_of', 'leads', 'studies_at'
+          ].includes(pred);
+          const distanceThreshold = isMultiSubjectRelation ? 250 : 100;
 
           const isCoordination = group.every((item, idx) => {
             if (idx === 0) return true;
@@ -404,10 +408,23 @@ export async function runRelationFilteringStage(
               return true;
             }
 
-            // If one is substring of the other, it's likely appositive
+            // If one is substring of the other, it's likely appositive (same entity, different names)
             if (prevCanonical !== currCanonical && (prevCanonical.includes(currCanonical) || currCanonical.includes(prevCanonical))) {
               console.log(`[${STAGE_NAME}]   ${currCanonical} substring of ${prevCanonical} - APPOSITIVE`);
               return false;
+            }
+
+            // If completely different names (no overlap), they're different entities - keep both!
+            // Appositives are when the SAME entity is referred to differently (e.g., "Harry, the wizard")
+            // Different entities (McGonagall, Snape) should BOTH be kept
+            const prevLower = prevCanonical.toLowerCase();
+            const currLower = currCanonical.toLowerCase();
+            const prevTokens = new Set(prevLower.split(/\s+/));
+            const currTokens = new Set(currLower.split(/\s+/));
+            const hasSharedToken = [...prevTokens].some(t => currTokens.has(t) && t.length > 2);
+            if (!hasSharedToken) {
+              console.log(`[${STAGE_NAME}]   ${currCanonical} and ${prevCanonical} are different entities - keeping both`);
+              return true;
             }
 
             // If close enough, likely coordination

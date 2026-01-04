@@ -809,6 +809,16 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     predicate: 'lives_in',
     typeGuard: { subj: ['PERSON'], obj: ['PLACE'] }
   },
+  // "The X family lived at/in Y" - propagate to family members with surname X
+  // e.g., "The Weasley family lived at the Burrow" → lives_in for Molly Weasley, Arthur, etc.
+  {
+    regex: /\b(?:The\s+)?([A-Z][a-z]+)\s+family\s+(?:lived|dwelt|dwelled|resides|resided|lives)\s+(?:at|in)\s+(?:the\s+)?([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/gi,
+    predicate: 'lives_in',
+    typeGuard: { subj: ['PERSON'], obj: ['PLACE'] },
+    familyGroupPattern: true,  // Special handling: expand to family members
+    extractSubj: 1,  // Surname in group 1
+    extractObj: 2    // Place in group 2
+  },
 
   // === EMPLOYMENT PATTERNS ===
   // "X worked at/in/for Y"
@@ -1016,6 +1026,16 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     regex: /\b(He|She)\s+(?:(?:continued\s+(?:to\s+)?)|still\s+|kept\s+)?(?:taught|teaches|teach|lectured|lectures)\s+(?:[a-zA-Z]+\s+)?(?:at|in)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
     predicate: 'teaches_at',
     typeGuard: { subj: ['PERSON'], obj: ['ORG', 'PLACE'] }
+  },
+  // "Professor X taught [Subject]" without explicit school - infer from context
+  // e.g., "Professor Snape taught Potions" → teaches_at::Hogwarts (inferred from context)
+  {
+    regex: /\b((?:Professor|Dr\.|Doctor)\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:taught|teaches|lectured|lectures)\s+([A-Z][a-z]+)\b(?!\s+(?:at|in)\s+[A-Z])/g,
+    predicate: 'teaches_at',
+    typeGuard: { subj: ['PERSON'], obj: ['ORG'] },
+    contextInferredSchool: true,  // Special handling: resolve school from context
+    extractSubj: 1,  // Professor name
+    extractObj: 2    // Subject name (ignored - will resolve to school)
   },
 
   // === LOCATION PATTERNS ===
@@ -2902,7 +2922,32 @@ export function extractNarrativeRelations(
 
           console.log(`[LIST-EXTRACT] Extracted ${listItems.length} items: ${listItems.join(', ')}`);
 
-          // Create part_of relations for each list item
+          // For "Their" with child_of predicate, find the spouse to include BOTH parents
+          // e.g., "Their children included Ron" where "Their" resolves to Arthur
+          //       should create child_of(Ron, Arthur) AND child_of(Ron, Molly)
+          const containerEntities: EntityLookup[] = [containerEntity];
+          if (/^their$/i.test(container) && pattern.predicate === 'child_of') {
+            // Look for married_to relation involving containerEntity
+            for (const rel of relations) {
+              if (rel.pred === 'married_to') {
+                if (rel.subj === containerEntity.id) {
+                  const spouse = entities.find(e => e.id === rel.obj);
+                  if (spouse && !containerEntities.some(ce => ce.id === spouse.id)) {
+                    containerEntities.push(spouse);
+                    console.log(`[LIST-EXTRACT] Found spouse via married_to: ${spouse.canonical}`);
+                  }
+                } else if (rel.obj === containerEntity.id) {
+                  const spouse = entities.find(e => e.id === rel.subj);
+                  if (spouse && !containerEntities.some(ce => ce.id === spouse.id)) {
+                    containerEntities.push(spouse);
+                    console.log(`[LIST-EXTRACT] Found spouse via married_to: ${spouse.canonical}`);
+                  }
+                }
+              }
+            }
+          }
+
+          // Create relations for each list item to each container (parent)
           for (const itemName of listItems) {
             const itemEntity = matchEntity(itemName, entities);
 
@@ -2912,20 +2957,23 @@ export function extractNarrativeRelations(
               const evidenceEnd = matchEnd + listText.length;
               const evidenceText = text.slice(evidenceStart, evidenceEnd);
 
-              relations.push({
-                id: uuid(),
-                subj: itemEntity.id,
-                pred: pattern.predicate as any,
-                obj: containerEntity.id,
-                evidence: [{
-                  doc_id: docId,
-                  span: { start: evidenceStart, end: evidenceEnd, text: evidenceText },
-                  sentence_index: 0,
-                  source: 'RULE'
-                }],
-                confidence: 0.80,  // Slightly lower confidence for inferred relations
-                extractor: 'regex'
-              });
+              for (const parentEntity of containerEntities) {
+                console.log(`[LIST-EXTRACT]   → Creating ${pattern.predicate}: ${itemEntity.canonical} -> ${parentEntity.canonical}`);
+                relations.push({
+                  id: uuid(),
+                  subj: itemEntity.id,
+                  pred: pattern.predicate as any,
+                  obj: parentEntity.id,
+                  evidence: [{
+                    doc_id: docId,
+                    span: { start: evidenceStart, end: evidenceEnd, text: evidenceText },
+                    sentence_index: 0,
+                    source: 'RULE'
+                  }],
+                  confidence: 0.80,  // Slightly lower confidence for inferred relations
+                  extractor: 'regex'
+                });
+              }
             } else {
               console.log(`[LIST-EXTRACT]   ✗ No entity match for "${itemName}"`);
             }
@@ -3226,6 +3274,193 @@ export function extractNarrativeRelations(
               source: 'RULE'
             }],
             confidence: 0.85,
+            extractor: 'regex'
+          });
+        }
+        continue;
+      }
+
+      // Handle "The X family lived at/in Y" pattern - propagate to family members
+      // e.g., "The Weasley family lived at the Burrow" → lives_in for Molly Weasley, Bill Weasley, etc.
+      if ((pattern as any).familyGroupPattern) {
+        const surname = match[1];  // e.g., "Weasley"
+        const placeSurface = match[2];  // e.g., "Burrow"
+        if (!surname || !placeSurface) continue;
+
+        const matchStart = match.index;
+        const matchEnd = matchStart + match[0].length;
+
+        // Find the PLACE entity
+        const placeEntity = entities.find(e =>
+          e.type === 'PLACE' &&
+          e.canonical.toLowerCase() === placeSurface.toLowerCase()
+        );
+
+        if (!placeEntity) continue;
+
+        // Find all PERSON entities with this surname
+        const surnameLC = surname.toLowerCase();
+        const familyMembers = entities.filter(e =>
+          e.type === 'PERSON' &&
+          e.canonical.toLowerCase().includes(surnameLC)
+        );
+
+        // Also find spouses of family members (married_to relations already extracted)
+        const spouseIds = new Set<string>();
+        for (const rel of relations) {
+          if (rel.pred === 'married_to') {
+            const subj = entities.find(e => e.id === rel.subj);
+            const obj = entities.find(e => e.id === rel.obj);
+            // If subject is a family member, add object as spouse
+            if (subj && familyMembers.some(fm => fm.id === subj.id) && obj) {
+              spouseIds.add(obj.id);
+            }
+            // If object is a family member, add subject as spouse
+            if (obj && familyMembers.some(fm => fm.id === obj.id) && subj) {
+              spouseIds.add(subj.id);
+            }
+          }
+        }
+
+        // Combine family members and spouses
+        const residentsSet = new Set<string>(familyMembers.map(e => e.id));
+        for (const spouseId of spouseIds) {
+          residentsSet.add(spouseId);
+        }
+
+        // Create lives_in for each resident
+        for (const residentId of residentsSet) {
+          const resident = entities.find(e => e.id === residentId);
+          if (!resident) continue;
+
+          if (process.env.L3_DEBUG === '1') {
+            console.log(`[FAMILY-GROUP] Adding lives_in: ${resident.canonical} -> ${placeEntity.canonical} (via ${surname} family)`);
+          }
+
+          relations.push({
+            id: uuid(),
+            subj: residentId,
+            pred: 'lives_in',
+            obj: placeEntity.id,
+            evidence: [{
+              doc_id: docId,
+              span: { start: matchStart, end: matchEnd, text: match[0] },
+              sentence_index: 0,
+              source: 'RULE'
+            }],
+            confidence: 0.85,
+            extractor: 'regex'
+          });
+        }
+        continue;
+      }
+
+      // Handle "Professor X taught [Subject]" - infer school from context
+      // e.g., "Professor Snape taught Potions" when Hogwarts was mentioned earlier
+      if ((pattern as any).contextInferredSchool) {
+        const professorName = match[1];  // e.g., "Professor Snape"
+        if (!professorName) continue;
+
+        const matchStart = match.index;
+        const matchEnd = matchStart + match[0].length;
+
+        // Find the professor entity - prefer exact match, then longer names
+        const professorNameLC = professorName.toLowerCase();
+        const bareNameLC = professorName.replace(/^(?:Professor|Dr\.|Doctor)\s+/i, '').toLowerCase();
+
+        let professorEntity: EntityLookup | null = null;
+
+        if (process.env.L3_DEBUG === '1') {
+          console.log(`[CONTEXT-SCHOOL] Looking for professor: "${professorName}" (bare: "${bareNameLC}")`);
+          console.log(`[CONTEXT-SCHOOL] Available entities: ${entities.map(e => `${e.type}::${e.canonical} (aliases: ${e.aliases?.join(', ') || 'none'})`).join('; ')}`);
+        }
+
+        // Helper to check if a name matches the professor search term
+        const nameMatchesProfessor = (name: string): boolean =>
+          name.toLowerCase() === professorNameLC ||
+          name.toLowerCase().includes(bareNameLC) ||
+          bareNameLC.includes(name.toLowerCase());
+
+        // First, try exact match with full name in canonical or aliases (e.g., "Professor Snape")
+        professorEntity = entities.find(e =>
+          e.type === 'PERSON' && (
+            e.canonical.toLowerCase() === professorNameLC ||
+            e.aliases?.some(a => a.toLowerCase() === professorNameLC)
+          )
+        ) || null;
+
+        if (process.env.L3_DEBUG === '1' && professorEntity) {
+          console.log(`[CONTEXT-SCHOOL] Found exact match: ${professorEntity.canonical}`);
+        }
+
+        // If no exact match, try looking for entities that match via canonical or aliases
+        if (!professorEntity) {
+          const candidates = entities.filter(e =>
+            e.type === 'PERSON' && (
+              nameMatchesProfessor(e.canonical) ||
+              e.aliases?.some(nameMatchesProfessor)
+            )
+          );
+
+          if (process.env.L3_DEBUG === '1') {
+            console.log(`[CONTEXT-SCHOOL] Candidates: ${candidates.map(e => `${e.canonical} (aliases: ${e.aliases?.join(', ') || 'none'})`).join('; ')}`);
+          }
+
+          if (candidates.length > 0) {
+            // Sort by length descending - prefer longer/more complete names (check aliases too)
+            candidates.sort((a, b) => {
+              const aMaxLen = Math.max(a.canonical.length, ...(a.aliases?.map(x => x.length) || [0]));
+              const bMaxLen = Math.max(b.canonical.length, ...(b.aliases?.map(x => x.length) || [0]));
+              return bMaxLen - aMaxLen;
+            });
+            professorEntity = candidates[0];
+            if (process.env.L3_DEBUG === '1') {
+              console.log(`[CONTEXT-SCHOOL] Selected: ${professorEntity.canonical} (length: ${professorEntity.canonical.length})`);
+            }
+          }
+        }
+
+        if (!professorEntity) continue;
+
+        // Find the most recent school (ORG with school-like name) mentioned before this position
+        const textBefore = text.slice(0, matchStart);
+        let bestSchool: EntityLookup | null = null;
+        let bestPosition = -1;
+
+        // Look for entities that are schools/universities
+        const schoolPatterns = /\b(school|academy|university|college|institute|hogwarts)\b/i;
+
+        for (const entity of entities) {
+          if (entity.type !== 'ORG') continue;
+
+          // Check if entity name suggests it's a school
+          if (!schoolPatterns.test(entity.canonical)) continue;
+
+          // Find position in text
+          const entityPos = textBefore.toLowerCase().lastIndexOf(entity.canonical.toLowerCase());
+          if (entityPos > bestPosition) {
+            bestPosition = entityPos;
+            bestSchool = entity;
+          }
+        }
+
+        if (bestSchool) {
+          if (process.env.L3_DEBUG === '1') {
+            console.log(`[CONTEXT-SCHOOL] Adding teaches_at: ${professorEntity.canonical} (id: ${professorEntity.id}) -> ${bestSchool.canonical} (id: ${bestSchool.id}) (inferred from context)`);
+          }
+
+          relations.push({
+            id: uuid(),
+            subj: professorEntity.id,
+            pred: 'teaches_at',
+            obj: bestSchool.id,
+            evidence: [{
+              doc_id: docId,
+              span: { start: matchStart, end: matchEnd, text: match[0] },
+              sentence_index: 0,
+              source: 'RULE'
+            }],
+            confidence: 0.75,  // Lower confidence for context-inferred relations
             extractor: 'regex'
           });
         }

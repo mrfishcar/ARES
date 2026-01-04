@@ -164,12 +164,27 @@ const testCases: TestCase[] = [
       relations: [
         { subj: 'Molly Weasley', pred: 'lives_in', obj: 'Burrow' },
         { subj: 'Arthur', pred: 'lives_in', obj: 'Burrow' },
+        { subj: 'Bill Weasley', pred: 'lives_in', obj: 'Burrow' },
         { subj: 'Molly Weasley', pred: 'married_to', obj: 'Arthur' },
         { subj: 'Arthur', pred: 'married_to', obj: 'Molly Weasley' },
+        // Children of Arthur and Molly
         { subj: 'Ron', pred: 'child_of', obj: 'Molly Weasley' },
         { subj: 'Ron', pred: 'child_of', obj: 'Arthur' },
         { subj: 'Ginny', pred: 'child_of', obj: 'Molly Weasley' },
-        { subj: 'Ginny', pred: 'child_of', obj: 'Arthur' }
+        { subj: 'Ginny', pred: 'child_of', obj: 'Arthur' },
+        { subj: 'Fred', pred: 'child_of', obj: 'Molly Weasley' },
+        { subj: 'Fred', pred: 'child_of', obj: 'Arthur' },
+        { subj: 'George', pred: 'child_of', obj: 'Molly Weasley' },
+        { subj: 'George', pred: 'child_of', obj: 'Arthur' },
+        // Inverse parent_of relations
+        { subj: 'Molly Weasley', pred: 'parent_of', obj: 'Ron' },
+        { subj: 'Arthur', pred: 'parent_of', obj: 'Ron' },
+        { subj: 'Molly Weasley', pred: 'parent_of', obj: 'Ginny' },
+        { subj: 'Arthur', pred: 'parent_of', obj: 'Ginny' },
+        { subj: 'Molly Weasley', pred: 'parent_of', obj: 'Fred' },
+        { subj: 'Arthur', pred: 'parent_of', obj: 'Fred' },
+        { subj: 'Molly Weasley', pred: 'parent_of', obj: 'George' },
+        { subj: 'Arthur', pred: 'parent_of', obj: 'George' }
       ]
     }
   },
@@ -209,7 +224,8 @@ const testCases: TestCase[] = [
       entities: [
         { text: 'Harry', type: 'PERSON' },
         { text: 'Ron', type: 'PERSON' },
-        { text: 'Hermione', type: 'PERSON' }
+        { text: 'Hermione', type: 'PERSON' },
+        { text: 'Death Eaters', type: 'ORG' }
       ],
       relations: [
         { subj: 'Harry', pred: 'friends_with', obj: 'Ron' },
