@@ -12,7 +12,7 @@
  * This is the foundation stage - all downstream stages depend on its output.
  */
 
-import { segmentDocument } from '../segmenter';
+import { segmentDocument, normalizeWhitespace } from '../segmenter';
 import { splitIntoSentences } from '../segment';
 import type { ParsedSentence } from '../extract/parse-types';
 import type {
@@ -46,8 +46,14 @@ export async function runDocumentParseStage(
       throw new Error('Invalid input: fullText must be a non-empty string');
     }
 
+    // IMPORTANT: Normalize text first to ensure segment positions match fullText positions
+    // The segmenter internally normalizes, so we must use the same normalized text
+    // throughout the pipeline to avoid character offset mismatches
+    const normalizedText = normalizeWhitespace(input.fullText);
+
     // 1. Segment the document into chunks with context windows
-    const segments: Segment[] = segmentDocument(input.docId, input.fullText);
+    // Note: segmentDocument also normalizes, so this is consistent
+    const segments: Segment[] = segmentDocument(input.docId, normalizedText);
 
     // Sort segments deterministically (already sorted by segmentDocument, but be explicit)
     segments.sort((a, b) => {
@@ -60,7 +66,8 @@ export async function runDocumentParseStage(
     );
 
     // 2. Split into sentences for proximity analysis and coreference
-    const sentences: Sentence[] = splitIntoSentences(input.fullText);
+    // Use normalized text to ensure sentence positions match segment positions
+    const sentences: Sentence[] = splitIntoSentences(normalizedText);
 
     console.log(
       `[${STAGE_NAME}] Split into ${sentences.length} sentences`
@@ -78,7 +85,7 @@ export async function runDocumentParseStage(
 
     return {
       docId: input.docId,
-      fullText: input.fullText,
+      fullText: normalizedText,  // Use normalized text to match segment positions
       segments,
       sentences,
       parseCache

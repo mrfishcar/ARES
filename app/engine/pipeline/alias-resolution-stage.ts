@@ -76,6 +76,17 @@ export async function runAliasResolutionStage(
         entity.eid = resolution.eid;
         entity.aid = resolution.aid;
 
+        // IMPORTANT: Update entity's canonical to match the registry's current canonical
+        // This ensures entities display the most complete form (e.g., "Dr. Wilson" instead of "Wilson")
+        const registryCanonical = eidRegistry.getCanonical(resolution.eid);
+        if (registryCanonical && registryCanonical !== entity.canonical) {
+          const oldCanonical = entity.canonical;
+          entity.canonical = registryCanonical;
+          console.log(
+            `[${STAGE_NAME}] Updated canonical: "${oldCanonical}" → "${registryCanonical}" (EID ${resolution.eid})`
+          );
+        }
+
         console.log(
           `[${STAGE_NAME}] Resolved "${entity.canonical}" → EID ${resolution.eid} (method: ${resolution.method}, confidence: ${resolution.confidence.toFixed(2)})`
         );

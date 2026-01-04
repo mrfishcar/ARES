@@ -163,6 +163,10 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
   'goodbye',
   'thanks',
   'yes', 'no',
+  'please', 'honey',  // Common interjections that appear sentence-initial
+
+  // Abstract concepts / sins / states that shouldn't be entities
+  'gluttony', 'legend', 'blood', 'bullet', 'steamy',
 
   // Discourse markers
   'however', 'therefore', 'moreover', 'furthermore', 'nevertheless',
@@ -218,6 +222,7 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
 
   // Common gerunds/present participles
   'running', 'walking', 'talking', 'fighting', 'waiting', 'looking', 'thinking',
+  'littering', 'driving', 'caged', 'growing', 'perched', 'sitting', 'becoming',  // More common gerunds/participles
 
   // Common adjectives
   'beautiful', 'terrible', 'wonderful', 'horrible', 'amazing', 'awful',
@@ -235,6 +240,7 @@ const GLOBAL_ENTITY_STOPWORDS = new Set([
   'man', 'woman', 'boy', 'girl', 'child', 'children', 'friend', 'friends',
   'king', 'queen', 'prince', 'princess', 'lord', 'lady',
   'sleeping', 'eating', 'drinking',
+  'animals', 'animal', 'layers', 'layer', 'land', 'lands',  // Generic nouns from real-world text
   'place', 'places', 'somewhere', 'anywhere', 'nowhere', 'everywhere',
   'time', 'times', 'day', 'days', 'year', 'years', 'moment', 'moments',
   'morning', 'evening', 'night', 'afternoon', 'noon', 'midnight', 'tonight',
@@ -427,6 +433,7 @@ function looksLikeSurname(word: string): boolean {
     'ner', 'ter',               // Gardener, Carpenter, etc.
     'ey', 'ay',                 // Finley, Murray, etc.
     'tt', 'ott',                // Scott, Abbott, etc.
+    'ard', 'gard',              // Beauregard, Bernard, Gerard, Blanchard, Richard, etc.
     // Common vowel endings for non-Anglo surnames
     'ama', 'ima', 'uma',        // Obama, Fujima, etc.
     'aro', 'ero', 'iro', 'oro', 'uro', // Castro, Shapiro, etc.
@@ -451,9 +458,44 @@ function looksLikeSurname(word: string): boolean {
 }
 
 /**
- * Check if name looks like two first names mashed together (no surname)
+ * Common first names - if the first word is a known first name,
+ * assume the second word is a surname (evidence-based detection)
  */
-function looksLikeTwoFirstNames(name: string): boolean {
+const COMMON_FIRST_NAMES = new Set([
+  // Male names
+  'james', 'john', 'robert', 'michael', 'william', 'david', 'richard', 'joseph',
+  'thomas', 'charles', 'christopher', 'daniel', 'matthew', 'anthony', 'mark',
+  'donald', 'steven', 'paul', 'andrew', 'joshua', 'kenneth', 'kevin', 'brian',
+  'george', 'timothy', 'ronald', 'edward', 'jason', 'jeffrey', 'ryan', 'jacob',
+  'gary', 'nicholas', 'eric', 'jonathan', 'stephen', 'larry', 'justin', 'scott',
+  'brandon', 'benjamin', 'samuel', 'raymond', 'gregory', 'frank', 'alexander',
+  'patrick', 'jack', 'dennis', 'jerry', 'peter', 'henry', 'carl', 'arthur',
+  'harry', 'ron', 'fred', 'tom', 'bob', 'jim', 'joe', 'bill', 'mike', 'dave',
+  // Female names
+  'mary', 'patricia', 'jennifer', 'linda', 'barbara', 'elizabeth', 'susan',
+  'jessica', 'sarah', 'karen', 'lisa', 'nancy', 'betty', 'margaret', 'sandra',
+  'ashley', 'kimberly', 'emily', 'donna', 'michelle', 'dorothy', 'carol',
+  'amanda', 'melissa', 'deborah', 'stephanie', 'rebecca', 'sharon', 'laura',
+  'cynthia', 'kathleen', 'amy', 'angela', 'shirley', 'anna', 'brenda', 'pamela',
+  'emma', 'nicole', 'helen', 'samantha', 'katherine', 'christine', 'debra',
+  'rachel', 'carolyn', 'janet', 'catherine', 'maria', 'heather', 'diane',
+  'jane', 'anne', 'ann', 'kate', 'lily', 'rose', 'grace', 'alice', 'eva',
+  // Gender-neutral names
+  'alex', 'taylor', 'jordan', 'casey', 'riley', 'morgan', 'jamie', 'drew'
+]);
+
+/**
+ * Check if name looks like two first names mashed together (no surname)
+ *
+ * This filter was designed for biblical texts where names like "Elimelech Naomi"
+ * appear. It should NOT trigger on legitimate "FirstName LastName" combinations.
+ *
+ * Evidence-based detection:
+ * - If first word is a known common first name → assume second is surname
+ * - If entity has NER backing as PERSON → trust the NER, don't split
+ * - Only split if BOTH words look like first names AND no evidence suggests otherwise
+ */
+function looksLikeTwoFirstNames(name: string, hasNERSupport: boolean = false): boolean {
   const words = name.split(/\s+/).filter(Boolean);
 
   // Must be exactly 2 words
@@ -462,14 +504,49 @@ function looksLikeTwoFirstNames(name: string): boolean {
   // Both must be capitalized
   if (!words.every(w => /^[A-Z]/.test(w))) return false;
 
-  // Check if second word looks like a surname
-  const secondWord = words[1];
+  const [firstWord, secondWord] = words;
+  const firstLower = firstWord.toLowerCase();
+  const secondLower = secondWord.toLowerCase();
+
+  // EVIDENCE 1: If entity has NER backing, trust it (don't split)
+  // NER systems are trained to recognize "FirstName LastName" patterns
+  if (hasNERSupport) {
+    return false;
+  }
+
+  // EVIDENCE 2: Check if second word looks like a surname by suffix/prefix
   if (looksLikeSurname(secondWord)) {
     return false; // Valid: "Harry Potter" (Potter is a surname)
   }
 
-  // Two capitalized words, second is NOT a surname
-  // Pattern: "Elimelech Naomi" (two first names - REJECT)
+  // EVIDENCE 3: If BOTH words are known common first names → definitely split
+  // e.g., "Mary Elizabeth" → both are clearly first names → split
+  if (COMMON_FIRST_NAMES.has(firstLower) && COMMON_FIRST_NAMES.has(secondLower)) {
+    return true;
+  }
+
+  // EVIDENCE 4: If first word is a known common first name AND second word is unknown,
+  // check if second word is suspiciously short (< 5 chars) or has first-name-like endings
+  // Only preserve as surname if it's reasonably long or has surname-like structure
+  if (COMMON_FIRST_NAMES.has(firstLower)) {
+    // Short unknown words after a first name could still be first names
+    // e.g., biblical names like "Esau", "Naomi"
+    // Only treat as surname if it's longer (6+ chars) suggesting a real surname
+    if (secondWord.length >= 6) {
+      return false; // Long enough to be a surname: "Andrew Beauregard"
+    }
+    // Short words could be either - fall through to default split behavior
+  }
+
+  // EVIDENCE 5: If second word is a known first name but first is not,
+  // this could be "Surname Firstname" (unusual) or just two first names
+  // Be conservative: don't split
+  if (COMMON_FIRST_NAMES.has(secondLower)) {
+    return false;
+  }
+
+  // Neither word is a known first name, and second doesn't look like a surname
+  // This is likely the biblical "two first names" pattern → split
   return true;
 }
 
@@ -1031,10 +1108,11 @@ export function filterLowQualityEntities(
     }
 
     // 9. Handle entities with two first names (biblical text issue - FILTER 1)
-    if (entity.type === 'PERSON' && looksLikeTwoFirstNames(name)) {
+    // Pass NER support flag for evidence-based detection
+    if (entity.type === 'PERSON' && looksLikeTwoFirstNames(name, hasNERSupport)) {
       // Instead of rejecting, split into constituent parts
       if (process.env.L4_DEBUG === '1') {
-        console.log(`[QUALITY-FILTER] Splitting PERSON "${name}" into constituent parts`);
+        console.log(`[QUALITY-FILTER] Splitting PERSON "${name}" into constituent parts (NER=${hasNERSupport})`);
       }
       const splitEntities = splitTwoFirstNamesEntity(entity);
       filtered.push(...splitEntities);
@@ -1126,7 +1204,7 @@ export function getFilterStats(
       stats.removedByReason.invalidDate++;
     } else if (isTooGeneric(name)) {
       stats.removedByReason.tooGeneric++;
-    } else if (entity.type === 'PERSON' && looksLikeTwoFirstNames(name)) {
+    } else if (entity.type === 'PERSON' && looksLikeTwoFirstNames(name, Boolean(entity.attrs?.nerLabel))) {
       stats.removedByReason.twoFirstNames++;
     } else if (isRoleBasedName(name)) {
       stats.removedByReason.roleDescriptor++;

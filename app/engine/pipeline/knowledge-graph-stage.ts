@@ -42,9 +42,15 @@ const RACE_WHITELIST = new Set([
 
 const RACE_BLOCKLIST = new Set(['barty', 'police', 'only', 'just']);
 
-// Junk person singletons
+// Junk person singletons - single-word entities that are almost never valid person names
+// Note: "souls" and "steamy" are fragments of compound entities ("Pool of Souls", "Bullet and Steamy")
+// that may appear as separate entities due to alias resolution
 const JUNK_PERSON_SINGLETONS = new Set([
-  'ahead', 'momentarily', 'darkness', 'defeated', 'legend', 'librarian'
+  'ahead', 'momentarily', 'darkness', 'defeated', 'legend', 'librarian',
+  // Fragment words that should only appear as part of compound entities
+  'souls', 'steamy', 'bullet',
+  // Common words that get extracted as PERSON
+  'maybe', 'sounds', 'a', 'the', 'city'
 ]);
 
 function isHeadingName(canonical: string): boolean {
@@ -93,13 +99,68 @@ function isRaceNoise(entity: Entity, mentionCount: number): boolean {
   return true;
 }
 
+// Words that are ALWAYS junk as PERSON entities, regardless of mention count
+const ALWAYS_JUNK_PERSON_WORDS = new Set([
+  'souls', 'steamy', 'bullet',  // Fragments of compound entities
+  'maybe', 'sounds', 'a', 'the', 'city',  // Common words
+]);
+
 function isJunkPersonSingleton(entity: Entity, mentionCount: number): boolean {
-  if (entity.type !== 'PERSON' || mentionCount !== 1) return false;
+  if (entity.type !== 'PERSON') return false;
 
   const tokens = entity.canonical.trim().split(/\s+/);
   if (tokens.length !== 1) return false;
 
-  return JUNK_PERSON_SINGLETONS.has(tokens[0].toLowerCase());
+  const word = tokens[0].toLowerCase();
+
+  // Always filter these regardless of mention count
+  if (ALWAYS_JUNK_PERSON_WORDS.has(word)) {
+    return true;
+  }
+
+  // Only filter other junk singletons if single mention
+  if (mentionCount === 1 && JUNK_PERSON_SINGLETONS.has(word)) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Check if a single-word entity is a fragment of a compound entity.
+ * This handles cases like:
+ * - "Souls" being a fragment of "Pool of Souls"
+ * - "Steamy" being a fragment of "Bullet and Steamy"
+ * - "Wilson" being a fragment of "Dr. Wilson"
+ *
+ * @param entity - The entity to check
+ * @param allEntities - All entities in the current extraction
+ * @returns The compound entity name if this is a fragment, null otherwise
+ */
+function isFragmentOfCompound(entity: Entity, allEntities: Entity[]): string | null {
+  const tokens = entity.canonical.trim().split(/\s+/);
+
+  // Only check single-word entities
+  if (tokens.length !== 1) return null;
+
+  const singleWord = tokens[0].toLowerCase();
+
+  // Check if this word appears as a token in any multi-word entity
+  for (const other of allEntities) {
+    if (other.id === entity.id) continue;
+
+    const otherTokens = other.canonical.trim().split(/\s+/);
+    if (otherTokens.length < 2) continue;
+
+    // Check if single word matches any token in the compound name
+    for (const token of otherTokens) {
+      if (token.toLowerCase() === singleWord) {
+        return other.canonical;
+      }
+    }
+  }
+
+  return null;
 }
 
 /**
@@ -171,7 +232,16 @@ export async function runKnowledgeGraphStage(
       return inRelation || highMentionCount;
     });
 
-    // Apply hygiene filters
+    // Apply hygiene filters (including fragment detection)
+    // Note: We need the full entity list to detect fragments, so we do this before filtering
+    const fragmentMap = new Map<string, string>();  // entityId -> compoundName
+    for (const entity of filteredEntities) {
+      const compound = isFragmentOfCompound(entity, filteredEntities);
+      if (compound) {
+        fragmentMap.set(entity.id, compound);
+      }
+    }
+
     filteredEntities = filteredEntities.filter(entity => {
       const mentionCount = entityMentionCounts.get(entity.id) || 0;
 
@@ -179,6 +249,13 @@ export async function runKnowledgeGraphStage(
       retagEventishPerson(entity);
       if (isRaceNoise(entity, mentionCount)) return false;
       if (isJunkPersonSingleton(entity, mentionCount)) return false;
+
+      // Fragment filter: Remove single-word entities that are part of compound entities
+      const compoundName = fragmentMap.get(entity.id);
+      if (compoundName) {
+        console.log(`[KG-FRAGMENT-FILTER] Removing "${entity.canonical}" (fragment of: ${compoundName})`);
+        return false;
+      }
 
       return true;
     });

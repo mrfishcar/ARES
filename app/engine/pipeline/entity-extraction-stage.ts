@@ -241,6 +241,12 @@ export async function runEntityExtractionStage(
 
       // Filter and remap entities/spans that fall within the actual segment bounds
       for (const entity of entities) {
+        // Debug: Track Andrew Beauregard
+        const isAndrew = entity.canonical.toLowerCase().includes('andrew');
+        if (isAndrew) {
+          console.log(`[TRACE-ANDREW] Processing entity: "${entity.canonical}" (${entity.type})`);
+        }
+
         // Find all spans for this entity
         const entitySpans = spans.filter(s => s.entity_id === entity.id);
 
@@ -267,7 +273,14 @@ export async function runEntityExtractionStage(
           });
 
         if (segmentSpans.length === 0) {
+          if (isAndrew) {
+            console.log(`[TRACE-ANDREW] ❌ No spans within segment bounds - SKIPPED`);
+          }
           continue;
+        }
+
+        if (isAndrew) {
+          console.log(`[TRACE-ANDREW] ✅ Has ${segmentSpans.length} spans within segment`);
         }
 
         // Derive canonical name from the LONGEST span (most complete name form)
@@ -307,6 +320,10 @@ export async function runEntityExtractionStage(
         if (isOriginalProperNoun && isDerivedDescriptor) {
           // Keep the proper noun as canonical, add descriptor as alias
           canonicalText = entityOriginalCanonical;
+        }
+
+        if (isAndrew) {
+          console.log(`[TRACE-ANDREW] Derived canonicalText: "${canonicalText}" from raw: "${canonicalRaw}"`);
         }
 
         // Check if we've seen this entity before (by type + canonical)
@@ -409,6 +426,170 @@ export async function runEntityExtractionStage(
     console.log(
       `[${STAGE_NAME}] Segment extraction: ${allEntities.length} entities, ${allSpans.length} spans`
     );
+
+    // ========================================================================
+    // BUILT-IN PATTERN EXTRACTION (Always enabled)
+    // Catches entities that spaCy doesn't recognize (fictional names, places, orgs)
+    // ========================================================================
+
+    let builtInPatternCount = 0;
+
+    // Log first 200 chars of fullText for debugging
+    console.log(`[${STAGE_NAME}] PATTERN-DEBUG: fullText first 200 chars: "${input.fullText.slice(0, 200)}"`);
+
+    // Pattern 1: Appositive family patterns - "his father, FirstName LastName"
+    // This extracts PERSON entities from appositive constructions
+    const appositivePattern = /\b(?:his|her|their)\s+(?:father|mother|brother|sister|son|daughter|uncle|aunt|cousin|grandfather|grandmother|husband|wife),?\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b/g;
+    let appMatch: RegExpExecArray | null;
+    console.log(`[${STAGE_NAME}] PATTERN-DEBUG: Testing appositive pattern on ${input.fullText.length} chars`);
+    while ((appMatch = appositivePattern.exec(input.fullText)) !== null) {
+      const nameCandidate = appMatch[1].trim();
+      // Skip if it's a common word
+      const lowerName = nameCandidate.toLowerCase();
+      console.log(`[${STAGE_NAME}] APPOSITIVE-MATCH: "${appMatch[0]}" -> captured="${nameCandidate}"`);
+      if (['the', 'a', 'an', 'this', 'that'].includes(lowerName)) continue;
+
+      const entityKey = `PERSON::${lowerName}`;
+      console.log(`[${STAGE_NAME}] APPOSITIVE-DEBUG: entityKey="${entityKey}", exists=${entityMap.has(entityKey)}`);
+      if (!entityMap.has(entityKey)) {
+        const newEntity: Entity = {
+          id: uuid(),
+          type: 'PERSON',
+          canonical: nameCandidate,
+          aliases: [],
+          attrs: { extracted_by: 'appositive_pattern' },
+          created_at: new Date().toISOString()
+        };
+        entityMap.set(entityKey, newEntity);
+        allEntities.push(newEntity);
+
+        // Find all occurrences of this name in the text
+        const nameRegex = new RegExp(`\\b${escapeRegex(nameCandidate)}\\b`, 'g');
+        let nameMatch: RegExpExecArray | null;
+        while ((nameMatch = nameRegex.exec(input.fullText)) !== null) {
+          allSpans.push({
+            entity_id: newEntity.id,
+            start: nameMatch.index,
+            end: nameMatch.index + nameMatch[0].length
+          });
+        }
+        builtInPatternCount++;
+        console.log(`[${STAGE_NAME}] APPOSITIVE-PATTERN: Extracted "${nameCandidate}" as PERSON`);
+      }
+    }
+
+    // Pattern 2: Mr./Mrs./Dr. + Name patterns - "Mr. Beauregard"
+    // This extracts PERSON entities from honorific patterns
+    const honorificPattern = /\b(Mr\.?|Mrs\.?|Ms\.?|Dr\.?|Miss)\s+([A-Z][a-z]+)\b/g;
+    let honMatch: RegExpExecArray | null;
+    while ((honMatch = honorificPattern.exec(input.fullText)) !== null) {
+      const honorific = honMatch[1];
+      const surname = honMatch[2];
+      const fullName = `${honorific} ${surname}`;
+      const lowerName = fullName.toLowerCase().replace('.', '');
+
+      const entityKey = `PERSON::${lowerName}`;
+      if (!entityMap.has(entityKey)) {
+        const newEntity: Entity = {
+          id: uuid(),
+          type: 'PERSON',
+          canonical: fullName,
+          aliases: [],
+          attrs: { extracted_by: 'honorific_pattern' },
+          created_at: new Date().toISOString()
+        };
+        entityMap.set(entityKey, newEntity);
+        allEntities.push(newEntity);
+        allSpans.push({
+          entity_id: newEntity.id,
+          start: honMatch.index,
+          end: honMatch.index + honMatch[0].length
+        });
+        builtInPatternCount++;
+        console.log(`[${STAGE_NAME}] HONORIFIC-PATTERN: Extracted "${fullName}" as PERSON`);
+      }
+    }
+
+    // Pattern 3: Place patterns - "[Adjective] Hall/House/Court/Room/Wing"
+    // This extracts PLACE entities for building names
+    const placePattern = /\b([A-Z][a-z]+)\s+(Hall|House|Court|Room|Wing|Tower|Castle|Manor|Abbey|Cathedral|Church|Temple|Palace|Keep|Dungeon)\b/g;
+    let placeMatch: RegExpExecArray | null;
+    while ((placeMatch = placePattern.exec(input.fullText)) !== null) {
+      const placeName = placeMatch[0].trim();
+      const lowerPlace = placeName.toLowerCase();
+
+      const entityKey = `PLACE::${lowerPlace}`;
+      if (!entityMap.has(entityKey)) {
+        const newEntity: Entity = {
+          id: uuid(),
+          type: 'PLACE',
+          canonical: placeName,
+          aliases: [],
+          attrs: { extracted_by: 'place_pattern' },
+          created_at: new Date().toISOString()
+        };
+        entityMap.set(entityKey, newEntity);
+        allEntities.push(newEntity);
+
+        // Find all occurrences
+        const placeRegex = new RegExp(`\\b${escapeRegex(placeName)}\\b`, 'gi');
+        let pm: RegExpExecArray | null;
+        while ((pm = placeRegex.exec(input.fullText)) !== null) {
+          allSpans.push({
+            entity_id: newEntity.id,
+            start: pm.index,
+            end: pm.index + pm[0].length
+          });
+        }
+        builtInPatternCount++;
+        console.log(`[${STAGE_NAME}] PLACE-PATTERN: Extracted "${placeName}" as PLACE`);
+      }
+    }
+
+    // Pattern 4: Group/Club patterns - "[Adjective] [Plural Noun]s"
+    // This extracts ORG entities for groups like "Preppy Pinks", "Slytherin Seekers"
+    const groupPattern = /\b(the\s+)?([A-Z][a-z]+)\s+([A-Z][a-z]+s)\b/g;
+    let groupMatch: RegExpExecArray | null;
+    while ((groupMatch = groupPattern.exec(input.fullText)) !== null) {
+      // Skip "the" prefix
+      const groupName = (groupMatch[2] + ' ' + groupMatch[3]).trim();
+      const lowerGroup = groupName.toLowerCase();
+
+      // Skip common phrases
+      const skipWords = ['united states', 'great wall', 'junior high'];
+      if (skipWords.some(sw => lowerGroup.includes(sw))) continue;
+
+      const entityKey = `ORG::${lowerGroup}`;
+      if (!entityMap.has(entityKey)) {
+        const newEntity: Entity = {
+          id: uuid(),
+          type: 'ORG',
+          canonical: groupName,
+          aliases: [],
+          attrs: { extracted_by: 'group_pattern' },
+          created_at: new Date().toISOString()
+        };
+        entityMap.set(entityKey, newEntity);
+        allEntities.push(newEntity);
+
+        // Find all occurrences
+        const groupRegex = new RegExp(`\\b(?:the\\s+)?${escapeRegex(groupName)}\\b`, 'gi');
+        let gm: RegExpExecArray | null;
+        while ((gm = groupRegex.exec(input.fullText)) !== null) {
+          allSpans.push({
+            entity_id: newEntity.id,
+            start: gm.index,
+            end: gm.index + gm[0].length
+          });
+        }
+        builtInPatternCount++;
+        console.log(`[${STAGE_NAME}] GROUP-PATTERN: Extracted "${groupName}" as ORG`);
+      }
+    }
+
+    if (builtInPatternCount > 0) {
+      console.log(`[${STAGE_NAME}] Built-in patterns extracted ${builtInPatternCount} new entities`);
+    }
 
     // ========================================================================
     // PATTERN-BASED EXTRACTION (Optional)

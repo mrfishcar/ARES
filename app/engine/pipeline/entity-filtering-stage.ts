@@ -22,14 +22,762 @@ import {
   getFilterStats,
   type EntityQualityConfig
 } from '../entity-quality-filter';
+import type { Entity } from '../schema';
 import type {
   EntityFilteringInput,
   EntityFilteringOutput,
   FilterStats,
-  EntityFilterConfig
+  EntityFilterConfig,
+  Span
 } from './types';
 
 const STAGE_NAME = 'EntityFilteringStage';
+
+/**
+ * Evidence-based filtering: Filter single-mention entities that are very likely junk
+ *
+ * RESURRECTION LOGIC: Words can be identified as potential junk, but "resurrected"
+ * if there's evidence they're being used as proper names:
+ * - Appears capitalized mid-sentence
+ * - Multiple mentions in the document
+ * - Used as noun of direct address (vocative)
+ *
+ * This is more robust than static stopword lists because context determines whether
+ * a word like "Honey" or "Steamy" is a common noun or a proper name/nickname.
+ */
+function filterByEvidence(
+  entities: Entity[],
+  spans: Span[],
+  fullText?: string
+): { filtered: Entity[]; removed: number } {
+  // Only apply evidence filtering in documents with a reasonable number of entities
+  // (very short test cases with < 5 entities shouldn't be filtered this way)
+  if (entities.length < 5) {
+    return { filtered: entities, removed: 0 };
+  }
+
+  // Count mentions per entity
+  const mentionCounts = new Map<string, number>();
+  for (const span of spans) {
+    const count = mentionCounts.get(span.entity_id) || 0;
+    mentionCounts.set(span.entity_id, count + 1);
+  }
+
+  // VERY SPECIFIC junk patterns - only filter clear false positives
+  const CLEAR_JUNK_PATTERNS = [
+    /^[A-Z][a-z]+(ing)$/, // Capitalized gerunds like "Learning", "Growing"
+    /^[A-Z][a-z]+(ed)$/, // Capitalized participles like "Caged", "Perched"
+    /^(The|A|An)\s+[a-z]/i, // Articles followed by lowercase
+    /^[A-Z][a-z]*-$/, // Words ending with hyphen like "Ugh-", "Preston-"
+    /^[A-Z][a-z]+-ly$/i, // Adverb-like forms like "Preston-ly"
+    /^That's\s/i, // Dialogue artifacts like "That's Beau Adams"
+  ];
+
+  // Potential junk words - but can be RESURRECTED if evidence exists
+  // These are words that are often common nouns but CAN be names/nicknames
+  const POTENTIAL_JUNK_WORDS = new Set([
+    'learning', 'growing', 'caged', 'perched', 'littering', 'driving', 'sitting', 'becoming',
+    'famous', 'animals', 'legend', 'blood', 'bullet', 'layers',
+    'gluttony', 'land', 'please', 'hello', 'help', 'shh', 'listen', 'ugh', 'nonsense',
+    // Exclamatory words that may be incorrectly extracted
+    'god', 'lord', 'jesus', 'christ', 'heavens', 'gosh',
+    // Chapter title fragments
+    'song', 'chapter', 'part', 'book', 'section', 'prologue', 'epilogue',
+    // Fragment words that are part of compound proper names
+    'souls', 'steamy',
+    // Interjections and common words often mistaken for names
+    'maybe', 'sounds', 'officers', 'cries', 'teachers'
+  ]);
+
+  /**
+   * Check if a word has resurrection signals - evidence it's a proper name
+   */
+  function hasResurrectionSignals(word: string, entityId: string): boolean {
+    // SIGNAL 1: Multiple mentions
+    const mentions = mentionCounts.get(entityId) || 0;
+    if (mentions >= 2) {
+      console.log(`[RESURRECTION] "${word}" has ${mentions} mentions - resurrecting`);
+      return true;
+    }
+
+    // SIGNAL 2: Used as noun of direct address (vocative)
+    // Pattern: "Word," at start of speech or ", Word" or ", Word."
+    if (fullText) {
+      const wordCap = word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      // Check for vocative patterns: "Honey," or ", Honey" or ", Honey."
+      const vocativePatterns = [
+        new RegExp(`"${wordCap},`, 'i'),           // "Honey,
+        new RegExp(`, ${wordCap}[,.]?["']`, 'i'),  // , Honey." or , Honey,"
+        new RegExp(`, ${wordCap}[!?]`, 'i'),       // , Honey! or , Honey?
+      ];
+
+      for (const pattern of vocativePatterns) {
+        if (pattern.test(fullText)) {
+          console.log(`[RESURRECTION] "${word}" appears in vocative/direct address - resurrecting`);
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  const filtered: Entity[] = [];
+  let removed = 0;
+
+  for (const entity of entities) {
+    const mentionCount = mentionCounts.get(entity.id) || 0;
+    const canonical = entity.canonical;
+    const canonicalLower = canonical.toLowerCase();
+
+    // Keep entities with 2+ mentions - they're referenced multiple times
+    if (mentionCount >= 2) {
+      filtered.push(entity);
+      continue;
+    }
+
+    // Only filter PERSON entities - places and orgs are rarely junk
+    if (entity.type !== 'PERSON') {
+      filtered.push(entity);
+      continue;
+    }
+
+    // Check if it's a potential junk word - but check for resurrection first
+    if (POTENTIAL_JUNK_WORDS.has(canonicalLower)) {
+      if (hasResurrectionSignals(canonicalLower, entity.id)) {
+        console.log(`[EVIDENCE-FILTER] Keeping resurrected name: "${canonical}"`);
+        filtered.push(entity);
+        continue;
+      }
+      console.log(`[EVIDENCE-FILTER] Removing potential junk word: "${canonical}"`);
+      removed++;
+      continue;
+    }
+
+    // Check if matches clear junk pattern
+    if (CLEAR_JUNK_PATTERNS.some(p => p.test(canonical))) {
+      console.log(`[EVIDENCE-FILTER] Removing pattern-matched junk: "${canonical}"`);
+      removed++;
+      continue;
+    }
+
+    // Keep by default - proper names like "Gandalf" are valid
+    filtered.push(entity);
+  }
+
+  return { filtered, removed };
+}
+
+/**
+ * Merge descriptor prefix entities with adjacent name entities.
+ *
+ * When NER extracts "Mad" and "Addy" as separate entities, this function
+ * detects they are adjacent in the text and merges them into "Mad Addy".
+ *
+ * DESCRIPTOR PREFIXES include: Mad, Big, Little, Old, Young, Fat, Slim,
+ * Tall, Short, Tiny, Red, Black, Wild, Crazy, Sweet, Dear, Poor, Good, Bad
+ *
+ * Examples:
+ * - "Mad" + "Addy" → "Mad Addy"
+ * - "Big" + "Jim" → "Big Jim"
+ * - "Old" + "Tom" → "Old Tom"
+ */
+function mergeDescriptorNamePairs(
+  entities: Entity[],
+  spans: Span[],
+  fullText?: string
+): { entities: Entity[]; spans: Span[]; mergedCount: number } {
+  // Descriptor prefixes that can combine with names
+  const DESCRIPTOR_PREFIXES = new Set([
+    'mad', 'big', 'little', 'old', 'young', 'fat', 'slim', 'tall', 'short',
+    'tiny', 'red', 'black', 'wild', 'crazy', 'sweet', 'dear', 'poor', 'good', 'bad'
+  ]);
+
+  // Log descriptor entities for debugging
+  const descriptorEntities = entities.filter(e => {
+    const words = e.canonical.split(/\s+/);
+    return words.length === 1 && DESCRIPTOR_PREFIXES.has(words[0].toLowerCase());
+  });
+  if (descriptorEntities.length > 0) {
+    console.log(`[DESCRIPTOR-MERGE] Found ${descriptorEntities.length} descriptor entities: ${descriptorEntities.map(e => e.canonical).join(', ')}`);
+  }
+
+  // Sort spans by start position
+  const sortedSpans = [...spans].sort((a, b) => a.start - b.start);
+
+  // Find merge candidates: descriptor entity immediately followed by name entity
+  const mergePairs: Array<{
+    descriptor: Entity;
+    name: Entity;
+    descriptorSpan?: Span;
+    nameSpan?: Span;
+  }> = [];
+  const entitiesToRemove = new Set<string>();
+
+  // APPROACH 1: Span-based merging (original approach)
+  // Debug: Log spans for descriptor entities
+  for (const descEnt of descriptorEntities) {
+    const descSpans = sortedSpans.filter(s => s.entity_id === descEnt.id);
+    if (descSpans.length === 0) {
+      console.log(`[DESCRIPTOR-MERGE] No spans found for descriptor "${descEnt.canonical}"`);
+    }
+    for (const descSpan of descSpans) {
+      // Find the next span after this one
+      const idx = sortedSpans.findIndex(s => s === descSpan);
+      if (idx < sortedSpans.length - 1) {
+        const nextSpan = sortedSpans[idx + 1];
+        const gap = nextSpan.start - descSpan.end;
+        const nextEntity = entities.find(e => e.id === nextSpan.entity_id);
+        console.log(`[DESCRIPTOR-MERGE] Checking "${descEnt.canonical}" at [${descSpan.start},${descSpan.end}] -> next span at [${nextSpan.start},${nextSpan.end}] (gap=${gap}) entity="${nextEntity?.canonical}"`);
+      }
+    }
+  }
+
+  for (let i = 0; i < sortedSpans.length - 1; i++) {
+    const currentSpan = sortedSpans[i];
+    const nextSpan = sortedSpans[i + 1];
+
+    // Check if they're adjacent (separated by 0-2 characters, usually a space)
+    const gap = nextSpan.start - currentSpan.end;
+    if (gap < 0 || gap > 2) continue;
+
+    // Find the entities for these spans
+    const currentEntity = entities.find(e => e.id === currentSpan.entity_id);
+    const nextEntity = entities.find(e => e.id === nextSpan.entity_id);
+
+    if (!currentEntity || !nextEntity) continue;
+
+    // Skip if already marked for removal (avoid double merging)
+    if (entitiesToRemove.has(currentEntity.id) || entitiesToRemove.has(nextEntity.id)) continue;
+
+    // Check if first entity is a single-word descriptor prefix
+    const currentWords = currentEntity.canonical.split(/\s+/);
+    if (currentWords.length !== 1) continue;
+    if (!DESCRIPTOR_PREFIXES.has(currentWords[0].toLowerCase())) continue;
+
+    // Check if second entity is a single-word name (not another descriptor)
+    const nextWords = nextEntity.canonical.split(/\s+/);
+    if (nextWords.length !== 1) continue;
+    if (DESCRIPTOR_PREFIXES.has(nextWords[0].toLowerCase())) continue;
+
+    // Both must be PERSON type
+    if (currentEntity.type !== 'PERSON' || nextEntity.type !== 'PERSON') continue;
+
+    // Found a merge candidate
+    mergePairs.push({
+      descriptor: currentEntity,
+      name: nextEntity,
+      descriptorSpan: currentSpan,
+      nameSpan: nextSpan
+    });
+
+    // Mark original entities for removal
+    entitiesToRemove.add(currentEntity.id);
+    entitiesToRemove.add(nextEntity.id);
+  }
+
+  // APPROACH 2: Text-based merging (fallback when spans aren't adjacent)
+  // For each descriptor entity, check if fullText contains "Descriptor Name" pattern
+  // and we have a separate "Name" entity that should be merged
+  if (fullText && descriptorEntities.length > 0) {
+    // Find single-word PERSON entities that are NOT descriptors (potential merge targets)
+    const nameEntities = entities.filter(e => {
+      if (e.type !== 'PERSON') return false;
+      const words = e.canonical.split(/\s+/);
+      if (words.length !== 1) return false;
+      if (DESCRIPTOR_PREFIXES.has(words[0].toLowerCase())) return false;
+      // Not already merged
+      if (entitiesToRemove.has(e.id)) return false;
+      return true;
+    });
+
+    for (const descEnt of descriptorEntities) {
+      // Skip if already merged
+      if (entitiesToRemove.has(descEnt.id)) continue;
+
+      const descWord = descEnt.canonical;
+
+      for (const nameEnt of nameEntities) {
+        // Skip if already merged
+        if (entitiesToRemove.has(nameEnt.id)) continue;
+
+        const nameWord = nameEnt.canonical;
+        const compoundPattern = `${descWord} ${nameWord}`;
+
+        // Check if this exact compound appears in the text (case-insensitive)
+        const pattern = new RegExp(`\\b${escapeRegex(descWord)}\\s+${escapeRegex(nameWord)}\\b`, 'i');
+        if (pattern.test(fullText)) {
+          console.log(`[DESCRIPTOR-MERGE] Text-based match: found "${compoundPattern}" in document`);
+
+          // Found a merge candidate via text matching
+          mergePairs.push({
+            descriptor: descEnt,
+            name: nameEnt
+            // No spans for text-based merge
+          });
+
+          // Mark original entities for removal
+          entitiesToRemove.add(descEnt.id);
+          entitiesToRemove.add(nameEnt.id);
+
+          // Break to avoid double merging this descriptor
+          break;
+        }
+      }
+    }
+  }
+
+  if (mergePairs.length === 0) {
+    return { entities, spans, mergedCount: 0 };
+  }
+
+  // Create merged entities
+  const newEntities: Entity[] = [];
+  const newSpans: Span[] = [];
+
+  for (const pair of mergePairs) {
+    const mergedCanonical = `${pair.descriptor.canonical} ${pair.name.canonical}`;
+    const mergedId = `merged_${pair.descriptor.id}_${pair.name.id}`;
+
+    console.log(`[DESCRIPTOR-MERGE] Merging "${pair.descriptor.canonical}" + "${pair.name.canonical}" → "${mergedCanonical}"`);
+
+    // Create merged entity
+    const mergedEntity: Entity = {
+      id: mergedId,
+      canonical: mergedCanonical,
+      type: 'PERSON',
+      aliases: [pair.descriptor.canonical, pair.name.canonical],
+      created_at: pair.descriptor.created_at || new Date().toISOString(),
+      confidence: Math.max(pair.descriptor.confidence ?? 0.99, pair.name.confidence ?? 0.99)
+    };
+    newEntities.push(mergedEntity);
+
+    // Create merged span (only if we have both spans from span-based matching)
+    if (pair.descriptorSpan && pair.nameSpan) {
+      const mergedSpan: Span = {
+        entity_id: mergedId,
+        start: pair.descriptorSpan.start,
+        end: pair.nameSpan.end,
+        text: `${pair.descriptorSpan.text || pair.descriptor.canonical} ${pair.nameSpan.text || pair.name.canonical}`
+      };
+      newSpans.push(mergedSpan);
+    }
+  }
+
+  // Filter out merged entities and add new ones
+  const filteredEntities = entities.filter(e => !entitiesToRemove.has(e.id));
+  const finalEntities = [...filteredEntities, ...newEntities];
+
+  // Filter out merged spans and add new ones
+  const filteredSpans = spans.filter(s => !entitiesToRemove.has(s.entity_id));
+  const finalSpans = [...filteredSpans, ...newSpans];
+
+  return {
+    entities: finalEntities,
+    spans: finalSpans,
+    mergedCount: mergePairs.length
+  };
+}
+
+/**
+ * Clean dialogue artifacts from entity names
+ *
+ * Patterns like "That's Beau Adams" or "Here's John" should become just the name.
+ * These occur when dialogue speech is incorrectly captured as part of the entity.
+ */
+function cleanDialogueArtifacts(
+  entities: Entity[]
+): { cleaned: Entity[]; cleanedCount: number } {
+  // Common dialogue artifacts that appear before names
+  const DIALOGUE_PREFIXES = [
+    /^that['']s\s+/i,    // "That's Beau Adams" → "Beau Adams"
+    /^this\s+is\s+/i,    // "This is John" → "John"
+    /^here['']s\s+/i,    // "Here's Mike" → "Mike"
+    /^there['']s\s+/i,   // "There's Sarah" → "Sarah"
+    /^it['']s\s+/i,      // "It's Mary" → "Mary"
+    /^meet\s+/i,         // "Meet John" → "John"
+    /^call\s+me\s+/i,    // "Call me Bob" → "Bob"
+    /^i['']m\s+/i,       // "I'm Bob" → "Bob"
+  ];
+
+  const cleaned: Entity[] = [];
+  let cleanedCount = 0;
+
+  for (const entity of entities) {
+    let canonical = entity.canonical;
+    let wasCleaned = false;
+
+    // Try each prefix pattern
+    for (const prefix of DIALOGUE_PREFIXES) {
+      if (prefix.test(canonical)) {
+        const newCanonical = canonical.replace(prefix, '').trim();
+        // Only accept if result still looks like a name (capitalized)
+        if (newCanonical && /^[A-Z]/.test(newCanonical)) {
+          console.log(`[DIALOGUE-ARTIFACT] Cleaned "${canonical}" → "${newCanonical}"`);
+          canonical = newCanonical;
+          wasCleaned = true;
+          break;
+        }
+      }
+    }
+
+    if (wasCleaned) {
+      cleanedCount++;
+      cleaned.push({ ...entity, canonical });
+    } else {
+      cleaned.push(entity);
+    }
+  }
+
+  return { cleaned, cleanedCount };
+}
+
+/**
+ * Clean entities that have chapter title/header contamination.
+ *
+ * When NER runs on text with chapter headings, it may combine the heading
+ * with the first entity mentioned, creating contaminated names like:
+ * - "Purple Sneakers Barty Beauregard" (from "The Boy with Purple Sneakers" + "Barty Beauregard")
+ * - "Song City Frederick" (from "Song for the City" + "Frederick")
+ *
+ * This filter detects entities with 4+ words where the last 2-3 words look
+ * like a proper name (FirstName LastName pattern) and the prefix contains
+ * common adjectives, nouns, or article-like words.
+ *
+ * IMPORTANT: This CLEANS the entity rather than removing it, preserving the
+ * actual person name while stripping the title prefix.
+ */
+function cleanTitleContamination(
+  entities: Entity[]
+): { cleaned: Entity[]; cleanedCount: number } {
+  // Common words found in chapter titles/headers that shouldn't be part of names
+  const TITLE_PREFIX_WORDS = new Set([
+    'purple', 'red', 'blue', 'green', 'yellow', 'orange', 'pink', 'black', 'white', 'golden', 'silver',
+    'sneakers', 'boy', 'girl', 'man', 'woman', 'child', 'kid', 'song', 'tale', 'story',
+    'with', 'of', 'the', 'a', 'an', 'for', 'in', 'on', 'at', 'by', 'to'
+  ]);
+
+  // Pattern for recognizing proper names (capitalized words)
+  const properNamePattern = /^[A-Z][a-z]+$/;
+
+  const cleaned: Entity[] = [];
+  let cleanedCount = 0;
+
+  for (const entity of entities) {
+    const canonical = entity.canonical;
+    const words = canonical.split(/\s+/);
+
+    // Only check PERSON entities with 4+ words
+    if (entity.type !== 'PERSON' || words.length < 4) {
+      cleaned.push(entity);
+      continue;
+    }
+
+    // Find where the actual name starts by looking for consecutive proper name words at the end
+    // Look for patterns like "FirstName LastName" or "Title FirstName LastName"
+    let nameStartIndex = -1;
+
+    for (let i = words.length - 2; i >= 0; i--) {
+      const word = words[i];
+      const nextWord = words[i + 1];
+
+      // Check if this word and the next form a proper name pattern
+      if (properNamePattern.test(word) && properNamePattern.test(nextWord)) {
+        // Check if prefix contains title words
+        const prefixWords = words.slice(0, i);
+        const hasTitlePrefix = prefixWords.some(w => TITLE_PREFIX_WORDS.has(w.toLowerCase()));
+
+        if (hasTitlePrefix) {
+          nameStartIndex = i;
+          break;
+        }
+      }
+    }
+
+    if (nameStartIndex > 0) {
+      // Found title contamination - clean it
+      const cleanedName = words.slice(nameStartIndex).join(' ');
+      console.log(`[TITLE-CONTAMINATION] Cleaned "${canonical}" → "${cleanedName}"`);
+
+      cleaned.push({
+        ...entity,
+        canonical: cleanedName
+      });
+      cleanedCount++;
+    } else {
+      cleaned.push(entity);
+    }
+  }
+
+  return { cleaned, cleanedCount };
+}
+
+/**
+ * Filter fragment entities that are substrings of longer compound entities.
+ *
+ * When NER extracts both "Pool of Souls" and "Souls" separately, the shorter
+ * version is often just a fragment that should be merged with the longer form.
+ *
+ * This filter removes single-word entities when a longer multi-word entity
+ * contains that word as a token.
+ *
+ * Examples:
+ * - "Souls" removed if "Pool of Souls" exists
+ * - "Steamy" removed if "Bullet and Steamy" exists
+ * - "Wilson" removed if "Dr. Wilson" exists
+ * - "Adams" removed if "Beau Adams" exists
+ */
+function filterFragmentEntities(
+  entities: Entity[]
+): { filtered: Entity[]; removed: number; removedNames: string[] } {
+  // Build set of all tokens from multi-word entity names
+  const tokensFromCompounds = new Map<string, string[]>();  // lowercase token -> list of compound names containing it
+
+  for (const entity of entities) {
+    const words = entity.canonical.split(/\s+/);
+    if (words.length >= 2) {
+      for (const word of words) {
+        const wordLower = word.toLowerCase();
+        if (!tokensFromCompounds.has(wordLower)) {
+          tokensFromCompounds.set(wordLower, []);
+        }
+        tokensFromCompounds.get(wordLower)!.push(entity.canonical);
+      }
+    }
+  }
+
+  const filtered: Entity[] = [];
+  let removed = 0;
+  const removedNames: string[] = [];
+
+  for (const entity of entities) {
+    const canonical = entity.canonical;
+    const words = canonical.split(/\s+/);
+
+    // Only filter single-word entities
+    if (words.length === 1) {
+      const wordLower = canonical.toLowerCase();
+      const containingCompounds = tokensFromCompounds.get(wordLower);
+
+      if (containingCompounds && containingCompounds.length > 0) {
+        // This single-word entity is a fragment of a longer compound
+        console.log(`[FRAGMENT-FILTER] Removing "${canonical}" (fragment of: ${containingCompounds.join(', ')})`);
+        removed++;
+        removedNames.push(canonical);
+        continue;
+      }
+    }
+
+    filtered.push(entity);
+  }
+
+  return { filtered, removed, removedNames };
+}
+
+/**
+ * Filter dialogue contractions that look like sentence fragments, not names.
+ *
+ * Words like "I'll", "You're", "Don't", "Can't" are contractions from dialogue
+ * that may be incorrectly extracted as entities if they appear at the start
+ * of quoted speech.
+ *
+ * Examples that should be FILTERED:
+ * - "I'll" (contraction of "I will")
+ * - "You're" (contraction of "You are")
+ * - "Don't" (contraction of "Do not")
+ * - "That's" (contraction of "That is")
+ *
+ * Note: Some contractions CAN be names (e.g., "O'Brien") so we filter
+ * specific patterns rather than all apostrophe words.
+ */
+function filterDialogueContractions(
+  entities: Entity[]
+): { filtered: Entity[]; removed: number; removedNames: string[] } {
+  // Dialogue contractions that are NEVER names
+  // These are common sentence-start contractions from dialogue
+  const CONTRACTION_PATTERNS = [
+    /^(I|You|We|They|He|She|It|That|What|There|Here)'(ll|re|ve|d|m|s)$/i,
+    /^(Don|Won|Can|Couldn|Wouldn|Shouldn|Didn|Isn|Aren|Wasn|Weren|Hasn|Haven|Hadn)'t$/i,
+    /^(Let)'s$/i,
+  ];
+
+  const filtered: Entity[] = [];
+  let removed = 0;
+  const removedNames: string[] = [];
+
+  for (const entity of entities) {
+    const canonical = entity.canonical;
+
+    // Only check PERSON entities
+    if (entity.type !== 'PERSON') {
+      filtered.push(entity);
+      continue;
+    }
+
+    // Check if it matches a contraction pattern
+    if (CONTRACTION_PATTERNS.some(p => p.test(canonical))) {
+      console.log(`[CONTRACTION-FILTER] Removing dialogue contraction: "${canonical}"`);
+      removed++;
+      removedNames.push(canonical);
+      continue;
+    }
+
+    filtered.push(entity);
+  }
+
+  return { filtered, removed, removedNames };
+}
+
+/**
+ * Check if a word appears capitalized in the middle of a sentence (not at sentence start).
+ * This indicates the word is being used as a proper name.
+ *
+ * Mid-sentence positions are detected by checking if the capitalized word is NOT preceded by:
+ * - Start of text
+ * - Sentence-ending punctuation (. ! ?) followed by whitespace
+ * - Newline or paragraph break
+ *
+ * Examples:
+ * - "Honey, please come here." → "Honey" at sentence start (not mid-sentence)
+ * - "Please come here, Honey." → "Honey" mid-sentence (IS a name)
+ * - "I love honey." → "honey" lowercase (common word)
+ */
+function hasMidSentenceCapitalization(word: string, fullText: string): boolean {
+  // Build regex to find the capitalized word
+  // Looking for the word NOT at sentence start
+  // Mid-sentence = preceded by comma, colon, or other words (not sentence-ending punctuation)
+  const capitalizedWord = word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+
+  // Pattern: word boundary + capitalized word + word boundary
+  // We'll find all occurrences and check their context
+  const wordPattern = new RegExp(`\\b${escapeRegex(capitalizedWord)}\\b`, 'g');
+
+  let match;
+  while ((match = wordPattern.exec(fullText)) !== null) {
+    const position = match.index;
+
+    // Check context before this occurrence
+    if (position === 0) {
+      // At very start of document - sentence start, skip
+      continue;
+    }
+
+    // Look at the preceding characters (up to 5 chars back for context)
+    const precedingText = fullText.slice(Math.max(0, position - 5), position);
+
+    // Check if this is a sentence start position:
+    // - After sentence-ending punctuation (. ! ?) + optional space
+    // - After newline
+    // - After opening quote at sentence start
+    const sentenceStartPattern = /[.!?]["']?\s*$/;
+    const afterNewlinePattern = /[\n\r]\s*$/;
+    const afterOpenQuoteAtStart = /^["']\s*$/;
+
+    const isSentenceStart =
+      sentenceStartPattern.test(precedingText) ||
+      afterNewlinePattern.test(precedingText) ||
+      (position <= 3 && afterOpenQuoteAtStart.test(precedingText));
+
+    if (!isSentenceStart) {
+      // Found mid-sentence capitalization! This is a name.
+      console.log(`[LOWERCASE-ECHO] Found mid-sentence capitalization of "${capitalizedWord}" → keeping as name`);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Escape special regex characters in a string
+ */
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Lowercase Echo Filter: Remove single-word PERSON entities that appear lowercase in the document
+ *
+ * RATIONALE: Proper names are ALWAYS capitalized in English text. If a word appears
+ * in lowercase anywhere in the document, it's almost certainly a common word that
+ * got capitalized at sentence start, not a name.
+ *
+ * EXCEPTION: If the word also appears CAPITALIZED in the middle of a sentence (not at
+ * sentence start), then it IS being used as a name and should be kept.
+ *
+ * Examples:
+ * - "Throughout" at sentence start → filtered (appears as "throughout" elsewhere)
+ * - "Honey" at sentence start → KEPT if "Honey" also appears mid-sentence as a name
+ * - "Frederick" IS a name because "frederick" never appears lowercase
+ *
+ * This approach is more robust than stopword lists because:
+ * 1. Self-adapting: Works for any word, not just ones we've listed
+ * 2. Domain-agnostic: Works for technical docs, fiction, any genre
+ * 3. Linguistically principled: Based on fundamental English capitalization rules
+ */
+function filterByLowercaseEcho(
+  entities: Entity[],
+  fullText: string,
+  spans: Span[]
+): { filtered: Entity[]; removed: number; removedNames: string[] } {
+  if (!fullText || fullText.length === 0) {
+    return { filtered: entities, removed: 0, removedNames: [] };
+  }
+
+  // Build lowercase word set from document (for fast lookup)
+  // Match whole words only using word boundary regex
+  const lowercaseWordsInDoc = new Set<string>();
+  const wordRegex = /\b[a-z]{2,}\b/g;
+  let match;
+  while ((match = wordRegex.exec(fullText)) !== null) {
+    lowercaseWordsInDoc.add(match[0]);
+  }
+
+  // Count mentions per entity for multi-mention check
+  const mentionCounts = new Map<string, number>();
+  for (const span of spans) {
+    const count = mentionCounts.get(span.entity_id) || 0;
+    mentionCounts.set(span.entity_id, count + 1);
+  }
+
+  const filtered: Entity[] = [];
+  let removed = 0;
+  const removedNames: string[] = [];
+
+  for (const entity of entities) {
+    const canonical = entity.canonical;
+    const words = canonical.split(/\s+/);
+
+    // Only apply to single-word PERSON entities (multi-word names are less likely to be junk)
+    // and only if entity has few mentions (well-established entities should be kept)
+    if (
+      entity.type === 'PERSON' &&
+      words.length === 1 &&
+      (mentionCounts.get(entity.id) || 0) <= 1
+    ) {
+      const lowercaseVersion = canonical.toLowerCase();
+
+      // Check if this word appears lowercase in the document
+      if (lowercaseWordsInDoc.has(lowercaseVersion)) {
+        // EXCEPTION: If the word appears CAPITALIZED mid-sentence, it's a name
+        if (hasMidSentenceCapitalization(lowercaseVersion, fullText)) {
+          console.log(`[LOWERCASE-ECHO] Keeping "${canonical}" (appears capitalized mid-sentence)`);
+          filtered.push(entity);
+          continue;
+        }
+
+        console.log(`[LOWERCASE-ECHO] Removing "${canonical}" (appears lowercase in document, never mid-sentence capitalized)`);
+        removed++;
+        removedNames.push(canonical);
+        continue;
+      }
+    }
+
+    filtered.push(entity);
+  }
+
+  return { filtered, removed, removedNames };
+}
 
 /**
  * Convert EntityFilterConfig (pipeline type) to EntityQualityConfig (filter type)
@@ -73,6 +821,19 @@ export async function runEntityFilteringStage(
 
     // Check if filtering is enabled (either via config or global flag)
     if (input.config.enabled || isEntityFilterEnabled()) {
+      // DEBUG: Log entities before filtering
+      if (process.env.DEBUG_ENTITY_FILTER === '1') {
+        console.log(`[${STAGE_NAME}] DEBUG: Entities BEFORE filter:`);
+        for (const e of input.entities.slice(0, 50)) {
+          const firstChar = e.canonical?.[0] || '?';
+          const isUpper = firstChar === firstChar.toUpperCase() && /[A-Z]/.test(firstChar);
+          console.log(`  ${e.type}: "${e.canonical}" firstChar="${firstChar}" isUpper=${isUpper}`);
+        }
+        if (input.entities.length > 50) {
+          console.log(`  ... and ${input.entities.length - 50} more`);
+        }
+      }
+
       // Convert pipeline config to quality filter config
       const config: EntityQualityConfig = input.config.enabled
         ? toQualityConfig(input.config)
@@ -115,6 +876,91 @@ export async function runEntityFilteringStage(
       };
     }
 
+    // Keep track of spans (may be modified by merge functions)
+    let currentSpans = input.spans;
+
+    // ========================================================================
+    // DESCRIPTOR-NAME MERGING: Merge adjacent descriptor+name pairs
+    // e.g., "Mad" + "Addy" → "Mad Addy"
+    // Must run BEFORE fragment filtering so new compounds are recognized
+    // ========================================================================
+    const mergeResult = mergeDescriptorNamePairs(filteredEntities, currentSpans, input.fullText);
+    if (mergeResult.mergedCount > 0) {
+      console.log(`[${STAGE_NAME}] 🛡️ Descriptor merge combined ${mergeResult.mergedCount} entity pairs`);
+      filteredEntities = mergeResult.entities;
+      currentSpans = mergeResult.spans;
+    }
+
+    // ========================================================================
+    // DIALOGUE ARTIFACT CLEANING: Remove dialogue prefixes from entity names
+    // ========================================================================
+    const dialogueResult = cleanDialogueArtifacts(filteredEntities);
+    if (dialogueResult.cleanedCount > 0) {
+      console.log(`[${STAGE_NAME}] 🛡️ Dialogue artifact filter cleaned ${dialogueResult.cleanedCount} entities`);
+      filteredEntities = dialogueResult.cleaned;
+    }
+
+    // ========================================================================
+    // TITLE CONTAMINATION CLEANING: Clean entities with chapter title prefixes
+    // ========================================================================
+    const titleResult = cleanTitleContamination(filteredEntities);
+    if (titleResult.cleanedCount > 0) {
+      console.log(`[${STAGE_NAME}] 🛡️ Title contamination filter cleaned ${titleResult.cleanedCount} entities`);
+      filteredEntities = titleResult.cleaned;
+    }
+
+    // ========================================================================
+    // FRAGMENT ENTITY FILTERING: Remove single-word fragments of compounds
+    // ========================================================================
+    const fragmentResult = filterFragmentEntities(filteredEntities);
+    if (fragmentResult.removed > 0) {
+      console.log(`[${STAGE_NAME}] 🛡️ Fragment filter removed ${fragmentResult.removed} entity fragments: ${fragmentResult.removedNames.join(', ')}`);
+      filteredEntities = fragmentResult.filtered;
+      stats.removed += fragmentResult.removed;
+      stats.filtered = filteredEntities.length;
+      stats.removalRate = stats.removed / stats.original;
+    }
+
+    // ========================================================================
+    // EVIDENCE-BASED FILTERING: Remove single-mention junk entities
+    // ========================================================================
+    const evidenceResult = filterByEvidence(filteredEntities, currentSpans, input.fullText);
+    if (evidenceResult.removed > 0) {
+      console.log(`[${STAGE_NAME}] 🛡️ Evidence filter removed ${evidenceResult.removed} single-mention junk entities`);
+      filteredEntities = evidenceResult.filtered;
+      stats.removed += evidenceResult.removed;
+      stats.filtered = filteredEntities.length;
+      stats.removalRate = stats.removed / stats.original;
+    }
+
+    // ========================================================================
+    // LOWERCASE ECHO FILTERING: Remove words that appear lowercase elsewhere
+    // This is a principled approach that doesn't require stopword maintenance
+    // ========================================================================
+    if (input.fullText) {
+      const echoResult = filterByLowercaseEcho(filteredEntities, input.fullText, currentSpans);
+      if (echoResult.removed > 0) {
+        console.log(`[${STAGE_NAME}] 🛡️ Lowercase echo filter removed ${echoResult.removed} common words: ${echoResult.removedNames.join(', ')}`);
+        filteredEntities = echoResult.filtered;
+        stats.removed += echoResult.removed;
+        stats.filtered = filteredEntities.length;
+        stats.removalRate = stats.removed / stats.original;
+      }
+    }
+
+    // ========================================================================
+    // DIALOGUE CONTRACTION FILTERING: Remove contractions from dialogue
+    // (e.g., "I'll", "You're", "Don't") which are not proper names
+    // ========================================================================
+    const contractionResult = filterDialogueContractions(filteredEntities);
+    if (contractionResult.removed > 0) {
+      console.log(`[${STAGE_NAME}] 🛡️ Contraction filter removed ${contractionResult.removed} dialogue fragments: ${contractionResult.removedNames.join(', ')}`);
+      filteredEntities = contractionResult.filtered;
+      stats.removed += contractionResult.removed;
+      stats.filtered = filteredEntities.length;
+      stats.removalRate = stats.removed / stats.original;
+    }
+
     // Update entityMap to only include filtered entities
     const filteredIds = new Set(filteredEntities.map(e => e.id));
     const updatedEntityMap = new Map<string, import('../schema').Entity>();
@@ -126,7 +972,7 @@ export async function runEntityFilteringStage(
     }
 
     // Update spans to only include spans for filtered entities
-    const validSpans = input.spans.filter(s => filteredIds.has(s.entity_id));
+    const validSpans = currentSpans.filter(s => filteredIds.has(s.entity_id));
 
     const duration = Date.now() - startTime;
     console.log(

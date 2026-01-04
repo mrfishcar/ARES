@@ -818,11 +818,24 @@ export function chooseBestCanonical(names: string[]): string {
 
   const scoreName = (name: string): number => {
     const tokens = name.split(/\s+/).filter(Boolean);
-    const lowerTokens = tokens.map(t => t.toLowerCase());
+    const lowerTokens = tokens.map(t => t.toLowerCase().replace(/\.$/, '')); // Remove trailing periods for comparison
     const hasSpace = tokens.length >= 2;
     const hasUpper = /[A-Z]/.test(name);
     const head = tokens[tokens.length - 1]?.toLowerCase();
     const hasGenericHead = head ? GENERIC_GROUPS.has(head) : false;
+
+    // Honorific prefixes that should be preserved as part of formal names
+    const HONORIFIC_PREFIXES = new Set([
+      'dr', 'mr', 'mrs', 'ms', 'miss', 'sir', 'lord', 'lady', 'prof', 'professor',
+      'coach', 'principal', 'captain', 'general', 'senator', 'president',
+      'reverend', 'father', 'mother', 'brother', 'sister', 'aunt', 'uncle'
+    ]);
+
+    // Descriptor prefixes that indicate nicknames
+    const DESCRIPTOR_PREFIXES = new Set([
+      'mad', 'big', 'little', 'old', 'young', 'fat', 'slim', 'tall', 'short',
+      'tiny', 'red', 'black', 'wild', 'crazy', 'sweet', 'dear', 'poor', 'good', 'bad'
+    ]);
 
     // Check for collective nouns anywhere in the name
     const hasCollectiveNoun = lowerTokens.some(t => COLLECTIVE_NOUNS.has(t));
@@ -834,10 +847,25 @@ export function chooseBestCanonical(names: string[]): string {
     // e.g., "The king", "The wizard", "The Heir" - these should NOT be canonical names
     const isThePlusNoun = lowerTokens[0] === 'the' && tokens.length === 2;
 
+    // Check for honorific prefix (e.g., "Dr. Wilson", "Mr. Smith")
+    const hasHonorificPrefix = tokens.length >= 2 && HONORIFIC_PREFIXES.has(lowerTokens[0]);
+
+    // Check for descriptor prefix (e.g., "Mad Addy", "Big Jim")
+    const hasDescriptorPrefix = tokens.length >= 2 && DESCRIPTOR_PREFIXES.has(lowerTokens[0]);
+
     // Check for proper noun (single or multi-word capitalized name without "The")
+    // Allow periods in tokens (e.g., "Dr." is valid)
     const isProperNoun = tokens.length >= 1 &&
       lowerTokens[0] !== 'the' &&
-      tokens.every(t => /^[A-Z][a-z]*$/.test(t));
+      tokens.every(t => /^[A-Z][a-z]*\.?$/.test(t));
+
+    // Check for full name pattern: FirstName LastName (no honorific, 2+ proper noun tokens)
+    // e.g., "Charles Garrison", "Barty Beauregard" - these are preferred over "Mr. Garrison"
+    const isFullName = tokens.length >= 2 &&
+      !hasHonorificPrefix &&
+      !hasDescriptorPrefix &&
+      lowerTokens[0] !== 'the' &&
+      tokens.every(t => /^[A-Z][a-z]+$/.test(t)); // No periods, just proper names
 
     let score = 0;
     if (hasSpace && !isThePlusNoun) score += 2; // Multi-word bonus only if not "The X"
@@ -847,6 +875,9 @@ export function chooseBestCanonical(names: string[]): string {
     if (hasVerb) score -= 10; // Strong penalty for verbs
     if (isThePlusNoun) score -= 5; // Strong penalty for "The king" patterns
     if (isProperNoun) score += 3; // Bonus for proper nouns like "Aragorn", "Harry Potter"
+    if (isFullName) score += 4; // Strong bonus for full names like "Charles Garrison"
+    if (hasHonorificPrefix && !isFullName) score += 2; // Honorific bonus only if no full name available
+    if (hasDescriptorPrefix) score += 1; // Small bonus for nickname prefixes like "Mad Addy"
     score += Math.min(tokens.length, 4) * 0.1; // slight preference for longer names
     return score;
   };
