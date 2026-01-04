@@ -122,6 +122,24 @@ function learnGenderFromContext(text: string): Map<string, Gender> {
     }
   }
 
+  // Pattern: "a CREATURE named X" or "an ANIMAL called X"
+  // Creatures/animals use "it", not "he/she", so gender is neutral
+  const creatureWords = [
+    'phoenix', 'dragon', 'owl', 'cat', 'dog', 'toad', 'rat', 'snake', 'spider',
+    'hippogriff', 'thestral', 'unicorn', 'centaur', 'goblin', 'elf', 'troll',
+    'basilisk', 'acromantula', 'werewolf', 'dementor', 'ghost', 'poltergeist',
+    'horse', 'eagle', 'lion', 'badger', 'raven', 'bird', 'creature', 'beast',
+    'animal', 'pet', 'familiar', 'monster', 'demon', 'spirit'
+  ];
+  const creaturePatternStr = `\\b(?:a|an|the)\\s+(${creatureWords.join('|')})\\s+(?:named|called)\\s+([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)\\b`;
+  const creaturePattern = new RegExp(creaturePatternStr, 'gi');
+  while ((match = creaturePattern.exec(text)) !== null) {
+    const name = match[2];
+    const normalizedName = name.toLowerCase();
+    // Creatures use "it" not "he/she"
+    learnedGender.set(normalizedName, 'neutral');
+  }
+
   return learnedGender;
 }
 
@@ -1130,22 +1148,26 @@ function resolveNominalBackLinks(
           const matches = findByDescriptor(word, profiles, expectedType);
 
           if (matches.length > 0) {
-            // Use the best match (highest confidence)
-            const best = matches[0];
+            // Use the best match (highest confidence) that was mentioned BEFORE this nominal
+            // Nominal references are anaphoric (refer back), not cataphoric (refer forward)
+            for (const candidate of matches) {
+              // Check entity was mentioned BEFORE this nominal position
+              const entityMentionedBefore = entitySpans.some(
+                span => span.entity_id === candidate.entity_id && span.end <= mention.start
+              );
 
-            // Verify the entity is in the current paragraph or document
-            const entityInDoc = entities.some(e => e.id === best.entity_id);
-
-            if (entityInDoc) {
-              links.push({
-                mention,
-                entity_id: best.entity_id,
-                confidence: Math.min(0.95, best.confidence * 0.8), // Scale down confidence slightly
-                method: 'nominal_match',
-              });
-              resolved = true;
-              break;
+              if (entityMentionedBefore) {
+                links.push({
+                  mention,
+                  entity_id: candidate.entity_id,
+                  confidence: Math.min(0.95, candidate.confidence * 0.8), // Scale down confidence slightly
+                  method: 'nominal_match',
+                });
+                resolved = true;
+                break;
+              }
             }
+            if (resolved) break;
           }
         }
       }
@@ -1154,13 +1176,19 @@ function resolveNominalBackLinks(
       if (!resolved && descriptors) {
         for (const [desc, entityId] of descriptors) {
           if (nominalText.includes(desc)) {
-            links.push({
-              mention,
-              entity_id: entityId,
-              confidence: 0.75,
-              method: 'nominal_match',
-            });
-            break;
+            // Also check entity was mentioned BEFORE this nominal
+            const entityMentionedBefore = entitySpans.some(
+              span => span.entity_id === entityId && span.end <= mention.start
+            );
+            if (entityMentionedBefore) {
+              links.push({
+                mention,
+                entity_id: entityId,
+                confidence: 0.75,
+                method: 'nominal_match',
+              });
+              break;
+            }
           }
         }
       }

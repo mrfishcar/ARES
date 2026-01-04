@@ -111,7 +111,9 @@ const testCases: TestCase[] = [
         { text: 'Severus Snape', type: 'PERSON' }
       ],
       relations: [
-        { subj: 'Albus Dumbledore', pred: 'leads', obj: 'Hogwarts' }
+        { subj: 'Albus Dumbledore', pred: 'leads', obj: 'Hogwarts' },
+        // "He trusted Severus Snape" - with correct coreference He → Dumbledore
+        { subj: 'Albus Dumbledore', pred: 'trusts', obj: 'Severus Snape' }
       ]
     }
   },
