@@ -22,14 +22,18 @@ export function nameContainsOrgOrPlaceKeyword(canonical: string): {
   let hasOrg = false;
   let hasPlace = false;
 
+  // Use word boundary matching to avoid false positives like "draco" matching "co"
   for (const kw of ORG_KEYWORDS) {
-    if (lower.includes(kw)) {
+    // Create regex with word boundaries
+    const regex = new RegExp(`\\b${kw.replace(/\./g, '\\.')}\\b`, 'i');
+    if (regex.test(lower)) {
       hasOrg = true;
       break;
     }
   }
   for (const kw of PLACE_KEYWORDS) {
-    if (lower.includes(kw)) {
+    const regex = new RegExp(`\\b${kw}\\b`, 'i');
+    if (regex.test(lower)) {
       hasPlace = true;
       break;
     }
