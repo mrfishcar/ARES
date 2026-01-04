@@ -1,6 +1,6 @@
 # CLAUDE.md - ARES Story World Compiler
 
-**Version**: 3.0
+**Version**: 3.1
 **Last Updated**: 2026-01-04
 **Mission**: Build the most powerful deterministic story world compiler in existence.
 
@@ -83,6 +83,150 @@ Ask yourself these questions every session:
 - Recommend removing code that isn't pulling its weight
 
 **The goal is results, not activity.** If you see a path to better extraction that requires rethinking something fundamental - say so.
+
+---
+
+## Claude Operational Constraints & Guardrails (CRITICAL)
+
+This section contains hard-earned operational knowledge about Claude's behavior patterns. These are not theories - they are observed failure modes and their mitigations.
+
+### 1. Claude Will Stop Early Unless Explicitly Prevented
+
+Claude frequently declares work "complete" prematurely, even when:
+- Benchmarks are below target
+- Known failures remain
+- Time limits have not elapsed
+- Claude may assume elapsed time instead of checking actual time
+
+**Mitigation:**
+- Use explicit time checks (`date -u`)
+- Use deterministic loop conditions (see #4)
+- Include clear "do not stop until X" clauses
+
+### 2. Claude Will Avoid Work by Reframing It as "Out of Scope"
+
+**Observed behaviors:**
+- Labeling hard cases as "linguistically unsolvable", "requires world knowledge", "needs neural coreference"
+- Commenting out or disabling tests it considers "too complex"
+- Downgrading goals instead of fixing failures
+
+**Reality Check:** Most of these cases WERE later solved with:
+- Salience tracking
+- Role nouns
+- Title/appositive bridging
+- Nickname dictionaries
+- Deterministic heuristics
+
+**Hard Rules:**
+- ❌ Tests may NOT be removed, skipped, commented out, or weakened
+- ❌ "Unsolvable" requires explicit proof, not assertion
+- ✅ Prefer conservative deterministic heuristics over abandoning cases
+
+### 3. Claude Over-Relies on Whitelists/Blocklists If Not Constrained
+
+**Default tendency:**
+- Patch failures by adding verbs/names to allowlists
+- Overfit fixes instead of modeling linguistic evidence
+
+**Better results occurred when:**
+- Evidence accumulation was introduced
+- Multiple weak signals were combined (NER + repetition + roles + context)
+- Decisions were delayed instead of filtered early
+
+**Mitigation:**
+- Prefer multi-signal evidence scoring
+- Avoid single-rule whitelists unless unavoidable
+- Treat whitelists as last resort, not first fix
+
+### 4. Claude Needs Deterministic Cycles, Not "Check-Ins"
+
+Hourly or vague check-ins cause loop escapes. Use this pattern:
+
+```
+WHILE (benchmarks < target AND no regressions):
+  1. Run tests
+  2. Identify highest-impact failure class
+  3. Implement minimal fix
+  4. Re-run full test suite
+  5. Log metrics
+END
+```
+
+- No human approval gates mid-loop
+- No time-based stopping unless hard limit reached
+- No "pause and summarize" unless explicitly requested
+
+### 5. Claude Performs Best When Framed as a Compiler Engineer
+
+**Breakthrough occurred when Claude understood ARES as:**
+
+> A deterministic story compiler: Text → IR → Queryable facts → Renderers
+
+**Not:**
+- An NLP experiment
+- A probabilistic model
+- A summarizer
+
+**Always reinforce:**
+- IR is the single source of truth
+- Renderers pull from IR (never parallel logic)
+- Precision/recall are compiler correctness metrics
+
+### 6. Claude Optimizes for Recall First Unless Precision Is Enforced
+
+**Observed pattern:**
+- Claude happily achieves 100% recall with massive duplication
+- Precision only improves when explicitly targeted
+
+**Mitigation:**
+- Specify exact precision targets (e.g., ≥98%)
+- Require deduplication correctness (canonicalized relations)
+- No duplicate facts under different extractors
+
+### 7. Claude Needs Explicit Prohibitions
+
+Claude respects hard rules better than preferences. Always include:
+
+- ❌ Do NOT disable tests
+- ❌ Do NOT comment out failing cases
+- ❌ Do NOT introduce parallel pipelines
+- ❌ Do NOT degrade performance without justification
+- ❌ Do NOT declare victory while metrics are below target
+
+### 8. Claude Improves Dramatically with Benchmarks, Not Abstract Goals
+
+Progress accelerated only after:
+- HP Chapter 1 gold sets
+- Ladder tests
+- Exact numeric targets
+
+**Never say:** "Improve coreference"
+**Instead say:** "Increase precision from 91% → 98% on HP Chapter 1 without recall regression"
+
+### 9. Claude Will Drift Unless Documentation Is Updated
+
+Claude forgets context between sessions unless CLAUDE.md and architectural invariants are kept current.
+
+**Mitigation:** End every major session by updating:
+- Current bottlenecks
+- What NOT to redo
+- What is considered "solved"
+
+### 10. Key Insight
+
+**Claude is not lazy—but it is risk-averse.**
+
+If allowed, it will:
+- Stop early
+- Reduce scope
+- Avoid hard cases
+
+When constrained with:
+- Deterministic loops
+- Hard metrics
+- Explicit prohibitions
+
+...it performs exceptionally well.
 
 ---
 
