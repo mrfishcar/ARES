@@ -4847,13 +4847,15 @@ const mergedEntries = Array.from(mergedMap.values());
         // Also update the existing entry to use a title-prefixed key
         if (existingTitle) {
           const existingBaseKey = dedupeKey;
-          const existingNewKey = `${existing.entry.entity.type}:${existingTitle}:${chosen.toLowerCase()}`;
+          // Strip any existing title from chosen to avoid "Mr. Mrs. Dursley" concatenation
+          const existingTitlePattern = /^(mr|mrs|miss|ms|dr)\.?\s+/i;
+          const existingChosenBaseName = chosen.replace(existingTitlePattern, '');
+          const existingNewKey = `${existing.entry.entity.type}:${existingTitle}:${existingChosenBaseName.toLowerCase()}`;
           // Move existing to title-prefixed key
           emittedEntryByKey.delete(existingBaseKey);
-          // Update existing canonical to include title
           const existingTitleCap = existingTitle.charAt(0).toUpperCase() + existingTitle.slice(1) + '.';
           if (!existing.entry.entity.canonical.toLowerCase().startsWith(existingTitle)) {
-            existing.entry.entity.canonical = `${existingTitleCap} ${chosen}`;
+            existing.entry.entity.canonical = `${existingTitleCap} ${existingChosenBaseName}`;
           }
           // Clear cross-contaminated aliases - keep only the title-appropriate one
           existing.entry.entity.aliases = existing.entry.entity.aliases.filter(a => {
@@ -4870,11 +4872,14 @@ const mergedEntries = Array.from(mergedMap.values());
         }
 
         // Use a distinct key that includes the title for new entry
-        dedupeKey = `${entry.entity.type}:${title}:${chosen.toLowerCase()}`;
+        // Strip any existing title from chosen to avoid "Mrs. Mr. Dursley" concatenation
+        const titlePattern = /^(mr|mrs|miss|ms|dr)\.?\s+/i;
+        const chosenBaseName = chosen.replace(titlePattern, '');
+        dedupeKey = `${entry.entity.type}:${title}:${chosenBaseName.toLowerCase()}`;
         existing = emittedEntryByKey.get(dedupeKey);
         // Also restore the titled canonical since they're separate people
         const titleCapitalized = title.charAt(0).toUpperCase() + title.slice(1) + '.';
-        entry.entity.canonical = `${titleCapitalized} ${chosen}`;
+        entry.entity.canonical = `${titleCapitalized} ${chosenBaseName}`;
         // Clear cross-contaminated aliases - keep only the title-appropriate one
         entry.entity.aliases = entry.entity.aliases.filter(a => {
           const aliasLower = a.toLowerCase();
