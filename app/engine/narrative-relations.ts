@@ -546,6 +546,24 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
     symmetric: true,
     typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
   },
+  // "X was Y's sister/brother" → sibling_of (hp1.2: Mrs. Potter was Mrs. Dursley's sister)
+  // Note: [\w'.-]+ to handle periods in titles like "Mrs."
+  {
+    regex: /\b([A-Z][\w'.-]+(?:\s+[A-Z][\w'.-]+)*)\s+was\s+([A-Z][\w'.-]+(?:\s+[A-Z][\w'.-]+)*)'s\s+(?:sister|brother)\b/g,
+    predicate: 'sibling_of',
+    symmetric: true,
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
+  // "his/her cousin X" → cousin_of (hp1.10: his cousin Dudley)
+  // Note: This is a pronoun-based pattern - needs coreference to identify the subject
+  {
+    regex: /\b(?:his|her)\s+cousin\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
+    predicate: 'cousin_of',
+    symmetric: true,
+    extractSubj: 0,  // Subject is the person the pronoun refers to (resolved by coreference)
+    extractObj: 1,   // Object is the cousin's name
+    typeGuard: { subj: ['PERSON'], obj: ['PERSON'] }
+  },
   // "The Xs had a small son called Y" → parent_of (hp1.4)
   {
     regex: /\b(?:The\s+)?([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\s+had\s+(?:a\s+)?(?:small\s+)?(?:son|daughter|child)\s+(?:named|called)\s+([A-Z][\w'-]+(?:\s+[A-Z][\w'-]+)*)\b/g,
@@ -3941,7 +3959,7 @@ export function extractPossessiveFamilyRelations(
   // Pattern 2: "their daughter/son" or "his wife" or "her partner" → resolve pronoun, then create family relations
   // Allow optional adjectives like "late", "younger", "older", etc.
   // NOTE: This pattern is conservative to avoid false positives (e.g., "He loved her" → parent_of)
-  const theirPattern = /\b(their|his|her)\s+(?:[a-z]+\s+)*(daughter|son|child|parent|father|mother|wife|husband|spouse|partner|brother|sister)\b/gi;
+  const theirPattern = /\b(their|his|her)\s+(?:[a-z]+\s+)*(daughter|son|child|parent|father|mother|wife|husband|spouse|partner|brother|sister|cousin)\b/gi;
 
   while ((match = theirPattern.exec(text)) !== null) {
     const pronoun = match[1].toLowerCase();
@@ -4018,6 +4036,8 @@ export function extractPossessiveFamilyRelations(
       predicate = 'married_to';
     } else if (['brother', 'sister'].includes(roleWord)) {
       predicate = 'sibling_of';
+    } else if (roleWord === 'cousin') {
+      predicate = 'cousin_of';
     } else {
       continue;
     }

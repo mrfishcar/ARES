@@ -215,6 +215,14 @@ export function extractFictionCharacters(text: string): Array<{name: string; men
     addCandidate(match[1]);
   }
 
+  // Pattern 2b: Vocative address at start of quote - ""Name," said X"
+  // Extracts the NAME being addressed (not the speaker)
+  // Example: "Hagrid," said Dumbledore → extracts Hagrid
+  const vocativePattern = new RegExp(`"((?:${TITLE_PATTERN}\\s+)?${NAME_CAPTURE}),["']?\\s*(?:${speechVerbs})`, 'g');
+  while ((match = vocativePattern.exec(text)) !== null) {
+    addCandidate(match[1]);
+  }
+
   // Pattern 3: Possessive - "X's [something]"
   const possessivePattern = new RegExp(`((?:${TITLE_PATTERN}\\s+)?${NAME_CAPTURE})'s\\s+`, 'g');
   while ((match = possessivePattern.exec(text)) !== null) {

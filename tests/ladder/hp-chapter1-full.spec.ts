@@ -284,6 +284,10 @@ function entityMatches(extracted: string, gold: string): boolean {
     if (lastExtracted === lastGold && lastExtracted.length > 2) {
       return true;
     }
+    // Handle plural variations (e.g., "Dursley" matches "Dursleys")
+    if ((lastExtracted + 's' === lastGold || lastGold + 's' === lastExtracted) && lastExtracted.length > 2) {
+      return true;
+    }
   }
 
   return false;

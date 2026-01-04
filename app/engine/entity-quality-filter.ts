@@ -1902,7 +1902,11 @@ const TYPE_SPECIFIC_BLOCKLIST: Partial<Record<EntityType, Set<string>>> = {
     // Fantasy/magical false positives (common nouns, not people)
     'magic', 'potions', 'slytherin', 'ravenclaw', 'hufflepuff', 'gryffindor',
     'platform', 'quidditch', 'wand', 'spell', 'charm', 'transfiguration',
-    'divination', 'herbology', 'astronomy', 'defense'
+    'divination', 'herbology', 'astronomy', 'defense',
+    // Common dialogue/narrative false positives
+    'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+    'hollow', 'black', 'white', 'dark', 'light', 'green', 'red', 'blue',
+    "g'night", 'goodbye', 'hello', 'morning', 'evening', 'night'
   ]),
   PLACE: new Set([
     'nothing', 'everything', 'back', 'part'

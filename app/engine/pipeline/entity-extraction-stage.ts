@@ -478,6 +478,47 @@ export async function runEntityExtractionStage(
       }
     }
 
+    // Pattern 1b: Compound name patterns - "Lily and James Potter"
+    // This extracts BOTH first names when two people share a last name
+    const compoundNamePattern = /\b([A-Z][a-z]+)\s+and\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b/g;
+    let compMatch: RegExpExecArray | null;
+    while ((compMatch = compoundNamePattern.exec(input.fullText)) !== null) {
+      const firstName = compMatch[1].trim();
+      const secondPart = compMatch[2].trim();
+      const lowerFirst = firstName.toLowerCase();
+
+      // Skip common words that might match
+      const skipWords = ['both', 'each', 'all', 'some', 'most', 'any', 'none', 'much', 'more', 'less'];
+      if (skipWords.includes(lowerFirst)) continue;
+
+      const entityKey = `PERSON::${lowerFirst}`;
+      if (!entityMap.has(entityKey)) {
+        const newEntity: Entity = {
+          id: uuid(),
+          type: 'PERSON',
+          canonical: firstName,
+          aliases: [],
+          attrs: { extracted_by: 'compound_name_pattern' },
+          created_at: new Date().toISOString()
+        };
+        entityMap.set(entityKey, newEntity);
+        allEntities.push(newEntity);
+
+        // Find all occurrences of this name in the text
+        const nameRegex = new RegExp(`\\b${escapeRegex(firstName)}\\b`, 'g');
+        let nameMatch: RegExpExecArray | null;
+        while ((nameMatch = nameRegex.exec(input.fullText)) !== null) {
+          allSpans.push({
+            entity_id: newEntity.id,
+            start: nameMatch.index,
+            end: nameMatch.index + nameMatch[0].length
+          });
+        }
+        builtInPatternCount++;
+        console.log(`[${STAGE_NAME}] COMPOUND-NAME-PATTERN: Extracted "${firstName}" as PERSON`);
+      }
+    }
+
     // Pattern 2: Mr./Mrs./Dr. + Name patterns - "Mr. Beauregard"
     // This extracts PERSON entities from honorific patterns
     const honorificPattern = /\b(Mr\.?|Mrs\.?|Ms\.?|Dr\.?|Miss)\s+([A-Z][a-z]+)\b/g;
@@ -585,12 +626,18 @@ export async function runEntityExtractionStage(
 
     // Pattern 4: Group/Club patterns - "[Adjective] [Plural Noun]s"
     // This extracts ORG entities for groups like "Preppy Pinks", "Slytherin Seekers"
+    // But NOT adjective + person name patterns like "Young Sirius"
+    const PERSON_ADJECTIVES = new Set(['young', 'old', 'little', 'big', 'tall', 'short', 'great', 'dear', 'poor', 'good', 'bad', 'fat', 'thin']);
     const groupPattern = /\b(the\s+)?([A-Z][a-z]+)\s+([A-Z][a-z]+s)\b/g;
     let groupMatch: RegExpExecArray | null;
     while ((groupMatch = groupPattern.exec(input.fullText)) !== null) {
       // Skip "the" prefix
       const groupName = (groupMatch[2] + ' ' + groupMatch[3]).trim();
       const lowerGroup = groupName.toLowerCase();
+      const firstWord = groupMatch[2].toLowerCase();
+
+      // Skip adjective + name patterns (e.g., "Young Sirius" is not a group)
+      if (PERSON_ADJECTIVES.has(firstWord)) continue;
 
       // Skip common phrases
       const skipWords = ['united states', 'great wall', 'junior high'];
@@ -621,6 +668,129 @@ export async function runEntityExtractionStage(
         }
         builtInPatternCount++;
         console.log(`[${STAGE_NAME}] GROUP-PATTERN: Extracted "${groupName}" as ORG`);
+      }
+    }
+
+    // Pattern 5: Adjective-prefixed person names - "Young Sirius Black", "Old Tom Riddle"
+    // This extracts the PERSON name (without the adjective) from adjective + name patterns
+    const adjPersonPattern = /\b(?:Young|Old|Little|Big|Poor|Dear|Great)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b/g;
+    let adjMatch: RegExpExecArray | null;
+    while ((adjMatch = adjPersonPattern.exec(input.fullText)) !== null) {
+      const nameCandidate = adjMatch[1].trim();
+      const lowerName = nameCandidate.toLowerCase();
+
+      // Skip if it's a single word that ends in 's' (might be possessive or plural)
+      if (nameCandidate.split(/\s+/).length === 1 && nameCandidate.endsWith('s')) continue;
+
+      const entityKey = `PERSON::${lowerName}`;
+      if (!entityMap.has(entityKey)) {
+        const newEntity: Entity = {
+          id: uuid(),
+          type: 'PERSON',
+          canonical: nameCandidate,
+          aliases: [],
+          attrs: { extracted_by: 'adjective_person_pattern' },
+          created_at: new Date().toISOString()
+        };
+        entityMap.set(entityKey, newEntity);
+        allEntities.push(newEntity);
+
+        // Find all occurrences of this name in the text
+        const nameRegex = new RegExp(`\\b${escapeRegex(nameCandidate)}\\b`, 'g');
+        let nameMatch: RegExpExecArray | null;
+        while ((nameMatch = nameRegex.exec(input.fullText)) !== null) {
+          allSpans.push({
+            entity_id: newEntity.id,
+            start: nameMatch.index,
+            end: nameMatch.index + nameMatch[0].length
+          });
+        }
+        builtInPatternCount++;
+        console.log(`[${STAGE_NAME}] ADJ-PERSON-PATTERN: Extracted "${nameCandidate}" as PERSON`);
+      }
+    }
+
+    // Pattern 6: Vocative address in dialogue - "Name," said X
+    // This extracts PERSON entities from dialogue where someone is addressed by name
+    // Examples: "Hagrid," said Dumbledore  |  "Harry!" called Mrs. Weasley
+    const speechVerbs = 'said|asked|replied|called|shouted|whispered|muttered|growled|cried|yelled|exclaimed|snapped|snarled|demanded|inquired|answered';
+    const vocativePattern = new RegExp(`"([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)?)[,!?]"\\s*(?:${speechVerbs})`, 'g');
+    let vocMatch: RegExpExecArray | null;
+    while ((vocMatch = vocativePattern.exec(input.fullText)) !== null) {
+      const nameCandidate = vocMatch[1].trim();
+      const lowerName = nameCandidate.toLowerCase();
+
+      // Skip common words that might appear at start of quotes
+      const skipWords = ['well', 'yes', 'no', 'oh', 'ah', 'hey', 'hello', 'hi', 'what', 'why', 'how', 'when', 'where', 'now', 'look', 'come', 'go', 'stop', 'wait', 'please', 'sorry', 'thanks', 'good', 'right', 'okay', 'fine', 'yeah', 'yep', 'nope', 'sure', 'well', 'alright', 'hmm', 'huh', 'uh'];
+      if (skipWords.includes(lowerName)) continue;
+
+      const entityKey = `PERSON::${lowerName}`;
+      if (!entityMap.has(entityKey)) {
+        const newEntity: Entity = {
+          id: uuid(),
+          type: 'PERSON',
+          canonical: nameCandidate,
+          aliases: [],
+          attrs: { extracted_by: 'vocative_pattern' },
+          created_at: new Date().toISOString()
+        };
+        entityMap.set(entityKey, newEntity);
+        allEntities.push(newEntity);
+
+        // Find all occurrences of this name in the text
+        const nameRegex = new RegExp(`\\b${escapeRegex(nameCandidate)}\\b`, 'g');
+        let nameMatch: RegExpExecArray | null;
+        while ((nameMatch = nameRegex.exec(input.fullText)) !== null) {
+          allSpans.push({
+            entity_id: newEntity.id,
+            start: nameMatch.index,
+            end: nameMatch.index + nameMatch[0].length
+          });
+        }
+        builtInPatternCount++;
+        console.log(`[${STAGE_NAME}] VOCATIVE-PATTERN: Extracted "${nameCandidate}" as PERSON`);
+      }
+    }
+
+    // Pattern 7: Post-quote dialogue attribution - said Dumbledore / cried Professor McGonagall
+    // This extracts PERSON entities from dialogue attribution that comes AFTER the quote
+    // Examples: said Dumbledore  |  cried Professor McGonagall
+    // Note: Use [A-Z][a-zA-Z]* to handle names like "McGonagall" with internal capitals
+    const postQuotePattern = new RegExp(`[""'']\\s*(?:${speechVerbs})\\s+([A-Z][a-zA-Z]*(?:\\s+[A-Z][a-zA-Z]*)?)`, 'g');
+    let postMatch: RegExpExecArray | null;
+    while ((postMatch = postQuotePattern.exec(input.fullText)) !== null) {
+      const nameCandidate = postMatch[1].trim();
+      const lowerName = nameCandidate.toLowerCase();
+
+      // Skip common words
+      const skipWords = ['the', 'a', 'an', 'that', 'this', 'it', 'she', 'he', 'they', 'we', 'you', 'i'];
+      if (skipWords.includes(lowerName)) continue;
+
+      const entityKey = `PERSON::${lowerName}`;
+      if (!entityMap.has(entityKey)) {
+        const newEntity: Entity = {
+          id: uuid(),
+          type: 'PERSON',
+          canonical: nameCandidate,
+          aliases: [],
+          attrs: { extracted_by: 'post_quote_pattern' },
+          created_at: new Date().toISOString()
+        };
+        entityMap.set(entityKey, newEntity);
+        allEntities.push(newEntity);
+
+        // Find all occurrences of this name in the text
+        const nameRegex = new RegExp(`\\b${escapeRegex(nameCandidate)}\\b`, 'g');
+        let nameMatch: RegExpExecArray | null;
+        while ((nameMatch = nameRegex.exec(input.fullText)) !== null) {
+          allSpans.push({
+            entity_id: newEntity.id,
+            start: nameMatch.index,
+            end: nameMatch.index + nameMatch[0].length
+          });
+        }
+        builtInPatternCount++;
+        console.log(`[${STAGE_NAME}] POST-QUOTE-PATTERN: Extracted "${nameCandidate}" as PERSON`);
       }
     }
 
