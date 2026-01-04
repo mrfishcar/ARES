@@ -512,11 +512,48 @@ export async function runEntityExtractionStage(
 
     // Pattern 3: Place patterns - "[Adjective] Hall/House/Court/Room/Wing"
     // This extracts PLACE entities for building names
+    // EXCEPTION: Hogwarts houses (Gryffindor, Slytherin, etc.) should be ORG not PLACE
+    const ORGANIZATIONAL_HOUSE_PREFIXES = new Set([
+      'gryffindor', 'slytherin', 'hufflepuff', 'ravenclaw'  // Hogwarts houses
+    ]);
     const placePattern = /\b([A-Z][a-z]+)\s+(Hall|House|Court|Room|Wing|Tower|Castle|Manor|Abbey|Cathedral|Church|Temple|Palace|Keep|Dungeon)\b/g;
     let placeMatch: RegExpExecArray | null;
     while ((placeMatch = placePattern.exec(input.fullText)) !== null) {
       const placeName = placeMatch[0].trim();
       const lowerPlace = placeName.toLowerCase();
+      const prefix = placeMatch[1].toLowerCase();
+      const suffix = placeMatch[2].toLowerCase();
+
+      // If this is a known organizational house (e.g., "Gryffindor House"), extract as ORG
+      if (suffix === 'house' && ORGANIZATIONAL_HOUSE_PREFIXES.has(prefix)) {
+        const entityKey = `ORG::${lowerPlace}`;
+        if (!entityMap.has(entityKey)) {
+          const newEntity: Entity = {
+            id: uuid(),
+            type: 'ORG',
+            canonical: placeName,
+            aliases: [placeMatch[1]], // Also add short form as alias (e.g., "Gryffindor")
+            attrs: { extracted_by: 'org_house_pattern', subtype: 'school_house' },
+            created_at: new Date().toISOString()
+          };
+          entityMap.set(entityKey, newEntity);
+          allEntities.push(newEntity);
+
+          // Find all occurrences
+          const houseRegex = new RegExp(`\\b${escapeRegex(placeName)}\\b`, 'gi');
+          let hm: RegExpExecArray | null;
+          while ((hm = houseRegex.exec(input.fullText)) !== null) {
+            allSpans.push({
+              entity_id: newEntity.id,
+              start: hm.index,
+              end: hm.index + hm[0].length
+            });
+          }
+          builtInPatternCount++;
+          console.log(`[${STAGE_NAME}] ORG-HOUSE-PATTERN: Extracted "${placeName}" as ORG (school house)`);
+        }
+        continue; // Skip PLACE extraction for this match
+      }
 
       const entityKey = `PLACE::${lowerPlace}`;
       if (!entityMap.has(entityKey)) {
