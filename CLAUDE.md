@@ -1,6 +1,6 @@
 # CLAUDE.md - ARES Story World Compiler
 
-**Version**: 3.1
+**Version**: 4.0
 **Last Updated**: 2026-01-04
 **Mission**: Build the most powerful deterministic story world compiler in existence.
 
@@ -15,6 +15,69 @@ We're building a system that **just works**. Users write stories, and the system
 If ARES can handle Harry Potter - with its alias chains (Tom Riddle = Voldemort = You-Know-Who = He-Who-Must-Not-Be-Named), complex family trees (Blacks, Weasleys, Malfoys), organizations (Death Eaters, Order of the Phoenix), epithets ("the boy who lived"), and 60%+ dialogue - it can handle anything.
 
 **No shortcuts. No moving goalposts. No "good enough."**
+
+---
+
+## Architectural Invariants (NEVER VIOLATE)
+
+These are non-negotiable. Every Claude session must respect these:
+
+1. **IR is the single source of narrative truth** — No parallel "events/facts" pipelines. Renderers pull from IR only.
+
+2. **Deterministic extraction** — Same input + same config + same code + same parser version → identical outputs (entities, aliases, IR, facts, timelines). This means:
+   - Stable ordering (sort keys, don't rely on Map/Set iteration order)
+   - No randomness anywhere
+   - No time-dependent logic
+   - Pin parser versions for benchmark reproducibility
+
+3. **Provenance always** — Every assertion/event/fact must have evidence spans. No fact without source.
+
+4. **Local-first** — Core extraction runs without cloud/internet calls at extraction time.
+   - spaCy models may be downloaded at install time
+   - Extraction itself must work offline
+   - Parser service on `localhost:8000`
+
+5. **HERT stability** — Entity IDs must remain stable across re-extraction. Same entity → same ID.
+
+6. **No heavyweight deps in core path** — No WordNet full load, no transformer coref in the baseline pipeline.
+
+---
+
+## Definitions
+
+### What "Deterministic" Means
+
+- Same text + same config + same code + same parser version ⇒ identical outputs
+- Includes: stable ordering, no randomness, no time-dependent logic
+- Environment variance (spaCy version differences) is acceptable but must be documented
+- **Pin these for benchmarks**: spaCy model version (`en_core_web_sm`), parser service code
+
+### What "Local-First" Means
+
+- Core pipeline runs offline (no network calls at extraction time)
+- Parser service: `http://127.0.0.1:8000` (configurable via `PARSER_URL`)
+- Fallback behavior if parser unavailable:
+  - `PARSER_BACKEND=mock` → Use MockParserClient (rule-based, no spaCy)
+  - `PARSER_BACKEND=http` → Try HTTP, fall back to mock if unavailable
+  - `PARSER_BACKEND=embedded` → Try embedded, fall back to mock
+  - Auto (default): HTTP → Embedded → Mock
+
+### Confidence Model
+
+Confidence is a first-class output concept (not just binary extraction):
+
+| Level | Score | Meaning |
+|-------|-------|---------|
+| High | ≥0.8 | Direct NER backing + consistent evidence |
+| Medium | ≥0.6 | Pattern-inferred, good context |
+| Low | ≥0.5 | Heuristic / weak evidence / ambiguous |
+| Filtered | <0.5 | Below threshold, excluded from output |
+
+For coreference: prefer UNRESOLVED if ambiguous (don't guess).
+
+**Key files:**
+- `app/engine/confidence-scoring.ts` - `computeEntityConfidence()`, `filterEntitiesByConfidence()`
+- Config: `app/config/extraction-config.ts`
 
 ---
 
@@ -83,6 +146,16 @@ Ask yourself these questions every session:
 - Recommend removing code that isn't pulling its weight
 
 **The goal is results, not activity.** If you see a path to better extraction that requires rethinking something fundamental - say so.
+
+### Prioritization Rules
+
+When constraints conflict, follow this order:
+
+1. **Never break invariants** (IR single source, determinism, provenance, HERT stability)
+2. **No regressions on earlier ladder levels** - fix before proceeding
+3. **Prefer precision over recall** when a change risks junk entities (junk breaks everything downstream)
+4. **Keep recall above threshold targets** and expand coverage via tests + patterns
+5. **When in doubt**: emit lower confidence / UNRESOLVED rather than hallucinating
 
 ---
 
@@ -230,6 +303,37 @@ When constrained with:
 
 ---
 
+## Handling "Unsolvable" Cases
+
+The escape hatch is structured uncertainty, not quitting:
+
+1. **For coreference**: Emit `UNRESOLVED` with reason code
+2. **For entities**: Emit with `confidence: low` + evidence
+3. **For relations**: Skip with explicit reason code (so it's measurable)
+
+**"Unsolvable" means**: "Not resolvable with available evidence under deterministic rules"
+
+The required response is structured uncertainty, NOT:
+- Skipping tests
+- Commenting them out
+- Declaring something "out of scope"
+
+---
+
+## Scope & Versatility
+
+**Baseline target**: English prose (fiction + narrative non-fiction)
+
+**Genre flexibility** is achieved via generic linguistic patterns, not universe-specific hacks:
+- Common noun entity extraction (dragon/village/students)
+- Role/title/definite-description bridging
+- User corrections / learning loop
+- NOT hardcoding one universe
+
+**Not in scope (yet)**: Other languages, poetry, screenplay format
+
+---
+
 ## What Works (Institutional Learning)
 
 This section captures approaches that have proven effective. Update it when you discover something that works well.
@@ -314,20 +418,6 @@ This section captures approaches that failed or caused problems. Update it to pr
 
 **Rule: Don't advance until current level passes.**
 
-### Harry Potter Test Corpus (Planned)
-
-```
-tests/corpus/hp/
-  01-dursleys-intro.txt      # Basic entity extraction
-  02-hagrid-reveal.txt       # Dialogue attribution
-  03-sorting-hat.txt         # Organization membership
-  04-voldemort-aliases.txt   # Alias chain resolution
-  05-weasley-family.txt      # Family tree extraction
-  06-time-turner.txt         # Temporal complexity
-```
-
-Each file gets `.expected.json` with ground truth entities and relations.
-
 ### Priority Work (In Order)
 
 1. **Close Level 3 Relation Gap** (55.7% → 80%)
@@ -372,13 +462,75 @@ Raw Text → spaCy Parser (port 8000) → Entity Extraction → Relation Extract
 8. **KnowledgeGraphStage** - Final assembly
 
 ### Key Files
+
 | File | Purpose |
 |------|---------|
+| **IR Core** | |
+| `app/engine/ir/types.ts` | IR type definitions (Entity, Event, Assertion, Fact, Confidence) |
+| **Extraction** | |
 | `app/engine/entity-quality-filter.ts` | Surname detection, two-first-names filter |
+| `app/engine/confidence-scoring.ts` | Entity confidence computation |
 | `app/engine/reference-resolver.ts` | Unified pronoun resolution |
-| `app/engine/narrative-relations.ts` | Narrative pattern extraction |
+| **Patterns** | |
+| `app/engine/extract/relations/dependency-paths.ts` | Dependency path patterns |
+| `app/engine/narrative-relations.ts` | Narrative patterns (appositives, possessives) |
+| `app/engine/dynamic-pattern-loader.ts` | Dynamic pattern loading |
+| **Pipeline** | |
 | `app/engine/pipeline/orchestrator.ts` | Pipeline coordination |
-| `tests/unit/surname-detection.spec.ts` | Surname guardrail tests |
+| **Parser** | |
+| `app/parser/createClient.ts` | Parser client selection (HTTP/Embedded/Mock) |
+| `app/parser/MockParserClient.ts` | Fallback parser (no spaCy) |
+| `scripts/parser_service.py` | spaCy parser service (en_core_web_sm) |
+
+---
+
+## How to Add a Pattern
+
+1. **Add failing test first** (ladder/benchmark/hp corpus)
+2. **Identify the pattern home file**:
+   - Dependency patterns → `app/engine/extract/relations/dependency-paths.ts`
+   - Narrative patterns → `app/engine/narrative-relations.ts`
+   - Dynamic patterns → JSON in `patterns/` directory
+3. **Implement the pattern**
+4. **Add/adjust schema guards** if new predicate type
+5. **Run full regression ladder**
+6. **Measure impact** (precision/recall + no regressions)
+7. **Commit with clear scope + update docs**
+
+---
+
+## Test Corpus Format
+
+### Gold Standard Structure
+
+From `tests/ladder/hp-chapter1.spec.ts`:
+
+```typescript
+interface GoldEntity {
+  text: string;
+  type: 'PERSON' | 'PLACE' | 'ORG' | 'DATE' | 'ITEM' | 'WORK' | 'EVENT';
+}
+
+interface GoldRelation {
+  subj: string;   // Entity text
+  pred: string;   // Predicate (e.g., "married_to", "parent_of")
+  obj: string;    // Entity text
+}
+
+interface TestCase {
+  id: string;     // e.g., "hp1.1"
+  name: string;   // e.g., "Married couple at address"
+  text: string;   // The input text
+  gold: {
+    entities: GoldEntity[];
+    relations: GoldRelation[];
+  };
+}
+```
+
+### Matching Rules
+- Entity matching: case-insensitive partial match (canonical or aliases)
+- Relation matching: subject + predicate + object must all match
 
 ---
 
@@ -394,6 +546,7 @@ npm test tests/ladder/level-1-simple.spec.ts
 npm test tests/ladder/level-2-multisentence.spec.ts
 npm test tests/ladder/level-3-complex.spec.ts
 npm test tests/unit/surname-detection.spec.ts
+npm test tests/ladder/hp-chapter1.spec.ts
 
 # Debug
 L3_DEBUG=1 npm test tests/ladder/level-2-multisentence.spec.ts
@@ -401,6 +554,13 @@ npx ts-node scripts/debug-fast-path.ts
 
 # Pattern inventory
 npx ts-node scripts/pattern-expansion/inventory-patterns.ts
+```
+
+### Environment Variables
+```bash
+PARSER_URL=http://127.0.0.1:8000   # Parser service URL
+PARSER_BACKEND=auto                 # mock | embedded | http | auto
+PARSER_TIMEOUT_MS=800               # Parser timeout
 ```
 
 ### Git Workflow
