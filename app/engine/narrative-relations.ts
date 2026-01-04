@@ -957,8 +957,9 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
   },
   // Pattern: "The couple's daughter, Mira" or "Their son, Cael"
   // Note: This requires special handling - need to resolve "couple"/"their" first
+  // IMPORTANT: Using 'g' only (not 'gi') so [A-Z] requires actual uppercase (avoids matching "included" as name)
   {
-    regex: /\b(the\s+couple'?s?|their)\s+(?:daughter|son|child|children)\s*,?\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/gi,
+    regex: /\b([Tt]he\s+couple'?s?|[Tt]heir)\s+(?:daughter|son|child|children)\s*,?\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g,
     predicate: 'parent_of',
     extractSubj: 1,  // This will be "their" or "the couple's" - needs coreference
     extractObj: 2,   // This is the child name
@@ -2791,6 +2792,22 @@ export function extractNarrativeRelations(
           }
         }
 
+        // If container is a possessive pronoun (Their/His/Her), try text-based coref lookup
+        // This handles position misalignment from text normalization
+        if (!containerEntity && corefLinks && /^(their|his|her)$/i.test(container)) {
+          // Find coref links for this pronoun anywhere in text
+          const containerLinks = corefLinks.links.filter(link =>
+            link.mention.text.toLowerCase() === container.toLowerCase()
+          );
+
+          if (containerLinks.length > 0) {
+            // For "Their", we might resolve to one of a married couple - that's fine for child_of
+            const bestLink = containerLinks.sort((a, b) => b.confidence - a.confidence)[0];
+            containerEntity = entities.find(e => e.id === bestLink.entity_id) || null;
+            console.log(`[LIST-EXTRACT] Resolved possessive "${container}" via text-based coref → entity ${containerEntity?.canonical}`);
+          }
+        }
+
         // If still no match and container is a common noun (lowercase), try type-based resolution
         // E.g., "castle" → most recent ORG/PLACE with "School" or similar in name
         if (!containerEntity && /^[a-z]+$/.test(container)) {
@@ -3450,6 +3467,22 @@ export function extractNarrativeRelations(
     const siblingName = match[1].toLowerCase();
     siblingsWithIndicators.add(siblingName);
     console.log(`[SIBLING-FILTER] Detected sibling indicator for: ${siblingName}`);
+  }
+
+  // SIBLING DETECTION 2: Detect entities from "children included X, Y, Z" lists
+  // All entities in such a list are siblings to each other
+  const CHILDREN_LIST_PATTERN = /\b(?:their|his|her)\s+children\s+(?:included|were|are)\s+([A-Z][a-z]+(?:,\s*(?:and\s+)?[A-Z][a-z]+)*(?:\s+and\s+[A-Z][a-z]+)?)/gi;
+  const childrenListMatches = text.matchAll(CHILDREN_LIST_PATTERN);
+  for (const match of childrenListMatches) {
+    // Extract names from the list
+    const listText = match[1];
+    const namePattern = /\b([A-Z][a-z]+)\b/g;
+    let nameMatch;
+    while ((nameMatch = namePattern.exec(listText)) !== null) {
+      const siblingName = nameMatch[1].toLowerCase();
+      siblingsWithIndicators.add(siblingName);
+      console.log(`[SIBLING-FILTER] Detected sibling from children list: ${siblingName}`);
+    }
   }
 
   // Create mapping from entity ID to canonical name (lowercase)
@@ -4202,6 +4235,20 @@ export function extractPossessiveFamilyRelations(
     const siblingName = match[1].toLowerCase();
     siblingsWithIndicators.add(siblingName);
     console.log(`[POSSESSIVE-SIBLING-FILTER] Detected sibling: ${siblingName}`);
+  }
+
+  // Also detect siblings from "children included X, Y, Z" lists
+  const CHILDREN_LIST_PATTERN = /\b(?:their|his|her)\s+children\s+(?:included|were|are)\s+([A-Z][a-z]+(?:,\s*(?:and\s+)?[A-Z][a-z]+)*(?:\s+and\s+[A-Z][a-z]+)?)/gi;
+  const childrenListMatches = text.matchAll(CHILDREN_LIST_PATTERN);
+  for (const match of childrenListMatches) {
+    const listText = match[1];
+    const namePattern = /\b([A-Z][a-z]+)\b/g;
+    let nameMatch;
+    while ((nameMatch = namePattern.exec(listText)) !== null) {
+      const siblingName = nameMatch[1].toLowerCase();
+      siblingsWithIndicators.add(siblingName);
+      console.log(`[POSSESSIVE-SIBLING-FILTER] Detected sibling from children list: ${siblingName}`);
+    }
   }
 
   // Create entity ID to name mapping

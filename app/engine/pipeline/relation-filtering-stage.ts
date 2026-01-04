@@ -31,6 +31,9 @@ const STAGE_NAME = 'RelationFilteringStage';
 // Sibling appositive pattern (Pattern FM-1 from LINGUISTIC_REFERENCE.md)
 const SIBLING_APPOSITIVE_PATTERN = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*,\s*(?:the\s+)?(?:eldest|oldest|younger|youngest|twin|middle)\s+(?:son|daughter|child|brother|sister|sibling)\b/gi;
 
+// Children list pattern - entities in "children included X, Y, Z" are siblings
+const CHILDREN_LIST_PATTERN = /\b(?:their|his|her)\s+children\s+(?:included|were|are)\s+([A-Z][a-z]+(?:,\s*(?:and\s+)?[A-Z][a-z]+)*(?:\s+and\s+[A-Z][a-z]+)?)/gi;
+
 /**
  * Filter false positive relations
  */
@@ -150,10 +153,22 @@ export async function runRelationFilteringStage(
     if (input.config.siblingDetectionEnabled) {
       // Detect siblings from full text
       const siblingsWithIndicators = new Set<string>();
-      const siblingMatches = input.fullText.matchAll(SIBLING_APPOSITIVE_PATTERN);
 
+      // Pattern 1: "X, the eldest/youngest son/daughter"
+      const siblingMatches = input.fullText.matchAll(SIBLING_APPOSITIVE_PATTERN);
       for (const match of siblingMatches) {
         siblingsWithIndicators.add(match[1].toLowerCase());
+      }
+
+      // Pattern 2: "children included X, Y, Z" - all are siblings
+      const childrenListMatches = input.fullText.matchAll(CHILDREN_LIST_PATTERN);
+      for (const match of childrenListMatches) {
+        const listText = match[1];
+        const namePattern = /\b([A-Z][a-z]+)\b/g;
+        let nameMatch;
+        while ((nameMatch = namePattern.exec(listText)) !== null) {
+          siblingsWithIndicators.add(nameMatch[1].toLowerCase());
+        }
       }
 
       console.log(
