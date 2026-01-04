@@ -1116,8 +1116,9 @@ const NARRATIVE_PATTERNS: RelationPattern[] = [
   // LIST EXTRACTION: "The castle had four houses: Gryffindor, Slytherin, Hufflepuff, and Ravenclaw"
   // This pattern triggers special list parsing logic
   // Matches "The [noun] had/has [number] items:" or "[Name] had/has [number] items:"
+  // Note: "The" is optional because normalizeTextForPatterns may strip leading articles
   {
-    regex: /\b(?:The\s+([a-z]+)|([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*))\s+(?:had|has|have)\s+(?:\w+\s+)?(?:houses?|members?|parts?|divisions?|sections?|components?|elements?):\s*/g,
+    regex: /\b(?:(?:The\s+)?([a-z]+)|([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*))\s+(?:had|has|have)\s+(?:\w+\s+)?(?:houses?|members?|parts?|divisions?|sections?|components?|elements?):\s*/g,
     predicate: 'part_of',
     typeGuard: {},
     listExtraction: true,
@@ -2787,6 +2788,74 @@ export function extractNarrativeRelations(
             const bestLink = containerLinks.sort((a, b) => b.confidence - a.confidence)[0];
             containerEntity = entities.find(e => e.id === bestLink.entity_id) || null;
             console.log(`[LIST-EXTRACT] Resolved "${container}" via coref → entity ${containerEntity?.canonical}`);
+          }
+        }
+
+        // If still no match and container is a common noun (lowercase), try type-based resolution
+        // E.g., "castle" → most recent ORG/PLACE with "School" or similar in name
+        if (!containerEntity && /^[a-z]+$/.test(container)) {
+          const containerLower = container.toLowerCase();
+          const matchPosition = match.index;
+
+          // Define what types of entities common nouns likely refer to
+          const nounToTypes: Record<string, string[]> = {
+            'castle': ['ORG', 'PLACE'],
+            'school': ['ORG'],
+            'house': ['ORG', 'PLACE'],
+            'building': ['ORG', 'PLACE'],
+            'company': ['ORG'],
+            'organization': ['ORG'],
+            'kingdom': ['PLACE', 'ORG'],
+            'city': ['PLACE'],
+            'town': ['PLACE'],
+            'village': ['PLACE']
+          };
+
+          const compatibleTypes = nounToTypes[containerLower] || ['ORG', 'PLACE'];
+
+          // Define semantic name patterns for common nouns (prioritize entities matching these)
+          const nounToNamePatterns: Record<string, RegExp> = {
+            'castle': /\b(school|academy|university|institute|college|castle|palace|fortress)\b/i,
+            'school': /\b(school|academy|university|institute|college)\b/i,
+            'house': /\b(house|home|manor|hall|residence)\b/i,
+            'building': /\b(building|tower|hall|center|centre)\b/i,
+            'company': /\b(corp|inc|llc|ltd|company|enterprises|industries)\b/i
+          };
+          const preferredPattern = nounToNamePatterns[containerLower];
+
+          // Find the most recent entity of compatible type that appears before this position
+          // Search for entity mentions in the text (since EntityLookup doesn't have spans)
+          let bestCandidate: EntityLookup | null = null;
+          let bestPosition = -1;
+          let bestHasPreferredName = false;
+
+          const textBeforePattern = text.slice(0, matchPosition);
+
+          for (const entity of entities) {
+            if (!compatibleTypes.includes(entity.type)) continue;
+
+            // Search for entity's canonical name in text before the pattern
+            const entityPos = textBeforePattern.lastIndexOf(entity.canonical);
+
+            if (entityPos >= 0) {
+              // Check if this entity has a preferred name pattern
+              const hasPreferredName = preferredPattern ? preferredPattern.test(entity.canonical) : false;
+
+              // Prefer entities with semantic match over recency
+              const shouldReplace = (hasPreferredName && !bestHasPreferredName) ||
+                                    (hasPreferredName === bestHasPreferredName && entityPos > bestPosition);
+
+              if (shouldReplace) {
+                bestPosition = entityPos;
+                bestCandidate = entity;
+                bestHasPreferredName = hasPreferredName;
+              }
+            }
+          }
+
+          if (bestCandidate) {
+            containerEntity = bestCandidate;
+            console.log(`[LIST-EXTRACT] Resolved "${container}" via type-based lookup → ${containerEntity.canonical} (type: ${containerEntity.type})`);
           }
         }
 
